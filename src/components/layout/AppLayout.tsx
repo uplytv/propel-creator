@@ -1,14 +1,14 @@
 import { ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Home, TrendingUp, Package, Users, UserCheck, Bell, Lock } from "lucide-react";
-import { useApp, tierNames } from "@/context/AppContext";
+import { Home, Rocket, Package, Users, UserCheck, Bell, Lock, Share2 } from "lucide-react";
+import { useApp } from "@/context/AppContext";
 
 const navItems = [
   { label: "Home", icon: Home, path: "/dashboard" },
-  { label: "Grow", icon: TrendingUp, path: "/dashboard" },
+  { label: "Grow", icon: Rocket, path: "/grow" },
   { label: "Products", icon: Package, path: "/products" },
   { label: "Community", icon: Users, path: "/community" },
+  { label: "Affiliates", icon: Share2, path: "/affiliates" },
   { label: "My Rep", icon: UserCheck, path: "/my-rep" },
 ];
 
@@ -27,7 +27,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         </div>
         <nav className="flex-1 px-3 space-y-1">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path || (item.path === "/dashboard" && item.label === "Home" && location.pathname === "/dashboard");
+            const isActive = location.pathname === item.path;
             const showLock = item.label === "My Rep" && isRepLocked;
             return (
               <button
@@ -37,7 +37,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                   isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                 }`}
               >
-                <item.icon className="w-4.5 h-4.5" />
+                <item.icon className="w-[18px] h-[18px]" />
                 <span className="flex-1 text-left">{item.label}</span>
                 {showLock && <Lock className="w-3.5 h-3.5 text-warning" />}
                 {item.label === "My Rep" && !isRepLocked && (
@@ -70,7 +70,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             </div>
             <div className="flex items-center gap-3">
               <button className="relative p-2 rounded-lg hover:bg-secondary transition-colors">
-                <Bell className="w-4.5 h-4.5 text-muted-foreground" />
+                <Bell className="w-[18px] h-[18px] text-muted-foreground" />
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary" />
               </button>
               <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
@@ -86,7 +86,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       {/* Mobile Bottom Tabs */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t border-border bg-card/90 backdrop-blur-xl z-30 safe-area-bottom">
         <div className="flex items-center justify-around py-2">
-          {navItems.map((item) => {
+          {navItems.slice(0, 5).map((item) => {
             const isActive = location.pathname === item.path;
             const showLock = item.label === "My Rep" && isRepLocked;
             return (
