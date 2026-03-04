@@ -13,6 +13,7 @@ import Community from "./pages/Community";
 import MyRep from "./pages/MyRep";
 import Grow from "./pages/Grow";
 import Affiliates from "./pages/Affiliates";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/products" element={<Products />} />
             <Route path="/community" element={<Community />} />
             <Route path="/affiliates" element={<Affiliates />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="/my-rep" element={<MyRep />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
