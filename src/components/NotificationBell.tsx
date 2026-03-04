@@ -1,13 +1,23 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, Check, AlertTriangle, Flag } from "lucide-react";
+import { Bell, Check, AlertTriangle, Flag, Briefcase, CheckCircle2, XCircle, Eye, Star } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { formatDistanceToNow } from "date-fns";
+import { useNavigate } from "react-router-dom";
+
+const jobNotifIcon: Record<string, { icon: any; color: string }> = {
+  new_application: { icon: Briefcase, color: "bg-primary/10 text-primary" },
+  status_reviewed: { icon: Eye, color: "bg-accent/10 text-accent-foreground" },
+  status_shortlisted: { icon: Star, color: "bg-primary/10 text-primary" },
+  status_hired: { icon: CheckCircle2, color: "bg-primary/15 text-primary" },
+  status_rejected: { icon: XCircle, color: "bg-destructive/10 text-destructive" },
+};
 
 export default function NotificationBell() {
   const { notifications, unreadCount, markRead, markAllRead } = useNotifications();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -16,6 +26,40 @@ export default function NotificationBell() {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  const handleNotifClick = (n: any) => {
+    if (!n.read) markRead(n.id, n.source);
+    if (n.source === "job" && n.job_id) {
+      navigate(`/jobs/${n.job_id}`);
+      setOpen(false);
+    }
+  };
+
+  const getIcon = (n: any) => {
+    if (n.source === "job") {
+      const config = jobNotifIcon[n.type] || jobNotifIcon.new_application;
+      const Icon = config.icon;
+      return (
+        <div className={`mt-0.5 flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center ${config.color}`}>
+          <Icon className="w-3.5 h-3.5" />
+        </div>
+      );
+    }
+    // Campaign notifications
+    return (
+      <div className={`mt-0.5 flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center ${
+        n.type === "budget_warning"
+          ? "bg-[hsl(38,92%,50%)]/10 text-[hsl(38,92%,50%)]"
+          : "bg-primary/10 text-primary"
+      }`}>
+        {n.type === "budget_warning" ? (
+          <AlertTriangle className="w-3.5 h-3.5" />
+        ) : (
+          <Flag className="w-3.5 h-3.5" />
+        )}
+      </div>
+    );
+  };
 
   return (
     <div ref={ref} className="relative">
@@ -44,7 +88,6 @@ export default function NotificationBell() {
             transition={{ duration: 0.15 }}
             className="absolute top-full right-0 mt-2 w-80 max-h-[400px] rounded-xl bg-card border border-border shadow-xl z-50 overflow-hidden"
           >
-            {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
               <span className="text-sm font-semibold">Notifications</span>
               {unreadCount > 0 && (
@@ -57,7 +100,6 @@ export default function NotificationBell() {
               )}
             </div>
 
-            {/* List */}
             <div className="overflow-y-auto max-h-[340px]">
               {notifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
@@ -68,22 +110,12 @@ export default function NotificationBell() {
                 notifications.map((n) => (
                   <button
                     key={n.id}
-                    onClick={() => { if (!n.read) markRead(n.id); }}
+                    onClick={() => handleNotifClick(n)}
                     className={`w-full text-left px-4 py-3 flex gap-3 hover:bg-secondary/40 transition-colors border-b border-border/50 last:border-0 ${
                       !n.read ? "bg-primary/5" : ""
                     }`}
                   >
-                    <div className={`mt-0.5 flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center ${
-                      n.type === "budget_warning"
-                        ? "bg-[hsl(38,92%,50%)]/10 text-[hsl(38,92%,50%)]"
-                        : "bg-primary/10 text-primary"
-                    }`}>
-                      {n.type === "budget_warning" ? (
-                        <AlertTriangle className="w-3.5 h-3.5" />
-                      ) : (
-                        <Flag className="w-3.5 h-3.5" />
-                      )}
-                    </div>
+                    {getIcon(n)}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-semibold truncate">{n.title}</span>
