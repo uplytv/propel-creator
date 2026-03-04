@@ -1,1 +1,4 @@
 project_id = "dbjlhmbgskvhuzqvqfrl"
+
+[functions.match-talent]
+verify_jwt = false

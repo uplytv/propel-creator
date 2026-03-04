@@ -27,6 +27,10 @@ import Stream from "./pages/Stream";
 import GoLive from "./pages/GoLive";
 import BuyCredits from "./pages/BuyCredits";
 import AdIntegrations from "./pages/AdIntegrations";
+import Jobs from "./pages/Jobs";
+import PostJob from "./pages/PostJob";
+import JobDetail from "./pages/JobDetail";
+import TalentProfile from "./pages/TalentProfile";
 
 const queryClient = new QueryClient();
 
@@ -63,6 +67,10 @@ const App = () => (
                 <Route path="/go-live" element={<ProtectedRoute><GoLive /></ProtectedRoute>} />
                 <Route path="/buy-credits" element={<ProtectedRoute><BuyCredits /></ProtectedRoute>} />
                 <Route path="/ad-integrations" element={<ProtectedRoute><AdIntegrations /></ProtectedRoute>} />
+                <Route path="/jobs" element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
+                <Route path="/jobs/:id" element={<ProtectedRoute><JobDetail /></ProtectedRoute>} />
+                <Route path="/post-job" element={<ProtectedRoute><PostJob /></ProtectedRoute>} />
+                <Route path="/talent-profile" element={<ProtectedRoute><TalentProfile /></ProtectedRoute>} />
 
                 <Route path="*" element={<NotFound />} />
               </Routes>
