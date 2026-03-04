@@ -121,6 +121,40 @@ export function useMyJobs() {
   });
 }
 
+export function useMyApplications() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["my-applications", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("job_applications")
+        .select("*")
+        .eq("applicant_id", user!.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+
+      // Fetch job titles
+      const jobIds = [...new Set((data || []).map((a: any) => a.job_id))];
+      let jobs: any[] = [];
+      if (jobIds.length > 0) {
+        const { data: jobData } = await supabase
+          .from("jobs")
+          .select("id, title, skill_category")
+          .in("id", jobIds);
+        jobs = jobData || [];
+      }
+      const jobMap = new Map(jobs.map((j: any) => [j.id, j]));
+
+      return (data || []).map((app: any) => ({
+        ...app,
+        job_title: jobMap.get(app.job_id)?.title || "Job",
+        job_skill: jobMap.get(app.job_id)?.skill_category,
+      }));
+    },
+  });
+}
+
 export function useCreateJob() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
