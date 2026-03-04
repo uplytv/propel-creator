@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 
 export interface AppNotification {
   id: string;
@@ -58,24 +59,43 @@ export function useNotifications() {
     enabled: !!user,
   });
 
-  // Realtime subscription for both tables
+  // Track if initial load is done to avoid toasting old notifications
+  const initialLoadDone = useRef(false);
+  useEffect(() => {
+    if (!query.isLoading && query.data) {
+      initialLoadDone.current = true;
+    }
+  }, [query.isLoading, query.data]);
+
+  // Realtime subscription for both tables — with toast on new inserts
   useEffect(() => {
     if (!user) return;
+
+    const showToast = (payload: any, source: string) => {
+      if (!initialLoadDone.current) return;
+      const row = payload.new as any;
+      if (row) {
+        const icon = source === "job" ? "💼" : "📢";
+        toast(row.title, {
+          description: row.message,
+          icon,
+          duration: 5000,
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ["all-notifications", user.id] });
+    };
+
     const channel = supabase
       .channel("notifications-realtime")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "campaign_notifications" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["all-notifications", user.id] });
-        }
+        (payload) => showToast(payload, "campaign")
       )
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "job_notifications" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["all-notifications", user.id] });
-        }
+        (payload) => showToast(payload, "job")
       )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
