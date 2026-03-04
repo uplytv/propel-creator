@@ -14,6 +14,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from "recharts";
 import type { CampaignRow } from "@/hooks/useCampaigns";
+import { useCampaignMetrics } from "@/hooks/useCampaignMetrics";
 
 /* ─────── types ─────── */
 export interface Campaign {
@@ -309,40 +310,8 @@ export default function CampaignPerformance({ campaigns = [], onUpdateStatus, on
                     <MiniStat label="ROAS" value={`${campaign.roas}x`} highlight />
                   </div>
 
-                  {/* Chart or "just launched" message */}
-                  {campaign.sparkline.length > 0 ? (
-                    <div className="h-48 w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={campaign.sparkline}>
-                          <defs>
-                            <linearGradient id={`grad-${campaign.id}`} x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                          <XAxis dataKey="day" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                          <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                          <Tooltip
-                            contentStyle={{
-                              background: "hsl(var(--card))",
-                              border: "1px solid hsl(var(--border))",
-                              borderRadius: "0.75rem",
-                              fontSize: "12px",
-                            }}
-                          />
-                          <Area type="monotone" dataKey="imp" name="Impressions" stroke="hsl(var(--primary))" fill={`url(#grad-${campaign.id})`} strokeWidth={2} />
-                          <Area type="monotone" dataKey="clicks" name="Clicks" stroke="hsl(var(--accent-foreground))" fill="none" strokeWidth={1.5} strokeDasharray="4 4" />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    </div>
-                  ) : (
-                    <div className="h-32 flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-secondary/10">
-                      <Sparkles className="w-6 h-6 text-primary mb-2" />
-                      <p className="text-sm font-semibold">Just Launched</p>
-                      <p className="text-xs text-muted-foreground">Performance data will appear as your campaign runs.</p>
-                    </div>
-                  )}
+                  {/* Chart */}
+                  <CampaignChart campaign={campaign} />
 
                   {/* Actions */}
                   <div className="flex gap-2">
@@ -422,6 +391,61 @@ function StatusPill({ status }: { status: Campaign["status"] }) {
     <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${styles[status]}`}>
       {status}
     </span>
+  );
+}
+
+function CampaignChart({ campaign }: { campaign: Campaign }) {
+  const isDbCampaign = !campaign.id.startsWith("c");
+  const { data: metrics, isLoading } = useCampaignMetrics(isDbCampaign ? campaign.id : null);
+
+  // For seed campaigns, use their built-in sparkline
+  const chartData = isDbCampaign ? metrics : campaign.sparkline;
+  const dataKey = isDbCampaign ? "time" : "day";
+
+  if (isDbCampaign && isLoading) {
+    return (
+      <div className="h-48 flex items-center justify-center rounded-xl border border-dashed border-border bg-secondary/10">
+        <p className="text-sm text-muted-foreground animate-pulse">Loading chart data…</p>
+      </div>
+    );
+  }
+
+  if (!chartData || chartData.length === 0) {
+    return (
+      <div className="h-32 flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-secondary/10">
+        <Sparkles className="w-6 h-6 text-primary mb-2" />
+        <p className="text-sm font-semibold">Just Launched</p>
+        <p className="text-xs text-muted-foreground">Performance data will appear as your campaign runs.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-48 w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={chartData}>
+          <defs>
+            <linearGradient id={`grad-${campaign.id}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+          <XAxis dataKey={dataKey} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+          <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+          <Tooltip
+            contentStyle={{
+              background: "hsl(var(--card))",
+              border: "1px solid hsl(var(--border))",
+              borderRadius: "0.75rem",
+              fontSize: "12px",
+            }}
+          />
+          <Area type="monotone" dataKey="imp" name="Impressions" stroke="hsl(var(--primary))" fill={`url(#grad-${campaign.id})`} strokeWidth={2} />
+          <Area type="monotone" dataKey="clicks" name="Clicks" stroke="hsl(var(--accent-foreground))" fill="none" strokeWidth={1.5} strokeDasharray="4 4" />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 

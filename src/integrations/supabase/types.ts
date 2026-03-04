@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      campaign_metrics: {
+        Row: {
+          campaign_id: string
+          clicks: number
+          conversions: number
+          id: string
+          impressions: number
+          recorded_at: string
+          spent: number
+          user_id: string
+        }
+        Insert: {
+          campaign_id: string
+          clicks?: number
+          conversions?: number
+          id?: string
+          impressions?: number
+          recorded_at?: string
+          spent?: number
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string
+          clicks?: number
+          conversions?: number
+          id?: string
+          impressions?: number
+          recorded_at?: string
+          spent?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_metrics_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_notifications: {
         Row: {
           campaign_id: string
