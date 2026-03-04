@@ -41,7 +41,7 @@ const googleEvents: PixelEvent[] = [
 /* ─────── component ─────── */
 export default function AdIntegrations() {
   const { toast } = useToast();
-  const { campaigns, launchCampaign, updateStatus, deleteCampaign } = useCampaigns();
+  const { campaigns, launchCampaign, updateStatus, deleteCampaign, duplicateCampaign } = useCampaigns();
   const [metaStatus, setMetaStatus] = useState<ConnectionStatus>("disconnected");
   const [googleStatus, setGoogleStatus] = useState<ConnectionStatus>("disconnected");
   const [boostOpen, setBoostOpen] = useState(false);
@@ -231,7 +231,15 @@ export default function AdIntegrations() {
 
         {/* Campaign Performance Dashboard */}
         <div className="mt-8">
-          <CampaignPerformance campaigns={campaigns} onUpdateStatus={updateStatus} onDelete={deleteCampaign} />
+          <CampaignPerformance
+            campaigns={campaigns}
+            onUpdateStatus={updateStatus}
+            onDelete={deleteCampaign}
+            onDuplicate={async (source) => {
+              await duplicateCampaign(source);
+              toast({ title: "Campaign duplicated", description: `A copy of "${source.stream_title}" has been created.` });
+            }}
+          />
         </div>
       </div>
 

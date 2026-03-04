@@ -115,6 +115,29 @@ export function useCampaigns() {
     },
   });
 
+  const duplicateMutation = useMutation({
+    mutationFn: async (source: CampaignRow) => {
+      if (!user) throw new Error("Not authenticated");
+      const { error } = await supabase.from("campaigns" as any).insert({
+        user_id: user.id,
+        stream_title: source.stream_title,
+        objective: source.objective,
+        objective_label: source.objective_label,
+        daily_budget: source.daily_budget,
+        duration: source.duration,
+        total_budget: source.total_budget,
+        audience: source.audience,
+        audience_label: source.audience_label,
+        platform: source.platform,
+        status: "active",
+      } as any);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+    },
+  });
+
   return {
     campaigns: query.data ?? [],
     isLoading: query.isLoading,
@@ -123,5 +146,7 @@ export function useCampaigns() {
     updateStatus: updateStatusMutation.mutateAsync,
     deleteCampaign: deleteMutation.mutateAsync,
     isDeleting: deleteMutation.isPending,
+    duplicateCampaign: duplicateMutation.mutateAsync,
+    isDuplicating: duplicateMutation.isPending,
   };
 }
