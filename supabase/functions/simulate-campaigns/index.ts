@@ -31,6 +31,7 @@ Deno.serve(async (req) => {
 
     const updates = [];
     const notifications = [];
+    const metricsSnapshots = [];
 
     for (const campaign of campaigns) {
       const dailyBudget = Number(campaign.daily_budget);
@@ -128,8 +129,16 @@ Deno.serve(async (req) => {
           })
           .eq("id", campaign.id)
       );
+      // Record metrics snapshot
+      metricsSnapshots.push({
+        campaign_id: campaign.id,
+        user_id: campaign.user_id,
+        impressions: totalImpressions,
+        clicks: totalClicks,
+        conversions: totalConversions,
+        spent: Math.round(totalSpent * 100) / 100,
+      });
     }
-
     // Filter notifications based on user preferences
     if (notifications.length > 0) {
       const userIds = [...new Set(notifications.map(n => n.user_id))];
@@ -158,6 +167,16 @@ Deno.serve(async (req) => {
         if (notifError) {
           console.error("Failed to insert notifications:", notifError);
         }
+      }
+    }
+
+    // Insert metrics snapshots
+    if (metricsSnapshots.length > 0) {
+      const { error: metricsError } = await supabase
+        .from("campaign_metrics")
+        .insert(metricsSnapshots);
+      if (metricsError) {
+        console.error("Failed to insert metrics:", metricsError);
       }
     }
 
