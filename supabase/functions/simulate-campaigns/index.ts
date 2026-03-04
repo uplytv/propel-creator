@@ -130,13 +130,34 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Insert notifications
+    // Filter notifications based on user preferences
     if (notifications.length > 0) {
-      const { error: notifError } = await supabase
-        .from("campaign_notifications")
-        .insert(notifications);
-      if (notifError) {
-        console.error("Failed to insert notifications:", notifError);
+      const userIds = [...new Set(notifications.map(n => n.user_id))];
+      const { data: prefsData } = await supabase
+        .from("notification_preferences")
+        .select("user_id, budget_warning, campaign_completed")
+        .in("user_id", userIds);
+
+      const prefsMap = new Map(
+        (prefsData || []).map((p: any) => [p.user_id, p])
+      );
+
+      const filteredNotifs = notifications.filter(n => {
+        const userPrefs = prefsMap.get(n.user_id);
+        // Default to true if no preferences row exists
+        if (!userPrefs) return true;
+        if (n.type === "budget_warning") return userPrefs.budget_warning;
+        if (n.type === "campaign_completed") return userPrefs.campaign_completed;
+        return true;
+      });
+
+      if (filteredNotifs.length > 0) {
+        const { error: notifError } = await supabase
+          .from("campaign_notifications")
+          .insert(filteredNotifs);
+        if (notifError) {
+          console.error("Failed to insert notifications:", notifError);
+        }
       }
     }
 
