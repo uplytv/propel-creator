@@ -1,0 +1,116 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+    // Fetch all active campaigns
+    const { data: campaigns, error: fetchError } = await supabase
+      .from("campaigns")
+      .select("*")
+      .eq("status", "active");
+
+    if (fetchError) throw fetchError;
+    if (!campaigns || campaigns.length === 0) {
+      return new Response(JSON.stringify({ message: "No active campaigns" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const updates = [];
+
+    for (const campaign of campaigns) {
+      const dailyBudget = Number(campaign.daily_budget);
+      const totalBudget = Number(campaign.total_budget);
+      const currentSpent = Number(campaign.spent);
+
+      // If already spent the full budget, mark as completed
+      if (currentSpent >= totalBudget) {
+        updates.push(
+          supabase
+            .from("campaigns")
+            .update({ status: "completed", updated_at: new Date().toISOString() })
+            .eq("id", campaign.id)
+        );
+        continue;
+      }
+
+      // Simulate a per-minute tick (~1/1440th of a day, but accelerated for demo)
+      // We'll simulate roughly 1/60th of daily metrics per tick (accelerated: 1 hour = 1 day)
+      const tickFraction = 1 / 60;
+      const spendIncrement = Math.min(
+        dailyBudget * tickFraction * (0.8 + Math.random() * 0.4),
+        totalBudget - currentSpent
+      );
+
+      // Metrics based on objective and budget
+      const cpmBase = campaign.objective === "awareness" ? 4 : campaign.objective === "conversions" ? 12 : 8;
+      const ctrBase = campaign.objective === "awareness" ? 1.2 : campaign.objective === "conversions" ? 3.5 : 4.0;
+      const convRateBase = campaign.objective === "conversions" ? 5.5 : campaign.objective === "leads" ? 4.0 : 1.0;
+
+      const cpm = cpmBase * (0.85 + Math.random() * 0.3);
+      const newImpressions = Math.round((spendIncrement / cpm) * 1000);
+      const ctr = ctrBase * (0.8 + Math.random() * 0.4);
+      const newClicks = Math.max(1, Math.round(newImpressions * (ctr / 100)));
+      const convRate = convRateBase * (0.7 + Math.random() * 0.6);
+      const newConversions = Math.max(0, Math.round(newClicks * (convRate / 100)));
+
+      const totalSpent = currentSpent + spendIncrement;
+      const totalImpressions = campaign.impressions + newImpressions;
+      const totalClicks = campaign.clicks + newClicks;
+      const totalConversions = campaign.conversions + newConversions;
+
+      const computedCtr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
+      const computedCpc = totalClicks > 0 ? totalSpent / totalClicks : 0;
+      const computedCpa = totalConversions > 0 ? totalSpent / totalConversions : 0;
+      // Simulate ROAS: assume average order value of $25-$45
+      const avgOrderValue = 25 + Math.random() * 20;
+      const computedRoas = totalSpent > 0 ? (totalConversions * avgOrderValue) / totalSpent : 0;
+
+      updates.push(
+        supabase
+          .from("campaigns")
+          .update({
+            spent: Math.round(totalSpent * 100) / 100,
+            impressions: totalImpressions,
+            clicks: totalClicks,
+            conversions: totalConversions,
+            ctr: Math.round(computedCtr * 100) / 100,
+            cpc: Math.round(computedCpc * 100) / 100,
+            cpa: Math.round(computedCpa * 100) / 100,
+            roas: Math.round(computedRoas * 10) / 10,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", campaign.id)
+      );
+    }
+
+    const results = await Promise.all(updates);
+    const errors = results.filter((r) => r.error);
+
+    return new Response(
+      JSON.stringify({
+        updated: results.length - errors.length,
+        errors: errors.length,
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
