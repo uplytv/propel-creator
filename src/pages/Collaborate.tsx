@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Handshake, Search, Users, Sparkles, TrendingUp, DollarSign,
-  Send, Check, Clock, ArrowRight, Star, Zap, Eye, X,
+  Send, Check, CheckCheck, Clock, ArrowRight, Star, Zap, Eye, X,
   Package, Percent, Calendar, MessageSquare, Crown, Filter
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -62,6 +62,7 @@ interface ChatMessage {
   sender: "you" | "partner";
   text: string;
   time: string;
+  read?: boolean;
 }
 
 const mockChats: Record<string, ChatMessage[]> = {
@@ -109,19 +110,71 @@ export default function Collaborate() {
   const [chatOpen, setChatOpen] = useState<string | null>(null);
   const [chatMessages, setChatMessages] = useState<Record<string, ChatMessage[]>>(mockChats);
   const [chatInput, setChatInput] = useState("");
+  const [partnerTyping, setPartnerTyping] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const activeChatCollab = chatOpen ? activeCollabs.find(c => c.id === chatOpen) : null;
 
   useEffect(() => {
     if (chatOpen) chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatOpen, chatMessages]);
+  }, [chatOpen, chatMessages, partnerTyping]);
+
+  // Mark partner messages as read when chat opens
+  useEffect(() => {
+    if (!chatOpen) return;
+    setChatMessages(prev => {
+      const msgs = prev[chatOpen];
+      if (!msgs) return prev;
+      const updated = msgs.map(m => m.sender === "partner" && !m.read ? { ...m, read: true } : m);
+      return { ...prev, [chatOpen]: updated };
+    });
+  }, [chatOpen]);
 
   const handleSendChat = () => {
     if (!chatInput.trim() || !chatOpen) return;
-    const newMsg: ChatMessage = { id: `m${Date.now()}`, sender: "you", text: chatInput.trim(), time: "Just now" };
+    const newMsg: ChatMessage = { id: `m${Date.now()}`, sender: "you", text: chatInput.trim(), time: "Just now", read: false };
     setChatMessages(prev => ({ ...prev, [chatOpen]: [...(prev[chatOpen] || []), newMsg] }));
     setChatInput("");
+
+    // Simulate partner reading after 1s, then typing, then reply
+    const currentChatId = chatOpen;
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+
+    // Mark as read after 1s
+    setTimeout(() => {
+      setChatMessages(prev => {
+        const msgs = prev[currentChatId];
+        if (!msgs) return prev;
+        return { ...prev, [currentChatId]: msgs.map(m => ({ ...m, read: true })) };
+      });
+    }, 1000);
+
+    // Partner starts typing after 1.5s
+    typingTimeoutRef.current = setTimeout(() => {
+      setPartnerTyping(true);
+
+      // Partner sends reply after 2-4s of typing
+      const replyDelay = 2000 + Math.random() * 2000;
+      typingTimeoutRef.current = setTimeout(() => {
+        setPartnerTyping(false);
+        const replies = [
+          "That sounds great! Let's make it happen 🙌",
+          "Love this direction. I'll work on it today!",
+          "Agreed! Let me check my calendar and get back to you.",
+          "Perfect — this is going to be huge for both of us!",
+          "Nice! I'll pull some data on this and share my thoughts.",
+        ];
+        const reply: ChatMessage = {
+          id: `m${Date.now()}`,
+          sender: "partner",
+          text: replies[Math.floor(Math.random() * replies.length)],
+          time: "Just now",
+          read: true,
+        };
+        setChatMessages(prev => ({ ...prev, [currentChatId]: [...(prev[currentChatId] || []), reply] }));
+      }, replyDelay);
+    }, 1500);
   };
 
   const filteredMatches = suggestedMatches.filter((c) => {
@@ -553,7 +606,7 @@ export default function Collaborate() {
                 </button>
               </div>
 
-              {/* Messages */}
+               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {(chatMessages[chatOpen] || []).map((msg) => (
                   <motion.div
@@ -568,12 +621,51 @@ export default function Collaborate() {
                         : "bg-secondary text-foreground rounded-bl-md"
                     }`}>
                       <p>{msg.text}</p>
-                      <p className={`text-[10px] mt-1 ${
-                        msg.sender === "you" ? "text-primary-foreground/60" : "text-muted-foreground"
-                      }`}>{msg.time}</p>
+                      <div className={`flex items-center gap-1 mt-1 ${
+                        msg.sender === "you" ? "justify-end" : ""
+                      }`}>
+                        <span className={`text-[10px] ${
+                          msg.sender === "you" ? "text-primary-foreground/60" : "text-muted-foreground"
+                        }`}>{msg.time}</span>
+                        {msg.sender === "you" && (
+                          msg.read
+                            ? <CheckCheck className="w-3 h-3 text-primary-foreground/80" />
+                            : <Check className="w-3 h-3 text-primary-foreground/40" />
+                        )}
+                      </div>
                     </div>
                   </motion.div>
                 ))}
+
+                {/* Typing Indicator */}
+                <AnimatePresence>
+                  {partnerTyping && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 5 }}
+                      className="flex justify-start"
+                    >
+                      <div className="bg-secondary rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-1">
+                        <motion.span
+                          animate={{ opacity: [0.3, 1, 0.3] }}
+                          transition={{ duration: 1.2, repeat: Infinity, delay: 0 }}
+                          className="w-1.5 h-1.5 rounded-full bg-muted-foreground"
+                        />
+                        <motion.span
+                          animate={{ opacity: [0.3, 1, 0.3] }}
+                          transition={{ duration: 1.2, repeat: Infinity, delay: 0.2 }}
+                          className="w-1.5 h-1.5 rounded-full bg-muted-foreground"
+                        />
+                        <motion.span
+                          animate={{ opacity: [0.3, 1, 0.3] }}
+                          transition={{ duration: 1.2, repeat: Infinity, delay: 0.4 }}
+                          className="w-1.5 h-1.5 rounded-full bg-muted-foreground"
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
                 <div ref={chatEndRef} />
               </div>
 
