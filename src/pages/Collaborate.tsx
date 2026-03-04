@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Handshake, Search, Users, Sparkles, TrendingUp, DollarSign,
@@ -57,6 +57,41 @@ const activeCollabs: Collaboration[] = [
   { id: "c3", partner: { name: "Tyler Knox", avatar: "TK", niche: "Strength Training" }, product: "Total Wellness Program", status: "completed", split: [50, 50], revenue: 15200, startDate: "2 months ago", messages: 32 },
 ];
 
+interface ChatMessage {
+  id: string;
+  sender: "you" | "partner";
+  text: string;
+  time: string;
+}
+
+const mockChats: Record<string, ChatMessage[]> = {
+  c1: [
+    { id: "m1", sender: "partner", text: "Hey! Excited to launch the Blueprint together 🚀", time: "2 weeks ago" },
+    { id: "m2", sender: "you", text: "Same here! I've drafted the first 3 modules. Want to review?", time: "2 weeks ago" },
+    { id: "m3", sender: "partner", text: "Absolutely. I'll add the automation section this week.", time: "13 days ago" },
+    { id: "m4", sender: "you", text: "Perfect. Should we do a 50/50 split on the launch promo too?", time: "12 days ago" },
+    { id: "m5", sender: "partner", text: "Yes, let's keep it even. I'll set up the co-branded landing page.", time: "12 days ago" },
+    { id: "m6", sender: "you", text: "Landing page looks amazing! We already have 12 pre-signups.", time: "10 days ago" },
+    { id: "m7", sender: "partner", text: "That's incredible! I shared it with my email list — expecting a wave.", time: "9 days ago" },
+    { id: "m8", sender: "you", text: "47 enrolled now! Revenue dashboard is looking 🔥", time: "3 days ago" },
+    { id: "m9", sender: "partner", text: "Love it! Let's plan a live Q&A for next week to boost engagement.", time: "2 days ago" },
+    { id: "m10", sender: "you", text: "Great idea. Thursday at 3pm work for you?", time: "1 day ago" },
+    { id: "m11", sender: "partner", text: "Thursday works! I'll prep some case studies to share.", time: "5 hours ago" },
+  ],
+  c2: [
+    { id: "m1", sender: "you", text: "Hey Jake! Love your production courses. Want to collab?", time: "3 days ago" },
+    { id: "m2", sender: "partner", text: "I'm in! A sound + strategy combo would be unique.", time: "3 days ago" },
+    { id: "m3", sender: "you", text: "Exactly my thinking. I'll draft a proposal with 60/40 split since I'll handle the strategy modules.", time: "2 days ago" },
+    { id: "m4", sender: "partner", text: "Fair deal. Let me outline the music production modules.", time: "2 days ago" },
+    { id: "m5", sender: "you", text: "Sent the proposal! Check it out when you get a chance 🎵", time: "1 day ago" },
+  ],
+  c3: [
+    { id: "m1", sender: "partner", text: "Great working with you on Total Wellness! Final revenue: $15.2K 🎉", time: "1 month ago" },
+    { id: "m2", sender: "you", text: "What a ride! $7.6K each. Want to do a v2?", time: "1 month ago" },
+    { id: "m3", sender: "partner", text: "Definitely! Let's plan for Q2. Maybe add a nutrition component.", time: "3 weeks ago" },
+  ],
+};
+
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
 
@@ -71,6 +106,23 @@ export default function Collaborate() {
   const [splitValue, setSplitValue] = useState([50]);
   const [proposalMessage, setProposalMessage] = useState("");
   const [proposalProduct, setProposalProduct] = useState("");
+  const [chatOpen, setChatOpen] = useState<string | null>(null);
+  const [chatMessages, setChatMessages] = useState<Record<string, ChatMessage[]>>(mockChats);
+  const [chatInput, setChatInput] = useState("");
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  const activeChatCollab = chatOpen ? activeCollabs.find(c => c.id === chatOpen) : null;
+
+  useEffect(() => {
+    if (chatOpen) chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatOpen, chatMessages]);
+
+  const handleSendChat = () => {
+    if (!chatInput.trim() || !chatOpen) return;
+    const newMsg: ChatMessage = { id: `m${Date.now()}`, sender: "you", text: chatInput.trim(), time: "Just now" };
+    setChatMessages(prev => ({ ...prev, [chatOpen]: [...(prev[chatOpen] || []), newMsg] }));
+    setChatInput("");
+  };
 
   const filteredMatches = suggestedMatches.filter((c) => {
     if (nicheFilter !== "all" && !c.tags.map(t => t.toLowerCase()).includes(nicheFilter)) return false;
@@ -259,7 +311,7 @@ export default function Collaborate() {
                           <p className="text-xs text-muted-foreground">Your Share</p>
                           <p className="text-sm font-bold">${Math.round(collab.revenue * collab.split[0] / 100).toLocaleString()}</p>
                         </div>
-                        <Button variant="ghost" size="sm" className="gap-1 text-xs">
+                        <Button variant="ghost" size="sm" className="gap-1 text-xs" onClick={() => setChatOpen(collab.id)}>
                           <MessageSquare className="w-3.5 h-3.5" /> {collab.messages}
                         </Button>
                       </div>
@@ -462,6 +514,95 @@ export default function Collaborate() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* ── Chat Slide-out Panel ──────────────────────────────────────────── */}
+      <AnimatePresence>
+        {chatOpen && activeChatCollab && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-background/60 backdrop-blur-sm z-50"
+              onClick={() => setChatOpen(null)}
+            />
+            {/* Panel */}
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="fixed right-0 top-0 bottom-0 w-full sm:w-[420px] bg-card border-l border-border z-50 flex flex-col shadow-2xl"
+            >
+              {/* Chat Header */}
+              <div className="flex items-center gap-3 p-4 border-b border-border flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-sm font-bold text-muted-foreground">
+                  {activeChatCollab.partner.avatar}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm truncate">{activeChatCollab.partner.name}</p>
+                  <p className="text-[11px] text-muted-foreground">{activeChatCollab.product}</p>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                  <span className="text-[10px] text-muted-foreground">Online</span>
+                </div>
+                <button onClick={() => setChatOpen(null)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground ml-1">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                {(chatMessages[chatOpen] || []).map((msg) => (
+                  <motion.div
+                    key={msg.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`flex ${msg.sender === "you" ? "justify-end" : "justify-start"}`}
+                  >
+                    <div className={`max-w-[80%] px-3.5 py-2.5 rounded-2xl text-sm ${
+                      msg.sender === "you"
+                        ? "bg-primary text-primary-foreground rounded-br-md"
+                        : "bg-secondary text-foreground rounded-bl-md"
+                    }`}>
+                      <p>{msg.text}</p>
+                      <p className={`text-[10px] mt-1 ${
+                        msg.sender === "you" ? "text-primary-foreground/60" : "text-muted-foreground"
+                      }`}>{msg.time}</p>
+                    </div>
+                  </motion.div>
+                ))}
+                <div ref={chatEndRef} />
+              </div>
+
+              {/* Input */}
+              <div className="p-3 border-t border-border flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSendChat()}
+                    placeholder="Type a message..."
+                    className="flex-1"
+                  />
+                  <Button
+                    variant="hero"
+                    size="sm"
+                    onClick={handleSendChat}
+                    disabled={!chatInput.trim()}
+                    className="px-3"
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-1.5 text-center">Messages are shared between you and your co-creator</p>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </AppLayout>
   );
 }
