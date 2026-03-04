@@ -104,28 +104,35 @@ function MiniBarChart({ data }: { data: { day: string; amount: number }[] }) {
 }
 
 // ── Page Component ─────────────────────────────────────────────────────────────
-export default function JointProduct() {
+export default function JointProduct({ isPublic = false }: { isPublic?: boolean }) {
   const navigate = useNavigate();
   const spotsLeft = product.maxCapacity - product.enrolledCount;
 
+  const handleCopyLink = () => {
+    const url = `${window.location.origin}/p/creator-revenue-blueprint`;
+    navigator.clipboard.writeText(url);
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Sticky Admin Bar */}
-      <div className="sticky top-0 z-40 bg-card/90 backdrop-blur-xl border-b border-border">
-        <div className="container flex items-center justify-between h-12 gap-4">
-          <div className="flex items-center gap-3">
-            <button onClick={() => navigate("/collaborate")} className="p-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground">
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-            <span className="text-sm font-medium text-muted-foreground">Joint Product Preview</span>
-            <Badge variant="secondary" className="bg-primary/10 text-primary border-0 text-[10px]">Live</Badge>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="gap-1.5 text-xs"><Share2 className="w-3.5 h-3.5" /> Share</Button>
-            <Button variant="ghost" size="sm" className="gap-1.5 text-xs"><Eye className="w-3.5 h-3.5" /> Preview</Button>
+      {/* Sticky Admin Bar (creator only) */}
+      {!isPublic && (
+        <div className="sticky top-0 z-40 bg-card/90 backdrop-blur-xl border-b border-border">
+          <div className="container flex items-center justify-between h-12 gap-4">
+            <div className="flex items-center gap-3">
+              <button onClick={() => navigate("/collaborate")} className="p-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground">
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+              <span className="text-sm font-medium text-muted-foreground">Joint Product Preview</span>
+              <Badge variant="secondary" className="bg-primary/10 text-primary border-0 text-[10px]">Live</Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" className="gap-1.5 text-xs" onClick={handleCopyLink}><Share2 className="w-3.5 h-3.5" /> Copy Public Link</Button>
+              <Button variant="ghost" size="sm" className="gap-1.5 text-xs" onClick={() => navigate("/p/creator-revenue-blueprint")}><Eye className="w-3.5 h-3.5" /> Public View</Button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">
@@ -276,73 +283,75 @@ export default function JointProduct() {
         </motion.section>
 
         {/* ── Revenue Dashboard (Creator-only view) ─────────────────────────── */}
-        <motion.section variants={container} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }} className="glass-card glow-border p-6 md:p-8 max-w-3xl mx-auto">
-          <motion.div variants={item} className="flex items-center gap-2 mb-1">
-            <BarChart3 className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-bold">Live Revenue Dashboard</h2>
-            <Badge variant="secondary" className="bg-primary/10 text-primary border-0 text-[10px] ml-auto">Creator View</Badge>
-          </motion.div>
-          <motion.p variants={item} className="text-xs text-muted-foreground mb-6">Only visible to you and your co-creator</motion.p>
+        {!isPublic && (
+          <motion.section variants={container} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }} className="glass-card glow-border p-6 md:p-8 max-w-3xl mx-auto">
+            <motion.div variants={item} className="flex items-center gap-2 mb-1">
+              <BarChart3 className="w-5 h-5 text-primary" />
+              <h2 className="text-lg font-bold">Live Revenue Dashboard</h2>
+              <Badge variant="secondary" className="bg-primary/10 text-primary border-0 text-[10px] ml-auto">Creator View</Badge>
+            </motion.div>
+            <motion.p variants={item} className="text-xs text-muted-foreground mb-6">Only visible to you and your co-creator</motion.p>
 
-          {/* Stats Row */}
-          <motion.div variants={item} className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
-            {[
-              { label: "Total Revenue", value: product.totalRevenue, prefix: "$", icon: DollarSign },
-              { label: "Your Share (50%)", value: Math.round(product.totalRevenue * product.split[0] / 100), prefix: "$", icon: Percent },
-              { label: "Partner Share (50%)", value: Math.round(product.totalRevenue * product.split[1] / 100), prefix: "$", icon: Percent },
-              { label: "Enrollments", value: product.enrolledCount, prefix: "", icon: Users },
-            ].map((stat) => (
-              <div key={stat.label} className="bg-secondary/30 rounded-xl p-4 text-center">
-                <stat.icon className="w-4 h-4 text-primary mx-auto mb-1" />
-                <p className="text-xs text-muted-foreground mb-0.5">{stat.label}</p>
-                <p className="text-xl font-bold">
-                  <AnimatedNumber value={stat.value} prefix={stat.prefix} />
-                </p>
-              </div>
-            ))}
-          </motion.div>
+            {/* Stats Row */}
+            <motion.div variants={item} className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+              {[
+                { label: "Total Revenue", value: product.totalRevenue, prefix: "$", icon: DollarSign },
+                { label: "Your Share (50%)", value: Math.round(product.totalRevenue * product.split[0] / 100), prefix: "$", icon: Percent },
+                { label: "Partner Share (50%)", value: Math.round(product.totalRevenue * product.split[1] / 100), prefix: "$", icon: Percent },
+                { label: "Enrollments", value: product.enrolledCount, prefix: "", icon: Users },
+              ].map((stat) => (
+                <div key={stat.label} className="bg-secondary/30 rounded-xl p-4 text-center">
+                  <stat.icon className="w-4 h-4 text-primary mx-auto mb-1" />
+                  <p className="text-xs text-muted-foreground mb-0.5">{stat.label}</p>
+                  <p className="text-xl font-bold">
+                    <AnimatedNumber value={stat.value} prefix={stat.prefix} />
+                  </p>
+                </div>
+              ))}
+            </motion.div>
 
-          {/* Revenue Chart */}
-          <motion.div variants={item}>
-            <p className="text-xs font-medium text-muted-foreground mb-3">Revenue this week</p>
-            <MiniBarChart data={product.revenueData} />
-          </motion.div>
+            {/* Revenue Chart */}
+            <motion.div variants={item}>
+              <p className="text-xs font-medium text-muted-foreground mb-3">Revenue this week</p>
+              <MiniBarChart data={product.revenueData} />
+            </motion.div>
 
-          {/* Split Visualization */}
-          <motion.div variants={item} className="mt-8">
-            <p className="text-xs font-medium text-muted-foreground mb-3">Revenue Split</p>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[10px] font-bold">{product.creators[0].avatar}</div>
-                <span className="text-sm font-medium">{product.split[0]}%</span>
+            {/* Split Visualization */}
+            <motion.div variants={item} className="mt-8">
+              <p className="text-xs font-medium text-muted-foreground mb-3">Revenue Split</p>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[10px] font-bold">{product.creators[0].avatar}</div>
+                  <span className="text-sm font-medium">{product.split[0]}%</span>
+                </div>
+                <div className="flex-1 h-3 rounded-full bg-muted overflow-hidden flex">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    whileInView={{ width: `${product.split[0]}%` }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
+                    className="h-full bg-primary rounded-l-full"
+                  />
+                  <motion.div
+                    initial={{ width: 0 }}
+                    whileInView={{ width: `${product.split[1]}%` }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.7, duration: 0.8, ease: "easeOut" }}
+                    className="h-full bg-muted-foreground/30 rounded-r-full"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">{product.split[1]}%</span>
+                  <div className="w-7 h-7 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-bold">{product.creators[1].avatar}</div>
+                </div>
               </div>
-              <div className="flex-1 h-3 rounded-full bg-muted overflow-hidden flex">
-                <motion.div
-                  initial={{ width: 0 }}
-                  whileInView={{ width: `${product.split[0]}%` }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
-                  className="h-full bg-primary rounded-l-full"
-                />
-                <motion.div
-                  initial={{ width: 0 }}
-                  whileInView={{ width: `${product.split[1]}%` }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.7, duration: 0.8, ease: "easeOut" }}
-                  className="h-full bg-muted-foreground/30 rounded-r-full"
-                />
+              <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+                <span>Your earnings: <span className="text-foreground font-semibold">${(product.totalRevenue * product.split[0] / 100).toLocaleString()}</span></span>
+                <span>Partner earnings: <span className="text-foreground font-semibold">${(product.totalRevenue * product.split[1] / 100).toLocaleString()}</span></span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">{product.split[1]}%</span>
-                <div className="w-7 h-7 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-bold">{product.creators[1].avatar}</div>
-              </div>
-            </div>
-            <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-              <span>Your earnings: <span className="text-foreground font-semibold">${(product.totalRevenue * product.split[0] / 100).toLocaleString()}</span></span>
-              <span>Partner earnings: <span className="text-foreground font-semibold">${(product.totalRevenue * product.split[1] / 100).toLocaleString()}</span></span>
-            </div>
-          </motion.div>
-        </motion.section>
+            </motion.div>
+          </motion.section>
+        )}
 
         {/* Bottom CTA */}
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center py-8">

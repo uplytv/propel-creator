@@ -42,6 +42,7 @@ const App = () => (
               <Route path="/affiliates" element={<Affiliates />} />
               <Route path="/collaborate" element={<Collaborate />} />
               <Route path="/collaborate/product" element={<JointProduct />} />
+              <Route path="/p/:slug" element={<JointProduct isPublic />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/my-rep" element={<MyRep />} />
               <Route path="*" element={<NotFound />} />
