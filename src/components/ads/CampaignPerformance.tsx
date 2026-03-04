@@ -2,9 +2,14 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   TrendingUp, TrendingDown, Eye, MousePointerClick, ShoppingCart,
-  DollarSign, BarChart3, Pause, Play, MoreHorizontal, ArrowUpRight, Sparkles
+  DollarSign, BarChart3, Pause, Play, MoreHorizontal, ArrowUpRight, Sparkles, Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from "recharts";
@@ -168,9 +173,10 @@ function fmt(n: number): string {
 interface CampaignPerformanceProps {
   campaigns?: CampaignRow[];
   onUpdateStatus?: (params: { id: string; status: string }) => void;
+  onDelete?: (id: string) => void;
 }
 
-export default function CampaignPerformance({ campaigns = [], onUpdateStatus }: CampaignPerformanceProps) {
+export default function CampaignPerformance({ campaigns = [], onUpdateStatus, onDelete }: CampaignPerformanceProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const dbCampaigns = campaigns.map(rowToCampaign);
@@ -365,6 +371,34 @@ export default function CampaignPerformance({ campaigns = [], onUpdateStatus }: 
                     <Button variant="outline" size="sm" className="flex items-center gap-1.5">
                       <MoreHorizontal className="w-3.5 h-3.5" /> Details
                     </Button>
+
+                    {/* Delete button with confirmation */}
+                    {!campaign.id.startsWith("c") && onDelete && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="flex items-center gap-1.5 text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/30">
+                            <Trash2 className="w-3.5 h-3.5" /> Delete
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Campaign</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete "{campaign.name}"? This will permanently remove the campaign and all its performance data. This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              onClick={() => onDelete(campaign.id)}
+                            >
+                              Delete Campaign
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
                   </div>
                 </div>
               </motion.div>

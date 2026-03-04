@@ -102,11 +102,26 @@ export function useCampaigns() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("campaigns" as any)
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+    },
+  });
+
   return {
     campaigns: query.data ?? [],
     isLoading: query.isLoading,
     launchCampaign: launchMutation.mutateAsync,
     isLaunching: launchMutation.isPending,
     updateStatus: updateStatusMutation.mutateAsync,
+    deleteCampaign: deleteMutation.mutateAsync,
+    isDeleting: deleteMutation.isPending,
   };
 }
