@@ -171,6 +171,7 @@ export type Database = {
           creator_challenge: string | null
           creator_stage: string | null
           creator_type: string | null
+          credits_balance: number
           display_name: string | null
           health_score: number
           id: string
@@ -189,6 +190,7 @@ export type Database = {
           creator_challenge?: string | null
           creator_stage?: string | null
           creator_type?: string | null
+          credits_balance?: number
           display_name?: string | null
           health_score?: number
           id?: string
@@ -207,6 +209,7 @@ export type Database = {
           creator_challenge?: string | null
           creator_stage?: string | null
           creator_type?: string | null
+          credits_balance?: number
           display_name?: string | null
           health_score?: number
           id?: string
@@ -217,6 +220,36 @@ export type Database = {
           total_revenue?: number
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      tip_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          message: string | null
+          receiver_id: string
+          sender_id: string
+          stream_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          message?: string | null
+          receiver_id: string
+          sender_id: string
+          stream_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          message?: string | null
+          receiver_id?: string
+          sender_id?: string
+          stream_id?: string | null
         }
         Relationships: []
       }
