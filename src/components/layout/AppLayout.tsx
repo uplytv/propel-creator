@@ -45,6 +45,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+  
 
   const isRepLocked = profile.tier <= 2;
 
@@ -191,71 +192,29 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           )}
 
           {/* Profile */}
-          <div ref={profileRef} className="relative">
-            <button
-              onClick={() => setProfileOpen(!profileOpen)}
-              className={`w-full flex items-center gap-3 rounded-lg hover:bg-secondary/60 transition-colors ${
-                collapsed ? "p-2 justify-center" : "px-3 py-2"
-              }`}
-            >
-              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary flex-shrink-0">
-                {profile.name.charAt(0)}
+          <button
+            onClick={() => setProfileOpen(!profileOpen)}
+            className={`w-full flex items-center gap-3 rounded-lg hover:bg-secondary/60 transition-colors ${
+              collapsed ? "p-2 justify-center" : "px-3 py-2"
+            }`}
+          >
+            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary flex-shrink-0">
+              {profile.name.charAt(0)}
+            </div>
+            {!collapsed && (
+              <div className="flex-1 text-left min-w-0">
+                <p className="text-sm font-medium truncate">{profile.name}</p>
+                <p className="text-[10px] text-muted-foreground">Manage account</p>
               </div>
-              {!collapsed && (
-                <div className="flex-1 text-left min-w-0">
-                  <p className="text-sm font-medium truncate">{profile.name}</p>
-                  <p className="text-[10px] text-muted-foreground">Manage account</p>
-                </div>
-              )}
-            </button>
-
-            {/* Profile Dropdown */}
-            <AnimatePresence>
-              {profileOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                  transition={{ duration: 0.15 }}
-                  className={`absolute bottom-full mb-2 ${collapsed ? "left-full ml-2" : "left-0 right-0"} min-w-[200px] rounded-xl bg-card border border-border shadow-xl py-2 z-50`}
-                >
-                  <div className="px-4 py-2 border-b border-border mb-1">
-                    <p className="text-sm font-medium">{profile.name}</p>
-                    <div className="mt-1">
-                      <TierBadge tier={profile.tier} tierName={profile.tierName} size="sm" />
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => { navigate("/dashboard"); setProfileOpen(false); }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                  >
-                    <BarChart3 className="w-4 h-4" /> Dashboard
-                  </button>
-                  <button
-                    onClick={() => { navigate("/"); setProfileOpen(false); }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                  >
-                    <Settings className="w-4 h-4" /> Settings
-                  </button>
-                  <div className="border-t border-border mt-1 pt-1">
-                    <button
-                      onClick={() => { navigate("/"); setProfileOpen(false); }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-destructive hover:bg-secondary transition-colors"
-                    >
-                      <LogOut className="w-4 h-4" /> Sign out
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+            )}
+          </button>
         </div>
       </aside>
 
       {/* Main Content */}
       <div className={`flex-1 transition-all duration-300 ${collapsed ? "md:ml-[68px]" : "md:ml-60"}`}>
         {/* Top Bar */}
-        <header className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur-xl">
+        <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
           <div className="flex items-center justify-between px-4 md:px-8 h-14">
             <span className="md:hidden text-lg font-bold">PLATFORM</span>
             <div className="hidden md:flex items-center gap-3">
@@ -268,10 +227,53 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary" />
               </button>
               <div className="hidden md:block w-px h-6 bg-border" />
-              <div className="hidden md:flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-secondary transition-colors cursor-pointer">
-                <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
-                  {profile.name.charAt(0)}
-                </div>
+              <div ref={profileRef} className="relative hidden md:block">
+                <button
+                  onClick={(e) => { e.stopPropagation(); setProfileOpen(!profileOpen); }}
+                  className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-secondary transition-colors cursor-pointer"
+                >
+                  <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
+                    {profile.name.charAt(0)}
+                  </div>
+                </button>
+                <AnimatePresence>
+                  {profileOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute top-full right-0 mt-2 min-w-[200px] rounded-xl bg-card border border-border shadow-xl py-2 z-50"
+                    >
+                      <div className="px-4 py-2 border-b border-border mb-1">
+                        <p className="text-sm font-medium">{profile.name}</p>
+                        <div className="mt-1">
+                          <TierBadge tier={profile.tier} tierName={profile.tierName} size="sm" />
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => { navigate("/dashboard"); setProfileOpen(false); }}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                      >
+                        <BarChart3 className="w-4 h-4" /> Dashboard
+                      </button>
+                      <button
+                        onClick={() => { navigate("/"); setProfileOpen(false); }}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                      >
+                        <Settings className="w-4 h-4" /> Settings
+                      </button>
+                      <div className="border-t border-border mt-1 pt-1">
+                        <button
+                          onClick={() => { navigate("/"); setProfileOpen(false); }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-destructive hover:bg-secondary transition-colors"
+                        >
+                          <LogOut className="w-4 h-4" /> Sign out
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </div>
