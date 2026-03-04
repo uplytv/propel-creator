@@ -22,6 +22,9 @@ import Leaderboard from "./pages/Leaderboard";
 import Collaborate from "./pages/Collaborate";
 import JointProduct from "./pages/JointProduct";
 import NotFound from "./pages/NotFound";
+import Live from "./pages/Live";
+import Stream from "./pages/Stream";
+import GoLive from "./pages/GoLive";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +43,8 @@ const App = () => (
                 <Route path="/" element={<Landing />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/p/:slug" element={<JointProduct isPublic />} />
+                <Route path="/live" element={<Live />} />
+                <Route path="/stream/:id" element={<Stream />} />
 
                 {/* Protected routes */}
                 <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
@@ -53,6 +58,7 @@ const App = () => (
                 <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                 <Route path="/my-rep" element={<ProtectedRoute><MyRep /></ProtectedRoute>} />
+                <Route path="/go-live" element={<ProtectedRoute><GoLive /></ProtectedRoute>} />
 
                 <Route path="*" element={<NotFound />} />
               </Routes>
