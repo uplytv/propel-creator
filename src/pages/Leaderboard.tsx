@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { motion } from "framer-motion";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { motion, useInView, useSpring, useMotionValue, useTransform } from "framer-motion";
 import { Trophy, Crown, Medal, Users, TrendingUp, Filter, ArrowLeft, Search, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,6 +63,29 @@ const timePeriods: { value: TimePeriod; label: string }[] = [
 
 function formatCurrency(n: number) {
   return n >= 1000 ? `$${(n / 1000).toFixed(n >= 10000 ? 1 : 1)}K` : `$${n.toLocaleString()}`;
+}
+
+function AnimatedCurrency({ value, className }: { value: number; className?: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-50px" });
+  const motionVal = useMotionValue(0);
+  const spring = useSpring(motionVal, { stiffness: 60, damping: 20, mass: 1 });
+  const [display, setDisplay] = useState("$0");
+
+  useEffect(() => {
+    if (isInView) motionVal.set(value);
+    else motionVal.set(0);
+  }, [isInView, value, motionVal]);
+
+  useEffect(() => {
+    const unsubscribe = spring.on("change", (v) => {
+      const n = Math.round(v);
+      setDisplay(n >= 1000 ? `$${(n / 1000).toFixed(1)}K` : `$${n.toLocaleString()}`);
+    });
+    return unsubscribe;
+  }, [spring]);
+
+  return <span ref={ref} className={className}>{display}</span>;
 }
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.04 } } };
@@ -182,9 +205,7 @@ export default function Leaderboard() {
                   </div>
                   <p className="font-semibold text-sm md:text-base truncate max-w-full">{c.name}</p>
                   <p className="text-xs text-muted-foreground mb-1 truncate max-w-full">{c.nicheLabel}</p>
-                  <p className={`font-bold tabular-nums ${isFirst ? "text-primary text-lg" : "text-foreground"}`}>
-                    {formatCurrency(c.earnings[period])}
-                  </p>
+                  <AnimatedCurrency value={c.earnings[period]} className={`font-bold tabular-nums ${isFirst ? "text-primary text-lg" : "text-foreground"}`} />
                   <div className="flex items-center gap-1 text-xs mt-1">
                     <TrendingUp className="w-3 h-3 text-primary" />
                     <span className="text-primary font-medium">+{c.growth}%</span>
@@ -245,7 +266,7 @@ export default function Leaderboard() {
 
                 {/* Earnings */}
                 <div className="text-right flex-shrink-0">
-                  <p className="font-bold tabular-nums text-foreground">{formatCurrency(creator.earnings[period])}</p>
+                  <AnimatedCurrency value={creator.earnings[period]} className="font-bold tabular-nums text-foreground" />
                 </div>
               </motion.div>
             );
