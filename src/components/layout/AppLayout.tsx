@@ -67,16 +67,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       }`}>
         {/* Logo + Collapse */}
         <div className={`flex items-center justify-between p-4 ${collapsed ? "px-3" : "px-5"}`}>
-          {!collapsed && (
-            <motion.span
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-lg font-bold tracking-tight cursor-pointer"
-              onClick={() => navigate("/")}
-            >
-              PLATFORM
-            </motion.span>
-          )}
+          <span
+            className="text-lg font-bold tracking-tight cursor-pointer hover:text-primary transition-colors"
+            onClick={() => navigate("/")}
+          >
+            {collapsed ? "P" : "PLATFORM"}
+          </span>
           <button
             onClick={() => setCollapsed(!collapsed)}
             className={`p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors ${collapsed ? "mx-auto" : ""}`}
