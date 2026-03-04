@@ -41,7 +41,7 @@ const googleEvents: PixelEvent[] = [
 /* ─────── component ─────── */
 export default function AdIntegrations() {
   const { toast } = useToast();
-  const { campaigns, launchCampaign, updateStatus } = useCampaigns();
+  const { campaigns, launchCampaign, updateStatus, deleteCampaign } = useCampaigns();
   const [metaStatus, setMetaStatus] = useState<ConnectionStatus>("disconnected");
   const [googleStatus, setGoogleStatus] = useState<ConnectionStatus>("disconnected");
   const [boostOpen, setBoostOpen] = useState(false);
@@ -231,7 +231,7 @@ export default function AdIntegrations() {
 
         {/* Campaign Performance Dashboard */}
         <div className="mt-8">
-          <CampaignPerformance campaigns={campaigns} onUpdateStatus={updateStatus} />
+          <CampaignPerformance campaigns={campaigns} onUpdateStatus={updateStatus} onDelete={deleteCampaign} />
         </div>
       </div>
 
