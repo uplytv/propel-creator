@@ -1,12 +1,15 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Eye, Heart, Share2, Users, Shield, TrendingUp, Zap, Crown, Radio } from "lucide-react";
+import { ArrowLeft, Eye, Heart, Share2, Shield, TrendingUp, Zap, Crown, Radio, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import StreamChat from "@/components/live/StreamChat";
 import JoinOverlay from "@/components/live/JoinOverlay";
+import TipButton from "@/components/live/TipButton";
+import TipOverlay from "@/components/live/TipOverlay";
 import { mockStreams } from "@/data/mockStreams";
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const tierIcons = [Shield, TrendingUp, Zap, Crown];
 const tierColors: Record<number, string> = {
@@ -24,10 +27,22 @@ export default function Stream() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
   const [joinOpen, setJoinOpen] = useState(false);
   const [liked, setLiked] = useState(false);
+  const [tipOpen, setTipOpen] = useState(false);
+  const [creditsBalance, setCreditsBalance] = useState(100);
 
   const stream = mockStreams.find((s) => s.id === id);
+
+  const handleTip = useCallback((amount: number, message: string) => {
+    setCreditsBalance((prev) => Math.max(0, prev - amount));
+    toast({
+      title: `Tip sent! 🎉`,
+      description: `You tipped ${amount} credits to ${stream?.creatorName ?? "creator"}`,
+    });
+  }, [stream?.creatorName, toast]);
+
   if (!stream) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -61,6 +76,19 @@ export default function Stream() {
             </span>
           </div>
           <div className="flex items-center gap-2">
+            {/* Credits balance */}
+            {user && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-warning/10 text-xs">
+                <Coins className="w-3.5 h-3.5 text-warning" />
+                <span className="font-semibold text-warning">{creditsBalance}</span>
+              </div>
+            )}
+            <TipButton
+              creatorName={stream.creatorName}
+              creditsBalance={creditsBalance}
+              isLoggedIn={!!user}
+              onTip={handleTip}
+            />
             <button
               onClick={() => setLiked(!liked)}
               className={`p-2 rounded-lg transition-colors ${liked ? "text-destructive" : "text-muted-foreground hover:text-foreground"}`}
@@ -89,6 +117,9 @@ export default function Stream() {
                 <Radio className="w-10 h-10 text-foreground/30" />
               </motion.div>
             </div>
+
+            {/* Tip overlay animations */}
+            <TipOverlay />
 
             {/* Persistent Join CTA - bottom of video */}
             {stream.isPublic && (
@@ -152,7 +183,11 @@ export default function Stream() {
         {/* Chat sidebar - desktop */}
         <div className="hidden lg:block w-80 flex-shrink-0">
           <div className="fixed top-14 right-0 w-80 bottom-0">
-            <StreamChat isLoggedIn={!!user} />
+            <StreamChat
+              isLoggedIn={!!user}
+              onTipClick={() => setTipOpen(true)}
+              creditsBalance={creditsBalance}
+            />
           </div>
         </div>
       </div>
