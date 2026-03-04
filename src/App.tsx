@@ -7,6 +7,7 @@ import { AppProvider } from "@/context/AppContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import TierCelebration from "@/components/TierCelebration";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
@@ -35,20 +36,24 @@ const App = () => (
             <TierCelebration />
             <BrowserRouter>
               <Routes>
+                {/* Public routes */}
                 <Route path="/" element={<Landing />} />
                 <Route path="/auth" element={<Auth />} />
-                <Route path="/onboarding" element={<Onboarding />} />
-                <Route path="/leaderboard" element={<Leaderboard />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/grow" element={<Grow />} />
-                <Route path="/products" element={<Products />} />
-                <Route path="/community" element={<Community />} />
-                <Route path="/affiliates" element={<Affiliates />} />
-                <Route path="/collaborate" element={<Collaborate />} />
-                <Route path="/collaborate/product" element={<JointProduct />} />
                 <Route path="/p/:slug" element={<JointProduct isPublic />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/my-rep" element={<MyRep />} />
+
+                {/* Protected routes */}
+                <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                <Route path="/grow" element={<ProtectedRoute><Grow /></ProtectedRoute>} />
+                <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
+                <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
+                <Route path="/affiliates" element={<ProtectedRoute><Affiliates /></ProtectedRoute>} />
+                <Route path="/collaborate" element={<ProtectedRoute><Collaborate /></ProtectedRoute>} />
+                <Route path="/collaborate/product" element={<ProtectedRoute><JointProduct /></ProtectedRoute>} />
+                <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                <Route path="/my-rep" element={<ProtectedRoute><MyRep /></ProtectedRoute>} />
+
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
