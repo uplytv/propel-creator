@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   TrendingUp, TrendingDown, Eye, MousePointerClick, ShoppingCart,
-  DollarSign, BarChart3, Pause, Play, MoreHorizontal, ArrowUpRight, Sparkles, Trash2, Download
+  DollarSign, BarChart3, Pause, Play, MoreHorizontal, ArrowUpRight, Sparkles, Trash2, Download, Copy
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -175,9 +175,10 @@ interface CampaignPerformanceProps {
   campaigns?: CampaignRow[];
   onUpdateStatus?: (params: { id: string; status: string }) => void;
   onDelete?: (id: string) => void;
+  onDuplicate?: (source: CampaignRow) => void;
 }
 
-export default function CampaignPerformance({ campaigns = [], onUpdateStatus, onDelete }: CampaignPerformanceProps) {
+export default function CampaignPerformance({ campaigns = [], onUpdateStatus, onDelete, onDuplicate }: CampaignPerformanceProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const dbCampaigns = campaigns.map(rowToCampaign);
@@ -366,7 +367,21 @@ export default function CampaignPerformance({ campaigns = [], onUpdateStatus, on
                       <Download className="w-3.5 h-3.5" /> Export
                     </Button>
 
-                    {/* Delete button with confirmation */}
+                    {/* Duplicate button — db campaigns only */}
+                    {!campaign.id.startsWith("c") && onDuplicate && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-1.5"
+                        onClick={() => {
+                          const source = campaigns.find(r => r.id === campaign.id);
+                          if (source) onDuplicate(source);
+                        }}
+                      >
+                        <Copy className="w-3.5 h-3.5" /> Duplicate
+                      </Button>
+                    )}
+
                     {!campaign.id.startsWith("c") && onDelete && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
