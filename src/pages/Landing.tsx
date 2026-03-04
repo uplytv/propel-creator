@@ -1,8 +1,10 @@
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import { useRef, useMemo, useCallback } from "react";
-import { Brain, Users, User, Box, Check, ArrowRight, Zap, Shield, TrendingUp, Star, Crown, Trophy, Medal } from "lucide-react";
+import { Brain, Users, User, Box, Check, ArrowRight, Zap, Shield, TrendingUp, Star, Crown, Trophy, Medal, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import StreamCard from "@/components/live/StreamCard";
+import { mockStreams } from "@/data/mockStreams";
 
 const features = [
   { icon: Brain, title: "AI Growth Partner", desc: "Your always-on strategist that learns your business and delivers personalized growth plans." },
@@ -72,6 +74,10 @@ export default function Landing() {
         <div className="container flex h-16 items-center justify-between">
           <span className="text-xl font-bold tracking-tight text-foreground">PLATFORM</span>
           <div className="hidden md:flex items-center gap-8">
+            <button onClick={() => navigate("/live")} className="text-sm text-primary font-semibold hover:text-primary/80 transition-colors flex items-center gap-1.5">
+              <Radio className="w-3.5 h-3.5" />
+              Live
+            </button>
             <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Features</a>
             <a href="#tiers" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Tiers</a>
             <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
@@ -150,6 +156,34 @@ export default function Landing() {
               </Button>
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Live Now Section */}
+      <section className="pb-20 md:pb-32">
+        <div className="container">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            className="flex items-center justify-between mb-8"
+          >
+            <div className="flex items-center gap-3">
+              <div className="live-badge flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-bold">
+                <span className="live-dot w-2.5 h-2.5 rounded-full" />
+                LIVE NOW
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">Trending Streams</h2>
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/live")} className="text-primary gap-1">
+              View All <ArrowRight className="w-4 h-4" />
+            </Button>
+          </motion.div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {[...mockStreams].sort((a, b) => b.viewers - a.viewers).slice(0, 4).map((s, i) => (
+              <StreamCard key={s.id} stream={s} index={i} />
+            ))}
+          </div>
         </div>
       </section>
 

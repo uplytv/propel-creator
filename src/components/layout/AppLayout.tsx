@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Rocket, Package, Users, UserCheck, Bell, Lock, Share2,
   LogOut, Settings, ChevronLeft, ChevronRight, Shield, TrendingUp,
-  Zap, Crown, Sparkles, BarChart3, Trophy, Handshake
+  Zap, Crown, Sparkles, BarChart3, Trophy, Handshake, Radio
 } from "lucide-react";
 import { useApp, tierNames } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
@@ -13,6 +13,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 
 const navItems = [
   { label: "Home", icon: Home, path: "/dashboard", desc: "Overview & metrics" },
+  { label: "Live", icon: Radio, path: "/live", desc: "Watch & stream live" },
   { label: "Grow", icon: Rocket, path: "/grow", desc: "Launch Protocol" },
   { label: "Products", icon: Package, path: "/products", desc: "What you sell" },
   { label: "Community", icon: Users, path: "/community", desc: "Your audience" },

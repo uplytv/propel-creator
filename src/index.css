@@ -140,6 +140,20 @@
     background-image: radial-gradient(hsl(var(--foreground) / 0.04) 1px, transparent 1px);
     background-size: 24px 24px;
   }
+
+  /* Live streaming badge */
+  .live-badge {
+    background: hsl(0 84% 55%);
+    color: hsl(0 0% 100%);
+  }
+  .live-dot {
+    background: hsl(0 0% 100%);
+    animation: live-pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes live-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
 }
 
 /* Skeleton pulse */
