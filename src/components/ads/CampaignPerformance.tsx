@@ -2,15 +2,16 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   TrendingUp, TrendingDown, Eye, MousePointerClick, ShoppingCart,
-  DollarSign, BarChart3, Pause, Play, MoreHorizontal, ArrowUpRight
+  DollarSign, BarChart3, Pause, Play, MoreHorizontal, ArrowUpRight, Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from "recharts";
+import type { LaunchedCampaign } from "./BoostCampaignBuilder";
 
-/* ─────── mock data ─────── */
-interface Campaign {
+/* ─────── types ─────── */
+export interface Campaign {
   id: string;
   name: string;
   platform: "meta" | "google";
@@ -30,9 +31,11 @@ interface Campaign {
   endDate: string;
   trend: "up" | "down" | "flat";
   sparkline: { day: string; imp: number; clicks: number; conv: number }[];
+  isNew?: boolean;
 }
 
-const mockCampaigns: Campaign[] = [
+/* ─────── seed data ─────── */
+const seedCampaigns: Campaign[] = [
   {
     id: "c1",
     name: "Stream: Weekly Q&A Boost",
@@ -122,6 +125,37 @@ const mockCampaigns: Campaign[] = [
   },
 ];
 
+/* ─────── helper to create campaign from launch ─────── */
+function launchedToCampaign(lc: LaunchedCampaign, index: number): Campaign {
+  const today = new Date();
+  const endDate = new Date(today);
+  endDate.setDate(today.getDate() + lc.duration);
+  const fmtDate = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+  return {
+    id: `new-${Date.now()}-${index}`,
+    name: `Boost: ${lc.streamTitle}`,
+    platform: lc.platform,
+    status: "active",
+    objective: lc.objectiveLabel,
+    dailyBudget: lc.dailyBudget,
+    totalBudget: lc.dailyBudget * lc.duration,
+    spent: 0,
+    impressions: 0,
+    clicks: 0,
+    conversions: 0,
+    ctr: 0,
+    cpc: 0,
+    cpa: 0,
+    roas: 0,
+    startDate: fmtDate(today),
+    endDate: fmtDate(endDate),
+    trend: "flat",
+    sparkline: [],
+    isNew: true,
+  };
+}
+
 /* ─────── helpers ─────── */
 function fmt(n: number): string {
   if (n >= 1000) return (n / 1000).toFixed(1) + "k";
@@ -129,15 +163,21 @@ function fmt(n: number): string {
 }
 
 /* ─────── component ─────── */
-export default function CampaignPerformance() {
+interface CampaignPerformanceProps {
+  launchedCampaigns?: LaunchedCampaign[];
+}
+
+export default function CampaignPerformance({ launchedCampaigns = [] }: CampaignPerformanceProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  // Aggregate stats
-  const activeCampaigns = mockCampaigns.filter((c) => c.status === "active");
-  const totalSpent = mockCampaigns.reduce((s, c) => s + c.spent, 0);
-  const totalImpressions = mockCampaigns.reduce((s, c) => s + c.impressions, 0);
-  const totalClicks = mockCampaigns.reduce((s, c) => s + c.clicks, 0);
-  const totalConversions = mockCampaigns.reduce((s, c) => s + c.conversions, 0);
+  const newCampaigns = launchedCampaigns.map((lc, i) => launchedToCampaign(lc, i));
+  const allCampaigns = [...newCampaigns, ...seedCampaigns];
+
+  const activeCampaigns = allCampaigns.filter((c) => c.status === "active");
+  const totalSpent = allCampaigns.reduce((s, c) => s + c.spent, 0);
+  const totalImpressions = allCampaigns.reduce((s, c) => s + c.impressions, 0);
+  const totalClicks = allCampaigns.reduce((s, c) => s + c.clicks, 0);
+  const totalConversions = allCampaigns.reduce((s, c) => s + c.conversions, 0);
 
   const summaryCards = [
     { label: "Total Spend", value: `$${totalSpent.toFixed(0)}`, icon: DollarSign, color: "text-primary" },
@@ -152,7 +192,7 @@ export default function CampaignPerformance() {
       <div className="flex items-center gap-2 mb-4">
         <BarChart3 className="w-5 h-5 text-primary" />
         <h2 className="text-lg font-bold">Campaign Performance</h2>
-        <span className="ml-auto text-xs text-muted-foreground">{activeCampaigns.length} active · {mockCampaigns.length} total</span>
+        <span className="ml-auto text-xs text-muted-foreground">{activeCampaigns.length} active · {allCampaigns.length} total</span>
       </div>
 
       {/* Summary row */}
@@ -176,13 +216,13 @@ export default function CampaignPerformance() {
 
       {/* Campaign list */}
       <div className="space-y-3">
-        {mockCampaigns.map((campaign, i) => (
+        {allCampaigns.map((campaign, i) => (
           <motion.div
             key={campaign.id}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 + i * 0.05 }}
-            className="glass-card overflow-hidden"
+            className={`glass-card overflow-hidden ${campaign.isNew ? "ring-2 ring-primary/40" : ""}`}
           >
             {/* Campaign row */}
             <button
@@ -201,6 +241,11 @@ export default function CampaignPerformance() {
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold truncate">{campaign.name}</span>
                   <StatusPill status={campaign.status} />
+                  {campaign.isNew && (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-semibold uppercase tracking-wider">
+                      <Sparkles className="w-3 h-3" /> New
+                    </span>
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground">{campaign.objective} · {campaign.startDate} – {campaign.endDate}</p>
               </div>
@@ -211,13 +256,15 @@ export default function CampaignPerformance() {
                 <MetricCell label="Impressions" value={fmt(campaign.impressions)} />
                 <MetricCell label="Clicks" value={fmt(campaign.clicks)} />
                 <MetricCell label="Conv." value={campaign.conversions.toString()} />
-                <div className="flex items-center gap-1">
-                  {campaign.trend === "up" ? (
-                    <TrendingUp className="w-4 h-4 text-primary" />
-                  ) : (
-                    <TrendingDown className="w-4 h-4 text-destructive" />
-                  )}
-                </div>
+                {campaign.trend !== "flat" && (
+                  <div className="flex items-center gap-1">
+                    {campaign.trend === "up" ? (
+                      <TrendingUp className="w-4 h-4 text-primary" />
+                    ) : (
+                      <TrendingDown className="w-4 h-4 text-destructive" />
+                    )}
+                  </div>
+                )}
               </div>
 
               <ArrowUpRight className={`w-4 h-4 text-muted-foreground transition-transform ${expandedId === campaign.id ? "rotate-90" : ""}`} />
@@ -248,32 +295,40 @@ export default function CampaignPerformance() {
                     <MiniStat label="ROAS" value={`${campaign.roas}x`} highlight />
                   </div>
 
-                  {/* Chart */}
-                  <div className="h-48 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={campaign.sparkline}>
-                        <defs>
-                          <linearGradient id={`grad-${campaign.id}`} x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis dataKey="day" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                        <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                        <Tooltip
-                          contentStyle={{
-                            background: "hsl(var(--card))",
-                            border: "1px solid hsl(var(--border))",
-                            borderRadius: "0.75rem",
-                            fontSize: "12px",
-                          }}
-                        />
-                        <Area type="monotone" dataKey="imp" name="Impressions" stroke="hsl(var(--primary))" fill={`url(#grad-${campaign.id})`} strokeWidth={2} />
-                        <Area type="monotone" dataKey="clicks" name="Clicks" stroke="hsl(var(--accent-foreground))" fill="none" strokeWidth={1.5} strokeDasharray="4 4" />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
+                  {/* Chart or "just launched" message */}
+                  {campaign.sparkline.length > 0 ? (
+                    <div className="h-48 w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={campaign.sparkline}>
+                          <defs>
+                            <linearGradient id={`grad-${campaign.id}`} x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                          <XAxis dataKey="day" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                          <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                          <Tooltip
+                            contentStyle={{
+                              background: "hsl(var(--card))",
+                              border: "1px solid hsl(var(--border))",
+                              borderRadius: "0.75rem",
+                              fontSize: "12px",
+                            }}
+                          />
+                          <Area type="monotone" dataKey="imp" name="Impressions" stroke="hsl(var(--primary))" fill={`url(#grad-${campaign.id})`} strokeWidth={2} />
+                          <Area type="monotone" dataKey="clicks" name="Clicks" stroke="hsl(var(--accent-foreground))" fill="none" strokeWidth={1.5} strokeDasharray="4 4" />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : (
+                    <div className="h-32 flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-secondary/10">
+                      <Sparkles className="w-6 h-6 text-primary mb-2" />
+                      <p className="text-sm font-semibold">Just Launched</p>
+                      <p className="text-xs text-muted-foreground">Performance data will appear as your campaign runs.</p>
+                    </div>
+                  )}
 
                   {/* Actions */}
                   <div className="flex gap-2">
