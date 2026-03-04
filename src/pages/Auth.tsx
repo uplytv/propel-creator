@@ -44,7 +44,7 @@ export default function Auth() {
     if (error) {
       toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Check your email", description: "We sent you a confirmation link." });
+      toast({ title: "Account created successfully!", description: "Welcome aboard! Redirecting to your dashboard." });
     }
   };
 
