@@ -7,6 +7,7 @@ import StreamChat from "@/components/live/StreamChat";
 import JoinOverlay from "@/components/live/JoinOverlay";
 import TipButton from "@/components/live/TipButton";
 import TipOverlay from "@/components/live/TipOverlay";
+import MobileChatDrawer from "@/components/live/MobileChatDrawer";
 import { mockStreams } from "@/data/mockStreams";
 import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -60,10 +61,10 @@ export default function Stream() {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Top bar */}
       <div className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-        <div className="flex items-center justify-between h-14 px-4">
-          <button onClick={() => navigate("/live")} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+        <div className="flex items-center justify-between h-14 px-3 sm:px-4">
+          <button onClick={() => navigate("/live")} className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm font-medium">Back</span>
+            <span className="text-sm font-medium hidden sm:inline">Back</span>
           </button>
           <div className="flex items-center gap-2">
             <div className="live-badge flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-bold">
@@ -72,13 +73,12 @@ export default function Stream() {
             </div>
             <span className="flex items-center gap-1 text-xs text-muted-foreground">
               <Eye className="w-3 h-3" />
-              {formatViewers(stream.viewers)} watching
+              {formatViewers(stream.viewers)}
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            {/* Credits balance */}
+          <div className="flex items-center gap-1 sm:gap-2">
             {user && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-warning/10 text-xs">
+              <div className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-warning/10 text-xs">
                 <Coins className="w-3.5 h-3.5 text-warning" />
                 <span className="font-semibold text-warning">{creditsBalance}</span>
               </div>
@@ -95,7 +95,7 @@ export default function Stream() {
             >
               <Heart className={`w-4 h-4 ${liked ? "fill-current" : ""}`} />
             </button>
-            <button className="p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors">
+            <button className="p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
               <Share2 className="w-4 h-4" />
             </button>
           </div>
@@ -105,29 +105,29 @@ export default function Stream() {
       {/* Main content */}
       <div className="flex-1 flex pt-14">
         {/* Video area */}
-        <div className="flex-1 flex flex-col">
-          {/* Video player mock */}
-          <div className={`relative aspect-video w-full bg-gradient-to-br ${stream.thumbnailGradient} flex items-center justify-center`}>
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Video player mock — full-width on mobile, aspect-video on desktop */}
+          <div className={`relative w-full bg-gradient-to-br ${stream.thumbnailGradient} flex items-center justify-center aspect-[9/16] sm:aspect-video`}>
             <div className="absolute inset-0 flex items-center justify-center">
               <motion.div
                 animate={{ scale: [1, 1.05, 1] }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                className="w-24 h-24 rounded-full bg-foreground/5 backdrop-blur-sm flex items-center justify-center"
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-foreground/5 backdrop-blur-sm flex items-center justify-center"
               >
-                <Radio className="w-10 h-10 text-foreground/30" />
+                <Radio className="w-8 h-8 sm:w-10 sm:h-10 text-foreground/30" />
               </motion.div>
             </div>
 
             {/* Tip overlay animations */}
             <TipOverlay />
 
-            {/* Persistent Join CTA - bottom of video */}
+            {/* Desktop join CTA — bottom of video */}
             {stream.isPublic && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1, duration: 0.6 }}
-                className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background/95 via-background/60 to-transparent"
+                className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background/95 via-background/60 to-transparent hidden sm:block"
               >
                 <div className="flex items-center justify-between max-w-2xl mx-auto">
                   <div className="flex items-center gap-3">
@@ -157,11 +157,11 @@ export default function Stream() {
           </div>
 
           {/* Stream info */}
-          <div className="px-6 py-5 border-b border-border">
-            <h1 className="text-xl font-bold text-foreground mb-3">{stream.title}</h1>
-            <div className="flex items-center gap-4 flex-wrap">
+          <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-border">
+            <h1 className="text-lg sm:text-xl font-bold text-foreground mb-2 sm:mb-3">{stream.title}</h1>
+            <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">
                   {stream.creatorAvatar}
                 </div>
                 <div>
@@ -176,11 +176,11 @@ export default function Stream() {
                 </div>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground mt-3">{stream.description}</p>
+            <p className="text-sm text-muted-foreground mt-3 hidden sm:block">{stream.description}</p>
           </div>
         </div>
 
-        {/* Chat sidebar - desktop */}
+        {/* Chat sidebar - desktop only */}
         <div className="hidden lg:block w-80 flex-shrink-0">
           <div className="fixed top-14 right-0 w-80 bottom-0">
             <StreamChat
@@ -191,6 +191,49 @@ export default function Stream() {
           </div>
         </div>
       </div>
+
+      {/* Mobile: Swipeable Chat Drawer */}
+      <div className="lg:hidden">
+        <MobileChatDrawer
+          isLoggedIn={!!user}
+          onTipClick={() => setTipOpen(true)}
+          creditsBalance={creditsBalance}
+        />
+      </div>
+
+      {/* Mobile: Bottom-sheet Join CTA */}
+      {stream.isPublic && (
+        <motion.div
+          initial={{ y: 100 }}
+          animate={{ y: 0 }}
+          transition={{ delay: 0.8, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="fixed bottom-0 left-0 right-0 z-30 sm:hidden"
+        >
+          <div className="bg-card/95 backdrop-blur-xl border-t border-border px-4 py-3 safe-area-bottom">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary border border-primary/30 flex-shrink-0">
+                {stream.creatorAvatar}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate">
+                  Join {stream.creatorName}'s community
+                </p>
+                <p className="text-[11px] text-muted-foreground">
+                  Streams, courses & resources
+                </p>
+              </div>
+              <Button
+                variant="hero"
+                size="default"
+                onClick={() => setJoinOpen(true)}
+                className="flex-shrink-0 text-sm"
+              >
+                ${stream.communityPrice}/mo
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Join Overlay */}
       <JoinOverlay
