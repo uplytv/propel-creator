@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   User, Bell, Shield, CreditCard, Palette, Mail,
-  Camera, Save, Eye, EyeOff, Trash2, Download
+  Camera, Save, Eye, EyeOff, Trash2, Download, Megaphone
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useApp } from "@/context/AppContext";
@@ -10,6 +10,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { useNotificationPreferences } from "@/hooks/useNotificationPreferences";
 
 type SettingsTab = "profile" | "notifications" | "account";
 
@@ -23,6 +24,7 @@ export default function Settings() {
   const { profile, setProfile } = useApp();
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
+  const { prefs: campaignPrefs, updatePrefs } = useNotificationPreferences();
   const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
 
   // Profile state
@@ -250,6 +252,45 @@ export default function Settings() {
                   />
                 </div>
               ))}
+            </div>
+
+            {/* Campaign Alerts */}
+            <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-5">
+              <div className="flex items-center gap-3">
+                <Megaphone className="w-5 h-5 text-primary" />
+                <div>
+                  <h2 className="text-lg font-semibold">Campaign Alerts</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">Control which campaign notifications appear in your inbox</p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between py-2">
+                <div>
+                  <p className="text-sm font-medium">Budget warnings</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Alert when a campaign reaches 75% of its budget</p>
+                </div>
+                <Switch
+                  checked={campaignPrefs.budget_warning}
+                  onCheckedChange={async (checked) => {
+                    await updatePrefs({ budget_warning: checked });
+                    toast({ title: "Preference saved" });
+                  }}
+                />
+              </div>
+
+              <div className="flex items-center justify-between py-2">
+                <div>
+                  <p className="text-sm font-medium">Campaign completed</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Alert when a campaign finishes its full budget</p>
+                </div>
+                <Switch
+                  checked={campaignPrefs.campaign_completed}
+                  onCheckedChange={async (checked) => {
+                    await updatePrefs({ campaign_completed: checked });
+                    toast({ title: "Preference saved" });
+                  }}
+                />
+              </div>
             </div>
           </motion.div>
         )}
