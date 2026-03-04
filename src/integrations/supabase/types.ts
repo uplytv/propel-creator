@@ -248,6 +248,145 @@ export type Database = {
         }
         Relationships: []
       }
+      job_applications: {
+        Row: {
+          applicant_id: string
+          cover_message: string
+          created_at: string
+          estimated_timeline: string
+          id: string
+          job_id: string
+          portfolio_samples: string[]
+          proposed_rate: number
+          status: Database["public"]["Enums"]["application_status"]
+          updated_at: string
+        }
+        Insert: {
+          applicant_id: string
+          cover_message: string
+          created_at?: string
+          estimated_timeline?: string
+          id?: string
+          job_id: string
+          portfolio_samples?: string[]
+          proposed_rate?: number
+          status?: Database["public"]["Enums"]["application_status"]
+          updated_at?: string
+        }
+        Update: {
+          applicant_id?: string
+          cover_message?: string
+          created_at?: string
+          estimated_timeline?: string
+          id?: string
+          job_id?: string
+          portfolio_samples?: string[]
+          proposed_rate?: number
+          status?: Database["public"]["Enums"]["application_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          job_id: string
+          rating: number
+          reviewee_id: string
+          reviewer_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          job_id: string
+          rating: number
+          reviewee_id: string
+          reviewer_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          job_id?: string
+          rating?: number
+          reviewee_id?: string
+          reviewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_reviews_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          applicant_count: number
+          budget_max: number
+          budget_min: number
+          created_at: string
+          creator_id: string
+          description: string
+          featured: boolean
+          id: string
+          job_type: Database["public"]["Enums"]["job_type"]
+          members_only: boolean
+          skill_category: Database["public"]["Enums"]["skill_category"]
+          status: string
+          timeline: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          applicant_count?: number
+          budget_max?: number
+          budget_min?: number
+          created_at?: string
+          creator_id: string
+          description: string
+          featured?: boolean
+          id?: string
+          job_type?: Database["public"]["Enums"]["job_type"]
+          members_only?: boolean
+          skill_category: Database["public"]["Enums"]["skill_category"]
+          status?: string
+          timeline?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          applicant_count?: number
+          budget_max?: number
+          budget_min?: number
+          created_at?: string
+          creator_id?: string
+          description?: string
+          featured?: boolean
+          id?: string
+          job_type?: Database["public"]["Enums"]["job_type"]
+          members_only?: boolean
+          skill_category?: Database["public"]["Enums"]["skill_category"]
+          status?: string
+          timeline?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       leaderboard_entries: {
         Row: {
           created_at: string
@@ -407,6 +546,63 @@ export type Database = {
         }
         Relationships: []
       }
+      talent_profiles: {
+        Row: {
+          availability: Database["public"]["Enums"]["availability_status"]
+          avg_rating: number
+          bio: string | null
+          completed_jobs: number
+          created_at: string
+          creator_economy_score: number
+          hourly_rate: number | null
+          id: string
+          past_work: string | null
+          portfolio_links: string[]
+          project_rate: number | null
+          skills: Database["public"]["Enums"]["skill_category"][]
+          total_reviews: number
+          updated_at: string
+          user_id: string
+          verified_partner: boolean
+        }
+        Insert: {
+          availability?: Database["public"]["Enums"]["availability_status"]
+          avg_rating?: number
+          bio?: string | null
+          completed_jobs?: number
+          created_at?: string
+          creator_economy_score?: number
+          hourly_rate?: number | null
+          id?: string
+          past_work?: string | null
+          portfolio_links?: string[]
+          project_rate?: number | null
+          skills?: Database["public"]["Enums"]["skill_category"][]
+          total_reviews?: number
+          updated_at?: string
+          user_id: string
+          verified_partner?: boolean
+        }
+        Update: {
+          availability?: Database["public"]["Enums"]["availability_status"]
+          avg_rating?: number
+          bio?: string | null
+          completed_jobs?: number
+          created_at?: string
+          creator_economy_score?: number
+          hourly_rate?: number | null
+          id?: string
+          past_work?: string | null
+          portfolio_links?: string[]
+          project_rate?: number | null
+          skills?: Database["public"]["Enums"]["skill_category"][]
+          total_reviews?: number
+          updated_at?: string
+          user_id?: string
+          verified_partner?: boolean
+        }
+        Relationships: []
+      }
       tip_transactions: {
         Row: {
           amount: number
@@ -445,7 +641,26 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      application_status:
+        | "pending"
+        | "reviewed"
+        | "shortlisted"
+        | "hired"
+        | "rejected"
+      availability_status: "open_to_work" | "not_available"
+      job_type: "one_time" | "ongoing"
+      skill_category:
+        | "video_editing"
+        | "thumbnail_design"
+        | "copywriting"
+        | "email_marketing"
+        | "community_management"
+        | "graphic_design"
+        | "web_development"
+        | "ai_automation"
+        | "coaching_support"
+        | "social_media_management"
+        | "podcast_editing"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -572,6 +787,29 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      application_status: [
+        "pending",
+        "reviewed",
+        "shortlisted",
+        "hired",
+        "rejected",
+      ],
+      availability_status: ["open_to_work", "not_available"],
+      job_type: ["one_time", "ongoing"],
+      skill_category: [
+        "video_editing",
+        "thumbnail_design",
+        "copywriting",
+        "email_marketing",
+        "community_management",
+        "graphic_design",
+        "web_development",
+        "ai_automation",
+        "coaching_support",
+        "social_media_management",
+        "podcast_editing",
+      ],
+    },
   },
 } as const
