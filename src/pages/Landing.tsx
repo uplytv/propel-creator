@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useMemo } from "react";
 import { Brain, Users, User, Box, Check, ArrowRight, Zap, Shield, TrendingUp, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -36,6 +36,18 @@ export default function Landing() {
   const glowScale = useTransform(scrollYProgress, [0, 1], [1, 1.2]);
   const gridOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.3]);
 
+  const particles = useMemo(() =>
+    Array.from({ length: 18 }, (_, i) => ({
+      id: i,
+      x: `${Math.random() * 100}%`,
+      y: `${Math.random() * 100}%`,
+      size: Math.random() * 4 + 2,
+      duration: Math.random() * 8 + 6,
+      delay: Math.random() * 4,
+      drift: Math.random() * 60 - 30,
+    })), []
+  );
+
   return (
     <div className="min-h-screen bg-background">
       {/* Nav */}
@@ -64,6 +76,28 @@ export default function Landing() {
           className="absolute inset-0 z-0 hero-grid-layer"
           style={{ y: gridY, opacity: gridOpacity }}
         />
+        {/* Floating particles */}
+        <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden">
+          {particles.map((p) => (
+            <motion.div
+              key={p.id}
+              className="absolute rounded-full bg-primary/20 dark:bg-primary/30"
+              style={{ left: p.x, top: p.y, width: p.size, height: p.size }}
+              animate={{
+                y: [0, -40, 0],
+                x: [0, p.drift, 0],
+                opacity: [0, 0.8, 0],
+                scale: [0.5, 1, 0.5],
+              }}
+              transition={{
+                duration: p.duration,
+                delay: p.delay,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+          ))}
+        </div>
         <div className="container relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
