@@ -2,10 +2,11 @@ import { ReactNode, useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Home, Rocket, Package, Users, UserCheck, Bell, Lock, Share2,
+  Home, Rocket, Package, Users, UserCheck, Lock, Share2,
   LogOut, Settings, ChevronLeft, ChevronRight, Shield, TrendingUp,
   Zap, Crown, Sparkles, BarChart3, Trophy, Handshake, Radio, Plug
 } from "lucide-react";
+import NotificationBell from "@/components/NotificationBell";
 import { useApp, tierNames } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
 import { useUnreadMessageCount } from "@/hooks/useCollaborations";
@@ -238,10 +239,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               <TierBadge tier={profile.tier} tierName={profile.tierName} size="sm" />
             </div>
             <div className="flex items-center gap-3">
-              <button className="relative p-2 rounded-lg hover:bg-secondary transition-colors">
-                <Bell className="w-[18px] h-[18px] text-muted-foreground" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary" />
-              </button>
+              <NotificationBell />
               <div className="hidden md:block w-px h-6 bg-border" />
               <div ref={profileRef} className="relative">
                 <button
