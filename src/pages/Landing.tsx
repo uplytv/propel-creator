@@ -1,5 +1,5 @@
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef, useMemo } from "react";
+import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
+import { useRef, useMemo, useCallback } from "react";
 import { Brain, Users, User, Box, Check, ArrowRight, Zap, Shield, TrendingUp, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -36,6 +36,17 @@ export default function Landing() {
   const glowScale = useTransform(scrollYProgress, [0, 1], [1, 1.2]);
   const gridOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.3]);
 
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const springX = useSpring(mouseX, { stiffness: 80, damping: 30 });
+  const springY = useSpring(mouseY, { stiffness: 80, damping: 30 });
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    mouseX.set(e.clientX - rect.left);
+    mouseY.set(e.clientY - rect.top);
+  }, [mouseX, mouseY]);
+
   const particles = useMemo(() =>
     Array.from({ length: 18 }, (_, i) => ({
       id: i,
@@ -67,7 +78,17 @@ export default function Landing() {
       </nav>
 
       {/* Hero */}
-      <section ref={heroRef} className="relative overflow-hidden pt-32 pb-20 md:pt-44 md:pb-32">
+      <section ref={heroRef} className="relative overflow-hidden pt-32 pb-20 md:pt-44 md:pb-32" onMouseMove={handleMouseMove}>
+        {/* Mouse-following glow */}
+        <motion.div
+          className="absolute z-[1] pointer-events-none w-[400px] h-[400px] rounded-full opacity-30 dark:opacity-40 blur-[100px] bg-primary/30"
+          style={{
+            left: springX,
+            top: springY,
+            translateX: "-50%",
+            translateY: "-50%",
+          }}
+        />
         <motion.div
           className="absolute inset-0 z-0 hero-glow-layer"
           style={{ y: glowY, scale: glowScale }}
