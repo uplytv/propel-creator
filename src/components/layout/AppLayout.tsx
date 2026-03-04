@@ -16,6 +16,7 @@ const navItems = [
   { label: "Community", icon: Users, path: "/community", desc: "Your audience" },
   { label: "Affiliates", icon: Share2, path: "/affiliates", desc: "Referral program" },
   { label: "My Rep", icon: UserCheck, path: "/my-rep", desc: "Growth partner", requiresTier: 3 },
+  { label: "Settings", icon: Settings, path: "/settings", desc: "Preferences" },
 ];
 
 const tierIcons = [Shield, TrendingUp, Zap, Crown];
