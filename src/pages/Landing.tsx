@@ -361,6 +361,7 @@ export default function Landing() {
               <a href="#features" className="hover:text-foreground transition-colors">Features</a>
               <a href="#tiers" className="hover:text-foreground transition-colors">Tiers</a>
               <a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a>
+              <a href="/leaderboard" className="hover:text-foreground transition-colors">Leaderboard</a>
             </div>
           </div>
         </div>

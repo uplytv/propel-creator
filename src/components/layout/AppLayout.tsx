@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Rocket, Package, Users, UserCheck, Bell, Lock, Share2,
   LogOut, Settings, ChevronLeft, ChevronRight, Shield, TrendingUp,
-  Zap, Crown, Sparkles, BarChart3
+  Zap, Crown, Sparkles, BarChart3, Trophy
 } from "lucide-react";
 import { useApp, tierNames } from "@/context/AppContext";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -15,6 +15,7 @@ const navItems = [
   { label: "Products", icon: Package, path: "/products", desc: "What you sell" },
   { label: "Community", icon: Users, path: "/community", desc: "Your audience" },
   { label: "Affiliates", icon: Share2, path: "/affiliates", desc: "Referral program" },
+  { label: "Leaderboard", icon: Trophy, path: "/leaderboard", desc: "Top creators" },
   { label: "My Rep", icon: UserCheck, path: "/my-rep", desc: "Growth partner", requiresTier: 3 },
   { label: "Settings", icon: Settings, path: "/settings", desc: "Preferences" },
 ];
