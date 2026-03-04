@@ -35,7 +35,7 @@ export function useNotifications() {
           .order("created_at", { ascending: false })
           .limit(20),
         supabase
-          .from("job_notifications" as any)
+          .from("job_notifications")
           .select("*")
           .order("created_at", { ascending: false })
           .limit(20),
@@ -103,36 +103,53 @@ export function useNotifications() {
 
   const markReadMutation = useMutation({
     mutationFn: async ({ id, source }: { id: string; source: "campaign" | "job" }) => {
-      const table = source === "campaign" ? "campaign_notifications" : "job_notifications";
-      const { error } = await supabase
-        .from(table as any)
-        .update({ read: true } as any)
-        .eq("id", id);
-      if (error) throw error;
+      if (source === "campaign") {
+        const { error } = await supabase
+          .from("campaign_notifications")
+          .update({ read: true })
+          .eq("id", id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("job_notifications")
+          .update({ read: true })
+          .eq("id", id);
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["all-notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["all-notifications", user?.id] });
+    },
+    onError: (err: any) => {
+      console.error("Mark read error:", err);
+      toast.error("Failed to mark notification as read");
     },
   });
 
   const markAllReadMutation = useMutation({
     mutationFn: async () => {
       if (!user) return;
-      await Promise.all([
+      const [campRes, jobRes] = await Promise.all([
         supabase
-          .from("campaign_notifications" as any)
-          .update({ read: true } as any)
+          .from("campaign_notifications")
+          .update({ read: true })
           .eq("user_id", user.id)
           .eq("read", false),
         supabase
-          .from("job_notifications" as any)
-          .update({ read: true } as any)
+          .from("job_notifications")
+          .update({ read: true })
           .eq("user_id", user.id)
           .eq("read", false),
       ]);
+      if (campRes.error) throw campRes.error;
+      if (jobRes.error) throw jobRes.error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["all-notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["all-notifications", user?.id] });
+    },
+    onError: (err: any) => {
+      console.error("Mark all read error:", err);
+      toast.error("Failed to mark all as read");
     },
   });
 
