@@ -251,6 +251,8 @@ export default function CampaignPerformance({ campaigns = [], onUpdateStatus }: 
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">{campaign.objective} · {campaign.startDate} – {campaign.endDate}</p>
+                {/* Budget progress bar */}
+                <BudgetProgressBar spent={campaign.spent} total={campaign.totalBudget} status={campaign.status} />
               </div>
 
               {/* Key metrics — desktop */}
@@ -400,6 +402,36 @@ function MiniStat({ label, value, highlight }: { label: string; value: string; h
     <div className={`p-3 rounded-xl border ${highlight ? "border-primary/30 bg-primary/5" : "border-border bg-secondary/20"}`}>
       <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">{label}</p>
       <p className={`text-sm font-bold ${highlight ? "text-primary" : ""}`}>{value}</p>
+    </div>
+  );
+}
+
+function BudgetProgressBar({ spent, total, status }: { spent: number; total: number; status: string }) {
+  const pct = total > 0 ? Math.min((spent / total) * 100, 100) : 0;
+  const isComplete = status === "completed" || pct >= 100;
+  const isWarning = pct >= 75 && !isComplete;
+
+  return (
+    <div className="mt-1.5 flex items-center gap-2 w-full max-w-[260px]">
+      <div className="flex-1 h-1.5 rounded-full bg-secondary/50 overflow-hidden">
+        <motion.div
+          className={`h-full rounded-full ${
+            isComplete
+              ? "bg-muted-foreground"
+              : isWarning
+              ? "bg-[hsl(var(--warning,38_92%_50%))]"
+              : "bg-primary"
+          }`}
+          initial={{ width: 0 }}
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        />
+      </div>
+      <span className={`text-[10px] font-semibold tabular-nums whitespace-nowrap ${
+        isComplete ? "text-muted-foreground" : isWarning ? "text-[hsl(38,92%,50%)]" : "text-primary"
+      }`}>
+        {pct.toFixed(0)}%
+      </span>
     </div>
   );
 }
