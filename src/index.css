@@ -118,37 +118,25 @@
     @apply bg-clip-text text-transparent;
     background-image: linear-gradient(to right, hsl(var(--primary)), hsl(var(--gradient-mid)), hsl(var(--primary)));
   }
-  .hero-bg {
-    position: relative;
-    overflow: hidden;
-  }
-  .hero-bg::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 0;
+  .hero-glow-layer {
     background:
       radial-gradient(ellipse 80% 60% at 50% -10%, hsl(var(--primary) / 0.08) 0%, transparent 60%),
       radial-gradient(ellipse 50% 40% at 80% 20%, hsl(var(--primary) / 0.05) 0%, transparent 50%),
       radial-gradient(ellipse 50% 40% at 20% 30%, hsl(var(--primary) / 0.04) 0%, transparent 50%);
     pointer-events: none;
   }
-  .hero-bg::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 0;
+  .hero-grid-layer {
     background-image: radial-gradient(hsl(var(--foreground) / 0.03) 1px, transparent 1px);
     background-size: 24px 24px;
     pointer-events: none;
   }
-  .dark .hero-bg::before {
+  .dark .hero-glow-layer {
     background:
       radial-gradient(ellipse 80% 60% at 50% -10%, hsl(var(--primary) / 0.15) 0%, transparent 60%),
       radial-gradient(ellipse 50% 40% at 80% 20%, hsl(var(--primary) / 0.08) 0%, transparent 50%),
       radial-gradient(ellipse 50% 40% at 20% 30%, hsl(var(--primary) / 0.06) 0%, transparent 50%);
   }
-  .dark .hero-bg::after {
+  .dark .hero-grid-layer {
     background-image: radial-gradient(hsl(var(--foreground) / 0.04) 1px, transparent 1px);
     background-size: 24px 24px;
   }

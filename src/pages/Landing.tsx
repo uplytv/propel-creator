@@ -1,4 +1,5 @@
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef } from "react";
 import { Brain, Users, User, Box, Check, ArrowRight, Zap, Shield, TrendingUp, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -28,6 +29,12 @@ const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transiti
 
 export default function Landing() {
   const navigate = useNavigate();
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const glowY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+  const gridY = useTransform(scrollYProgress, [0, 1], ["0%", "15%"]);
+  const glowScale = useTransform(scrollYProgress, [0, 1], [1, 1.2]);
+  const gridOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.3]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -48,7 +55,15 @@ export default function Landing() {
       </nav>
 
       {/* Hero */}
-      <section className="hero-bg pt-32 pb-20 md:pt-44 md:pb-32">
+      <section ref={heroRef} className="relative overflow-hidden pt-32 pb-20 md:pt-44 md:pb-32">
+        <motion.div
+          className="absolute inset-0 z-0 hero-glow-layer"
+          style={{ y: glowY, scale: glowScale }}
+        />
+        <motion.div
+          className="absolute inset-0 z-0 hero-grid-layer"
+          style={{ y: gridY, opacity: gridOpacity }}
+        />
         <div className="container relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
