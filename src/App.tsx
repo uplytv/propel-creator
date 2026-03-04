@@ -32,6 +32,7 @@ import PostJob from "./pages/PostJob";
 import JobDetail from "./pages/JobDetail";
 import TalentProfile from "./pages/TalentProfile";
 import JobMessages from "./pages/JobMessages";
+import Notifications from "./pages/Notifications";
 
 const queryClient = new QueryClient();
 
@@ -73,6 +74,7 @@ const App = () => (
                 <Route path="/post-job" element={<ProtectedRoute><PostJob /></ProtectedRoute>} />
                 <Route path="/talent-profile" element={<ProtectedRoute><TalentProfile /></ProtectedRoute>} />
                 <Route path="/job-messages" element={<ProtectedRoute><JobMessages /></ProtectedRoute>} />
+                <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
 
                 <Route path="*" element={<NotFound />} />
               </Routes>

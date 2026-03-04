@@ -90,14 +90,22 @@ export default function NotificationBell() {
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
               <span className="text-sm font-semibold">Notifications</span>
-              {unreadCount > 0 && (
+              <div className="flex items-center gap-3">
+                {unreadCount > 0 && (
+                  <button
+                    onClick={() => markAllRead()}
+                    className="text-[11px] text-primary hover:underline font-medium"
+                  >
+                    Mark all read
+                  </button>
+                )}
                 <button
-                  onClick={() => markAllRead()}
-                  className="text-[11px] text-primary hover:underline font-medium"
+                  onClick={() => { navigate("/notifications"); setOpen(false); }}
+                  className="text-[11px] text-muted-foreground hover:text-foreground font-medium"
                 >
-                  Mark all read
+                  View all
                 </button>
-              )}
+              </div>
             </div>
 
             <div className="overflow-y-auto max-h-[340px]">
