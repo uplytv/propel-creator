@@ -15,11 +15,11 @@ const navItems = [
   { label: "Products", icon: Package, path: "/products", desc: "What you sell" },
   { label: "Community", icon: Users, path: "/community", desc: "Your audience" },
   { label: "Affiliates", icon: Share2, path: "/affiliates", desc: "Referral program" },
-  { label: "Collaborate", icon: Handshake, path: "/collaborate", desc: "Co-creator collabs" },
+  { label: "Collaborate", icon: Handshake, path: "/collaborate", desc: "Co-creator collabs", badge: 3 },
   { label: "Leaderboard", icon: Trophy, path: "/leaderboard", desc: "Top creators" },
   { label: "My Rep", icon: UserCheck, path: "/my-rep", desc: "Growth partner", requiresTier: 3 },
   { label: "Settings", icon: Settings, path: "/settings", desc: "Preferences" },
-];
+] as { label: string; icon: React.ElementType; path: string; desc: string; requiresTier?: number; badge?: number }[];
 
 const tierIcons = [Shield, TrendingUp, Zap, Crown];
 const tierColors = [
@@ -108,6 +108,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                   {isLocked && !collapsed && (
                     <Lock className="w-2.5 h-2.5 absolute -top-1 -right-1.5 text-warning" />
                   )}
+                  {!isLocked && item.badge && item.badge > 0 && collapsed && (
+                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
+                      {item.badge}
+                    </span>
+                  )}
                 </div>
                 {!collapsed && (
                   <>
@@ -115,6 +120,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                     {isLocked && <Lock className="w-3 h-3 text-warning" />}
                     {item.label === "My Rep" && !isLocked && (
                       <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                    )}
+                    {!isLocked && item.badge && item.badge > 0 && (
+                      <span className="min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1">
+                        {item.badge}
+                      </span>
                     )}
                   </>
                 )}
