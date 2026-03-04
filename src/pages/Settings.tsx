@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useApp } from "@/context/AppContext";
+import { useTheme } from "@/context/ThemeContext";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +21,7 @@ const tabs = [
 
 export default function Settings() {
   const { profile, setProfile } = useApp();
+  const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
 
@@ -45,7 +47,7 @@ export default function Settings() {
   const [showPassword, setShowPassword] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [theme, setTheme] = useState<"dark" | "light" | "system">("dark");
+  
 
   const handleSaveProfile = () => {
     setProfile({ name });

@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppProvider } from "@/context/AppContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 import TierCelebration from "@/components/TierCelebration";
 import Landing from "./pages/Landing";
 import Onboarding from "./pages/Onboarding";
@@ -20,27 +21,29 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AppProvider>
-        <Toaster />
-        <Sonner />
-        <TierCelebration />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/grow" element={<Grow />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/community" element={<Community />} />
-            <Route path="/affiliates" element={<Affiliates />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/my-rep" element={<MyRep />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </AppProvider>
-    </TooltipProvider>
+    <ThemeProvider>
+      <TooltipProvider>
+        <AppProvider>
+          <Toaster />
+          <Sonner />
+          <TierCelebration />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/grow" element={<Grow />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/community" element={<Community />} />
+              <Route path="/affiliates" element={<Affiliates />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/my-rep" element={<MyRep />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </AppProvider>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
