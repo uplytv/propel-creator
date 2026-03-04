@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
 import AudienceTemplates from "@/components/ads/AudienceTemplates";
+import CampaignPerformance from "@/components/ads/CampaignPerformance";
 
 /* ─────── types ─────── */
 type Platform = "meta" | "google";
@@ -204,6 +205,11 @@ export default function AdIntegrations() {
 
         {/* Audience Templates */}
         <AudienceTemplates metaConnected={metaStatus === "connected"} googleConnected={googleStatus === "connected"} />
+
+        {/* Campaign Performance Dashboard */}
+        <div className="mt-8">
+          <CampaignPerformance />
+        </div>
       </div>
     </AppLayout>
   );
