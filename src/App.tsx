@@ -25,6 +25,7 @@ import NotFound from "./pages/NotFound";
 import Live from "./pages/Live";
 import Stream from "./pages/Stream";
 import GoLive from "./pages/GoLive";
+import BuyCredits from "./pages/BuyCredits";
 
 const queryClient = new QueryClient();
 
@@ -59,6 +60,7 @@ const App = () => (
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                 <Route path="/my-rep" element={<ProtectedRoute><MyRep /></ProtectedRoute>} />
                 <Route path="/go-live" element={<ProtectedRoute><GoLive /></ProtectedRoute>} />
+                <Route path="/buy-credits" element={<ProtectedRoute><BuyCredits /></ProtectedRoute>} />
 
                 <Route path="*" element={<NotFound />} />
               </Routes>
