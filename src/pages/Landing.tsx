@@ -48,8 +48,8 @@ export default function Landing() {
       </nav>
 
       {/* Hero */}
-      <section className="pt-32 pb-20 md:pt-44 md:pb-32">
-        <div className="container">
+      <section className="hero-bg pt-32 pb-20 md:pt-44 md:pb-32">
+        <div className="container relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
