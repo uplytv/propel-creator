@@ -104,8 +104,8 @@ export default {
           "100%": { width: "var(--progress-width)" },
         },
         "pulse-glow": {
-          "0%, 100%": { boxShadow: "0 0 8px 2px hsl(152 100% 50% / 0.2)" },
-          "50%": { boxShadow: "0 0 16px 4px hsl(152 100% 50% / 0.4)" },
+          "0%, 100%": { boxShadow: "var(--glow-shadow)" },
+          "50%": { boxShadow: "var(--glow-shadow-strong)" },
         },
         "confetti-fall": {
           "0%": { transform: "translateY(-100vh) rotate(0deg)", opacity: "1" },
