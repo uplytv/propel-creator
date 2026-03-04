@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   TrendingUp, TrendingDown, Eye, MousePointerClick, ShoppingCart,
-  DollarSign, BarChart3, Pause, Play, MoreHorizontal, ArrowUpRight, Sparkles, Trash2
+  DollarSign, BarChart3, Pause, Play, MoreHorizontal, ArrowUpRight, Sparkles, Trash2, Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -192,6 +192,16 @@ export default function CampaignPerformance({ campaigns = [], onUpdateStatus, on
   const totalClicks = allCampaigns.reduce((s, c) => s + c.clicks, 0);
   const totalConversions = allCampaigns.reduce((s, c) => s + c.conversions, 0);
 
+  function exportAllCsv() {
+    const headers = ["Name","Platform","Status","Objective","Daily Budget","Total Budget","Spent","Impressions","Clicks","Conversions","CTR","CPC","CPA","ROAS","Start","End"];
+    const rows = allCampaigns.map(c => [
+      c.name, c.platform, c.status, c.objective, c.dailyBudget, c.totalBudget,
+      c.spent.toFixed(2), c.impressions, c.clicks, c.conversions,
+      c.ctr, c.cpc.toFixed(2), c.cpa.toFixed(2), c.roas, c.startDate, c.endDate,
+    ]);
+    downloadCsv([headers, ...rows], "all-campaigns.csv");
+  }
+
   const summaryCards = [
     { label: "Total Spend", value: `$${totalSpent.toFixed(0)}`, icon: DollarSign, color: "text-primary" },
     { label: "Impressions", value: fmt(totalImpressions), icon: Eye, color: "text-blue-400" },
@@ -206,6 +216,9 @@ export default function CampaignPerformance({ campaigns = [], onUpdateStatus, on
         <BarChart3 className="w-5 h-5 text-primary" />
         <h2 className="text-lg font-bold">Campaign Performance</h2>
         <span className="ml-auto text-xs text-muted-foreground">{activeCampaigns.length} active · {allCampaigns.length} total</span>
+        <Button variant="outline" size="sm" className="flex items-center gap-1.5" onClick={exportAllCsv}>
+          <Download className="w-3.5 h-3.5" /> Export CSV
+        </Button>
       </div>
 
       {/* Summary row */}
@@ -340,6 +353,18 @@ export default function CampaignPerformance({ campaigns = [], onUpdateStatus, on
                     <Button variant="outline" size="sm" className="flex items-center gap-1.5">
                       <MoreHorizontal className="w-3.5 h-3.5" /> Details
                     </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-1.5"
+                      onClick={() => {
+                        const headers = ["Name","Platform","Status","Objective","Spent","Impressions","Clicks","Conversions","CTR","CPC","CPA","ROAS"];
+                        const row = [campaign.name, campaign.platform, campaign.status, campaign.objective, campaign.spent.toFixed(2), campaign.impressions, campaign.clicks, campaign.conversions, campaign.ctr, campaign.cpc.toFixed(2), campaign.cpa.toFixed(2), campaign.roas];
+                        downloadCsv([headers, row], `${campaign.name.replace(/[^a-zA-Z0-9]/g, "_")}.csv`);
+                      }}
+                    >
+                      <Download className="w-3.5 h-3.5" /> Export
+                    </Button>
 
                     {/* Delete button with confirmation */}
                     {!campaign.id.startsWith("c") && onDelete && (
@@ -377,6 +402,18 @@ export default function CampaignPerformance({ campaigns = [], onUpdateStatus, on
       </div>
     </motion.div>
   );
+}
+
+/* ─────── CSV helper ─────── */
+function downloadCsv(rows: (string | number)[][], filename: string) {
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 /* ─────── sub-components ─────── */
