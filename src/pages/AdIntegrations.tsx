@@ -11,6 +11,7 @@ import AudienceTemplates from "@/components/ads/AudienceTemplates";
 import CampaignPerformance from "@/components/ads/CampaignPerformance";
 import BoostCampaignBuilder, { type LaunchedCampaign } from "@/components/ads/BoostCampaignBuilder";
 import { useToast } from "@/hooks/use-toast";
+import { useCampaigns } from "@/hooks/useCampaigns";
 
 /* ─────── types ─────── */
 type Platform = "meta" | "google";
@@ -40,9 +41,9 @@ const googleEvents: PixelEvent[] = [
 /* ─────── component ─────── */
 export default function AdIntegrations() {
   const { toast } = useToast();
+  const { campaigns, launchCampaign, updateStatus } = useCampaigns();
   const [metaStatus, setMetaStatus] = useState<ConnectionStatus>("disconnected");
   const [googleStatus, setGoogleStatus] = useState<ConnectionStatus>("disconnected");
-  const [launchedCampaigns, setLaunchedCampaigns] = useState<LaunchedCampaign[]>([]);
   const [boostOpen, setBoostOpen] = useState(false);
 
   const simulateConnect = (platform: Platform) => {
@@ -51,12 +52,16 @@ export default function AdIntegrations() {
     setTimeout(() => setter("connected"), 2000);
   };
 
-  const handleCampaignLaunch = (campaign: LaunchedCampaign) => {
-    setLaunchedCampaigns((prev) => [...prev, campaign]);
-    toast({
-      title: "Campaign launched!",
-      description: `"Boost: ${campaign.streamTitle}" is now active on ${campaign.platform === "meta" ? "Meta" : "Google"}.`,
-    });
+  const handleCampaignLaunch = async (campaign: LaunchedCampaign) => {
+    try {
+      await launchCampaign(campaign);
+      toast({
+        title: "Campaign launched!",
+        description: `"Boost: ${campaign.streamTitle}" is now active on ${campaign.platform === "meta" ? "Meta" : "Google"}.`,
+      });
+    } catch {
+      toast({ title: "Failed to launch campaign", variant: "destructive" });
+    }
   };
 
   return (
@@ -226,7 +231,7 @@ export default function AdIntegrations() {
 
         {/* Campaign Performance Dashboard */}
         <div className="mt-8">
-          <CampaignPerformance launchedCampaigns={launchedCampaigns} />
+          <CampaignPerformance campaigns={campaigns} onUpdateStatus={updateStatus} />
         </div>
       </div>
 

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from "recharts";
-import type { LaunchedCampaign } from "./BoostCampaignBuilder";
+import type { CampaignRow } from "@/hooks/useCampaigns";
 
 /* ─────── types ─────── */
 export interface Campaign {
@@ -125,34 +125,36 @@ const seedCampaigns: Campaign[] = [
   },
 ];
 
-/* ─────── helper to create campaign from launch ─────── */
-function launchedToCampaign(lc: LaunchedCampaign, index: number): Campaign {
-  const today = new Date();
-  const endDate = new Date(today);
-  endDate.setDate(today.getDate() + lc.duration);
+/* ─────── helper to convert db row to display ─────── */
+function rowToCampaign(row: CampaignRow): Campaign {
+  const created = new Date(row.created_at);
+  const endDate = new Date(created);
+  endDate.setDate(created.getDate() + row.duration);
   const fmtDate = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
+  const isRecent = Date.now() - created.getTime() < 60_000 * 5; // 5 min
+
   return {
-    id: `new-${Date.now()}-${index}`,
-    name: `Boost: ${lc.streamTitle}`,
-    platform: lc.platform,
-    status: "active",
-    objective: lc.objectiveLabel,
-    dailyBudget: lc.dailyBudget,
-    totalBudget: lc.dailyBudget * lc.duration,
-    spent: 0,
-    impressions: 0,
-    clicks: 0,
-    conversions: 0,
-    ctr: 0,
-    cpc: 0,
-    cpa: 0,
-    roas: 0,
-    startDate: fmtDate(today),
+    id: row.id,
+    name: `Boost: ${row.stream_title}`,
+    platform: row.platform as "meta" | "google",
+    status: row.status as "active" | "paused" | "completed",
+    objective: row.objective_label,
+    dailyBudget: Number(row.daily_budget),
+    totalBudget: Number(row.total_budget),
+    spent: Number(row.spent),
+    impressions: row.impressions,
+    clicks: row.clicks,
+    conversions: row.conversions,
+    ctr: Number(row.ctr),
+    cpc: Number(row.cpc),
+    cpa: Number(row.cpa),
+    roas: Number(row.roas),
+    startDate: fmtDate(created),
     endDate: fmtDate(endDate),
-    trend: "flat",
+    trend: row.impressions > 0 ? "up" : "flat",
     sparkline: [],
-    isNew: true,
+    isNew: isRecent,
   };
 }
 
@@ -164,14 +166,15 @@ function fmt(n: number): string {
 
 /* ─────── component ─────── */
 interface CampaignPerformanceProps {
-  launchedCampaigns?: LaunchedCampaign[];
+  campaigns?: CampaignRow[];
+  onUpdateStatus?: (params: { id: string; status: string }) => void;
 }
 
-export default function CampaignPerformance({ launchedCampaigns = [] }: CampaignPerformanceProps) {
+export default function CampaignPerformance({ campaigns = [], onUpdateStatus }: CampaignPerformanceProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const newCampaigns = launchedCampaigns.map((lc, i) => launchedToCampaign(lc, i));
-  const allCampaigns = [...newCampaigns, ...seedCampaigns];
+  const dbCampaigns = campaigns.map(rowToCampaign);
+  const allCampaigns = [...dbCampaigns, ...seedCampaigns];
 
   const activeCampaigns = allCampaigns.filter((c) => c.status === "active");
   const totalSpent = allCampaigns.reduce((s, c) => s + c.spent, 0);
@@ -332,10 +335,28 @@ export default function CampaignPerformance({ launchedCampaigns = [] }: Campaign
 
                   {/* Actions */}
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="flex items-center gap-1.5">
-                      {campaign.status === "active" ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                      {campaign.status === "active" ? "Pause" : "Resume"}
-                    </Button>
+                    {!campaign.id.startsWith("c") && onUpdateStatus && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-1.5"
+                        onClick={() =>
+                          onUpdateStatus({
+                            id: campaign.id,
+                            status: campaign.status === "active" ? "paused" : "active",
+                          })
+                        }
+                      >
+                        {campaign.status === "active" ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                        {campaign.status === "active" ? "Pause" : "Resume"}
+                      </Button>
+                    )}
+                    {campaign.id.startsWith("c") && (
+                      <Button variant="outline" size="sm" className="flex items-center gap-1.5">
+                        {campaign.status === "active" ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                        {campaign.status === "active" ? "Pause" : "Resume"}
+                      </Button>
+                    )}
                     <Button variant="outline" size="sm" className="flex items-center gap-1.5">
                       <MoreHorizontal className="w-3.5 h-3.5" /> Details
                     </Button>

@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      campaigns: {
+        Row: {
+          audience: string
+          audience_label: string
+          clicks: number
+          conversions: number
+          cpa: number
+          cpc: number
+          created_at: string
+          ctr: number
+          daily_budget: number
+          duration: number
+          id: string
+          impressions: number
+          objective: string
+          objective_label: string
+          platform: string
+          roas: number
+          spent: number
+          status: string
+          stream_title: string
+          total_budget: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          audience: string
+          audience_label: string
+          clicks?: number
+          conversions?: number
+          cpa?: number
+          cpc?: number
+          created_at?: string
+          ctr?: number
+          daily_budget?: number
+          duration?: number
+          id?: string
+          impressions?: number
+          objective: string
+          objective_label: string
+          platform?: string
+          roas?: number
+          spent?: number
+          status?: string
+          stream_title: string
+          total_budget?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          audience?: string
+          audience_label?: string
+          clicks?: number
+          conversions?: number
+          cpa?: number
+          cpc?: number
+          created_at?: string
+          ctr?: number
+          daily_budget?: number
+          duration?: number
+          id?: string
+          impressions?: number
+          objective?: string
+          objective_label?: string
+          platform?: string
+          roas?: number
+          spent?: number
+          status?: string
+          stream_title?: string
+          total_budget?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           collaboration_id: string
