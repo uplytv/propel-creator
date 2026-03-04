@@ -17,6 +17,7 @@ import Affiliates from "./pages/Affiliates";
 import Settings from "./pages/Settings";
 import Leaderboard from "./pages/Leaderboard";
 import Collaborate from "./pages/Collaborate";
+import JointProduct from "./pages/JointProduct";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
               <Route path="/community" element={<Community />} />
               <Route path="/affiliates" element={<Affiliates />} />
               <Route path="/collaborate" element={<Collaborate />} />
+              <Route path="/collaborate/product" element={<JointProduct />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/my-rep" element={<MyRep />} />
               <Route path="*" element={<NotFound />} />

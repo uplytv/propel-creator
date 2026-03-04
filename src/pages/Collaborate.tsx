@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import AppLayout from "@/components/layout/AppLayout";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface CreatorMatch {
@@ -61,6 +62,7 @@ const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transiti
 
 // ── Component ──────────────────────────────────────────────────────────────────
 export default function Collaborate() {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [nicheFilter, setNicheFilter] = useState("all");
@@ -318,7 +320,7 @@ export default function Collaborate() {
                     <p className="text-xs text-muted-foreground">Revenue</p>
                     <p className="font-bold text-primary">$8,420</p>
                   </div>
-                  <Button variant="outline" size="sm" className="gap-1">
+                  <Button variant="outline" size="sm" className="gap-1" onClick={() => navigate("/collaborate/product")}>
                     <Eye className="w-3.5 h-3.5" /> View Page
                   </Button>
                 </div>
