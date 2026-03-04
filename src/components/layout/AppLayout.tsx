@@ -7,6 +7,7 @@ import {
   Zap, Crown, Sparkles, BarChart3, Trophy, Handshake
 } from "lucide-react";
 import { useApp, tierNames } from "@/context/AppContext";
+import { useAuth } from "@/context/AuthContext";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const navItems = [
@@ -45,6 +46,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { profile } = useApp();
+  const { user, signOut } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -274,7 +276,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                       </button>
                       <div className="border-t border-border mt-1 pt-1">
                         <button
-                          onClick={() => { navigate("/"); setProfileOpen(false); }}
+                          onClick={async () => { await signOut(); navigate("/"); setProfileOpen(false); }}
                           className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-destructive hover:bg-secondary transition-colors"
                         >
                           <LogOut className="w-4 h-4" /> Sign out
