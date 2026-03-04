@@ -4,12 +4,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Rocket, Package, Users, UserCheck, Lock, Share2,
   LogOut, Settings, ChevronLeft, ChevronRight, Shield, TrendingUp,
-  Zap, Crown, Sparkles, BarChart3, Trophy, Handshake, Radio, Plug, Briefcase
+  Zap, Crown, Sparkles, BarChart3, Trophy, Handshake, Radio, Plug, Briefcase, MessageSquare
 } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import { useApp, tierNames } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
 import { useUnreadMessageCount } from "@/hooks/useCollaborations";
+import { useUnreadJobMessageCount } from "@/hooks/useJobMessages";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const navItems = [
@@ -23,6 +24,7 @@ const navItems = [
   { label: "Leaderboard", icon: Trophy, path: "/leaderboard", desc: "Top creators" },
   { label: "Ad Integrations", icon: Plug, path: "/ad-integrations", desc: "Pixels & campaigns" },
   { label: "Jobs & Talent", icon: Briefcase, path: "/jobs", desc: "Freelance marketplace" },
+  { label: "Messages", icon: MessageSquare, path: "/job-messages", desc: "Job conversations", badgeKey: "job-messages" },
   { label: "My Rep", icon: UserCheck, path: "/my-rep", desc: "Growth partner", requiresTier: 3 },
   { label: "Settings", icon: Settings, path: "/settings", desc: "Preferences" },
 ] as { label: string; icon: React.ElementType; path: string; desc: string; requiresTier?: number; badgeKey?: string }[];
@@ -53,11 +55,16 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { profile } = useApp();
   const { user, signOut } = useAuth();
   const { data: unreadCount = 0 } = useUnreadMessageCount();
+  const { data: jobUnreadCount = 0 } = useUnreadJobMessageCount();
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   
-  const getBadge = (item: typeof navItems[0]) => item.badgeKey === "collaborate" ? unreadCount : 0;
+  const getBadge = (item: typeof navItems[0]) => {
+    if (item.badgeKey === "collaborate") return unreadCount;
+    if (item.badgeKey === "job-messages") return jobUnreadCount;
+    return 0;
+  };
 
   const isRepLocked = profile.tier <= 2;
 
