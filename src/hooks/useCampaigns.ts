@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import type { LaunchedCampaign } from "@/components/ads/BoostCampaignBuilder";
@@ -44,6 +45,26 @@ export function useCampaigns() {
     },
     enabled: !!user,
   });
+
+  // Realtime subscription for live metric updates
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel("campaigns-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "campaigns" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["campaigns", user.id] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, queryClient]);
 
   const launchMutation = useMutation({
     mutationFn: async (campaign: LaunchedCampaign) => {
