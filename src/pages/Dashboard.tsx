@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useApp, tierNames } from "@/context/AppContext";
-import { TrendingUp, Users, DollarSign, Brain, MessageSquare, Phone, Clock, CheckCircle2, Zap, ChevronRight, BarChart3, Target } from "lucide-react";
+import { TrendingUp, Users, DollarSign, Brain, MessageSquare, Phone, Clock, CheckCircle2, Zap, ChevronRight, BarChart3, Target, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
 import { AIGrowthEngine } from "@/components/AIGrowthEngine";
+import { MyJobsTab } from "@/components/dashboard/MyJobsTab";
 
 const tierTargets = [
   { members: 100, mrr: 1000 },
@@ -35,7 +36,7 @@ export default function Dashboard() {
   const { profile } = useApp();
   const [checkedTasks, setCheckedTasks] = useState<Set<number>>(new Set());
   const [revenueRange, setRevenueRange] = useState<"30" | "60" | "90">("30");
-  const [showGrowthEngine, setShowGrowthEngine] = useState(false);
+  const [activeTab, setActiveTab] = useState<"overview" | "growth" | "jobs">("overview");
 
   const target = tierTargets[profile.tier - 1];
   const nextTier = profile.tier < 4 ? tierNames[profile.tier] : null;
@@ -66,22 +67,32 @@ export default function Dashboard() {
         {/* Tab Toggle */}
         <div className="flex gap-2 mb-6">
           <button
-            onClick={() => setShowGrowthEngine(false)}
-            className={`text-sm px-4 py-2 rounded-lg font-medium transition-colors ${!showGrowthEngine ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}
+            onClick={() => setActiveTab("overview")}
+            className={`text-sm px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === "overview" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}
           >
             Overview
           </button>
           <button
-            onClick={() => setShowGrowthEngine(true)}
-            className={`text-sm px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-1.5 ${showGrowthEngine ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}
+            onClick={() => setActiveTab("growth")}
+            className={`text-sm px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-1.5 ${activeTab === "growth" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}
           >
             <Zap className="w-3.5 h-3.5" /> AI Growth Engine
           </button>
+          <button
+            onClick={() => setActiveTab("jobs")}
+            className={`text-sm px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-1.5 ${activeTab === "jobs" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}
+          >
+            <Briefcase className="w-3.5 h-3.5" /> My Jobs
+          </button>
         </div>
 
-        {showGrowthEngine ? (
+        {activeTab === "growth" ? (
           <motion.div key="growth-engine" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
             <AIGrowthEngine />
+          </motion.div>
+        ) : activeTab === "jobs" ? (
+          <motion.div key="my-jobs" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+            <MyJobsTab />
           </motion.div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
