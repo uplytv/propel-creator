@@ -95,6 +95,17 @@ Deno.serve(async (req) => {
         });
       }
 
+      // Check if we just crossed 80% threshold
+      if (prevPct < 80 && newPct >= 80) {
+        notifications.push({
+          user_id: campaign.user_id,
+          campaign_id: campaign.id,
+          type: "budget_warning",
+          title: "🔴 80% Budget Warning",
+          message: `"${campaign.stream_title}" has used ${Math.round(newPct)}% of its $${totalBudget.toFixed(0)} budget. Consider pausing or increasing your budget.`,
+        });
+      }
+
       // Check if campaign just completed
       if (totalSpent >= totalBudget) {
         notifications.push({

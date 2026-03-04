@@ -409,6 +409,9 @@ export default function CampaignPerformance({ campaigns = [], onUpdateStatus, on
                     <MiniStat label="ROAS" value={`${campaign.roas}x`} highlight />
                   </div>
 
+                  {/* Budget alert */}
+                  <BudgetAlert spent={campaign.spent} total={campaign.totalBudget} status={campaign.status} />
+
                   {/* Chart */}
                   <CampaignChart campaign={campaign} />
 
@@ -607,7 +610,8 @@ function MiniStat({ label, value, highlight }: { label: string; value: string; h
 function BudgetProgressBar({ spent, total, status }: { spent: number; total: number; status: string }) {
   const pct = total > 0 ? Math.min((spent / total) * 100, 100) : 0;
   const isComplete = status === "completed" || pct >= 100;
-  const isWarning = pct >= 75 && !isComplete;
+  const isCritical = pct >= 80 && !isComplete;
+  const isWarning = pct >= 75 && !isCritical && !isComplete;
 
   return (
     <div className="mt-1.5 flex items-center gap-2 w-full max-w-[260px]">
@@ -616,6 +620,8 @@ function BudgetProgressBar({ spent, total, status }: { spent: number; total: num
           className={`h-full rounded-full ${
             isComplete
               ? "bg-muted-foreground"
+              : isCritical
+              ? "bg-destructive"
               : isWarning
               ? "bg-[hsl(var(--warning,38_92%_50%))]"
               : "bg-primary"
@@ -626,10 +632,30 @@ function BudgetProgressBar({ spent, total, status }: { spent: number; total: num
         />
       </div>
       <span className={`text-[10px] font-semibold tabular-nums whitespace-nowrap ${
-        isComplete ? "text-muted-foreground" : isWarning ? "text-[hsl(38,92%,50%)]" : "text-primary"
+        isComplete ? "text-muted-foreground" : isCritical ? "text-destructive" : isWarning ? "text-[hsl(38,92%,50%)]" : "text-primary"
       }`}>
         {pct.toFixed(0)}%
       </span>
     </div>
+  );
+}
+
+function BudgetAlert({ spent, total, status }: { spent: number; total: number; status: string }) {
+  const pct = total > 0 ? Math.min((spent / total) * 100, 100) : 0;
+  if (pct < 80 || status === "completed") return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "auto" }}
+      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium"
+    >
+      <DollarSign className="w-3.5 h-3.5 flex-shrink-0" />
+      <span>
+        {pct >= 100
+          ? "Budget fully spent — campaign will stop."
+          : `${Math.round(pct)}% of budget used ($${spent.toFixed(0)} / $${total.toFixed(0)}). Consider pausing or increasing budget.`}
+      </span>
+    </motion.div>
   );
 }
