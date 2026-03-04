@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Coins, X, Sparkles } from "lucide-react";
+import { Coins, X, Sparkles, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const tipPresets = [
   { amount: 5, emoji: "☕", label: "Coffee" },
@@ -19,6 +20,7 @@ interface TipButtonProps {
 
 export default function TipButton({ creatorName, creditsBalance, isLoggedIn, onTip }: TipButtonProps) {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
   const [selected, setSelected] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState("");
   const [message, setMessage] = useState("");
@@ -182,6 +184,16 @@ export default function TipButton({ creatorName, creditsBalance, isLoggedIn, onT
 
                     {amount > creditsBalance && (
                       <p className="text-xs text-destructive text-center">Not enough credits</p>
+                    )}
+
+                    {creditsBalance < 50 && (
+                      <button
+                        onClick={() => { setOpen(false); navigate("/buy-credits"); }}
+                        className="flex items-center justify-center gap-1.5 w-full text-xs text-primary hover:text-primary/80 font-medium transition-colors py-1"
+                      >
+                        <Plus className="w-3 h-3" />
+                        Get more credits
+                      </button>
                     )}
                   </div>
                 </div>
