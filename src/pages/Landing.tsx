@@ -24,8 +24,14 @@ const pricing = [
   { name: "Scale", price: "99", period: "/month", fee: "0% transaction fee", features: ["Everything in Pro", "Dedicated success rep", "Custom integrations", "White-label options"] },
 ];
 
-const container = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
-const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
+const ease = [0.22, 1, 0.36, 1] as const;
+const container = { hidden: {}, show: { transition: { staggerChildren: 0.12 } } };
+const item = { hidden: { opacity: 0, y: 30, scale: 0.97 }, show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: "easeOut" as const } } };
+
+const sectionHeading = {
+  hidden: { opacity: 0, y: 40 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" as const } },
+};
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -154,10 +160,10 @@ export default function Landing() {
             {features.map((f, i) => (
               <motion.div
                 key={f.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
+                initial={{ opacity: 0, y: 40, scale: 0.95 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ delay: i * 0.12, duration: 0.6, ease: "easeOut" }}
                 className="glass-card-hover p-6 min-w-[260px] md:min-w-0"
               >
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
@@ -188,11 +194,11 @@ export default function Landing() {
       {/* Tier Preview */}
       <section id="tiers" className="py-20 md:py-32">
         <div className="container">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
+          <motion.div variants={sectionHeading} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }} className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Grow your way. We'll grow with you.</h2>
             <p className="text-muted-foreground text-lg">Every tier unlocks more support, more tools, more investment in your success.</p>
           </motion.div>
-          <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true }} className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }} className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
             {tiers.map((t, i) => (
               <motion.div
                 key={t.name}
@@ -222,11 +228,11 @@ export default function Landing() {
       {/* Pricing */}
       <section id="pricing" className="py-20 md:py-32">
         <div className="container">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
+          <motion.div variants={sectionHeading} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }} className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Simple, transparent pricing</h2>
             <p className="text-muted-foreground text-lg">Start free. Upgrade when you're ready.</p>
           </motion.div>
-          <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true }} className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }} className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {pricing.map((p) => (
               <motion.div
                 key={p.name}
