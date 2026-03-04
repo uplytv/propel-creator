@@ -1,6 +1,6 @@
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import { useRef, useMemo, useCallback } from "react";
-import { Brain, Users, User, Box, Check, ArrowRight, Zap, Shield, TrendingUp, Star } from "lucide-react";
+import { Brain, Users, User, Box, Check, ArrowRight, Zap, Shield, TrendingUp, Star, Crown, Trophy, Medal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
@@ -263,6 +263,88 @@ export default function Landing() {
                 </Button>
               </motion.div>
             ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Creator Leaderboard */}
+      <section id="leaderboard" className="py-20 md:py-32 relative overflow-hidden">
+        {/* Ambient glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+        <div className="container relative">
+          <motion.div variants={sectionHeading} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }} className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-4">
+              <Trophy className="w-4 h-4" />
+              Live Leaderboard
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Top creators earning right now</h2>
+            <p className="text-muted-foreground text-lg max-w-xl mx-auto">Real creators. Real revenue. See who's leading the pack this month.</p>
+          </motion.div>
+
+          <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }} className="max-w-3xl mx-auto space-y-3">
+            {[
+              { rank: 1, name: "Sarah Chen", niche: "Fitness & Nutrition", earnings: "$48,200", members: "12.4K", avatar: "SC", icon: Crown },
+              { rank: 2, name: "Marcus Rivera", niche: "Photography", earnings: "$36,800", members: "8.7K", avatar: "MR", icon: Trophy },
+              { rank: 3, name: "Aisha Patel", niche: "Business Strategy", earnings: "$31,500", members: "6.2K", avatar: "AP", icon: Medal },
+              { rank: 4, name: "Jake Morrison", niche: "Music Production", earnings: "$24,100", members: "5.1K", avatar: "JM" },
+              { rank: 5, name: "Luna Zhang", niche: "UX Design", earnings: "$19,750", members: "4.3K", avatar: "LZ" },
+            ].map((creator, i) => (
+              <motion.div
+                key={creator.name}
+                variants={item}
+                className={`flex items-center gap-4 p-4 rounded-xl transition-all duration-300 hover:scale-[1.02] ${
+                  i === 0
+                    ? "glass-card glow-border bg-primary/[0.03]"
+                    : "glass-card hover:shadow-md"
+                }`}
+              >
+                {/* Rank */}
+                <div className={`flex-shrink-0 w-8 text-center font-bold text-lg ${
+                  i === 0 ? "text-primary" : i < 3 ? "text-foreground" : "text-muted-foreground"
+                }`}>
+                  {creator.icon ? <creator.icon className={`w-5 h-5 mx-auto ${i === 0 ? "text-primary" : "text-muted-foreground"}`} /> : `#${creator.rank}`}
+                </div>
+
+                {/* Avatar */}
+                <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${
+                  i === 0
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
+                }`}>
+                  {creator.avatar}
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-foreground truncate">{creator.name}</p>
+                  <p className="text-xs text-muted-foreground">{creator.niche}</p>
+                </div>
+
+                {/* Stats */}
+                <div className="hidden sm:block text-right">
+                  <p className="text-xs text-muted-foreground">{creator.members} members</p>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <p className={`font-bold tabular-nums ${i === 0 ? "text-primary text-lg" : "text-foreground"}`}>
+                    {creator.earnings}
+                  </p>
+                  <p className="text-xs text-muted-foreground">this month</p>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.5, duration: 0.6 }}
+            className="text-center mt-12"
+          >
+            <Button variant="hero" size="lg" onClick={() => navigate("/onboarding")} className="gap-2">
+              Start Your Journey <ArrowRight className="w-4 h-4" />
+            </Button>
+            <p className="text-xs text-muted-foreground mt-3">Join 2,400+ creators already growing on PLATFORM</p>
           </motion.div>
         </div>
       </section>
