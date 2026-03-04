@@ -3,12 +3,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Plug, CheckCircle2, Circle, ExternalLink, Users, Eye, ShoppingCart,
   UserPlus, Zap, BarChart3, Target, TrendingUp, ArrowRight, RefreshCw,
-  Activity, Globe, Link2
+  Activity, Globe, Link2, Rocket
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
 import AudienceTemplates from "@/components/ads/AudienceTemplates";
 import CampaignPerformance from "@/components/ads/CampaignPerformance";
+import BoostCampaignBuilder, { type LaunchedCampaign } from "@/components/ads/BoostCampaignBuilder";
+import { useToast } from "@/hooks/use-toast";
 
 /* ─────── types ─────── */
 type Platform = "meta" | "google";
@@ -37,13 +39,24 @@ const googleEvents: PixelEvent[] = [
 
 /* ─────── component ─────── */
 export default function AdIntegrations() {
+  const { toast } = useToast();
   const [metaStatus, setMetaStatus] = useState<ConnectionStatus>("disconnected");
   const [googleStatus, setGoogleStatus] = useState<ConnectionStatus>("disconnected");
+  const [launchedCampaigns, setLaunchedCampaigns] = useState<LaunchedCampaign[]>([]);
+  const [boostOpen, setBoostOpen] = useState(false);
 
   const simulateConnect = (platform: Platform) => {
     const setter = platform === "meta" ? setMetaStatus : setGoogleStatus;
     setter("connecting");
     setTimeout(() => setter("connected"), 2000);
+  };
+
+  const handleCampaignLaunch = (campaign: LaunchedCampaign) => {
+    setLaunchedCampaigns((prev) => [...prev, campaign]);
+    toast({
+      title: "Campaign launched!",
+      description: `"Boost: ${campaign.streamTitle}" is now active on ${campaign.platform === "meta" ? "Meta" : "Google"}.`,
+    });
   };
 
   return (
@@ -55,11 +68,18 @@ export default function AdIntegrations() {
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
               <Plug className="w-5 h-5 text-primary" />
             </div>
-            <div>
+            <div className="flex-1">
               <h1 className="text-2xl md:text-3xl font-bold">Ad Integrations</h1>
               <p className="text-muted-foreground text-sm">Connect your ad accounts to track conversions and launch campaigns.</p>
             </div>
+            <Button variant="hero" size="sm" onClick={() => setBoostOpen(true)} className="hidden sm:flex items-center gap-2">
+              <Rocket className="w-4 h-4" /> Boost a Stream
+            </Button>
           </div>
+          {/* Mobile boost button */}
+          <Button variant="hero" size="sm" onClick={() => setBoostOpen(true)} className="sm:hidden w-full mt-3 flex items-center justify-center gap-2">
+            <Rocket className="w-4 h-4" /> Boost a Stream
+          </Button>
         </motion.div>
 
         {/* Connection Cards */}
@@ -71,11 +91,9 @@ export default function AdIntegrations() {
             transition={{ delay: 0.05 }}
             className="glass-card overflow-hidden"
           >
-            {/* Meta header */}
             <div className="p-6 border-b border-border">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  {/* Meta logo */}
                   <div className="w-12 h-12 rounded-xl bg-[hsl(214,89%,52%)]/10 flex items-center justify-center">
                     <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none">
                       <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12c0-5.523-4.477-10-10-10z" fill="hsl(214, 89%, 52%)" />
@@ -208,9 +226,18 @@ export default function AdIntegrations() {
 
         {/* Campaign Performance Dashboard */}
         <div className="mt-8">
-          <CampaignPerformance />
+          <CampaignPerformance launchedCampaigns={launchedCampaigns} />
         </div>
       </div>
+
+      {/* Boost Campaign Builder */}
+      <BoostCampaignBuilder
+        isOpen={boostOpen}
+        onClose={() => setBoostOpen(false)}
+        streamTitle="My Stream"
+        creatorName="Creator"
+        onLaunch={handleCampaignLaunch}
+      />
     </AppLayout>
   );
 }
@@ -256,7 +283,6 @@ function ConnectedDetails({
 }) {
   return (
     <div className="space-y-5">
-      {/* ID + Status */}
       <div className="flex items-center justify-between">
         <div>
           <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{idLabel}</p>
@@ -270,7 +296,6 @@ function ConnectedDetails({
         </span>
       </div>
 
-      {/* Events Checklist */}
       <div>
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Events Firing</p>
         <div className="grid grid-cols-2 gap-2">
@@ -291,7 +316,6 @@ function ConnectedDetails({
         </div>
       </div>
 
-      {/* Extra Info */}
       <div className="space-y-2">
         {extraInfo.map((info) => (
           <div key={info.label} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">

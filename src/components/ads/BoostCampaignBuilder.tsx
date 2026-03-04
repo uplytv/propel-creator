@@ -2,13 +2,24 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Rocket, Target, DollarSign, Clock, Users, Sparkles, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+
+export interface LaunchedCampaign {
+  streamTitle: string;
+  objective: string;
+  objectiveLabel: string;
+  dailyBudget: number;
+  duration: number;
+  audience: string;
+  audienceLabel: string;
+  platform: "meta" | "google";
+}
 
 interface BoostCampaignBuilderProps {
   isOpen: boolean;
   onClose: () => void;
   streamTitle: string;
   creatorName: string;
+  onLaunch?: (campaign: LaunchedCampaign) => void;
 }
 
 const objectives = [
@@ -27,8 +38,7 @@ const audiences = [
 const budgetPresets = [10, 25, 50, 100];
 const durationPresets = [3, 7, 14, 30];
 
-export default function BoostCampaignBuilder({ isOpen, onClose, streamTitle, creatorName }: BoostCampaignBuilderProps) {
-  const { toast } = useToast();
+export default function BoostCampaignBuilder({ isOpen, onClose, streamTitle, creatorName, onLaunch }: BoostCampaignBuilderProps) {
   const [step, setStep] = useState(0);
   const [objective, setObjective] = useState<string | null>(null);
   const [budget, setBudget] = useState(25);
@@ -43,6 +53,18 @@ export default function BoostCampaignBuilder({ isOpen, onClose, streamTitle, cre
     setTimeout(() => {
       setLaunching(false);
       setLaunched(true);
+      if (onLaunch && objective && audience) {
+        onLaunch({
+          streamTitle,
+          objective,
+          objectiveLabel: objectives.find((o) => o.id === objective)?.label ?? objective,
+          dailyBudget: budget,
+          duration,
+          audience,
+          audienceLabel: audiences.find((a) => a.id === audience)?.label ?? audience,
+          platform,
+        });
+      }
     }, 2000);
   };
 
