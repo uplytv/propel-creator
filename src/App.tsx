@@ -15,6 +15,7 @@ import MyRep from "./pages/MyRep";
 import Grow from "./pages/Grow";
 import Affiliates from "./pages/Affiliates";
 import Settings from "./pages/Settings";
+import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/grow" element={<Grow />} />
               <Route path="/products" element={<Products />} />
