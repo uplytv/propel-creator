@@ -30,11 +30,13 @@ Deno.serve(async (req) => {
     }
 
     const updates = [];
+    const notifications = [];
 
     for (const campaign of campaigns) {
       const dailyBudget = Number(campaign.daily_budget);
       const totalBudget = Number(campaign.total_budget);
       const currentSpent = Number(campaign.spent);
+      const prevPct = totalBudget > 0 ? (currentSpent / totalBudget) * 100 : 0;
 
       // If already spent the full budget, mark as completed
       if (currentSpent >= totalBudget) {
@@ -44,11 +46,18 @@ Deno.serve(async (req) => {
             .update({ status: "completed", updated_at: new Date().toISOString() })
             .eq("id", campaign.id)
         );
+        // Completion notification
+        notifications.push({
+          user_id: campaign.user_id,
+          campaign_id: campaign.id,
+          type: "campaign_completed",
+          title: "🏁 Campaign Completed",
+          message: `"${campaign.stream_title}" has finished — $${currentSpent.toFixed(0)} spent of $${totalBudget.toFixed(0)} budget.`,
+        });
         continue;
       }
 
-      // Simulate a per-minute tick (~1/1440th of a day, but accelerated for demo)
-      // We'll simulate roughly 1/60th of daily metrics per tick (accelerated: 1 hour = 1 day)
+      // Simulate a per-minute tick
       const tickFraction = 1 / 60;
       const spendIncrement = Math.min(
         dailyBudget * tickFraction * (0.8 + Math.random() * 0.4),
@@ -72,10 +81,33 @@ Deno.serve(async (req) => {
       const totalClicks = campaign.clicks + newClicks;
       const totalConversions = campaign.conversions + newConversions;
 
+      const newPct = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
+
+      // Check if we just crossed 75% threshold
+      if (prevPct < 75 && newPct >= 75) {
+        notifications.push({
+          user_id: campaign.user_id,
+          campaign_id: campaign.id,
+          type: "budget_warning",
+          title: "⚠️ Budget Alert",
+          message: `"${campaign.stream_title}" has used ${Math.round(newPct)}% of its $${totalBudget.toFixed(0)} budget.`,
+        });
+      }
+
+      // Check if campaign just completed
+      if (totalSpent >= totalBudget) {
+        notifications.push({
+          user_id: campaign.user_id,
+          campaign_id: campaign.id,
+          type: "campaign_completed",
+          title: "🏁 Campaign Completed",
+          message: `"${campaign.stream_title}" has finished — $${totalSpent.toFixed(0)} spent of $${totalBudget.toFixed(0)} budget.`,
+        });
+      }
+
       const computedCtr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
       const computedCpc = totalClicks > 0 ? totalSpent / totalClicks : 0;
       const computedCpa = totalConversions > 0 ? totalSpent / totalConversions : 0;
-      // Simulate ROAS: assume average order value of $25-$45
       const avgOrderValue = 25 + Math.random() * 20;
       const computedRoas = totalSpent > 0 ? (totalConversions * avgOrderValue) / totalSpent : 0;
 
@@ -92,9 +124,20 @@ Deno.serve(async (req) => {
             cpa: Math.round(computedCpa * 100) / 100,
             roas: Math.round(computedRoas * 10) / 10,
             updated_at: new Date().toISOString(),
+            ...(totalSpent >= totalBudget ? { status: "completed" } : {}),
           })
           .eq("id", campaign.id)
       );
+    }
+
+    // Insert notifications
+    if (notifications.length > 0) {
+      const { error: notifError } = await supabase
+        .from("campaign_notifications")
+        .insert(notifications);
+      if (notifError) {
+        console.error("Failed to insert notifications:", notifError);
+      }
     }
 
     const results = await Promise.all(updates);
@@ -104,6 +147,7 @@ Deno.serve(async (req) => {
       JSON.stringify({
         updated: results.length - errors.length,
         errors: errors.length,
+        notifications_sent: notifications.length,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

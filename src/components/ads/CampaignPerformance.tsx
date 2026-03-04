@@ -1,5 +1,4 @@
-import { useState, useEffect, useRef } from "react";
-import { toast } from "@/hooks/use-toast";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   TrendingUp, TrendingDown, Eye, MousePointerClick, ShoppingCart,
@@ -177,32 +176,8 @@ export default function CampaignPerformance({ campaigns = [], onUpdateStatus }: 
   const dbCampaigns = campaigns.map(rowToCampaign);
   const allCampaigns = [...dbCampaigns, ...seedCampaigns];
 
-  // Track which campaigns have already triggered notifications
-  const notifiedRef = useRef<Set<string>>(new Set());
 
-  useEffect(() => {
-    allCampaigns.forEach((c) => {
-      const pct = c.totalBudget > 0 ? (c.spent / c.totalBudget) * 100 : 0;
 
-      // Completed notification
-      if ((c.status === "completed" || pct >= 100) && !notifiedRef.current.has(`${c.id}-done`)) {
-        notifiedRef.current.add(`${c.id}-done`);
-        toast({
-          title: "🏁 Campaign Completed",
-          description: `"${c.name}" has finished — $${c.spent.toFixed(0)} spent of $${c.totalBudget.toFixed(0)} budget.`,
-        });
-      }
-      // 75% warning notification
-      else if (pct >= 75 && !notifiedRef.current.has(`${c.id}-75`)) {
-        notifiedRef.current.add(`${c.id}-75`);
-        toast({
-          title: "⚠️ Budget Alert",
-          description: `"${c.name}" has used ${pct.toFixed(0)}% of its $${c.totalBudget.toFixed(0)} budget.`,
-          variant: "destructive",
-        });
-      }
-    });
-  }, [allCampaigns]);
 
   const activeCampaigns = allCampaigns.filter((c) => c.status === "active");
   const totalSpent = allCampaigns.reduce((s, c) => s + c.spent, 0);
