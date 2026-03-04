@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useApp, tierNames } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
+import { useUnreadMessageCount } from "@/hooks/useCollaborations";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const navItems = [
@@ -16,11 +17,11 @@ const navItems = [
   { label: "Products", icon: Package, path: "/products", desc: "What you sell" },
   { label: "Community", icon: Users, path: "/community", desc: "Your audience" },
   { label: "Affiliates", icon: Share2, path: "/affiliates", desc: "Referral program" },
-  { label: "Collaborate", icon: Handshake, path: "/collaborate", desc: "Co-creator collabs", badge: 3 },
+  { label: "Collaborate", icon: Handshake, path: "/collaborate", desc: "Co-creator collabs", badgeKey: "collaborate" },
   { label: "Leaderboard", icon: Trophy, path: "/leaderboard", desc: "Top creators" },
   { label: "My Rep", icon: UserCheck, path: "/my-rep", desc: "Growth partner", requiresTier: 3 },
   { label: "Settings", icon: Settings, path: "/settings", desc: "Preferences" },
-] as { label: string; icon: React.ElementType; path: string; desc: string; requiresTier?: number; badge?: number }[];
+] as { label: string; icon: React.ElementType; path: string; desc: string; requiresTier?: number; badgeKey?: string }[];
 
 const tierIcons = [Shield, TrendingUp, Zap, Crown];
 const tierColors = [
@@ -47,10 +48,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const { profile } = useApp();
   const { user, signOut } = useAuth();
+  const { data: unreadCount = 0 } = useUnreadMessageCount();
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   
+  const getBadge = (item: typeof navItems[0]) => item.badgeKey === "collaborate" ? unreadCount : 0;
 
   const isRepLocked = profile.tier <= 2;
 
@@ -110,9 +113,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                   {isLocked && !collapsed && (
                     <Lock className="w-2.5 h-2.5 absolute -top-1 -right-1.5 text-warning" />
                   )}
-                  {!isLocked && item.badge && item.badge > 0 && collapsed && (
+                  {!isLocked && getBadge(item) > 0 && collapsed && (
                     <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
-                      {item.badge}
+                      {getBadge(item)}
                     </span>
                   )}
                 </div>
@@ -123,9 +126,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                     {item.label === "My Rep" && !isLocked && (
                       <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                     )}
-                    {!isLocked && item.badge && item.badge > 0 && (
+                    {!isLocked && getBadge(item) > 0 && (
                       <span className="min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1">
-                        {item.badge}
+                        {getBadge(item)}
                       </span>
                     )}
                   </>

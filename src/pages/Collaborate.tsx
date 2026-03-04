@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Handshake, Search, Users, Sparkles, TrendingUp, DollarSign,
   Send, Check, CheckCheck, Clock, ArrowRight, Star, Zap, Eye, X,
-  Package, Percent, Calendar, MessageSquare, Crown, Filter
+  Package, Percent, Calendar, MessageSquare, Crown, Filter, Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import AppLayout from "@/components/layout/AppLayout";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import {
+  useCollaborations,
+  useCreateCollaboration,
+  useChatMessages,
+  useSendMessage,
+  useMarkMessagesRead,
+  DbCollaboration,
+} from "@/hooks/useCollaborations";
+import { formatDistanceToNow } from "date-fns";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface CreatorMatch {
@@ -30,18 +40,7 @@ interface CreatorMatch {
   topProduct: string;
 }
 
-interface Collaboration {
-  id: string;
-  partner: { name: string; avatar: string; niche: string };
-  product: string;
-  status: "pending" | "active" | "completed";
-  split: [number, number];
-  revenue: number;
-  startDate: string;
-  messages: number;
-}
-
-// ── Mock Data ──────────────────────────────────────────────────────────────────
+// ── Mock Data (Discover tab — AI suggestions) ─────────────────────────────────
 const suggestedMatches: CreatorMatch[] = [
   { id: "1", name: "Sarah Chen", avatar: "SC", niche: "Fitness & Nutrition", members: "12.4K", revenue: "$48K/mo", compatibility: 96, tags: ["Wellness", "Coaching", "High-ticket"], bio: "Helping busy professionals transform their health through sustainable habits.", topProduct: "12-Week Body Reboot" },
   { id: "2", name: "Priya Sharma", avatar: "PS", niche: "Language Learning", members: "3.6K", revenue: "$16K/mo", compatibility: 89, tags: ["Education", "Community", "Courses"], bio: "Making language learning fun and accessible through immersive community experiences.", topProduct: "Fluent in 90 Days" },
@@ -51,55 +50,35 @@ const suggestedMatches: CreatorMatch[] = [
   { id: "6", name: "Luna Zhang", avatar: "LZ", niche: "UX Design", members: "4.3K", revenue: "$19K/mo", compatibility: 81, tags: ["Design", "Tech", "Freelance"], bio: "Teaching designers to think strategically and land premium clients.", topProduct: "UX Portfolio Masterclass" },
 ];
 
-const activeCollabs: Collaboration[] = [
-  { id: "c1", partner: { name: "Aisha Patel", avatar: "AP", niche: "Business Strategy" }, product: "Creator Revenue Blueprint", status: "active", split: [50, 50], revenue: 8420, startDate: "2 weeks ago", messages: 14 },
-  { id: "c2", partner: { name: "Jake Morrison", avatar: "JM", niche: "Music Production" }, product: "Sound + Strategy Masterclass", status: "pending", split: [60, 40], revenue: 0, startDate: "3 days ago", messages: 5 },
-  { id: "c3", partner: { name: "Tyler Knox", avatar: "TK", niche: "Strength Training" }, product: "Total Wellness Program", status: "completed", split: [50, 50], revenue: 15200, startDate: "2 months ago", messages: 32 },
-];
-
-interface ChatMessage {
-  id: string;
-  sender: "you" | "partner";
-  text: string;
-  time: string;
-  read?: boolean;
-}
-
-const mockChats: Record<string, ChatMessage[]> = {
-  c1: [
-    { id: "m1", sender: "partner", text: "Hey! Excited to launch the Blueprint together 🚀", time: "2 weeks ago" },
-    { id: "m2", sender: "you", text: "Same here! I've drafted the first 3 modules. Want to review?", time: "2 weeks ago" },
-    { id: "m3", sender: "partner", text: "Absolutely. I'll add the automation section this week.", time: "13 days ago" },
-    { id: "m4", sender: "you", text: "Perfect. Should we do a 50/50 split on the launch promo too?", time: "12 days ago" },
-    { id: "m5", sender: "partner", text: "Yes, let's keep it even. I'll set up the co-branded landing page.", time: "12 days ago" },
-    { id: "m6", sender: "you", text: "Landing page looks amazing! We already have 12 pre-signups.", time: "10 days ago" },
-    { id: "m7", sender: "partner", text: "That's incredible! I shared it with my email list — expecting a wave.", time: "9 days ago" },
-    { id: "m8", sender: "you", text: "47 enrolled now! Revenue dashboard is looking 🔥", time: "3 days ago" },
-    { id: "m9", sender: "partner", text: "Love it! Let's plan a live Q&A for next week to boost engagement.", time: "2 days ago" },
-    { id: "m10", sender: "you", text: "Great idea. Thursday at 3pm work for you?", time: "1 day ago" },
-    { id: "m11", sender: "partner", text: "Thursday works! I'll prep some case studies to share.", time: "5 hours ago" },
-  ],
-  c2: [
-    { id: "m1", sender: "you", text: "Hey Jake! Love your production courses. Want to collab?", time: "3 days ago" },
-    { id: "m2", sender: "partner", text: "I'm in! A sound + strategy combo would be unique.", time: "3 days ago" },
-    { id: "m3", sender: "you", text: "Exactly my thinking. I'll draft a proposal with 60/40 split since I'll handle the strategy modules.", time: "2 days ago" },
-    { id: "m4", sender: "partner", text: "Fair deal. Let me outline the music production modules.", time: "2 days ago" },
-    { id: "m5", sender: "you", text: "Sent the proposal! Check it out when you get a chance 🎵", time: "1 day ago" },
-  ],
-  c3: [
-    { id: "m1", sender: "partner", text: "Great working with you on Total Wellness! Final revenue: $15.2K 🎉", time: "1 month ago" },
-    { id: "m2", sender: "you", text: "What a ride! $7.6K each. Want to do a v2?", time: "1 month ago" },
-    { id: "m3", sender: "partner", text: "Definitely! Let's plan for Q2. Maybe add a nutrition component.", time: "3 weeks ago" },
-  ],
-};
-
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+function getInitials(name: string) {
+  return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
+}
+
+function timeAgo(dateStr: string) {
+  try {
+    return formatDistanceToNow(new Date(dateStr), { addSuffix: true });
+  } catch {
+    return dateStr;
+  }
+}
 
 // ── Component ──────────────────────────────────────────────────────────────────
 export default function Collaborate() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  // DB hooks
+  const { data: collaborations = [], isLoading: collabsLoading } = useCollaborations();
+  const createCollab = useCreateCollaboration();
+  const sendMessage = useSendMessage();
+  const markRead = useMarkMessagesRead();
+
+  // Local state
   const [search, setSearch] = useState("");
   const [nicheFilter, setNicheFilter] = useState("all");
   const [selectedCreator, setSelectedCreator] = useState<CreatorMatch | null>(null);
@@ -108,73 +87,28 @@ export default function Collaborate() {
   const [proposalMessage, setProposalMessage] = useState("");
   const [proposalProduct, setProposalProduct] = useState("");
   const [chatOpen, setChatOpen] = useState<string | null>(null);
-  const [chatMessages, setChatMessages] = useState<Record<string, ChatMessage[]>>(mockChats);
   const [chatInput, setChatInput] = useState("");
-  const [partnerTyping, setPartnerTyping] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
-  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const activeChatCollab = chatOpen ? activeCollabs.find(c => c.id === chatOpen) : null;
+  // Chat messages from DB
+  const { data: chatMessages = [] } = useChatMessages(chatOpen);
 
+  const activeChatCollab = chatOpen ? collaborations.find(c => c.id === chatOpen) : null;
+
+  // Auto-scroll on new messages
   useEffect(() => {
     if (chatOpen) chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatOpen, chatMessages, partnerTyping]);
+  }, [chatOpen, chatMessages]);
 
-  // Mark partner messages as read when chat opens
+  // Mark messages as read when chat opens
   useEffect(() => {
-    if (!chatOpen) return;
-    setChatMessages(prev => {
-      const msgs = prev[chatOpen];
-      if (!msgs) return prev;
-      const updated = msgs.map(m => m.sender === "partner" && !m.read ? { ...m, read: true } : m);
-      return { ...prev, [chatOpen]: updated };
-    });
+    if (chatOpen) markRead.mutate(chatOpen);
   }, [chatOpen]);
 
   const handleSendChat = () => {
     if (!chatInput.trim() || !chatOpen) return;
-    const newMsg: ChatMessage = { id: `m${Date.now()}`, sender: "you", text: chatInput.trim(), time: "Just now", read: false };
-    setChatMessages(prev => ({ ...prev, [chatOpen]: [...(prev[chatOpen] || []), newMsg] }));
+    sendMessage.mutate({ collaborationId: chatOpen, content: chatInput.trim() });
     setChatInput("");
-
-    // Simulate partner reading after 1s, then typing, then reply
-    const currentChatId = chatOpen;
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-
-    // Mark as read after 1s
-    setTimeout(() => {
-      setChatMessages(prev => {
-        const msgs = prev[currentChatId];
-        if (!msgs) return prev;
-        return { ...prev, [currentChatId]: msgs.map(m => ({ ...m, read: true })) };
-      });
-    }, 1000);
-
-    // Partner starts typing after 1.5s
-    typingTimeoutRef.current = setTimeout(() => {
-      setPartnerTyping(true);
-
-      // Partner sends reply after 2-4s of typing
-      const replyDelay = 2000 + Math.random() * 2000;
-      typingTimeoutRef.current = setTimeout(() => {
-        setPartnerTyping(false);
-        const replies = [
-          "That sounds great! Let's make it happen 🙌",
-          "Love this direction. I'll work on it today!",
-          "Agreed! Let me check my calendar and get back to you.",
-          "Perfect — this is going to be huge for both of us!",
-          "Nice! I'll pull some data on this and share my thoughts.",
-        ];
-        const reply: ChatMessage = {
-          id: `m${Date.now()}`,
-          sender: "partner",
-          text: replies[Math.floor(Math.random() * replies.length)],
-          time: "Just now",
-          read: true,
-        };
-        setChatMessages(prev => ({ ...prev, [currentChatId]: [...(prev[currentChatId] || []), reply] }));
-      }, replyDelay);
-    }, 1500);
   };
 
   const filteredMatches = suggestedMatches.filter((c) => {
@@ -184,21 +118,43 @@ export default function Collaborate() {
   });
 
   const handleSendProposal = () => {
-    toast({ title: "Proposal Sent! 🎉", description: `Your collaboration proposal has been sent to ${selectedCreator?.name}. They'll be notified.` });
-    setProposalOpen(false);
-    setSelectedCreator(null);
-    setProposalMessage("");
-    setProposalProduct("");
-    setSplitValue([50]);
+    if (!selectedCreator) return;
+    createCollab.mutate(
+      {
+        partner_name: selectedCreator.name,
+        title: proposalProduct || `Collab with ${selectedCreator.name}`,
+        description: proposalMessage || undefined,
+        revenue_split: splitValue[0],
+      },
+      {
+        onSuccess: () => {
+          toast({ title: "Proposal Sent! 🎉", description: `Your collaboration proposal has been sent to ${selectedCreator.name}. They'll be notified.` });
+          setProposalOpen(false);
+          setSelectedCreator(null);
+          setProposalMessage("");
+          setProposalProduct("");
+          setSplitValue([50]);
+        },
+        onError: (err) => {
+          toast({ title: "Error", description: err.message, variant: "destructive" });
+        },
+      }
+    );
   };
 
-  const statusColors = {
+  const statusColors: Record<string, string> = {
     pending: "bg-warning/10 text-warning border-warning/20",
     active: "bg-primary/10 text-primary border-primary/20",
     completed: "bg-muted text-muted-foreground border-border",
   };
 
-  const statusIcons = { pending: Clock, active: Zap, completed: Check };
+  const statusIcons: Record<string, React.ElementType> = { pending: Clock, active: Zap, completed: Check };
+
+  // Count messages per collaboration (from loaded chat or show 0)
+  const getMessageCount = (collabId: string) => {
+    if (chatOpen === collabId) return chatMessages.length;
+    return 0; // Will show actual count when chat is opened
+  };
 
   return (
     <AppLayout>
@@ -219,9 +175,9 @@ export default function Collaborate() {
         {/* Stats Bar */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: "Active Collabs", value: "1", icon: Handshake, color: "text-primary" },
-            { label: "Joint Revenue", value: "$8,420", icon: DollarSign, color: "text-primary" },
-            { label: "Audience Reach", value: "18.6K", icon: Users, color: "text-primary" },
+            { label: "Active Collabs", value: String(collaborations.filter(c => c.status === "active").length), icon: Handshake, color: "text-primary" },
+            { label: "Total Collabs", value: String(collaborations.length), icon: Users, color: "text-primary" },
+            { label: "Pending", value: String(collaborations.filter(c => c.status === "pending").length), icon: Clock, color: "text-primary" },
             { label: "Avg Compatibility", value: "87%", icon: Sparkles, color: "text-primary" },
           ].map((stat) => (
             <div key={stat.label} className="glass-card p-4 flex items-center gap-3">
@@ -256,7 +212,7 @@ export default function Collaborate() {
                 <p className="text-xs text-muted-foreground mt-0.5">We analyze audience overlap, niche compatibility, and revenue potential to find your ideal co-creator partner.</p>
               </div>
               <Badge variant="secondary" className="bg-primary/10 text-primary border-0 text-xs">
-                6 matches found
+                {filteredMatches.length} matches found
               </Badge>
             </motion.div>
 
@@ -330,49 +286,58 @@ export default function Collaborate() {
 
           {/* ── My Collabs Tab ──────────────────────────────────────────────── */}
           <TabsContent value="collaborations" className="space-y-4">
-            <motion.div variants={container} initial="hidden" animate="show" className="space-y-3">
-              {activeCollabs.map((collab) => {
-                const StatusIcon = statusIcons[collab.status];
-                return (
-                  <motion.div key={collab.id} variants={item} className="glass-card p-5">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="w-11 h-11 rounded-full bg-muted flex items-center justify-center text-sm font-bold text-muted-foreground flex-shrink-0">
-                          {collab.partner.avatar}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <p className="font-semibold truncate">{collab.product}</p>
-                            <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${statusColors[collab.status]}`}>
-                              <StatusIcon className="w-3 h-3" />
-                              {collab.status.charAt(0).toUpperCase() + collab.status.slice(1)}
-                            </span>
+            {collabsLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            ) : collaborations.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <Handshake className="w-8 h-8 mx-auto mb-3 opacity-40" />
+                <p className="font-medium">No collaborations yet</p>
+                <p className="text-sm mt-1">Discover creators and send a proposal to get started!</p>
+              </div>
+            ) : (
+              <motion.div variants={container} initial="hidden" animate="show" className="space-y-3">
+                {collaborations.map((collab) => {
+                  const StatusIcon = statusIcons[collab.status] || Clock;
+                  const split = collab.revenue_split;
+                  return (
+                    <motion.div key={collab.id} variants={item} className="glass-card p-5">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className="w-11 h-11 rounded-full bg-muted flex items-center justify-center text-sm font-bold text-muted-foreground flex-shrink-0">
+                            {getInitials(collab.partner_name)}
                           </div>
-                          <p className="text-xs text-muted-foreground">with {collab.partner.name} · {collab.partner.niche}</p>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="font-semibold truncate">{collab.title}</p>
+                              <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${statusColors[collab.status] || statusColors.pending}`}>
+                                <StatusIcon className="w-3 h-3" />
+                                {collab.status.charAt(0).toUpperCase() + collab.status.slice(1)}
+                              </span>
+                            </div>
+                            <p className="text-xs text-muted-foreground">with {collab.partner_name} · {timeAgo(collab.created_at)}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-6 sm:gap-8">
+                          <div className="text-center">
+                            <p className="text-xs text-muted-foreground">Split</p>
+                            <p className="text-sm font-bold">{split}/{100 - split}</p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-xs text-muted-foreground">Type</p>
+                            <p className="text-sm font-bold capitalize">{collab.type.replace("-", " ")}</p>
+                          </div>
+                          <Button variant="ghost" size="sm" className="gap-1 text-xs" onClick={() => setChatOpen(collab.id)}>
+                            <MessageSquare className="w-3.5 h-3.5" /> Chat
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-6 sm:gap-8">
-                        <div className="text-center">
-                          <p className="text-xs text-muted-foreground">Split</p>
-                          <p className="text-sm font-bold">{collab.split[0]}/{collab.split[1]}</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-xs text-muted-foreground">Revenue</p>
-                          <p className="text-sm font-bold text-primary">${collab.revenue.toLocaleString()}</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-xs text-muted-foreground">Your Share</p>
-                          <p className="text-sm font-bold">${Math.round(collab.revenue * collab.split[0] / 100).toLocaleString()}</p>
-                        </div>
-                        <Button variant="ghost" size="sm" className="gap-1 text-xs" onClick={() => setChatOpen(collab.id)}>
-                          <MessageSquare className="w-3.5 h-3.5" /> {collab.messages}
-                        </Button>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </motion.div>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+            )}
           </TabsContent>
 
           {/* ── Joint Products Tab ──────────────────────────────────────────── */}
@@ -405,32 +370,24 @@ export default function Collaborate() {
               </Button>
             </motion.div>
 
-            {/* Existing joint product */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass-card p-5">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <div className="flex items-center -space-x-2">
-                  <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold ring-2 ring-background z-10">You</div>
-                  <div className="w-10 h-10 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-bold ring-2 ring-background">AP</div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold">Creator Revenue Blueprint</p>
-                  <p className="text-xs text-muted-foreground">You + Aisha Patel · 50/50 split</p>
-                </div>
-                <div className="flex items-center gap-4 text-sm">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Total Sales</p>
-                    <p className="font-bold">47</p>
+            {/* Active collabs as joint products */}
+            {collaborations.filter(c => c.status === "active").map((collab) => (
+              <motion.div key={collab.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass-card p-5">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="flex items-center -space-x-2">
+                    <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold ring-2 ring-background z-10">You</div>
+                    <div className="w-10 h-10 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-bold ring-2 ring-background">{getInitials(collab.partner_name)}</div>
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Revenue</p>
-                    <p className="font-bold text-primary">$8,420</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold">{collab.title}</p>
+                    <p className="text-xs text-muted-foreground">You + {collab.partner_name} · {collab.revenue_split}/{100 - collab.revenue_split} split</p>
                   </div>
                   <Button variant="outline" size="sm" className="gap-1" onClick={() => navigate("/collaborate/product")}>
                     <Eye className="w-3.5 h-3.5" /> View Page
                   </Button>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            ))}
           </TabsContent>
         </Tabs>
       </div>
@@ -505,7 +462,6 @@ export default function Collaborate() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-5 mt-2">
-            {/* Joint Product Name */}
             <div>
               <label className="text-sm font-medium mb-1.5 block">Joint Product Name</label>
               <Input
@@ -514,8 +470,6 @@ export default function Collaborate() {
                 onChange={(e) => setProposalProduct(e.target.value)}
               />
             </div>
-
-            {/* Revenue Split */}
             <div>
               <label className="text-sm font-medium mb-1.5 block">Revenue Split</label>
               <div className="glass-card p-4">
@@ -532,22 +486,13 @@ export default function Collaborate() {
                     </div>
                   </div>
                 </div>
-                <Slider
-                  value={splitValue}
-                  onValueChange={setSplitValue}
-                  min={10}
-                  max={90}
-                  step={5}
-                  className="w-full"
-                />
+                <Slider value={splitValue} onValueChange={setSplitValue} min={10} max={90} step={5} className="w-full" />
                 <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
                   <span>You get more</span>
                   <span>They get more</span>
                 </div>
               </div>
             </div>
-
-            {/* Message */}
             <div>
               <label className="text-sm font-medium mb-1.5 block">Your Pitch</label>
               <Textarea
@@ -557,11 +502,16 @@ export default function Collaborate() {
                 rows={3}
               />
             </div>
-
             <div className="flex gap-3">
               <Button variant="outline" className="flex-1" onClick={() => setProposalOpen(false)}>Cancel</Button>
-              <Button variant="hero" className="flex-1 gap-2" onClick={handleSendProposal}>
-                <Send className="w-4 h-4" /> Send Proposal
+              <Button
+                variant="hero"
+                className="flex-1 gap-2"
+                onClick={handleSendProposal}
+                disabled={createCollab.isPending}
+              >
+                {createCollab.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                Send Proposal
               </Button>
             </div>
           </div>
@@ -572,7 +522,6 @@ export default function Collaborate() {
       <AnimatePresence>
         {chatOpen && activeChatCollab && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -580,7 +529,6 @@ export default function Collaborate() {
               className="fixed inset-0 bg-background/60 backdrop-blur-sm z-50"
               onClick={() => setChatOpen(null)}
             />
-            {/* Panel */}
             <motion.div
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
@@ -591,81 +539,54 @@ export default function Collaborate() {
               {/* Chat Header */}
               <div className="flex items-center gap-3 p-4 border-b border-border flex-shrink-0">
                 <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-sm font-bold text-muted-foreground">
-                  {activeChatCollab.partner.avatar}
+                  {getInitials(activeChatCollab.partner_name)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm truncate">{activeChatCollab.partner.name}</p>
-                  <p className="text-[11px] text-muted-foreground">{activeChatCollab.product}</p>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                  <span className="text-[10px] text-muted-foreground">Online</span>
+                  <p className="font-semibold text-sm truncate">{activeChatCollab.partner_name}</p>
+                  <p className="text-[11px] text-muted-foreground">{activeChatCollab.title}</p>
                 </div>
                 <button onClick={() => setChatOpen(null)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground ml-1">
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-               {/* Messages */}
+              {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                {(chatMessages[chatOpen] || []).map((msg) => (
-                  <motion.div
-                    key={msg.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`flex ${msg.sender === "you" ? "justify-end" : "justify-start"}`}
-                  >
-                    <div className={`max-w-[80%] px-3.5 py-2.5 rounded-2xl text-sm ${
-                      msg.sender === "you"
-                        ? "bg-primary text-primary-foreground rounded-br-md"
-                        : "bg-secondary text-foreground rounded-bl-md"
-                    }`}>
-                      <p>{msg.text}</p>
-                      <div className={`flex items-center gap-1 mt-1 ${
-                        msg.sender === "you" ? "justify-end" : ""
-                      }`}>
-                        <span className={`text-[10px] ${
-                          msg.sender === "you" ? "text-primary-foreground/60" : "text-muted-foreground"
-                        }`}>{msg.time}</span>
-                        {msg.sender === "you" && (
-                          msg.read
-                            ? <CheckCheck className="w-3 h-3 text-primary-foreground/80" />
-                            : <Check className="w-3 h-3 text-primary-foreground/40" />
-                        )}
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-
-                {/* Typing Indicator */}
-                <AnimatePresence>
-                  {partnerTyping && (
+                {chatMessages.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <MessageSquare className="w-6 h-6 mx-auto mb-2 opacity-40" />
+                    <p className="text-sm">No messages yet. Say hello!</p>
+                  </div>
+                )}
+                {chatMessages.map((msg) => {
+                  const isYou = msg.sender_id === user?.id;
+                  return (
                     <motion.div
+                      key={msg.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 5 }}
-                      className="flex justify-start"
+                      className={`flex ${isYou ? "justify-end" : "justify-start"}`}
                     >
-                      <div className="bg-secondary rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-1">
-                        <motion.span
-                          animate={{ opacity: [0.3, 1, 0.3] }}
-                          transition={{ duration: 1.2, repeat: Infinity, delay: 0 }}
-                          className="w-1.5 h-1.5 rounded-full bg-muted-foreground"
-                        />
-                        <motion.span
-                          animate={{ opacity: [0.3, 1, 0.3] }}
-                          transition={{ duration: 1.2, repeat: Infinity, delay: 0.2 }}
-                          className="w-1.5 h-1.5 rounded-full bg-muted-foreground"
-                        />
-                        <motion.span
-                          animate={{ opacity: [0.3, 1, 0.3] }}
-                          transition={{ duration: 1.2, repeat: Infinity, delay: 0.4 }}
-                          className="w-1.5 h-1.5 rounded-full bg-muted-foreground"
-                        />
+                      <div className={`max-w-[80%] px-3.5 py-2.5 rounded-2xl text-sm ${
+                        isYou
+                          ? "bg-primary text-primary-foreground rounded-br-md"
+                          : "bg-secondary text-foreground rounded-bl-md"
+                      }`}>
+                        <p>{msg.content}</p>
+                        <div className={`flex items-center gap-1 mt-1 ${isYou ? "justify-end" : ""}`}>
+                          <span className={`text-[10px] ${
+                            isYou ? "text-primary-foreground/60" : "text-muted-foreground"
+                          }`}>{timeAgo(msg.created_at)}</span>
+                          {isYou && (
+                            msg.read
+                              ? <CheckCheck className="w-3 h-3 text-primary-foreground/80" />
+                              : <Check className="w-3 h-3 text-primary-foreground/40" />
+                          )}
+                        </div>
                       </div>
                     </motion.div>
-                  )}
-                </AnimatePresence>
+                  );
+                })}
                 <div ref={chatEndRef} />
               </div>
 
@@ -683,13 +604,13 @@ export default function Collaborate() {
                     variant="hero"
                     size="sm"
                     onClick={handleSendChat}
-                    disabled={!chatInput.trim()}
+                    disabled={!chatInput.trim() || sendMessage.isPending}
                     className="px-3"
                   >
-                    <Send className="w-4 h-4" />
+                    {sendMessage.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   </Button>
                 </div>
-                <p className="text-[10px] text-muted-foreground mt-1.5 text-center">Messages are shared between you and your co-creator</p>
+                <p className="text-[10px] text-muted-foreground mt-1.5 text-center">Messages are persisted and synced in real-time</p>
               </div>
             </motion.div>
           </>
