@@ -341,8 +341,8 @@ export default function Landing() {
             transition={{ delay: 0.5, duration: 0.6 }}
             className="text-center mt-12"
           >
-            <Button variant="hero" size="lg" onClick={() => navigate("/onboarding")} className="gap-2">
-              Start Your Journey <ArrowRight className="w-4 h-4" />
+            <Button variant="hero" size="lg" onClick={() => navigate("/leaderboard")} className="gap-2">
+              View Full Leaderboard <ArrowRight className="w-4 h-4" />
             </Button>
             <p className="text-xs text-muted-foreground mt-3">Join 2,400+ creators already growing on PLATFORM</p>
           </motion.div>
