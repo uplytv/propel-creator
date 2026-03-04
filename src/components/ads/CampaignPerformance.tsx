@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
+import { format, subDays, isAfter, isBefore, startOfDay, endOfDay } from "date-fns";
 import {
   TrendingUp, TrendingDown, Eye, MousePointerClick, ShoppingCart,
-  DollarSign, BarChart3, Pause, Play, MoreHorizontal, ArrowUpRight, Sparkles, Trash2, Download, Copy
+  DollarSign, BarChart3, Pause, Play, MoreHorizontal, ArrowUpRight, Sparkles, Trash2, Download, Copy, CalendarIcon, X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -13,6 +16,7 @@ import {
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from "recharts";
+import { cn } from "@/lib/utils";
 import type { CampaignRow } from "@/hooks/useCampaigns";
 import { useCampaignMetrics } from "@/hooks/useCampaignMetrics";
 
@@ -38,6 +42,7 @@ export interface Campaign {
   trend: "up" | "down" | "flat";
   sparkline: { day: string; imp: number; clicks: number; conv: number }[];
   isNew?: boolean;
+  _createdAt: Date;
 }
 
 /* ─────── seed data ─────── */
@@ -61,6 +66,7 @@ const seedCampaigns: Campaign[] = [
     startDate: "Feb 26",
     endDate: "Mar 4",
     trend: "up",
+    _createdAt: new Date(2026, 1, 26),
     sparkline: [
       { day: "Mon", imp: 2100, clicks: 82, conv: 3 },
       { day: "Tue", imp: 2400, clicks: 96, conv: 5 },
@@ -90,6 +96,7 @@ const seedCampaigns: Campaign[] = [
     startDate: "Feb 20",
     endDate: "Mar 6",
     trend: "up",
+    _createdAt: new Date(2026, 1, 20),
     sparkline: [
       { day: "Mon", imp: 5200, clicks: 158, conv: 7 },
       { day: "Tue", imp: 5800, clicks: 176, conv: 9 },
@@ -119,6 +126,7 @@ const seedCampaigns: Campaign[] = [
     startDate: "Feb 18",
     endDate: "Mar 3",
     trend: "down",
+    _createdAt: new Date(2026, 1, 18),
     sparkline: [
       { day: "Mon", imp: 5100, clicks: 68, conv: 2 },
       { day: "Tue", imp: 4800, clicks: 62, conv: 1 },
@@ -161,6 +169,7 @@ function rowToCampaign(row: CampaignRow): Campaign {
     trend: row.impressions > 0 ? "up" : "flat",
     sparkline: [],
     isNew: isRecent,
+    _createdAt: created,
   };
 }
 
@@ -180,12 +189,22 @@ interface CampaignPerformanceProps {
 
 export default function CampaignPerformance({ campaigns = [], onUpdateStatus, onDelete, onDuplicate }: CampaignPerformanceProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
+  const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
 
   const dbCampaigns = campaigns.map(rowToCampaign);
-  const allCampaigns = [...dbCampaigns, ...seedCampaigns];
+  const allCampaignsRaw = [...dbCampaigns, ...seedCampaigns];
 
+  const allCampaigns = useMemo(() => {
+    if (!dateFrom && !dateTo) return allCampaignsRaw;
+    return allCampaignsRaw.filter((c) => {
+      if (dateFrom && isBefore(c._createdAt, startOfDay(dateFrom))) return false;
+      if (dateTo && isAfter(c._createdAt, endOfDay(dateTo))) return false;
+      return true;
+    });
+  }, [allCampaignsRaw, dateFrom, dateTo]);
 
-
+  const hasDateFilter = !!dateFrom || !!dateTo;
 
   const activeCampaigns = allCampaigns.filter((c) => c.status === "active");
   const totalSpent = allCampaigns.reduce((s, c) => s + c.spent, 0);
@@ -203,6 +222,12 @@ export default function CampaignPerformance({ campaigns = [], onUpdateStatus, on
     downloadCsv([headers, ...rows], "all-campaigns.csv");
   }
 
+  const presetRanges = [
+    { label: "7d", from: subDays(new Date(), 7) },
+    { label: "14d", from: subDays(new Date(), 14) },
+    { label: "30d", from: subDays(new Date(), 30) },
+  ];
+
   const summaryCards = [
     { label: "Total Spend", value: `$${totalSpent.toFixed(0)}`, icon: DollarSign, color: "text-primary" },
     { label: "Impressions", value: fmt(totalImpressions), icon: Eye, color: "text-blue-400" },
@@ -213,10 +238,70 @@ export default function CampaignPerformance({ campaigns = [], onUpdateStatus, on
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
       {/* Section header */}
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex flex-wrap items-center gap-2 mb-4">
         <BarChart3 className="w-5 h-5 text-primary" />
         <h2 className="text-lg font-bold">Campaign Performance</h2>
         <span className="ml-auto text-xs text-muted-foreground">{activeCampaigns.length} active · {allCampaigns.length} total</span>
+
+        {/* Date range filter */}
+        <div className="flex items-center gap-1.5">
+          {presetRanges.map((p) => (
+            <Button
+              key={p.label}
+              variant={dateFrom?.getTime() === startOfDay(p.from).getTime() && !dateTo ? "default" : "outline"}
+              size="sm"
+              className="h-8 px-2.5 text-xs"
+              onClick={() => {
+                if (dateFrom?.getTime() === startOfDay(p.from).getTime() && !dateTo) {
+                  setDateFrom(undefined);
+                } else {
+                  setDateFrom(startOfDay(p.from));
+                  setDateTo(undefined);
+                }
+              }}
+            >
+              {p.label}
+            </Button>
+          ))}
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className={cn("h-8 px-2.5 text-xs gap-1.5", hasDateFilter && "border-primary/50")}>
+                <CalendarIcon className="w-3.5 h-3.5" />
+                {dateFrom && dateTo
+                  ? `${format(dateFrom, "MMM d")} – ${format(dateTo, "MMM d")}`
+                  : dateFrom
+                  ? `From ${format(dateFrom, "MMM d")}`
+                  : "Custom"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                mode="range"
+                selected={{ from: dateFrom, to: dateTo }}
+                onSelect={(range) => {
+                  setDateFrom(range?.from);
+                  setDateTo(range?.to);
+                }}
+                numberOfMonths={1}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
+
+          {hasDateFilter && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}
+            >
+              <X className="w-3.5 h-3.5" />
+            </Button>
+          )}
+        </div>
+
         <Button variant="outline" size="sm" className="flex items-center gap-1.5" onClick={exportAllCsv}>
           <Download className="w-3.5 h-3.5" /> Export CSV
         </Button>
