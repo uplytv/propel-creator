@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Briefcase, Clock, Users, DollarSign, Star, Send, Loader2,
-  CheckCircle, Eye, Award, User
+  CheckCircle, Eye, Award, User, MessageSquare
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useJobs, useJobApplications, useApplyToJob, useUpdateApplicationStatus, SKILL_LABELS } from "@/hooks/useJobs";
+import { useStartConversation } from "@/hooks/useJobMessages";
 import { useAuth } from "@/context/AuthContext";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
@@ -34,6 +35,9 @@ export default function JobDetail() {
   const { data: applications = [] } = useJobApplications(id);
   const applyMutation = useApplyToJob();
   const updateStatus = useUpdateApplicationStatus();
+  const startConversation = useStartConversation();
+  const [messageText, setMessageText] = useState("");
+  const [showMessageForm, setShowMessageForm] = useState<string | null>(null);
 
   const job = allJobs.find((j) => j.id === id);
   const isCreator = job?.creator_id === user?.id;
@@ -127,12 +131,41 @@ export default function JobDetail() {
             <span className="flex items-center gap-1"><Users className="w-4 h-4" /> {job.applicant_count} applicants</span>
           </div>
 
-          {/* Apply Button */}
-          {!isCreator && !hasApplied && (
-            <Button onClick={() => setShowApply(!showApply)} className="w-full gap-1.5">
-              <Send className="w-4 h-4" /> Apply Now
-            </Button>
-          )}
+          {/* Action Buttons */}
+          <div className="flex gap-3">
+            {!isCreator && !hasApplied && (
+              <Button onClick={() => setShowApply(!showApply)} className="flex-1 gap-1.5">
+                <Send className="w-4 h-4" /> Apply Now
+              </Button>
+            )}
+            {!isCreator && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const msg = prompt("Send a message to the creator:");
+                  if (msg && msg.trim()) {
+                    startConversation.mutate({
+                      jobId: job.id,
+                      creatorId: job.creator_id,
+                      applicantId: user!.id,
+                      initialMessage: msg.trim(),
+                    }, {
+                      onSuccess: (convId) => navigate(`/job-messages?conv=${convId}`),
+                    });
+                  }
+                }}
+                disabled={startConversation.isPending}
+                className="gap-1.5"
+              >
+                <MessageSquare className="w-4 h-4" /> Message
+              </Button>
+            )}
+            {isCreator && (
+              <Button variant="outline" onClick={() => navigate("/job-messages")} className="gap-1.5">
+                <MessageSquare className="w-4 h-4" /> View Messages
+              </Button>
+            )}
+          </div>
           {hasApplied && (
             <div className="flex items-center gap-2 text-sm text-primary">
               <CheckCircle className="w-4 h-4" /> You've already applied to this job
@@ -260,7 +293,7 @@ export default function JobDetail() {
                           </div>
                         )}
 
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap">
                           {app.status === "pending" && (
                             <>
                               <Button
@@ -289,7 +322,55 @@ export default function JobDetail() {
                               <CheckCircle className="w-3 h-3" /> Hire
                             </Button>
                           )}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              if (showMessageForm === app.id) {
+                                setShowMessageForm(null);
+                              } else {
+                                setShowMessageForm(app.id);
+                                setMessageText("");
+                              }
+                            }}
+                            className="text-xs gap-1"
+                          >
+                            <MessageSquare className="w-3 h-3" /> Message
+                          </Button>
                         </div>
+
+                        {/* Inline message form */}
+                        {showMessageForm === app.id && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            className="flex gap-2 mt-2"
+                          >
+                            <Input
+                              placeholder="Type a message..."
+                              value={messageText}
+                              onChange={(e) => setMessageText(e.target.value)}
+                              className="flex-1 text-xs"
+                            />
+                            <Button
+                              size="sm"
+                              disabled={!messageText.trim() || startConversation.isPending}
+                              onClick={() => {
+                                startConversation.mutate({
+                                  jobId: job.id,
+                                  creatorId: job.creator_id,
+                                  applicantId: app.applicant_id,
+                                  initialMessage: messageText.trim(),
+                                }, {
+                                  onSuccess: (convId) => navigate(`/job-messages?conv=${convId}`),
+                                });
+                              }}
+                              className="text-xs gap-1"
+                            >
+                              <Send className="w-3 h-3" /> Send
+                            </Button>
+                          </motion.div>
+                        )}
                       </div>
                     ))}
                 </TabsContent>
