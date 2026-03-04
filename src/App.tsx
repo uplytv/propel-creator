@@ -16,6 +16,7 @@ import Grow from "./pages/Grow";
 import Affiliates from "./pages/Affiliates";
 import Settings from "./pages/Settings";
 import Leaderboard from "./pages/Leaderboard";
+import Collaborate from "./pages/Collaborate";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
               <Route path="/products" element={<Products />} />
               <Route path="/community" element={<Community />} />
               <Route path="/affiliates" element={<Affiliates />} />
+              <Route path="/collaborate" element={<Collaborate />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/my-rep" element={<MyRep />} />
               <Route path="*" element={<NotFound />} />

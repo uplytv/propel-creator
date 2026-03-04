@@ -1,6 +1,8 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Rocket, Target, TrendingUp, Zap, CheckCircle2, Circle, Clock, Flame, Trophy, Star, Sparkles } from "lucide-react";
+import { Rocket, Target, TrendingUp, Zap, CheckCircle2, Circle, Clock, Flame, Trophy, Star, Sparkles, Handshake, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
 
 interface ProtocolTask {
@@ -92,6 +94,7 @@ function getStreakLabel(streak: number): string {
 }
 
 export default function Grow() {
+  const navigate = useNavigate();
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   const [expandedWeek, setExpandedWeek] = useState<number>(1);
 
@@ -302,6 +305,42 @@ export default function Grow() {
             );
           })}
         </div>
+
+        {/* Co-Creator Collaboration CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="glass-card p-6 glow-border mt-8"
+        >
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Handshake className="w-6 h-6 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-bold text-lg">Ready to grow faster? Find a Co-Creator</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Combine audiences with a complementary creator. Launch a joint product and split revenue automatically — nobody else offers this.
+              </p>
+              <div className="flex items-center gap-4 mt-2">
+                {[
+                  { avatar: "SC", name: "Sarah Chen" },
+                  { avatar: "ML", name: "Mei Lin" },
+                  { avatar: "PS", name: "Priya Sharma" },
+                ].map((c) => (
+                  <div key={c.avatar} className="flex items-center gap-1.5">
+                    <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-[9px] font-bold text-muted-foreground">{c.avatar}</div>
+                    <span className="text-xs text-muted-foreground hidden sm:inline">{c.name}</span>
+                  </div>
+                ))}
+                <span className="text-xs text-primary font-medium">+3 more matches</span>
+              </div>
+            </div>
+            <Button variant="hero" className="gap-2 flex-shrink-0" onClick={() => navigate("/collaborate")}>
+              Explore Matches <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </motion.div>
       </div>
     </AppLayout>
   );
