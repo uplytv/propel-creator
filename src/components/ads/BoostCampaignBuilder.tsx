@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Rocket, Target, DollarSign, Clock, Users, Sparkles, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import AIAudienceSuggestions, { type AISuggestion } from "./AIAudienceSuggestions";
 
 export interface LaunchedCampaign {
   streamTitle: string;
@@ -222,6 +223,16 @@ export default function BoostCampaignBuilder({ isOpen, onClose, streamTitle, cre
                       {/* Step 2: Audience */}
                       {step === 2 && (
                         <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                          <AIAudienceSuggestions
+                            objective={objective}
+                            budget={budget}
+                            duration={duration}
+                            onApplySuggestion={(suggestion: AISuggestion) => {
+                              if (suggestion.audienceId) setAudience(suggestion.audienceId);
+                              if (suggestion.budgetRecommendation) setBudget(suggestion.budgetRecommendation);
+                              if (suggestion.durationRecommendation) setDuration(suggestion.durationRecommendation);
+                            }}
+                          />
                           <h3 className="text-sm font-semibold mb-3">Target Audience</h3>
                           <div className="space-y-2">
                             {audiences.map((aud) => (
