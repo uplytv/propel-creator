@@ -228,7 +228,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary" />
               </button>
               <div className="hidden md:block w-px h-6 bg-border" />
-              <div ref={profileRef} className="relative hidden md:block">
+              <div ref={profileRef} className="relative">
                 <button
                   onClick={(e) => { e.stopPropagation(); setProfileOpen(!profileOpen); }}
                   className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-secondary transition-colors cursor-pointer"
