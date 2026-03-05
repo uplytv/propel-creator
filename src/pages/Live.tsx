@@ -17,12 +17,12 @@ export default function Live() {
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-3">
-            <span
-              className="text-xl font-bold tracking-tight text-foreground cursor-pointer hover:text-primary transition-colors"
+            <img
+              src="/logo.png"
+              alt="Uply"
+              className="h-7 cursor-pointer hover:opacity-80 transition-opacity"
               onClick={() => navigate("/")}
-            >
-              Uply
-            </span>
+            />
             <span className="text-border">|</span>
             <div className="flex items-center gap-1.5 text-primary">
               <Radio className="w-4 h-4" />

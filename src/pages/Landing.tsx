@@ -106,7 +106,7 @@ export default function Landing() {
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container flex h-16 items-center justify-between">
-          <span className="text-xl font-bold tracking-tight text-foreground">Uply</span>
+          <img src="/logo.png" alt="Uply" className="h-8" />
           <div className="hidden md:flex items-center gap-8">
             <button onClick={() => navigate("/live")} className="text-sm text-primary font-semibold hover:text-primary/80 transition-colors flex items-center gap-1.5">
               <Radio className="w-3.5 h-3.5" />
@@ -513,7 +513,7 @@ export default function Landing() {
         <div className="container">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div>
-              <span className="text-xl font-bold">Uply</span>
+              <img src="/logo.png" alt="Uply" className="h-8" />
               <p className="text-sm text-muted-foreground mt-1">Built for creators who are serious about growth.</p>
             </div>
             <div className="flex gap-8 text-sm text-muted-foreground">
