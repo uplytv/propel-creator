@@ -26,6 +26,7 @@ export default function Settings() {
   const { toast } = useToast();
   const { prefs: campaignPrefs, updatePrefs } = useNotificationPreferences();
   const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
+  const [soundEnabled, setSoundEnabled] = useState(() => localStorage.getItem("notif_sound_enabled") !== "false");
 
   // Profile state
   const [name, setName] = useState(profile.name);
@@ -270,8 +271,9 @@ export default function Settings() {
                   <p className="text-xs text-muted-foreground mt-0.5">Play a sound when a new notification arrives</p>
                 </div>
                 <Switch
-                  checked={localStorage.getItem("notif_sound_enabled") !== "false"}
+                  checked={soundEnabled}
                   onCheckedChange={(checked) => {
+                    setSoundEnabled(checked);
                     localStorage.setItem("notif_sound_enabled", String(checked));
                     toast({ title: checked ? "Sound enabled" : "Sound disabled" });
                   }}
