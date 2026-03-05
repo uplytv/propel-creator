@@ -126,27 +126,33 @@ export function useNotifications() {
 
   const markReadMutation = useMutation({
     mutationFn: async ({ id, source }: { id: string; source: "campaign" | "job" }) => {
-      if (source === "campaign") {
-        const { error } = await supabase
-          .from("campaign_notifications")
-          .update({ read: true })
-          .eq("id", id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from("job_notifications")
-          .update({ read: true })
-          .eq("id", id);
-        if (error) throw error;
-      }
+      const table = source === "campaign" ? "campaign_notifications" : "job_notifications";
+      const { error } = await supabase.from(table).update({ read: true }).eq("id", id);
+      if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["all-notifications", user?.id] });
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["all-notifications", user?.id] }),
+    onError: (err: any) => { console.error("Mark read error:", err); toast.error("Failed to mark notification as read"); },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async ({ id, source }: { id: string; source: "campaign" | "job" }) => {
+      const table = source === "campaign" ? "campaign_notifications" : "job_notifications";
+      const { error } = await supabase.from(table).delete().eq("id", id);
+      if (error) throw error;
     },
-    onError: (err: any) => {
-      console.error("Mark read error:", err);
-      toast.error("Failed to mark notification as read");
+    onMutate: async ({ id }) => {
+      await queryClient.cancelQueries({ queryKey: ["all-notifications", user?.id] });
+      const prev = queryClient.getQueryData<AppNotification[]>(["all-notifications", user?.id]);
+      queryClient.setQueryData<AppNotification[]>(["all-notifications", user?.id], (old) =>
+        (old ?? []).filter((n) => n.id !== id)
+      );
+      return { prev };
     },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(["all-notifications", user?.id], ctx.prev);
+      toast.error("Failed to delete notification");
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["all-notifications", user?.id] }),
   });
 
   const markAllReadMutation = useMutation({
@@ -185,5 +191,6 @@ export function useNotifications() {
     isLoading: query.isLoading,
     markRead: (id: string, source: "campaign" | "job" = "campaign") => markReadMutation.mutateAsync({ id, source }),
     markAllRead: markAllReadMutation.mutateAsync,
+    deleteNotification: (id: string, source: "campaign" | "job" = "campaign") => deleteMutation.mutateAsync({ id, source }),
   };
 }
