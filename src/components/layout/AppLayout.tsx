@@ -113,7 +113,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               <button
                 key={item.label}
                 onClick={() => !isLocked && navigate(item.path)}
-                className={`w-full flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-200 group relative ${
+                className={`w-full flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-200 group relative nav-item-hover ${
                   collapsed ? "px-0 py-2.5 justify-center" : "px-3 py-2.5"
                 } ${
                   isLocked
@@ -123,7 +123,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
                 }`}
               >
-                <div className="relative flex-shrink-0">
+                <div className="relative flex-shrink-0 transition-transform duration-200 group-hover:scale-110">
                   <item.icon className="w-[18px] h-[18px]" />
                   {isLocked && !collapsed && (
                     <Lock className="w-2.5 h-2.5 absolute -top-1 -right-1.5 text-warning" />
@@ -318,22 +318,22 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               <button
                 key={item.label}
                 onClick={() => !isLocked && navigate(item.path)}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all relative ${
+                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all relative tab-press ${
                   isLocked
                     ? "text-muted-foreground/25"
                     : isActive
                     ? "text-primary"
-                    : "text-muted-foreground active:scale-90"
+                    : "text-muted-foreground"
                 }`}
               >
                 <div className="relative">
-                  <item.icon className={`w-5 h-5 transition-all ${isActive ? "scale-110" : ""}`} />
+                  <item.icon className={`w-5 h-5 transition-all duration-300 ${isActive ? "scale-110" : ""}`} />
                   {isLocked && <Lock className="w-2 h-2 text-warning absolute -top-0.5 -right-1" />}
                   {item.label === "My Rep" && !isLocked && (
                     <span className="absolute -top-0.5 -right-1 w-2 h-2 rounded-full bg-primary" />
                   )}
                 </div>
-                <span className={`text-[10px] font-medium transition-all ${isActive ? "text-primary" : ""}`}>
+                <span className={`text-[10px] font-medium transition-all duration-300 ${isActive ? "text-primary" : ""}`}>
                   {item.label}
                 </span>
                 {/* Active dot indicator */}

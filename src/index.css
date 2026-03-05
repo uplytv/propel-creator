@@ -100,15 +100,32 @@
   .glass-card {
     @apply bg-card/80 backdrop-blur-xl border border-border rounded-xl;
     box-shadow: var(--card-shadow);
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+                border-color 0.3s ease;
   }
   .dark .glass-card {
     @apply bg-card/60;
   }
+  .glass-card-interactive {
+    @apply glass-card cursor-pointer;
+  }
+  .glass-card-interactive:hover {
+    transform: translateY(-3px);
+    border-color: hsl(var(--primary) / 0.25);
+    box-shadow: var(--card-shadow-hover), var(--glow-shadow);
+  }
+  .glass-card-interactive:active {
+    transform: translateY(-1px);
+    transition-duration: 0.1s;
+  }
   .glass-card-hover {
-    @apply glass-card transition-all duration-300 hover:translate-y-[-2px] hover:border-primary/20;
-    &:hover {
-      box-shadow: var(--card-shadow-hover);
-    }
+    @apply glass-card;
+  }
+  .glass-card-hover:hover {
+    transform: translateY(-2px);
+    border-color: hsl(var(--primary) / 0.2);
+    box-shadow: var(--card-shadow-hover);
   }
   .glow-border {
     @apply border border-primary/30;
@@ -139,6 +156,35 @@
   .dark .hero-grid-layer {
     background-image: radial-gradient(hsl(var(--foreground) / 0.04) 1px, transparent 1px);
     background-size: 24px 24px;
+  }
+
+  /* Sidebar nav item hover */
+  .nav-item-hover {
+    position: relative;
+    transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .nav-item-hover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: hsl(var(--primary) / 0);
+    transition: background 0.2s ease;
+  }
+  .nav-item-hover:hover::before {
+    background: hsl(var(--primary) / 0.05);
+  }
+  .nav-item-hover:active {
+    transform: scale(0.97);
+    transition-duration: 0.1s;
+  }
+
+  /* Bottom tab press effect */
+  .tab-press {
+    transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .tab-press:active {
+    transform: scale(0.88);
   }
 
   /* Live streaming badge */
