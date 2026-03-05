@@ -81,12 +81,14 @@ export function useNotifications() {
           icon,
           duration: 5000,
         });
-        // Play notification sound
-        try {
-          const audio = new Audio("/sounds/notification.mp3");
-          audio.volume = 0.5;
-          audio.play().catch(() => {});
-        } catch {}
+        // Play notification sound if enabled
+        if (localStorage.getItem("notif_sound_enabled") !== "false") {
+          try {
+            const audio = new Audio("/sounds/notification.mp3");
+            audio.volume = 0.5;
+            audio.play().catch(() => {});
+          } catch {}
+        }
       }
       queryClient.invalidateQueries({ queryKey: ["all-notifications", user.id] });
     };

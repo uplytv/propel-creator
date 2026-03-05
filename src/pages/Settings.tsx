@@ -254,6 +254,31 @@ export default function Settings() {
               ))}
             </div>
 
+            {/* Sound */}
+            <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-5">
+              <div className="flex items-center gap-3">
+                <Bell className="w-5 h-5 text-primary" />
+                <div>
+                  <h2 className="text-lg font-semibold">Sound</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">Control notification sound effects</p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between py-2">
+                <div>
+                  <p className="text-sm font-medium">Notification sound</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Play a sound when a new notification arrives</p>
+                </div>
+                <Switch
+                  checked={localStorage.getItem("notif_sound_enabled") !== "false"}
+                  onCheckedChange={(checked) => {
+                    localStorage.setItem("notif_sound_enabled", String(checked));
+                    toast({ title: checked ? "Sound enabled" : "Sound disabled" });
+                  }}
+                />
+              </div>
+            </div>
+
             {/* Campaign Alerts */}
             <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-5">
               <div className="flex items-center gap-3">
