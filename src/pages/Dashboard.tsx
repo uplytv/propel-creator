@@ -68,19 +68,19 @@ export default function Dashboard() {
         <div className="flex gap-2 mb-6">
           <button
             onClick={() => setActiveTab("overview")}
-            className={`text-sm px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === "overview" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}
+            className={`text-sm px-4 py-2 rounded-lg font-medium transition-all duration-200 active:scale-95 ${activeTab === "overview" ? "bg-primary text-primary-foreground shadow-md shadow-primary/20" : "bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80"}`}
           >
             Overview
           </button>
           <button
             onClick={() => setActiveTab("growth")}
-            className={`text-sm px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-1.5 ${activeTab === "growth" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}
+            className={`text-sm px-4 py-2 rounded-lg font-medium transition-all duration-200 active:scale-95 flex items-center gap-1.5 ${activeTab === "growth" ? "bg-primary text-primary-foreground shadow-md shadow-primary/20" : "bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80"}`}
           >
             <Zap className="w-3.5 h-3.5" /> AI Growth Engine
           </button>
           <button
             onClick={() => setActiveTab("jobs")}
-            className={`text-sm px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-1.5 ${activeTab === "jobs" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}
+            className={`text-sm px-4 py-2 rounded-lg font-medium transition-all duration-200 active:scale-95 flex items-center gap-1.5 ${activeTab === "jobs" ? "bg-primary text-primary-foreground shadow-md shadow-primary/20" : "bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80"}`}
           >
             <Briefcase className="w-3.5 h-3.5" /> My Jobs
           </button>
@@ -97,10 +97,10 @@ export default function Dashboard() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Card 1 - Current Level */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="glass-card p-6">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Current Level</h3>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }} className="glass-card p-6 group">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 group-hover:text-primary transition-colors duration-300">Current Level</h3>
               <div className="flex items-center gap-4">
-                <div className="relative w-20 h-20">
+                <div className="relative w-20 h-20 group-hover:scale-105 transition-transform duration-300">
                   <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
                     <circle cx="40" cy="40" r="34" fill="none" strokeWidth="4" className="stroke-secondary" />
                     <circle cx="40" cy="40" r="34" fill="none" strokeWidth="4" className="stroke-primary" strokeLinecap="round"
@@ -119,8 +119,8 @@ export default function Dashboard() {
             </motion.div>
 
             {/* Card 2 - Progress to Next Tier */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass-card p-6">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Progress to Next Tier</h3>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }} className="glass-card p-6 group">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 group-hover:text-primary transition-colors duration-300">Progress to Next Tier</h3>
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between text-sm mb-1">
@@ -149,8 +149,8 @@ export default function Dashboard() {
             </motion.div>
 
             {/* Card 3 - Growth Partner */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="glass-card p-6">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Your Growth Partner</h3>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }} className="glass-card p-6 group">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 group-hover:text-primary transition-colors duration-300">Your Growth Partner</h3>
               {profile.tier <= 2 ? (
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center animate-pulse-glow">
@@ -181,8 +181,8 @@ export default function Dashboard() {
             </motion.div>
 
             {/* Card 4 - Health Score */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="glass-card p-6">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Business Health Score</h3>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }} className="glass-card p-6 group">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 group-hover:text-primary transition-colors duration-300">Business Health Score</h3>
               <div className="flex items-center gap-6">
                 <div className="relative w-20 h-20">
                   <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
@@ -203,9 +203,9 @@ export default function Dashboard() {
             </motion.div>
 
             {/* Card 5 - Revenue Tracker */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="glass-card p-6">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }} className="glass-card p-6 group">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Revenue Tracker</h3>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider group-hover:text-primary transition-colors duration-300">Revenue Tracker</h3>
                 <div className="flex gap-1">
                   {(["30", "60", "90"] as const).map((d) => (
                     <button key={d} onClick={() => setRevenueRange(d)}
@@ -240,8 +240,8 @@ export default function Dashboard() {
             </motion.div>
 
             {/* Card 6 - Action Plan */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="glass-card p-6">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">This Week's Action Plan</h3>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }} className="glass-card p-6 group">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 group-hover:text-primary transition-colors duration-300">This Week's Action Plan</h3>
               <div className="space-y-3">
                 {actionPlan.map((a, i) => (
                   <button
