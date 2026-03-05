@@ -94,6 +94,10 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
+  h1, h2, h3 {
+    font-family: "Space Grotesk", "Plus Jakarta Sans", system-ui, sans-serif;
+    @apply tracking-tight;
+  }
 }
 
 @layer utilities {
