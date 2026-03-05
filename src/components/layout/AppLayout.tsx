@@ -93,7 +93,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             className="cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2"
             onClick={() => navigate("/")}
           >
-            <img src="/logo.png" alt="Uply" className={collapsed ? "h-[72px]" : "h-24"} />
+            <img src="/logo.png" alt="Uply" className={collapsed ? "h-[66px]" : "h-[88px]"} />
           </div>
           <button
             onClick={() => setCollapsed(!collapsed)}
@@ -245,7 +245,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         {/* Top Bar */}
         <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
           <div className="flex items-center justify-between px-4 md:px-8 h-14">
-            <img src="/logo.png" alt="Uply" className="md:hidden h-20" />
+            <img src="/logo.png" alt="Uply" className="md:hidden h-[74px]" />
             <div className="hidden md:flex items-center gap-3">
               <span className="text-sm font-medium">{profile.name}</span>
               <TierBadge tier={profile.tier} tierName={profile.tierName} size="sm" />
