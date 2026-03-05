@@ -89,12 +89,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       }`}>
         {/* Logo + Collapse */}
         <div className={`flex items-center justify-between p-4 ${collapsed ? "px-3" : "px-5"}`}>
-          <span
-            className="text-lg font-bold tracking-tight cursor-pointer hover:text-primary transition-colors"
+          <div
+            className="cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2"
             onClick={() => navigate("/")}
           >
-            {collapsed ? "U" : "Uply"}
-          </span>
+            <img src="/logo.png" alt="Uply" className={collapsed ? "h-7" : "h-8"} />
+          </div>
           <button
             onClick={() => setCollapsed(!collapsed)}
             className={`p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors ${collapsed ? "mx-auto" : ""}`}
@@ -245,7 +245,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         {/* Top Bar */}
         <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
           <div className="flex items-center justify-between px-4 md:px-8 h-14">
-            <span className="md:hidden text-lg font-bold">Uply</span>
+            <img src="/logo.png" alt="Uply" className="md:hidden h-7" />
             <div className="hidden md:flex items-center gap-3">
               <span className="text-sm font-medium">{profile.name}</span>
               <TierBadge tier={profile.tier} tierName={profile.tierName} size="sm" />
