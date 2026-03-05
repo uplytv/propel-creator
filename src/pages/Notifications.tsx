@@ -26,10 +26,12 @@ function NotificationItem({
   n,
   onRead,
   onNavigate,
+  onDelete,
 }: {
   n: AppNotification;
   onRead: () => void;
   onNavigate: () => void;
+  onDelete: () => void;
 }) {
   const getIcon = () => {
     if (n.source === "job") {
@@ -82,24 +84,30 @@ function NotificationItem({
           {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
         </p>
       </div>
-      {!n.read && (
+      <div className="flex-shrink-0 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        {!n.read && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onRead(); }}
+            className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground"
+            title="Mark as read"
+          >
+            <Check className="w-4 h-4" />
+          </button>
+        )}
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onRead();
-          }}
-          className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground"
-          title="Mark as read"
+          onClick={(e) => { e.stopPropagation(); onDelete(); }}
+          className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+          title="Delete notification"
         >
-          <Check className="w-4 h-4" />
+          <Trash2 className="w-4 h-4" />
         </button>
-      )}
+      </div>
     </motion.button>
   );
 }
 
 export default function Notifications() {
-  const { notifications, unreadCount, markRead, markAllRead, isLoading } = useNotifications();
+  const { notifications, unreadCount, markRead, markAllRead, deleteNotification, isLoading } = useNotifications();
   const [filter, setFilter] = useState<FilterTab>("all");
   const navigate = useNavigate();
 
@@ -193,6 +201,7 @@ export default function Notifications() {
                   n={n}
                   onRead={() => markRead(n.id, n.source)}
                   onNavigate={() => handleNavigate(n)}
+                  onDelete={() => deleteNotification(n.id, n.source)}
                 />
               ))}
             </AnimatePresence>
