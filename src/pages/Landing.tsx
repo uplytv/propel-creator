@@ -1,16 +1,16 @@
-import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
-import { useRef, useMemo, useCallback } from "react";
-import { Brain, Users, User, Box, Check, ArrowRight, Zap, Shield, TrendingUp, Star, Crown, Trophy, Medal, Radio } from "lucide-react";
+import { motion, useScroll, useTransform, useMotionValue, useSpring, useInView } from "framer-motion";
+import { useRef, useMemo, useCallback, useEffect, useState } from "react";
+import { Brain, Users, User, Box, Check, ArrowRight, Zap, Shield, TrendingUp, Star, Crown, Trophy, Medal, Radio, Sparkles, BarChart3, Heart, PlayCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import StreamCard from "@/components/live/StreamCard";
 import { mockStreams } from "@/data/mockStreams";
 
 const features = [
-  { icon: Brain, title: "AI Growth Partner", desc: "Your always-on strategist that learns your business and delivers personalized growth plans." },
-  { icon: User, title: "Tiered Human Support", desc: "As you grow, unlock a dedicated success rep invested in your results." },
-  { icon: Users, title: "Built-in Community", desc: "Premium community tools designed for engagement and retention." },
-  { icon: Box, title: "Sell Anything Digital", desc: "Courses, memberships, coaching, downloads — all in one place." },
+  { icon: Brain, title: "AI Growth Partner", desc: "Your always-on strategist that learns your business and delivers personalized growth plans.", accent: "from-primary/20 to-primary/5" },
+  { icon: User, title: "Tiered Human Support", desc: "As you grow, unlock a dedicated success rep invested in your results.", accent: "from-primary/15 to-primary/5" },
+  { icon: Users, title: "Built-in Community", desc: "Premium community tools designed for engagement and retention.", accent: "from-primary/20 to-primary/5" },
+  { icon: Box, title: "Sell Anything Digital", desc: "Courses, memberships, coaching, downloads — all in one place.", accent: "from-primary/15 to-primary/5" },
 ];
 
 const tiers = [
@@ -25,6 +25,40 @@ const pricing = [
   { name: "Pro", price: "49", period: "/month", fee: "2% transaction fee", features: ["Everything in Free", "Unlimited members", "Advanced analytics", "Priority support"], popular: true },
   { name: "Scale", price: "99", period: "/month", fee: "0% transaction fee", features: ["Everything in Pro", "Dedicated success rep", "Custom integrations", "White-label options"] },
 ];
+
+const testimonials = [
+  { name: "Sarah Chen", role: "Fitness Creator", avatar: "SC", quote: "I went from 0 to 2,000 members in 6 months. The AI growth partner is like having a CMO on speed dial.", revenue: "$48K/mo" },
+  { name: "Marcus Rivera", role: "Photography Coach", avatar: "MR", quote: "The tier system actually motivated me to level up. Once I hit Scaling, my rep helped me 3x my revenue.", revenue: "$36K/mo" },
+  { name: "Aisha Patel", role: "Business Strategist", avatar: "AP", quote: "Every other platform felt like a tool. This one feels like a partner that actually cares about my growth.", revenue: "$31K/mo" },
+];
+
+const heroStats = [
+  { label: "Active Creators", value: 10000, suffix: "+", prefix: "" },
+  { label: "Revenue Generated", value: 12, suffix: "M+", prefix: "$" },
+  { label: "Communities Built", value: 4800, suffix: "+", prefix: "" },
+  { label: "Avg. Growth Rate", value: 340, suffix: "%", prefix: "" },
+];
+
+function AnimatedCounter({ value, prefix = "", suffix = "", duration = 2 }: { value: number; prefix?: string; suffix?: string; duration?: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-50px" });
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!isInView) return;
+    let start = 0;
+    const end = value;
+    const step = Math.ceil(end / (duration * 60));
+    const timer = setInterval(() => {
+      start += step;
+      if (start >= end) { setCount(end); clearInterval(timer); }
+      else setCount(start);
+    }, 1000 / 60);
+    return () => clearInterval(timer);
+  }, [isInView, value, duration]);
+
+  return <span ref={ref}>{prefix}{count.toLocaleString()}{suffix}</span>;
+}
 
 const ease = [0.22, 1, 0.36, 1] as const;
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.12 } } };
@@ -90,25 +124,14 @@ export default function Landing() {
       </nav>
 
       {/* Hero */}
-      <section ref={heroRef} className="relative overflow-hidden pt-32 pb-20 md:pt-44 md:pb-32" onMouseMove={handleMouseMove}>
+      <section ref={heroRef} className="relative overflow-hidden pt-32 pb-16 md:pt-44 md:pb-24" onMouseMove={handleMouseMove}>
         {/* Mouse-following glow */}
         <motion.div
           className="absolute z-[1] pointer-events-none w-[400px] h-[400px] rounded-full opacity-30 dark:opacity-40 blur-[100px] bg-primary/30"
-          style={{
-            left: springX,
-            top: springY,
-            translateX: "-50%",
-            translateY: "-50%",
-          }}
+          style={{ left: springX, top: springY, translateX: "-50%", translateY: "-50%" }}
         />
-        <motion.div
-          className="absolute inset-0 z-0 hero-glow-layer"
-          style={{ y: glowY, scale: glowScale }}
-        />
-        <motion.div
-          className="absolute inset-0 z-0 hero-grid-layer"
-          style={{ y: gridY, opacity: gridOpacity }}
-        />
+        <motion.div className="absolute inset-0 z-0 hero-glow-layer" style={{ y: glowY, scale: glowScale }} />
+        <motion.div className="absolute inset-0 z-0 hero-grid-layer" style={{ y: gridY, opacity: gridOpacity }} />
         {/* Floating particles */}
         <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden">
           {particles.map((p) => (
@@ -116,18 +139,8 @@ export default function Landing() {
               key={p.id}
               className="absolute rounded-full bg-primary/20 dark:bg-primary/30"
               style={{ left: p.x, top: p.y, width: p.size, height: p.size }}
-              animate={{
-                y: [0, -40, 0],
-                x: [0, p.drift, 0],
-                opacity: [0, 0.8, 0],
-                scale: [0.5, 1, 0.5],
-              }}
-              transition={{
-                duration: p.duration,
-                delay: p.delay,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
+              animate={{ y: [0, -40, 0], x: [0, p.drift, 0], opacity: [0, 0.8, 0], scale: [0.5, 1, 0.5] }}
+              transition={{ duration: p.duration, delay: p.delay, repeat: Infinity, ease: "easeInOut" }}
             />
           ))}
         </div>
@@ -138,11 +151,22 @@ export default function Landing() {
             transition={{ duration: 0.7 }}
             className="max-w-3xl mx-auto text-center"
           >
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6">
+            {/* Trust badge */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-6"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Trusted by 10,000+ creators worldwide
+            </motion.div>
+
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.08] mb-6">
               The only creator platform that{" "}
               <span className="text-gradient">grows with you.</span>
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-xl mx-auto">
+            <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-xl mx-auto leading-relaxed">
               AI gets you started. Our team helps you scale.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -152,15 +176,53 @@ export default function Landing() {
               <Button variant="hero-outline" size="xl" onClick={() => {
                 document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
               }}>
-                See How It Works
+                <PlayCircle className="w-5 h-5 mr-1" /> See How It Works
               </Button>
             </div>
+
+            {/* No credit card line */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8 }}
+              className="text-xs text-muted-foreground mt-5 flex items-center justify-center gap-1.5"
+            >
+              <Check className="w-3.5 h-3.5 text-primary" /> No credit card required
+              <span className="mx-1.5 text-border">·</span>
+              <Check className="w-3.5 h-3.5 text-primary" /> Free forever plan
+              <span className="mx-1.5 text-border">·</span>
+              <Check className="w-3.5 h-3.5 text-primary" /> Setup in 2 minutes
+            </motion.p>
           </motion.div>
         </div>
       </section>
 
+      {/* Hero Stats Bar */}
+      <section className="py-10 md:py-14 border-y border-border/50 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.02] to-transparent pointer-events-none" />
+        <div className="container relative">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4">
+            {heroStats.map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1, duration: 0.5 }}
+                className="text-center"
+              >
+                <p className="text-3xl md:text-4xl font-extrabold text-foreground tabular-nums">
+                  <AnimatedCounter value={stat.value} prefix={stat.prefix} suffix={stat.suffix} />
+                </p>
+                <p className="text-sm text-muted-foreground mt-1 font-medium">{stat.label}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Live Now Section */}
-      <section className="pb-20 md:pb-32">
+      <section className="py-20 md:py-28">
         <div className="container">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -188,9 +250,13 @@ export default function Landing() {
       </section>
 
       {/* Feature Cards */}
-      <section id="features" className="pb-20 md:pb-32">
+      <section id="features" className="py-20 md:py-28">
         <div className="container">
-          <div className="flex gap-4 overflow-x-auto pb-4 md:grid md:grid-cols-4 md:overflow-visible scrollbar-none">
+          <motion.div variants={sectionHeading} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }} className="text-center mb-14">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Everything you need to build, grow, and monetize</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Four pillars that make PLATFORM the last creator tool you'll ever need.</p>
+          </motion.div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {features.map((f, i) => (
               <motion.div
                 key={f.title}
@@ -198,35 +264,73 @@ export default function Landing() {
                 whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 viewport={{ once: true, margin: "-80px" }}
                 transition={{ delay: i * 0.12, duration: 0.6, ease: "easeOut" }}
-                className="glass-card-hover p-6 min-w-[260px] md:min-w-0"
+                whileHover={{ y: -4, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }}
+                className="glass-card p-6 group relative overflow-hidden"
               >
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <f.icon className="w-5 h-5 text-primary" />
+                {/* Subtle gradient overlay on hover */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${f.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                <div className="relative z-10">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors duration-300 group-hover:scale-110 transform-gpu">
+                    <f.icon className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-bold text-foreground mb-2 text-lg">{f.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
                 </div>
-                <h3 className="font-bold text-foreground mb-2">{f.title}</h3>
-                <p className="text-sm text-muted-foreground">{f.desc}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Social Proof */}
-      <section className="py-12 border-y border-border/50">
-        <div className="container">
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center text-muted-foreground text-lg"
-          >
-            Join <span className="text-foreground font-bold">10,000+</span> creators already growing on <span className="text-foreground font-bold">PLATFORM</span>
-          </motion.p>
+      {/* Testimonials */}
+      <section className="py-20 md:py-28 relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/[0.03] rounded-full blur-[120px] pointer-events-none" />
+        <div className="container relative">
+          <motion.div variants={sectionHeading} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }} className="text-center mb-14">
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-4">
+              <Heart className="w-3.5 h-3.5" />
+              Loved by Creators
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Creators are building real businesses here</h2>
+            <p className="text-muted-foreground text-lg">Don't just take our word for it.</p>
+          </motion.div>
+          <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }} className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {testimonials.map((t, i) => (
+              <motion.div
+                key={t.name}
+                variants={item}
+                whileHover={{ y: -4, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }}
+                className="glass-card p-7 flex flex-col group"
+              >
+                {/* Stars */}
+                <div className="flex gap-0.5 mb-4">
+                  {Array.from({ length: 5 }).map((_, j) => (
+                    <Star key={j} className="w-4 h-4 fill-primary text-primary" />
+                  ))}
+                </div>
+                <blockquote className="text-foreground font-medium leading-relaxed flex-1 mb-6">
+                  "{t.quote}"
+                </blockquote>
+                <div className="flex items-center justify-between pt-4 border-t border-border">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
+                      {t.avatar}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm text-foreground">{t.name}</p>
+                      <p className="text-xs text-muted-foreground">{t.role}</p>
+                    </div>
+                  </div>
+                  <span className="text-primary font-bold text-sm">{t.revenue}</span>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
       </section>
 
       {/* Tier Preview */}
-      <section id="tiers" className="py-20 md:py-32">
+      <section id="tiers" className="py-20 md:py-28">
         <div className="container">
           <motion.div variants={sectionHeading} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }} className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Grow your way. We'll grow with you.</h2>
@@ -237,6 +341,7 @@ export default function Landing() {
               <motion.div
                 key={t.name}
                 variants={item}
+                whileHover={{ y: -4, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }}
                 className={`glass-card p-6 ${t.glow ? "glow-border animate-pulse-glow" : ""}`}
               >
                 <div className="flex items-center gap-2 mb-1">
@@ -260,7 +365,7 @@ export default function Landing() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="py-20 md:py-32">
+      <section id="pricing" className="py-20 md:py-28">
         <div className="container">
           <motion.div variants={sectionHeading} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }} className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Simple, transparent pricing</h2>
@@ -271,6 +376,7 @@ export default function Landing() {
               <motion.div
                 key={p.name}
                 variants={item}
+                whileHover={{ y: -4, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }}
                 className={`glass-card p-8 relative ${p.popular ? "glow-border" : ""}`}
               >
                 {p.popular && (
@@ -302,8 +408,7 @@ export default function Landing() {
       </section>
 
       {/* Creator Leaderboard */}
-      <section id="leaderboard" className="py-20 md:py-32 relative overflow-hidden">
-        {/* Ambient glow */}
+      <section id="leaderboard" className="py-20 md:py-28 relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
         <div className="container relative">
           <motion.div variants={sectionHeading} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }} className="text-center mb-16">
@@ -326,35 +431,25 @@ export default function Landing() {
               <motion.div
                 key={creator.name}
                 variants={item}
-                className={`flex items-center gap-4 p-4 rounded-xl transition-all duration-300 hover:scale-[1.02] ${
-                  i === 0
-                    ? "glass-card glow-border bg-primary/[0.03]"
-                    : "glass-card hover:shadow-md"
+                whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
+                className={`flex items-center gap-4 p-4 rounded-xl transition-all duration-300 ${
+                  i === 0 ? "glass-card glow-border bg-primary/[0.03]" : "glass-card hover:shadow-md"
                 }`}
               >
-                {/* Rank */}
                 <div className={`flex-shrink-0 w-8 text-center font-bold text-lg ${
                   i === 0 ? "text-primary" : i < 3 ? "text-foreground" : "text-muted-foreground"
                 }`}>
                   {creator.icon ? <creator.icon className={`w-5 h-5 mx-auto ${i === 0 ? "text-primary" : "text-muted-foreground"}`} /> : `#${creator.rank}`}
                 </div>
-
-                {/* Avatar */}
                 <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${
-                  i === 0
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground"
+                  i === 0 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                 }`}>
                   {creator.avatar}
                 </div>
-
-                {/* Info */}
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-foreground truncate">{creator.name}</p>
                   <p className="text-xs text-muted-foreground">{creator.niche}</p>
                 </div>
-
-                {/* Stats */}
                 <div className="hidden sm:block text-right">
                   <p className="text-xs text-muted-foreground">{creator.members} members</p>
                 </div>
@@ -378,7 +473,37 @@ export default function Landing() {
             <Button variant="hero" size="lg" onClick={() => navigate("/leaderboard")} className="gap-2">
               View Full Leaderboard <ArrowRight className="w-4 h-4" />
             </Button>
-            <p className="text-xs text-muted-foreground mt-3">Join 2,400+ creators already growing on PLATFORM</p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-24 md:py-32 relative overflow-hidden">
+        <div className="absolute inset-0 hero-glow-layer" />
+        <div className="absolute inset-0 hero-grid-layer opacity-50" />
+        <div className="container relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="max-w-2xl mx-auto text-center"
+          >
+            <h2 className="text-3xl md:text-5xl font-extrabold mb-5 leading-tight">
+              Ready to build something{" "}
+              <span className="text-gradient">extraordinary?</span>
+            </h2>
+            <p className="text-lg text-muted-foreground mb-8 max-w-lg mx-auto leading-relaxed">
+              Join 10,000+ creators who chose the platform that actually invests in their growth.
+            </p>
+            <Button variant="hero" size="xl" onClick={() => navigate("/onboarding")}>
+              Start Free Today <ArrowRight className="ml-1" />
+            </Button>
+            <p className="text-xs text-muted-foreground mt-4 flex items-center justify-center gap-1.5">
+              <Check className="w-3.5 h-3.5 text-primary" /> No credit card required
+              <span className="mx-1.5 text-border">·</span>
+              <Check className="w-3.5 h-3.5 text-primary" /> Cancel anytime
+            </p>
           </motion.div>
         </div>
       </section>
