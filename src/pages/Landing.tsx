@@ -106,7 +106,7 @@ export default function Landing() {
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container flex h-16 items-center justify-between">
-          <span className="text-xl font-bold tracking-tight text-foreground">PLATFORM</span>
+          <span className="text-xl font-bold tracking-tight text-foreground">Uply</span>
           <div className="hidden md:flex items-center gap-8">
             <button onClick={() => navigate("/live")} className="text-sm text-primary font-semibold hover:text-primary/80 transition-colors flex items-center gap-1.5">
               <Radio className="w-3.5 h-3.5" />
@@ -254,7 +254,7 @@ export default function Landing() {
         <div className="container">
           <motion.div variants={sectionHeading} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }} className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Everything you need to build, grow, and monetize</h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Four pillars that make PLATFORM the last creator tool you'll ever need.</p>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto"><p className="text-muted-foreground text-lg max-w-2xl mx-auto">Four pillars that make Uply the last creator tool you'll ever need.</p></p>
           </motion.div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {features.map((f, i) => (
@@ -513,7 +513,7 @@ export default function Landing() {
         <div className="container">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div>
-              <span className="text-xl font-bold">PLATFORM</span>
+              <span className="text-xl font-bold">Uply</span>
               <p className="text-sm text-muted-foreground mt-1">Built for creators who are serious about growth.</p>
             </div>
             <div className="flex gap-8 text-sm text-muted-foreground">

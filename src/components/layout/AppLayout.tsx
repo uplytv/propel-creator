@@ -93,7 +93,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             className="text-lg font-bold tracking-tight cursor-pointer hover:text-primary transition-colors"
             onClick={() => navigate("/")}
           >
-            {collapsed ? "P" : "PLATFORM"}
+            {collapsed ? "U" : "Uply"}
           </span>
           <button
             onClick={() => setCollapsed(!collapsed)}
@@ -245,7 +245,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         {/* Top Bar */}
         <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
           <div className="flex items-center justify-between px-4 md:px-8 h-14">
-            <span className="md:hidden text-lg font-bold">PLATFORM</span>
+            <span className="md:hidden text-lg font-bold">Uply</span>
             <div className="hidden md:flex items-center gap-3">
               <span className="text-sm font-medium">{profile.name}</span>
               <TierBadge tier={profile.tier} tierName={profile.tierName} size="sm" />

@@ -21,7 +21,7 @@ export default function Live() {
               className="text-xl font-bold tracking-tight text-foreground cursor-pointer hover:text-primary transition-colors"
               onClick={() => navigate("/")}
             >
-              PLATFORM
+              Uply
             </span>
             <span className="text-border">|</span>
             <div className="flex items-center gap-1.5 text-primary">
