@@ -20,7 +20,7 @@ export default function Live() {
             <img
               src="/logo.png"
               alt="Uply"
-              className="h-7 cursor-pointer hover:opacity-80 transition-opacity"
+              className="h-9 cursor-pointer hover:opacity-80 transition-opacity"
               onClick={() => navigate("/")}
             />
             <span className="text-border">|</span>
