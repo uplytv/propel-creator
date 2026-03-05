@@ -81,13 +81,28 @@ export function useNotifications() {
           icon,
           duration: 5000,
         });
-        // Play notification sound if enabled
+        // Play notification sound if enabled (Web Audio API for reliability)
         if (localStorage.getItem("notif_sound_enabled") !== "false") {
           try {
-            const audio = new Audio("/sounds/notification.mp3");
-            audio.volume = 0.5;
-            audio.play().catch(() => {});
-          } catch {}
+            const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const playTone = (freq: number, startTime: number, duration: number) => {
+              const osc = ctx.createOscillator();
+              const gain = ctx.createGain();
+              osc.connect(gain);
+              gain.connect(ctx.destination);
+              osc.frequency.value = freq;
+              osc.type = "sine";
+              gain.gain.setValueAtTime(0.3, startTime);
+              gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+              osc.start(startTime);
+              osc.stop(startTime + duration);
+            };
+            // Two-tone chime
+            playTone(830, ctx.currentTime, 0.15);
+            playTone(1100, ctx.currentTime + 0.15, 0.2);
+          } catch (e) {
+            console.warn("Notification sound failed:", e);
+          }
         }
       }
       queryClient.invalidateQueries({ queryKey: ["all-notifications", user.id] });
