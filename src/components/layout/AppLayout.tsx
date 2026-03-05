@@ -4,13 +4,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Rocket, Package, Users, UserCheck, Lock, Share2,
   LogOut, Settings, ChevronLeft, ChevronRight, Shield, TrendingUp,
-  Zap, Crown, Sparkles, BarChart3, Trophy, Handshake, Radio, Plug, Briefcase, MessageSquare
+  Zap, Crown, Sparkles, BarChart3, Trophy, Handshake, Radio, Plug, Briefcase, MessageSquare, Bell as BellIcon
 } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import { useApp, tierNames } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
 import { useUnreadMessageCount } from "@/hooks/useCollaborations";
 import { useUnreadJobMessageCount } from "@/hooks/useJobMessages";
+import { useNotifications } from "@/hooks/useNotifications";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const navItems = [
@@ -25,6 +26,7 @@ const navItems = [
   { label: "Ad Integrations", icon: Plug, path: "/ad-integrations", desc: "Pixels & campaigns" },
   { label: "Jobs & Talent", icon: Briefcase, path: "/jobs", desc: "Freelance marketplace" },
   { label: "Messages", icon: MessageSquare, path: "/job-messages", desc: "Job conversations", badgeKey: "job-messages" },
+  { label: "Notifications", icon: BellIcon, path: "/notifications", desc: "Alerts & updates", badgeKey: "notifications" },
   { label: "My Rep", icon: UserCheck, path: "/my-rep", desc: "Growth partner", requiresTier: 3 },
   { label: "Settings", icon: Settings, path: "/settings", desc: "Preferences" },
 ] as { label: string; icon: React.ElementType; path: string; desc: string; requiresTier?: number; badgeKey?: string }[];
@@ -56,6 +58,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, signOut } = useAuth();
   const { data: unreadCount = 0 } = useUnreadMessageCount();
   const { data: jobUnreadCount = 0 } = useUnreadJobMessageCount();
+  const { unreadCount: notifUnreadCount } = useNotifications();
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -63,6 +66,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const getBadge = (item: typeof navItems[0]) => {
     if (item.badgeKey === "collaborate") return unreadCount;
     if (item.badgeKey === "job-messages") return jobUnreadCount;
+    if (item.badgeKey === "notifications") return notifUnreadCount;
     return 0;
   };
 
