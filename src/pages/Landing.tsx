@@ -125,6 +125,27 @@ export default function Landing() {
 
       {/* Hero */}
       <section ref={heroRef} className="relative overflow-hidden pt-32 pb-16 md:pt-44 md:pb-24" onMouseMove={handleMouseMove}>
+        {/* Animated gradient mesh */}
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          <motion.div
+            className="absolute w-[600px] h-[600px] rounded-full blur-[120px] opacity-20 dark:opacity-30"
+            style={{ background: "radial-gradient(circle, hsl(265 90% 65%) 0%, transparent 70%)", top: "-10%", left: "-5%" }}
+            animate={{ x: [0, 80, 0], y: [0, 40, 0], scale: [1, 1.15, 1] }}
+            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="absolute w-[500px] h-[500px] rounded-full blur-[100px] opacity-15 dark:opacity-25"
+            style={{ background: "radial-gradient(circle, hsl(280 80% 72%) 0%, transparent 70%)", top: "20%", right: "-10%" }}
+            animate={{ x: [0, -60, 0], y: [0, -50, 0], scale: [1.1, 0.95, 1.1] }}
+            transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="absolute w-[450px] h-[450px] rounded-full blur-[110px] opacity-10 dark:opacity-20"
+            style={{ background: "radial-gradient(circle, hsl(240 70% 60%) 0%, transparent 70%)", bottom: "-5%", left: "30%" }}
+            animate={{ x: [0, 50, -30, 0], y: [0, -30, 20, 0], scale: [1, 1.1, 0.95, 1] }}
+            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+          />
+        </div>
         {/* Mouse-following glow */}
         <motion.div
           className="absolute z-[1] pointer-events-none w-[400px] h-[400px] rounded-full opacity-30 dark:opacity-40 blur-[100px] bg-primary/30"
