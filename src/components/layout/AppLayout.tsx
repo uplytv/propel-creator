@@ -62,6 +62,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { unreadCount: notifUnreadCount } = useNotifications();
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   
   const getBadge = (item: typeof navItems[0]) => {
