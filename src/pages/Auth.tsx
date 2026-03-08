@@ -23,14 +23,15 @@ export default function Auth() {
   const [forgotLoading, setForgotLoading] = useState(false);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) navigate("/dashboard", { replace: true });
+    if (signUpSuccess) return;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session && !signUpSuccess) navigate("/dashboard", { replace: true });
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) navigate("/dashboard", { replace: true });
+      if (session && !signUpSuccess) navigate("/dashboard", { replace: true });
     });
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, signUpSuccess]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
