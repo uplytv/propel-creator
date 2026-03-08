@@ -248,6 +248,36 @@ export type Database = {
         }
         Relationships: []
       }
+      grow_progress: {
+        Row: {
+          completed_tasks: string[]
+          created_at: string
+          id: string
+          last_activity_date: string | null
+          streak_days: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_tasks?: string[]
+          created_at?: string
+          id?: string
+          last_activity_date?: string | null
+          streak_days?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_tasks?: string[]
+          created_at?: string
+          id?: string
+          last_activity_date?: string | null
+          streak_days?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       job_applications: {
         Row: {
           applicant_id: string
@@ -565,6 +595,36 @@ export type Database = {
         }
         Relationships: []
       }
+      posts: {
+        Row: {
+          category: string
+          comment_count: number
+          content: string
+          created_at: string
+          id: string
+          like_count: number
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          comment_count?: number
+          content: string
+          created_at?: string
+          id?: string
+          like_count?: number
+          user_id: string
+        }
+        Update: {
+          category?: string
+          comment_count?: number
+          content?: string
+          created_at?: string
+          id?: string
+          like_count?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           created_at: string
@@ -626,6 +686,7 @@ export type Database = {
           total_revenue: number
           updated_at: string
           user_id: string
+          website: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -645,6 +706,7 @@ export type Database = {
           total_revenue?: number
           updated_at?: string
           user_id: string
+          website?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -664,6 +726,7 @@ export type Database = {
           total_revenue?: number
           updated_at?: string
           user_id?: string
+          website?: string | null
         }
         Relationships: []
       }
