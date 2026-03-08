@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useApp, tierNames } from "@/context/AppContext";
-import { TrendingUp, Users, DollarSign, Brain, MessageSquare, Phone, Clock, CheckCircle2, Zap, ChevronRight, BarChart3, Target, Briefcase } from "lucide-react";
+import { TrendingUp, Users, DollarSign, Brain, MessageSquare, Phone, Clock, CheckCircle2, Zap, ChevronRight, BarChart3, Target, Briefcase, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
 import { AIGrowthEngine } from "@/components/AIGrowthEngine";
@@ -14,28 +14,8 @@ const tierTargets = [
   { members: 10000, mrr: 100000 },
 ];
 
-const actionPlan = [
-  { task: "Create a free lead magnet to attract new members", time: 25, impact: "High" as const },
-  { task: "Post a community introduction thread", time: 10, impact: "Medium" as const },
-  { task: "Set up your first automated email sequence", time: 30, impact: "High" as const },
-];
-
-const healthActions = [
-  { label: "Add a lead magnet", impact: "High" as const },
-  { label: "Improve onboarding flow", impact: "Medium" as const },
-  { label: "Update pricing page", impact: "Low" as const },
-];
-
-const impactColors = {
-  High: "bg-primary/10 text-primary border-primary/20",
-  Medium: "bg-warning/10 text-warning border-warning/20",
-  Low: "bg-muted text-muted-foreground border-border",
-};
-
 export default function Dashboard() {
   const { profile } = useApp();
-  const [checkedTasks, setCheckedTasks] = useState<Set<number>>(new Set());
-  const [revenueRange, setRevenueRange] = useState<"30" | "60" | "90">("30");
   const [activeTab, setActiveTab] = useState<"overview" | "growth" | "jobs">("overview");
 
   const target = tierTargets[profile.tier - 1];
@@ -43,15 +23,6 @@ export default function Dashboard() {
   const memberPct = Math.min((profile.members / target.members) * 100, 100);
   const mrrPct = Math.min((profile.mrr / target.mrr) * 100, 100);
   const overallPct = Math.max(memberPct, mrrPct);
-
-  const toggleTask = (i: number) => {
-    setCheckedTasks((prev) => {
-      const next = new Set(prev);
-      if (next.has(i)) next.delete(i);
-      else next.add(i);
-      return next;
-    });
-  };
 
   const scoreColor = profile.healthScore < 40 ? "text-destructive" : profile.healthScore < 70 ? "text-warning" : "text-primary";
   const scoreRing = profile.healthScore < 40 ? "stroke-destructive" : profile.healthScore < 70 ? "stroke-warning" : "stroke-primary";
@@ -151,33 +122,18 @@ export default function Dashboard() {
             {/* Card 3 - Growth Partner */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }} className="glass-card p-6 group">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 group-hover:text-primary transition-colors duration-300">Your Growth Partner</h3>
-              {profile.tier <= 2 ? (
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center animate-pulse-glow">
-                    <Brain className="w-6 h-6 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-bold">ARIA — Your AI Growth Partner</p>
-                    <p className="text-sm text-muted-foreground mt-1 mb-3">This week's top recommendation: Create a free lead magnet to grow your email list by 30%.</p>
-                    <Button variant="default" size="sm"><MessageSquare className="w-4 h-4 mr-1" /> Chat with ARIA</Button>
-                  </div>
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                  <Brain className="w-6 h-6 text-primary" />
                 </div>
-              ) : (
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center text-lg font-bold">JR</div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="font-bold">Jordan Rivera</p>
-                      <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium">Revenue Specialist</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-xs text-primary mt-1"><Clock className="w-3 h-3" /> Avg. response: 2 hours</div>
-                    <div className="flex gap-2 mt-3">
-                      <Button variant="default" size="sm"><Phone className="w-4 h-4 mr-1" /> Book a Call</Button>
-                      <Button variant="outline" size="sm"><MessageSquare className="w-4 h-4 mr-1" /> Message</Button>
-                    </div>
-                  </div>
+                <div className="flex-1">
+                  <p className="font-bold">ARIA — Your AI Growth Partner</p>
+                  <p className="text-sm text-muted-foreground mt-1 mb-3">AI-powered growth recommendations coming soon. Connect your data to unlock personalized insights.</p>
+                  <Button variant="outline" size="sm" disabled>
+                    <MessageSquare className="w-4 h-4 mr-1" /> Coming Soon
+                  </Button>
                 </div>
-              )}
+              </div>
             </motion.div>
 
             {/* Card 4 - Health Score */}
@@ -192,12 +148,12 @@ export default function Dashboard() {
                   </svg>
                   <span className={`absolute inset-0 flex items-center justify-center text-xl font-extrabold ${scoreColor}`}>{profile.healthScore}</span>
                 </div>
-                <div className="flex-1 space-y-2">
-                  {healthActions.map((a) => (
-                    <button key={a.label} className={`text-xs px-3 py-1.5 rounded-full border ${impactColors[a.impact]} font-medium`}>
-                      {a.label} · {a.impact}
-                    </button>
-                  ))}
+                <div className="flex-1">
+                  {profile.healthScore === 0 ? (
+                    <p className="text-sm text-muted-foreground">Complete your onboarding and add products to build your health score.</p>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Your business health is calculated from members, revenue, and engagement metrics.</p>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -206,61 +162,34 @@ export default function Dashboard() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }} className="glass-card p-6 group">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider group-hover:text-primary transition-colors duration-300">Revenue Tracker</h3>
-                <div className="flex gap-1">
-                  {(["30", "60", "90"] as const).map((d) => (
-                    <button key={d} onClick={() => setRevenueRange(d)}
-                      className={`text-xs px-2.5 py-1 rounded-md font-medium transition-colors ${revenueRange === d ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-                    >{d}d</button>
-                  ))}
-                </div>
               </div>
-              <div className="h-32 flex items-end gap-1">
-                {Array.from({ length: 15 }).map((_, i) => {
-                  const h = 20 + Math.sin(i * 0.5) * 30 + Math.random() * 30;
-                  return (
-                    <motion.div key={i} className="flex-1 bg-primary/20 rounded-t-sm hover:bg-primary/40 transition-colors"
-                      initial={{ height: 0 }} animate={{ height: `${h}%` }} transition={{ delay: 0.3 + i * 0.03, duration: 0.5 }} />
-                  );
-                })}
-              </div>
-              <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-border">
-                <div>
-                  <p className="text-xs text-muted-foreground">MRR</p>
-                  <p className="text-lg font-bold">${profile.mrr.toLocaleString()}</p>
+              {profile.mrr > 0 || profile.totalRevenue > 0 ? (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-muted-foreground">MRR</p>
+                    <p className="text-2xl font-bold">${profile.mrr.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Total Revenue</p>
+                    <p className="text-2xl font-bold">${profile.totalRevenue.toLocaleString()}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Total Revenue</p>
-                  <p className="text-lg font-bold">${profile.totalRevenue.toLocaleString()}</p>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-6 text-center">
+                  <BarChart3 className="w-8 h-8 text-muted-foreground/40 mb-2" />
+                  <p className="text-sm text-muted-foreground">No revenue data yet.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Revenue will appear here once payments are connected.</p>
                 </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Projected</p>
-                  <p className="text-lg font-bold text-primary">${Math.round(profile.mrr * 1.15).toLocaleString()}</p>
-                </div>
-              </div>
+              )}
             </motion.div>
 
-            {/* Card 6 - Action Plan */}
+            {/* Card 6 - Action Plan Placeholder */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }} className="glass-card p-6 group">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 group-hover:text-primary transition-colors duration-300">This Week's Action Plan</h3>
-              <div className="space-y-3">
-                {actionPlan.map((a, i) => (
-                  <button
-                    key={i}
-                    onClick={() => toggleTask(i)}
-                    className={`w-full flex items-start gap-3 p-3 rounded-lg transition-all duration-200 text-left ${checkedTasks.has(i) ? "bg-primary/5" : "hover:bg-secondary"}`}
-                  >
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 transition-all flex-shrink-0 ${checkedTasks.has(i) ? "bg-primary border-primary" : "border-border"}`}>
-                      {checkedTasks.has(i) && <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}><CheckCircle2 className="w-3 h-3 text-primary-foreground" /></motion.div>}
-                    </div>
-                    <div className="flex-1">
-                      <p className={`text-sm font-medium ${checkedTasks.has(i) ? "line-through text-muted-foreground" : ""}`}>{a.task}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="w-3 h-3" /> {a.time}min</span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full border ${impactColors[a.impact]} font-medium`}>{a.impact} Impact</span>
-                      </div>
-                    </div>
-                  </button>
-                ))}
+              <div className="flex flex-col items-center justify-center py-6 text-center">
+                <Info className="w-8 h-8 text-muted-foreground/40 mb-2" />
+                <p className="text-sm text-muted-foreground">Connect your growth data to see your action plan.</p>
+                <p className="text-xs text-muted-foreground mt-1">AI-powered recommendations will appear here once ARIA is integrated.</p>
               </div>
             </motion.div>
           </div>

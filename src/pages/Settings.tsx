@@ -1,16 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   User, Bell, Shield, CreditCard, Palette, Mail,
-  Camera, Save, Eye, EyeOff, Trash2, Download, Megaphone
+  Camera, Save, Eye, EyeOff, Trash2, Download, Megaphone, Loader2
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useNotificationPreferences } from "@/hooks/useNotificationPreferences";
+import { useProfile, useUpdateProfile, useUploadAvatar } from "@/hooks/useProfile";
+import { supabase } from "@/integrations/supabase/client";
 
 type SettingsTab = "profile" | "notifications" | "account";
 
@@ -21,18 +24,32 @@ const tabs = [
 ];
 
 export default function Settings() {
-  const { profile, setProfile } = useApp();
+  const { profile: appProfile, refreshProfile } = useApp();
+  const { user } = useAuth();
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const { prefs: campaignPrefs, updatePrefs } = useNotificationPreferences();
+  const { data: dbProfile } = useProfile();
+  const updateProfile = useUpdateProfile();
+  const uploadAvatar = useUploadAvatar();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
   const [soundEnabled, setSoundEnabled] = useState(() => localStorage.getItem("notif_sound_enabled") !== "false");
 
-  // Profile state
-  const [name, setName] = useState(profile.name);
-  const [email, setEmail] = useState("creator@example.com");
-  const [bio, setBio] = useState("Building communities that matter.");
-  const [website, setWebsite] = useState("https://");
+  // Profile state - initialized from DB
+  const [name, setName] = useState("");
+  const [bio, setBio] = useState("");
+  const [website, setWebsite] = useState("");
+
+  // Load from DB profile
+  useEffect(() => {
+    if (dbProfile) {
+      setName(dbProfile.display_name || "");
+      setBio(dbProfile.bio || "");
+      setWebsite((dbProfile as any).website || "");
+    }
+  }, [dbProfile]);
 
   // Notification state
   const [notifications, setNotifications] = useState({
@@ -48,13 +65,40 @@ export default function Settings() {
 
   // Account state
   const [showPassword, setShowPassword] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  
+  const [saving, setSaving] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
 
-  const handleSaveProfile = () => {
-    setProfile({ name });
-    toast({ title: "Profile updated", description: "Your changes have been saved." });
+  const handleSaveProfile = async () => {
+    setSaving(true);
+    try {
+      await updateProfile.mutateAsync({
+        display_name: name,
+        bio,
+        website,
+      } as any);
+      refreshProfile();
+      toast({ title: "Profile updated", description: "Your changes have been saved." });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+    setSaving(false);
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Max 2MB.", variant: "destructive" });
+      return;
+    }
+    try {
+      await uploadAvatar.mutateAsync(file);
+      refreshProfile();
+      toast({ title: "Avatar updated" });
+    } catch (err: any) {
+      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+    }
   };
 
   const handleNotifToggle = (key: keyof typeof notifications) => {
@@ -62,19 +106,41 @@ export default function Settings() {
     toast({ title: "Preference saved" });
   };
 
-  const handleChangePassword = () => {
-    if (!currentPassword || !newPassword) {
-      toast({ title: "Error", description: "Please fill in both password fields.", variant: "destructive" });
+  const handleChangePassword = async () => {
+    if (!newPassword) {
+      toast({ title: "Error", description: "Please enter a new password.", variant: "destructive" });
       return;
     }
     if (newPassword.length < 8) {
       toast({ title: "Error", description: "Password must be at least 8 characters.", variant: "destructive" });
       return;
     }
-    toast({ title: "Password updated", description: "Your password has been changed." });
-    setCurrentPassword("");
-    setNewPassword("");
+    setSaving(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setSaving(false);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Password updated", description: "Your password has been changed." });
+      setNewPassword("");
+    }
   };
+
+  const handleForgotPassword = async () => {
+    if (!user?.email) return;
+    setForgotLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setForgotLoading(false);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Reset email sent", description: "Check your email for the password reset link." });
+    }
+  };
+
+  const avatarUrl = dbProfile?.avatar_url || appProfile.avatarUrl;
 
   return (
     <AppLayout>
@@ -85,23 +151,17 @@ export default function Settings() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex gap-1 bg-secondary/30 rounded-xl p-1 w-fit">
+        <div className="flex gap-1 bg-secondary/30 rounded-xl p-1 w-fit overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === tab.id
-                  ? "text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+              className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                activeTab === tab.id ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {activeTab === tab.id && (
-                <motion.div
-                  layoutId="settings-tab"
-                  className="absolute inset-0 bg-primary rounded-lg"
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                />
+                <motion.div layoutId="settings-tab" className="absolute inset-0 bg-primary rounded-lg" transition={{ type: "spring", stiffness: 300, damping: 30 }} />
               )}
               <span className="relative z-10 flex items-center gap-2">
                 <tab.icon className="w-4 h-4" />
@@ -113,27 +173,37 @@ export default function Settings() {
 
         {/* Profile Tab */}
         {activeTab === "profile" && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             {/* Avatar Section */}
             <div className="rounded-2xl border border-border bg-card/40 p-6">
               <h2 className="text-lg font-semibold mb-4">Profile Photo</h2>
               <div className="flex items-center gap-5">
                 <div className="relative group">
-                  <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center text-2xl font-bold text-primary">
-                    {name.charAt(0)}
-                  </div>
-                  <button className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <Camera className="w-5 h-5 text-white" />
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="Avatar" className="w-20 h-20 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center text-2xl font-bold text-primary">
+                      {name.charAt(0) || "C"}
+                    </div>
+                  )}
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    {uploadAvatar.isPending ? (
+                      <Loader2 className="w-5 h-5 text-white animate-spin" />
+                    ) : (
+                      <Camera className="w-5 h-5 text-white" />
+                    )}
                   </button>
+                  <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
                 </div>
                 <div>
-                  <p className="text-sm font-medium">{name}</p>
+                  <p className="text-sm font-medium">{name || "Creator"}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">JPG, PNG or GIF. Max 2MB.</p>
-                  <button className="text-xs text-primary hover:underline mt-1">Upload new photo</button>
+                  <button onClick={() => fileInputRef.current?.click()} className="text-xs text-primary hover:underline mt-1">
+                    Upload new photo
+                  </button>
                 </div>
               </div>
             </div>
@@ -155,11 +225,9 @@ export default function Settings() {
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Email</label>
                   <input
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    type="email"
-                    maxLength={255}
-                    className="w-full rounded-lg bg-secondary/40 border border-border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                    value={user?.email || ""}
+                    readOnly
+                    className="w-full rounded-lg bg-secondary/40 border border-border px-3 py-2.5 text-sm text-muted-foreground cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -182,6 +250,7 @@ export default function Settings() {
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
                   maxLength={200}
+                  placeholder="https://"
                   className="w-full rounded-lg bg-secondary/40 border border-border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                 />
               </div>
@@ -189,9 +258,10 @@ export default function Settings() {
               <div className="flex justify-end">
                 <button
                   onClick={handleSaveProfile}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+                  disabled={saving}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
                 >
-                  <Save className="w-4 h-4" /> Save Changes
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save Changes
                 </button>
               </div>
             </div>
@@ -200,17 +270,12 @@ export default function Settings() {
 
         {/* Notifications Tab */}
         {activeTab === "notifications" && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-5">
               <div className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-primary" />
                 <h2 className="text-lg font-semibold">Email Notifications</h2>
               </div>
-
               {[
                 { key: "emailNewMember" as const, label: "New member joins", desc: "Get notified when someone joins your community" },
                 { key: "emailRevenue" as const, label: "Revenue milestones", desc: "Alerts when you hit revenue goals" },
@@ -222,10 +287,7 @@ export default function Settings() {
                     <p className="text-sm font-medium">{item.label}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
                   </div>
-                  <Switch
-                    checked={notifications[item.key]}
-                    onCheckedChange={() => handleNotifToggle(item.key)}
-                  />
+                  <Switch checked={notifications[item.key]} onCheckedChange={() => handleNotifToggle(item.key)} />
                 </div>
               ))}
             </div>
@@ -235,7 +297,6 @@ export default function Settings() {
                 <Bell className="w-5 h-5 text-primary" />
                 <h2 className="text-lg font-semibold">Push Notifications</h2>
               </div>
-
               {[
                 { key: "pushNewMember" as const, label: "New members", desc: "Real-time alerts for new signups" },
                 { key: "pushRevenue" as const, label: "Revenue events", desc: "Instant alerts for purchases" },
@@ -247,10 +308,7 @@ export default function Settings() {
                     <p className="text-sm font-medium">{item.label}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
                   </div>
-                  <Switch
-                    checked={notifications[item.key]}
-                    onCheckedChange={() => handleNotifToggle(item.key)}
-                  />
+                  <Switch checked={notifications[item.key]} onCheckedChange={() => handleNotifToggle(item.key)} />
                 </div>
               ))}
             </div>
@@ -264,7 +322,6 @@ export default function Settings() {
                   <p className="text-xs text-muted-foreground mt-0.5">Control notification sound effects</p>
                 </div>
               </div>
-
               <div className="flex items-center justify-between py-2">
                 <div>
                   <p className="text-sm font-medium">Notification sound</p>
@@ -290,7 +347,6 @@ export default function Settings() {
                   <p className="text-xs text-muted-foreground mt-0.5">Control which campaign notifications appear in your inbox</p>
                 </div>
               </div>
-
               <div className="flex items-center justify-between py-2">
                 <div>
                   <p className="text-sm font-medium">Budget warnings</p>
@@ -304,7 +360,6 @@ export default function Settings() {
                   }}
                 />
               </div>
-
               <div className="flex items-center justify-between py-2">
                 <div>
                   <p className="text-sm font-medium">Campaign completed</p>
@@ -324,11 +379,7 @@ export default function Settings() {
 
         {/* Account Tab */}
         {activeTab === "account" && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             {/* Appearance */}
             <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-4">
               <div className="flex items-center gap-3">
@@ -341,9 +392,7 @@ export default function Settings() {
                     key={t}
                     onClick={() => setTheme(t)}
                     className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all border ${
-                      theme === t
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                      theme === t ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                     }`}
                   >
                     {t}
@@ -359,43 +408,42 @@ export default function Settings() {
                 <h2 className="text-lg font-semibold">Security</h2>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-5">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Current Password</label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                      maxLength={128}
-                      className="w-full rounded-lg bg-secondary/40 border border-border px-3 py-2.5 text-sm pr-10 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                    />
-                    <button
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">New Password</label>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">New Password</label>
+                <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     maxLength={128}
                     placeholder="Min 8 characters"
-                    className="w-full rounded-lg bg-secondary/40 border border-border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                    className="w-full rounded-lg bg-secondary/40 border border-border px-3 py-2.5 text-sm pr-10 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                   />
+                  <button
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
-              <button
-                onClick={handleChangePassword}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-sm font-medium hover:bg-secondary/80 transition-colors"
-              >
-                Update Password
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleChangePassword}
+                  disabled={saving}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-sm font-medium hover:bg-secondary/80 transition-colors disabled:opacity-50"
+                >
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                  Update Password
+                </button>
+                <button
+                  onClick={handleForgotPassword}
+                  disabled={forgotLoading}
+                  className="text-xs text-primary hover:underline"
+                >
+                  {forgotLoading ? "Sending..." : "Forgot password?"}
+                </button>
+              </div>
             </div>
 
             {/* Billing */}
@@ -407,9 +455,9 @@ export default function Settings() {
               <div className="flex items-center justify-between py-2 px-4 rounded-lg bg-secondary/30 border border-border">
                 <div>
                   <p className="text-sm font-medium">Current Plan</p>
-                  <p className="text-xs text-muted-foreground">Tier {profile.tier} · {profile.tierName}</p>
+                  <p className="text-xs text-muted-foreground">Tier {appProfile.tier} · {appProfile.tierName}</p>
                 </div>
-                <button className="text-sm text-primary hover:underline font-medium">Upgrade</button>
+                <span className="text-sm text-muted-foreground font-medium">Payments coming soon</span>
               </div>
             </div>
 
@@ -419,13 +467,14 @@ export default function Settings() {
             <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-6 space-y-4">
               <h2 className="text-lg font-semibold text-destructive">Danger Zone</h2>
               <div className="flex flex-wrap gap-3">
-                <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-sm hover:bg-secondary transition-colors">
+                <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-sm hover:bg-secondary transition-colors" disabled>
                   <Download className="w-4 h-4" /> Export Data
                 </button>
-                <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-destructive/40 text-sm text-destructive hover:bg-destructive/10 transition-colors">
+                <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-destructive/40 text-sm text-destructive hover:bg-destructive/10 transition-colors" disabled>
                   <Trash2 className="w-4 h-4" /> Delete Account
                 </button>
               </div>
+              <p className="text-xs text-muted-foreground">These features are not yet available.</p>
             </div>
           </motion.div>
         )}
