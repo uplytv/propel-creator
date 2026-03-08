@@ -262,9 +262,13 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                   onClick={(e) => { e.stopPropagation(); setProfileOpen(!profileOpen); }}
                   className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-secondary transition-colors cursor-pointer"
                 >
-                  <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
-                    {profile.name.charAt(0)}
-                  </div>
+                  {profile.avatarUrl ? (
+                    <img src={profile.avatarUrl} alt="" className="w-7 h-7 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
+                      {profile.name.charAt(0)}
+                    </div>
+                  )}
                 </button>
                 <AnimatePresence>
                   {profileOpen && (
