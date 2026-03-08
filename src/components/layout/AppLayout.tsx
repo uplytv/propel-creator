@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Rocket, Package, Users, UserCheck, Lock, Share2,
   LogOut, Settings, ChevronLeft, ChevronRight, Shield, TrendingUp,
-  Zap, Crown, Sparkles, BarChart3, Trophy, Handshake, Radio, Plug, Briefcase, MessageSquare, Bell as BellIcon, Search
+  Zap, Crown, Sparkles, BarChart3, Trophy, Handshake, Radio, Plug, Briefcase, MessageSquare, Bell as BellIcon, Search, Menu, X
 } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import { useApp, tierNames } from "@/context/AppContext";
@@ -62,6 +62,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { unreadCount: notifUnreadCount } = useNotifications();
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   
   const getBadge = (item: typeof navItems[0]) => {
@@ -81,6 +82,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -105,7 +111,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         </div>
 
         {/* Navigation */}
-        <nav className={`flex-1 space-y-0.5 mt-2 ${collapsed ? "px-2" : "px-3"}`}>
+        <nav className={`flex-1 space-y-0.5 mt-2 ${collapsed ? "px-2" : "px-3"} overflow-y-auto`}>
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             const isLocked = item.requiresTier && profile.tier < item.requiresTier;
@@ -250,7 +256,15 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         {/* Top Bar */}
         <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
           <div className="flex items-center justify-between px-4 md:px-8 h-14">
-            <img src="/logo.png" alt="Uply" className="md:hidden h-[74px] cursor-pointer" onClick={() => navigate("/")} />
+            <div className="flex items-center gap-2 md:hidden">
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+              <img src="/logo.png" alt="Uply" className="h-[50px] cursor-pointer" onClick={() => navigate("/")} />
+            </div>
             <div className="hidden md:flex items-center gap-3">
               <span className="text-sm font-medium">{profile.name}</span>
               <TierBadge tier={profile.tier} tierName={profile.tierName} size="sm" />
@@ -314,50 +328,106 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main className="pb-20 md:pb-0">{children}</main>
+        <main>{children}</main>
       </div>
 
-      {/* Mobile Bottom Tabs */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t border-border bg-card/95 backdrop-blur-xl z-30 safe-area-bottom">
-        <div className="flex items-center justify-around py-1.5 px-1">
-          {navItems.slice(0, 5).map((item) => {
-            const isActive = location.pathname === item.path;
-            const isLocked = item.requiresTier && profile.tier < item.requiresTier;
-            return (
-              <button
-                key={item.label}
-                onClick={() => !isLocked && navigate(item.path)}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all relative tab-press ${
-                  isLocked
-                    ? "text-muted-foreground/25"
-                    : isActive
-                    ? "text-primary"
-                    : "text-muted-foreground"
-                }`}
-              >
-                <div className="relative">
-                  <item.icon className={`w-5 h-5 transition-all duration-300 ${isActive ? "scale-110" : ""}`} />
-                  {isLocked && <Lock className="w-2 h-2 text-warning absolute -top-0.5 -right-1" />}
-                  {item.label === "My Rep" && !isLocked && (
-                    <span className="absolute -top-0.5 -right-1 w-2 h-2 rounded-full bg-primary" />
+      {/* Mobile Navigation Drawer */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="md:hidden fixed inset-0 bg-black/50 z-40"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="md:hidden fixed inset-y-0 left-0 w-72 bg-card border-r border-border z-50 flex flex-col"
+            >
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between p-4 border-b border-border">
+                <img src="/logo.png" alt="Uply" className="h-[50px] cursor-pointer" onClick={() => { navigate("/"); setMobileMenuOpen(false); }} />
+                <button onClick={() => setMobileMenuOpen(false)} className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Profile Summary */}
+              <div className="px-4 py-3 border-b border-border">
+                <div className="flex items-center gap-3">
+                  {profile.avatarUrl ? (
+                    <img src={profile.avatarUrl} alt="" className="w-10 h-10 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">
+                      {profile.name.charAt(0)}
+                    </div>
                   )}
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{profile.name}</p>
+                    <TierBadge tier={profile.tier} tierName={profile.tierName} size="sm" />
+                  </div>
                 </div>
-                <span className={`text-[10px] font-medium transition-all duration-300 ${isActive ? "text-primary" : ""}`}>
-                  {item.label}
-                </span>
-                {/* Active dot indicator */}
-                {isActive && (
-                  <motion.div
-                    layoutId="mobile-active"
-                    className="absolute -bottom-0.5 w-1 h-1 rounded-full bg-primary"
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </nav>
+              </div>
+
+              {/* Nav Items */}
+              <nav className="flex-1 py-2 px-3 space-y-0.5 overflow-y-auto">
+                {navItems.map((item) => {
+                  const isActive = location.pathname === item.path;
+                  const isLocked = item.requiresTier && profile.tier < item.requiresTier;
+                  const badge = getBadge(item);
+
+                  return (
+                    <button
+                      key={item.label}
+                      onClick={() => {
+                        if (!isLocked) {
+                          navigate(item.path);
+                          setMobileMenuOpen(false);
+                        }
+                      }}
+                      className={`w-full flex items-center gap-3 rounded-lg text-sm font-medium px-3 py-2.5 transition-colors ${
+                        isLocked
+                          ? "text-muted-foreground/30 cursor-not-allowed"
+                          : isActive
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                      }`}
+                    >
+                      <div className="relative flex-shrink-0">
+                        <item.icon className="w-[18px] h-[18px]" />
+                        {isLocked && <Lock className="w-2.5 h-2.5 absolute -top-1 -right-1.5 text-warning" />}
+                      </div>
+                      <span className="flex-1 text-left">{item.label}</span>
+                      {isLocked && <Lock className="w-3 h-3 text-warning" />}
+                      {!isLocked && badge > 0 && (
+                        <span className="min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1">
+                          {badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </nav>
+
+              {/* Sign Out */}
+              <div className="border-t border-border p-3">
+                <button
+                  onClick={async () => { await signOut(); navigate("/"); setMobileMenuOpen(false); }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-destructive hover:bg-secondary transition-colors"
+                >
+                  <LogOut className="w-[18px] h-[18px]" /> Sign out
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
