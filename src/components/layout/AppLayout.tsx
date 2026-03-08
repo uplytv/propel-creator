@@ -250,7 +250,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         {/* Top Bar */}
         <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
           <div className="flex items-center justify-between px-4 md:px-8 h-14">
-            <img src="/logo.png" alt="Uply" className="md:hidden h-[74px]" />
+            <img src="/logo.png" alt="Uply" className="md:hidden h-[74px] cursor-pointer" onClick={() => navigate("/")} />
             <div className="hidden md:flex items-center gap-3">
               <span className="text-sm font-medium">{profile.name}</span>
               <TierBadge tier={profile.tier} tierName={profile.tierName} size="sm" />
