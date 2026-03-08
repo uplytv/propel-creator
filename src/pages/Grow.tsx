@@ -1,9 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Rocket, Target, TrendingUp, Zap, CheckCircle2, Circle, Clock, Flame, Trophy, Star, Sparkles, Handshake, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
+import { useGrowProgress, useUpdateGrowProgress } from "@/hooks/useGrowProgress";
 
 interface ProtocolTask {
   key: string;
@@ -21,10 +22,7 @@ interface ProtocolWeek {
 
 const PROTOCOL_WEEKS: ProtocolWeek[] = [
   {
-    week: 1,
-    title: "Foundation & Positioning",
-    subtitle: "Define your offer, audience, and pricing strategy",
-    icon: Target,
+    week: 1, title: "Foundation & Positioning", subtitle: "Define your offer, audience, and pricing strategy", icon: Target,
     tasks: [
       { key: "w1_offer", label: "Define your core high-ticket offer", description: "Package your expertise into a clear, results-driven offer" },
       { key: "w1_avatar", label: "Map your ideal buyer avatar", description: "Demographics, pain points, desired outcomes, and buying triggers" },
@@ -34,10 +32,7 @@ const PROTOCOL_WEEKS: ProtocolWeek[] = [
     ],
   },
   {
-    week: 2,
-    title: "Traffic & Lead Generation",
-    subtitle: "Build your acquisition engine and start capturing leads",
-    icon: Zap,
+    week: 2, title: "Traffic & Lead Generation", subtitle: "Build your acquisition engine and start capturing leads", icon: Zap,
     tasks: [
       { key: "w2_channel", label: "Choose your primary traffic channel", description: "Pick ONE channel: organic social, paid ads, SEO, or partnerships" },
       { key: "w2_lead_magnet", label: "Build a lead magnet or free resource", description: "Create something valuable that pre-qualifies your buyers" },
@@ -47,10 +42,7 @@ const PROTOCOL_WEEKS: ProtocolWeek[] = [
     ],
   },
   {
-    week: 3,
-    title: "Sales & Conversion",
-    subtitle: "Close your first deals and optimize the sales process",
-    icon: TrendingUp,
+    week: 3, title: "Sales & Conversion", subtitle: "Close your first deals and optimize the sales process", icon: TrendingUp,
     tasks: [
       { key: "w3_outreach", label: "Launch direct outreach campaign", description: "Reach out to 50+ warm prospects with personalized messages" },
       { key: "w3_calls", label: "Book and run 5 discovery calls", description: "Qualify prospects and present your offer on live calls" },
@@ -60,10 +52,7 @@ const PROTOCOL_WEEKS: ProtocolWeek[] = [
     ],
   },
   {
-    week: 4,
-    title: "Scale & Systematize",
-    subtitle: "Build repeatable systems for predictable revenue",
-    icon: Rocket,
+    week: 4, title: "Scale & Systematize", subtitle: "Build repeatable systems for predictable revenue", icon: Rocket,
     tasks: [
       { key: "w4_automate", label: "Automate your top-of-funnel", description: "Set up automated lead capture, scoring, and nurture flows" },
       { key: "w4_upsell", label: "Create an upsell or backend offer", description: "Design a higher-ticket offer for existing buyers" },
@@ -95,17 +84,27 @@ function getStreakLabel(streak: number): string {
 
 export default function Grow() {
   const navigate = useNavigate();
+  const { data: progress, isLoading } = useGrowProgress();
+  const updateProgress = useUpdateGrowProgress();
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   const [expandedWeek, setExpandedWeek] = useState<number>(1);
 
-  // Mock streak
-  const streak = completedTasks.size > 0 ? Math.min(completedTasks.size, 7) : 0;
+  // Sync from DB
+  useEffect(() => {
+    if (progress?.completed_tasks) {
+      setCompletedTasks(new Set(progress.completed_tasks));
+    }
+  }, [progress]);
+
+  const streak = progress?.streak_days ?? 0;
 
   const toggleTask = (taskKey: string) => {
     setCompletedTasks((prev) => {
       const next = new Set(prev);
       if (next.has(taskKey)) next.delete(taskKey);
       else next.add(taskKey);
+      // Save to DB
+      updateProgress.mutate(Array.from(next));
       return next;
     });
   };
@@ -147,7 +146,6 @@ export default function Grow() {
 
         {/* Streak & Motivation Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Streak Card */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="glass-card p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
@@ -158,40 +156,26 @@ export default function Grow() {
                 {getStreakLabel(streak)}
               </span>
             </div>
-
             <div className="flex items-end gap-4 mb-4">
               <div>
-                <span className={`text-4xl font-bold font-mono ${streak > 0 ? "text-warning" : "text-muted-foreground"}`}>
-                  {streak}
-                </span>
+                <span className={`text-4xl font-bold font-mono ${streak > 0 ? "text-warning" : "text-muted-foreground"}`}>{streak}</span>
                 <span className="text-sm text-muted-foreground ml-1">day{streak !== 1 ? "s" : ""}</span>
               </div>
             </div>
-
-            {/* 7-day visualization */}
             <div className="flex items-center gap-2 justify-between">
               {streakDots.map((dot, i) => (
                 <div key={i} className="flex flex-col items-center gap-1.5">
-                  <div
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-                      dot.active
-                        ? "bg-warning/15 text-warning"
-                        : dot.isToday
-                        ? "bg-secondary border-2 border-dashed border-muted-foreground/30 text-muted-foreground"
-                        : "bg-secondary text-muted-foreground/40"
-                    }`}
-                  >
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                    dot.active ? "bg-warning/15 text-warning" : dot.isToday ? "bg-secondary border-2 border-dashed border-muted-foreground/30 text-muted-foreground" : "bg-secondary text-muted-foreground/40"
+                  }`}>
                     {dot.active ? <Flame className="w-4 h-4" /> : <Circle className="w-3 h-3" />}
                   </div>
-                  <span className={`text-[10px] font-medium ${dot.isToday ? "text-foreground" : "text-muted-foreground"}`}>
-                    {dot.day}
-                  </span>
+                  <span className={`text-[10px] font-medium ${dot.isToday ? "text-foreground" : "text-muted-foreground"}`}>{dot.day}</span>
                 </div>
               ))}
             </div>
           </motion.div>
 
-          {/* Motivational Card */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass-card p-6 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
             <div className="relative">
@@ -200,19 +184,13 @@ export default function Grow() {
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Today's Motivation</span>
               </div>
               <p className="text-sm leading-relaxed">{motivation}</p>
-
               <div className="mt-4 pt-4 border-t border-border">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span>Overall Progress</span>
                   <span className="font-mono font-bold text-primary">{overallProgress}%</span>
                 </div>
                 <div className="h-2 rounded-full bg-secondary mt-2 overflow-hidden">
-                  <motion.div
-                    className="h-full rounded-full bg-primary"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${overallProgress}%` }}
-                    transition={{ duration: 1, delay: 0.3 }}
-                  />
+                  <motion.div className="h-full rounded-full bg-primary" initial={{ width: 0 }} animate={{ width: `${overallProgress}%` }} transition={{ duration: 1, delay: 0.3 }} />
                 </div>
                 <p className="text-[11px] text-muted-foreground mt-1">{completedTasks.size}/{TOTAL_TASKS} tasks completed</p>
               </div>
@@ -229,14 +207,7 @@ export default function Grow() {
             const WeekIcon = week.icon;
 
             return (
-              <motion.div
-                key={week.week}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: wi * 0.05 }}
-                className="glass-card overflow-hidden"
-              >
-                {/* Week Header */}
+              <motion.div key={week.week} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: wi * 0.05 }} className="glass-card overflow-hidden">
                 <button
                   onClick={() => setExpandedWeek(isExpanded ? 0 : week.week)}
                   className="w-full flex items-center gap-4 px-5 py-4 hover:bg-secondary/30 transition-colors"
@@ -250,13 +221,9 @@ export default function Grow() {
                     <div className="flex items-center gap-2">
                       <h3 className="text-sm font-bold">Week {week.week}: {week.title}</h3>
                       {status === "completed" ? (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3" /> Done
-                        </span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Done</span>
                       ) : status === "in_progress" ? (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-warning/10 text-warning font-semibold flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> In Progress
-                        </span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-warning/10 text-warning font-semibold flex items-center gap-1"><Clock className="w-3 h-3" /> In Progress</span>
                       ) : null}
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">{week.subtitle}</p>
@@ -264,31 +231,18 @@ export default function Grow() {
                   <span className="text-xs font-mono text-muted-foreground">{weekDone}/{week.tasks.length}</span>
                 </button>
 
-                {/* Tasks */}
                 <AnimatePresence>
                   {isExpanded && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="border-t border-border"
-                    >
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }} className="border-t border-border">
                       <div className="px-5 py-4 space-y-2">
                         {week.tasks.map((task) => {
                           const isDone = completedTasks.has(task.key);
                           return (
-                            <button
-                              key={task.key}
-                              onClick={() => toggleTask(task.key)}
+                            <button key={task.key} onClick={() => toggleTask(task.key)}
                               className={`w-full flex items-start gap-3 p-3 rounded-lg transition-all text-left ${isDone ? "bg-primary/5" : "hover:bg-secondary/50"}`}
                             >
                               <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 transition-all ${isDone ? "bg-primary border-primary" : "border-border"}`}>
-                                {isDone && (
-                                  <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                                    <CheckCircle2 className="w-3 h-3 text-primary-foreground" />
-                                  </motion.div>
-                                )}
+                                {isDone && <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}><CheckCircle2 className="w-3 h-3 text-primary-foreground" /></motion.div>}
                               </div>
                               <div>
                                 <p className={`text-sm font-medium ${isDone ? "line-through text-muted-foreground" : ""}`}>{task.label}</p>
@@ -306,35 +260,15 @@ export default function Grow() {
           })}
         </div>
 
-        {/* Co-Creator Collaboration CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="glass-card p-6 glow-border mt-8"
-        >
+        {/* Co-Creator CTA */}
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="glass-card p-6 glow-border mt-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
               <Handshake className="w-6 h-6 text-primary" />
             </div>
             <div className="flex-1">
               <h3 className="font-bold text-lg">Ready to grow faster? Find a Co-Creator</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Combine audiences with a complementary creator. Launch a joint product and split revenue automatically — nobody else offers this.
-              </p>
-              <div className="flex items-center gap-4 mt-2">
-                {[
-                  { avatar: "SC", name: "Sarah Chen" },
-                  { avatar: "ML", name: "Mei Lin" },
-                  { avatar: "PS", name: "Priya Sharma" },
-                ].map((c) => (
-                  <div key={c.avatar} className="flex items-center gap-1.5">
-                    <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-[9px] font-bold text-muted-foreground">{c.avatar}</div>
-                    <span className="text-xs text-muted-foreground hidden sm:inline">{c.name}</span>
-                  </div>
-                ))}
-                <span className="text-xs text-primary font-medium">+3 more matches</span>
-              </div>
+              <p className="text-sm text-muted-foreground mt-1">Combine audiences with a complementary creator. Launch a joint product and split revenue automatically.</p>
             </div>
             <Button variant="hero" className="gap-2 flex-shrink-0" onClick={() => navigate("/collaborate")}>
               Explore Matches <ArrowRight className="w-4 h-4" />

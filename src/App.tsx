@@ -10,6 +10,7 @@ import TierCelebration from "@/components/TierCelebration";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
@@ -33,6 +34,8 @@ import JobDetail from "./pages/JobDetail";
 import TalentProfile from "./pages/TalentProfile";
 import JobMessages from "./pages/JobMessages";
 import Notifications from "./pages/Notifications";
+import CreatorProfile from "./pages/CreatorProfile";
+import Discover from "./pages/Discover";
 
 const queryClient = new QueryClient();
 
@@ -50,9 +53,13 @@ const App = () => (
                 {/* Public routes */}
                 <Route path="/" element={<Landing />} />
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/p/:slug" element={<JointProduct isPublic />} />
                 <Route path="/live" element={<Live />} />
                 <Route path="/stream/:id" element={<Stream />} />
+                <Route path="/leaderboard" element={<Leaderboard />} />
+                <Route path="/creator/:username" element={<CreatorProfile />} />
+                <Route path="/discover" element={<Discover />} />
 
                 {/* Protected routes */}
                 <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
@@ -63,7 +70,6 @@ const App = () => (
                 <Route path="/affiliates" element={<ProtectedRoute><Affiliates /></ProtectedRoute>} />
                 <Route path="/collaborate" element={<ProtectedRoute><Collaborate /></ProtectedRoute>} />
                 <Route path="/collaborate/product" element={<ProtectedRoute><JointProduct /></ProtectedRoute>} />
-                <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                 <Route path="/my-rep" element={<ProtectedRoute><MyRep /></ProtectedRoute>} />
                 <Route path="/go-live" element={<ProtectedRoute><GoLive /></ProtectedRoute>} />
