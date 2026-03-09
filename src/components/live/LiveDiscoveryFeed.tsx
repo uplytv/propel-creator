@@ -191,7 +191,6 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
   }
 
   if (!hasLiveStreams) {
-    // Show mock streams as fallback with a notice
     return (
       <div className="space-y-16">
         <div className="glass-card p-4 flex items-center gap-3 mb-4">
@@ -200,6 +199,9 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
             No creators are live right now. Showing example streams — <span className="text-primary font-medium cursor-pointer" onClick={() => window.location.href = '/go-live'}>be the first to go live!</span>
           </p>
         </div>
+
+        {/* Recent Recordings */}
+        {vodAssets.length > 0 && <VodSection vodAssets={vodAssets} navigate={navigate} />}
 
         {/* Trending Live */}
         <section>
