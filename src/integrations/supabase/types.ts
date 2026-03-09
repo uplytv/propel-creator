@@ -568,6 +568,152 @@ export type Database = {
         }
         Relationships: []
       }
+      live_stream_sessions: {
+        Row: {
+          ended_at: string | null
+          id: string
+          mux_asset_id: string | null
+          peak_viewers: number | null
+          started_at: string | null
+          stream_id: string | null
+          total_watch_minutes: number | null
+          user_id: string | null
+        }
+        Insert: {
+          ended_at?: string | null
+          id?: string
+          mux_asset_id?: string | null
+          peak_viewers?: number | null
+          started_at?: string | null
+          stream_id?: string | null
+          total_watch_minutes?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          ended_at?: string | null
+          id?: string
+          mux_asset_id?: string | null
+          peak_viewers?: number | null
+          started_at?: string | null
+          stream_id?: string | null
+          total_watch_minutes?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_stream_sessions_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "mux_live_streams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mux_assets: {
+        Row: {
+          aspect_ratio: string | null
+          created_at: string | null
+          description: string | null
+          duration: number | null
+          id: string
+          is_public: boolean | null
+          mux_asset_id: string
+          mux_playback_id: string | null
+          status: string | null
+          thumbnail_url: string | null
+          title: string | null
+          updated_at: string | null
+          upload_id: string | null
+          user_id: string
+        }
+        Insert: {
+          aspect_ratio?: string | null
+          created_at?: string | null
+          description?: string | null
+          duration?: number | null
+          id?: string
+          is_public?: boolean | null
+          mux_asset_id: string
+          mux_playback_id?: string | null
+          status?: string | null
+          thumbnail_url?: string | null
+          title?: string | null
+          updated_at?: string | null
+          upload_id?: string | null
+          user_id: string
+        }
+        Update: {
+          aspect_ratio?: string | null
+          created_at?: string | null
+          description?: string | null
+          duration?: number | null
+          id?: string
+          is_public?: boolean | null
+          mux_asset_id?: string
+          mux_playback_id?: string | null
+          status?: string | null
+          thumbnail_url?: string | null
+          title?: string | null
+          updated_at?: string | null
+          upload_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mux_live_streams: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          ended_at: string | null
+          id: string
+          is_public: boolean | null
+          mux_playback_id: string | null
+          mux_stream_id: string
+          started_at: string | null
+          status: string | null
+          stream_key: string | null
+          title: string | null
+          updated_at: string | null
+          user_id: string
+          viewer_count: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          ended_at?: string | null
+          id?: string
+          is_public?: boolean | null
+          mux_playback_id?: string | null
+          mux_stream_id: string
+          started_at?: string | null
+          status?: string | null
+          stream_key?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id: string
+          viewer_count?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          ended_at?: string | null
+          id?: string
+          is_public?: boolean | null
+          mux_playback_id?: string | null
+          mux_stream_id?: string
+          started_at?: string | null
+          status?: string | null
+          stream_key?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string
+          viewer_count?: number | null
+        }
+        Relationships: []
+      }
       notification_preferences: {
         Row: {
           budget_warning: boolean
