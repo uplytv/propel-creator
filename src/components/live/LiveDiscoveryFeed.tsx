@@ -279,6 +279,9 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
           <p className="text-muted-foreground">No live streams match your search.</p>
         </div>
       )}
+
+      {/* Recent Recordings */}
+      {vodAssets.length > 0 && <VodSection vodAssets={vodAssets} navigate={navigate} />}
     </div>
   );
 }
