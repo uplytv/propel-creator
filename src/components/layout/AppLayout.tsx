@@ -62,6 +62,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { data: unreadCount = 0 } = useUnreadMessageCount();
   const { data: jobUnreadCount = 0 } = useUnreadJobMessageCount();
   const { unreadCount: notifUnreadCount } = useNotifications();
+  const { data: wallet } = useWallet();
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
