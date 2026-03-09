@@ -41,35 +41,57 @@ export default function Stream() {
   const [loading, setLoading] = useState(true);
   const [isRealStream, setIsRealStream] = useState(false);
 
+  const searchParams = new URLSearchParams(window.location.search);
+  const isVod = searchParams.get('type') === 'vod';
+
   useEffect(() => {
     const fetchStream = async () => {
       if (!id) return;
 
-      // Try fetching from mux_live_streams first
-      const { data: muxStream } = await supabase
-        .from('mux_live_streams')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (muxStream) {
-        setDbStream(muxStream);
-        setIsRealStream(true);
-
-        // Fetch profile
-        const { data: prof } = await supabase
-          .from('profiles')
-          .select('display_name, avatar_url, tier, tier_name')
-          .eq('user_id', muxStream.user_id)
+      if (isVod) {
+        // Fetch VOD asset
+        const { data: asset } = await supabase
+          .from('mux_assets')
+          .select('*')
+          .eq('id', id)
           .single();
 
-        setProfile(prof);
+        if (asset) {
+          setDbStream(asset);
+          setIsRealStream(true);
+
+          const { data: prof } = await supabase
+            .from('profiles')
+            .select('display_name, avatar_url, tier, tier_name')
+            .eq('user_id', asset.user_id)
+            .single();
+          setProfile(prof);
+        }
+      } else {
+        // Try fetching from mux_live_streams first
+        const { data: muxStream } = await supabase
+          .from('mux_live_streams')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (muxStream) {
+          setDbStream(muxStream);
+          setIsRealStream(true);
+
+          const { data: prof } = await supabase
+            .from('profiles')
+            .select('display_name, avatar_url, tier, tier_name')
+            .eq('user_id', muxStream.user_id)
+            .single();
+          setProfile(prof);
+        }
       }
       setLoading(false);
     };
 
     fetchStream();
-  }, [id]);
+  }, [id, isVod]);
 
   // Realtime status updates
   useEffect(() => {
