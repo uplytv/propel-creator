@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useApp, tierNames } from "@/context/AppContext";
-import { TrendingUp, Users, DollarSign, Brain, MessageSquare, Phone, Clock, CheckCircle2, Zap, ChevronRight, BarChart3, Target, Briefcase, Info } from "lucide-react";
+import { TrendingUp, Users, DollarSign, Brain, MessageSquare, Phone, Clock, CheckCircle2, Zap, ChevronRight, BarChart3, Target, Briefcase, Info, Film, Play, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
 import { AIGrowthEngine } from "@/components/AIGrowthEngine";
 import { MyJobsTab } from "@/components/dashboard/MyJobsTab";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 const tierTargets = [
   { members: 100, mrr: 1000 },
@@ -16,7 +19,30 @@ const tierTargets = [
 
 export default function Dashboard() {
   const { profile } = useApp();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"overview" | "growth" | "jobs">("overview");
+  const [recordings, setRecordings] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetch = async () => {
+      const { data } = await supabase
+        .from("mux_assets")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(6);
+      if (data) setRecordings(data);
+    };
+    fetch();
+
+    const channel = supabase
+      .channel("dashboard-assets")
+      .on("postgres_changes", { event: "*", schema: "public", table: "mux_assets" }, () => fetch())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
 
   const target = tierTargets[profile.tier - 1];
   const nextTier = profile.tier < 4 ? tierNames[profile.tier] : null;
@@ -66,7 +92,7 @@ export default function Dashboard() {
             <MyJobsTab />
           </motion.div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <><div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Card 1 - Current Level */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }} className="glass-card p-6 group">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 group-hover:text-primary transition-colors duration-300">Current Level</h3>
@@ -193,6 +219,91 @@ export default function Dashboard() {
               </div>
             </motion.div>
           </div>
+
+            {/* My Recordings Section */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="mt-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Film className="w-5 h-5 text-primary" />
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">My Recordings</h3>
+                </div>
+                <Button variant="ghost" size="sm" className="text-xs text-primary" onClick={() => navigate("/content-library")}>
+                  View All <ChevronRight className="w-3 h-3 ml-1" />
+                </Button>
+              </div>
+
+              {recordings.length === 0 ? (
+                <div className="glass-card p-8 text-center">
+                  <Film className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground mb-1">No recordings yet</p>
+                  <p className="text-xs text-muted-foreground mb-4">Record your first video in the Broadcast Studio</p>
+                  <Button variant="outline" size="sm" onClick={() => navigate("/go-live")} className="gap-1.5">
+                    <Play className="w-3.5 h-3.5" /> Go to Studio
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {recordings.map((asset, i) => {
+                    const thumb = asset.mux_playback_id
+                      ? `https://image.mux.com/${asset.mux_playback_id}/thumbnail.png?width=480&height=270&time=2`
+                      : null;
+                    const duration = asset.duration
+                      ? `${Math.floor(asset.duration / 60)}:${Math.floor(asset.duration % 60).toString().padStart(2, "0")}`
+                      : null;
+                    const isReady = asset.status === "ready";
+
+                    return (
+                      <motion.div
+                        key={asset.id}
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 + i * 0.05 }}
+                        onClick={() => isReady && asset.mux_playback_id && navigate(`/stream/${asset.id}?type=vod`)}
+                        className={`glass-card rounded-xl overflow-hidden group ${isReady ? "cursor-pointer" : ""}`}
+                      >
+                        <div className="relative aspect-video bg-secondary/50">
+                          {thumb ? (
+                            <img src={thumb} alt={asset.title || "Recording"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Film className="w-8 h-8 text-muted-foreground/30" />
+                            </div>
+                          )}
+                          <div className="absolute top-2 left-2">
+                            {isReady ? (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/90 text-primary-foreground">Ready</span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-warning/90 text-warning-foreground flex items-center gap-1">
+                                <Loader2 className="w-3 h-3 animate-spin" /> Processing
+                              </span>
+                            )}
+                          </div>
+                          {duration && (
+                            <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/70 text-white text-[10px] font-mono">{duration}</span>
+                          )}
+                          {isReady && (
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center">
+                              <Play className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-3">
+                          <p className="text-sm font-semibold truncate">{asset.title || "Untitled Recording"}</p>
+                          <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                            <Clock className="w-3 h-3" />
+                            {new Date(asset.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] ${asset.is_public ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground"}`}>
+                              {asset.is_public ? "Public" : "Private"}
+                            </span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
+            </motion.div>
+          </>
         )}
       </div>
     </AppLayout>
