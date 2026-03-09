@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
-import { Flame, TrendingUp, Compass, Sparkles, Radio } from "lucide-react";
+import { Flame, TrendingUp, Compass, Sparkles, Radio, Film } from "lucide-react";
 import StreamCard from "./StreamCard";
 import { mockStreams, categories } from "@/data/mockStreams";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useNavigate } from "react-router-dom";
 
 interface LiveStream {
   id: string;
