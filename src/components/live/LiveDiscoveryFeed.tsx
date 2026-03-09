@@ -359,7 +359,7 @@ function VodSection({ vodAssets, navigate }: { vodAssets: any[]; navigate: (path
   );
 }
 
-
+function SectionHeader({ section }: { section: (typeof sections)[0] }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
