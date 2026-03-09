@@ -188,7 +188,10 @@ export default function ContentLibrary() {
 
                   {/* Info */}
                   <div className="p-3">
-                    <h3 className="font-semibold text-sm truncate">
+                    <h3
+                      className="font-semibold text-sm truncate cursor-pointer hover:text-primary transition-colors"
+                      onClick={() => navigate(`/stream/${asset.id}?type=vod`)}
+                    >
                       {asset.title || "Untitled Recording"}
                     </h3>
                     <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
