@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
-import { Flame, TrendingUp, Compass, Sparkles, Radio } from "lucide-react";
+import { Flame, TrendingUp, Compass, Sparkles, Radio, Film } from "lucide-react";
 import StreamCard from "./StreamCard";
 import { mockStreams, categories } from "@/data/mockStreams";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useNavigate } from "react-router-dom";
 
 interface LiveStream {
   id: string;
@@ -42,7 +43,9 @@ interface Props {
 export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [liveStreams, setLiveStreams] = useState<LiveStream[]>([]);
+  const [vodAssets, setVodAssets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const fetchLiveStreams = async () => {
     const { data: streams, error } = await supabase
@@ -53,41 +56,64 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
 
     if (error || !streams || streams.length === 0) {
       setLiveStreams([]);
-      setLoading(false);
-      return;
+    } else {
+      const userIds = [...new Set(streams.map((s: any) => s.user_id))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, avatar_url, tier, tier_name')
+        .in('user_id', userIds);
+
+      const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
+
+      const enriched = streams.map((s: any) => {
+        const profile = profileMap.get(s.user_id);
+        return {
+          ...s,
+          creator_name: profile?.display_name || 'Creator',
+          creator_avatar: profile?.avatar_url || (profile?.display_name?.slice(0, 2).toUpperCase() || 'CR'),
+          creator_tier: profile?.tier || 1,
+          creator_tier_name: profile?.tier_name || 'Starter',
+        };
+      });
+      setLiveStreams(enriched);
     }
+  };
 
-    // Fetch profiles for these streams
-    const userIds = [...new Set(streams.map((s: any) => s.user_id))];
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('user_id, display_name, avatar_url, tier, tier_name')
-      .in('user_id', userIds);
+  const fetchVodAssets = async () => {
+    const { data: assets } = await supabase
+      .from('mux_assets')
+      .select('*')
+      .eq('is_public', true)
+      .eq('status', 'ready')
+      .order('created_at', { ascending: false })
+      .limit(12);
 
-    const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
+    if (assets && assets.length > 0) {
+      const userIds = [...new Set(assets.map((a: any) => a.user_id))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, avatar_url, tier, tier_name')
+        .in('user_id', userIds);
 
-    const enriched = streams.map((s: any) => {
-      const profile = profileMap.get(s.user_id);
-      return {
-        ...s,
-        creator_name: profile?.display_name || 'Creator',
-        creator_avatar: profile?.avatar_url || (profile?.display_name?.slice(0, 2).toUpperCase() || 'CR'),
-        creator_tier: profile?.tier || 1,
-        creator_tier_name: profile?.tier_name || 'Starter',
-      };
-    });
+      const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
 
-    setLiveStreams(enriched);
-    setLoading(false);
+      setVodAssets(assets.map((a: any) => {
+        const profile = profileMap.get(a.user_id);
+        return { ...a, creator_name: profile?.display_name || 'Creator', creator_avatar: profile?.avatar_url, creator_tier: profile?.tier || 1, creator_tier_name: profile?.tier_name || 'Starter' };
+      }));
+    }
   };
 
   useEffect(() => {
-    fetchLiveStreams();
+    Promise.all([fetchLiveStreams(), fetchVodAssets()]).then(() => setLoading(false));
 
     const channel = supabase
       .channel('live-discovery')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'mux_live_streams' }, () => {
         fetchLiveStreams();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'mux_assets' }, () => {
+        fetchVodAssets();
       })
       .subscribe();
 
@@ -165,7 +191,6 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
   }
 
   if (!hasLiveStreams) {
-    // Show mock streams as fallback with a notice
     return (
       <div className="space-y-16">
         <div className="glass-card p-4 flex items-center gap-3 mb-4">
@@ -174,6 +199,9 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
             No creators are live right now. Showing example streams — <span className="text-primary font-medium cursor-pointer" onClick={() => window.location.href = '/go-live'}>be the first to go live!</span>
           </p>
         </div>
+
+        {/* Recent Recordings */}
+        {vodAssets.length > 0 && <VodSection vodAssets={vodAssets} navigate={navigate} />}
 
         {/* Trending Live */}
         <section>
@@ -251,7 +279,83 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
           <p className="text-muted-foreground">No live streams match your search.</p>
         </div>
       )}
+
+      {/* Recent Recordings */}
+      {vodAssets.length > 0 && <VodSection vodAssets={vodAssets} navigate={navigate} />}
     </div>
+  );
+}
+
+function VodSection({ vodAssets, navigate }: { vodAssets: any[]; navigate: (path: string) => void }) {
+  return (
+    <section>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-40px" }}
+        className="flex items-center gap-3 mb-6"
+      >
+        <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+          <Film className="w-4.5 h-4.5 text-primary" />
+        </div>
+        <div>
+          <h2 className="text-lg font-bold text-foreground">Recent Recordings</h2>
+          <p className="text-xs text-muted-foreground">Latest creator videos & stream replays</p>
+        </div>
+      </motion.div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {vodAssets.map((asset: any, i: number) => {
+          const thumb = asset.mux_playback_id
+            ? `https://image.mux.com/${asset.mux_playback_id}/thumbnail.png?width=640&height=360&time=2`
+            : null;
+          const duration = asset.duration
+            ? `${Math.floor(asset.duration / 60)}:${Math.floor(asset.duration % 60).toString().padStart(2, '0')}`
+            : null;
+          return (
+            <motion.div
+              key={asset.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.05 }}
+              onClick={() => navigate(`/stream/${asset.id}?type=vod`)}
+              className="group cursor-pointer"
+            >
+              <div className="relative aspect-video rounded-xl overflow-hidden bg-secondary/50">
+                {thumb ? (
+                  <img src={thumb} alt={asset.title || 'Recording'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Film className="w-8 h-8 text-muted-foreground/40" />
+                  </div>
+                )}
+                {duration && (
+                  <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/70 text-white text-[10px] font-mono">
+                    {duration}
+                  </span>
+                )}
+                <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-medium bg-secondary/80 text-foreground border border-border">
+                  Recording
+                </span>
+              </div>
+              <div className="mt-3 flex gap-3">
+                {asset.creator_avatar ? (
+                  <img src={asset.creator_avatar} alt="" className="w-9 h-9 rounded-full flex-shrink-0 object-cover" />
+                ) : (
+                  <div className="w-9 h-9 rounded-full flex-shrink-0 bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+                    {(asset.creator_name || 'C').slice(0, 2).toUpperCase()}
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold truncate">{asset.title || 'Untitled Recording'}</p>
+                  <p className="text-xs text-muted-foreground">{asset.creator_name || 'Creator'}</p>
+                </div>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 

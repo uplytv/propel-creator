@@ -38,6 +38,7 @@ import CreatorProfile from "./pages/CreatorProfile";
 import Discover from "./pages/Discover";
 import Wallet from "./pages/Wallet";
 import AdminPayouts from "./pages/AdminPayouts";
+import ContentLibrary from "./pages/ContentLibrary";
 
 const queryClient = new QueryClient();
 
@@ -85,6 +86,7 @@ const App = () => (
                 <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
                 <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
                 <Route path="/admin/payouts" element={<ProtectedRoute><AdminPayouts /></ProtectedRoute>} />
+                <Route path="/content-library" element={<ProtectedRoute><ContentLibrary /></ProtectedRoute>} />
 
                 <Route path="*" element={<NotFound />} />
               </Routes>
