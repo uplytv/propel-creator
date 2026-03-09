@@ -53,7 +53,19 @@ export default function ContentLibrary() {
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    // Auto-poll every 30s while any asset is still preparing
+    const interval = setInterval(() => {
+      setAssets((current) => {
+        const hasPreparing = current.some((a) => a.status !== "ready" && a.status !== "errored");
+        if (hasPreparing) fetchAssets();
+        return current;
+      });
+    }, 30000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(interval);
+    };
   }, [user]);
 
   const formatDuration = (seconds: number | null) => {
