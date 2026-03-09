@@ -6,13 +6,82 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+async function verifyMuxSignature(req: Request, body: string): Promise<boolean> {
+  const secret = Deno.env.get('MUX_WEBHOOK_SECRET')
+  if (!secret) {
+    console.warn('MUX_WEBHOOK_SECRET not set — skipping signature verification')
+    return true
+  }
+
+  const header = req.headers.get('mux-signature')
+  if (!header) {
+    console.error('Missing mux-signature header')
+    return false
+  }
+
+  // Parse "t=<timestamp>,v1=<hash>" format
+  const parts: Record<string, string> = {}
+  for (const part of header.split(',')) {
+    const [key, value] = part.split('=')
+    parts[key] = value
+  }
+
+  const timestamp = parts['t']
+  const expectedSignature = parts['v1']
+
+  if (!timestamp || !expectedSignature) {
+    console.error('Invalid mux-signature format')
+    return false
+  }
+
+  // Reject if timestamp is older than 5 minutes
+  const fiveMinutes = 5 * 60
+  const now = Math.floor(Date.now() / 1000)
+  if (Math.abs(now - parseInt(timestamp)) > fiveMinutes) {
+    console.error('Webhook timestamp too old — possible replay attack')
+    return false
+  }
+
+  // Compute HMAC-SHA256 of "timestamp.body"
+  const encoder = new TextEncoder()
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  )
+  const signed = await crypto.subtle.sign('HMAC', key, encoder.encode(`${timestamp}.${body}`))
+  const computedSignature = Array.from(new Uint8Array(signed))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
+
+  if (computedSignature !== expectedSignature) {
+    console.error('Signature mismatch — rejecting webhook')
+    return false
+  }
+
+  return true
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const body = await req.json()
+    const rawBody = await req.text()
+
+    // Verify webhook signature
+    const isValid = await verifyMuxSignature(req, rawBody)
+    if (!isValid) {
+      return new Response(JSON.stringify({ error: 'Invalid signature' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    const body = JSON.parse(rawBody)
     const { type, data } = body
 
     console.log(`Webhook received: ${type}`, JSON.stringify(data).slice(0, 500))
@@ -28,7 +97,6 @@ serve(async (req) => {
         const liveStreamId = data.live_stream_id
 
         if (liveStreamId) {
-          // This is a recording from a live stream — look up the stream to get user info
           const { data: stream } = await supabase
             .from('mux_live_streams')
             .select('id, user_id, title, description, category')
@@ -36,7 +104,6 @@ serve(async (req) => {
             .single()
 
           if (stream) {
-            // Insert a new mux_assets record for the recording
             await supabase.from('mux_assets').insert({
               user_id: stream.user_id,
               mux_asset_id: data.id,
@@ -49,7 +116,6 @@ serve(async (req) => {
               description: stream.description,
             })
 
-            // Also create a live_stream_session record
             await supabase.from('live_stream_sessions').insert({
               stream_id: stream.id,
               user_id: stream.user_id,
@@ -60,7 +126,6 @@ serve(async (req) => {
             console.log(`Saved live stream recording for user ${stream.user_id}, asset ${data.id}`)
           }
         } else if (data.upload_id) {
-          // Standard VOD upload
           await supabase.from('mux_assets')
             .update({
               status: 'ready',
