@@ -19,7 +19,30 @@ const tierTargets = [
 
 export default function Dashboard() {
   const { profile } = useApp();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"overview" | "growth" | "jobs">("overview");
+  const [recordings, setRecordings] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetch = async () => {
+      const { data } = await supabase
+        .from("mux_assets")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(6);
+      if (data) setRecordings(data);
+    };
+    fetch();
+
+    const channel = supabase
+      .channel("dashboard-assets")
+      .on("postgres_changes", { event: "*", schema: "public", table: "mux_assets" }, () => fetch())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
 
   const target = tierTargets[profile.tier - 1];
   const nextTier = profile.tier < 4 ? tierNames[profile.tier] : null;
