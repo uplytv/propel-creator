@@ -1,18 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, MoreVertical, Grid, List, Brain, Link as LinkIcon,
   LayoutTemplate, Pencil, Users, DollarSign, X, ArrowLeft,
-  Loader2, Sparkles, Trash2,
+  Loader2, Sparkles, Trash2, Video, Upload,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Progress } from "@/components/ui/progress";
 import AppLayout from "@/components/layout/AppLayout";
 import { useProducts, useCreateProduct, useDeleteProduct } from "@/hooks/useProducts";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import UPLYMuxPlayer from "@/components/MuxPlayer";
 
 const typeIcons: Record<string, string> = {
   digital: "📦", course: "📚", community: "🤝", coaching: "🎯",
@@ -31,6 +35,8 @@ export default function Products() {
   const [view, setView] = useState<"grid" | "list">("grid");
   const [showCreate, setShowCreate] = useState(false);
   const [mode, setMode] = useState<CreateMode>(null);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   // Scratch / shared form state
   const [name, setName] = useState("");
@@ -45,13 +51,48 @@ export default function Products() {
   // URL state
   const [urlInput, setUrlInput] = useState("");
 
+  // Video upload state
+  const [videoUploadUrl, setVideoUploadUrl] = useState<string | null>(null);
+  const [videoUploadId, setVideoUploadId] = useState<string | null>(null);
+  const [videoUploading, setVideoUploading] = useState(false);
+  const [videoProgress, setVideoProgress] = useState(0);
+  const [videoStatus, setVideoStatus] = useState<string | null>(null);
+  const [videoPlaybackId, setVideoPlaybackId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const { data: products, isLoading } = useProducts();
   const createProduct = useCreateProduct();
   const deleteProduct = useDeleteProduct();
 
+  // Poll for video asset status
+  useEffect(() => {
+    if (!videoUploadId || videoStatus === 'ready') return;
+
+    const interval = setInterval(async () => {
+      const { data } = await supabase
+        .from('mux_assets')
+        .select('status, mux_playback_id')
+        .eq('upload_id', videoUploadId)
+        .single();
+
+      if (data) {
+        setVideoStatus(data.status);
+        if (data.mux_playback_id) setVideoPlaybackId(data.mux_playback_id);
+        if (data.status === 'ready' || data.status === 'errored') {
+          clearInterval(interval);
+        }
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [videoUploadId, videoStatus]);
+
   const resetForm = () => {
     setName(""); setDescription(""); setType("digital"); setPrice("");
     setAiPrompt(""); setUrlInput(""); setMode(null);
+    setVideoUploadUrl(null); setVideoUploadId(null);
+    setVideoUploading(false); setVideoProgress(0);
+    setVideoStatus(null); setVideoPlaybackId(null);
   };
 
   const closeSheet = () => { setShowCreate(false); resetForm(); };
@@ -77,9 +118,8 @@ export default function Products() {
       setDescription(result.description || "");
       setType(result.type || "digital");
       setPrice(String(result.price || 0));
-      setMode("scratch"); // switch to form with pre-filled data
+      setMode("scratch");
     } catch (e: any) {
-      // Fallback: generate locally if edge function doesn't exist yet
       setName(aiPrompt.slice(0, 60));
       setDescription(`AI-generated product based on: "${aiPrompt}"`);
       setType("digital");
@@ -105,6 +145,60 @@ export default function Products() {
     setType(t.type);
     setPrice(String(t.price));
     setMode("scratch");
+  };
+
+  const handleVideoUpload = async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase.functions.invoke("mux-create-upload", {
+        body: { userId: user.id, title: name || "Video content", description },
+      });
+      if (error) throw error;
+      setVideoUploadUrl(data.uploadUrl);
+      setVideoUploadId(data.uploadId);
+      fileInputRef.current?.click();
+    } catch (e: any) {
+      toast({ title: "Upload error", description: e.message || "Failed to initialize upload", variant: "destructive" });
+    }
+  };
+
+  const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !videoUploadUrl) return;
+
+    setVideoUploading(true);
+    setVideoProgress(0);
+    setVideoStatus('preparing');
+
+    try {
+      const xhr = new XMLHttpRequest();
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) {
+          setVideoProgress(Math.round((event.loaded / event.total) * 100));
+        }
+      });
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          setVideoUploading(false);
+          toast({ title: "Upload complete!", description: "Video is being processed..." });
+        } else {
+          throw new Error('Upload failed');
+        }
+      });
+
+      xhr.addEventListener('error', () => {
+        setVideoUploading(false);
+        toast({ title: "Upload failed", description: "Please try again", variant: "destructive" });
+      });
+
+      xhr.open('PUT', videoUploadUrl);
+      xhr.setRequestHeader('Content-Type', file.type);
+      xhr.send(file);
+    } catch (err: any) {
+      setVideoUploading(false);
+      toast({ title: "Upload error", description: err.message, variant: "destructive" });
+    }
   };
 
   const isEmpty = !isLoading && (!products || products.length === 0);
@@ -179,6 +273,15 @@ export default function Products() {
         >
           <Plus className="w-6 h-6" />
         </button>
+
+        {/* Hidden file input for video upload */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="video/*"
+          className="hidden"
+          onChange={handleFileSelected}
+        />
 
         {/* Create Sheet */}
         <AnimatePresence>
@@ -311,6 +414,50 @@ export default function Products() {
                         <Input type="number" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="0" min="0" />
                       </div>
                     </div>
+
+                    {/* Video Upload Section */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <Video className="w-4 h-4" /> Video Content
+                      </Label>
+                      {!videoStatus && !videoUploading && (
+                        <Button
+                          variant="outline"
+                          onClick={handleVideoUpload}
+                          className="w-full"
+                          type="button"
+                        >
+                          <Upload className="w-4 h-4 mr-2" /> Upload Video
+                        </Button>
+                      )}
+                      {videoUploading && (
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Uploading... {videoProgress}%
+                          </div>
+                          <Progress value={videoProgress} className="h-2" />
+                        </div>
+                      )}
+                      {videoStatus === 'preparing' && !videoUploading && (
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-warning/10 text-sm text-warning">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Processing video...
+                        </div>
+                      )}
+                      {videoStatus === 'ready' && videoPlaybackId && (
+                        <div className="rounded-xl overflow-hidden border border-border">
+                          <UPLYMuxPlayer playbackId={videoPlaybackId} title={name} />
+                        </div>
+                      )}
+                      {videoStatus === 'errored' && (
+                        <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-destructive/10 text-sm text-destructive">
+                          <span>Video processing failed</span>
+                          <Button variant="outline" size="sm" onClick={handleVideoUpload}>Retry</Button>
+                        </div>
+                      )}
+                    </div>
+
                     <Button onClick={handleScratchSubmit} disabled={createProduct.isPending || !name.trim()} className="w-full">
                       {createProduct.isPending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Creating...</> : "Create Product"}
                     </Button>
