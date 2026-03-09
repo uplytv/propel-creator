@@ -92,7 +92,7 @@ export default function Dashboard() {
             <MyJobsTab />
           </motion.div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <><div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Card 1 - Current Level */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }} className="glass-card p-6 group">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 group-hover:text-primary transition-colors duration-300">Current Level</h3>
