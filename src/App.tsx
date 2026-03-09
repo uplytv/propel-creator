@@ -36,6 +36,8 @@ import JobMessages from "./pages/JobMessages";
 import Notifications from "./pages/Notifications";
 import CreatorProfile from "./pages/CreatorProfile";
 import Discover from "./pages/Discover";
+import Wallet from "./pages/Wallet";
+import AdminPayouts from "./pages/AdminPayouts";
 
 const queryClient = new QueryClient();
 
