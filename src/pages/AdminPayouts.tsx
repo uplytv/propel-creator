@@ -37,7 +37,7 @@ export default function AdminPayouts() {
   const { data: isAdmin, isLoading: adminLoading } = useQuery({
     queryKey: ["is-admin", user?.id],
     queryFn: async () => {
-      const { data } = await supabase.rpc("has_role", { _user_id: user!.id, _role: "admin" });
+      const { data } = await supabase.rpc("has_role" as any, { _user_id: user!.id, _role: "admin" });
       return !!data;
     },
     enabled: !!user,
