@@ -19,6 +19,7 @@ const navItems = [
   { label: "Home", icon: Home, path: "/dashboard", desc: "Overview & metrics" },
   { label: "Discover", icon: Search, path: "/discover", desc: "Find creators" },
   { label: "Live", icon: Radio, path: "/live", desc: "Watch & stream live" },
+  { label: "Content Library", icon: Film, path: "/content-library", desc: "Your recordings & videos" },
   { label: "Grow", icon: Rocket, path: "/grow", desc: "Launch Protocol" },
   { label: "Products", icon: Package, path: "/products", desc: "What you sell" },
   { label: "Community", icon: Users, path: "/community", desc: "Your audience" },
