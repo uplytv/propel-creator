@@ -595,6 +595,77 @@ export type Database = {
         }
         Relationships: []
       }
+      payout_requests: {
+        Row: {
+          amount: number
+          id: string
+          notes: string | null
+          payout_details: Json | null
+          payout_method: string | null
+          processed_at: string | null
+          requested_at: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          id?: string
+          notes?: string | null
+          payout_details?: Json | null
+          payout_method?: string | null
+          processed_at?: string | null
+          requested_at?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          id?: string
+          notes?: string | null
+          payout_details?: Json | null
+          payout_method?: string | null
+          processed_at?: string | null
+          requested_at?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      platform_fees: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          fee_type: string | null
+          id: string
+          percentage: number | null
+          transaction_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string | null
+          fee_type?: string | null
+          id?: string
+          percentage?: number | null
+          transaction_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string | null
+          fee_type?: string | null
+          id?: string
+          percentage?: number | null
+          transaction_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_fees_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       posts: {
         Row: {
           category: string
@@ -814,6 +885,89 @@ export type Database = {
           receiver_id?: string
           sender_id?: string
           stream_id?: string | null
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          completed_at: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          net_amount: number | null
+          platform_fee_amount: number | null
+          reference_id: string | null
+          status: string | null
+          type: string | null
+          wallet_id: string | null
+        }
+        Insert: {
+          amount: number
+          completed_at?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          net_amount?: number | null
+          platform_fee_amount?: number | null
+          reference_id?: string | null
+          status?: string | null
+          type?: string | null
+          wallet_id?: string | null
+        }
+        Update: {
+          amount?: number
+          completed_at?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          net_amount?: number | null
+          platform_fee_amount?: number | null
+          reference_id?: string | null
+          status?: string | null
+          type?: string | null
+          wallet_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallets: {
+        Row: {
+          available_balance: number | null
+          created_at: string | null
+          currency: string | null
+          id: string
+          lifetime_earned: number | null
+          lifetime_withdrawn: number | null
+          pending_balance: number | null
+          user_id: string
+        }
+        Insert: {
+          available_balance?: number | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          lifetime_earned?: number | null
+          lifetime_withdrawn?: number | null
+          pending_balance?: number | null
+          user_id: string
+        }
+        Update: {
+          available_balance?: number | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          lifetime_earned?: number | null
+          lifetime_withdrawn?: number | null
+          pending_balance?: number | null
+          user_id?: string
         }
         Relationships: []
       }
