@@ -41,35 +41,57 @@ export default function Stream() {
   const [loading, setLoading] = useState(true);
   const [isRealStream, setIsRealStream] = useState(false);
 
+  const searchParams = new URLSearchParams(window.location.search);
+  const isVod = searchParams.get('type') === 'vod';
+
   useEffect(() => {
     const fetchStream = async () => {
       if (!id) return;
 
-      // Try fetching from mux_live_streams first
-      const { data: muxStream } = await supabase
-        .from('mux_live_streams')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (muxStream) {
-        setDbStream(muxStream);
-        setIsRealStream(true);
-
-        // Fetch profile
-        const { data: prof } = await supabase
-          .from('profiles')
-          .select('display_name, avatar_url, tier, tier_name')
-          .eq('user_id', muxStream.user_id)
+      if (isVod) {
+        // Fetch VOD asset
+        const { data: asset } = await supabase
+          .from('mux_assets')
+          .select('*')
+          .eq('id', id)
           .single();
 
-        setProfile(prof);
+        if (asset) {
+          setDbStream(asset);
+          setIsRealStream(true);
+
+          const { data: prof } = await supabase
+            .from('profiles')
+            .select('display_name, avatar_url, tier, tier_name')
+            .eq('user_id', asset.user_id)
+            .single();
+          setProfile(prof);
+        }
+      } else {
+        // Try fetching from mux_live_streams first
+        const { data: muxStream } = await supabase
+          .from('mux_live_streams')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (muxStream) {
+          setDbStream(muxStream);
+          setIsRealStream(true);
+
+          const { data: prof } = await supabase
+            .from('profiles')
+            .select('display_name, avatar_url, tier, tier_name')
+            .eq('user_id', muxStream.user_id)
+            .single();
+          setProfile(prof);
+        }
       }
       setLoading(false);
     };
 
     fetchStream();
-  }, [id]);
+  }, [id, isVod]);
 
   // Realtime status updates
   useEffect(() => {
@@ -113,26 +135,29 @@ export default function Stream() {
     );
   }
 
-  // If it's a real stream from the database
+  // If it's a real stream or VOD from the database
   if (isRealStream && dbStream) {
-    const isActive = dbStream.status === 'active';
+    const isActive = !isVod && dbStream.status === 'active';
     const creatorName = profile?.display_name || 'Creator';
     const creatorAvatar = profile?.display_name?.slice(0, 2).toUpperCase() || 'CR';
     const creatorTier = profile?.tier || 1;
     const creatorTierName = profile?.tier_name || 'Starter';
     const TierIcon = tierIcons[creatorTier - 1] || Shield;
+    const playbackId = isVod ? dbStream.mux_playback_id : dbStream.mux_playback_id;
 
     return (
       <div className="min-h-screen bg-background flex flex-col">
         {/* Top bar */}
         <div className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
           <div className="flex items-center justify-between h-14 px-3 sm:px-4">
-            <button onClick={() => navigate("/live")} className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
+            <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft className="w-4 h-4" />
               <span className="text-sm font-medium hidden sm:inline">Back</span>
             </button>
             <div className="flex items-center gap-2">
-              {isActive ? (
+              {isVod ? (
+                <span className="text-xs text-muted-foreground px-2 py-1 rounded-md bg-muted">Recording</span>
+              ) : isActive ? (
                 <div className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-bold bg-primary/10 text-primary">
                   <span className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
@@ -143,10 +168,12 @@ export default function Stream() {
               ) : (
                 <span className="text-xs text-muted-foreground px-2 py-1 rounded-md bg-muted">Offline</span>
               )}
-              <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Eye className="w-3 h-3" />
-                {formatViewers(dbStream.viewer_count || 0)}
-              </span>
+              {!isVod && (
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Eye className="w-3 h-3" />
+                  {formatViewers(dbStream.viewer_count || 0)}
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
               {user && (
@@ -175,9 +202,17 @@ export default function Stream() {
         <div className="flex-1 flex pt-14">
           <div className="flex-1 flex flex-col min-w-0">
             {/* Video player */}
-            {isActive && dbStream.mux_playback_id ? (
+            {(isVod && playbackId) ? (
               <UPLYMuxPlayer
-                playbackId={dbStream.mux_playback_id}
+                playbackId={playbackId}
+                title={dbStream.title || 'Recording'}
+                autoPlay
+                muted={false}
+                streamType="on-demand"
+              />
+            ) : isActive && playbackId ? (
+              <UPLYMuxPlayer
+                playbackId={playbackId}
                 title={dbStream.title || 'Live Stream'}
                 autoPlay
                 muted
