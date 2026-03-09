@@ -202,7 +202,18 @@ export default function Stream() {
         <div className="flex-1 flex pt-14">
           <div className="flex-1 flex flex-col min-w-0">
             {/* Video player */}
-            {(isVod && playbackId) ? (
+            {isVod && !playbackId ? (
+              <div className="w-full aspect-video bg-muted/50 flex items-center justify-center border-b border-border">
+                <div className="text-center">
+                  <Loader2 className="w-10 h-10 text-primary mx-auto mb-3 animate-spin" />
+                  <h2 className="text-lg font-bold text-foreground mb-1">Still processing</h2>
+                  <p className="text-sm text-muted-foreground">This recording is being prepared. Check back shortly.</p>
+                  <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate(-1)}>
+                    Go Back
+                  </Button>
+                </div>
+              </div>
+            ) : (isVod && playbackId) ? (
               <UPLYMuxPlayer
                 playbackId={playbackId}
                 title={dbStream.title || 'Recording'}
