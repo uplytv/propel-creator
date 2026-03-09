@@ -12,6 +12,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useUnreadMessageCount } from "@/hooks/useCollaborations";
 import { useUnreadJobMessageCount } from "@/hooks/useJobMessages";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useWallet } from "@/hooks/useWallet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const navItems = [
