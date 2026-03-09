@@ -43,7 +43,9 @@ interface Props {
 export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [liveStreams, setLiveStreams] = useState<LiveStream[]>([]);
+  const [vodAssets, setVodAssets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const fetchLiveStreams = async () => {
     const { data: streams, error } = await supabase
@@ -54,41 +56,64 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
 
     if (error || !streams || streams.length === 0) {
       setLiveStreams([]);
-      setLoading(false);
-      return;
+    } else {
+      const userIds = [...new Set(streams.map((s: any) => s.user_id))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, avatar_url, tier, tier_name')
+        .in('user_id', userIds);
+
+      const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
+
+      const enriched = streams.map((s: any) => {
+        const profile = profileMap.get(s.user_id);
+        return {
+          ...s,
+          creator_name: profile?.display_name || 'Creator',
+          creator_avatar: profile?.avatar_url || (profile?.display_name?.slice(0, 2).toUpperCase() || 'CR'),
+          creator_tier: profile?.tier || 1,
+          creator_tier_name: profile?.tier_name || 'Starter',
+        };
+      });
+      setLiveStreams(enriched);
     }
+  };
 
-    // Fetch profiles for these streams
-    const userIds = [...new Set(streams.map((s: any) => s.user_id))];
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('user_id, display_name, avatar_url, tier, tier_name')
-      .in('user_id', userIds);
+  const fetchVodAssets = async () => {
+    const { data: assets } = await supabase
+      .from('mux_assets')
+      .select('*')
+      .eq('is_public', true)
+      .eq('status', 'ready')
+      .order('created_at', { ascending: false })
+      .limit(12);
 
-    const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
+    if (assets && assets.length > 0) {
+      const userIds = [...new Set(assets.map((a: any) => a.user_id))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, avatar_url, tier, tier_name')
+        .in('user_id', userIds);
 
-    const enriched = streams.map((s: any) => {
-      const profile = profileMap.get(s.user_id);
-      return {
-        ...s,
-        creator_name: profile?.display_name || 'Creator',
-        creator_avatar: profile?.avatar_url || (profile?.display_name?.slice(0, 2).toUpperCase() || 'CR'),
-        creator_tier: profile?.tier || 1,
-        creator_tier_name: profile?.tier_name || 'Starter',
-      };
-    });
+      const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
 
-    setLiveStreams(enriched);
-    setLoading(false);
+      setVodAssets(assets.map((a: any) => {
+        const profile = profileMap.get(a.user_id);
+        return { ...a, creator_name: profile?.display_name || 'Creator', creator_avatar: profile?.avatar_url, creator_tier: profile?.tier || 1, creator_tier_name: profile?.tier_name || 'Starter' };
+      }));
+    }
   };
 
   useEffect(() => {
-    fetchLiveStreams();
+    Promise.all([fetchLiveStreams(), fetchVodAssets()]).then(() => setLoading(false));
 
     const channel = supabase
       .channel('live-discovery')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'mux_live_streams' }, () => {
         fetchLiveStreams();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'mux_assets' }, () => {
+        fetchVodAssets();
       })
       .subscribe();
 
