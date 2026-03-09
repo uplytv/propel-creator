@@ -38,6 +38,7 @@ import CreatorProfile from "./pages/CreatorProfile";
 import Discover from "./pages/Discover";
 import Wallet from "./pages/Wallet";
 import AdminPayouts from "./pages/AdminPayouts";
+import ContentLibrary from "./pages/ContentLibrary";
 
 const queryClient = new QueryClient();
 
