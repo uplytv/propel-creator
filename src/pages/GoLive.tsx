@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Radio, Globe, Lock, Copy, Check, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Radio, Globe, Lock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
@@ -8,7 +8,7 @@ import { categories } from "@/data/mockStreams";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Skeleton } from "@/components/ui/skeleton";
+import BroadcastStudio from "@/components/live/BroadcastStudio";
 
 export default function GoLive() {
   const navigate = useNavigate();
@@ -24,8 +24,6 @@ export default function GoLive() {
     playbackId: string;
     rtmpUrl: string;
   } | null>(null);
-  const [showKey, setShowKey] = useState(false);
-  const [copiedField, setCopiedField] = useState<string | null>(null);
   const [streamStatus, setStreamStatus] = useState<string>("idle");
 
   // Realtime subscription on mux_live_streams for status
@@ -69,18 +67,12 @@ export default function GoLive() {
       if (error) throw error;
       setStreamData(data);
       setStreamStatus("idle");
-      toast({ title: "Stream created!", description: "Enter credentials into your streaming software." });
+      toast({ title: "Stream created!", description: "Your broadcast studio is ready." });
     } catch (e: any) {
       toast({ title: "Error", description: e.message || "Failed to create stream", variant: "destructive" });
     } finally {
       setIsSettingUp(false);
     }
-  };
-
-  const copyToClipboard = (text: string, field: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedField(field);
-    setTimeout(() => setCopiedField(null), 2000);
   };
 
   return (
@@ -93,7 +85,9 @@ export default function GoLive() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-foreground">Go Live</h1>
-              <p className="text-sm text-muted-foreground">Start streaming to your audience</p>
+              <p className="text-sm text-muted-foreground">
+                {streamData ? "Broadcast Studio" : "Start streaming to your audience"}
+              </p>
             </div>
           </div>
 
@@ -182,111 +176,12 @@ export default function GoLive() {
               </p>
             </div>
           ) : (
-            /* Stream Credentials & Status */
-            <div className="space-y-6">
-              {/* Status Badge */}
-              <div className="flex items-center gap-3">
-                {streamStatus === "active" ? (
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20">
-                    <span className="relative flex h-2.5 w-2.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary" />
-                    </span>
-                    <span className="text-sm font-bold text-primary">LIVE</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted border border-border">
-                    <span className="w-2.5 h-2.5 rounded-full bg-muted-foreground" />
-                    <span className="text-sm font-medium text-muted-foreground">Waiting for stream...</span>
-                  </div>
-                )}
-                <span className="text-sm text-muted-foreground">{title}</span>
-              </div>
-
-              {/* Credentials Card */}
-              <div className="glass-card p-6 space-y-4">
-                <h3 className="text-lg font-bold text-foreground">Stream Credentials</h3>
-                <p className="text-sm text-muted-foreground">
-                  Enter these credentials into OBS, Streamyard, or any streaming software to go live on UPLY.
-                </p>
-
-                {/* RTMP URL */}
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5 block">RTMP URL</label>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 bg-secondary/50 border border-border rounded-lg px-4 py-2.5 text-sm font-mono text-foreground">
-                      {streamData.rtmpUrl}
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => copyToClipboard(streamData.rtmpUrl, "rtmp")}
-                      className="flex-shrink-0"
-                    >
-                      {copiedField === "rtmp" ? <Check className="w-4 h-4 text-primary" /> : <Copy className="w-4 h-4" />}
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Stream Key */}
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5 block">Stream Key</label>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 bg-secondary/50 border border-border rounded-lg px-4 py-2.5 text-sm font-mono text-foreground relative overflow-hidden">
-                      {showKey ? streamData.streamKey : "••••••••••••••••••••••••"}
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setShowKey(!showKey)}
-                      className="flex-shrink-0"
-                    >
-                      {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => copyToClipboard(streamData.streamKey, "key")}
-                      className="flex-shrink-0"
-                    >
-                      {copiedField === "key" ? <Check className="w-4 h-4 text-primary" /> : <Copy className="w-4 h-4" />}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Instructions */}
-              <div className="glass-card p-5">
-                <h4 className="text-sm font-semibold text-foreground mb-3">Quick Setup</h4>
-                <ol className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex gap-2">
-                    <span className="text-primary font-bold">1.</span>
-                    Open your streaming software (OBS, Streamyard, etc.)
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-primary font-bold">2.</span>
-                    Set the server/RTMP URL to the value above
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-primary font-bold">3.</span>
-                    Paste your stream key
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-primary font-bold">4.</span>
-                    Click "Start Streaming" — your status will update to LIVE automatically
-                  </li>
-                </ol>
-              </div>
-
-              <Button
-                variant="destructive"
-                size="lg"
-                onClick={() => setStreamData(null)}
-                className="w-full"
-              >
-                Create New Stream
-              </Button>
-            </div>
+            <BroadcastStudio
+              streamData={streamData}
+              streamStatus={streamStatus}
+              title={title}
+              onEndStream={() => setStreamData(null)}
+            />
           )}
         </motion.div>
       </div>
