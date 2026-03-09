@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Rocket, Package, Users, UserCheck, Lock, Share2,
   LogOut, Settings, ChevronLeft, ChevronRight, Shield, TrendingUp,
-  Zap, Crown, Sparkles, BarChart3, Trophy, Handshake, Radio, Plug, Briefcase, MessageSquare, Bell as BellIcon, Search, Menu, X
+  Zap, Crown, Sparkles, BarChart3, Trophy, Handshake, Radio, Plug, Briefcase, MessageSquare, Bell as BellIcon, Search, Menu, X, Wallet
 } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import { useApp, tierNames } from "@/context/AppContext";
@@ -12,6 +12,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useUnreadMessageCount } from "@/hooks/useCollaborations";
 import { useUnreadJobMessageCount } from "@/hooks/useJobMessages";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useWallet } from "@/hooks/useWallet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const navItems = [
@@ -28,6 +29,7 @@ const navItems = [
   { label: "Jobs & Talent", icon: Briefcase, path: "/jobs", desc: "Freelance marketplace" },
   { label: "Messages", icon: MessageSquare, path: "/job-messages", desc: "Job conversations", badgeKey: "job-messages" },
   { label: "Notifications", icon: BellIcon, path: "/notifications", desc: "Alerts & updates", badgeKey: "notifications" },
+  { label: "Wallet", icon: Wallet, path: "/wallet", desc: "Earnings & payouts" },
   { label: "My Rep", icon: UserCheck, path: "/my-rep", desc: "Growth partner", requiresTier: 3 },
   { label: "Settings", icon: Settings, path: "/settings", desc: "Preferences" },
 ] as { label: string; icon: React.ElementType; path: string; desc: string; requiresTier?: number; badgeKey?: string }[];
@@ -60,6 +62,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { data: unreadCount = 0 } = useUnreadMessageCount();
   const { data: jobUnreadCount = 0 } = useUnreadJobMessageCount();
   const { unreadCount: notifUnreadCount } = useNotifications();
+  const { data: wallet } = useWallet();
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -196,6 +199,34 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
         {/* Bottom Section */}
         <div className={`border-t border-border ${collapsed ? "p-2" : "p-3"}`}>
+          {/* Wallet Widget */}
+          {!collapsed ? (
+            <button
+              onClick={() => navigate("/wallet")}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[#00FF85]/5 border border-[#00FF85]/20 hover:bg-[#00FF85]/10 transition-colors mb-3"
+            >
+              <Wallet className="w-4 h-4 text-[#00FF85]" />
+              <div className="flex-1 text-left">
+                <p className="text-[10px] text-muted-foreground">Balance</p>
+                <p className="text-sm font-bold text-[#00FF85]">${Number(wallet?.available_balance ?? 0).toFixed(2)}</p>
+              </div>
+            </button>
+          ) : (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => navigate("/wallet")}
+                  className="w-full flex justify-center py-2 mb-2 rounded-lg hover:bg-[#00FF85]/10 transition-colors"
+                >
+                  <Wallet className="w-4 h-4 text-[#00FF85]" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <span>Balance: ${Number(wallet?.available_balance ?? 0).toFixed(2)}</span>
+              </TooltipContent>
+            </Tooltip>
+          )}
+
           {/* Tier Badge */}
           {!collapsed ? (
             <div className="px-3 py-3 rounded-xl bg-secondary/30 mb-3">

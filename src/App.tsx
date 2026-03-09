@@ -36,6 +36,8 @@ import JobMessages from "./pages/JobMessages";
 import Notifications from "./pages/Notifications";
 import CreatorProfile from "./pages/CreatorProfile";
 import Discover from "./pages/Discover";
+import Wallet from "./pages/Wallet";
+import AdminPayouts from "./pages/AdminPayouts";
 
 const queryClient = new QueryClient();
 
@@ -81,6 +83,8 @@ const App = () => (
                 <Route path="/talent-profile" element={<ProtectedRoute><TalentProfile /></ProtectedRoute>} />
                 <Route path="/job-messages" element={<ProtectedRoute><JobMessages /></ProtectedRoute>} />
                 <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+                <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
+                <Route path="/admin/payouts" element={<ProtectedRoute><AdminPayouts /></ProtectedRoute>} />
 
                 <Route path="*" element={<NotFound />} />
               </Routes>
