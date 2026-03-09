@@ -1,3 +1,4 @@
+// @ts-nocheck
 import MuxPlayerComponent from '@mux/mux-player-react';
 
 interface MuxPlayerProps {

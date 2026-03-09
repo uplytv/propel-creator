@@ -4,12 +4,35 @@ import LiveDiscoveryFeed from "@/components/live/LiveDiscoveryFeed";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Live() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const [liveCount, setLiveCount] = useState(0);
+
+  useEffect(() => {
+    const fetchCount = async () => {
+      const { count } = await supabase
+        .from('mux_live_streams')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'active')
+        .eq('is_public', true);
+      setLiveCount(count || 0);
+    };
+    fetchCount();
+
+    const channel = supabase
+      .channel('live-count')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'mux_live_streams' }, () => {
+        fetchCount();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -75,7 +98,7 @@ export default function Live() {
           >
             <div className="live-badge flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold">
               <span className="live-dot w-2.5 h-2.5 rounded-full" />
-              {8} LIVE NOW
+              {liveCount} LIVE NOW
             </div>
           </motion.div>
           <motion.h1
@@ -100,7 +123,7 @@ export default function Live() {
       {/* Discovery Feed */}
       <section className="pb-20">
         <div className="container">
-          <LiveDiscoveryFeed />
+          <LiveDiscoveryFeed searchQuery={search} />
         </div>
       </section>
     </div>
