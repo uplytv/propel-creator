@@ -2,3 +2,12 @@ project_id = "dbjlhmbgskvhuzqvqfrl"
 
 [functions.match-talent]
 verify_jwt = false
+
+[functions.mux-webhook]
+verify_jwt = false
+
+[functions.mux-create-upload]
+verify_jwt = false
+
+[functions.mux-create-livestream]
+verify_jwt = false
