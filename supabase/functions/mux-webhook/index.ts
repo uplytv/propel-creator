@@ -126,7 +126,7 @@ serve(async (req) => {
             console.log(`Saved live stream recording for user ${stream.user_id}, asset ${data.id}`)
           }
         } else if (data.upload_id) {
-          await supabase.from('mux_assets')
+          const { data: updateResult, error: updateError } = await supabase.from('mux_assets')
             .update({
               status: 'ready',
               mux_asset_id: data.id,
@@ -136,6 +136,15 @@ serve(async (req) => {
               updated_at: new Date().toISOString()
             })
             .eq('upload_id', data.upload_id)
+            .select()
+
+          if (updateError) {
+            console.error(`Failed to update asset by upload_id ${data.upload_id}: ${JSON.stringify(updateError)}`)
+          } else if (!updateResult || updateResult.length === 0) {
+            console.warn(`No DB record found for upload_id ${data.upload_id} — asset ${data.id} with playback ${playbackId} was not linked`)
+          } else {
+            console.log(`Updated asset ${updateResult[0].id} to ready via upload_id ${data.upload_id}`)
+          }
         }
         break
       }
