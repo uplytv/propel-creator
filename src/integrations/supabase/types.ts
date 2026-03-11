@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      business_categories: {
+        Row: {
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          name: string
+          position: number
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          name: string
+          position?: number
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          name?: string
+          position?: number
+          slug?: string
+        }
+        Relationships: []
+      }
       campaign_metrics: {
         Row: {
           campaign_id: string
@@ -170,6 +200,42 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      category_feature_defaults: {
+        Row: {
+          category_id: string
+          enabled: boolean
+          feature_key: string
+          id: string
+        }
+        Insert: {
+          category_id: string
+          enabled?: boolean
+          feature_key: string
+          id?: string
+        }
+        Update: {
+          category_id?: string
+          enabled?: boolean
+          feature_key?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_feature_defaults_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "business_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_feature_defaults_feature_key_fkey"
+            columns: ["feature_key"]
+            isOneToOne: false
+            referencedRelation: "feature_registry"
+            referencedColumns: ["key"]
+          },
+        ]
       }
       chat_messages: {
         Row: {
@@ -548,6 +614,81 @@ export type Database = {
           name?: string
           price?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      feature_audit_log: {
+        Row: {
+          action: string
+          actor_id: string
+          created_at: string
+          feature_key: string | null
+          id: string
+          new_value: Json | null
+          old_value: Json | null
+          target_id: string | null
+          target_type: string
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          created_at?: string
+          feature_key?: string | null
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          target_id?: string | null
+          target_type: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          created_at?: string
+          feature_key?: string | null
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          target_id?: string | null
+          target_type?: string
+        }
+        Relationships: []
+      }
+      feature_registry: {
+        Row: {
+          core: string
+          created_at: string
+          default_enabled: boolean
+          dependencies: string[]
+          description: string
+          id: string
+          key: string
+          label: string
+          position: number
+          tier: string
+        }
+        Insert: {
+          core: string
+          created_at?: string
+          default_enabled?: boolean
+          dependencies?: string[]
+          description?: string
+          id?: string
+          key: string
+          label: string
+          position?: number
+          tier: string
+        }
+        Update: {
+          core?: string
+          created_at?: string
+          default_enabled?: boolean
+          dependencies?: string[]
+          description?: string
+          id?: string
+          key?: string
+          label?: string
+          position?: number
+          tier?: string
         }
         Relationships: []
       }
@@ -1342,6 +1483,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           bio: string | null
+          business_category: string | null
           created_at: string
           creator_challenge: string | null
           creator_stage: string | null
@@ -1357,11 +1499,13 @@ export type Database = {
           total_revenue: number
           updated_at: string
           user_id: string
+          user_type: string | null
           website: string | null
         }
         Insert: {
           avatar_url?: string | null
           bio?: string | null
+          business_category?: string | null
           created_at?: string
           creator_challenge?: string | null
           creator_stage?: string | null
@@ -1377,11 +1521,13 @@ export type Database = {
           total_revenue?: number
           updated_at?: string
           user_id: string
+          user_type?: string | null
           website?: string | null
         }
         Update: {
           avatar_url?: string | null
           bio?: string | null
+          business_category?: string | null
           created_at?: string
           creator_challenge?: string | null
           creator_stage?: string | null
@@ -1397,6 +1543,7 @@ export type Database = {
           total_revenue?: number
           updated_at?: string
           user_id?: string
+          user_type?: string | null
           website?: string | null
         }
         Relationships: []
@@ -1535,6 +1682,41 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "wallets"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_feature_overrides: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          feature_key: string
+          id: string
+          overridden_by: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          feature_key: string
+          id?: string
+          overridden_by?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          feature_key?: string
+          id?: string
+          overridden_by?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_feature_overrides_feature_key_fkey"
+            columns: ["feature_key"]
+            isOneToOne: false
+            referencedRelation: "feature_registry"
+            referencedColumns: ["key"]
           },
         ]
       }
