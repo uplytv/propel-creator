@@ -467,7 +467,40 @@ export default function Products() {
                       </div>
                     </div>
 
-                    {/* Video Upload Section */}
+                    {/* Image Upload Section */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <ImageIcon className="w-4 h-4" /> Product Image
+                      </Label>
+                      {imagePreview ? (
+                        <div className="relative rounded-lg overflow-hidden border border-border">
+                          <img src={imagePreview} alt="Preview" className="w-full h-36 object-cover" />
+                          <button
+                            onClick={() => { setImageFile(null); setImagePreview(null); }}
+                            className="absolute top-2 right-2 p-1 rounded-full bg-background/80 hover:bg-background text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => imageInputRef.current?.click()}
+                          className="w-full flex flex-col items-center justify-center gap-1.5 p-4 rounded-lg border border-dashed border-border hover:border-primary/30 hover:bg-secondary/30 transition-colors cursor-pointer"
+                        >
+                          <ImageIcon className="w-5 h-5 text-primary" />
+                          <span className="text-xs text-muted-foreground">Click to upload an image</span>
+                        </button>
+                      )}
+                      <input
+                        ref={imageInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleImageSelected}
+                      />
+                    </div>
+
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2">
                         <Video className="w-4 h-4" /> Video Content
