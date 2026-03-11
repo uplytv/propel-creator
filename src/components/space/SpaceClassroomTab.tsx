@@ -359,9 +359,34 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                           <p className="text-sm font-medium text-white truncate">{lesson.title}</p>
-                                          {lesson.duration_seconds > 0 && (
-                                            <p className="text-xs" style={{ color: "#888" }}>{formatDuration(lesson.duration_seconds)}</p>
-                                          )}
+                                          <div className="flex items-center gap-2">
+                                            {lesson.duration_seconds > 0 && (
+                                              <p className="text-xs" style={{ color: "#888" }}>{formatDuration(lesson.duration_seconds)}</p>
+                                            )}
+                                            {isOwner && lesson.mux_asset_id && (() => {
+                                              const asset = (assetStatuses as Record<string, { status: string; hasPlayback: boolean }>)[lesson.mux_asset_id];
+                                              const status = asset?.status || (lesson.mux_asset_id === "pending" ? "preparing" : null);
+                                              if (!status || status === "ready") {
+                                                if (asset?.hasPlayback) return (
+                                                  <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: "rgba(0,255,133,0.15)", color: "#00FF85" }}>
+                                                    <CheckCircle className="w-2.5 h-2.5" /> Ready
+                                                  </span>
+                                                );
+                                                return null;
+                                              }
+                                              if (status === "preparing" || status === "pending") return (
+                                                <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: "rgba(255,187,0,0.15)", color: "#FFBB00" }}>
+                                                  <Loader2 className="w-2.5 h-2.5 animate-spin" /> Processing
+                                                </span>
+                                              );
+                                              if (status === "errored") return (
+                                                <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: "rgba(255,50,50,0.15)", color: "#FF3232" }}>
+                                                  <AlertCircle className="w-2.5 h-2.5" /> Error
+                                                </span>
+                                              );
+                                              return null;
+                                            })()}
+                                          </div>
                                         </div>
                                         {isComplete && <CheckCircle className="w-4 h-4 flex-shrink-0" style={{ color: "#00FF85" }} />}
                                       </button>
