@@ -43,6 +43,9 @@ export default function BroadcastStudio({
   streamStatus,
   title,
   onEndStream,
+  products = [],
+  featuredProductId,
+  onFeaturedProductChange,
 }: BroadcastStudioProps) {
   const { user } = useAuth();
   const { toast } = useToast();
