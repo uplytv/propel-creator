@@ -12,9 +12,13 @@ import SpaceCalendarTab from "@/components/space/SpaceCalendarTab";
 import SpaceMembersTab from "@/components/space/SpaceMembersTab";
 import SpaceLeaderboardTab from "@/components/space/SpaceLeaderboardTab";
 import SpaceAboutTab from "@/components/space/SpaceAboutTab";
+import { MemberEarnTab } from "@/components/affiliates/MemberEarnTab";
+import { CreatorAffiliateProgramSettings } from "@/components/affiliates/CreatorAffiliateProgramSettings";
+import { useCreatorAffiliateProgram } from "@/hooks/useAffiliates";
+import { useQuery as useRQQuery } from "@tanstack/react-query";
 
-const TABS = ["Community", "Classroom", "Calendar", "Members", "Leaderboard", "About"] as const;
-type Tab = typeof TABS[number];
+const BASE_TABS = ["Community", "Classroom", "Calendar", "Members", "Leaderboard", "About"] as const;
+type Tab = typeof BASE_TABS[number] | "Earn" | "Manage";
 
 export default function CreatorSpace() {
   const { creatorId } = useParams<{ creatorId: string }>();
