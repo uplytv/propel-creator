@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import Hls from 'hls.js';
-import { Loader2, RefreshCw, WifiOff } from 'lucide-react';
+import { Loader2, RefreshCw, WifiOff, PictureInPicture2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface MuxPlayerProps {
