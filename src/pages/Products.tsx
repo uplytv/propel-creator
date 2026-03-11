@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, MoreVertical, Grid, List, Brain, Link as LinkIcon,
   LayoutTemplate, Pencil, Users, DollarSign, X, ArrowLeft,
-  Loader2, Sparkles, Trash2, Video, Upload,
+  Loader2, Sparkles, Trash2, Video, Upload, ImageIcon,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
