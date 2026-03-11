@@ -44,12 +44,12 @@ export function useDashboardStats() {
       } catch {}
 
       return {
-        totalMembers: 0, // No subscriptions table yet
-        activeSubscribers: 0, // No subscriptions table yet
-        totalRevenue: Number(walletResult?.lifetime_earned ?? 0),
-        revenueThisMonth: 0, // Will wire when transactions are scoped by creator
-        newMembersThisWeek: 0, // No subscriptions table yet
-        totalLiveStreams: liveStreamsResult as number,
+        totalMembers: 0,
+        activeSubscribers: 0,
+        totalRevenue: Number(walletData?.lifetime_earned ?? 0),
+        revenueThisMonth: 0,
+        newMembersThisWeek: 0,
+        totalLiveStreams: liveStreamsCount,
       };
     },
     enabled: !!user,
