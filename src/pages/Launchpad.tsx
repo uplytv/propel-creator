@@ -101,6 +101,25 @@ export default function Launchpad() {
     setSuccess(false);
     setImageFile(null);
     setImagePreview(null);
+    setIdea("");
+  };
+
+  const handleGenerate = async () => {
+    if (!idea.trim() || !option) return;
+    setGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-product-copy", {
+        body: { idea: idea.trim(), productType: option.id },
+      });
+      if (error) throw error;
+      if (data?.name) setName(data.name);
+      if (data?.description) setDescription(data.description);
+      toast.success("AI filled in your name & description!");
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to generate. Try again.");
+    } finally {
+      setGenerating(false);
+    }
   };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
