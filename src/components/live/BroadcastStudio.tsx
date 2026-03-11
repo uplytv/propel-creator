@@ -4,12 +4,22 @@ import {
   Video, VideoOff, Mic, MicOff, Monitor, Camera,
   Settings, Copy, Check, Eye, EyeOff, Radio,
   RotateCcw, Volume2, Circle, Square, Upload,
-  Wifi, WifiOff, AlertCircle
+  Wifi, WifiOff, AlertCircle, ShoppingBag, X, ChevronDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
+interface Product {
+  id: string;
+  name: string;
+  type: string;
+  price: number;
+  image_url?: string | null;
+  status: string;
+}
 
 interface BroadcastStudioProps {
   streamData: {
@@ -21,6 +31,121 @@ interface BroadcastStudioProps {
   streamStatus: string;
   title: string;
   onEndStream: () => void;
+  products?: Product[];
+  featuredProductId?: string | null;
+  onFeaturedProductChange?: (productId: string | null) => void;
+}
+
+function FeaturedProductPicker({
+  products,
+  featuredProductId,
+  onSelect,
+}: {
+  products: Product[];
+  featuredProductId?: string | null;
+  onSelect?: (id: string | null) => void;
+}) {
+  const selected = products.find((p) => p.id === featuredProductId);
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="glass-card p-3">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-1.5">
+          <ShoppingBag className="w-3.5 h-3.5 text-primary" />
+          <span className="text-xs font-semibold text-foreground">Featured Product</span>
+        </div>
+        {selected && (
+          <button
+            onClick={() => onSelect?.(null)}
+            className="p-1 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        )}
+      </div>
+
+      {selected ? (
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <button className="w-full flex items-center gap-2.5 p-2 rounded-lg bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-all text-left">
+              {selected.image_url ? (
+                <img src={selected.image_url} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+              ) : (
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 text-sm">
+                  {selected.type === 'course' ? '📚' : selected.type === 'community' ? '🤝' : selected.type === 'coaching' ? '🎯' : '📦'}
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-foreground truncate">{selected.name}</p>
+                <p className="text-[10px] text-muted-foreground capitalize">{selected.type} · ${selected.price}</p>
+              </div>
+              <ChevronDown className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-72 p-2" align="start">
+            <p className="text-xs font-semibold text-foreground px-2 py-1.5">Switch Product</p>
+            <div className="space-y-1 max-h-48 overflow-y-auto">
+              {products.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => { onSelect?.(p.id); setOpen(false); }}
+                  className={`w-full flex items-center gap-2.5 p-2 rounded-lg text-left transition-colors ${
+                    p.id === featuredProductId ? 'bg-primary/10' : 'hover:bg-secondary'
+                  }`}
+                >
+                  {p.image_url ? (
+                    <img src={p.image_url} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0" />
+                  ) : (
+                    <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center flex-shrink-0 text-xs">
+                      {p.type === 'course' ? '📚' : p.type === 'community' ? '🤝' : p.type === 'coaching' ? '🎯' : '📦'}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-foreground truncate">{p.name}</p>
+                    <p className="text-[10px] text-muted-foreground capitalize">{p.type} · ${p.price}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+      ) : (
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <button className="w-full flex items-center justify-center gap-1.5 p-2.5 rounded-lg border border-dashed border-border hover:border-primary/30 hover:bg-primary/5 transition-all text-xs text-muted-foreground">
+              <ShoppingBag className="w-3.5 h-3.5" />
+              Select a product to feature
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-72 p-2" align="start">
+            <p className="text-xs font-semibold text-foreground px-2 py-1.5">Feature a Product</p>
+            <div className="space-y-1 max-h-48 overflow-y-auto">
+              {products.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => { onSelect?.(p.id); setOpen(false); }}
+                  className="w-full flex items-center gap-2.5 p-2 rounded-lg text-left hover:bg-secondary transition-colors"
+                >
+                  {p.image_url ? (
+                    <img src={p.image_url} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0" />
+                  ) : (
+                    <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center flex-shrink-0 text-xs">
+                      {p.type === 'course' ? '📚' : p.type === 'community' ? '🤝' : p.type === 'coaching' ? '🎯' : '📦'}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-foreground truncate">{p.name}</p>
+                    <p className="text-[10px] text-muted-foreground capitalize">{p.type} · ${p.price}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+      )}
+    </div>
+  );
 }
 
 type StudioMode = "select" | "browser-record" | "external-encoder";
@@ -30,6 +155,9 @@ export default function BroadcastStudio({
   streamStatus,
   title,
   onEndStream,
+  products = [],
+  featuredProductId,
+  onFeaturedProductChange,
 }: BroadcastStudioProps) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -635,6 +763,15 @@ export default function BroadcastStudio({
           )}
         </div>
 
+        {/* Featured Product Picker */}
+        {products.length > 0 && (
+          <FeaturedProductPicker
+            products={products}
+            featuredProductId={featuredProductId}
+            onSelect={onFeaturedProductChange}
+          />
+        )}
+
         {/* Record / Stop / Upload */}
         {(cameraOn || screenShare) && !isUploading && (
           <Button
@@ -764,6 +901,15 @@ export default function BroadcastStudio({
             <li className="flex gap-2"><span className="text-primary font-bold">4.</span> Your stream is auto-recorded and saved to your library</li>
           </ol>
         </div>
+      )}
+
+      {/* Featured Product Picker */}
+      {products.length > 0 && (
+        <FeaturedProductPicker
+          products={products}
+          featuredProductId={featuredProductId}
+          onSelect={onFeaturedProductChange}
+        />
       )}
 
       <Button variant="destructive" size="lg" onClick={onEndStream} className="w-full">

@@ -248,6 +248,17 @@ export default function GoLive() {
               streamStatus={streamStatus}
               title={title}
               onEndStream={() => setStreamData(null)}
+              products={activeProducts}
+              featuredProductId={featuredProductId}
+              onFeaturedProductChange={async (productId) => {
+                setFeaturedProductId(productId);
+                if (streamData) {
+                  await supabase
+                    .from('mux_live_streams')
+                    .update({ featured_product_id: productId } as any)
+                    .eq('id', streamData.streamId);
+                }
+              }}
             />
           )}
         </motion.div>

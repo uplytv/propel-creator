@@ -106,7 +106,7 @@ export default function Stream() {
     fetchStream();
   }, [id, isVod]);
 
-  // Realtime status updates
+  // Realtime status updates + featured product changes
   useEffect(() => {
     if (!isRealStream || !id) return;
 
@@ -117,8 +117,24 @@ export default function Stream() {
         schema: 'public',
         table: 'mux_live_streams',
         filter: `id=eq.${id}`,
-      }, (payload: any) => {
+      }, async (payload: any) => {
         setDbStream((prev: any) => ({ ...prev, ...payload.new }));
+        
+        // Reactively update featured product when it changes
+        const newProductId = payload.new.featured_product_id;
+        const oldProductId = payload.old?.featured_product_id;
+        if (newProductId !== oldProductId) {
+          if (newProductId) {
+            const { data: prod } = await supabase
+              .from('products')
+              .select('*')
+              .eq('id', newProductId)
+              .single();
+            setFeaturedProduct(prod || null);
+          } else {
+            setFeaturedProduct(null);
+          }
+        }
       })
       .subscribe();
 
