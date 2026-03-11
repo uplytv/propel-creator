@@ -96,6 +96,33 @@ export default function Launchpad() {
     setDescription("");
     setPrice(String(opt.fields!.defaultPrice));
     setSuccess(false);
+    setImageFile(null);
+    setImagePreview(null);
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setImagePreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const uploadImage = async (): Promise<string | null> => {
+    if (!imageFile || !user) return null;
+    setUploadingImage(true);
+    const ext = imageFile.name.split(".").pop();
+    const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabase.storage
+      .from("product-images")
+      .upload(path, imageFile, { upsert: true });
+    setUploadingImage(false);
+    if (error) return null;
+    const { data: urlData } = supabase.storage
+      .from("product-images")
+      .getPublicUrl(path);
+    return urlData.publicUrl;
   };
 
   const handleLaunch = async () => {
