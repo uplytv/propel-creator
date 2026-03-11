@@ -37,12 +37,20 @@ export default function StreamCard({ stream, index = 0 }: { stream: MockStream; 
           onClick={() => navigate(`/stream/${stream.id}`)}
           className={`relative aspect-video rounded-xl overflow-hidden bg-gradient-to-br ${stream.thumbnailGradient} border border-border/50 group-hover:border-primary/30 transition-all duration-300 cursor-pointer`}
         >
-          {/* Mock video content */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-20 h-20 rounded-full bg-foreground/5 backdrop-blur-sm flex items-center justify-center">
-              <div className="w-0 h-0 border-t-[12px] border-t-transparent border-b-[12px] border-b-transparent border-l-[20px] border-l-foreground/40 ml-1" />
+          {/* Real Mux thumbnail or mock */}
+          {stream.muxPlaybackId ? (
+            <img
+              src={`https://image.mux.com/${stream.muxPlaybackId}/thumbnail.png?width=640&height=360&time=1`}
+              alt={stream.title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-20 h-20 rounded-full bg-foreground/5 backdrop-blur-sm flex items-center justify-center">
+                <div className="w-0 h-0 border-t-[12px] border-t-transparent border-b-[12px] border-b-transparent border-l-[20px] border-l-foreground/40 ml-1" />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* LIVE badge */}
           {stream.isLive && (

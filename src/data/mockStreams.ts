@@ -13,6 +13,7 @@ export interface MockStream {
   communityPrice: number;
   startedAt: string;
   description: string;
+  muxPlaybackId?: string | null;
 }
 
 export const categories = [

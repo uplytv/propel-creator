@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useApp, tierNames } from "@/context/AppContext";
-import { TrendingUp, Users, DollarSign, Brain, MessageSquare, Phone, Clock, CheckCircle2, Zap, ChevronRight, BarChart3, Target, Briefcase, Info, Film, Play, Loader2, Sparkles } from "lucide-react";
+import { TrendingUp, Users, DollarSign, Brain, MessageSquare, Phone, Clock, CheckCircle2, Zap, ChevronRight, BarChart3, Target, Briefcase, Info, Film, Play, Loader2, Sparkles, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
 import { AIGrowthEngine } from "@/components/AIGrowthEngine";
@@ -26,6 +26,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<"overview" | "growth" | "jobs">("overview");
   const [recordings, setRecordings] = useState<any[]>([]);
   const [ariaOpen, setAriaOpen] = useState(false);
+  const [activeStream, setActiveStream] = useState<any>(null);
   const { data: dashStats, isLoading: statsLoading } = useDashboardStats();
   useEffect(() => {
     if (!user) return;
@@ -44,7 +45,29 @@ export default function Dashboard() {
       .channel("dashboard-assets")
       .on("postgres_changes", { event: "*", schema: "public", table: "mux_assets" }, () => fetch())
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+
+    // Check if this creator is currently live
+    const fetchActiveStream = async () => {
+      const { data } = await supabase
+        .from("mux_live_streams")
+        .select("id, title, mux_playback_id, viewer_count, started_at")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .limit(1)
+        .maybeSingle();
+      setActiveStream(data);
+    };
+    fetchActiveStream();
+
+    const liveChannel = supabase
+      .channel("dashboard-live-status")
+      .on("postgres_changes", { event: "*", schema: "public", table: "mux_live_streams", filter: `user_id=eq.${user.id}` }, () => fetchActiveStream())
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+      supabase.removeChannel(liveChannel);
+    };
   }, [user]);
 
   const target = tierTargets[profile.tier - 1];
@@ -63,6 +86,29 @@ export default function Dashboard() {
           <h1 className="text-2xl md:text-3xl font-bold">Welcome back, {profile.name} 👋</h1>
           <p className="text-muted-foreground mt-1">Here's how your business is doing.</p>
         </motion.div>
+
+        {/* Live Now Banner */}
+        {activeStream && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 rounded-xl border border-destructive/30 bg-destructive/5 flex items-center justify-between gap-4"
+          >
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-destructive text-destructive-foreground">
+                <span className="w-2 h-2 rounded-full bg-destructive-foreground animate-pulse" />
+                LIVE
+              </span>
+              <div>
+                <p className="text-sm font-semibold">{activeStream.title || "Your Live Stream"}</p>
+                <p className="text-xs text-muted-foreground">{activeStream.viewer_count || 0} viewers</p>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => navigate(`/stream/${activeStream.id}`)} className="gap-1.5 border-destructive/30 hover:border-destructive">
+              <Radio className="w-3.5 h-3.5" /> View Stream
+            </Button>
+          </motion.div>
+        )}
 
         {/* Tab Toggle */}
         <div className="flex gap-2 mb-6">
