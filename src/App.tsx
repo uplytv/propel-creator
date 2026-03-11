@@ -47,6 +47,8 @@ import AdminFeatureToggles from "./pages/AdminFeatureToggles";
 import ContentLibrary from "./pages/ContentLibrary";
 import CreatorSpace from "./pages/CreatorSpace";
 import Launchpad from "./pages/Launchpad";
+import AdminAffiliates from "./pages/AdminAffiliates";
+import ReferralRedirect from "./pages/ReferralRedirect";
 
 const queryClient = new QueryClient();
 
