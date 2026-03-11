@@ -2,46 +2,84 @@ import { ReactNode, useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Home, Rocket, Package, Users, UserCheck, Lock, Share2,
+  Home, Package, Lock,
   LogOut, Settings, ChevronLeft, ChevronRight, Shield, TrendingUp,
-  Zap, Crown, Sparkles, BarChart3, Trophy, Handshake, Radio, Plug, Briefcase, MessageSquare, Bell as BellIcon, Search, Menu, X, Wallet, Film, LayoutGrid, ChevronDown
+  Zap, Crown, Sparkles, BarChart3, Radio, Menu, X, Wallet, LayoutGrid, ChevronDown,
+  GraduationCap, DollarSign, Bot, Briefcase, Handshake, Share2, Film,
+  Trophy, Plug, MessageSquare, Bell as BellIcon, UserCheck, Search, Rocket
 } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import { useApp, tierNames } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
+import { useFeatures } from "@/context/FeatureContext";
 import { useUnreadMessageCount } from "@/hooks/useCollaborations";
 import { useUnreadJobMessageCount } from "@/hooks/useJobMessages";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useWallet } from "@/hooks/useWallet";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-type NavItem = { label: string; icon: React.ElementType; path: string; desc: string; requiresTier?: number; badgeKey?: string };
+type NavItem = { label: string; icon: React.ElementType; path: string; desc: string; requiresTier?: number; badgeKey?: string; featureKey?: string };
 
-const primaryNav: NavItem[] = [
-  { label: "Home", icon: Home, path: "/dashboard", desc: "Overview & metrics" },
-  { label: "My Space", icon: LayoutGrid, path: "__space__", desc: "Your creator space" },
-  { label: "Live", icon: Radio, path: "/live", desc: "Watch & stream live" },
-  { label: "Discover", icon: Search, path: "/discover", desc: "Find creators" },
-  { label: "Products", icon: Package, path: "/products", desc: "What you sell" },
-  { label: "Wallet", icon: Wallet, path: "/wallet", desc: "Earnings & payouts" },
+// 5 Core sections with their embedded/advanced sub-items
+const coreNav: { core: string; label: string; icon: React.ElementType; items: NavItem[] }[] = [
+  {
+    core: "space",
+    label: "SPACE",
+    icon: LayoutGrid,
+    items: [
+      { label: "My Space", icon: LayoutGrid, path: "__space__", desc: "Your community hub" },
+      { label: "Leaderboard", icon: Trophy, path: "/leaderboard", desc: "Top members", featureKey: "leaderboard" },
+    ],
+  },
+  {
+    core: "learn",
+    label: "LEARN",
+    icon: GraduationCap,
+    items: [
+      { label: "Content Library", icon: Film, path: "/content-library", desc: "Videos & uploads", featureKey: "content_library" },
+    ],
+  },
+  {
+    core: "live",
+    label: "LIVE",
+    icon: Radio,
+    items: [
+      { label: "Live", icon: Radio, path: "/live", desc: "Watch & stream" },
+      { label: "Ad Campaigns", icon: Plug, path: "/ad-integrations", desc: "Boost streams", featureKey: "stream_boost" },
+    ],
+  },
+  {
+    core: "earn",
+    label: "EARN",
+    icon: DollarSign,
+    items: [
+      { label: "Products", icon: Package, path: "/products", desc: "What you sell", featureKey: "product_store" },
+      { label: "Wallet", icon: Wallet, path: "/wallet", desc: "Earnings & payouts", featureKey: "wallet" },
+      { label: "Jobs & Talent", icon: Briefcase, path: "/jobs", desc: "Freelance marketplace", featureKey: "jobs_marketplace" },
+      { label: "Collaborate", icon: Handshake, path: "/collaborate", desc: "Co-creator collabs", badgeKey: "collaborate", featureKey: "collaborations" },
+      { label: "Affiliates", icon: Share2, path: "/affiliates", desc: "Referral program", featureKey: "affiliates" },
+    ],
+  },
+  {
+    core: "aria",
+    label: "ARIA",
+    icon: Bot,
+    items: [
+      { label: "Grow", icon: Sparkles, path: "/grow", desc: "Growth tasks", featureKey: "growth_tasks" },
+      { label: "Launchpad", icon: Rocket, path: "/launchpad", desc: "Launch something new" },
+    ],
+  },
 ];
 
-const secondaryNav: NavItem[] = [
-  { label: "Launchpad", icon: Rocket, path: "/launchpad", desc: "Launch something new" },
-  { label: "Grow", icon: Sparkles, path: "/grow", desc: "Launch Protocol" },
-  { label: "Content Library", icon: Film, path: "/content-library", desc: "Your recordings & videos" },
-  { label: "Collaborate", icon: Handshake, path: "/collaborate", desc: "Co-creator collabs", badgeKey: "collaborate" },
-  { label: "Jobs & Talent", icon: Briefcase, path: "/jobs", desc: "Freelance marketplace" },
-  { label: "Messages", icon: MessageSquare, path: "/job-messages", desc: "Job conversations", badgeKey: "job-messages" },
-  { label: "Leaderboard", icon: Trophy, path: "/leaderboard", desc: "Top creators" },
-  { label: "Ad Integrations", icon: Plug, path: "/ad-integrations", desc: "Pixels & campaigns" },
-  { label: "Affiliates", icon: Share2, path: "/affiliates", desc: "Referral program" },
-  { label: "Notifications", icon: BellIcon, path: "/notifications", desc: "Alerts & updates", badgeKey: "notifications" },
+const utilityNav: NavItem[] = [
+  { label: "Discover", icon: Search, path: "/discover", desc: "Find creators" },
+  { label: "Messages", icon: MessageSquare, path: "/job-messages", desc: "Conversations", badgeKey: "job-messages" },
+  { label: "Notifications", icon: BellIcon, path: "/notifications", desc: "Alerts", badgeKey: "notifications" },
   { label: "My Rep", icon: UserCheck, path: "/my-rep", desc: "Growth partner", requiresTier: 3 },
   { label: "Settings", icon: Settings, path: "/settings", desc: "Preferences" },
 ];
-
-const allNavItems = [...primaryNav, ...secondaryNav];
 
 const tierIcons = [Shield, TrendingUp, Zap, Crown];
 const tierColors = [
@@ -63,63 +101,12 @@ function TierBadge({ tier, tierName, size = "md" }: { tier: number; tierName: st
   );
 }
 
-function NavButton({ item, isActive, isLocked, collapsed, badge, onClick }: {
-  item: NavItem; isActive: boolean; isLocked: boolean; collapsed: boolean; badge: number; onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={() => !isLocked && onClick()}
-      className={`w-full flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-200 group relative nav-item-hover ${
-        collapsed ? "px-0 py-2.5 justify-center" : "px-3 py-2.5"
-      } ${
-        isLocked
-          ? "text-muted-foreground/30 cursor-not-allowed"
-          : isActive
-          ? "bg-primary/10 text-primary"
-          : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
-      }`}
-    >
-      <div className="relative flex-shrink-0 transition-transform duration-200 group-hover:scale-110">
-        <item.icon className="w-[18px] h-[18px]" />
-        {isLocked && !collapsed && (
-          <Lock className="w-2.5 h-2.5 absolute -top-1 -right-1.5 text-warning" />
-        )}
-        {!isLocked && badge > 0 && collapsed && (
-          <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
-            {badge}
-          </span>
-        )}
-      </div>
-      {!collapsed && (
-        <>
-          <span className="flex-1 text-left">{item.label}</span>
-          {isLocked && <Lock className="w-3 h-3 text-warning" />}
-          {item.label === "My Rep" && !isLocked && (
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          )}
-          {!isLocked && badge > 0 && (
-            <span className="min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1">
-              {badge}
-            </span>
-          )}
-        </>
-      )}
-      {isActive && (
-        <motion.div
-          layoutId="sidebar-active"
-          className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary"
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        />
-      )}
-    </button>
-  );
-}
-
 export default function AppLayout({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { profile } = useApp();
   const { user, signOut } = useAuth();
+  const { isEnabled, isCoreEnabled } = useFeatures();
   const { data: unreadCount = 0 } = useUnreadMessageCount();
   const { data: jobUnreadCount = 0 } = useUnreadJobMessageCount();
   const { unreadCount: notifUnreadCount } = useNotifications();
@@ -127,17 +114,25 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [moreOpen, setMoreOpen] = useState(false);
+  const [expandedCores, setExpandedCores] = useState<string[]>([]);
   const profileRef = useRef<HTMLDivElement>(null);
-  
+
+  // Check admin
+  const { data: isAdmin } = useQuery({
+    queryKey: ["is-admin-nav", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("has_role" as any, { _user_id: user!.id, _role: "admin" });
+      return !!data;
+    },
+    enabled: !!user,
+  });
+
   const getBadge = (item: NavItem) => {
     if (item.badgeKey === "collaborate") return unreadCount;
     if (item.badgeKey === "job-messages") return jobUnreadCount;
     if (item.badgeKey === "notifications") return notifUnreadCount;
     return 0;
   };
-
-  const secondaryBadgeTotal = secondaryNav.reduce((sum, item) => sum + getBadge(item), 0);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -147,56 +142,132 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  useEffect(() => { setMobileMenuOpen(false); }, [location.pathname]);
+
+  // Auto-expand the core that contains the active route
   useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [location.pathname]);
+    for (const group of coreNav) {
+      const hasActive = group.items.some(item => {
+        const resolved = item.path === "__space__" ? (user ? `/space/${user.id}` : "/auth") : item.path;
+        return location.pathname === resolved;
+      });
+      if (hasActive && !expandedCores.includes(group.core)) {
+        setExpandedCores(prev => [...prev, group.core]);
+      }
+    }
+  }, [location.pathname, user]);
 
   const resolvePath = (item: NavItem) => item.path === "__space__" ? (user ? `/space/${user.id}` : "/auth") : item.path;
 
-  const renderNavItem = (item: NavItem, inCollapsed: boolean) => {
+  const renderNavItem = (item: NavItem, inCollapsed: boolean, onNavigate?: () => void) => {
+    // Check feature visibility
+    if (item.featureKey && !isEnabled(item.featureKey)) return null;
+
     const resolvedPath = resolvePath(item);
     const isActive = location.pathname === resolvedPath;
     const isLocked = !!(item.requiresTier && profile.tier < item.requiresTier);
     const badge = getBadge(item);
 
-    const button = (
-      <NavButton
+    return (
+      <button
         key={item.label}
-        item={item}
-        isActive={isActive}
-        isLocked={isLocked}
-        collapsed={inCollapsed}
-        badge={badge}
-        onClick={() => navigate(resolvedPath)}
-      />
+        onClick={() => {
+          if (!isLocked) {
+            navigate(resolvedPath);
+            onNavigate?.();
+          }
+        }}
+        className={`w-full flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-200 group relative ${
+          inCollapsed ? "px-0 py-2 justify-center" : "px-3 py-2"
+        } ${
+          isLocked ? "text-muted-foreground/30 cursor-not-allowed"
+            : isActive ? "bg-primary/10 text-primary"
+            : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+        }`}
+      >
+        <div className="relative flex-shrink-0">
+          <item.icon className="w-[18px] h-[18px]" />
+          {isLocked && !inCollapsed && <Lock className="w-2.5 h-2.5 absolute -top-1 -right-1.5 text-warning" />}
+        </div>
+        {!inCollapsed && (
+          <>
+            <span className="flex-1 text-left">{item.label}</span>
+            {isLocked && <Lock className="w-3 h-3 text-warning" />}
+            {!isLocked && badge > 0 && (
+              <span className="min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1">
+                {badge}
+              </span>
+            )}
+          </>
+        )}
+        {isActive && (
+          <motion.div
+            layoutId="sidebar-active"
+            className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary"
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          />
+        )}
+      </button>
     );
-
-    if (inCollapsed) {
-      return (
-        <Tooltip key={item.label}>
-          <TooltipTrigger asChild>{button}</TooltipTrigger>
-          <TooltipContent side="right" className="flex flex-col">
-            <span className="font-medium">{item.label}</span>
-            <span className="text-muted-foreground text-[10px]">{item.desc}</span>
-            {isLocked && <span className="text-warning text-[10px] mt-0.5">🔒 Unlock at Tier 3</span>}
-          </TooltipContent>
-        </Tooltip>
-      );
-    }
-
-    if (isLocked) {
-      return (
-        <Tooltip key={item.label}>
-          <TooltipTrigger asChild>{button}</TooltipTrigger>
-          <TooltipContent side="right">
-            <p className="text-xs">Reach 500 members or $5k MRR to unlock</p>
-          </TooltipContent>
-        </Tooltip>
-      );
-    }
-
-    return button;
   };
+
+  const renderDesktopNav = () => (
+    <nav className={`flex-1 mt-2 ${collapsed ? "px-2" : "px-3"} overflow-y-auto`}>
+      {/* Home */}
+      {renderNavItem({ label: "Home", icon: Home, path: "/dashboard", desc: "Overview" }, collapsed)}
+
+      {/* 5 Cores */}
+      {coreNav.map(group => {
+        if (!isCoreEnabled(group.core)) return null;
+        const isExpanded = expandedCores.includes(group.core);
+        const visibleItems = group.items.filter(i => !i.featureKey || isEnabled(i.featureKey));
+        if (visibleItems.length === 0) return null;
+
+        if (collapsed) {
+          return visibleItems.map(item => (
+            <Tooltip key={item.label}>
+              <TooltipTrigger asChild>{renderNavItem(item, true)}</TooltipTrigger>
+              <TooltipContent side="right">{item.label}</TooltipContent>
+            </Tooltip>
+          ));
+        }
+
+        return (
+          <div key={group.core} className="mt-2">
+            <button
+              onClick={() => setExpandedCores(prev =>
+                prev.includes(group.core) ? prev.filter(c => c !== group.core) : [...prev, group.core]
+              )}
+              className="w-full flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <group.icon className="w-3.5 h-3.5" />
+              <span className="flex-1 text-left">{group.label}</span>
+              <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />
+            </button>
+            <AnimatePresence>
+              {isExpanded && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden space-y-0.5 ml-1"
+                >
+                  {visibleItems.map(item => renderNavItem(item, false))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      })}
+
+      {/* Utility */}
+      <div className="mt-3 pt-3 border-t border-border/50 space-y-0.5">
+        {utilityNav.map(item => renderNavItem(item, collapsed))}
+        {isAdmin && renderNavItem({ label: "Admin", icon: Shield, path: "/admin", desc: "Platform admin" }, collapsed)}
+      </div>
+    </nav>
+  );
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -206,10 +277,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       }`}>
         {/* Logo + Collapse */}
         <div className={`flex items-center justify-between p-4 ${collapsed ? "px-3" : "px-5"}`}>
-          <div
-            className="cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2"
-            onClick={() => navigate("/")}
-          >
+          <div className="cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2" onClick={() => navigate("/")}>
             <img src="/logo.png" alt="Uply" className={collapsed ? "h-[66px]" : "h-[88px]"} />
           </div>
           <button
@@ -220,76 +288,33 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           </button>
         </div>
 
-        {/* Primary Navigation */}
-        <nav className={`flex-1 mt-2 ${collapsed ? "px-2" : "px-3"} overflow-y-auto`}>
-          <div className="space-y-0.5">
-            {primaryNav.map((item) => renderNavItem(item, collapsed))}
-          </div>
-
-          {/* More section divider */}
-          {!collapsed ? (
-            <div className="mt-4">
-              <button
-                onClick={() => setMoreOpen(!moreOpen)}
-                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <span className="flex-1 text-left">More Tools</span>
-                {secondaryBadgeTotal > 0 && !moreOpen && (
-                  <span className="min-w-[16px] h-[16px] rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center px-1">
-                    {secondaryBadgeTotal}
-                  </span>
-                )}
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${moreOpen ? "rotate-180" : ""}`} />
-              </button>
-              <AnimatePresence>
-                {moreOpen && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden space-y-0.5"
-                  >
-                    {secondaryNav.map((item) => renderNavItem(item, false))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          ) : (
-            <div className="mt-3 pt-3 border-t border-border/50 space-y-0.5">
-              {secondaryNav.map((item) => renderNavItem(item, true))}
-            </div>
-          )}
-        </nav>
+        {renderDesktopNav()}
 
         {/* Bottom Section */}
         <div className={`border-t border-border ${collapsed ? "p-2" : "p-3"}`}>
           {/* Wallet Widget */}
-          {!collapsed ? (
-            <button
-              onClick={() => navigate("/wallet")}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-accent-green/5 border border-accent-green/20 hover:bg-accent-green/10 transition-colors mb-3"
-            >
-              <Wallet className="w-4 h-4 text-accent-green" />
-              <div className="flex-1 text-left">
-                <p className="text-[10px] text-muted-foreground">Balance</p>
-                <p className="text-sm font-bold text-accent-green">${Number(wallet?.available_balance ?? 0).toFixed(2)}</p>
-              </div>
-            </button>
-          ) : (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => navigate("/wallet")}
-                  className="w-full flex justify-center py-2 mb-2 rounded-lg hover:bg-accent-green/10 transition-colors"
-                >
-                  <Wallet className="w-4 h-4 text-accent-green" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                <span>Balance: ${Number(wallet?.available_balance ?? 0).toFixed(2)}</span>
-              </TooltipContent>
-            </Tooltip>
+          {isEnabled("wallet") && (
+            !collapsed ? (
+              <button
+                onClick={() => navigate("/wallet")}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-accent-green/5 border border-accent-green/20 hover:bg-accent-green/10 transition-colors mb-3"
+              >
+                <Wallet className="w-4 h-4 text-accent-green" />
+                <div className="flex-1 text-left">
+                  <p className="text-[10px] text-muted-foreground">Balance</p>
+                  <p className="text-sm font-bold text-accent-green">${Number(wallet?.available_balance ?? 0).toFixed(2)}</p>
+                </div>
+              </button>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button onClick={() => navigate("/wallet")} className="w-full flex justify-center py-2 mb-2 rounded-lg hover:bg-accent-green/10 transition-colors">
+                    <Wallet className="w-4 h-4 text-accent-green" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right">Balance: ${Number(wallet?.available_balance ?? 0).toFixed(2)}</TooltipContent>
+              </Tooltip>
+            )
           )}
 
           {/* Tier Badge */}
@@ -303,12 +328,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                   Reach Scaling tier to unlock your dedicated growth rep
                 </p>
               )}
-              {profile.tier >= 3 && (
-                <div className="flex items-center gap-1.5 text-[11px] text-primary">
-                  <Sparkles className="w-3 h-3" />
-                  <span>All features unlocked</span>
-                </div>
-              )}
             </div>
           ) : (
             <Tooltip>
@@ -317,18 +336,14 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                   <TierBadge tier={profile.tier} tierName="" size="sm" />
                 </div>
               </TooltipTrigger>
-              <TooltipContent side="right">
-                <span>{profile.tierName} · Tier {profile.tier}</span>
-              </TooltipContent>
+              <TooltipContent side="right">{profile.tierName} · Tier {profile.tier}</TooltipContent>
             </Tooltip>
           )}
 
           {/* Profile */}
           <button
             onClick={() => setProfileOpen(!profileOpen)}
-            className={`w-full flex items-center gap-3 rounded-lg hover:bg-secondary/60 transition-colors ${
-              collapsed ? "p-2 justify-center" : "px-3 py-2"
-            }`}
+            className={`w-full flex items-center gap-3 rounded-lg hover:bg-secondary/60 transition-colors ${collapsed ? "p-2 justify-center" : "px-3 py-2"}`}
           >
             {profile.avatarUrl ? (
               <img src={profile.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
@@ -353,10 +368,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
           <div className="flex items-center justify-between px-4 md:px-8 h-14">
             <div className="flex items-center gap-2 md:hidden">
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground"
-              >
+              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground">
                 <Menu className="w-5 h-5" />
               </button>
               <img src="/logo.png" alt="Uply" className="h-[50px] cursor-pointer" onClick={() => navigate("/")} />
@@ -408,6 +420,14 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                       >
                         <Settings className="w-4 h-4" /> Settings
                       </button>
+                      {isAdmin && (
+                        <button
+                          onClick={() => { navigate("/admin"); setProfileOpen(false); }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                        >
+                          <Shield className="w-4 h-4" /> Admin Panel
+                        </button>
+                      )}
                       <div className="border-t border-border mt-1 pt-1">
                         <button
                           onClick={async () => { await signOut(); navigate("/"); setProfileOpen(false); }}
@@ -432,21 +452,16 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         {mobileMenuOpen && (
           <>
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               className="md:hidden fixed inset-0 bg-black/50 z-40"
               onClick={() => setMobileMenuOpen(false)}
             />
             <motion.div
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
+              initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
               className="md:hidden fixed inset-y-0 left-0 w-72 bg-card border-r border-border z-50 flex flex-col"
             >
-              {/* Drawer Header */}
               <div className="flex items-center justify-between p-4 border-b border-border">
                 <img src="/logo.png" alt="Uply" className="h-[50px] cursor-pointer" onClick={() => { navigate("/"); setMobileMenuOpen(false); }} />
                 <button onClick={() => setMobileMenuOpen(false)} className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground">
@@ -454,7 +469,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 </button>
               </div>
 
-              {/* Profile Summary */}
               <div className="px-4 py-3 border-b border-border">
                 <div className="flex items-center gap-3">
                   {profile.avatarUrl ? (
@@ -471,92 +485,42 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 </div>
               </div>
 
-              {/* Nav Items - Primary */}
               <nav className="flex-1 py-2 px-3 overflow-y-auto">
-                <div className="space-y-0.5">
-                  {primaryNav.map((item) => {
-                    const resolvedPath = resolvePath(item);
-                    const isActive = location.pathname === resolvedPath;
-                    const badge = getBadge(item);
-                    return (
-                      <button
-                        key={item.label}
-                        onClick={() => { navigate(resolvedPath); setMobileMenuOpen(false); }}
-                        className={`w-full flex items-center gap-3 rounded-lg text-sm font-medium px-3 py-2.5 transition-colors ${
-                          isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
-                        }`}
-                      >
-                        <item.icon className="w-[18px] h-[18px] flex-shrink-0" />
-                        <span className="flex-1 text-left">{item.label}</span>
-                        {badge > 0 && (
-                          <span className="min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1">
-                            {badge}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
+                {renderNavItem({ label: "Home", icon: Home, path: "/dashboard", desc: "Overview" }, false, () => setMobileMenuOpen(false))}
 
-                {/* More Tools */}
-                <div className="mt-3 pt-3 border-t border-border/50">
-                  <button
-                    onClick={() => setMoreOpen(!moreOpen)}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                  >
-                    <span className="flex-1 text-left">More Tools</span>
-                    {secondaryBadgeTotal > 0 && !moreOpen && (
-                      <span className="min-w-[16px] h-[16px] rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center px-1">
-                        {secondaryBadgeTotal}
-                      </span>
-                    )}
-                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${moreOpen ? "rotate-180" : ""}`} />
-                  </button>
-                  <AnimatePresence>
-                    {moreOpen && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="overflow-hidden space-y-0.5"
+                {coreNav.map(group => {
+                  if (!isCoreEnabled(group.core)) return null;
+                  const visibleItems = group.items.filter(i => !i.featureKey || isEnabled(i.featureKey));
+                  if (visibleItems.length === 0) return null;
+                  const isExpanded = expandedCores.includes(group.core);
+
+                  return (
+                    <div key={group.core} className="mt-2">
+                      <button
+                        onClick={() => setExpandedCores(prev =>
+                          prev.includes(group.core) ? prev.filter(c => c !== group.core) : [...prev, group.core]
+                        )}
+                        className="w-full flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
                       >
-                        {secondaryNav.map((item) => {
-                          const resolvedPath = resolvePath(item);
-                          const isActive = location.pathname === resolvedPath;
-                          const isLocked = !!(item.requiresTier && profile.tier < item.requiresTier);
-                          const badge = getBadge(item);
-                          return (
-                            <button
-                              key={item.label}
-                              onClick={() => { if (!isLocked) { navigate(resolvedPath); setMobileMenuOpen(false); } }}
-                              className={`w-full flex items-center gap-3 rounded-lg text-sm font-medium px-3 py-2.5 transition-colors ${
-                                isLocked ? "text-muted-foreground/30 cursor-not-allowed"
-                                  : isActive ? "bg-primary/10 text-primary"
-                                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
-                              }`}
-                            >
-                              <div className="relative flex-shrink-0">
-                                <item.icon className="w-[18px] h-[18px]" />
-                                {isLocked && <Lock className="w-2.5 h-2.5 absolute -top-1 -right-1.5 text-warning" />}
-                              </div>
-                              <span className="flex-1 text-left">{item.label}</span>
-                              {isLocked && <Lock className="w-3 h-3 text-warning" />}
-                              {!isLocked && badge > 0 && (
-                                <span className="min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1">
-                                  {badge}
-                                </span>
-                              )}
-                            </button>
-                          );
-                        })}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                        <group.icon className="w-3.5 h-3.5" />
+                        <span className="flex-1 text-left">{group.label}</span>
+                        <ChevronDown className={`w-3 h-3 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                      </button>
+                      {isExpanded && (
+                        <div className="space-y-0.5 ml-1">
+                          {visibleItems.map(item => renderNavItem(item, false, () => setMobileMenuOpen(false)))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                <div className="mt-3 pt-3 border-t border-border/50 space-y-0.5">
+                  {utilityNav.map(item => renderNavItem(item, false, () => setMobileMenuOpen(false)))}
+                  {isAdmin && renderNavItem({ label: "Admin", icon: Shield, path: "/admin", desc: "Platform admin" }, false, () => setMobileMenuOpen(false))}
                 </div>
               </nav>
 
-              {/* Sign Out */}
               <div className="border-t border-border p-3">
                 <button
                   onClick={async () => { await signOut(); navigate("/"); setMobileMenuOpen(false); }}

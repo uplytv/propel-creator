@@ -1,22 +1,13 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Check, Loader2, ArrowRight } from "lucide-react";
-
-const creatorTypes = [
-  { label: "Coach", emoji: "🎯" },
-  { label: "Course Creator", emoji: "📚" },
-  { label: "Community Builder", emoji: "🤝" },
-  { label: "Digital Product Seller", emoji: "📦" },
-  { label: "Fitness Expert", emoji: "💪" },
-  { label: "Music Artist", emoji: "🎵" },
-  { label: "Wellness Creator", emoji: "🧘" },
-  { label: "Other", emoji: "✨" },
-] as const;
+import { useQuery } from "@tanstack/react-query";
+import { Check, Loader2, ArrowRight, Search } from "lucide-react";
 
 const stages = [
   { id: "just-starting" as const, label: "Just Starting Out", detail: "0 members, $0 MRR", desc: "You have the vision but haven't launched yet.", emoji: "🌱" },
@@ -34,56 +25,80 @@ const challenges = [
   { id: "scaling-ceiling" as const, label: "Scaling past my current ceiling", emoji: "🚧" },
 ];
 
+const userTypes = [
+  { label: "Coach / Consultant", emoji: "🎯" },
+  { label: "Course Creator", emoji: "📚" },
+  { label: "Community Builder", emoji: "🤝" },
+  { label: "Content Creator", emoji: "📱" },
+  { label: "Streamer / Entertainer", emoji: "🎮" },
+  { label: "Artist / Designer", emoji: "🎨" },
+  { label: "Service Provider", emoji: "🔧" },
+  { label: "Other", emoji: "✨" },
+];
+
 const loadingSteps = [
-  "Analyzing your creator type",
+  "Analyzing your category",
+  "Setting up your feature defaults",
   "Calculating your growth potential",
-  "Assigning your tier",
-  "Preparing your action plan",
+  "Preparing your personalized dashboard",
 ];
 
 export default function Onboarding() {
   const [step, setStep] = useState(1);
   const { setProfile, setIsOnboarded, isOnboarded, refreshProfile } = useApp();
   const { user } = useAuth();
-  const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedUserType, setSelectedUserType] = useState<string | null>(null);
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
   const [selectedChallenge, setSelectedChallenge] = useState<string | null>(null);
+  const [categorySearch, setCategorySearch] = useState("");
   const [loadingStep, setLoadingStep] = useState(0);
   const navigate = useNavigate();
 
-  // If already onboarded, redirect
+  // Fetch business categories
+  const { data: categories = [] } = useQuery({
+    queryKey: ["business-categories"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("business_categories")
+        .select("*")
+        .order("position");
+      return data || [];
+    },
+  });
+
   useEffect(() => {
-    if (isOnboarded) {
-      navigate("/dashboard", { replace: true });
-    }
+    if (isOnboarded) navigate("/dashboard", { replace: true });
   }, [isOnboarded, navigate]);
 
-  // Load partial progress from profile
+  // Load partial progress
   useEffect(() => {
     const loadProgress = async () => {
       if (!user) return;
       const { data } = await supabase
         .from("profiles")
-        .select("creator_type, creator_stage, creator_challenge")
+        .select("creator_type, creator_stage, creator_challenge, business_category, user_type")
         .eq("user_id", user.id)
         .single();
       if (data) {
-        if ((data as any).creator_type) setSelectedType((data as any).creator_type);
-        if ((data as any).creator_stage) setSelectedStage((data as any).creator_stage);
-        if ((data as any).creator_challenge) setSelectedChallenge((data as any).creator_challenge);
-        // Resume at the right step
-        if ((data as any).creator_challenge) setStep(4);
-        else if ((data as any).creator_stage) setStep(4);
-        else if ((data as any).creator_type) setStep(3);
+        const d = data as any;
+        if (d.business_category) setSelectedCategory(d.business_category);
+        if (d.user_type) setSelectedUserType(d.user_type);
+        if (d.creator_stage) setSelectedStage(d.creator_stage);
+        if (d.creator_challenge) setSelectedChallenge(d.creator_challenge);
+        if (d.creator_challenge) setStep(5);
+        else if (d.creator_stage) setStep(5);
+        else if (d.user_type) setStep(4);
+        else if (d.business_category) setStep(3);
       }
     };
     loadProgress();
   }, [user]);
 
-  const next = () => setStep((s) => s + 1);
+  const next = () => setStep(s => s + 1);
 
   const startLoading = async () => {
-    setStep(5);
+    setStep(6);
     let i = 0;
     const interval = setInterval(() => {
       i++;
@@ -91,19 +106,20 @@ export default function Onboarding() {
       if (i >= loadingSteps.length) {
         clearInterval(interval);
         setTimeout(async () => {
-          // Save to database
           if (user) {
             await supabase
               .from("profiles")
               .update({
-                creator_type: selectedType,
+                business_category: selectedCategory,
+                user_type: selectedUserType,
                 creator_stage: selectedStage,
                 creator_challenge: selectedChallenge,
+                creator_type: selectedUserType, // Map to existing field
               } as any)
               .eq("user_id", user.id);
           }
           setProfile({
-            type: selectedType as any,
+            type: selectedUserType as any,
             stage: selectedStage as any,
             challenge: selectedChallenge as any,
           });
@@ -115,7 +131,11 @@ export default function Onboarding() {
     }, 750);
   };
 
-  const progress = (step / 5) * 100;
+  const progress = (step / 6) * 100;
+
+  const filteredCategories = categories.filter((c: any) =>
+    !categorySearch || c.name.toLowerCase().includes(categorySearch.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -125,21 +145,67 @@ export default function Onboarding() {
 
       <div className="flex-1 flex items-center justify-center p-6">
         <AnimatePresence mode="wait">
+          {/* Step 1: Welcome */}
           {step === 1 && (
             <motion.div key="s1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="max-w-lg text-center">
-              <h1 className="text-3xl md:text-5xl font-extrabold mb-4">Let's build your growth plan.</h1>
-              <p className="text-muted-foreground text-lg mb-10">Answer a few quick questions. Your personalized plan will be ready in 60 seconds.</p>
+              <h1 className="text-3xl md:text-5xl font-extrabold mb-4">Let's personalize your experience.</h1>
+              <p className="text-muted-foreground text-lg mb-10">We'll set up the right tools for your business in 60 seconds.</p>
               <Button variant="hero" size="xl" onClick={next}>Let's Go <ArrowRight className="ml-1" /></Button>
             </motion.div>
           )}
 
+          {/* Step 2: Business Category */}
           {step === 2 && (
             <motion.div key="s2" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="max-w-2xl w-full">
-              <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">What type of creator are you?</h2>
+              <h2 className="text-2xl md:text-3xl font-bold text-center mb-2">What's your business category?</h2>
+              <p className="text-muted-foreground text-center mb-6">This determines which features are enabled by default.</p>
+
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search categories..."
+                  value={categorySearch}
+                  onChange={e => setCategorySearch(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-[400px] overflow-y-auto">
+                {filteredCategories.map((cat: any) => (
+                  <button
+                    key={cat.slug}
+                    onClick={() => setSelectedCategory(cat.slug)}
+                    className={`glass-card p-4 text-center transition-all duration-200 hover:translate-y-[-2px] ${
+                      selectedCategory === cat.slug ? "border-primary bg-primary/5" : "hover:border-primary/30"
+                    }`}
+                  >
+                    <span className="text-2xl mb-2 block">{cat.icon}</span>
+                    <span className="text-sm font-semibold block">{cat.name}</span>
+                    <span className="text-[10px] text-muted-foreground block mt-1">{cat.description}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex justify-center mt-6">
+                <Button variant="hero" size="lg" onClick={next} disabled={!selectedCategory}>
+                  Continue <ArrowRight className="ml-1" />
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step 3: User Type / Service */}
+          {step === 3 && (
+            <motion.div key="s3" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="max-w-2xl w-full">
+              <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">What best describes you?</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {creatorTypes.map((t) => (
-                  <button key={t.label} onClick={() => setSelectedType(t.label)}
-                    className={`glass-card p-5 text-center transition-all duration-200 hover:translate-y-[-2px] ${selectedType === t.label ? "border-primary bg-primary/5" : "hover:border-primary/30"}`}
+                {userTypes.map(t => (
+                  <button
+                    key={t.label}
+                    onClick={() => setSelectedUserType(t.label)}
+                    className={`glass-card p-5 text-center transition-all duration-200 hover:translate-y-[-2px] ${
+                      selectedUserType === t.label ? "border-primary bg-primary/5" : "hover:border-primary/30"
+                    }`}
                   >
                     <span className="text-3xl mb-2 block">{t.emoji}</span>
                     <span className="text-sm font-semibold">{t.label}</span>
@@ -147,18 +213,25 @@ export default function Onboarding() {
                 ))}
               </div>
               <div className="flex justify-center mt-8">
-                <Button variant="hero" size="lg" onClick={next} disabled={!selectedType}>Continue <ArrowRight className="ml-1" /></Button>
+                <Button variant="hero" size="lg" onClick={next} disabled={!selectedUserType}>
+                  Continue <ArrowRight className="ml-1" />
+                </Button>
               </div>
             </motion.div>
           )}
 
-          {step === 3 && (
-            <motion.div key="s3" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="max-w-lg w-full">
+          {/* Step 4: Stage */}
+          {step === 4 && (
+            <motion.div key="s4" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="max-w-lg w-full">
               <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">Where are you right now?</h2>
               <div className="space-y-3">
-                {stages.map((s) => (
-                  <button key={s.id} onClick={() => setSelectedStage(s.id)}
-                    className={`glass-card p-5 w-full text-left transition-all duration-200 hover:translate-y-[-2px] ${selectedStage === s.id ? "border-primary bg-primary/5" : "hover:border-primary/30"}`}
+                {stages.map(s => (
+                  <button
+                    key={s.id}
+                    onClick={() => setSelectedStage(s.id)}
+                    className={`glass-card p-5 w-full text-left transition-all duration-200 hover:translate-y-[-2px] ${
+                      selectedStage === s.id ? "border-primary bg-primary/5" : "hover:border-primary/30"
+                    }`}
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">{s.emoji}</span>
@@ -172,18 +245,25 @@ export default function Onboarding() {
                 ))}
               </div>
               <div className="flex justify-center mt-8">
-                <Button variant="hero" size="lg" onClick={next} disabled={!selectedStage}>Continue <ArrowRight className="ml-1" /></Button>
+                <Button variant="hero" size="lg" onClick={next} disabled={!selectedStage}>
+                  Continue <ArrowRight className="ml-1" />
+                </Button>
               </div>
             </motion.div>
           )}
 
-          {step === 4 && (
-            <motion.div key="s4" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="max-w-2xl w-full">
+          {/* Step 5: Challenge */}
+          {step === 5 && (
+            <motion.div key="s5" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="max-w-2xl w-full">
               <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">What's your biggest challenge?</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {challenges.map((c) => (
-                  <button key={c.id} onClick={() => setSelectedChallenge(c.id)}
-                    className={`glass-card p-5 text-center transition-all duration-200 hover:translate-y-[-2px] ${selectedChallenge === c.id ? "border-primary bg-primary/5" : "hover:border-primary/30"}`}
+                {challenges.map(c => (
+                  <button
+                    key={c.id}
+                    onClick={() => setSelectedChallenge(c.id)}
+                    className={`glass-card p-5 text-center transition-all duration-200 hover:translate-y-[-2px] ${
+                      selectedChallenge === c.id ? "border-primary bg-primary/5" : "hover:border-primary/30"
+                    }`}
                   >
                     <span className="text-2xl mb-2 block">{c.emoji}</span>
                     <span className="text-sm font-semibold">{c.label}</span>
@@ -191,14 +271,17 @@ export default function Onboarding() {
                 ))}
               </div>
               <div className="flex justify-center mt-8">
-                <Button variant="hero" size="lg" onClick={startLoading} disabled={!selectedChallenge}>Build My Plan <ArrowRight className="ml-1" /></Button>
+                <Button variant="hero" size="lg" onClick={startLoading} disabled={!selectedChallenge}>
+                  Build My Plan <ArrowRight className="ml-1" />
+                </Button>
               </div>
             </motion.div>
           )}
 
-          {step === 5 && (
-            <motion.div key="s5" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-md w-full">
-              <h2 className="text-2xl md:text-3xl font-bold text-center mb-10">Building your growth plan...</h2>
+          {/* Step 6: Loading */}
+          {step === 6 && (
+            <motion.div key="s6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-md w-full">
+              <h2 className="text-2xl md:text-3xl font-bold text-center mb-10">Setting up your workspace...</h2>
               <div className="space-y-4">
                 {loadingSteps.map((ls, i) => (
                   <motion.div key={ls} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.2 }} className="flex items-center gap-3 glass-card p-4">
