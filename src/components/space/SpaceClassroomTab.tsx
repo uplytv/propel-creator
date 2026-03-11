@@ -1,10 +1,10 @@
 import { useState, useCallback } from "react";
-import { ChevronDown, ChevronRight, CheckCircle, Lock, Play, Plus, ArrowLeft, ArrowRight, GripVertical, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, CheckCircle, Lock, Play, Plus, ArrowLeft, ArrowRight, GripVertical, Trash2, Pencil } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UPLYMuxPlayer } from "@/components/MuxPlayer";
 import { useAuth } from "@/context/AuthContext";
-import { useClassroomModules, useClassroomLessons, useLessonCompletions, useCompleteLesson, useCreateModule, useCreateLesson, useReorderModules, useReorderLessons, useDeleteModule, useDeleteLesson } from "@/hooks/useClassroom";
+import { useClassroomModules, useClassroomLessons, useLessonCompletions, useCompleteLesson, useCreateModule, useCreateLesson, useReorderModules, useReorderLessons, useDeleteModule, useDeleteLesson, useUpdateModule, useUpdateLesson } from "@/hooks/useClassroom";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -126,6 +126,8 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
   const [showAddModule, setShowAddModule] = useState(false);
   const [showAddLesson, setShowAddLesson] = useState<string | null>(null);
+  const [editingModule, setEditingModule] = useState<any>(null);
+  const [editingLesson, setEditingLesson] = useState<any>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -272,28 +274,37 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                           {modCompleted && <CheckCircle className="w-4 h-4" style={{ color: "#00FF85" }} />}
                         </button>
                         {isOwner && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <button className="p-2 mr-2 rounded hover:bg-white/10 transition-colors" style={{ color: "#888" }}>
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent style={{ background: "#111111", border: "1px solid #1e1e1e" }}>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle className="text-white">Delete Module</AlertDialogTitle>
-                                <AlertDialogDescription style={{ color: "#888" }}>
-                                  This will permanently delete "{mod.title}" and all its lessons. This cannot be undone.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel className="border-0" style={{ background: "#1e1e1e", color: "#fff" }}>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => { deleteModule.mutate(mod.id); toast({ title: "Module deleted" }); }}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >Delete</AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                          <div className="flex items-center mr-2 gap-1">
+                            <button
+                              onClick={() => setEditingModule(mod)}
+                              className="p-2 rounded hover:bg-white/10 transition-colors"
+                              style={{ color: "#888" }}
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <button className="p-2 rounded hover:bg-white/10 transition-colors" style={{ color: "#888" }}>
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent style={{ background: "#111111", border: "1px solid #1e1e1e" }}>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle className="text-white">Delete Module</AlertDialogTitle>
+                                  <AlertDialogDescription style={{ color: "#888" }}>
+                                    This will permanently delete "{mod.title}" and all its lessons. This cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel className="border-0" style={{ background: "#1e1e1e", color: "#fff" }}>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => { deleteModule.mutate(mod.id); toast({ title: "Module deleted" }); }}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >Delete</AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                         )}
                       </div>
 
@@ -326,28 +337,37 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                                         {isComplete && <CheckCircle className="w-4 h-4 flex-shrink-0" style={{ color: "#00FF85" }} />}
                                       </button>
                                       {isOwner && (
-                                        <AlertDialog>
-                                          <AlertDialogTrigger asChild>
-                                            <button className="p-2 mr-2 rounded hover:bg-white/10 transition-colors" style={{ color: "#888" }}>
-                                              <Trash2 className="w-3.5 h-3.5" />
-                                            </button>
-                                          </AlertDialogTrigger>
-                                          <AlertDialogContent style={{ background: "#111111", border: "1px solid #1e1e1e" }}>
-                                            <AlertDialogHeader>
-                                              <AlertDialogTitle className="text-white">Delete Lesson</AlertDialogTitle>
-                                              <AlertDialogDescription style={{ color: "#888" }}>
-                                                Delete "{lesson.title}"? This cannot be undone.
-                                              </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                              <AlertDialogCancel className="border-0" style={{ background: "#1e1e1e", color: "#fff" }}>Cancel</AlertDialogCancel>
-                                              <AlertDialogAction
-                                                onClick={() => { deleteLesson.mutate(lesson.id); toast({ title: "Lesson deleted" }); }}
-                                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                              >Delete</AlertDialogAction>
-                                            </AlertDialogFooter>
-                                          </AlertDialogContent>
-                                        </AlertDialog>
+                                        <div className="flex items-center mr-2 gap-0.5">
+                                          <button
+                                            onClick={() => setEditingLesson(lesson)}
+                                            className="p-2 rounded hover:bg-white/10 transition-colors"
+                                            style={{ color: "#888" }}
+                                          >
+                                            <Pencil className="w-3.5 h-3.5" />
+                                          </button>
+                                          <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                              <button className="p-2 rounded hover:bg-white/10 transition-colors" style={{ color: "#888" }}>
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                              </button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent style={{ background: "#111111", border: "1px solid #1e1e1e" }}>
+                                              <AlertDialogHeader>
+                                                <AlertDialogTitle className="text-white">Delete Lesson</AlertDialogTitle>
+                                                <AlertDialogDescription style={{ color: "#888" }}>
+                                                  Delete "{lesson.title}"? This cannot be undone.
+                                                </AlertDialogDescription>
+                                              </AlertDialogHeader>
+                                              <AlertDialogFooter>
+                                                <AlertDialogCancel className="border-0" style={{ background: "#1e1e1e", color: "#fff" }}>Cancel</AlertDialogCancel>
+                                                <AlertDialogAction
+                                                  onClick={() => { deleteLesson.mutate(lesson.id); toast({ title: "Lesson deleted" }); }}
+                                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                                >Delete</AlertDialogAction>
+                                              </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                          </AlertDialog>
+                                        </div>
                                       )}
                                     </div>
                                   </SortableLesson>
@@ -374,6 +394,12 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
       <AddModuleDialog open={showAddModule} onClose={() => setShowAddModule(false)} creatorId={creatorId} />
       {showAddLesson && (
         <AddLessonDialog open={!!showAddLesson} onClose={() => setShowAddLesson(null)} moduleId={showAddLesson} creatorId={creatorId} />
+      )}
+      {editingModule && (
+        <EditModuleDialog open={!!editingModule} onClose={() => setEditingModule(null)} module={editingModule} />
+      )}
+      {editingLesson && (
+        <EditLessonDialog open={!!editingLesson} onClose={() => setEditingLesson(null)} lesson={editingLesson} />
       )}
     </div>
   );
@@ -429,6 +455,60 @@ function AddLessonDialog({ open, onClose, moduleId, creatorId }: { open: boolean
           <Input placeholder="Lesson title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
           <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
           <Button onClick={handleSubmit} disabled={!title.trim()} className="w-full font-semibold" style={{ background: "#00FF85", color: "#0A0A0A" }}>Add Lesson</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function EditModuleDialog({ open, onClose, module: mod }: { open: boolean; onClose: () => void; module: any }) {
+  const [title, setTitle] = useState(mod.title);
+  const [description, setDescription] = useState(mod.description || "");
+  const updateModule = useUpdateModule();
+  const { toast } = useToast();
+
+  const handleSubmit = async () => {
+    if (!title.trim()) return;
+    await updateModule.mutateAsync({ id: mod.id, title, description });
+    onClose();
+    toast({ title: "Module updated!" });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="border-0" style={{ background: "#111111", color: "#fff" }}>
+        <DialogHeader><DialogTitle className="text-white">Edit Module</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <Input placeholder="Module title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
+          <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
+          <Button onClick={handleSubmit} disabled={!title.trim()} className="w-full font-semibold" style={{ background: "#00FF85", color: "#0A0A0A" }}>Save Changes</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function EditLessonDialog({ open, onClose, lesson }: { open: boolean; onClose: () => void; lesson: any }) {
+  const [title, setTitle] = useState(lesson.title);
+  const [description, setDescription] = useState(lesson.description || "");
+  const updateLesson = useUpdateLesson();
+  const { toast } = useToast();
+
+  const handleSubmit = async () => {
+    if (!title.trim()) return;
+    await updateLesson.mutateAsync({ id: lesson.id, title, description });
+    onClose();
+    toast({ title: "Lesson updated!" });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="border-0" style={{ background: "#111111", color: "#fff" }}>
+        <DialogHeader><DialogTitle className="text-white">Edit Lesson</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <Input placeholder="Lesson title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
+          <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
+          <Button onClick={handleSubmit} disabled={!title.trim()} className="w-full font-semibold" style={{ background: "#00FF85", color: "#0A0A0A" }}>Save Changes</Button>
         </div>
       </DialogContent>
     </Dialog>
