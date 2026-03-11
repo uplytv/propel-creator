@@ -165,6 +165,8 @@ export default function Launchpad() {
     setDescription("");
     setPrice("");
     setSuccess(false);
+    setImageFile(null);
+    setImagePreview(null);
   };
 
   return (
