@@ -368,19 +368,20 @@ export default function Products() {
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
                       <h3 className="font-bold">{p.name}</h3>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); deleteProduct.mutate(p.id); }}
-                        className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); openEdit(p); }}
-                        className="p-1 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); openEdit(p); }}
+                          className="p-1 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); deleteProduct.mutate(p.id); }}
+                          className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                     {p.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{p.description}</p>}
                     <div className="flex items-center gap-2 mt-2">
