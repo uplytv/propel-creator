@@ -136,7 +136,6 @@ export default function WaitlistPage() {
           <button
             onClick={scrollToForm}
             className="bg-[#00FF85] text-[#0A0A0A] font-bold text-base px-8 py-4 rounded-[4px] hover:shadow-[0_0_20px_rgba(0,255,133,0.4)] transition-shadow duration-300 animate-[fadeUp_0.6s_ease_0.5s_both]"
-            style={{ cursor: "none" }}
           >
             Apply for Early Access →
           </button>
