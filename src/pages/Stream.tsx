@@ -143,7 +143,21 @@ export default function Stream() {
     const creatorTier = profile?.tier || 1;
     const creatorTierName = profile?.tier_name || 'Starter';
     const TierIcon = tierIcons[creatorTier - 1] || Shield;
-    const playbackId = isVod ? dbStream.mux_playback_id : dbStream.mux_playback_id;
+    const playbackId = dbStream.mux_playback_id;
+
+    // Guard: no playback ID available
+    if (!playbackId) {
+      return (
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-center">
+            <Radio className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <h1 className="text-xl font-bold mb-2">Stream unavailable</h1>
+            <p className="text-sm text-muted-foreground mb-4">The creator may have ended their session.</p>
+            <Button variant="outline" onClick={() => navigate("/live")}>Browse Streams</Button>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="min-h-screen bg-background flex flex-col">
