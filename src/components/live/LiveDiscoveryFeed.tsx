@@ -1,10 +1,9 @@
-import { motion } from "framer-motion";
-import { Flame, TrendingUp, Compass, Sparkles, Radio, Film } from "lucide-react";
-import StreamCard from "./StreamCard";
-import { mockStreams, categories } from "@/data/mockStreams";
-import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Radio, Film, Tv, ChevronRight } from "lucide-react";
+import StreamCardNew from "./StreamCardNew";
+import { mockStreams } from "@/data/mockStreams";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 
 interface LiveStream {
@@ -22,30 +21,39 @@ interface LiveStream {
   started_at: string | null;
   ended_at: string | null;
   created_at: string | null;
-  // Joined from profiles
   creator_name?: string;
   creator_avatar?: string;
   creator_tier?: number;
   creator_tier_name?: string;
 }
 
-const sections = [
-  { id: "trending", label: "Trending Live", icon: Flame, description: "Most-watched streams right now" },
-  { id: "rising", label: "Rising Creators", icon: TrendingUp, description: "Breakout creators gaining momentum" },
-  { id: "category", label: "By Category", icon: Compass, description: "Find streams in your niche" },
-  { id: "foryou", label: "For You", icon: Sparkles, description: "Personalized picks based on your interests" },
+const HARDCODED_CATEGORIES = [
+  { emoji: "💪", name: "Fitness" },
+  { emoji: "💰", name: "Finance" },
+  { emoji: "🎮", name: "Gaming" },
+  { emoji: "💬", name: "Just Chatting" },
+  { emoji: "🎵", name: "Music" },
+  { emoji: "📚", name: "Education" },
+  { emoji: "🌍", name: "IRL" },
 ];
+
+const TABS = [
+  { id: "foryou", label: "For You" },
+  { id: "categories", label: "Categories" },
+] as const;
 
 interface Props {
   searchQuery?: string;
 }
 
 export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("foryou");
   const [liveStreams, setLiveStreams] = useState<LiveStream[]>([]);
   const [vodAssets, setVodAssets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
   const navigate = useNavigate();
+  const categoriesRef = useRef<HTMLDivElement>(null);
 
   const fetchLiveStreams = async () => {
     const { data: streams, error } = await supabase
@@ -56,6 +64,7 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
 
     if (error || !streams || streams.length === 0) {
       setLiveStreams([]);
+      setCategoryCounts({});
     } else {
       const userIds = [...new Set(streams.map((s: any) => s.user_id))];
       const { data: profiles } = await supabase
@@ -76,6 +85,18 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
         };
       });
       setLiveStreams(enriched);
+
+      // Count streams per category
+      const counts: Record<string, number> = {};
+      streams.forEach((s: any) => {
+        const cat = (s.category || '').toLowerCase();
+        HARDCODED_CATEGORIES.forEach(hc => {
+          if (cat.includes(hc.name.toLowerCase())) {
+            counts[hc.name] = (counts[hc.name] || 0) + 1;
+          }
+        });
+      });
+      setCategoryCounts(counts);
     }
   };
 
@@ -107,7 +128,6 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
   useEffect(() => {
     Promise.all([fetchLiveStreams(), fetchVodAssets()]).then(() => setLoading(false));
 
-    // Realtime subscription for instant detection
     const channel = supabase
       .channel('live-discovery')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'mux_live_streams' }, () => {
@@ -118,7 +138,6 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
       })
       .subscribe();
 
-    // Fallback polling every 5s in case realtime misses updates
     const pollInterval = setInterval(() => {
       fetchLiveStreams();
     }, 5000);
@@ -129,7 +148,6 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
     };
   }, []);
 
-  // Convert live streams to MockStream format for StreamCard compatibility
   const toMockFormat = (s: LiveStream) => ({
     id: s.id,
     creatorName: s.creator_name || 'Creator',
@@ -141,8 +159,8 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
     viewers: s.viewer_count || 0,
     isLive: s.status === 'active',
     isPublic: s.is_public ?? true,
-    thumbnailGradient: 'from-primary/20 via-primary/10 to-background',
-    communityPrice: 19,
+    thumbnailGradient: '',
+    communityPrice: 0,
     startedAt: s.started_at ? getTimeAgo(s.started_at) : 'just now',
     description: s.description || '',
     muxPlaybackId: s.mux_playback_id,
@@ -160,230 +178,208 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
       )
     : allStreams;
 
-  const trendingStreams = [...filtered].sort((a, b) => b.viewers - a.viewers).slice(0, 4);
-  const risingStreams = filtered.filter((s) => s.creatorTier <= 2).slice(0, 4);
-  const categoryStreams = selectedCategory
-    ? filtered.filter((s) => s.category === selectedCategory)
-    : filtered.slice(0, 4);
-  const forYouStreams = [...filtered].sort(() => Math.random() - 0.5).slice(0, 4);
+  const liveCount = hasLiveStreams ? liveStreams.length : filtered.filter(s => s.isLive).length;
 
+  const handleTabClick = (tabId: string) => {
+    setActiveTab(tabId);
+    if (tabId === "categories" && categoriesRef.current) {
+      categoriesRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  // ─── Skeleton Loading ─────────────────────────────────────────
   if (loading) {
     return (
-      <div className="space-y-16">
-        {[0, 1].map((i) => (
-          <section key={i}>
-            <div className="flex items-center gap-3 mb-6">
-              <Skeleton className="w-9 h-9 rounded-lg" />
-              <div>
-                <Skeleton className="h-5 w-32 mb-1" />
-                <Skeleton className="h-3 w-48" />
+      <div>
+        {/* Header skeleton */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="h-7 w-40 rounded bg-[#1a1a1a] animate-pulse" />
+          <div className="h-5 w-28 rounded bg-[#1a1a1a] animate-pulse" />
+        </div>
+        {/* Tab skeleton */}
+        <div className="flex gap-6 mb-6">
+          <div className="h-5 w-16 rounded bg-[#1a1a1a] animate-pulse" />
+          <div className="h-5 w-20 rounded bg-[#1a1a1a] animate-pulse" />
+        </div>
+        {/* Grid skeleton */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i}>
+              <div className="aspect-video rounded-lg bg-[#1a1a1a] animate-pulse" />
+              <div className="mt-2.5 flex gap-2.5">
+                <div className="w-9 h-9 rounded-full bg-[#1a1a1a] animate-pulse flex-shrink-0" />
+                <div className="flex-1 space-y-1.5">
+                  <div className="h-3.5 w-3/4 rounded bg-[#1a1a1a] animate-pulse" />
+                  <div className="h-3 w-full rounded bg-[#1a1a1a] animate-pulse" />
+                  <div className="h-3 w-16 rounded bg-[#1a1a1a] animate-pulse" />
+                </div>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {[0, 1, 2, 3].map((j) => (
-                <div key={j}>
-                  <Skeleton className="aspect-video rounded-xl" />
-                  <div className="mt-3 flex gap-3">
-                    <Skeleton className="w-9 h-9 rounded-full flex-shrink-0" />
-                    <div className="flex-1">
-                      <Skeleton className="h-4 w-full mb-1" />
-                      <Skeleton className="h-3 w-24" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        ))}
-      </div>
-    );
-  }
-
-  if (!hasLiveStreams) {
-    return (
-      <div className="space-y-16">
-        <div className="glass-card p-4 flex items-center gap-3 mb-4">
-          <Radio className="w-5 h-5 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            No creators are live right now. Showing example streams — <span className="text-primary font-medium cursor-pointer" onClick={() => window.location.href = '/go-live'}>be the first to go live!</span>
-          </p>
-        </div>
-
-        {/* Recent Recordings */}
-        {vodAssets.length > 0 && <VodSection vodAssets={vodAssets} navigate={navigate} />}
-
-        {/* Trending Live */}
-        <section>
-          <SectionHeader section={sections[0]} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {trendingStreams.map((s, i) => (
-              <StreamCard key={s.id} stream={s} index={i} />
-            ))}
-          </div>
-        </section>
-
-        {/* Rising Creators */}
-        <section>
-          <SectionHeader section={sections[1]} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {risingStreams.map((s, i) => (
-              <StreamCard key={s.id} stream={s} index={i} />
-            ))}
-          </div>
-        </section>
-
-        {/* By Category */}
-        <section>
-          <SectionHeader section={sections[2]} />
-          <div className="flex gap-2 flex-wrap mb-6">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
-                  selectedCategory === cat
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-secondary/50 text-muted-foreground border-border hover:border-primary/30 hover:text-foreground"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {categoryStreams.map((s, i) => (
-              <StreamCard key={s.id} stream={s} index={i} />
-            ))}
-          </div>
-        </section>
-
-        {/* For You */}
-        <section>
-          <SectionHeader section={sections[3]} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {forYouStreams.map((s, i) => (
-              <StreamCard key={s.id} stream={s} index={i} />
-            ))}
-          </div>
-        </section>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-16">
-      {/* Trending Live */}
-      <section>
-        <SectionHeader section={sections[0]} />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {trendingStreams.map((s, i) => (
-            <StreamCard key={s.id} stream={s} index={i} />
           ))}
         </div>
-      </section>
+      </div>
+    );
+  }
 
-      {trendingStreams.length === 0 && (
-        <div className="text-center py-12">
-          <Radio className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-          <p className="text-muted-foreground">No live streams match your search.</p>
+  return (
+    <div>
+      {/* ─── Header Row ────────────────────────────────────────── */}
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="flex items-center gap-2 text-xl font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#FF3B3B] animate-pulse" />
+            Live Now
+          </span>
+        </h2>
+        <span className="text-sm font-medium text-[#00FF85]">
+          {liveCount} stream{liveCount !== 1 ? 's' : ''} live
+        </span>
+      </div>
+
+      {/* ─── Tabs ──────────────────────────────────────────────── */}
+      <div className="flex gap-6 mb-6 border-b border-white/5">
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => handleTabClick(tab.id)}
+            className={`pb-2.5 text-sm font-medium transition-colors relative ${
+              activeTab === tab.id
+                ? "text-white"
+                : "text-[#888888] hover:text-white"
+            }`}
+          >
+            {tab.label}
+            {activeTab === tab.id && (
+              <motion.div
+                layoutId="live-tab-underline"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#00FF85] rounded-full"
+              />
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* ─── Empty State ───────────────────────────────────────── */}
+      {filtered.length === 0 && !hasLiveStreams ? (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <Tv className="w-12 h-12 text-[#888888] mb-4" />
+          <p className="text-white font-semibold mb-1">No one is live right now.</p>
+          <button
+            onClick={() => navigate('/go-live')}
+            className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#00FF85] text-[#0A0A0A] text-sm font-bold hover:brightness-110 transition-all"
+          >
+            Be the first to go live
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
+      ) : (
+        <>
+          {/* ─── Stream Grid ─────────────────────────────────── */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <AnimatePresence mode="popLayout">
+              {filtered.map((s, i) => (
+                <StreamCardNew key={s.id} stream={s} index={i} />
+              ))}
+            </AnimatePresence>
+          </div>
+
+          {/* No real streams banner */}
+          {!hasLiveStreams && (
+            <div className="mt-4 flex items-center gap-2.5 px-4 py-3 rounded-lg bg-[#111111] border border-white/5">
+              <Radio className="w-4 h-4 text-[#888888] flex-shrink-0" />
+              <p className="text-xs text-[#888888]">
+                Showing example streams — <span className="text-[#00FF85] font-medium cursor-pointer" onClick={() => navigate('/go-live')}>be the first to go live!</span>
+              </p>
+            </div>
+          )}
+        </>
       )}
 
-      {/* Recent Recordings */}
-      {vodAssets.length > 0 && <VodSection vodAssets={vodAssets} navigate={navigate} />}
-    </div>
-  );
-}
-
-function VodSection({ vodAssets, navigate }: { vodAssets: any[]; navigate: (path: string) => void }) {
-  return (
-    <section>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-40px" }}
-        className="flex items-center gap-3 mb-6"
-      >
-        <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-          <Film className="w-4.5 h-4.5 text-primary" />
+      {/* ─── Top Categories ────────────────────────────────────── */}
+      <div ref={categoriesRef} className="mt-12">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-lg font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            Top Categories
+          </h2>
         </div>
-        <div>
-          <h2 className="text-lg font-bold text-foreground">Recent Recordings</h2>
-          <p className="text-xs text-muted-foreground">Latest creator videos & stream replays</p>
-        </div>
-      </motion.div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {vodAssets.map((asset: any, i: number) => {
-          const thumb = asset.mux_playback_id
-            ? `https://image.mux.com/${asset.mux_playback_id}/thumbnail.png?width=640&height=360&time=2`
-            : null;
-          const duration = asset.duration
-            ? `${Math.floor(asset.duration / 60)}:${Math.floor(asset.duration % 60).toString().padStart(2, '0')}`
-            : null;
-          return (
-            <motion.div
-              key={asset.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.05 }}
-              onClick={() => navigate(`/stream/${asset.id}?type=vod`)}
-              className="group cursor-pointer"
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide sm:grid sm:grid-cols-4 lg:grid-cols-7 sm:overflow-visible">
+          {HARDCODED_CATEGORIES.map((cat) => (
+            <div
+              key={cat.name}
+              className="flex-shrink-0 w-28 sm:w-auto cursor-pointer group"
             >
-              <div className="relative aspect-video rounded-xl overflow-hidden bg-secondary/50">
-                {thumb ? (
-                  <img src={thumb} alt={asset.title || 'Recording'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Film className="w-8 h-8 text-muted-foreground/40" />
-                  </div>
-                )}
-                {duration && (
-                  <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/70 text-white text-[10px] font-mono">
-                    {duration}
-                  </span>
-                )}
-                <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-medium bg-secondary/80 text-foreground border border-border">
-                  Recording
-                </span>
+              <div className="aspect-square rounded-lg bg-[#111111] border border-white/5 flex items-center justify-center text-4xl group-hover:border-[#00FF85]/40 transition-colors">
+                {cat.emoji}
               </div>
-              <div className="mt-3 flex gap-3">
-                {asset.creator_avatar ? (
-                  <img src={asset.creator_avatar} alt="" className="w-9 h-9 rounded-full flex-shrink-0 object-cover" />
-                ) : (
-                  <div className="w-9 h-9 rounded-full flex-shrink-0 bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-                    {(asset.creator_name || 'C').slice(0, 2).toUpperCase()}
-                  </div>
-                )}
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold truncate">{asset.title || 'Untitled Recording'}</p>
-                  <p className="text-xs text-muted-foreground">{asset.creator_name || 'Creator'}</p>
-                </div>
-              </div>
-            </motion.div>
-          );
-        })}
+              <p className="text-sm font-medium text-white mt-2 text-center truncate">{cat.name}</p>
+              <p className="text-[11px] text-[#888888] text-center">
+                {categoryCounts[cat.name] || 0} live
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
-    </section>
-  );
-}
 
-function SectionHeader({ section }: { section: (typeof sections)[0] }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
-      className="flex items-center gap-3 mb-6"
-    >
-      <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-        <section.icon className="w-4.5 h-4.5 text-primary" />
-      </div>
-      <div>
-        <h2 className="text-lg font-bold text-foreground">{section.label}</h2>
-        <p className="text-xs text-muted-foreground">{section.description}</p>
-      </div>
-    </motion.div>
+      {/* ─── Recent Recordings ─────────────────────────────────── */}
+      {vodAssets.length > 0 && (
+        <div className="mt-12">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="flex items-center gap-2 text-lg font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              <Film className="w-5 h-5 text-[#888888]" />
+              Recent Recordings
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {vodAssets.map((asset: any, i: number) => {
+              const thumb = asset.mux_playback_id
+                ? `https://image.mux.com/${asset.mux_playback_id}/thumbnail.png?width=640&height=360&time=2`
+                : null;
+              const duration = asset.duration
+                ? `${Math.floor(asset.duration / 60)}:${Math.floor(asset.duration % 60).toString().padStart(2, '0')}`
+                : null;
+              return (
+                <motion.div
+                  key={asset.id}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.04 }}
+                  onClick={() => navigate(`/stream/${asset.id}?type=vod`)}
+                  className="group cursor-pointer"
+                >
+                  <div className="relative aspect-video rounded-lg overflow-hidden bg-[#111111] border-2 border-transparent group-hover:border-[#00FF85] transition-all duration-200 group-hover:scale-[1.02]">
+                    {thumb ? (
+                      <img src={thumb} alt={asset.title || 'Recording'} className="w-full h-full object-cover" loading="lazy" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Film className="w-8 h-8 text-[#888888]/40" />
+                      </div>
+                    )}
+                    {duration && (
+                      <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-mono text-white bg-black/70">
+                        {duration}
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-2.5 flex gap-2.5">
+                    <div className="flex-shrink-0 w-9 h-9 rounded-full bg-[#1a1a1a] flex items-center justify-center text-[11px] font-bold text-[#888888] overflow-hidden">
+                      {asset.creator_avatar ? (
+                        <img src={asset.creator_avatar} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        (asset.creator_name || 'C').slice(0, 2).toUpperCase()
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-white truncate">{asset.title || 'Untitled Recording'}</p>
+                      <p className="text-xs text-[#888888]">{asset.creator_name || 'Creator'}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
