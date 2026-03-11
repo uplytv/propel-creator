@@ -126,6 +126,35 @@ export const UPLYMuxPlayer = ({
     return destroyHls;
   }, [initHls, destroyHls]);
 
+  const [isPip, setIsPip] = useState(false);
+
+  const togglePip = useCallback(async () => {
+    const video = videoRef.current;
+    if (!video) return;
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      } else {
+        await video.requestPictureInPicture();
+      }
+    } catch (err) {
+      console.error('PiP error:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const onEnter = () => setIsPip(true);
+    const onLeave = () => setIsPip(false);
+    video.addEventListener('enterpictureinpicture', onEnter);
+    video.addEventListener('leavepictureinpicture', onLeave);
+    return () => {
+      video.removeEventListener('enterpictureinpicture', onEnter);
+      video.removeEventListener('leavepictureinpicture', onLeave);
+    };
+  }, []);
+
   const handleManualRetry = () => {
     setRetryCount(0);
     initHls();
