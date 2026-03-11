@@ -2,6 +2,7 @@ import { useRef, useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, WifiOff, RefreshCw, PictureInPicture2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAutoPip } from '@/hooks/useAutoPip';
 
 interface WebRTCPlayerProps {
   streamId: string;
@@ -220,34 +221,7 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
     return cleanup;
   }, [connect, cleanup]);
 
-  const [isPip, setIsPip] = useState(false);
-
-  const togglePip = useCallback(async () => {
-    const video = videoRef.current;
-    if (!video) return;
-    try {
-      if (document.pictureInPictureElement) {
-        await document.exitPictureInPicture();
-      } else {
-        await video.requestPictureInPicture();
-      }
-    } catch (err) {
-      console.error('PiP error:', err);
-    }
-  }, []);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    const onEnter = () => setIsPip(true);
-    const onLeave = () => setIsPip(false);
-    video.addEventListener('enterpictureinpicture', onEnter);
-    video.addEventListener('leavepictureinpicture', onLeave);
-    return () => {
-      video.removeEventListener('enterpictureinpicture', onEnter);
-      video.removeEventListener('leavepictureinpicture', onLeave);
-    };
-  }, []);
+  const { isPip, togglePip, containerRef } = useAutoPip(videoRef, status === 'playing');
 
   const handleRetry = () => {
     setRetryCount(0);
@@ -255,7 +229,7 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
   };
 
   return (
-    <div className={`relative w-full aspect-video bg-black ${className || ''}`}>
+    <div ref={containerRef} className={`relative w-full aspect-video bg-black ${className || ''}`}>
       <video
         ref={videoRef}
         autoPlay

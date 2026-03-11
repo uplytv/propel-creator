@@ -2,6 +2,7 @@ import { useRef, useEffect, useState, useCallback } from 'react';
 import Hls from 'hls.js';
 import { Loader2, RefreshCw, WifiOff, PictureInPicture2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAutoPip } from '@/hooks/useAutoPip';
 
 interface MuxPlayerProps {
   playbackId: string;
@@ -126,34 +127,7 @@ export const UPLYMuxPlayer = ({
     return destroyHls;
   }, [initHls, destroyHls]);
 
-  const [isPip, setIsPip] = useState(false);
-
-  const togglePip = useCallback(async () => {
-    const video = videoRef.current;
-    if (!video) return;
-    try {
-      if (document.pictureInPictureElement) {
-        await document.exitPictureInPicture();
-      } else {
-        await video.requestPictureInPicture();
-      }
-    } catch (err) {
-      console.error('PiP error:', err);
-    }
-  }, []);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    const onEnter = () => setIsPip(true);
-    const onLeave = () => setIsPip(false);
-    video.addEventListener('enterpictureinpicture', onEnter);
-    video.addEventListener('leavepictureinpicture', onLeave);
-    return () => {
-      video.removeEventListener('enterpictureinpicture', onEnter);
-      video.removeEventListener('leavepictureinpicture', onLeave);
-    };
-  }, []);
+  const { isPip, togglePip, containerRef } = useAutoPip(videoRef, status === 'playing');
 
   const handleManualRetry = () => {
     setRetryCount(0);
@@ -161,7 +135,7 @@ export const UPLYMuxPlayer = ({
   };
 
   return (
-    <div className={`relative w-full aspect-video bg-black ${className || ''}`}>
+    <div ref={containerRef} className={`relative w-full aspect-video bg-black ${className || ''}`}>
       <video
         ref={videoRef}
         autoPlay={autoPlay}
