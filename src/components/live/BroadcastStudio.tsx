@@ -196,6 +196,23 @@ export default function BroadcastStudio({
     iceServers: [
       { urls: 'stun:stun.l.google.com:19302' },
       { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun2.l.google.com:19302' },
+      { urls: 'stun:stun3.l.google.com:19302' },
+      {
+        urls: 'turn:openrelay.metered.ca:80',
+        username: 'openrelayproject',
+        credential: 'openrelayproject',
+      },
+      {
+        urls: 'turn:openrelay.metered.ca:443',
+        username: 'openrelayproject',
+        credential: 'openrelayproject',
+      },
+      {
+        urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+        username: 'openrelayproject',
+        credential: 'openrelayproject',
+      },
     ],
   };
 
@@ -388,19 +405,35 @@ export default function BroadcastStudio({
     setTimeout(() => setCopiedField(null), 2000);
   };
 
+  // Cleanup only on unmount — not on every re-render
   useEffect(() => {
+    const sid = streamData.streamId;
     return () => {
-      stopCurrentStream();
-      stopWebRTCHost();
+      // Stop media and WebRTC
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+      }
+      peerConnectionsRef.current.forEach(pc => pc.close());
+      peerConnectionsRef.current.clear();
+      if (webrtcChannelRef.current) {
+        supabase.removeChannel(webrtcChannelRef.current);
+        webrtcChannelRef.current = null;
+      }
       if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      if (audioContextRef.current?.state !== "closed") {
+        audioContextRef.current?.close();
+      }
       // Ensure stream is set back to idle if user navigates away mid-recording
       supabase
         .from('mux_live_streams')
         .update({ status: 'idle', ended_at: new Date().toISOString() })
-        .eq('id', streamData.streamId)
+        .eq('id', sid)
         .then(() => {});
     };
-  }, [stopCurrentStream, stopWebRTCHost, streamData.streamId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [streamData.streamId]);
 
   const isLive = streamStatus === "active";
 

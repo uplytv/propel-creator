@@ -107,6 +107,7 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
   useEffect(() => {
     Promise.all([fetchLiveStreams(), fetchVodAssets()]).then(() => setLoading(false));
 
+    // Realtime subscription for instant detection
     const channel = supabase
       .channel('live-discovery')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'mux_live_streams' }, () => {
@@ -117,7 +118,15 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    // Fallback polling every 5s in case realtime misses updates
+    const pollInterval = setInterval(() => {
+      fetchLiveStreams();
+    }, 5000);
+
+    return () => {
+      clearInterval(pollInterval);
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // Convert live streams to MockStream format for StreamCard compatibility
