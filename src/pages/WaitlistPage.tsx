@@ -296,7 +296,6 @@ export default function WaitlistPage() {
               <button
                 onClick={handleShare}
                 className="bg-[#00FF85] text-[#0A0A0A] font-bold text-sm px-6 py-3 rounded-[4px] hover:shadow-[0_0_20px_rgba(0,255,133,0.4)] transition-shadow inline-flex items-center gap-2"
-                style={{ cursor: "none" }}
               >
                 <Share2 className="w-4 h-4" />
                 Share UPLY →
