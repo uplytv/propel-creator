@@ -634,6 +634,91 @@ export default function Products() {
             </>
           )}
         </AnimatePresence>
+
+        {/* Edit Product Sheet */}
+        <AnimatePresence>
+          {editingProduct && (
+            <>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50" onClick={closeEdit} />
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="fixed bottom-0 left-0 right-0 bg-card border-t border-border rounded-t-2xl z-50 p-6 max-h-[85vh] overflow-y-auto"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-bold">Edit Product</h3>
+                  <button onClick={closeEdit} className="p-1 rounded hover:bg-secondary"><X className="w-5 h-5" /></button>
+                </div>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Name</Label>
+                    <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Product name" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Description</Label>
+                    <Textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} placeholder="Description" rows={3} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label>Type</Label>
+                      <Select value={editType} onValueChange={setEditType}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="digital">Digital Product</SelectItem>
+                          <SelectItem value="course">Course</SelectItem>
+                          <SelectItem value="community">Community</SelectItem>
+                          <SelectItem value="coaching">Coaching</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Price ($)</Label>
+                      <Input type="number" value={editPrice} onChange={(e) => setEditPrice(e.target.value)} placeholder="0" min="0" />
+                    </div>
+                  </div>
+
+                  {/* Image */}
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2"><ImageIcon className="w-4 h-4" /> Product Image</Label>
+                    {editImagePreview ? (
+                      <div className="relative rounded-lg overflow-hidden border border-border">
+                        <img src={editImagePreview} alt="Preview" className="w-full h-36 object-cover" />
+                        <button
+                          onClick={() => { setEditImageFile(null); setEditImagePreview(null); }}
+                          className="absolute top-2 right-2 p-1 rounded-full bg-background/80 hover:bg-background text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => editImageInputRef.current?.click()}
+                        className="w-full flex flex-col items-center justify-center gap-1.5 p-4 rounded-lg border border-dashed border-border hover:border-primary/30 hover:bg-secondary/30 transition-colors cursor-pointer"
+                      >
+                        <ImageIcon className="w-5 h-5 text-primary" />
+                        <span className="text-xs text-muted-foreground">Click to upload an image</span>
+                      </button>
+                    )}
+                    <input
+                      ref={editImageInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleEditImageSelected}
+                    />
+                  </div>
+
+                  <Button onClick={handleEditSubmit} disabled={updateProduct.isPending || editImageUploading || !editName.trim()} className="w-full">
+                    {updateProduct.isPending || editImageUploading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {editImageUploading ? "Uploading image..." : "Saving..."}</> : "Save Changes"}
+                  </Button>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
       </div>
     </AppLayout>
   );
