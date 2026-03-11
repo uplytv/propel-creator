@@ -651,6 +651,15 @@ export default function BroadcastStudio({
           )}
         </div>
 
+        {/* Featured Product Picker */}
+        {products.length > 0 && (
+          <FeaturedProductPicker
+            products={products}
+            featuredProductId={featuredProductId}
+            onSelect={onFeaturedProductChange}
+          />
+        )}
+
         {/* Record / Stop / Upload */}
         {(cameraOn || screenShare) && !isUploading && (
           <Button
