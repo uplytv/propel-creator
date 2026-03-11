@@ -240,6 +240,16 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
           </Button>
         </div>
       )}
+
+      {status === 'playing' && document.pictureInPictureEnabled && (
+        <button
+          onClick={togglePip}
+          className="absolute top-3 right-3 z-10 p-2 rounded-lg bg-background/60 backdrop-blur-sm text-foreground hover:bg-background/80 transition-colors"
+          title={isPip ? 'Exit Picture-in-Picture' : 'Picture-in-Picture'}
+        >
+          <PictureInPicture2 className={`w-4 h-4 ${isPip ? 'text-primary' : ''}`} />
+        </button>
+      )}
     </div>
   );
 }
