@@ -117,6 +117,9 @@ import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist"
           </motion.div>
         )}
 
+        {/* Onboarding Checklist */}
+        <OnboardingChecklist />
+
         {/* Stats Row */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
