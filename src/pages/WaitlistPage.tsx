@@ -179,9 +179,12 @@ export default function WaitlistPage() {
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { icon: <Zap className="w-6 h-6" />, title: "0% Platform Fees for 6 Months", desc: "Keep everything you earn while you build. No catches." },
+              { icon: <Zap className="w-6 h-6" />, title: "0% Platform Fees — Forever", desc: "Legacy beta creators keep 100% of what they earn. No catches. No expiry." },
               { icon: <Mic className="w-6 h-6" />, title: "Priority Onboarding Call", desc: "A real human walks you through setup and your growth strategy." },
               { icon: <Crown className="w-6 h-6" />, title: "Founding Creator Badge", desc: "Permanent badge on your profile. You were here first." },
+              { icon: <Trophy className="w-6 h-6" />, title: "Monthly Prize Competitions", desc: "Compete for cash prizes every month. Most viewed, top revenue, top referrer — three ways to win." },
+              { icon: <Ticket className="w-6 h-6" />, title: "Your Own Invite Code", desc: "Get a personal invite code to share. Every creator you bring in boosts your rank on the leaderboard." },
+              { icon: <Sparkles className="w-6 h-6" />, title: "ARIA Early Access", desc: "Be the first to use our AI growth engine. ARIA will analyze your content and suggest your next move." },
             ].map((card, i) => (
               <div
                 key={card.title}
@@ -219,6 +222,78 @@ export default function WaitlistPage() {
                 <p className="text-[#888] text-sm leading-relaxed">{card.desc}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Competition Section */}
+      <section className="py-24 px-6">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-4">
+            Compete. Win. <span className="text-[#00FF85]">Get Paid.</span>
+          </h2>
+          <p className="text-[#888] text-center text-sm mb-16 max-w-lg mx-auto">
+            Every month, we award cash prizes to top-performing Founding Creators across three categories.
+          </p>
+          <div className="grid md:grid-cols-3 gap-6 mb-16">
+            {[
+              {
+                icon: <Eye className="w-6 h-6" />,
+                title: "Most Viewed",
+                desc: "Highest total live stream views in a month.",
+                prizes: ["$500", "$250", "$100"],
+              },
+              {
+                icon: <TrendingUp className="w-6 h-6" />,
+                title: "Top Revenue",
+                desc: "Most revenue generated through products, tips & subs.",
+                prizes: ["$500", "$250", "$100"],
+              },
+              {
+                icon: <Users className="w-6 h-6" />,
+                title: "Top Referrer",
+                desc: "Most successful creator referrals via your invite code.",
+                prizes: ["$500", "$250", "$100"],
+              },
+            ].map((cat, i) => (
+              <div
+                key={cat.title}
+                className="bg-[#111] border border-[#222] rounded-[4px] p-8 animate-[fadeUp_0.6s_ease_both]"
+                style={{ animationDelay: `${i * 100}ms` }}
+              >
+                <div className="text-[#00FF85] mb-4">{cat.icon}</div>
+                <h3 className="font-bold text-lg mb-2">{cat.title}</h3>
+                <p className="text-[#888] text-sm leading-relaxed mb-6">{cat.desc}</p>
+                <div className="space-y-2">
+                  {cat.prizes.map((prize, j) => (
+                    <div key={j} className="flex items-center justify-between text-sm">
+                      <span className="text-[#888]">{j === 0 ? "🥇 1st" : j === 1 ? "🥈 2nd" : "🥉 3rd"}</span>
+                      <span className="text-[#00FF85] font-bold">{prize}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Pre-launch referral leaderboard */}
+          <div className="bg-[#111] border border-[#222] rounded-[4px] p-8 max-w-2xl mx-auto">
+            <h3 className="font-bold text-lg text-center mb-6">
+              🏆 Pre-Launch Referral Leaderboard
+            </h3>
+            <p className="text-[#888] text-xs text-center mb-6">
+              Top referrers get priority access and bonus perks at launch.
+            </p>
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5].map((rank) => (
+                <div key={rank} className="flex items-center gap-4 py-2 border-b border-[#1a1a1a] last:border-0">
+                  <span className="text-[#00FF85] font-bold text-sm w-6">#{rank}</span>
+                  <div className="w-8 h-8 rounded-full bg-[#222] flex items-center justify-center text-xs text-[#555]">?</div>
+                  <span className="text-[#555] text-sm flex-1">Waiting for you…</span>
+                  <span className="text-[#333] text-xs">0 referrals</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
