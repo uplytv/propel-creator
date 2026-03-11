@@ -26,6 +26,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<"overview" | "growth" | "jobs">("overview");
   const [recordings, setRecordings] = useState<any[]>([]);
   const [ariaOpen, setAriaOpen] = useState(false);
+  const [activeStream, setActiveStream] = useState<any>(null);
   const { data: dashStats, isLoading: statsLoading } = useDashboardStats();
   useEffect(() => {
     if (!user) return;
