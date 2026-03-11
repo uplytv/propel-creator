@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Rocket, Package, Users, UserCheck, Lock, Share2,
   LogOut, Settings, ChevronLeft, ChevronRight, Shield, TrendingUp,
-  Zap, Crown, Sparkles, BarChart3, Trophy, Handshake, Radio, Plug, Briefcase, MessageSquare, Bell as BellIcon, Search, Menu, X, Wallet, Film, LayoutGrid
+  Zap, Crown, Sparkles, BarChart3, Trophy, Handshake, Radio, Plug, Briefcase, MessageSquare, Bell as BellIcon, Search, Menu, X, Wallet, Film, LayoutGrid, ChevronDown
 } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import { useApp, tierNames } from "@/context/AppContext";
@@ -15,27 +15,33 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { useWallet } from "@/hooks/useWallet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-const navItems = [
+type NavItem = { label: string; icon: React.ElementType; path: string; desc: string; requiresTier?: number; badgeKey?: string };
+
+const primaryNav: NavItem[] = [
   { label: "Home", icon: Home, path: "/dashboard", desc: "Overview & metrics" },
-  { label: "Launchpad", icon: Rocket, path: "/launchpad", desc: "Launch something new" },
-  { label: "Discover", icon: Search, path: "/discover", desc: "Find creators" },
-  { label: "Live", icon: Radio, path: "/live", desc: "Watch & stream live" },
-  { label: "Content Library", icon: Film, path: "/content-library", desc: "Your recordings & videos" },
-  { label: "Grow", icon: Sparkles, path: "/grow", desc: "Launch Protocol" },
-  { label: "Products", icon: Package, path: "/products", desc: "What you sell" },
   { label: "My Space", icon: LayoutGrid, path: "__space__", desc: "Your creator space" },
-  
-  { label: "Affiliates", icon: Share2, path: "/affiliates", desc: "Referral program" },
+  { label: "Live", icon: Radio, path: "/live", desc: "Watch & stream live" },
+  { label: "Discover", icon: Search, path: "/discover", desc: "Find creators" },
+  { label: "Products", icon: Package, path: "/products", desc: "What you sell" },
+  { label: "Wallet", icon: Wallet, path: "/wallet", desc: "Earnings & payouts" },
+];
+
+const secondaryNav: NavItem[] = [
+  { label: "Launchpad", icon: Rocket, path: "/launchpad", desc: "Launch something new" },
+  { label: "Grow", icon: Sparkles, path: "/grow", desc: "Launch Protocol" },
+  { label: "Content Library", icon: Film, path: "/content-library", desc: "Your recordings & videos" },
   { label: "Collaborate", icon: Handshake, path: "/collaborate", desc: "Co-creator collabs", badgeKey: "collaborate" },
-  { label: "Leaderboard", icon: Trophy, path: "/leaderboard", desc: "Top creators" },
-  { label: "Ad Integrations", icon: Plug, path: "/ad-integrations", desc: "Pixels & campaigns" },
   { label: "Jobs & Talent", icon: Briefcase, path: "/jobs", desc: "Freelance marketplace" },
   { label: "Messages", icon: MessageSquare, path: "/job-messages", desc: "Job conversations", badgeKey: "job-messages" },
+  { label: "Leaderboard", icon: Trophy, path: "/leaderboard", desc: "Top creators" },
+  { label: "Ad Integrations", icon: Plug, path: "/ad-integrations", desc: "Pixels & campaigns" },
+  { label: "Affiliates", icon: Share2, path: "/affiliates", desc: "Referral program" },
   { label: "Notifications", icon: BellIcon, path: "/notifications", desc: "Alerts & updates", badgeKey: "notifications" },
-  { label: "Wallet", icon: Wallet, path: "/wallet", desc: "Earnings & payouts" },
   { label: "My Rep", icon: UserCheck, path: "/my-rep", desc: "Growth partner", requiresTier: 3 },
   { label: "Settings", icon: Settings, path: "/settings", desc: "Preferences" },
-] as { label: string; icon: React.ElementType; path: string; desc: string; requiresTier?: number; badgeKey?: string }[];
+];
+
+const allNavItems = [...primaryNav, ...secondaryNav];
 
 const tierIcons = [Shield, TrendingUp, Zap, Crown];
 const tierColors = [
@@ -57,6 +63,58 @@ function TierBadge({ tier, tierName, size = "md" }: { tier: number; tierName: st
   );
 }
 
+function NavButton({ item, isActive, isLocked, collapsed, badge, onClick }: {
+  item: NavItem; isActive: boolean; isLocked: boolean; collapsed: boolean; badge: number; onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={() => !isLocked && onClick()}
+      className={`w-full flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-200 group relative nav-item-hover ${
+        collapsed ? "px-0 py-2.5 justify-center" : "px-3 py-2.5"
+      } ${
+        isLocked
+          ? "text-muted-foreground/30 cursor-not-allowed"
+          : isActive
+          ? "bg-primary/10 text-primary"
+          : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+      }`}
+    >
+      <div className="relative flex-shrink-0 transition-transform duration-200 group-hover:scale-110">
+        <item.icon className="w-[18px] h-[18px]" />
+        {isLocked && !collapsed && (
+          <Lock className="w-2.5 h-2.5 absolute -top-1 -right-1.5 text-warning" />
+        )}
+        {!isLocked && badge > 0 && collapsed && (
+          <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
+            {badge}
+          </span>
+        )}
+      </div>
+      {!collapsed && (
+        <>
+          <span className="flex-1 text-left">{item.label}</span>
+          {isLocked && <Lock className="w-3 h-3 text-warning" />}
+          {item.label === "My Rep" && !isLocked && (
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+          )}
+          {!isLocked && badge > 0 && (
+            <span className="min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1">
+              {badge}
+            </span>
+          )}
+        </>
+      )}
+      {isActive && (
+        <motion.div
+          layoutId="sidebar-active"
+          className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary"
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        />
+      )}
+    </button>
+  );
+}
+
 export default function AppLayout({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -69,18 +127,18 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   
-  const getBadge = (item: typeof navItems[0]) => {
+  const getBadge = (item: NavItem) => {
     if (item.badgeKey === "collaborate") return unreadCount;
     if (item.badgeKey === "job-messages") return jobUnreadCount;
     if (item.badgeKey === "notifications") return notifUnreadCount;
     return 0;
   };
 
-  const isRepLocked = profile.tier <= 2;
+  const secondaryBadgeTotal = secondaryNav.reduce((sum, item) => sum + getBadge(item), 0);
 
-  // Close profile menu on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (profileRef.current && !profileRef.current.contains(e.target as Node)) setProfileOpen(false);
@@ -89,10 +147,56 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
+
+  const resolvePath = (item: NavItem) => item.path === "__space__" ? (user ? `/space/${user.id}` : "/auth") : item.path;
+
+  const renderNavItem = (item: NavItem, inCollapsed: boolean) => {
+    const resolvedPath = resolvePath(item);
+    const isActive = location.pathname === resolvedPath;
+    const isLocked = !!(item.requiresTier && profile.tier < item.requiresTier);
+    const badge = getBadge(item);
+
+    const button = (
+      <NavButton
+        key={item.label}
+        item={item}
+        isActive={isActive}
+        isLocked={isLocked}
+        collapsed={inCollapsed}
+        badge={badge}
+        onClick={() => navigate(resolvedPath)}
+      />
+    );
+
+    if (inCollapsed) {
+      return (
+        <Tooltip key={item.label}>
+          <TooltipTrigger asChild>{button}</TooltipTrigger>
+          <TooltipContent side="right" className="flex flex-col">
+            <span className="font-medium">{item.label}</span>
+            <span className="text-muted-foreground text-[10px]">{item.desc}</span>
+            {isLocked && <span className="text-warning text-[10px] mt-0.5">🔒 Unlock at Tier 3</span>}
+          </TooltipContent>
+        </Tooltip>
+      );
+    }
+
+    if (isLocked) {
+      return (
+        <Tooltip key={item.label}>
+          <TooltipTrigger asChild>{button}</TooltipTrigger>
+          <TooltipContent side="right">
+            <p className="text-xs">Reach 500 members or $5k MRR to unlock</p>
+          </TooltipContent>
+        </Tooltip>
+      );
+    }
+
+    return button;
+  };
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -116,89 +220,46 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className={`flex-1 space-y-0.5 mt-2 ${collapsed ? "px-2" : "px-3"} overflow-y-auto`}>
-          {navItems.map((item) => {
-            const resolvedPath = item.path === "__space__" ? (user ? `/space/${user.id}` : "/auth") : item.path;
-            const isActive = location.pathname === resolvedPath;
-            const isLocked = item.requiresTier && profile.tier < item.requiresTier;
+        {/* Primary Navigation */}
+        <nav className={`flex-1 mt-2 ${collapsed ? "px-2" : "px-3"} overflow-y-auto`}>
+          <div className="space-y-0.5">
+            {primaryNav.map((item) => renderNavItem(item, collapsed))}
+          </div>
 
-            const button = (
+          {/* More section divider */}
+          {!collapsed ? (
+            <div className="mt-4">
               <button
-                key={item.label}
-                onClick={() => !isLocked && navigate(resolvedPath)}
-                className={`w-full flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-200 group relative nav-item-hover ${
-                  collapsed ? "px-0 py-2.5 justify-center" : "px-3 py-2.5"
-                } ${
-                  isLocked
-                    ? "text-muted-foreground/30 cursor-not-allowed"
-                    : isActive
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
-                }`}
+                onClick={() => setMoreOpen(!moreOpen)}
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
               >
-                <div className="relative flex-shrink-0 transition-transform duration-200 group-hover:scale-110">
-                  <item.icon className="w-[18px] h-[18px]" />
-                  {isLocked && !collapsed && (
-                    <Lock className="w-2.5 h-2.5 absolute -top-1 -right-1.5 text-warning" />
-                  )}
-                  {!isLocked && getBadge(item) > 0 && collapsed && (
-                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
-                      {getBadge(item)}
-                    </span>
-                  )}
-                </div>
-                {!collapsed && (
-                  <>
-                    <span className="flex-1 text-left">{item.label}</span>
-                    {isLocked && <Lock className="w-3 h-3 text-warning" />}
-                    {item.label === "My Rep" && !isLocked && (
-                      <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                    )}
-                    {!isLocked && getBadge(item) > 0 && (
-                      <span className="min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1">
-                        {getBadge(item)}
-                      </span>
-                    )}
-                  </>
+                <span className="flex-1 text-left">More Tools</span>
+                {secondaryBadgeTotal > 0 && !moreOpen && (
+                  <span className="min-w-[16px] h-[16px] rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center px-1">
+                    {secondaryBadgeTotal}
+                  </span>
                 )}
-                {/* Active indicator bar */}
-                {isActive && (
-                  <motion.div
-                    layoutId="sidebar-active"
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary"
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  />
-                )}
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${moreOpen ? "rotate-180" : ""}`} />
               </button>
-            );
-
-            if (collapsed) {
-              return (
-                <Tooltip key={item.label}>
-                  <TooltipTrigger asChild>{button}</TooltipTrigger>
-                  <TooltipContent side="right" className="flex flex-col">
-                    <span className="font-medium">{item.label}</span>
-                    <span className="text-muted-foreground text-[10px]">{item.desc}</span>
-                    {isLocked && <span className="text-warning text-[10px] mt-0.5">🔒 Unlock at Tier 3</span>}
-                  </TooltipContent>
-                </Tooltip>
-              );
-            }
-
-            if (isLocked) {
-              return (
-                <Tooltip key={item.label}>
-                  <TooltipTrigger asChild>{button}</TooltipTrigger>
-                  <TooltipContent side="right">
-                    <p className="text-xs">Reach 500 members or $5k MRR to unlock</p>
-                  </TooltipContent>
-                </Tooltip>
-              );
-            }
-
-            return button;
-          })}
+              <AnimatePresence>
+                {moreOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden space-y-0.5"
+                  >
+                    {secondaryNav.map((item) => renderNavItem(item, false))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ) : (
+            <div className="mt-3 pt-3 border-t border-border/50 space-y-0.5">
+              {secondaryNav.map((item) => renderNavItem(item, true))}
+            </div>
+          )}
         </nav>
 
         {/* Bottom Section */}
@@ -410,45 +471,89 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 </div>
               </div>
 
-              {/* Nav Items */}
-              <nav className="flex-1 py-2 px-3 space-y-0.5 overflow-y-auto">
-                {navItems.map((item) => {
-                  const resolvedPath = item.path === "__space__" ? (user ? `/space/${user.id}` : "/auth") : item.path;
-                  const isActive = location.pathname === resolvedPath;
-                  const isLocked = item.requiresTier && profile.tier < item.requiresTier;
-                  const badge = getBadge(item);
+              {/* Nav Items - Primary */}
+              <nav className="flex-1 py-2 px-3 overflow-y-auto">
+                <div className="space-y-0.5">
+                  {primaryNav.map((item) => {
+                    const resolvedPath = resolvePath(item);
+                    const isActive = location.pathname === resolvedPath;
+                    const badge = getBadge(item);
+                    return (
+                      <button
+                        key={item.label}
+                        onClick={() => { navigate(resolvedPath); setMobileMenuOpen(false); }}
+                        className={`w-full flex items-center gap-3 rounded-lg text-sm font-medium px-3 py-2.5 transition-colors ${
+                          isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                        }`}
+                      >
+                        <item.icon className="w-[18px] h-[18px] flex-shrink-0" />
+                        <span className="flex-1 text-left">{item.label}</span>
+                        {badge > 0 && (
+                          <span className="min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1">
+                            {badge}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
 
-                  return (
-                    <button
-                      key={item.label}
-                      onClick={() => {
-                        if (!isLocked) {
-                          navigate(resolvedPath);
-                          setMobileMenuOpen(false);
-                        }
-                      }}
-                      className={`w-full flex items-center gap-3 rounded-lg text-sm font-medium px-3 py-2.5 transition-colors ${
-                        isLocked
-                          ? "text-muted-foreground/30 cursor-not-allowed"
-                          : isActive
-                          ? "bg-primary/10 text-primary"
-                          : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
-                      }`}
-                    >
-                      <div className="relative flex-shrink-0">
-                        <item.icon className="w-[18px] h-[18px]" />
-                        {isLocked && <Lock className="w-2.5 h-2.5 absolute -top-1 -right-1.5 text-warning" />}
-                      </div>
-                      <span className="flex-1 text-left">{item.label}</span>
-                      {isLocked && <Lock className="w-3 h-3 text-warning" />}
-                      {!isLocked && badge > 0 && (
-                        <span className="min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1">
-                          {badge}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
+                {/* More Tools */}
+                <div className="mt-3 pt-3 border-t border-border/50">
+                  <button
+                    onClick={() => setMoreOpen(!moreOpen)}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                  >
+                    <span className="flex-1 text-left">More Tools</span>
+                    {secondaryBadgeTotal > 0 && !moreOpen && (
+                      <span className="min-w-[16px] h-[16px] rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center px-1">
+                        {secondaryBadgeTotal}
+                      </span>
+                    )}
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${moreOpen ? "rotate-180" : ""}`} />
+                  </button>
+                  <AnimatePresence>
+                    {moreOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden space-y-0.5"
+                      >
+                        {secondaryNav.map((item) => {
+                          const resolvedPath = resolvePath(item);
+                          const isActive = location.pathname === resolvedPath;
+                          const isLocked = !!(item.requiresTier && profile.tier < item.requiresTier);
+                          const badge = getBadge(item);
+                          return (
+                            <button
+                              key={item.label}
+                              onClick={() => { if (!isLocked) { navigate(resolvedPath); setMobileMenuOpen(false); } }}
+                              className={`w-full flex items-center gap-3 rounded-lg text-sm font-medium px-3 py-2.5 transition-colors ${
+                                isLocked ? "text-muted-foreground/30 cursor-not-allowed"
+                                  : isActive ? "bg-primary/10 text-primary"
+                                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                              }`}
+                            >
+                              <div className="relative flex-shrink-0">
+                                <item.icon className="w-[18px] h-[18px]" />
+                                {isLocked && <Lock className="w-2.5 h-2.5 absolute -top-1 -right-1.5 text-warning" />}
+                              </div>
+                              <span className="flex-1 text-left">{item.label}</span>
+                              {isLocked && <Lock className="w-3 h-3 text-warning" />}
+                              {!isLocked && badge > 0 && (
+                                <span className="min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1">
+                                  {badge}
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </nav>
 
               {/* Sign Out */}
