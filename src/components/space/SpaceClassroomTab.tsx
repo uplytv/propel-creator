@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { ChevronDown, ChevronRight, CheckCircle, Lock, Play, Plus, ArrowLeft, ArrowRight, GripVertical, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, CheckCircle, Lock, Play, Plus, ArrowLeft, ArrowRight, GripVertical, Trash2, Pencil } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UPLYMuxPlayer } from "@/components/MuxPlayer";
