@@ -190,6 +190,7 @@ export default function Notifications() {
             </TabsTrigger>
             <TabsTrigger value="job" className="text-xs">💼 Jobs</TabsTrigger>
             <TabsTrigger value="campaign" className="text-xs">📢 Campaigns</TabsTrigger>
+            <TabsTrigger value="social" className="text-xs">💬 Social</TabsTrigger>
           </TabsList>
         </Tabs>
 
