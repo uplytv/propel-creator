@@ -120,6 +120,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           {navItems.map((item) => {
             const resolvedPath = item.path === "__space__" ? (user ? `/space/${user.id}` : "/auth") : item.path;
             const isActive = location.pathname === resolvedPath;
+            const isLocked = item.requiresTier && profile.tier < item.requiresTier;
 
             const button = (
               <button
