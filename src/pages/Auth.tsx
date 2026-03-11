@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { Mail, Lock, User, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { getAffiliateCookie, clearAffiliateCookie } from "@/lib/affiliateCookies";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -36,18 +37,37 @@ export default function Auth() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+
+    // Check for platform referral cookie
+    const refCode = getAffiliateCookie("uply_ref");
+
+    const { data: signUpData, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { full_name: name },
+        data: { full_name: name, referred_by: refCode || undefined },
       },
     });
     setLoading(false);
     if (error) {
       toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
     } else {
+      // If we have a referral cookie, attribute the signup
+      if (refCode && signUpData?.user) {
+        try {
+          await supabase.functions.invoke("track-affiliate-conversion", {
+            body: {
+              affiliate_code: refCode,
+              referred_user_id: signUpData.user.id,
+              conversion_type: "signup",
+            },
+          });
+          clearAffiliateCookie("uply_ref");
+        } catch (err) {
+          console.error("Affiliate tracking failed:", err);
+        }
+      }
       setSignUpSuccess(true);
     }
   };

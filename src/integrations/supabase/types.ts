@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      affiliate_conversions: {
+        Row: {
+          affiliate_code: string
+          amount: number
+          commission_amount: number
+          conversion_type: string
+          created_at: string
+          id: string
+          referred_user_id: string
+          referring_user_id: string
+          status: string
+        }
+        Insert: {
+          affiliate_code: string
+          amount?: number
+          commission_amount?: number
+          conversion_type: string
+          created_at?: string
+          id?: string
+          referred_user_id: string
+          referring_user_id: string
+          status?: string
+        }
+        Update: {
+          affiliate_code?: string
+          amount?: number
+          commission_amount?: number
+          conversion_type?: string
+          created_at?: string
+          id?: string
+          referred_user_id?: string
+          referring_user_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      affiliate_links: {
+        Row: {
+          clicks: number
+          code: string
+          created_at: string
+          id: string
+          revenue_generated: number
+          signups: number
+          user_id: string
+        }
+        Insert: {
+          clicks?: number
+          code: string
+          created_at?: string
+          id?: string
+          revenue_generated?: number
+          signups?: number
+          user_id: string
+        }
+        Update: {
+          clicks?: number
+          code?: string
+          created_at?: string
+          id?: string
+          revenue_generated?: number
+          signups?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       business_categories: {
         Row: {
           created_at: string
@@ -572,6 +638,74 @@ export type Database = {
           is_pinned?: boolean
           like_count?: number
           title?: string
+        }
+        Relationships: []
+      }
+      creator_affiliate_members: {
+        Row: {
+          affiliate_code: string
+          clicks: number
+          conversions: number
+          created_at: string
+          earnings: number
+          id: string
+          member_id: string
+          program_id: string
+        }
+        Insert: {
+          affiliate_code: string
+          clicks?: number
+          conversions?: number
+          created_at?: string
+          earnings?: number
+          id?: string
+          member_id: string
+          program_id: string
+        }
+        Update: {
+          affiliate_code?: string
+          clicks?: number
+          conversions?: number
+          created_at?: string
+          earnings?: number
+          id?: string
+          member_id?: string
+          program_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_affiliate_members_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "creator_affiliate_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_affiliate_programs: {
+        Row: {
+          commission_rate: number
+          cookie_duration_days: number
+          created_at: string
+          creator_id: string
+          id: string
+          is_active: boolean
+        }
+        Insert: {
+          commission_rate?: number
+          cookie_duration_days?: number
+          created_at?: string
+          creator_id: string
+          id?: string
+          is_active?: boolean
+        }
+        Update: {
+          commission_rate?: number
+          cookie_duration_days?: number
+          created_at?: string
+          creator_id?: string
+          id?: string
+          is_active?: boolean
         }
         Relationships: []
       }

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import {
   ShieldCheck, Users, DollarSign, Video, Package, Radio,
-  TrendingUp, AlertTriangle, Eye, ToggleLeft
+  TrendingUp, AlertTriangle, Eye, ToggleLeft, Link2
 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { format, subDays } from "date-fns";
@@ -96,6 +96,9 @@ export default function AdminDashboard() {
             </Button>
             <Button size="sm" variant="outline" onClick={() => navigate("/admin/features")}>
               <ToggleLeft className="w-4 h-4 mr-1" /> Features
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => navigate("/admin/affiliates")}>
+              <Link2 className="w-4 h-4 mr-1" /> Affiliates
             </Button>
             <Button size="sm" variant="outline" onClick={() => navigate("/admin/settings")}>
               Settings

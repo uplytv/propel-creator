@@ -47,6 +47,8 @@ import AdminFeatureToggles from "./pages/AdminFeatureToggles";
 import ContentLibrary from "./pages/ContentLibrary";
 import CreatorSpace from "./pages/CreatorSpace";
 import Launchpad from "./pages/Launchpad";
+import AdminAffiliates from "./pages/AdminAffiliates";
+import ReferralRedirect from "./pages/ReferralRedirect";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +73,7 @@ const App = () => (
                   <Route path="/live" element={<Live />} />
                   <Route path="/stream/:id" element={<Stream />} />
                   <Route path="/leaderboard" element={<Leaderboard />} />
+                  <Route path="/ref/:code" element={<ReferralRedirect />} />
                   <Route path="/creator/:username" element={<CreatorProfile />} />
                   <Route path="/space/:creatorId" element={<CreatorSpace />} />
                   <Route path="/discover" element={<Discover />} />
@@ -104,6 +107,7 @@ const App = () => (
                   <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
                   <Route path="/admin/payouts" element={<AdminRoute><AdminPayouts /></AdminRoute>} />
                   <Route path="/admin/features" element={<AdminRoute><AdminFeatureToggles /></AdminRoute>} />
+                  <Route path="/admin/affiliates" element={<AdminRoute><AdminAffiliates /></AdminRoute>} />
 
                   <Route path="*" element={<NotFound />} />
                 </Routes>

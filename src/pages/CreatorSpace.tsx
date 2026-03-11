@@ -12,9 +12,13 @@ import SpaceCalendarTab from "@/components/space/SpaceCalendarTab";
 import SpaceMembersTab from "@/components/space/SpaceMembersTab";
 import SpaceLeaderboardTab from "@/components/space/SpaceLeaderboardTab";
 import SpaceAboutTab from "@/components/space/SpaceAboutTab";
+import { MemberEarnTab } from "@/components/affiliates/MemberEarnTab";
+import { CreatorAffiliateProgramSettings } from "@/components/affiliates/CreatorAffiliateProgramSettings";
+import { useCreatorAffiliateProgram } from "@/hooks/useAffiliates";
+import { setAffiliateCookie } from "@/lib/affiliateCookies";
 
-const TABS = ["Community", "Classroom", "Calendar", "Members", "Leaderboard", "About"] as const;
-type Tab = typeof TABS[number];
+const BASE_TABS = ["Community", "Classroom", "Calendar", "Members", "Leaderboard", "About"] as const;
+type Tab = typeof BASE_TABS[number] | "Earn" | "Manage";
 
 export default function CreatorSpace() {
   const { creatorId } = useParams<{ creatorId: string }>();
@@ -23,6 +27,14 @@ export default function CreatorSpace() {
   const tabFromState = (location.state as any)?.tab;
   const searchParams = new URLSearchParams(location.search);
   const tabFromQuery = searchParams.get("tab");
+  const refCode = searchParams.get("ref");
+
+  // Handle creator affiliate cookie
+  useEffect(() => {
+    if (refCode) {
+      setAffiliateCookie("uply_creator_ref", refCode, 30);
+    }
+  }, [refCode]);
   const resolveTab = (val?: string): Tab => {
     if (val === "classroom") return "Classroom";
     if (val === "community") return "Community";
@@ -35,6 +47,28 @@ export default function CreatorSpace() {
   const { data: space } = useCreatorSpace(creatorId);
   const { data: memberCount = 0 } = useMemberCount(creatorId);
   const ensureSpace = useEnsureSpace();
+  const { data: affiliateProgram } = useCreatorAffiliateProgram(creatorId);
+
+  // Check if current user is a member (for Earn tab)
+  const { data: isMember } = useQuery({
+    queryKey: ["is-member", creatorId, user?.id],
+    enabled: !!creatorId && !!user && !isOwner,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("community_members")
+        .select("id")
+        .eq("creator_id", creatorId!)
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return !!data;
+    },
+  });
+
+  const showEarnTab = !isOwner && isMember && affiliateProgram?.is_active;
+  const TABS: Tab[] = [
+    ...BASE_TABS,
+    ...(showEarnTab ? ["Earn" as Tab] : []),
+  ];
 
   const { data: creatorProfile } = useQuery({
     queryKey: ["creator-profile-space", creatorId],
@@ -100,7 +134,19 @@ export default function CreatorSpace() {
         {activeTab === "Calendar" && <SpaceCalendarTab creatorId={creatorId!} isOwner={isOwner} />}
         {activeTab === "Members" && <SpaceMembersTab creatorId={creatorId!} />}
         {activeTab === "Leaderboard" && <SpaceLeaderboardTab creatorId={creatorId!} />}
-        {activeTab === "About" && <SpaceAboutTab creatorId={creatorId!} isOwner={isOwner} />}
+        {activeTab === "About" && (
+          <div>
+            <SpaceAboutTab creatorId={creatorId!} isOwner={isOwner} />
+            {isOwner && (
+              <div className="px-4 mt-4">
+                <CreatorAffiliateProgramSettings />
+              </div>
+            )}
+          </div>
+        )}
+        {activeTab === "Earn" && showEarnTab && affiliateProgram && (
+          <MemberEarnTab programId={affiliateProgram.id} creatorId={creatorId!} />
+        )}
       </div>
     </div>
   );
