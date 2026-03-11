@@ -109,7 +109,7 @@ function LessonPlayer({ lesson }: { lesson: any }) {
   );
 }
 
-
+export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
   const { data: modules = [] } = useClassroomModules(creatorId);
