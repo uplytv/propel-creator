@@ -206,6 +206,86 @@ export type Database = {
           },
         ]
       }
+      classroom_lessons: {
+        Row: {
+          created_at: string
+          creator_id: string
+          description: string
+          duration_seconds: number
+          id: string
+          is_free: boolean
+          module_id: string
+          mux_asset_id: string | null
+          position: number
+          title: string
+          video_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          description?: string
+          duration_seconds?: number
+          id?: string
+          is_free?: boolean
+          module_id: string
+          mux_asset_id?: string | null
+          position?: number
+          title: string
+          video_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          description?: string
+          duration_seconds?: number
+          id?: string
+          is_free?: boolean
+          module_id?: string
+          mux_asset_id?: string | null
+          position?: number
+          title?: string
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classroom_lessons_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "classroom_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      classroom_modules: {
+        Row: {
+          created_at: string
+          creator_id: string
+          description: string
+          id: string
+          is_free: boolean
+          position: number
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          description?: string
+          id?: string
+          is_free?: boolean
+          position?: number
+          title: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          description?: string
+          id?: string
+          is_free?: boolean
+          position?: number
+          title?: string
+        }
+        Relationships: []
+      }
       collaborations: {
         Row: {
           created_at: string
@@ -244,6 +324,229 @@ export type Database = {
           status?: string
           title?: string
           type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      community_categories: {
+        Row: {
+          created_at: string
+          creator_id: string
+          emoji: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          emoji?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          emoji?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      community_comments: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          post_id: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          post_id: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_events: {
+        Row: {
+          created_at: string
+          creator_id: string
+          description: string
+          event_date: string
+          event_time: string | null
+          id: string
+          link: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          description?: string
+          event_date: string
+          event_time?: string | null
+          id?: string
+          link?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          description?: string
+          event_date?: string
+          event_time?: string | null
+          id?: string
+          link?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      community_members: {
+        Row: {
+          creator_id: string
+          id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          creator_id: string
+          id?: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          creator_id?: string
+          id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      community_post_likes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_posts: {
+        Row: {
+          author_id: string
+          body: string
+          category: string
+          comment_count: number
+          created_at: string
+          creator_id: string
+          id: string
+          image_url: string | null
+          is_pinned: boolean
+          like_count: number
+          title: string
+        }
+        Insert: {
+          author_id: string
+          body?: string
+          category?: string
+          comment_count?: number
+          created_at?: string
+          creator_id: string
+          id?: string
+          image_url?: string | null
+          is_pinned?: boolean
+          like_count?: number
+          title?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          category?: string
+          comment_count?: number
+          created_at?: string
+          creator_id?: string
+          id?: string
+          image_url?: string | null
+          is_pinned?: boolean
+          like_count?: number
+          title?: string
+        }
+        Relationships: []
+      }
+      creator_spaces: {
+        Row: {
+          avatar_url: string | null
+          cover_image_url: string | null
+          created_at: string
+          creator_id: string
+          description: string
+          id: string
+          is_free: boolean
+          is_public: boolean
+          name: string
+          price: number
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          creator_id: string
+          description?: string
+          id?: string
+          is_free?: boolean
+          is_public?: boolean
+          name?: string
+          price?: number
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          creator_id?: string
+          description?: string
+          id?: string
+          is_free?: boolean
+          is_public?: boolean
+          name?: string
+          price?: number
           updated_at?: string
         }
         Relationships: []
@@ -607,6 +910,35 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_completions: {
+        Row: {
+          completed_at: string
+          id: string
+          lesson_id: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          id?: string
+          lesson_id: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          id?: string
+          lesson_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_completions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "classroom_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       live_stream_sessions: {
         Row: {
           ended_at: string | null
@@ -647,6 +979,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      member_points: {
+        Row: {
+          action_type: string
+          created_at: string
+          creator_id: string
+          id: string
+          points: number
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          creator_id: string
+          id?: string
+          points?: number
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          creator_id?: string
+          id?: string
+          points?: number
+          user_id?: string
+        }
+        Relationships: []
       }
       mux_assets: {
         Row: {
