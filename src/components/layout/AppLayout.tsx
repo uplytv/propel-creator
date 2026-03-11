@@ -412,7 +412,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               {/* Nav Items */}
               <nav className="flex-1 py-2 px-3 space-y-0.5 overflow-y-auto">
                 {navItems.map((item) => {
-                  const isActive = location.pathname === item.path;
+                  const resolvedPath = item.path === "__space__" ? (user ? `/space/${user.id}` : "/auth") : item.path;
+                  const isActive = location.pathname === resolvedPath;
                   const isLocked = item.requiresTier && profile.tier < item.requiresTier;
                   const badge = getBadge(item);
 
@@ -421,7 +422,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                       key={item.label}
                       onClick={() => {
                         if (!isLocked) {
-                          navigate(item.path);
+                          navigate(resolvedPath);
                           setMobileMenuOpen(false);
                         }
                       }}
