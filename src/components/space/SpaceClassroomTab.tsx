@@ -379,7 +379,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                                               <p className="text-xs" style={{ color: "#888" }}>{formatDuration(lesson.duration_seconds)}</p>
                                             )}
                                             {isOwner && lesson.mux_asset_id && (() => {
-                                              const asset = (assetStatuses as Record<string, { status: string; hasPlayback: boolean }>)[lesson.mux_asset_id];
+                                              const asset = (assetStatuses as Record<string, { status: string; hasPlayback: boolean; playbackId: string | null }>)[lesson.mux_asset_id];
                                               const status = asset?.status || (lesson.mux_asset_id === "pending" ? "preparing" : null);
                                               if (!status || status === "ready") {
                                                 if (asset?.hasPlayback) return (
