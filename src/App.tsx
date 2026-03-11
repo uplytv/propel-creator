@@ -15,7 +15,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
-import Community from "./pages/Community";
+
 import MyRep from "./pages/MyRep";
 import Grow from "./pages/Grow";
 import Affiliates from "./pages/Affiliates";
