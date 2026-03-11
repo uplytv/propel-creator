@@ -154,3 +154,32 @@ export function useReorderLessons() {
     },
   });
 }
+
+export function useDeleteModule() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (moduleId: string) => {
+      // Delete lessons in module first
+      await supabase.from("classroom_lessons" as any).delete().eq("module_id", moduleId);
+      const { error } = await supabase.from("classroom_modules" as any).delete().eq("id", moduleId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["classroom-modules"] });
+      queryClient.invalidateQueries({ queryKey: ["classroom-lessons"] });
+    },
+  });
+}
+
+export function useDeleteLesson() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (lessonId: string) => {
+      const { error } = await supabase.from("classroom_lessons" as any).delete().eq("id", lessonId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["classroom-lessons"] });
+    },
+  });
+}
