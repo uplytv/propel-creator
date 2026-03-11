@@ -222,6 +222,9 @@ export default function BroadcastStudio({
     }
     setIsRecording(false);
 
+    // Mark stream as idle in DB
+    await setStreamActive(false);
+
     // Wait for the recorder to fully stop and flush all chunks
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       await new Promise<void>((resolve) => {
