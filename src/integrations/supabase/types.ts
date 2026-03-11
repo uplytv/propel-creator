@@ -1064,6 +1064,7 @@ export type Database = {
           created_at: string | null
           description: string | null
           ended_at: string | null
+          featured_product_id: string | null
           id: string
           is_public: boolean | null
           mux_playback_id: string | null
@@ -1082,6 +1083,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           ended_at?: string | null
+          featured_product_id?: string | null
           id?: string
           is_public?: boolean | null
           mux_playback_id?: string | null
@@ -1100,6 +1102,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           ended_at?: string | null
+          featured_product_id?: string | null
           id?: string
           is_public?: boolean | null
           mux_playback_id?: string | null
@@ -1113,7 +1116,15 @@ export type Database = {
           user_id?: string
           viewer_count?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "mux_live_streams_featured_product_id_fkey"
+            columns: ["featured_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notification_preferences: {
         Row: {
