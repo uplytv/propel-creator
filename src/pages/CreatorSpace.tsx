@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import BackNav from "@/components/BackNav";
 import { useParams } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useCreatorSpace, useEnsureSpace } from "@/hooks/useCreatorSpace";
