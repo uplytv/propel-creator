@@ -4,12 +4,22 @@ import {
   Video, VideoOff, Mic, MicOff, Monitor, Camera,
   Settings, Copy, Check, Eye, EyeOff, Radio,
   RotateCcw, Volume2, Circle, Square, Upload,
-  Wifi, WifiOff, AlertCircle
+  Wifi, WifiOff, AlertCircle, ShoppingBag, X, ChevronDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
+interface Product {
+  id: string;
+  name: string;
+  type: string;
+  price: number;
+  image_url?: string | null;
+  status: string;
+}
 
 interface BroadcastStudioProps {
   streamData: {
@@ -21,6 +31,9 @@ interface BroadcastStudioProps {
   streamStatus: string;
   title: string;
   onEndStream: () => void;
+  products?: Product[];
+  featuredProductId?: string | null;
+  onFeaturedProductChange?: (productId: string | null) => void;
 }
 
 type StudioMode = "select" | "browser-record" | "external-encoder";
