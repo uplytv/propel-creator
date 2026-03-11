@@ -11,9 +11,6 @@ import {
   ShieldCheck, Users, DollarSign, Video, Package, Radio,
   TrendingUp, AlertTriangle, Eye, ToggleLeft
 } from "lucide-react";
-  ShieldCheck, Users, DollarSign, Video, Package, Radio,
-  TrendingUp, AlertTriangle, Eye
-} from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { format, subDays } from "date-fns";
 
