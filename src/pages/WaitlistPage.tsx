@@ -19,6 +19,7 @@ export default function WaitlistPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [socialHandle, setSocialHandle] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
   const [creatorType, setCreatorType] = useState("");
   const [followerCount, setFollowerCount] = useState("");
   const [primaryPlatform, setPrimaryPlatform] = useState("");
