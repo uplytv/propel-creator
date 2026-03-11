@@ -41,6 +41,7 @@ const HARDCODED_CATEGORIES = [
 
 const TABS = [
   { id: "foryou", label: "For You" },
+  { id: "following", label: "Following" },
   { id: "categories", label: "Categories" },
 ] as const;
 
