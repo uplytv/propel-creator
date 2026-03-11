@@ -1,0 +1,1 @@
+UPDATE public.launch_config SET is_launched = true WHERE id = '9295d348-c3fc-4948-9f51-aeed304b317a';
