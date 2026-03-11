@@ -113,6 +113,32 @@ export default function Stream() {
     return () => { supabase.removeChannel(channel); };
   }, [id, isRealStream]);
 
+  // Real-time viewer count via presence
+  useEffect(() => {
+    if (!isRealStream || !id || isVod) return;
+
+    const presenceChannel = supabase.channel(`viewers-${id}`, {
+      config: { presence: { key: user?.id || crypto.randomUUID() } },
+    });
+
+    presenceChannel
+      .on('presence', { event: 'sync' }, () => {
+        const state = presenceChannel.presenceState();
+        const count = Object.keys(state).length;
+        setDbStream((prev: any) => prev ? { ...prev, viewer_count: count } : prev);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await presenceChannel.track({ joined_at: new Date().toISOString() });
+        }
+      });
+
+    return () => {
+      presenceChannel.untrack();
+      supabase.removeChannel(presenceChannel);
+    };
+  }, [id, isRealStream, isVod, user?.id]);
+
   const handleTip = useCallback((amount: number, message: string) => {
     setCreditsBalance((prev) => Math.max(0, prev - amount));
     toast({
