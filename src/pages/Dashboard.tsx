@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useApp, tierNames } from "@/context/AppContext";
-import { TrendingUp, Users, DollarSign, Brain, MessageSquare, Phone, Clock, CheckCircle2, Zap, ChevronRight, BarChart3, Target, Briefcase, Info, Film, Play, Loader2 } from "lucide-react";
+import { TrendingUp, Users, DollarSign, Brain, MessageSquare, Phone, Clock, CheckCircle2, Zap, ChevronRight, BarChart3, Target, Briefcase, Info, Film, Play, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
 import { AIGrowthEngine } from "@/components/AIGrowthEngine";
@@ -9,6 +9,8 @@ import { MyJobsTab } from "@/components/dashboard/MyJobsTab";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useDashboardStats } from "@/hooks/useDashboardStats";
+import { AriaPanel } from "@/components/aria/AriaPanel";
 
 const tierTargets = [
   { members: 100, mrr: 1000 },
