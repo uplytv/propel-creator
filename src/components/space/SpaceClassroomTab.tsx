@@ -1,17 +1,75 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { ChevronDown, ChevronRight, CheckCircle, Lock, Play, Plus, ArrowLeft, ArrowRight } from "lucide-react";
+import { useState, useCallback } from "react";
+import { ChevronDown, ChevronRight, CheckCircle, Lock, Play, Plus, ArrowLeft, ArrowRight, GripVertical } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { useClassroomModules, useClassroomLessons, useLessonCompletions, useCompleteLesson, useCreateModule, useCreateLesson } from "@/hooks/useClassroom";
+import { useClassroomModules, useClassroomLessons, useLessonCompletions, useCompleteLesson, useCreateModule, useCreateLesson, useReorderModules, useReorderLessons } from "@/hooks/useClassroom";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface Props {
   creatorId: string;
   isOwner: boolean;
+}
+
+function SortableModule({ mod, children, isOwner }: { mod: any; children: React.ReactNode; isOwner: boolean }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: mod.id, disabled: !isOwner });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    background: "#111111",
+    border: "1px solid #1e1e1e",
+  };
+  return (
+    <div ref={setNodeRef} style={style} className="rounded-lg overflow-hidden" {...attributes}>
+      <div className="flex items-center">
+        {isOwner && (
+          <div {...listeners} className="px-2 cursor-grab active:cursor-grabbing touch-none" style={{ color: "#888" }}>
+            <GripVertical className="w-4 h-4" />
+          </div>
+        )}
+        <div className="flex-1">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function SortableLesson({ lesson, children, isOwner }: { lesson: any; children: React.ReactNode; isOwner: boolean }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: lesson.id, disabled: !isOwner });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+  return (
+    <div ref={setNodeRef} style={style} className="flex items-center" {...attributes}>
+      {isOwner && (
+        <div {...listeners} className="px-2 cursor-grab active:cursor-grabbing touch-none" style={{ color: "#888" }}>
+          <GripVertical className="w-3 h-3" />
+        </div>
+      )}
+      <div className="flex-1">{children}</div>
+    </div>
+  );
 }
 
 export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
@@ -22,11 +80,18 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
   const { data: allLessons = [] } = useClassroomLessons(moduleIds);
   const { data: completions = new Set<string>() } = useLessonCompletions(creatorId);
   const completeLesson = useCompleteLesson();
+  const reorderModules = useReorderModules();
+  const reorderLessons = useReorderLessons();
 
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
   const [showAddModule, setShowAddModule] = useState(false);
   const [showAddLesson, setShowAddLesson] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   const totalLessons = allLessons.length;
   const completedCount = allLessons.filter((l: any) => (completions as Set<string>).has(l.id)).length;
@@ -50,7 +115,27 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
     }
   };
 
-  // Navigate between lessons
+  const handleModuleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = modules.findIndex((m: any) => m.id === active.id);
+    const newIndex = modules.findIndex((m: any) => m.id === over.id);
+    const reordered = arrayMove(modules, oldIndex, newIndex);
+    const updates = reordered.map((m: any, i: number) => ({ id: m.id, position: i }));
+    reorderModules.mutate(updates);
+  }, [modules, reorderModules]);
+
+  const handleLessonDragEnd = useCallback((moduleId: string) => (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const lessons = getLessonsForModule(moduleId);
+    const oldIndex = lessons.findIndex((l: any) => l.id === active.id);
+    const newIndex = lessons.findIndex((l: any) => l.id === over.id);
+    const reordered = arrayMove(lessons, oldIndex, newIndex);
+    const updates = reordered.map((l: any, i: number) => ({ id: l.id, position: i }));
+    reorderLessons.mutate(updates);
+  }, [allLessons, reorderLessons]);
+
   const currentLessonIdx = selectedLesson ? allLessons.findIndex((l: any) => l.id === selectedLesson.id) : -1;
   const prevLesson = currentLessonIdx > 0 ? allLessons[currentLessonIdx - 1] : null;
   const nextLesson = currentLessonIdx < allLessons.length - 1 ? allLessons[currentLessonIdx + 1] : null;
@@ -69,23 +154,15 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
           <button onClick={() => setSelectedLesson(null)}><ArrowLeft className="w-5 h-5 text-white" /></button>
           <span className="text-sm font-semibold text-white truncate">{selectedLesson.title}</span>
         </div>
-
         <div className="flex-1 overflow-y-auto">
-          {/* Video Placeholder */}
           <div className="w-full aspect-video flex items-center justify-center" style={{ background: "#111111" }}>
             <Play className="w-12 h-12" style={{ color: "#888" }} />
           </div>
-
           <div className="p-4">
             <h2 className="text-lg font-bold text-white mb-2">{selectedLesson.title}</h2>
             <p className="text-sm mb-4" style={{ color: "#ccc" }}>{selectedLesson.description}</p>
-
             {user && !(completions as Set<string>).has(selectedLesson.id) && (
-              <Button
-                onClick={() => handleComplete(selectedLesson.id)}
-                className="w-full font-semibold mb-4"
-                style={{ background: "#00FF85", color: "#0A0A0A" }}
-              >
+              <Button onClick={() => handleComplete(selectedLesson.id)} className="w-full font-semibold mb-4" style={{ background: "#00FF85", color: "#0A0A0A" }}>
                 <CheckCircle className="w-4 h-4 mr-2" /> Mark as Complete
               </Button>
             )}
@@ -94,23 +171,11 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                 <CheckCircle className="w-4 h-4" /> Completed
               </div>
             )}
-
-            {/* Nav */}
             <div className="flex justify-between">
-              <button
-                onClick={() => prevLesson && setSelectedLesson(prevLesson)}
-                disabled={!prevLesson}
-                className="flex items-center gap-1 text-sm"
-                style={{ color: prevLesson ? "#fff" : "#888" }}
-              >
+              <button onClick={() => prevLesson && setSelectedLesson(prevLesson)} disabled={!prevLesson} className="flex items-center gap-1 text-sm" style={{ color: prevLesson ? "#fff" : "#888" }}>
                 <ArrowLeft className="w-4 h-4" /> Previous
               </button>
-              <button
-                onClick={() => nextLesson && setSelectedLesson(nextLesson)}
-                disabled={!nextLesson}
-                className="flex items-center gap-1 text-sm"
-                style={{ color: nextLesson ? "#fff" : "#888" }}
-              >
+              <button onClick={() => nextLesson && setSelectedLesson(nextLesson)} disabled={!nextLesson} className="flex items-center gap-1 text-sm" style={{ color: nextLesson ? "#fff" : "#888" }}>
                 Next <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -125,27 +190,19 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
       {/* Progress Bar */}
       {totalLessons > 0 && (
         <div className="mb-4 p-3 rounded-lg" style={{ background: "#111111", border: "1px solid #1e1e1e" }}>
-          <p className="text-xs font-medium mb-2 text-white">
-            You've completed {completedCount} of {totalLessons} lessons
-          </p>
+          <p className="text-xs font-medium mb-2 text-white">You've completed {completedCount} of {totalLessons} lessons</p>
           <div className="h-2 rounded-full overflow-hidden" style={{ background: "#1e1e1e" }}>
             <div className="h-full rounded-full transition-all" style={{ width: `${progressPct}%`, background: "#00FF85" }} />
           </div>
         </div>
       )}
 
-      {/* Add Module Button */}
       {isOwner && (
-        <button
-          onClick={() => setShowAddModule(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold mb-4"
-          style={{ border: "1px dashed #1e1e1e", color: "#00FF85" }}
-        >
+        <button onClick={() => setShowAddModule(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold mb-4" style={{ border: "1px dashed #1e1e1e", color: "#00FF85" }}>
           <Plus className="w-4 h-4" /> Add Module
         </button>
       )}
 
-      {/* Modules */}
       {modules.length === 0 ? (
         <div className="p-12 text-center rounded-lg" style={{ background: "#111111" }}>
           <span className="text-4xl block mb-3">📚</span>
@@ -155,76 +212,77 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {modules.map((mod: any) => {
-            const lessons = getLessonsForModule(mod.id);
-            const modCompleted = lessons.length > 0 && lessons.every((l: any) => (completions as Set<string>).has(l.id));
-            const isExpanded = expandedModules.has(mod.id);
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleModuleDragEnd}>
+          <SortableContext items={modules.map((m: any) => m.id)} strategy={verticalListSortingStrategy}>
+            <div className="space-y-2">
+              {modules.map((mod: any) => {
+                const lessons = getLessonsForModule(mod.id);
+                const modCompleted = lessons.length > 0 && lessons.every((l: any) => (completions as Set<string>).has(l.id));
+                const isExpanded = expandedModules.has(mod.id);
 
-            return (
-              <div key={mod.id} className="rounded-lg overflow-hidden" style={{ background: "#111111", border: "1px solid #1e1e1e" }}>
-                <button
-                  onClick={() => toggleModule(mod.id)}
-                  className="w-full flex items-center justify-between p-4"
-                >
-                  <div className="flex items-center gap-3">
-                    {isExpanded ? <ChevronDown className="w-4 h-4 text-white" /> : <ChevronRight className="w-4 h-4 text-white" />}
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-white">{mod.title}</p>
-                      <p className="text-xs" style={{ color: "#888" }}>{lessons.length} lessons</p>
-                    </div>
-                  </div>
-                  {modCompleted && <CheckCircle className="w-4 h-4" style={{ color: "#00FF85" }} />}
-                </button>
-
-                {isExpanded && (
-                  <div style={{ borderTop: "1px solid #1e1e1e" }}>
-                    {lessons.map((lesson: any) => {
-                      const isComplete = (completions as Set<string>).has(lesson.id);
-                      return (
-                        <button
-                          key={lesson.id}
-                          onClick={() => setSelectedLesson(lesson)}
-                          className="w-full flex items-center gap-3 p-3 text-left hover:bg-white/5 transition-colors"
-                        >
-                          <div className="w-10 h-10 rounded flex items-center justify-center flex-shrink-0" style={{ background: "#1e1e1e" }}>
-                            {lesson.is_free || true ? (
-                              <Play className="w-4 h-4" style={{ color: "#888" }} />
-                            ) : (
-                              <Lock className="w-4 h-4" style={{ color: "#888" }} />
-                            )}
+                return (
+                  <SortableModule key={mod.id} mod={mod} isOwner={isOwner}>
+                    <div>
+                      <button onClick={() => toggleModule(mod.id)} className="w-full flex items-center justify-between p-4">
+                        <div className="flex items-center gap-3">
+                          {isExpanded ? <ChevronDown className="w-4 h-4 text-white" /> : <ChevronRight className="w-4 h-4 text-white" />}
+                          <div className="text-left">
+                            <p className="text-sm font-semibold text-white">{mod.title}</p>
+                            <p className="text-xs" style={{ color: "#888" }}>{lessons.length} lessons</p>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-white truncate">{lesson.title}</p>
-                            {lesson.duration_seconds > 0 && (
-                              <p className="text-xs" style={{ color: "#888" }}>{formatDuration(lesson.duration_seconds)}</p>
-                            )}
-                          </div>
-                          {isComplete && <CheckCircle className="w-4 h-4 flex-shrink-0" style={{ color: "#00FF85" }} />}
-                        </button>
-                      );
-                    })}
-                    {isOwner && (
-                      <button
-                        onClick={() => setShowAddLesson(mod.id)}
-                        className="w-full flex items-center gap-2 p-3 text-xs"
-                        style={{ color: "#00FF85" }}
-                      >
-                        <Plus className="w-3 h-3" /> Add Lesson
+                        </div>
+                        {modCompleted && <CheckCircle className="w-4 h-4" style={{ color: "#00FF85" }} />}
                       </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+
+                      {isExpanded && (
+                        <div style={{ borderTop: "1px solid #1e1e1e" }}>
+                          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleLessonDragEnd(mod.id)}>
+                            <SortableContext items={lessons.map((l: any) => l.id)} strategy={verticalListSortingStrategy}>
+                              {lessons.map((lesson: any) => {
+                                const isComplete = (completions as Set<string>).has(lesson.id);
+                                return (
+                                  <SortableLesson key={lesson.id} lesson={lesson} isOwner={isOwner}>
+                                    <button
+                                      onClick={() => setSelectedLesson(lesson)}
+                                      className="w-full flex items-center gap-3 p-3 text-left hover:bg-white/5 transition-colors"
+                                    >
+                                      <div className="w-10 h-10 rounded flex items-center justify-center flex-shrink-0" style={{ background: "#1e1e1e" }}>
+                                        {lesson.is_free || true ? (
+                                          <Play className="w-4 h-4" style={{ color: "#888" }} />
+                                        ) : (
+                                          <Lock className="w-4 h-4" style={{ color: "#888" }} />
+                                        )}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-white truncate">{lesson.title}</p>
+                                        {lesson.duration_seconds > 0 && (
+                                          <p className="text-xs" style={{ color: "#888" }}>{formatDuration(lesson.duration_seconds)}</p>
+                                        )}
+                                      </div>
+                                      {isComplete && <CheckCircle className="w-4 h-4 flex-shrink-0" style={{ color: "#00FF85" }} />}
+                                    </button>
+                                  </SortableLesson>
+                                );
+                              })}
+                            </SortableContext>
+                          </DndContext>
+                          {isOwner && (
+                            <button onClick={() => setShowAddLesson(mod.id)} className="w-full flex items-center gap-2 p-3 text-xs" style={{ color: "#00FF85" }}>
+                              <Plus className="w-3 h-3" /> Add Lesson
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </SortableModule>
+                );
+              })}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
 
-      {/* Add Module Dialog */}
       <AddModuleDialog open={showAddModule} onClose={() => setShowAddModule(false)} creatorId={creatorId} />
-
-      {/* Add Lesson Dialog */}
       {showAddLesson && (
         <AddLessonDialog open={!!showAddLesson} onClose={() => setShowAddLesson(null)} moduleId={showAddLesson} creatorId={creatorId} />
       )}
