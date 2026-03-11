@@ -374,6 +374,13 @@ export default function Products() {
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); openEdit(p); }}
+                        className="p-1 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      </button>
                     </div>
                     {p.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{p.description}</p>}
                     <div className="flex items-center gap-2 mt-2">
