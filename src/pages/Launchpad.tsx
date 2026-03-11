@@ -129,6 +129,7 @@ export default function Launchpad() {
     if (!name.trim() || !option) return;
     setCreating(true);
 
+    const imageUrl = await uploadImage();
     const productType = option.id === "service" ? "coaching" : option.id;
 
     createProduct.mutate(
@@ -138,6 +139,7 @@ export default function Launchpad() {
         type: productType,
         price: parseFloat(price) || 0,
         status: "active",
+        image_url: imageUrl || undefined,
       },
       {
         onSuccess: () => {
