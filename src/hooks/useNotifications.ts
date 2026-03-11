@@ -12,12 +12,16 @@ export interface AppNotification {
   message: string;
   read: boolean;
   created_at: string;
-  source: "campaign" | "job";
+  source: "campaign" | "job" | "social";
   // campaign-specific
   campaign_id?: string;
   // job-specific
   job_id?: string;
   application_id?: string;
+  // social-specific
+  actor_id?: string;
+  reference_id?: string;
+  link?: string;
 }
 
 export function useNotifications() {
@@ -27,8 +31,7 @@ export function useNotifications() {
   const query = useQuery({
     queryKey: ["all-notifications", user?.id],
     queryFn: async () => {
-      // Fetch both campaign and job notifications in parallel
-      const [campaignRes, jobRes] = await Promise.all([
+      const [campaignRes, jobRes, socialRes] = await Promise.all([
         supabase
           .from("campaign_notifications")
           .select("*")
@@ -36,6 +39,11 @@ export function useNotifications() {
           .limit(20),
         supabase
           .from("job_notifications")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(20),
+        supabase
+          .from("notifications")
           .select("*")
           .order("created_at", { ascending: false })
           .limit(20),
@@ -51,15 +59,18 @@ export function useNotifications() {
         source: "job" as const,
       }));
 
-      // Merge and sort by created_at descending
-      return [...campaignNotifs, ...jobNotifs]
+      const socialNotifs: AppNotification[] = (socialRes.data ?? []).map((n: any) => ({
+        ...n,
+        source: "social" as const,
+      }));
+
+      return [...campaignNotifs, ...jobNotifs, ...socialNotifs]
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-        .slice(0, 30);
+        .slice(0, 40);
     },
     enabled: !!user,
   });
 
-  // Track if initial load is done to avoid toasting old notifications
   const initialLoadDone = useRef(false);
   useEffect(() => {
     if (!query.isLoading && query.data) {
@@ -67,7 +78,6 @@ export function useNotifications() {
     }
   }, [query.isLoading, query.data]);
 
-  // Realtime subscription for both tables — with toast on new inserts
   useEffect(() => {
     if (!user) return;
 
@@ -75,13 +85,12 @@ export function useNotifications() {
       if (!initialLoadDone.current) return;
       const row = payload.new as any;
       if (row) {
-        const icon = source === "job" ? "💼" : "📢";
+        const icon = source === "job" ? "💼" : source === "social" ? "💬" : "📢";
         toast(row.title, {
           description: row.message,
           icon,
           duration: 5000,
         });
-        // Play notification sound if enabled (Web Audio API for reliability)
         if (localStorage.getItem("notif_sound_enabled") !== "false") {
           try {
             const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -97,7 +106,6 @@ export function useNotifications() {
               osc.start(startTime);
               osc.stop(startTime + duration);
             };
-            // Two-tone chime
             playTone(830, ctx.currentTime, 0.15);
             playTone(1100, ctx.currentTime + 0.15, 0.2);
           } catch (e) {
@@ -120,14 +128,24 @@ export function useNotifications() {
         { event: "INSERT", schema: "public", table: "job_notifications" },
         (payload) => showToast(payload, "job")
       )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "notifications" },
+        (payload) => showToast(payload, "social")
+      )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [user, queryClient]);
 
+  const getTable = (source: string) => {
+    if (source === "campaign") return "campaign_notifications" as const;
+    if (source === "job") return "job_notifications" as const;
+    return "notifications" as const;
+  };
+
   const markReadMutation = useMutation({
-    mutationFn: async ({ id, source }: { id: string; source: "campaign" | "job" }) => {
-      const table = source === "campaign" ? "campaign_notifications" : "job_notifications";
-      const { error } = await supabase.from(table).update({ read: true }).eq("id", id);
+    mutationFn: async ({ id, source }: { id: string; source: "campaign" | "job" | "social" }) => {
+      const { error } = await supabase.from(getTable(source)).update({ read: true }).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["all-notifications", user?.id] }),
@@ -135,9 +153,8 @@ export function useNotifications() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async ({ id, source }: { id: string; source: "campaign" | "job" }) => {
-      const table = source === "campaign" ? "campaign_notifications" : "job_notifications";
-      const { error } = await supabase.from(table).delete().eq("id", id);
+    mutationFn: async ({ id, source }: { id: string; source: "campaign" | "job" | "social" }) => {
+      const { error } = await supabase.from(getTable(source)).delete().eq("id", id);
       if (error) throw error;
     },
     onMutate: async ({ id }) => {
@@ -158,7 +175,7 @@ export function useNotifications() {
   const markAllReadMutation = useMutation({
     mutationFn: async () => {
       if (!user) return;
-      const [campRes, jobRes] = await Promise.all([
+      const [campRes, jobRes, socialRes] = await Promise.all([
         supabase
           .from("campaign_notifications")
           .update({ read: true })
@@ -169,9 +186,15 @@ export function useNotifications() {
           .update({ read: true })
           .eq("user_id", user.id)
           .eq("read", false),
+        supabase
+          .from("notifications")
+          .update({ read: true })
+          .eq("user_id", user.id)
+          .eq("read", false),
       ]);
       if (campRes.error) throw campRes.error;
       if (jobRes.error) throw jobRes.error;
+      if (socialRes.error) throw socialRes.error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["all-notifications", user?.id] });
@@ -189,8 +212,8 @@ export function useNotifications() {
     notifications,
     unreadCount,
     isLoading: query.isLoading,
-    markRead: (id: string, source: "campaign" | "job" = "campaign") => markReadMutation.mutateAsync({ id, source }),
+    markRead: (id: string, source: "campaign" | "job" | "social" = "campaign") => markReadMutation.mutateAsync({ id, source }),
     markAllRead: markAllReadMutation.mutateAsync,
-    deleteNotification: (id: string, source: "campaign" | "job" = "campaign") => deleteMutation.mutateAsync({ id, source }),
+    deleteNotification: (id: string, source: "campaign" | "job" | "social" = "campaign") => deleteMutation.mutateAsync({ id, source }),
   };
 }

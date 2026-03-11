@@ -2,7 +2,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Bell, Check, CheckCheck, AlertTriangle, Flag, Briefcase,
-  CheckCircle2, XCircle, Eye, Star, Filter, Trash2
+  CheckCircle2, XCircle, Eye, Star, Filter, Trash2,
+  MessageSquare, Heart, UserPlus, Coins, Users
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useNotifications, AppNotification } from "@/hooks/useNotifications";
@@ -12,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-type FilterTab = "all" | "unread" | "job" | "campaign";
+type FilterTab = "all" | "unread" | "job" | "campaign" | "social";
 
 const jobNotifIcon: Record<string, { icon: any; color: string; label: string }> = {
   new_application: { icon: Briefcase, color: "bg-primary/10 text-primary", label: "New Application" },
@@ -33,7 +34,24 @@ function NotificationItem({
   onNavigate: () => void;
   onDelete: () => void;
 }) {
+  const socialNotifIcon: Record<string, { icon: any; color: string }> = {
+    community_comment: { icon: MessageSquare, color: "bg-primary/10 text-primary" },
+    community_like: { icon: Heart, color: "bg-destructive/10 text-destructive" },
+    new_follower: { icon: UserPlus, color: "bg-primary/10 text-primary" },
+    tip_received: { icon: Coins, color: "bg-primary/15 text-primary" },
+    member_joined: { icon: Users, color: "bg-primary/10 text-primary" },
+  };
+
   const getIcon = () => {
+    if (n.source === "social") {
+      const config = socialNotifIcon[n.type] || { icon: Bell, color: "bg-secondary text-muted-foreground" };
+      const Icon = config.icon;
+      return (
+        <div className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center ${config.color}`}>
+          <Icon className="w-5 h-5" />
+        </div>
+      );
+    }
     if (n.source === "job") {
       const config = jobNotifIcon[n.type] || jobNotifIcon.new_application;
       const Icon = config.icon;
@@ -115,6 +133,7 @@ export default function Notifications() {
     if (filter === "unread") return !n.read;
     if (filter === "job") return n.source === "job";
     if (filter === "campaign") return n.source === "campaign";
+    if (filter === "social") return n.source === "social";
     return true;
   });
 
@@ -171,6 +190,7 @@ export default function Notifications() {
             </TabsTrigger>
             <TabsTrigger value="job" className="text-xs">💼 Jobs</TabsTrigger>
             <TabsTrigger value="campaign" className="text-xs">📢 Campaigns</TabsTrigger>
+            <TabsTrigger value="social" className="text-xs">💬 Social</TabsTrigger>
           </TabsList>
         </Tabs>
 
