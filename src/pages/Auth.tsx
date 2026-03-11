@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { Mail, Lock, User, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { getAffiliateCookie, clearAffiliateCookie } from "@/lib/affiliateCookies";
 
 export default function Auth() {
   const navigate = useNavigate();
