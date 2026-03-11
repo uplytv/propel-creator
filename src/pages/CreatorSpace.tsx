@@ -23,6 +23,7 @@ type Tab = typeof BASE_TABS[number] | "Earn" | "Manage";
 export default function CreatorSpace() {
   const { creatorId: rawCreatorId } = useParams<{ creatorId: string }>();
   const { user } = useAuth();
+  const creatorId = rawCreatorId === "me" ? user?.id : rawCreatorId;
   const location = useLocation();
   const tabFromState = (location.state as any)?.tab;
   const searchParams = new URLSearchParams(location.search);
