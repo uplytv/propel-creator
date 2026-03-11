@@ -1,134 +1,143 @@
 import { motion } from "framer-motion";
-import { Trophy, DollarSign, Users, TrendingUp, Share2, ArrowRight, Copy, Check } from "lucide-react";
 import { useState } from "react";
+import { Copy, Check, Share2, Users, DollarSign, MousePointerClick, Clock, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import AppLayout from "@/components/layout/AppLayout";
-
-const mockAffiliates = [
-  { id: 1, name: "Sarah Chen", avatar: "SC", sales: 47, revenue: 9400, commission: 2820 },
-  { id: 2, name: "Marcus Lee", avatar: "ML", sales: 31, revenue: 6200, commission: 1860 },
-  { id: 3, name: "Jordan Kim", avatar: "JK", sales: 22, revenue: 4400, commission: 1320 },
-  { id: 4, name: "Alex Rivera", avatar: "AR", sales: 18, revenue: 3600, commission: 1080 },
-  { id: 5, name: "Taylor Swift", avatar: "TS", sales: 12, revenue: 2400, commission: 720 },
-];
+import { useAffiliateLink, useAffiliateStats } from "@/hooks/useAffiliates";
+import { format } from "date-fns";
 
 export default function Affiliates() {
   const [copied, setCopied] = useState(false);
-  const isEmpty = false;
+  const { data: linkData, isLoading: linkLoading } = useAffiliateLink();
+  const { data: stats, isLoading: statsLoading } = useAffiliateStats();
 
-  const totalAffiliates = mockAffiliates.length;
-  const totalRevenue = mockAffiliates.reduce((s, a) => s + a.revenue, 0);
-
-  const stats = [
-    { label: "Total Affiliates", value: totalAffiliates.toString(), icon: Users },
-    { label: "Revenue via Affiliates", value: `$${totalRevenue.toLocaleString()}`, icon: DollarSign },
-    { label: "Avg. Commission", value: "30%", icon: TrendingUp },
-  ];
+  const isLoading = linkLoading || statsLoading;
+  const referralLink = linkData?.code ? `${window.location.origin}/ref/${linkData.code}` : "";
 
   const handleCopy = () => {
-    navigator.clipboard.writeText("https://platform.com/ref/creator123");
+    navigator.clipboard.writeText(referralLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const handleShareTwitter = () => {
+    const text = encodeURIComponent("Join me on UPLY — the creator monetization platform! 🚀");
+    const url = encodeURIComponent(referralLink);
+    window.open(`https://x.com/intent/tweet?text=${text}&url=${url}`, "_blank");
+  };
+
+  const statCards = [
+    { label: "Total Clicks", value: stats?.totalClicks ?? 0, icon: MousePointerClick },
+    { label: "Total Signups", value: stats?.totalSignups ?? 0, icon: Users },
+    { label: "Total Earnings", value: `$${(stats?.totalEarnings ?? 0).toFixed(2)}`, icon: DollarSign },
+    { label: "Pending Payout", value: `$${(stats?.pendingEarnings ?? 0).toFixed(2)}`, icon: Clock },
+  ];
 
   return (
     <AppLayout>
       <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-6">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-2xl md:text-3xl font-bold">Affiliates</h1>
-          <p className="text-muted-foreground mt-1">Gamified leaderboard · Real-time tracking</p>
+          <h1 className="text-2xl md:text-3xl font-bold">Referrals</h1>
+          <p className="text-muted-foreground mt-1">Refer creators to UPLY and earn 20% commission on their revenue.</p>
         </motion.div>
 
         {/* Referral Link */}
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="glass-card p-5">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Your Referral Link</p>
-          <div className="flex items-center gap-3">
-            <div className="flex-1 px-4 py-2.5 rounded-lg bg-secondary border border-border text-sm font-mono text-muted-foreground truncate">
-              https://platform.com/ref/creator123
+          {isLoading ? (
+            <Skeleton className="h-10 w-full" />
+          ) : (
+            <div className="flex items-center gap-3">
+              <div className="flex-1 px-4 py-2.5 rounded-lg bg-secondary border border-border text-sm font-mono text-muted-foreground truncate">
+                {referralLink}
+              </div>
+              <Button variant="default" size="sm" onClick={handleCopy} className="flex items-center gap-1.5 flex-shrink-0">
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                {copied ? "Copied" : "Copy"}
+              </Button>
             </div>
-            <Button variant="default" size="sm" onClick={handleCopy} className="flex items-center gap-1.5 flex-shrink-0">
-              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-              {copied ? "Copied" : "Copy"}
+          )}
+          <div className="flex gap-2 mt-3">
+            <Button variant="outline" size="sm" onClick={handleShareTwitter} className="gap-1.5 text-xs">
+              <ExternalLink className="w-3.5 h-3.5" /> Share on X
             </Button>
           </div>
         </motion.div>
 
-        {isEmpty ? (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-12 text-center">
-            <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <Share2 className="w-7 h-7 text-primary" />
-            </div>
-            <h3 className="text-lg font-bold mb-2">Grow with affiliate partners</h3>
-            <p className="text-muted-foreground text-sm max-w-sm mx-auto mb-5">
-              Let your customers become your salesforce. Set up affiliate links with custom commission rates and track performance in real-time.
-            </p>
-            <Button variant="hero">
-              Invite Your First Affiliate <ArrowRight className="w-4 h-4 ml-1" />
-            </Button>
-          </motion.div>
-        ) : (
-          <>
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-3">
-              {stats.map((stat, i) => {
-                const Icon = stat.icon;
-                return (
-                  <motion.div
-                    key={stat.label}
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.05 + i * 0.05 }}
-                    className="glass-card p-4"
-                  >
-                    <Icon className="w-4 h-4 text-muted-foreground mb-2" />
-                    <p className="text-xl md:text-2xl font-bold font-mono">{stat.value}</p>
-                    <p className="text-xs text-muted-foreground">{stat.label}</p>
-                  </motion.div>
-                );
-              })}
-            </div>
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {statCards.map((stat, i) => {
+            const Icon = stat.icon;
+            return (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 + i * 0.05 }}
+                className="glass-card p-4"
+              >
+                <Icon className="w-4 h-4 text-muted-foreground mb-2" />
+                {isLoading ? (
+                  <Skeleton className="h-7 w-16" />
+                ) : (
+                  <p className="text-xl font-bold font-mono">{stat.value}</p>
+                )}
+                <p className="text-xs text-muted-foreground">{stat.label}</p>
+              </motion.div>
+            );
+          })}
+        </div>
 
-            {/* Leaderboard */}
-            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="glass-card overflow-hidden">
-              <div className="p-5 border-b border-border flex items-center gap-2">
-                <Trophy className="w-4 h-4 text-primary" />
-                <h3 className="text-sm font-semibold">Top Affiliates</h3>
-              </div>
-              <div className="divide-y divide-border">
-                {mockAffiliates.map((affiliate, i) => (
-                  <motion.div
-                    key={affiliate.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.25 + i * 0.05 }}
-                    className="flex items-center justify-between px-5 py-4 hover:bg-secondary/30 transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <span className={`text-lg font-bold font-mono w-6 ${i < 3 ? "text-primary" : "text-muted-foreground"}`}>{i + 1}</span>
-                      <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-xs font-bold">
-                        {affiliate.avatar}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">{affiliate.name}</p>
-                        <p className="text-xs text-muted-foreground">{affiliate.sales} sales</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-6">
-                      <div className="text-right hidden md:block">
-                        <p className="text-sm font-semibold font-mono">${affiliate.revenue.toLocaleString()}</p>
-                        <p className="text-[10px] text-muted-foreground">revenue</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold font-mono text-primary">${affiliate.commission.toLocaleString()}</p>
-                        <p className="text-[10px] text-muted-foreground">earned</p>
-                      </div>
-                    </div>
-                  </motion.div>
+        {/* Conversions Table */}
+        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="glass-card overflow-hidden">
+          <div className="p-5 border-b border-border">
+            <h3 className="text-sm font-semibold">Conversion History</h3>
+          </div>
+          {isLoading ? (
+            <div className="p-5 space-y-3">
+              {[1, 2, 3].map(i => <Skeleton key={i} className="h-10 w-full" />)}
+            </div>
+          ) : (stats?.conversions?.length || 0) === 0 ? (
+            <div className="p-12 text-center">
+              <Share2 className="w-8 h-8 text-muted-foreground/50 mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">No conversions yet. Share your link to start earning!</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Referred User</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead className="text-right">Commission</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {stats!.conversions.map((conv: any, i: number) => (
+                  <TableRow key={conv.id}>
+                    <TableCell className="font-mono text-xs">Creator #{i + 1}</TableCell>
+                    <TableCell className="text-xs">{format(new Date(conv.created_at), "MMM d, yyyy")}</TableCell>
+                    <TableCell>
+                      <Badge variant={conv.conversion_type === "signup" ? "secondary" : "default"} className="text-xs">
+                        {conv.conversion_type}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right font-mono">${Number(conv.commission_amount).toFixed(2)}</TableCell>
+                    <TableCell>
+                      <Badge variant={conv.status === "paid" ? "default" : "outline"} className="text-xs">
+                        {conv.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </div>
-            </motion.div>
-          </>
-        )}
+              </TableBody>
+            </Table>
+          )}
+        </motion.div>
       </div>
     </AppLayout>
   );
