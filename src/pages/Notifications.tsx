@@ -133,6 +133,7 @@ export default function Notifications() {
     if (filter === "unread") return !n.read;
     if (filter === "job") return n.source === "job";
     if (filter === "campaign") return n.source === "campaign";
+    if (filter === "social") return n.source === "social";
     return true;
   });
 
