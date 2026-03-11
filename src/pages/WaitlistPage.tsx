@@ -396,7 +396,6 @@ export default function WaitlistPage() {
                       value={creatorType}
                       onChange={(e) => setCreatorType(e.target.value)}
                       className="w-full bg-[#111] border border-[#333] rounded-[4px] px-4 py-3 text-sm text-white focus:outline-none focus:border-[#00FF85] transition-colors appearance-none"
-                      style={{ cursor: "none" }}
                     >
                       <option value="">Select one…</option>
                       {CREATOR_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -408,7 +407,6 @@ export default function WaitlistPage() {
                       value={followerCount}
                       onChange={(e) => setFollowerCount(e.target.value)}
                       className="w-full bg-[#111] border border-[#333] rounded-[4px] px-4 py-3 text-sm text-white focus:outline-none focus:border-[#00FF85] transition-colors appearance-none"
-                      style={{ cursor: "none" }}
                     >
                       <option value="">Select one…</option>
                       {FOLLOWER_RANGES.map((r) => <option key={r} value={r}>{r}</option>)}
@@ -420,7 +418,6 @@ export default function WaitlistPage() {
                       value={primaryPlatform}
                       onChange={(e) => setPrimaryPlatform(e.target.value)}
                       className="w-full bg-[#111] border border-[#333] rounded-[4px] px-4 py-3 text-sm text-white focus:outline-none focus:border-[#00FF85] transition-colors appearance-none"
-                      style={{ cursor: "none" }}
                     >
                       <option value="">Select one…</option>
                       {PLATFORMS.map((p) => <option key={p} value={p}>{p}</option>)}
@@ -430,7 +427,6 @@ export default function WaitlistPage() {
                     <button
                       onClick={() => setStep(1)}
                       className="flex-1 border border-[#333] text-[#888] font-semibold text-sm px-6 py-3.5 rounded-[4px] hover:border-[#555] transition-colors"
-                      style={{ cursor: "none" }}
                     >
                       ← Back
                     </button>
@@ -444,7 +440,6 @@ export default function WaitlistPage() {
                         setStep(3);
                       }}
                       className="flex-1 bg-[#00FF85] text-[#0A0A0A] font-bold text-sm px-6 py-3.5 rounded-[4px] hover:shadow-[0_0_20px_rgba(0,255,133,0.4)] transition-shadow"
-                      style={{ cursor: "none" }}
                     >
                       Continue →
                     </button>
@@ -464,14 +459,12 @@ export default function WaitlistPage() {
                       maxLength={300}
                       className="w-full bg-[#111] border border-[#333] rounded-[4px] px-4 py-3 text-sm text-white placeholder:text-[#555] focus:outline-none focus:border-[#00FF85] transition-colors resize-none"
                       placeholder='e.g. "I teach first-generation investors how to build wealth from zero."'
-                      style={{ cursor: "none" }}
                     />
                   </div>
                   <div className="flex gap-3">
                     <button
                       onClick={() => setStep(2)}
                       className="flex-1 border border-[#333] text-[#888] font-semibold text-sm px-6 py-3.5 rounded-[4px] hover:border-[#555] transition-colors"
-                      style={{ cursor: "none" }}
                     >
                       ← Back
                     </button>
@@ -479,7 +472,6 @@ export default function WaitlistPage() {
                       onClick={handleSubmit}
                       disabled={submitting || !oneSentence.trim()}
                       className="flex-1 bg-[#00FF85] text-[#0A0A0A] font-bold text-sm px-6 py-3.5 rounded-[4px] hover:shadow-[0_0_20px_rgba(0,255,133,0.4)] transition-shadow disabled:opacity-50"
-                      style={{ cursor: "none" }}
                     >
                       {submitting ? "Submitting…" : "Submit My Application →"}
                     </button>
