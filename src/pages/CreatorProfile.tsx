@@ -108,6 +108,14 @@ export default function CreatorProfile() {
             <span className="mt-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">{profile.creator_type}</span>
           )}
           {profile.bio && <p className="text-muted-foreground mt-3 max-w-md">{profile.bio}</p>}
+          <Button
+            variant="outline"
+            className="mt-4 gap-2"
+            onClick={() => navigate(`/space/${profile.user_id}`)}
+          >
+            <Users className="w-4 h-4" />
+            Visit Space
+          </Button>
         </motion.div>
 
         {/* Products */}
