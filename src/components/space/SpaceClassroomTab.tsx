@@ -350,13 +350,28 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                                         onClick={() => setSelectedLesson(lesson)}
                                         className="flex-1 flex items-center gap-3 p-3 text-left hover:bg-white/5 transition-colors"
                                       >
-                                        <div className="w-10 h-10 rounded flex items-center justify-center flex-shrink-0" style={{ background: "#1e1e1e" }}>
-                                          {lesson.is_free || true ? (
-                                            <Play className="w-4 h-4" style={{ color: "#888" }} />
+                                        {(() => {
+                                          const asset = lesson.mux_asset_id ? (assetStatuses as Record<string, { status: string; hasPlayback: boolean; playbackId: string | null }>)[lesson.mux_asset_id] : null;
+                                          const thumbnailUrl = asset?.playbackId && asset?.status === "ready"
+                                            ? `https://image.mux.com/${asset.playbackId}/thumbnail.webp?width=80&height=80&fit_mode=smartcrop`
+                                            : null;
+                                          return thumbnailUrl ? (
+                                            <div className="w-10 h-10 rounded overflow-hidden flex-shrink-0 relative">
+                                              <img src={thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                                              <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                                                <Play className="w-3.5 h-3.5 text-white" />
+                                              </div>
+                                            </div>
                                           ) : (
-                                            <Lock className="w-4 h-4" style={{ color: "#888" }} />
-                                          )}
-                                        </div>
+                                            <div className="w-10 h-10 rounded flex items-center justify-center flex-shrink-0" style={{ background: "#1e1e1e" }}>
+                                              {lesson.is_free || true ? (
+                                                <Play className="w-4 h-4" style={{ color: "#888" }} />
+                                              ) : (
+                                                <Lock className="w-4 h-4" style={{ color: "#888" }} />
+                                              )}
+                                            </div>
+                                          );
+                                        })()}
                                         <div className="flex-1 min-w-0">
                                           <p className="text-sm font-medium text-white truncate">{lesson.title}</p>
                                           <div className="flex items-center gap-2">
