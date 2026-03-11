@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import Hls from 'hls.js';
-import { Loader2, RefreshCw, WifiOff } from 'lucide-react';
+import { Loader2, RefreshCw, WifiOff, PictureInPicture2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface MuxPlayerProps {
@@ -126,6 +126,35 @@ export const UPLYMuxPlayer = ({
     return destroyHls;
   }, [initHls, destroyHls]);
 
+  const [isPip, setIsPip] = useState(false);
+
+  const togglePip = useCallback(async () => {
+    const video = videoRef.current;
+    if (!video) return;
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      } else {
+        await video.requestPictureInPicture();
+      }
+    } catch (err) {
+      console.error('PiP error:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const onEnter = () => setIsPip(true);
+    const onLeave = () => setIsPip(false);
+    video.addEventListener('enterpictureinpicture', onEnter);
+    video.addEventListener('leavepictureinpicture', onLeave);
+    return () => {
+      video.removeEventListener('enterpictureinpicture', onEnter);
+      video.removeEventListener('leavepictureinpicture', onLeave);
+    };
+  }, []);
+
   const handleManualRetry = () => {
     setRetryCount(0);
     initHls();
@@ -173,6 +202,16 @@ export const UPLYMuxPlayer = ({
             Retry
           </Button>
         </div>
+      )}
+
+      {status === 'playing' && document.pictureInPictureEnabled && (
+        <button
+          onClick={togglePip}
+          className="absolute top-3 right-3 z-10 p-2 rounded-lg bg-background/60 backdrop-blur-sm text-foreground hover:bg-background/80 transition-colors"
+          title={isPip ? 'Exit Picture-in-Picture' : 'Picture-in-Picture'}
+        >
+          <PictureInPicture2 className={`w-4 h-4 ${isPip ? 'text-primary' : ''}`} />
+        </button>
       )}
     </div>
   );
