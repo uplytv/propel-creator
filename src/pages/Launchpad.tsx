@@ -189,6 +189,10 @@ export default function Launchpad() {
     setSuccess(false);
     setImageFile(null);
     setImagePreview(null);
+    setIdea("");
+  };
+    setImageFile(null);
+    setImagePreview(null);
   };
 
   return (
