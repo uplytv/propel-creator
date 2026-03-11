@@ -1,52 +1,30 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useApp, tierNames } from "@/context/AppContext";
-import { TrendingUp, Users, DollarSign, Brain, MessageSquare, Phone, Clock, CheckCircle2, Zap, ChevronRight, BarChart3, Target, Briefcase, Info, Film, Play, Loader2, Sparkles, Radio } from "lucide-react";
+import {
+  TrendingUp, Users, DollarSign, Brain, Radio, Sparkles,
+  BarChart3, ChevronRight, Film, Play, Loader2, Clock,
+  LayoutGrid, Package, Search, ArrowRight, Zap, GraduationCap,
+  Plus, Eye
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
-import { AIGrowthEngine } from "@/components/AIGrowthEngine";
-import { MyJobsTab } from "@/components/dashboard/MyJobsTab";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { AriaPanel } from "@/components/aria/AriaPanel";
 
-const tierTargets = [
-  { members: 100, mrr: 1000 },
-  { members: 500, mrr: 5000 },
-  { members: 2000, mrr: 20000 },
-  { members: 10000, mrr: 100000 },
-];
-
 export default function Dashboard() {
   const { profile } = useApp();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"overview" | "growth" | "jobs">("overview");
-  const [recordings, setRecordings] = useState<any[]>([]);
   const [ariaOpen, setAriaOpen] = useState(false);
   const [activeStream, setActiveStream] = useState<any>(null);
   const { data: dashStats, isLoading: statsLoading } = useDashboardStats();
+
   useEffect(() => {
     if (!user) return;
-    const fetch = async () => {
-      const { data } = await supabase
-        .from("mux_assets")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(6);
-      if (data) setRecordings(data);
-    };
-    fetch();
-
-    const channel = supabase
-      .channel("dashboard-assets")
-      .on("postgres_changes", { event: "*", schema: "public", table: "mux_assets" }, () => fetch())
-      .subscribe();
-
-    // Check if this creator is currently live
     const fetchActiveStream = async () => {
       const { data } = await supabase
         .from("mux_live_streams")
@@ -58,33 +36,63 @@ export default function Dashboard() {
       setActiveStream(data);
     };
     fetchActiveStream();
-
     const liveChannel = supabase
       .channel("dashboard-live-status")
       .on("postgres_changes", { event: "*", schema: "public", table: "mux_live_streams", filter: `user_id=eq.${user.id}` }, () => fetchActiveStream())
       .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-      supabase.removeChannel(liveChannel);
-    };
+    return () => { supabase.removeChannel(liveChannel); };
   }, [user]);
 
-  const target = tierTargets[profile.tier - 1];
-  const nextTier = profile.tier < 4 ? tierNames[profile.tier] : null;
-  const memberPct = Math.min((profile.members / target.members) * 100, 100);
-  const mrrPct = Math.min((profile.mrr / target.mrr) * 100, 100);
-  const overallPct = Math.max(memberPct, mrrPct);
-
-  const scoreColor = profile.healthScore < 40 ? "text-destructive" : profile.healthScore < 70 ? "text-warning" : "text-primary";
-  const scoreRing = profile.healthScore < 40 ? "stroke-destructive" : profile.healthScore < 70 ? "stroke-warning" : "stroke-primary";
+  const quickActions = [
+    {
+      label: "Community",
+      desc: "Manage your space, posts & members",
+      icon: LayoutGrid,
+      color: "from-violet-500/20 to-violet-600/5",
+      iconColor: "text-violet-400",
+      action: () => navigate(user ? `/space/${user.id}` : "/auth"),
+    },
+    {
+      label: "Go Live",
+      desc: "Start a livestream or watch others",
+      icon: Radio,
+      color: "from-red-500/20 to-red-600/5",
+      iconColor: "text-red-400",
+      action: () => navigate("/go-live"),
+    },
+    {
+      label: "Courses",
+      desc: "Create lessons & modules for your audience",
+      icon: GraduationCap,
+      color: "from-blue-500/20 to-blue-600/5",
+      iconColor: "text-blue-400",
+      action: () => navigate(user ? `/space/${user.id}?tab=classroom` : "/auth"),
+    },
+    {
+      label: "Products",
+      desc: "Sell digital products & services",
+      icon: Package,
+      color: "from-amber-500/20 to-amber-600/5",
+      iconColor: "text-amber-400",
+      action: () => navigate("/products"),
+    },
+    {
+      label: "Discover",
+      desc: "Find creators & explore the platform",
+      icon: Search,
+      color: "from-emerald-500/20 to-emerald-600/5",
+      iconColor: "text-emerald-400",
+      action: () => navigate("/discover"),
+    },
+  ];
 
   return (
     <AppLayout>
-      <div className="p-4 md:p-8 max-w-6xl mx-auto">
+      <div className="p-4 md:p-8 max-w-5xl mx-auto">
+        {/* Welcome */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
           <h1 className="text-2xl md:text-3xl font-bold">Welcome back, {profile.name} 👋</h1>
-          <p className="text-muted-foreground mt-1">Here's how your business is doing.</p>
+          <p className="text-muted-foreground mt-1">Here's your command center.</p>
         </motion.div>
 
         {/* Live Now Banner */}
@@ -110,271 +118,165 @@ export default function Dashboard() {
           </motion.div>
         )}
 
-        {/* Tab Toggle */}
-        <div className="flex gap-2 mb-6">
-          <button
-            onClick={() => setActiveTab("overview")}
-            className={`text-sm px-4 py-2 rounded-lg font-medium transition-all duration-200 active:scale-95 ${activeTab === "overview" ? "bg-primary text-primary-foreground shadow-md shadow-primary/20" : "bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80"}`}
-          >
-            Overview
-          </button>
-          <button
-            onClick={() => setActiveTab("growth")}
-            className={`text-sm px-4 py-2 rounded-lg font-medium transition-all duration-200 active:scale-95 flex items-center gap-1.5 ${activeTab === "growth" ? "bg-primary text-primary-foreground shadow-md shadow-primary/20" : "bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80"}`}
-          >
-            <Zap className="w-3.5 h-3.5" /> AI Growth Engine
-          </button>
-          <button
-            onClick={() => setActiveTab("jobs")}
-            className={`text-sm px-4 py-2 rounded-lg font-medium transition-all duration-200 active:scale-95 flex items-center gap-1.5 ${activeTab === "jobs" ? "bg-primary text-primary-foreground shadow-md shadow-primary/20" : "bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80"}`}
-          >
-            <Briefcase className="w-3.5 h-3.5" /> My Jobs
-          </button>
-        </div>
-
-        {activeTab === "growth" ? (
-          <motion.div key="growth-engine" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-            <AIGrowthEngine />
-          </motion.div>
-        ) : activeTab === "jobs" ? (
-          <motion.div key="my-jobs" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-            <MyJobsTab />
-          </motion.div>
-        ) : (
-          <><div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Card 1 - Current Level */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }} className="glass-card p-6 group">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 group-hover:text-primary transition-colors duration-300">Current Level</h3>
-              <div className="flex items-center gap-4">
-                <div className="relative w-20 h-20 group-hover:scale-105 transition-transform duration-300">
-                  <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
-                    <circle cx="40" cy="40" r="34" fill="none" strokeWidth="4" className="stroke-secondary" />
-                    <circle cx="40" cy="40" r="34" fill="none" strokeWidth="4" className="stroke-primary" strokeLinecap="round"
-                      strokeDasharray={`${overallPct * 2.136} 213.6`} />
-                  </svg>
-                  <span className="absolute inset-0 flex items-center justify-center text-lg font-bold">{Math.round(overallPct)}%</span>
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold">Tier {profile.tier}</span>
-                    <span className="font-bold text-lg">{profile.tierName}</span>
-                  </div>
-                  {nextTier && <p className="text-sm text-muted-foreground mt-1">You're {Math.round(overallPct)}% of the way to {nextTier}</p>}
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Card 2 - Progress to Next Tier */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }} className="glass-card p-6 group">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 group-hover:text-primary transition-colors duration-300">Progress to Next Tier</h3>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-muted-foreground">Members</span>
-                    <span className="font-semibold">{profile.members} / {target.members}</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                    <motion.div className="h-full rounded-full bg-primary" initial={{ width: 0 }} animate={{ width: `${memberPct}%` }} transition={{ duration: 1, delay: 0.3 }} />
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-muted-foreground">MRR</span>
-                    <span className="font-semibold">${profile.mrr.toLocaleString()} / ${target.mrr.toLocaleString()}</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                    <motion.div className="h-full rounded-full bg-primary" initial={{ width: 0 }} animate={{ width: `${mrrPct}%` }} transition={{ duration: 1, delay: 0.4 }} />
-                  </div>
-                </div>
-                {nextTier && (
-                  <p className="text-sm text-primary font-medium">
-                    Unlock <span className="font-bold">{nextTier}</span> in {target.members - profile.members} members or ${(target.mrr - profile.mrr).toLocaleString()} MRR — whichever comes first.
-                  </p>
-                )}
-              </div>
-            </motion.div>
-
-            {/* Card 3 - ARIA Growth Partner */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }} className="glass-card p-6 group">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 group-hover:text-primary transition-colors duration-300">Your Growth Partner</h3>
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                  <Brain className="w-6 h-6 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-bold">ARIA — Your AI Growth Partner</p>
-                  <p className="text-sm text-muted-foreground mt-1 mb-3">AI-powered growth recommendations based on your real data. Ask ARIA anything.</p>
-                  <Button variant="outline" size="sm" onClick={() => setAriaOpen(true)} className="gap-1.5 border-primary/30 hover:border-primary hover:bg-primary/10">
-                    <Sparkles className="w-4 h-4 text-primary" /> Ask ARIA
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Card 4 - Health Score */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }} className="glass-card p-6 group">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 group-hover:text-primary transition-colors duration-300">Business Health Score</h3>
-              <div className="flex items-center gap-6">
-                <div className="relative w-20 h-20">
-                  <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
-                    <circle cx="40" cy="40" r="34" fill="none" strokeWidth="5" className="stroke-secondary" />
-                    <circle cx="40" cy="40" r="34" fill="none" strokeWidth="5" className={scoreRing} strokeLinecap="round"
-                      strokeDasharray={`${(profile.healthScore / 100) * 213.6} 213.6`} />
-                  </svg>
-                  <span className={`absolute inset-0 flex items-center justify-center text-xl font-extrabold ${scoreColor}`}>{profile.healthScore}</span>
-                </div>
-                <div className="flex-1">
-                  {profile.healthScore === 0 ? (
-                    <p className="text-sm text-muted-foreground">Complete your onboarding and add products to build your health score.</p>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">Your business health is calculated from members, revenue, and engagement metrics.</p>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Card 5 - Revenue Tracker */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }} className="glass-card p-6 group">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider group-hover:text-primary transition-colors duration-300">Revenue Tracker</h3>
-              </div>
+        {/* Stats Row */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8"
+        >
+          {[
+            { label: "Members", value: dashStats?.totalMembers ?? 0, icon: Users, iconColor: "text-violet-400" },
+            { label: "Revenue", value: `$${(dashStats?.totalRevenue ?? 0).toLocaleString()}`, icon: DollarSign, iconColor: "text-emerald-400" },
+            { label: "This Month", value: `$${(dashStats?.revenueThisMonth ?? 0).toLocaleString()}`, icon: TrendingUp, iconColor: "text-blue-400" },
+            { label: "Streams", value: dashStats?.totalLiveStreams ?? 0, icon: Radio, iconColor: "text-red-400" },
+          ].map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 + i * 0.05 }}
+              className="glass-card p-4 group hover:border-primary/20 transition-colors"
+            >
               {statsLoading ? (
-                <div className="grid grid-cols-2 gap-4">
-                  <div><div className="h-3 w-16 bg-secondary rounded animate-pulse mb-2" /><div className="h-7 w-24 bg-secondary rounded animate-pulse" /></div>
-                  <div><div className="h-3 w-16 bg-secondary rounded animate-pulse mb-2" /><div className="h-7 w-24 bg-secondary rounded animate-pulse" /></div>
-                </div>
-              ) : (dashStats?.totalRevenue ?? 0) > 0 ? (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Total Revenue</p>
-                    <p className="text-2xl font-bold">${(dashStats?.totalRevenue ?? 0).toLocaleString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">This Month</p>
-                    <p className="text-2xl font-bold">${(dashStats?.revenueThisMonth ?? 0).toLocaleString()}</p>
-                  </div>
+                <div>
+                  <div className="h-3 w-14 bg-secondary rounded animate-pulse mb-2" />
+                  <div className="h-7 w-16 bg-secondary rounded animate-pulse" />
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-6 text-center">
-                  <BarChart3 className="w-8 h-8 text-muted-foreground/40 mb-2" />
-                  <p className="text-sm text-muted-foreground">No revenue data yet.</p>
-                  <p className="text-xs text-muted-foreground mt-1">Revenue will appear here once payments are connected.</p>
-                </div>
+                <>
+                  <div className="flex items-center gap-2 mb-1">
+                    <stat.icon className={`w-3.5 h-3.5 ${stat.iconColor}`} />
+                    <p className="text-xs text-muted-foreground font-medium">{stat.label}</p>
+                  </div>
+                  <p className="text-xl md:text-2xl font-bold">{stat.value}</p>
+                </>
               )}
             </motion.div>
+          ))}
+        </motion.div>
 
-            {/* Card 6 - Live Stats */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }} className="glass-card p-6 group">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 group-hover:text-primary transition-colors duration-300">Platform Stats</h3>
-              {statsLoading ? (
-                <div className="grid grid-cols-3 gap-3">
-                  {[0,1,2].map(i => (<div key={i}><div className="h-3 w-14 bg-secondary rounded animate-pulse mb-2" /><div className="h-6 w-10 bg-secondary rounded animate-pulse" /></div>))}
+        {/* Quick Actions - Core Features */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="mb-8"
+        >
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Your Tools</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {quickActions.map((action, i) => (
+              <motion.button
+                key={action.label}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 + i * 0.06 }}
+                whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }}
+                onClick={action.action}
+                className="glass-card p-5 text-left group relative overflow-hidden hover:border-primary/20 transition-all"
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className={`w-10 h-10 rounded-xl bg-secondary/80 flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
+                      <action.icon className={`w-5 h-5 ${action.iconColor}`} />
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-muted-foreground/0 group-hover:text-muted-foreground group-hover:translate-x-0.5 transition-all duration-300" />
+                  </div>
+                  <h3 className="font-bold text-foreground text-base mb-1">{action.label}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{action.desc}</p>
                 </div>
-              ) : (
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Members</p>
-                    <p className="text-xl font-bold">{dashStats?.totalMembers ?? 0}</p>
+              </motion.button>
+            ))}
+
+            {/* ARIA Card */}
+            <motion.button
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 + quickActions.length * 0.06 }}
+              whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }}
+              onClick={() => setAriaOpen(true)}
+              className="glass-card p-5 text-left group relative overflow-hidden hover:border-primary/20 transition-all border-dashed"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/15 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                    <Sparkles className="w-5 h-5 text-primary" />
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Subscribers</p>
-                    <p className="text-xl font-bold">{dashStats?.activeSubscribers ?? 0}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Streams</p>
-                    <p className="text-xl font-bold">{dashStats?.totalLiveStreams ?? 0}</p>
-                  </div>
+                  <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">AI</span>
                 </div>
-              )}
-              {!statsLoading && <p className="text-xs mt-3" style={{ color: "#888" }}>Dashboard syncing...</p>}
-            </motion.div>
+                <h3 className="font-bold text-foreground text-base mb-1">Ask ARIA</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">Your AI growth partner — get personalized advice</p>
+              </div>
+            </motion.button>
+          </div>
+        </motion.div>
+
+        {/* Getting Started / Health */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="grid grid-cols-1 md:grid-cols-2 gap-4"
+        >
+          {/* Tier Progress */}
+          <div className="glass-card p-5">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Your Level</h3>
+            <div className="flex items-center gap-4 mb-4">
+              <div className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-bold">
+                Tier {profile.tier} · {profile.tierName}
+              </div>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-muted-foreground">Members</span>
+                  <span className="font-medium">{profile.members}</span>
+                </div>
+                <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                  <motion.div className="h-full rounded-full bg-primary" initial={{ width: 0 }} animate={{ width: `${Math.min((profile.members / (profile.tier < 4 ? [100, 500, 2000, 10000][profile.tier - 1] : 10000)) * 100, 100)}%` }} transition={{ duration: 1, delay: 0.5 }} />
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-muted-foreground">MRR</span>
+                  <span className="font-medium">${profile.mrr.toLocaleString()}</span>
+                </div>
+                <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                  <motion.div className="h-full rounded-full bg-primary" initial={{ width: 0 }} animate={{ width: `${Math.min((profile.mrr / (profile.tier < 4 ? [1000, 5000, 20000, 100000][profile.tier - 1] : 100000)) * 100, 100)}%` }} transition={{ duration: 1, delay: 0.6 }} />
+                </div>
+              </div>
+            </div>
           </div>
 
-            {/* My Recordings Section */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="mt-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <Film className="w-5 h-5 text-primary" />
-                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">My Recordings</h3>
-                </div>
-                <Button variant="ghost" size="sm" className="text-xs text-primary" onClick={() => navigate("/content-library")}>
-                  View All <ChevronRight className="w-3 h-3 ml-1" />
-                </Button>
+          {/* Health Score */}
+          <div className="glass-card p-5">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Business Health</h3>
+            <div className="flex items-center gap-5">
+              <div className="relative w-16 h-16 flex-shrink-0">
+                <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
+                  <circle cx="32" cy="32" r="27" fill="none" strokeWidth="4" className="stroke-secondary" />
+                  <circle cx="32" cy="32" r="27" fill="none" strokeWidth="4"
+                    className={profile.healthScore < 40 ? "stroke-destructive" : profile.healthScore < 70 ? "stroke-warning" : "stroke-primary"}
+                    strokeLinecap="round"
+                    strokeDasharray={`${(profile.healthScore / 100) * 169.6} 169.6`}
+                  />
+                </svg>
+                <span className={`absolute inset-0 flex items-center justify-center text-lg font-extrabold ${
+                  profile.healthScore < 40 ? "text-destructive" : profile.healthScore < 70 ? "text-warning" : "text-primary"
+                }`}>{profile.healthScore}</span>
               </div>
-
-              {recordings.length === 0 ? (
-                <div className="glass-card p-8 text-center">
-                  <Film className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-                  <p className="text-sm text-muted-foreground mb-1">No recordings yet</p>
-                  <p className="text-xs text-muted-foreground mb-4">Record your first video in the Broadcast Studio</p>
-                  <Button variant="outline" size="sm" onClick={() => navigate("/go-live")} className="gap-1.5">
-                    <Play className="w-3.5 h-3.5" /> Go to Studio
-                  </Button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {recordings.map((asset, i) => {
-                    const thumb = asset.mux_playback_id
-                      ? `https://image.mux.com/${asset.mux_playback_id}/thumbnail.png?width=480&height=270&time=2`
-                      : null;
-                    const duration = asset.duration
-                      ? `${Math.floor(asset.duration / 60)}:${Math.floor(asset.duration % 60).toString().padStart(2, "0")}`
-                      : null;
-                    const isReady = asset.status === "ready";
-
-                    return (
-                      <motion.div
-                        key={asset.id}
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 + i * 0.05 }}
-                        onClick={() => isReady && asset.mux_playback_id && navigate(`/stream/${asset.id}?type=vod`)}
-                        className={`glass-card rounded-xl overflow-hidden group ${isReady ? "cursor-pointer" : ""}`}
-                      >
-                        <div className="relative aspect-video bg-secondary/50">
-                          {thumb ? (
-                            <img src={thumb} alt={asset.title || "Recording"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <Film className="w-8 h-8 text-muted-foreground/30" />
-                            </div>
-                          )}
-                          <div className="absolute top-2 left-2">
-                            {isReady ? (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/90 text-primary-foreground">Ready</span>
-                            ) : (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-warning/90 text-warning-foreground flex items-center gap-1">
-                                <Loader2 className="w-3 h-3 animate-spin" /> Processing
-                              </span>
-                            )}
-                          </div>
-                          {duration && (
-                            <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/70 text-white text-[10px] font-mono">{duration}</span>
-                          )}
-                          {isReady && (
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center">
-                              <Play className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="p-3">
-                          <p className="text-sm font-semibold truncate">{asset.title || "Untitled Recording"}</p>
-                          <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                            <Clock className="w-3 h-3" />
-                            {new Date(asset.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                            <span className={`px-1.5 py-0.5 rounded text-[10px] ${asset.is_public ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground"}`}>
-                              {asset.is_public ? "Public" : "Private"}
-                            </span>
-                          </div>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              )}
-            </motion.div>
-          </>
-        )}
+              <div className="flex-1">
+                {profile.healthScore === 0 ? (
+                  <p className="text-sm text-muted-foreground">Complete your setup and add products to build your health score.</p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Calculated from members, revenue, and engagement metrics.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
       {user && <AriaPanel open={ariaOpen} onClose={() => setAriaOpen(false)} />}
     </AppLayout>
