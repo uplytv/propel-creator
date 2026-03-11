@@ -148,7 +148,7 @@ export default function Dashboard() {
               </div>
             </motion.div>
 
-            {/* Card 3 - Growth Partner */}
+            {/* Card 3 - ARIA Growth Partner */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }} className="glass-card p-6 group">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 group-hover:text-primary transition-colors duration-300">Your Growth Partner</h3>
               <div className="flex items-start gap-4">
@@ -157,9 +157,9 @@ export default function Dashboard() {
                 </div>
                 <div className="flex-1">
                   <p className="font-bold">ARIA — Your AI Growth Partner</p>
-                  <p className="text-sm text-muted-foreground mt-1 mb-3">AI-powered growth recommendations coming soon. Connect your data to unlock personalized insights.</p>
-                  <Button variant="outline" size="sm" disabled>
-                    <MessageSquare className="w-4 h-4 mr-1" /> Coming Soon
+                  <p className="text-sm text-muted-foreground mt-1 mb-3">AI-powered growth recommendations based on your real data. Ask ARIA anything.</p>
+                  <Button variant="outline" size="sm" onClick={() => setAriaOpen(true)} className="gap-1.5 border-primary/30 hover:border-primary hover:bg-primary/10">
+                    <Sparkles className="w-4 h-4 text-primary" /> Ask ARIA
                   </Button>
                 </div>
               </div>
