@@ -310,6 +310,7 @@ export default function Stream() {
                     <p className="text-xs text-muted-foreground">{dbStream.category || 'General'}</p>
                   </div>
                 </div>
+                <FollowButton targetUserId={dbStream.user_id} />
               </div>
               {dbStream.description && (
                 <p className="text-sm text-muted-foreground mt-3 hidden sm:block">{dbStream.description}</p>
