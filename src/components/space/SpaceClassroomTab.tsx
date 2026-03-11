@@ -436,25 +436,109 @@ function AddModuleDialog({ open, onClose, creatorId }: { open: boolean; onClose:
 function AddLessonDialog({ open, onClose, moduleId, creatorId }: { open: boolean; onClose: () => void; moduleId: string; creatorId: string }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const createLesson = useCreateLesson();
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  const uploadToMux = async (file: File): Promise<string | null> => {
+    if (!user) return null;
+    // Create upload URL via edge function
+    const { data, error } = await supabase.functions.invoke("mux-create-upload", {
+      body: { title, description, userId: user.id },
+    });
+    if (error || !data?.uploadUrl) {
+      throw new Error(error?.message || "Failed to create upload");
+    }
+
+    // Upload file directly to Mux
+    const xhr = new XMLHttpRequest();
+    await new Promise<void>((resolve, reject) => {
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100));
+      };
+      xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error("Upload failed")));
+      xhr.onerror = () => reject(new Error("Upload failed"));
+      xhr.open("PUT", data.uploadUrl);
+      xhr.send(file);
+    });
+
+    return data.uploadId;
+  };
 
   const handleSubmit = async () => {
     if (!title.trim()) return;
-    await createLesson.mutateAsync({ module_id: moduleId, creator_id: creatorId, title, description });
-    setTitle(""); setDescription("");
-    onClose();
-    toast({ title: "Lesson added!" });
+    setUploading(true);
+    try {
+      let uploadId: string | null = null;
+      if (videoFile) {
+        uploadId = await uploadToMux(videoFile);
+      }
+      await createLesson.mutateAsync({
+        module_id: moduleId,
+        creator_id: creatorId,
+        title,
+        description,
+        ...(uploadId ? { mux_asset_id: "pending", video_url: `upload:${uploadId}` } : {}),
+      });
+      setTitle(""); setDescription(""); setVideoFile(null); setUploadProgress(0);
+      onClose();
+      toast({ title: videoFile ? "Lesson added! Video is processing..." : "Lesson added!" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={(o) => { if (!o && !uploading) { onClose(); } }}>
       <DialogContent className="border-0" style={{ background: "#111111", color: "#fff" }}>
         <DialogHeader><DialogTitle className="text-white">Add Lesson</DialogTitle></DialogHeader>
         <div className="space-y-3">
           <Input placeholder="Lesson title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
           <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
-          <Button onClick={handleSubmit} disabled={!title.trim()} className="w-full font-semibold" style={{ background: "#00FF85", color: "#0A0A0A" }}>Add Lesson</Button>
+          
+          {/* Video Upload */}
+          <div>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: "#888" }}>Video (optional)</label>
+            {!videoFile ? (
+              <label
+                className="flex flex-col items-center justify-center gap-1.5 p-4 rounded-lg cursor-pointer hover:bg-white/5 transition-colors"
+                style={{ border: "1px dashed #333" }}
+              >
+                <Play className="w-5 h-5" style={{ color: "#00FF85" }} />
+                <span className="text-xs" style={{ color: "#888" }}>Click to select a video file</span>
+                <input
+                  type="file"
+                  accept="video/*"
+                  className="hidden"
+                  onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
+                />
+              </label>
+            ) : (
+              <div className="flex items-center gap-2 p-2.5 rounded-lg" style={{ background: "#1e1e1e" }}>
+                <Play className="w-4 h-4 flex-shrink-0" style={{ color: "#00FF85" }} />
+                <span className="text-xs text-white truncate flex-1">{videoFile.name}</span>
+                <button onClick={() => setVideoFile(null)} className="text-xs px-2 py-0.5 rounded" style={{ color: "#888" }}>Remove</button>
+              </div>
+            )}
+          </div>
+
+          {uploading && (
+            <div className="space-y-1">
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "#1e1e1e" }}>
+                <div className="h-full rounded-full transition-all" style={{ width: `${uploadProgress}%`, background: "#00FF85" }} />
+              </div>
+              <p className="text-xs text-center" style={{ color: "#888" }}>Uploading… {uploadProgress}%</p>
+            </div>
+          )}
+
+          <Button onClick={handleSubmit} disabled={!title.trim() || uploading} className="w-full font-semibold" style={{ background: "#00FF85", color: "#0A0A0A" }}>
+            {uploading ? "Uploading…" : "Add Lesson"}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
