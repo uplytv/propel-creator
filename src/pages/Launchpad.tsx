@@ -191,9 +191,6 @@ export default function Launchpad() {
     setImagePreview(null);
     setIdea("");
   };
-    setImageFile(null);
-    setImagePreview(null);
-  };
 
   return (
     <AppLayout>
