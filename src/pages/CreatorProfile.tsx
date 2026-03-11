@@ -39,6 +39,19 @@ export default function CreatorProfile() {
     enabled: !!profile?.user_id,
   });
 
+  const { data: followerCount } = useQuery({
+    queryKey: ["follower-count", profile?.user_id],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("follows")
+        .select("*", { count: "exact", head: true })
+        .eq("following_id", profile!.user_id);
+      if (error) throw error;
+      return count || 0;
+    },
+    enabled: !!profile?.user_id,
+  });
+
   if (profileLoading) {
     return (
       <div className="min-h-screen bg-background p-8 max-w-3xl mx-auto">
