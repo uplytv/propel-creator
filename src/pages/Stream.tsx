@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import UPLYMuxPlayer from "@/components/MuxPlayer";
 import WebRTCPlayer from "@/components/live/WebRTCPlayer";
 import { Skeleton } from "@/components/ui/skeleton";
+import FollowButton from "@/components/FollowButton";
 
 const tierIcons = [Shield, TrendingUp, Zap, Crown];
 const tierColors: Record<number, string> = {
@@ -309,6 +310,7 @@ export default function Stream() {
                     <p className="text-xs text-muted-foreground">{dbStream.category || 'General'}</p>
                   </div>
                 </div>
+                <FollowButton targetUserId={dbStream.user_id} />
               </div>
               {dbStream.description && (
                 <p className="text-sm text-muted-foreground mt-3 hidden sm:block">{dbStream.description}</p>

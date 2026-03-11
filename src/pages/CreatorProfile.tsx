@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Package, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import FollowButton from "@/components/FollowButton";
 
 export default function CreatorProfile() {
   const { username } = useParams<{ username: string }>();
@@ -81,6 +82,11 @@ export default function CreatorProfile() {
             </div>
           )}
           <h2 className="text-2xl font-bold">{profile.display_name}</h2>
+          {profile.user_id && (
+            <div className="mt-3">
+              <FollowButton targetUserId={profile.user_id} size="md" />
+            </div>
+          )}
           {profile.creator_type && (
             <span className="mt-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">{profile.creator_type}</span>
           )}
