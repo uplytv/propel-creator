@@ -322,6 +322,41 @@ export default function Launchpad() {
                     />
                   </div>
 
+                  {/* Cover Image */}
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">
+                      Cover Image <span className="text-muted-foreground font-normal">(optional)</span>
+                    </label>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageSelect}
+                    />
+                    {imagePreview ? (
+                      <div className="relative rounded-xl overflow-hidden border border-border">
+                        <img src={imagePreview} alt="Cover preview" className="w-full h-36 object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => { setImageFile(null); setImagePreview(null); }}
+                          className="absolute top-2 right-2 w-7 h-7 rounded-full bg-background/80 backdrop-blur flex items-center justify-center hover:bg-background transition-colors"
+                        >
+                          <X className="w-4 h-4 text-foreground" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-full h-28 rounded-xl border-2 border-dashed border-border hover:border-primary/40 bg-muted/30 flex flex-col items-center justify-center gap-1.5 transition-colors"
+                      >
+                        <ImagePlus className="w-6 h-6 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">Tap to upload a cover image</span>
+                      </button>
+                    )}
+                  </div>
+
                   {/* Price */}
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">Price (USD)</label>
