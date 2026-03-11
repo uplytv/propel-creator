@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Rocket, Package, Users, UserCheck, Lock, Share2,
   LogOut, Settings, ChevronLeft, ChevronRight, Shield, TrendingUp,
-  Zap, Crown, Sparkles, BarChart3, Trophy, Handshake, Radio, Plug, Briefcase, MessageSquare, Bell as BellIcon, Search, Menu, X, Wallet, Film
+  Zap, Crown, Sparkles, BarChart3, Trophy, Handshake, Radio, Plug, Briefcase, MessageSquare, Bell as BellIcon, Search, Menu, X, Wallet, Film, LayoutGrid
 } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import { useApp, tierNames } from "@/context/AppContext";
@@ -22,6 +22,7 @@ const navItems = [
   { label: "Content Library", icon: Film, path: "/content-library", desc: "Your recordings & videos" },
   { label: "Grow", icon: Rocket, path: "/grow", desc: "Launch Protocol" },
   { label: "Products", icon: Package, path: "/products", desc: "What you sell" },
+  { label: "My Space", icon: LayoutGrid, path: "__space__", desc: "Your creator space" },
   { label: "Community", icon: Users, path: "/community", desc: "Your audience" },
   { label: "Affiliates", icon: Share2, path: "/affiliates", desc: "Referral program" },
   { label: "Collaborate", icon: Handshake, path: "/collaborate", desc: "Co-creator collabs", badgeKey: "collaborate" },
@@ -117,13 +118,14 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         {/* Navigation */}
         <nav className={`flex-1 space-y-0.5 mt-2 ${collapsed ? "px-2" : "px-3"} overflow-y-auto`}>
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
+            const resolvedPath = item.path === "__space__" ? (user ? `/space/${user.id}` : "/auth") : item.path;
+            const isActive = location.pathname === resolvedPath;
             const isLocked = item.requiresTier && profile.tier < item.requiresTier;
 
             const button = (
               <button
                 key={item.label}
-                onClick={() => !isLocked && navigate(item.path)}
+                onClick={() => !isLocked && navigate(resolvedPath)}
                 className={`w-full flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-200 group relative nav-item-hover ${
                   collapsed ? "px-0 py-2.5 justify-center" : "px-3 py-2.5"
                 } ${
@@ -410,7 +412,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               {/* Nav Items */}
               <nav className="flex-1 py-2 px-3 space-y-0.5 overflow-y-auto">
                 {navItems.map((item) => {
-                  const isActive = location.pathname === item.path;
+                  const resolvedPath = item.path === "__space__" ? (user ? `/space/${user.id}` : "/auth") : item.path;
+                  const isActive = location.pathname === resolvedPath;
                   const isLocked = item.requiresTier && profile.tier < item.requiresTier;
                   const badge = getBadge(item);
 
@@ -419,7 +422,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                       key={item.label}
                       onClick={() => {
                         if (!isLocked) {
-                          navigate(item.path);
+                          navigate(resolvedPath);
                           setMobileMenuOpen(false);
                         }
                       }}
