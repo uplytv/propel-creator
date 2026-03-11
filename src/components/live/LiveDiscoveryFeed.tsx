@@ -155,6 +155,7 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
 
   const toMockFormat = (s: LiveStream) => ({
     id: s.id,
+    userId: s.user_id,
     creatorName: s.creator_name || 'Creator',
     creatorAvatar: s.creator_avatar || 'CR',
     creatorTier: s.creator_tier || 1,
@@ -174,7 +175,7 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
   const hasLiveStreams = liveStreams.length > 0;
   const allStreams = hasLiveStreams ? liveStreams.map(toMockFormat) : mockStreams;
 
-  const filtered = searchQuery
+  let filtered = searchQuery
     ? allStreams.filter(
         (s) =>
           s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -182,6 +183,11 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
           s.category.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : allStreams;
+
+  // Filter by following tab
+  if (activeTab === "following" && hasLiveStreams) {
+    filtered = filtered.filter((s) => 'userId' in s && followingIds.includes((s as any).userId));
+  }
 
   const liveCount = hasLiveStreams ? liveStreams.length : filtered.filter(s => s.isLive).length;
 
