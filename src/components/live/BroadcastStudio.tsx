@@ -38,6 +38,8 @@ export default function BroadcastStudio({
   const animFrameRef = useRef<number>(0);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const webrtcChannelRef = useRef<any>(null);
+  const peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
 
   const [studioMode, setStudioMode] = useState<StudioMode>("select");
   const [cameraOn, setCameraOn] = useState(false);
@@ -180,6 +182,7 @@ export default function BroadcastStudio({
         .from('mux_live_streams')
         .update({
           status: active ? 'active' : 'idle',
+          stream_type: 'browser',
           ...(active ? { started_at: new Date().toISOString() } : { ended_at: new Date().toISOString() }),
         })
         .eq('id', streamData.streamId);
@@ -187,6 +190,100 @@ export default function BroadcastStudio({
       console.error('Failed to update stream status:', err);
     }
   };
+
+  // WebRTC host: respond to viewer join requests
+  const ICE_SERVERS: RTCConfiguration = {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+    ],
+  };
+
+  const startWebRTCHost = useCallback(() => {
+    const channel = supabase.channel(`webrtc-${streamData.streamId}`, {
+      config: { broadcast: { self: false } },
+    });
+
+    webrtcChannelRef.current = channel;
+
+    channel
+      .on('broadcast', { event: 'viewer-join' }, async (payload: any) => {
+        const { viewerId, offer } = payload.payload;
+        if (!streamRef.current || !offer) return;
+
+        const pc = new RTCPeerConnection(ICE_SERVERS);
+        peerConnectionsRef.current.set(viewerId, pc);
+
+        // Add all tracks from the local stream
+        streamRef.current.getTracks().forEach(track => {
+          pc.addTrack(track, streamRef.current!);
+        });
+
+        // Send ICE candidates to viewer
+        pc.onicecandidate = (event) => {
+          if (event.candidate) {
+            channel.send({
+              type: 'broadcast',
+              event: 'ice-candidate',
+              payload: {
+                viewerId,
+                from: 'host',
+                candidate: event.candidate.toJSON(),
+              },
+            });
+          }
+        };
+
+        pc.oniceconnectionstatechange = () => {
+          if (pc.iceConnectionState === 'disconnected' || pc.iceConnectionState === 'failed') {
+            pc.close();
+            peerConnectionsRef.current.delete(viewerId);
+          }
+        };
+
+        try {
+          await pc.setRemoteDescription(new RTCSessionDescription(offer));
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+
+          channel.send({
+            type: 'broadcast',
+            event: 'host-answer',
+            payload: {
+              viewerId,
+              answer: pc.localDescription?.toJSON(),
+            },
+          });
+        } catch (err) {
+          console.error('WebRTC host: failed to handle viewer join:', err);
+          pc.close();
+          peerConnectionsRef.current.delete(viewerId);
+        }
+      })
+      .on('broadcast', { event: 'ice-candidate' }, async (payload: any) => {
+        const { viewerId, from, candidate } = payload.payload;
+        if (from !== 'viewer') return;
+
+        const pc = peerConnectionsRef.current.get(viewerId);
+        if (pc && pc.remoteDescription && pc.signalingState !== 'closed') {
+          try {
+            await pc.addIceCandidate(new RTCIceCandidate(candidate));
+          } catch (err) {
+            console.error('WebRTC host: failed to add ICE candidate:', err);
+          }
+        }
+      })
+      .subscribe();
+  }, [streamData.streamId]);
+
+  const stopWebRTCHost = useCallback(() => {
+    peerConnectionsRef.current.forEach(pc => pc.close());
+    peerConnectionsRef.current.clear();
+    if (webrtcChannelRef.current) {
+      supabase.removeChannel(webrtcChannelRef.current);
+      webrtcChannelRef.current = null;
+    }
+  }, []);
 
   // Recording
   const startRecording = async () => {
@@ -212,6 +309,9 @@ export default function BroadcastStudio({
 
     // Mark stream as active in DB for discovery feed
     await setStreamActive(true);
+
+    // Start WebRTC host so viewers can connect
+    startWebRTCHost();
   };
 
   const stopRecording = async () => {
@@ -220,6 +320,9 @@ export default function BroadcastStudio({
       recordingTimerRef.current = null;
     }
     setIsRecording(false);
+
+    // Stop WebRTC host
+    stopWebRTCHost();
 
     // Mark stream as idle in DB
     await setStreamActive(false);
@@ -288,6 +391,7 @@ export default function BroadcastStudio({
   useEffect(() => {
     return () => {
       stopCurrentStream();
+      stopWebRTCHost();
       if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
       // Ensure stream is set back to idle if user navigates away mid-recording
       supabase
@@ -296,7 +400,7 @@ export default function BroadcastStudio({
         .eq('id', streamData.streamId)
         .then(() => {});
     };
-  }, [stopCurrentStream, streamData.streamId]);
+  }, [stopCurrentStream, stopWebRTCHost, streamData.streamId]);
 
   const isLive = streamStatus === "active";
 

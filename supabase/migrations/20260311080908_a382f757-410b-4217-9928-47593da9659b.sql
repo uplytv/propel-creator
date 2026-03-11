@@ -1,0 +1,1 @@
+ALTER TABLE public.mux_live_streams ADD COLUMN IF NOT EXISTS stream_type text NOT NULL DEFAULT 'rtmp';
