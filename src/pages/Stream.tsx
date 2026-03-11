@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Eye, Heart, Share2, Shield, TrendingUp, Zap, Crown, Radio, Coins, Loader2 } from "lucide-react";
+import { ArrowLeft, Eye, Heart, Share2, Shield, TrendingUp, Zap, Crown, Radio, Coins, Loader2, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import StreamChat from "@/components/live/StreamChat";
@@ -42,6 +42,7 @@ export default function Stream() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isRealStream, setIsRealStream] = useState(false);
+  const [featuredProduct, setFeaturedProduct] = useState<any>(null);
 
   const searchParams = new URLSearchParams(window.location.search);
   const isVod = searchParams.get('type') === 'vod';
@@ -87,6 +88,16 @@ export default function Stream() {
             .eq('user_id', muxStream.user_id)
             .single();
           setProfile(prof);
+
+          // Fetch featured product if set
+          if ((muxStream as any).featured_product_id) {
+            const { data: prod } = await supabase
+              .from('products')
+              .select('*')
+              .eq('id', (muxStream as any).featured_product_id)
+              .single();
+            if (prod) setFeaturedProduct(prod);
+          }
         }
       }
       setLoading(false);
@@ -314,6 +325,33 @@ export default function Stream() {
               </div>
               {dbStream.description && (
                 <p className="text-sm text-muted-foreground mt-3 hidden sm:block">{dbStream.description}</p>
+              )}
+
+              {/* Featured Product */}
+              {featuredProduct && (
+                <button
+                  onClick={() => navigate(`/space/${dbStream.user_id}`, { state: { tab: featuredProduct.type === 'course' ? 'classroom' : 'community' } })}
+                  className="mt-4 w-full flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/20 hover:bg-primary/10 hover:border-primary/30 transition-all text-left group"
+                >
+                  {featuredProduct.image_url ? (
+                    <img src={featuredProduct.image_url} alt="" className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
+                  ) : (
+                    <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 text-xl">
+                      {featuredProduct.type === 'course' ? '📚' : featuredProduct.type === 'community' ? '🤝' : featuredProduct.type === 'coaching' ? '🎯' : '📦'}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <ShoppingBag className="w-3 h-3 text-primary" />
+                      <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">Featured</span>
+                    </div>
+                    <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">{featuredProduct.name}</p>
+                    <p className="text-xs text-muted-foreground capitalize">{featuredProduct.type} · <span className="text-primary font-semibold">${featuredProduct.price}</span></p>
+                  </div>
+                  <div className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold flex-shrink-0">
+                    View
+                  </div>
+                </button>
               )}
             </div>
           </div>

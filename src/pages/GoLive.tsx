@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Radio, Globe, Lock, Loader2 } from "lucide-react";
+import { Radio, Globe, Lock, Loader2, ShoppingBag, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
@@ -9,6 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import BroadcastStudio from "@/components/live/BroadcastStudio";
+import { useProducts } from "@/hooks/useProducts";
 
 export default function GoLive() {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ export default function GoLive() {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState(categories[0]);
   const [isSettingUp, setIsSettingUp] = useState(false);
+  const [featuredProductId, setFeaturedProductId] = useState<string | null>(null);
   const [streamData, setStreamData] = useState<{
     streamId: string;
     streamKey: string;
@@ -25,6 +27,9 @@ export default function GoLive() {
     rtmpUrl: string;
   } | null>(null);
   const [streamStatus, setStreamStatus] = useState<string>("idle");
+
+  const { data: products } = useProducts();
+  const activeProducts = products?.filter(p => p.status === 'active') || [];
 
   // Realtime subscription on mux_live_streams for status
   useEffect(() => {
@@ -65,6 +70,15 @@ export default function GoLive() {
         },
       });
       if (error) throw error;
+
+      // Save featured product to the stream record
+      if (featuredProductId && data?.streamId) {
+        await supabase
+          .from('mux_live_streams')
+          .update({ featured_product_id: featuredProductId } as any)
+          .eq('id', data.streamId);
+      }
+
       setStreamData(data);
       setStreamStatus("idle");
       toast({ title: "Stream created!", description: "Your broadcast studio is ready." });
@@ -74,6 +88,8 @@ export default function GoLive() {
       setIsSettingUp(false);
     }
   };
+
+  const selectedProduct = activeProducts.find(p => p.id === featuredProductId);
 
   return (
     <AppLayout>
@@ -154,6 +170,57 @@ export default function GoLive() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Featured Product Selector */}
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block flex items-center gap-2">
+                  <ShoppingBag className="w-4 h-4 text-primary" />
+                  Feature a Product
+                  <span className="text-xs text-muted-foreground font-normal">(optional)</span>
+                </label>
+                {selectedProduct ? (
+                  <div className="glass-card p-3 flex items-center gap-3">
+                    {(selectedProduct as any).image_url ? (
+                      <img src={(selectedProduct as any).image_url} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                    ) : (
+                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 text-lg">
+                        {selectedProduct.type === 'course' ? '📚' : selectedProduct.type === 'community' ? '🤝' : selectedProduct.type === 'coaching' ? '🎯' : '📦'}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">{selectedProduct.name}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{selectedProduct.type} · ${selectedProduct.price}</p>
+                    </div>
+                    <button onClick={() => setFeaturedProductId(null)} className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : activeProducts.length > 0 ? (
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {activeProducts.map((p) => (
+                      <button
+                        key={p.id}
+                        onClick={() => setFeaturedProductId(p.id)}
+                        className="glass-card-hover p-3 w-full text-left flex items-center gap-3"
+                      >
+                        {(p as any).image_url ? (
+                          <img src={(p as any).image_url} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            {p.type === 'course' ? '📚' : p.type === 'community' ? '🤝' : p.type === 'coaching' ? '🎯' : '📦'}
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
+                          <p className="text-xs text-muted-foreground capitalize">{p.type} · ${p.price}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground py-2">No active products yet. Create one in the Products page.</p>
+                )}
               </div>
 
               {/* Set Up Stream Button */}
