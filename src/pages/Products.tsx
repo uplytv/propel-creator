@@ -70,6 +70,79 @@ export default function Products() {
   const { data: products, isLoading } = useProducts();
   const createProduct = useCreateProduct();
   const deleteProduct = useDeleteProduct();
+  const updateProduct = useUpdateProduct();
+
+  // Edit state
+  const [editingProduct, setEditingProduct] = useState<EditingProduct>(null);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editType, setEditType] = useState("digital");
+  const [editPrice, setEditPrice] = useState("");
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
+  const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
+  const [editImageUploading, setEditImageUploading] = useState(false);
+  const editImageInputRef = useRef<HTMLInputElement>(null);
+
+  const openEdit = (p: any) => {
+    setEditingProduct(p);
+    setEditName(p.name);
+    setEditDescription(p.description || "");
+    setEditType(p.type);
+    setEditPrice(String(p.price));
+    setEditImagePreview(p.image_url || null);
+    setEditImageFile(null);
+  };
+
+  const closeEdit = () => {
+    setEditingProduct(null);
+    setEditImageFile(null);
+    setEditImagePreview(null);
+    setEditImageUploading(false);
+  };
+
+  const handleEditImageSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setEditImageFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setEditImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const handleEditSubmit = async () => {
+    if (!editingProduct || !editName.trim()) return;
+    let image_url: string | null | undefined = undefined;
+
+    if (editImageFile && user) {
+      setEditImageUploading(true);
+      try {
+        const ext = editImageFile.name.split('.').pop();
+        const path = `${user.id}/${Date.now()}.${ext}`;
+        const { error } = await supabase.storage.from('product-images').upload(path, editImageFile);
+        if (error) throw error;
+        const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(path);
+        image_url = publicUrl;
+      } catch (e: any) {
+        toast({ title: "Image upload failed", description: e.message, variant: "destructive" });
+        setEditImageUploading(false);
+        return;
+      }
+      setEditImageUploading(false);
+    } else if (!editImagePreview && editingProduct.image_url) {
+      image_url = null; // removed
+    }
+
+    const updates: any = {
+      id: editingProduct.id,
+      name: editName,
+      description: editDescription,
+      type: editType,
+      price: parseFloat(editPrice) || 0,
+    };
+    if (image_url !== undefined) updates.image_url = image_url;
+
+    updateProduct.mutate(updates, { onSuccess: closeEdit });
+  };
 
   // Poll for video asset status
   useEffect(() => {
