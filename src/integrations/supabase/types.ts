@@ -1128,6 +1128,7 @@ export type Database = {
           follower_count: string | null
           full_name: string
           id: string
+          invite_code: string | null
           one_sentence: string | null
           primary_platform: string | null
           social_handle: string | null
@@ -1139,6 +1140,7 @@ export type Database = {
           follower_count?: string | null
           full_name: string
           id?: string
+          invite_code?: string | null
           one_sentence?: string | null
           primary_platform?: string | null
           social_handle?: string | null
@@ -1150,6 +1152,7 @@ export type Database = {
           follower_count?: string | null
           full_name?: string
           id?: string
+          invite_code?: string | null
           one_sentence?: string | null
           primary_platform?: string | null
           social_handle?: string | null
