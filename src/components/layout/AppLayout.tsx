@@ -118,8 +118,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         {/* Navigation */}
         <nav className={`flex-1 space-y-0.5 mt-2 ${collapsed ? "px-2" : "px-3"} overflow-y-auto`}>
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            const isLocked = item.requiresTier && profile.tier < item.requiresTier;
+            const resolvedPath = item.path === "__space__" ? (user ? `/space/${user.id}` : "/auth") : item.path;
+            const isActive = location.pathname === resolvedPath;
 
             const button = (
               <button
