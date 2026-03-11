@@ -271,25 +271,51 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                                 const isComplete = (completions as Set<string>).has(lesson.id);
                                 return (
                                   <SortableLesson key={lesson.id} lesson={lesson} isOwner={isOwner}>
-                                    <button
-                                      onClick={() => setSelectedLesson(lesson)}
-                                      className="w-full flex items-center gap-3 p-3 text-left hover:bg-white/5 transition-colors"
-                                    >
-                                      <div className="w-10 h-10 rounded flex items-center justify-center flex-shrink-0" style={{ background: "#1e1e1e" }}>
-                                        {lesson.is_free || true ? (
-                                          <Play className="w-4 h-4" style={{ color: "#888" }} />
-                                        ) : (
-                                          <Lock className="w-4 h-4" style={{ color: "#888" }} />
-                                        )}
-                                      </div>
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-white truncate">{lesson.title}</p>
-                                        {lesson.duration_seconds > 0 && (
-                                          <p className="text-xs" style={{ color: "#888" }}>{formatDuration(lesson.duration_seconds)}</p>
-                                        )}
-                                      </div>
-                                      {isComplete && <CheckCircle className="w-4 h-4 flex-shrink-0" style={{ color: "#00FF85" }} />}
-                                    </button>
+                                    <div className="flex items-center">
+                                      <button
+                                        onClick={() => setSelectedLesson(lesson)}
+                                        className="flex-1 flex items-center gap-3 p-3 text-left hover:bg-white/5 transition-colors"
+                                      >
+                                        <div className="w-10 h-10 rounded flex items-center justify-center flex-shrink-0" style={{ background: "#1e1e1e" }}>
+                                          {lesson.is_free || true ? (
+                                            <Play className="w-4 h-4" style={{ color: "#888" }} />
+                                          ) : (
+                                            <Lock className="w-4 h-4" style={{ color: "#888" }} />
+                                          )}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <p className="text-sm font-medium text-white truncate">{lesson.title}</p>
+                                          {lesson.duration_seconds > 0 && (
+                                            <p className="text-xs" style={{ color: "#888" }}>{formatDuration(lesson.duration_seconds)}</p>
+                                          )}
+                                        </div>
+                                        {isComplete && <CheckCircle className="w-4 h-4 flex-shrink-0" style={{ color: "#00FF85" }} />}
+                                      </button>
+                                      {isOwner && (
+                                        <AlertDialog>
+                                          <AlertDialogTrigger asChild>
+                                            <button className="p-2 mr-2 rounded hover:bg-white/10 transition-colors" style={{ color: "#888" }}>
+                                              <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                          </AlertDialogTrigger>
+                                          <AlertDialogContent style={{ background: "#111111", border: "1px solid #1e1e1e" }}>
+                                            <AlertDialogHeader>
+                                              <AlertDialogTitle className="text-white">Delete Lesson</AlertDialogTitle>
+                                              <AlertDialogDescription style={{ color: "#888" }}>
+                                                Delete "{lesson.title}"? This cannot be undone.
+                                              </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                              <AlertDialogCancel className="border-0" style={{ background: "#1e1e1e", color: "#fff" }}>Cancel</AlertDialogCancel>
+                                              <AlertDialogAction
+                                                onClick={() => { deleteLesson.mutate(lesson.id); toast({ title: "Lesson deleted" }); }}
+                                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                              >Delete</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                          </AlertDialogContent>
+                                        </AlertDialog>
+                                      )}
+                                    </div>
                                   </SortableLesson>
                                 );
                               })}
