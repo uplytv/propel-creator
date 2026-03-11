@@ -226,16 +226,42 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                 return (
                   <SortableModule key={mod.id} mod={mod} isOwner={isOwner}>
                     <div>
-                      <button onClick={() => toggleModule(mod.id)} className="w-full flex items-center justify-between p-4">
-                        <div className="flex items-center gap-3">
-                          {isExpanded ? <ChevronDown className="w-4 h-4 text-white" /> : <ChevronRight className="w-4 h-4 text-white" />}
-                          <div className="text-left">
-                            <p className="text-sm font-semibold text-white">{mod.title}</p>
-                            <p className="text-xs" style={{ color: "#888" }}>{lessons.length} lessons</p>
+                      <div className="flex items-center">
+                        <button onClick={() => toggleModule(mod.id)} className="flex-1 flex items-center justify-between p-4">
+                          <div className="flex items-center gap-3">
+                            {isExpanded ? <ChevronDown className="w-4 h-4 text-white" /> : <ChevronRight className="w-4 h-4 text-white" />}
+                            <div className="text-left">
+                              <p className="text-sm font-semibold text-white">{mod.title}</p>
+                              <p className="text-xs" style={{ color: "#888" }}>{lessons.length} lessons</p>
+                            </div>
                           </div>
-                        </div>
-                        {modCompleted && <CheckCircle className="w-4 h-4" style={{ color: "#00FF85" }} />}
-                      </button>
+                          {modCompleted && <CheckCircle className="w-4 h-4" style={{ color: "#00FF85" }} />}
+                        </button>
+                        {isOwner && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <button className="p-2 mr-2 rounded hover:bg-white/10 transition-colors" style={{ color: "#888" }}>
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent style={{ background: "#111111", border: "1px solid #1e1e1e" }}>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle className="text-white">Delete Module</AlertDialogTitle>
+                                <AlertDialogDescription style={{ color: "#888" }}>
+                                  This will permanently delete "{mod.title}" and all its lessons. This cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel className="border-0" style={{ background: "#1e1e1e", color: "#fff" }}>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => { deleteModule.mutate(mod.id); toast({ title: "Module deleted" }); }}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >Delete</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                      </div>
 
                       {isExpanded && (
                         <div style={{ borderTop: "1px solid #1e1e1e" }}>
