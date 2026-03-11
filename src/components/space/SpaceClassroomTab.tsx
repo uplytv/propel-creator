@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { ChevronDown, ChevronRight, CheckCircle, Lock, Play, Plus, ArrowLeft, ArrowRight, GripVertical, Trash2, Pencil } from "lucide-react";
+import { ChevronDown, ChevronRight, CheckCircle, Lock, Play, Plus, ArrowLeft, ArrowRight, GripVertical, Trash2, Pencil, Loader2, AlertCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UPLYMuxPlayer } from "@/components/MuxPlayer";
@@ -121,6 +121,35 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
   const reorderLessons = useReorderLessons();
   const deleteModule = useDeleteModule();
   const deleteLesson = useDeleteLesson();
+
+  // Fetch mux_asset statuses for lessons that have a mux_asset_id
+  const lessonAssetIds = allLessons
+    .filter((l: any) => l.mux_asset_id && l.mux_asset_id !== "")
+    .map((l: any) => l.mux_asset_id);
+
+  const { data: assetStatuses = {} } = useQuery({
+    queryKey: ["lesson-asset-statuses", lessonAssetIds],
+    enabled: lessonAssetIds.length > 0,
+    refetchInterval: (query) => {
+      const data = query.state.data as Record<string, { status: string }> | undefined;
+      if (!data) return false;
+      const hasPending = Object.values(data).some(
+        (a) => a.status === "preparing" || a.status === "pending"
+      );
+      return hasPending ? 15000 : false;
+    },
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("mux_assets")
+        .select("mux_asset_id, status, mux_playback_id")
+        .in("mux_asset_id", lessonAssetIds);
+      const map: Record<string, { status: string; hasPlayback: boolean }> = {};
+      (data || []).forEach((a: any) => {
+        map[a.mux_asset_id] = { status: a.status || "preparing", hasPlayback: !!a.mux_playback_id };
+      });
+      return map;
+    },
+  });
 
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
@@ -330,9 +359,34 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                           <p className="text-sm font-medium text-white truncate">{lesson.title}</p>
-                                          {lesson.duration_seconds > 0 && (
-                                            <p className="text-xs" style={{ color: "#888" }}>{formatDuration(lesson.duration_seconds)}</p>
-                                          )}
+                                          <div className="flex items-center gap-2">
+                                            {lesson.duration_seconds > 0 && (
+                                              <p className="text-xs" style={{ color: "#888" }}>{formatDuration(lesson.duration_seconds)}</p>
+                                            )}
+                                            {isOwner && lesson.mux_asset_id && (() => {
+                                              const asset = (assetStatuses as Record<string, { status: string; hasPlayback: boolean }>)[lesson.mux_asset_id];
+                                              const status = asset?.status || (lesson.mux_asset_id === "pending" ? "preparing" : null);
+                                              if (!status || status === "ready") {
+                                                if (asset?.hasPlayback) return (
+                                                  <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: "rgba(0,255,133,0.15)", color: "#00FF85" }}>
+                                                    <CheckCircle className="w-2.5 h-2.5" /> Ready
+                                                  </span>
+                                                );
+                                                return null;
+                                              }
+                                              if (status === "preparing" || status === "pending") return (
+                                                <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: "rgba(255,187,0,0.15)", color: "#FFBB00" }}>
+                                                  <Loader2 className="w-2.5 h-2.5 animate-spin" /> Processing
+                                                </span>
+                                              );
+                                              if (status === "errored") return (
+                                                <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: "rgba(255,50,50,0.15)", color: "#FF3232" }}>
+                                                  <AlertCircle className="w-2.5 h-2.5" /> Error
+                                                </span>
+                                              );
+                                              return null;
+                                            })()}
+                                          </div>
                                         </div>
                                         {isComplete && <CheckCircle className="w-4 h-4 flex-shrink-0" style={{ color: "#00FF85" }} />}
                                       </button>
