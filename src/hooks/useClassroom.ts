@@ -144,10 +144,13 @@ export function useUpdateModule() {
 export function useUpdateLesson() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, title, description }: { id: string; title: string; description: string }) => {
+    mutationFn: async ({ id, title, description, mux_asset_id, video_url }: { id: string; title: string; description: string; mux_asset_id?: string | null; video_url?: string | null }) => {
+      const updateData: any = { title, description };
+      if (mux_asset_id !== undefined) updateData.mux_asset_id = mux_asset_id;
+      if (video_url !== undefined) updateData.video_url = video_url;
       const { error } = await supabase
         .from("classroom_lessons" as any)
-        .update({ title, description } as any)
+        .update(updateData as any)
         .eq("id", id);
       if (error) throw error;
     },
