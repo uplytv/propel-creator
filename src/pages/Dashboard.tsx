@@ -14,8 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { AriaPanel } from "@/components/aria/AriaPanel";
-
-export default function Dashboard() {
+import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist";
   const { profile } = useApp();
   const { user } = useAuth();
   const navigate = useNavigate();
