@@ -9,6 +9,9 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import {
   ShieldCheck, Users, DollarSign, Video, Package, Radio,
+  TrendingUp, AlertTriangle, Eye, ToggleLeft
+} from "lucide-react";
+  ShieldCheck, Users, DollarSign, Video, Package, Radio,
   TrendingUp, AlertTriangle, Eye
 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
