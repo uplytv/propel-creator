@@ -92,6 +92,7 @@ const App = () => (
                 <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
                 <Route path="/admin/payouts" element={<ProtectedRoute><AdminPayouts /></ProtectedRoute>} />
                 <Route path="/content-library" element={<ProtectedRoute><ContentLibrary /></ProtectedRoute>} />
+                <Route path="/launchpad" element={<ProtectedRoute><Launchpad /></ProtectedRoute>} />
 
                 <Route path="*" element={<NotFound />} />
               </Routes>
