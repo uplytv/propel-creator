@@ -7,6 +7,7 @@ import { useDiscoveryFeed, type FilterCategory, type SortOption } from "@/hooks/
 import FeedCard from "@/components/discovery/FeedCard";
 import FeedFilters from "@/components/discovery/FeedFilters";
 import FeaturedCarousel from "@/components/discovery/FeaturedCarousel";
+import CategoryHeroBanner from "@/components/discovery/CategoryHeroBanner";
 import BackNav from "@/components/BackNav";
 
 const PAGE_SIZE = 8;
