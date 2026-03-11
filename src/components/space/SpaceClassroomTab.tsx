@@ -337,28 +337,37 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                                         {isComplete && <CheckCircle className="w-4 h-4 flex-shrink-0" style={{ color: "#00FF85" }} />}
                                       </button>
                                       {isOwner && (
-                                        <AlertDialog>
-                                          <AlertDialogTrigger asChild>
-                                            <button className="p-2 mr-2 rounded hover:bg-white/10 transition-colors" style={{ color: "#888" }}>
-                                              <Trash2 className="w-3.5 h-3.5" />
-                                            </button>
-                                          </AlertDialogTrigger>
-                                          <AlertDialogContent style={{ background: "#111111", border: "1px solid #1e1e1e" }}>
-                                            <AlertDialogHeader>
-                                              <AlertDialogTitle className="text-white">Delete Lesson</AlertDialogTitle>
-                                              <AlertDialogDescription style={{ color: "#888" }}>
-                                                Delete "{lesson.title}"? This cannot be undone.
-                                              </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                              <AlertDialogCancel className="border-0" style={{ background: "#1e1e1e", color: "#fff" }}>Cancel</AlertDialogCancel>
-                                              <AlertDialogAction
-                                                onClick={() => { deleteLesson.mutate(lesson.id); toast({ title: "Lesson deleted" }); }}
-                                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                              >Delete</AlertDialogAction>
-                                            </AlertDialogFooter>
-                                          </AlertDialogContent>
-                                        </AlertDialog>
+                                        <div className="flex items-center mr-2 gap-0.5">
+                                          <button
+                                            onClick={() => setEditingLesson(lesson)}
+                                            className="p-2 rounded hover:bg-white/10 transition-colors"
+                                            style={{ color: "#888" }}
+                                          >
+                                            <Pencil className="w-3.5 h-3.5" />
+                                          </button>
+                                          <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                              <button className="p-2 rounded hover:bg-white/10 transition-colors" style={{ color: "#888" }}>
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                              </button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent style={{ background: "#111111", border: "1px solid #1e1e1e" }}>
+                                              <AlertDialogHeader>
+                                                <AlertDialogTitle className="text-white">Delete Lesson</AlertDialogTitle>
+                                                <AlertDialogDescription style={{ color: "#888" }}>
+                                                  Delete "{lesson.title}"? This cannot be undone.
+                                                </AlertDialogDescription>
+                                              </AlertDialogHeader>
+                                              <AlertDialogFooter>
+                                                <AlertDialogCancel className="border-0" style={{ background: "#1e1e1e", color: "#fff" }}>Cancel</AlertDialogCancel>
+                                                <AlertDialogAction
+                                                  onClick={() => { deleteLesson.mutate(lesson.id); toast({ title: "Lesson deleted" }); }}
+                                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                                >Delete</AlertDialogAction>
+                                              </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                          </AlertDialog>
+                                        </div>
                                       )}
                                     </div>
                                   </SortableLesson>
