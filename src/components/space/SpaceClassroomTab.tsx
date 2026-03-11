@@ -76,7 +76,40 @@ function SortableLesson({ lesson, children, isOwner }: { lesson: any; children: 
   );
 }
 
-export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
+function LessonPlayer({ lesson }: { lesson: any }) {
+  const { data: playbackId } = useQuery({
+    queryKey: ["lesson-playback", lesson.mux_asset_id],
+    enabled: !!lesson.mux_asset_id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("mux_assets")
+        .select("mux_playback_id")
+        .eq("mux_asset_id", lesson.mux_asset_id)
+        .maybeSingle();
+      return data?.mux_playback_id || null;
+    },
+  });
+
+  if (playbackId) {
+    return <UPLYMuxPlayer playbackId={playbackId} title={lesson.title} autoPlay />;
+  }
+
+  if (lesson.video_url) {
+    return (
+      <div className="w-full aspect-video bg-black">
+        <video src={lesson.video_url} controls autoPlay playsInline className="w-full h-full object-contain" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full aspect-video flex items-center justify-center" style={{ background: "#111111" }}>
+      <Play className="w-12 h-12" style={{ color: "#888" }} />
+    </div>
+  );
+}
+
+
   const { user } = useAuth();
   const { toast } = useToast();
   const { data: modules = [] } = useClassroomModules(creatorId);
