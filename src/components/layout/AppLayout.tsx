@@ -281,9 +281,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               <TooltipTrigger asChild>
                 <button
                   onClick={() => navigate("/wallet")}
-                  className="w-full flex justify-center py-2 mb-2 rounded-lg hover:bg-[#00FF85]/10 transition-colors"
+                  className="w-full flex justify-center py-2 mb-2 rounded-lg hover:bg-accent-green/10 transition-colors"
                 >
-                  <Wallet className="w-4 h-4 text-[#00FF85]" />
+                  <Wallet className="w-4 h-4 text-accent-green" />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="right">
