@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Eye, Heart, Share2, Shield, TrendingUp, Zap, Crown, Radio, Coins, Loader2 } from "lucide-react";
+import { ArrowLeft, Eye, Heart, Share2, Shield, TrendingUp, Zap, Crown, Radio, Coins, Loader2, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import StreamChat from "@/components/live/StreamChat";
