@@ -274,28 +274,37 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                           {modCompleted && <CheckCircle className="w-4 h-4" style={{ color: "#00FF85" }} />}
                         </button>
                         {isOwner && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <button className="p-2 mr-2 rounded hover:bg-white/10 transition-colors" style={{ color: "#888" }}>
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent style={{ background: "#111111", border: "1px solid #1e1e1e" }}>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle className="text-white">Delete Module</AlertDialogTitle>
-                                <AlertDialogDescription style={{ color: "#888" }}>
-                                  This will permanently delete "{mod.title}" and all its lessons. This cannot be undone.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel className="border-0" style={{ background: "#1e1e1e", color: "#fff" }}>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => { deleteModule.mutate(mod.id); toast({ title: "Module deleted" }); }}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >Delete</AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                          <div className="flex items-center mr-2 gap-1">
+                            <button
+                              onClick={() => setEditingModule(mod)}
+                              className="p-2 rounded hover:bg-white/10 transition-colors"
+                              style={{ color: "#888" }}
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <button className="p-2 rounded hover:bg-white/10 transition-colors" style={{ color: "#888" }}>
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent style={{ background: "#111111", border: "1px solid #1e1e1e" }}>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle className="text-white">Delete Module</AlertDialogTitle>
+                                  <AlertDialogDescription style={{ color: "#888" }}>
+                                    This will permanently delete "{mod.title}" and all its lessons. This cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel className="border-0" style={{ background: "#1e1e1e", color: "#fff" }}>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => { deleteModule.mutate(mod.id); toast({ title: "Module deleted" }); }}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >Delete</AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                         )}
                       </div>
 
