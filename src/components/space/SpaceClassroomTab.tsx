@@ -143,9 +143,9 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
         .from("mux_assets")
         .select("mux_asset_id, status, mux_playback_id")
         .in("mux_asset_id", lessonAssetIds);
-      const map: Record<string, { status: string; hasPlayback: boolean }> = {};
+      const map: Record<string, { status: string; hasPlayback: boolean; playbackId: string | null }> = {};
       (data || []).forEach((a: any) => {
-        map[a.mux_asset_id] = { status: a.status || "preparing", hasPlayback: !!a.mux_playback_id };
+        map[a.mux_asset_id] = { status: a.status || "preparing", hasPlayback: !!a.mux_playback_id, playbackId: a.mux_playback_id || null };
       });
       return map;
     },
@@ -350,13 +350,28 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                                         onClick={() => setSelectedLesson(lesson)}
                                         className="flex-1 flex items-center gap-3 p-3 text-left hover:bg-white/5 transition-colors"
                                       >
-                                        <div className="w-10 h-10 rounded flex items-center justify-center flex-shrink-0" style={{ background: "#1e1e1e" }}>
-                                          {lesson.is_free || true ? (
-                                            <Play className="w-4 h-4" style={{ color: "#888" }} />
+                                        {(() => {
+                                          const asset = lesson.mux_asset_id ? (assetStatuses as Record<string, { status: string; hasPlayback: boolean; playbackId: string | null }>)[lesson.mux_asset_id] : null;
+                                          const thumbnailUrl = asset?.playbackId && asset?.status === "ready"
+                                            ? `https://image.mux.com/${asset.playbackId}/thumbnail.webp?width=80&height=80&fit_mode=smartcrop`
+                                            : null;
+                                          return thumbnailUrl ? (
+                                            <div className="w-10 h-10 rounded overflow-hidden flex-shrink-0 relative">
+                                              <img src={thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                                              <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                                                <Play className="w-3.5 h-3.5 text-white" />
+                                              </div>
+                                            </div>
                                           ) : (
-                                            <Lock className="w-4 h-4" style={{ color: "#888" }} />
-                                          )}
-                                        </div>
+                                            <div className="w-10 h-10 rounded flex items-center justify-center flex-shrink-0" style={{ background: "#1e1e1e" }}>
+                                              {lesson.is_free || true ? (
+                                                <Play className="w-4 h-4" style={{ color: "#888" }} />
+                                              ) : (
+                                                <Lock className="w-4 h-4" style={{ color: "#888" }} />
+                                              )}
+                                            </div>
+                                          );
+                                        })()}
                                         <div className="flex-1 min-w-0">
                                           <p className="text-sm font-medium text-white truncate">{lesson.title}</p>
                                           <div className="flex items-center gap-2">
@@ -364,7 +379,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                                               <p className="text-xs" style={{ color: "#888" }}>{formatDuration(lesson.duration_seconds)}</p>
                                             )}
                                             {isOwner && lesson.mux_asset_id && (() => {
-                                              const asset = (assetStatuses as Record<string, { status: string; hasPlayback: boolean }>)[lesson.mux_asset_id];
+                                              const asset = (assetStatuses as Record<string, { status: string; hasPlayback: boolean; playbackId: string | null }>)[lesson.mux_asset_id];
                                               const status = asset?.status || (lesson.mux_asset_id === "pending" ? "preparing" : null);
                                               if (!status || status === "ready") {
                                                 if (asset?.hasPlayback) return (
