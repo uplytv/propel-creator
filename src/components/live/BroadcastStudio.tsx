@@ -173,8 +173,24 @@ export default function BroadcastStudio({
     if (cameraOn) startCamera(next);
   };
 
+  // Set stream status in DB so discovery feed picks it up
+  const setStreamActive = async (active: boolean) => {
+    try {
+      await supabase
+        .from('mux_live_streams')
+        .update({
+          status: active ? 'active' : 'idle',
+          started_at: active ? new Date().toISOString() : undefined,
+          ended_at: active ? undefined : new Date().toISOString(),
+        })
+        .eq('mux_stream_id', streamData.streamId);
+    } catch (err) {
+      console.error('Failed to update stream status:', err);
+    }
+  };
+
   // Recording
-  const startRecording = () => {
+  const startRecording = async () => {
     if (!streamRef.current) return;
     chunksRef.current = [];
     const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9,opus")
@@ -194,6 +210,9 @@ export default function BroadcastStudio({
     recordingTimerRef.current = setInterval(() => {
       setRecordingDuration((d) => d + 1);
     }, 1000);
+
+    // Mark stream as active in DB for discovery feed
+    await setStreamActive(true);
   };
 
   const stopRecording = async () => {
