@@ -1,9 +1,10 @@
 import { useState, useCallback } from "react";
-import { ChevronDown, ChevronRight, CheckCircle, Lock, Play, Plus, ArrowLeft, ArrowRight, GripVertical } from "lucide-react";
+import { ChevronDown, ChevronRight, CheckCircle, Lock, Play, Plus, ArrowLeft, ArrowRight, GripVertical, Trash2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { useClassroomModules, useClassroomLessons, useLessonCompletions, useCompleteLesson, useCreateModule, useCreateLesson, useReorderModules, useReorderLessons } from "@/hooks/useClassroom";
+import { useClassroomModules, useClassroomLessons, useLessonCompletions, useCompleteLesson, useCreateModule, useCreateLesson, useReorderModules, useReorderLessons, useDeleteModule, useDeleteLesson } from "@/hooks/useClassroom";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -82,6 +83,8 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
   const completeLesson = useCompleteLesson();
   const reorderModules = useReorderModules();
   const reorderLessons = useReorderLessons();
+  const deleteModule = useDeleteModule();
+  const deleteLesson = useDeleteLesson();
 
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
@@ -223,16 +226,42 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                 return (
                   <SortableModule key={mod.id} mod={mod} isOwner={isOwner}>
                     <div>
-                      <button onClick={() => toggleModule(mod.id)} className="w-full flex items-center justify-between p-4">
-                        <div className="flex items-center gap-3">
-                          {isExpanded ? <ChevronDown className="w-4 h-4 text-white" /> : <ChevronRight className="w-4 h-4 text-white" />}
-                          <div className="text-left">
-                            <p className="text-sm font-semibold text-white">{mod.title}</p>
-                            <p className="text-xs" style={{ color: "#888" }}>{lessons.length} lessons</p>
+                      <div className="flex items-center">
+                        <button onClick={() => toggleModule(mod.id)} className="flex-1 flex items-center justify-between p-4">
+                          <div className="flex items-center gap-3">
+                            {isExpanded ? <ChevronDown className="w-4 h-4 text-white" /> : <ChevronRight className="w-4 h-4 text-white" />}
+                            <div className="text-left">
+                              <p className="text-sm font-semibold text-white">{mod.title}</p>
+                              <p className="text-xs" style={{ color: "#888" }}>{lessons.length} lessons</p>
+                            </div>
                           </div>
-                        </div>
-                        {modCompleted && <CheckCircle className="w-4 h-4" style={{ color: "#00FF85" }} />}
-                      </button>
+                          {modCompleted && <CheckCircle className="w-4 h-4" style={{ color: "#00FF85" }} />}
+                        </button>
+                        {isOwner && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <button className="p-2 mr-2 rounded hover:bg-white/10 transition-colors" style={{ color: "#888" }}>
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent style={{ background: "#111111", border: "1px solid #1e1e1e" }}>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle className="text-white">Delete Module</AlertDialogTitle>
+                                <AlertDialogDescription style={{ color: "#888" }}>
+                                  This will permanently delete "{mod.title}" and all its lessons. This cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel className="border-0" style={{ background: "#1e1e1e", color: "#fff" }}>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => { deleteModule.mutate(mod.id); toast({ title: "Module deleted" }); }}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >Delete</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                      </div>
 
                       {isExpanded && (
                         <div style={{ borderTop: "1px solid #1e1e1e" }}>
@@ -242,25 +271,51 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                                 const isComplete = (completions as Set<string>).has(lesson.id);
                                 return (
                                   <SortableLesson key={lesson.id} lesson={lesson} isOwner={isOwner}>
-                                    <button
-                                      onClick={() => setSelectedLesson(lesson)}
-                                      className="w-full flex items-center gap-3 p-3 text-left hover:bg-white/5 transition-colors"
-                                    >
-                                      <div className="w-10 h-10 rounded flex items-center justify-center flex-shrink-0" style={{ background: "#1e1e1e" }}>
-                                        {lesson.is_free || true ? (
-                                          <Play className="w-4 h-4" style={{ color: "#888" }} />
-                                        ) : (
-                                          <Lock className="w-4 h-4" style={{ color: "#888" }} />
-                                        )}
-                                      </div>
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-white truncate">{lesson.title}</p>
-                                        {lesson.duration_seconds > 0 && (
-                                          <p className="text-xs" style={{ color: "#888" }}>{formatDuration(lesson.duration_seconds)}</p>
-                                        )}
-                                      </div>
-                                      {isComplete && <CheckCircle className="w-4 h-4 flex-shrink-0" style={{ color: "#00FF85" }} />}
-                                    </button>
+                                    <div className="flex items-center">
+                                      <button
+                                        onClick={() => setSelectedLesson(lesson)}
+                                        className="flex-1 flex items-center gap-3 p-3 text-left hover:bg-white/5 transition-colors"
+                                      >
+                                        <div className="w-10 h-10 rounded flex items-center justify-center flex-shrink-0" style={{ background: "#1e1e1e" }}>
+                                          {lesson.is_free || true ? (
+                                            <Play className="w-4 h-4" style={{ color: "#888" }} />
+                                          ) : (
+                                            <Lock className="w-4 h-4" style={{ color: "#888" }} />
+                                          )}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <p className="text-sm font-medium text-white truncate">{lesson.title}</p>
+                                          {lesson.duration_seconds > 0 && (
+                                            <p className="text-xs" style={{ color: "#888" }}>{formatDuration(lesson.duration_seconds)}</p>
+                                          )}
+                                        </div>
+                                        {isComplete && <CheckCircle className="w-4 h-4 flex-shrink-0" style={{ color: "#00FF85" }} />}
+                                      </button>
+                                      {isOwner && (
+                                        <AlertDialog>
+                                          <AlertDialogTrigger asChild>
+                                            <button className="p-2 mr-2 rounded hover:bg-white/10 transition-colors" style={{ color: "#888" }}>
+                                              <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                          </AlertDialogTrigger>
+                                          <AlertDialogContent style={{ background: "#111111", border: "1px solid #1e1e1e" }}>
+                                            <AlertDialogHeader>
+                                              <AlertDialogTitle className="text-white">Delete Lesson</AlertDialogTitle>
+                                              <AlertDialogDescription style={{ color: "#888" }}>
+                                                Delete "{lesson.title}"? This cannot be undone.
+                                              </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                              <AlertDialogCancel className="border-0" style={{ background: "#1e1e1e", color: "#fff" }}>Cancel</AlertDialogCancel>
+                                              <AlertDialogAction
+                                                onClick={() => { deleteLesson.mutate(lesson.id); toast({ title: "Lesson deleted" }); }}
+                                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                              >Delete</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                          </AlertDialogContent>
+                                        </AlertDialog>
+                                      )}
+                                    </div>
                                   </SortableLesson>
                                 );
                               })}
