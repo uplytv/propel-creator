@@ -38,6 +38,7 @@ export default function Products() {
   const [mode, setMode] = useState<CreateMode>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Scratch / shared form state
   const [name, setName] = useState("");
