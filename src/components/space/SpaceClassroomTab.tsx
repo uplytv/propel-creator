@@ -460,3 +460,57 @@ function AddLessonDialog({ open, onClose, moduleId, creatorId }: { open: boolean
     </Dialog>
   );
 }
+
+function EditModuleDialog({ open, onClose, module: mod }: { open: boolean; onClose: () => void; module: any }) {
+  const [title, setTitle] = useState(mod.title);
+  const [description, setDescription] = useState(mod.description || "");
+  const updateModule = useUpdateModule();
+  const { toast } = useToast();
+
+  const handleSubmit = async () => {
+    if (!title.trim()) return;
+    await updateModule.mutateAsync({ id: mod.id, title, description });
+    onClose();
+    toast({ title: "Module updated!" });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="border-0" style={{ background: "#111111", color: "#fff" }}>
+        <DialogHeader><DialogTitle className="text-white">Edit Module</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <Input placeholder="Module title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
+          <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
+          <Button onClick={handleSubmit} disabled={!title.trim()} className="w-full font-semibold" style={{ background: "#00FF85", color: "#0A0A0A" }}>Save Changes</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function EditLessonDialog({ open, onClose, lesson }: { open: boolean; onClose: () => void; lesson: any }) {
+  const [title, setTitle] = useState(lesson.title);
+  const [description, setDescription] = useState(lesson.description || "");
+  const updateLesson = useUpdateLesson();
+  const { toast } = useToast();
+
+  const handleSubmit = async () => {
+    if (!title.trim()) return;
+    await updateLesson.mutateAsync({ id: lesson.id, title, description });
+    onClose();
+    toast({ title: "Lesson updated!" });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="border-0" style={{ background: "#111111", color: "#fff" }}>
+        <DialogHeader><DialogTitle className="text-white">Edit Lesson</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <Input placeholder="Lesson title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
+          <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
+          <Button onClick={handleSubmit} disabled={!title.trim()} className="w-full font-semibold" style={{ background: "#00FF85", color: "#0A0A0A" }}>Save Changes</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
