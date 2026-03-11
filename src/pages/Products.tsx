@@ -543,8 +543,8 @@ export default function Products() {
                       )}
                     </div>
 
-                    <Button onClick={handleScratchSubmit} disabled={createProduct.isPending || !name.trim()} className="w-full">
-                      {createProduct.isPending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Creating...</> : "Create Product"}
+                    <Button onClick={handleScratchSubmit} disabled={createProduct.isPending || imageUploading || !name.trim()} className="w-full">
+                      {createProduct.isPending || imageUploading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {imageUploading ? "Uploading image..." : "Creating..."}</> : "Create Product"}
                     </Button>
                   </div>
                 )}
