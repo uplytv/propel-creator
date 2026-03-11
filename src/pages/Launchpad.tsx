@@ -78,6 +78,10 @@ export default function Launchpad() {
   const [price, setPrice] = useState("");
   const [creating, setCreating] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const option = launchOptions.find((o) => o.id === selected);
 
