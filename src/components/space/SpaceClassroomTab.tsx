@@ -644,24 +644,115 @@ function EditModuleDialog({ open, onClose, module: mod }: { open: boolean; onClo
 function EditLessonDialog({ open, onClose, lesson }: { open: boolean; onClose: () => void; lesson: any }) {
   const [title, setTitle] = useState(lesson.title);
   const [description, setDescription] = useState(lesson.description || "");
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [removeVideo, setRemoveVideo] = useState(false);
   const updateLesson = useUpdateLesson();
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  const hasExistingVideo = !removeVideo && (lesson.mux_asset_id || lesson.video_url);
+
+  const uploadToMux = async (file: File): Promise<string | null> => {
+    if (!user) return null;
+    const { data, error } = await supabase.functions.invoke("mux-create-upload", {
+      body: { title, description, userId: user.id },
+    });
+    if (error || !data?.uploadUrl) {
+      throw new Error(error?.message || "Failed to create upload");
+    }
+    const xhr = new XMLHttpRequest();
+    await new Promise<void>((resolve, reject) => {
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100));
+      };
+      xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error("Upload failed")));
+      xhr.onerror = () => reject(new Error("Upload failed"));
+      xhr.open("PUT", data.uploadUrl);
+      xhr.send(file);
+    });
+    return data.uploadId;
+  };
 
   const handleSubmit = async () => {
     if (!title.trim()) return;
-    await updateLesson.mutateAsync({ id: lesson.id, title, description });
-    onClose();
-    toast({ title: "Lesson updated!" });
+    setUploading(true);
+    try {
+      let updateData: any = { id: lesson.id, title, description };
+
+      if (videoFile) {
+        const uploadId = await uploadToMux(videoFile);
+        if (uploadId) {
+          updateData.mux_asset_id = "pending";
+          updateData.video_url = `upload:${uploadId}`;
+        }
+      } else if (removeVideo) {
+        updateData.mux_asset_id = null;
+        updateData.video_url = null;
+      }
+
+      await updateLesson.mutateAsync(updateData);
+      onClose();
+      toast({ title: videoFile ? "Lesson updated! Video is processing..." : "Lesson updated!" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={(o) => { if (!o && !uploading) { onClose(); } }}>
       <DialogContent className="border-0" style={{ background: "#111111", color: "#fff" }}>
         <DialogHeader><DialogTitle className="text-white">Edit Lesson</DialogTitle></DialogHeader>
         <div className="space-y-3">
           <Input placeholder="Lesson title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
           <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
-          <Button onClick={handleSubmit} disabled={!title.trim()} className="w-full font-semibold" style={{ background: "#00FF85", color: "#0A0A0A" }}>Save Changes</Button>
+
+          {/* Video Upload / Replace */}
+          <div>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: "#888" }}>Video</label>
+            {videoFile ? (
+              <div className="flex items-center gap-2 p-2.5 rounded-lg" style={{ background: "#1e1e1e" }}>
+                <Play className="w-4 h-4 flex-shrink-0" style={{ color: "#00FF85" }} />
+                <span className="text-xs text-white truncate flex-1">{videoFile.name}</span>
+                <button onClick={() => setVideoFile(null)} className="text-xs px-2 py-0.5 rounded" style={{ color: "#888" }}>Remove</button>
+              </div>
+            ) : hasExistingVideo ? (
+              <div className="flex items-center gap-2 p-2.5 rounded-lg" style={{ background: "#1e1e1e" }}>
+                <CheckCircle className="w-4 h-4 flex-shrink-0" style={{ color: "#00FF85" }} />
+                <span className="text-xs text-white flex-1">Video attached</span>
+                <label className="text-xs px-2 py-0.5 rounded cursor-pointer hover:bg-white/10 transition-colors" style={{ color: "#00FF85" }}>
+                  Replace
+                  <input type="file" accept="video/*" className="hidden" onChange={(e) => { setVideoFile(e.target.files?.[0] || null); setRemoveVideo(false); }} />
+                </label>
+                <button onClick={() => { setRemoveVideo(true); setVideoFile(null); }} className="text-xs px-2 py-0.5 rounded" style={{ color: "#FF3232" }}>Remove</button>
+              </div>
+            ) : (
+              <label
+                className="flex flex-col items-center justify-center gap-1.5 p-4 rounded-lg cursor-pointer hover:bg-white/5 transition-colors"
+                style={{ border: "1px dashed #333" }}
+              >
+                <Play className="w-5 h-5" style={{ color: "#00FF85" }} />
+                <span className="text-xs" style={{ color: "#888" }}>Click to select a video file</span>
+                <input type="file" accept="video/*" className="hidden" onChange={(e) => { setVideoFile(e.target.files?.[0] || null); setRemoveVideo(false); }} />
+              </label>
+            )}
+          </div>
+
+          {uploading && (
+            <div className="space-y-1">
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "#1e1e1e" }}>
+                <div className="h-full rounded-full transition-all" style={{ width: `${uploadProgress}%`, background: "#00FF85" }} />
+              </div>
+              <p className="text-xs text-center" style={{ color: "#888" }}>Uploading… {uploadProgress}%</p>
+            </div>
+          )}
+
+          <Button onClick={handleSubmit} disabled={!title.trim() || uploading} className="w-full font-semibold" style={{ background: "#00FF85", color: "#0A0A0A" }}>
+            {uploading ? "Uploading…" : "Save Changes"}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
