@@ -104,10 +104,42 @@ export default function Products() {
 
   const closeSheet = () => { setShowCreate(false); resetForm(); };
 
-  const handleScratchSubmit = () => {
+  const uploadImage = async (): Promise<string | null> => {
+    if (!imageFile || !user) return null;
+    setImageUploading(true);
+    try {
+      const ext = imageFile.name.split('.').pop();
+      const path = `${user.id}/${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from('product-images').upload(path, imageFile);
+      if (error) throw error;
+      const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(path);
+      return publicUrl;
+    } catch (e: any) {
+      toast({ title: "Image upload failed", description: e.message, variant: "destructive" });
+      return null;
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  const handleImageSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const handleScratchSubmit = async () => {
     if (!name.trim()) return;
+    let image_url: string | undefined;
+    if (imageFile) {
+      const url = await uploadImage();
+      if (url) image_url = url;
+    }
     createProduct.mutate(
-      { name, description, type, price: parseFloat(price) || 0, status: "active" },
+      { name, description, type, price: parseFloat(price) || 0, status: "active", image_url },
       { onSuccess: closeSheet },
     );
   };
