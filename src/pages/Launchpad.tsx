@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Rocket, BookOpen, Users, Radio, Briefcase, ArrowRight,
-  Sparkles, Zap, X, Loader2, CheckCircle2, ImagePlus
+  Sparkles, Zap, X, Loader2, CheckCircle2, ImagePlus, Wand2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
