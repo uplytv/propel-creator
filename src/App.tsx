@@ -39,6 +39,10 @@ import CreatorProfile from "./pages/CreatorProfile";
 import Discover from "./pages/Discover";
 import Wallet from "./pages/Wallet";
 import AdminPayouts from "./pages/AdminPayouts";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminUsers from "./pages/AdminUsers";
+import AdminSettings from "./pages/AdminSettings";
+import AdminRoute from "./components/AdminRoute";
 import ContentLibrary from "./pages/ContentLibrary";
 import CreatorSpace from "./pages/CreatorSpace";
 import Launchpad from "./pages/Launchpad";
@@ -90,7 +94,10 @@ const App = () => (
                 <Route path="/job-messages" element={<ProtectedRoute><JobMessages /></ProtectedRoute>} />
                 <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
                 <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
-                <Route path="/admin/payouts" element={<ProtectedRoute><AdminPayouts /></ProtectedRoute>} />
+                <Route path="/admin/payouts" element={<AdminRoute><AdminPayouts /></AdminRoute>} />
+                <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+                <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+                <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
                 <Route path="/content-library" element={<ProtectedRoute><ContentLibrary /></ProtectedRoute>} />
                 <Route path="/launchpad" element={<ProtectedRoute><Launchpad /></ProtectedRoute>} />
 
