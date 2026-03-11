@@ -126,6 +126,8 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
   const [showAddModule, setShowAddModule] = useState(false);
   const [showAddLesson, setShowAddLesson] = useState<string | null>(null);
+  const [editingModule, setEditingModule] = useState<any>(null);
+  const [editingLesson, setEditingLesson] = useState<any>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
