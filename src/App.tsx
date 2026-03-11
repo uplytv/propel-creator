@@ -94,7 +94,10 @@ const App = () => (
                 <Route path="/job-messages" element={<ProtectedRoute><JobMessages /></ProtectedRoute>} />
                 <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
                 <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
-                <Route path="/admin/payouts" element={<ProtectedRoute><AdminPayouts /></ProtectedRoute>} />
+                <Route path="/admin/payouts" element={<AdminRoute><AdminPayouts /></AdminRoute>} />
+                <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+                <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+                <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
                 <Route path="/content-library" element={<ProtectedRoute><ContentLibrary /></ProtectedRoute>} />
                 <Route path="/launchpad" element={<ProtectedRoute><Launchpad /></ProtectedRoute>} />
 
