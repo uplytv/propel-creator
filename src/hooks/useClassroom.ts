@@ -125,6 +125,38 @@ export function useCreateLesson() {
   });
 }
 
+export function useUpdateModule() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, title, description }: { id: string; title: string; description: string }) => {
+      const { error } = await supabase
+        .from("classroom_modules" as any)
+        .update({ title, description } as any)
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["classroom-modules"] });
+    },
+  });
+}
+
+export function useUpdateLesson() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, title, description }: { id: string; title: string; description: string }) => {
+      const { error } = await supabase
+        .from("classroom_lessons" as any)
+        .update({ title, description } as any)
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["classroom-lessons"] });
+    },
+  });
+}
+
 export function useReorderModules() {
   const queryClient = useQueryClient();
   return useMutation({

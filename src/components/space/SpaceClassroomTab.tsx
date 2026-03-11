@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UPLYMuxPlayer } from "@/components/MuxPlayer";
 import { useAuth } from "@/context/AuthContext";
-import { useClassroomModules, useClassroomLessons, useLessonCompletions, useCompleteLesson, useCreateModule, useCreateLesson, useReorderModules, useReorderLessons, useDeleteModule, useDeleteLesson } from "@/hooks/useClassroom";
+import { useClassroomModules, useClassroomLessons, useLessonCompletions, useCompleteLesson, useCreateModule, useCreateLesson, useReorderModules, useReorderLessons, useDeleteModule, useDeleteLesson, useUpdateModule, useUpdateLesson } from "@/hooks/useClassroom";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
