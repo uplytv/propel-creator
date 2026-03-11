@@ -41,6 +41,7 @@ import Wallet from "./pages/Wallet";
 import AdminPayouts from "./pages/AdminPayouts";
 import ContentLibrary from "./pages/ContentLibrary";
 import CreatorSpace from "./pages/CreatorSpace";
+import Launchpad from "./pages/Launchpad";
 
 const queryClient = new QueryClient();
 
