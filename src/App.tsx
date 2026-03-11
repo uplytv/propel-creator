@@ -65,6 +65,7 @@ const App = () => (
                 <Route path="/stream/:id" element={<Stream />} />
                 <Route path="/leaderboard" element={<Leaderboard />} />
                 <Route path="/creator/:username" element={<CreatorProfile />} />
+                <Route path="/space/:creatorId" element={<CreatorSpace />} />
                 <Route path="/discover" element={<Discover />} />
 
                 {/* Protected routes */}
