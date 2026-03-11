@@ -37,31 +37,7 @@ export default function WaitlistPage() {
     fetchCount();
   }, []);
 
-  // Custom cursor
-  useEffect(() => {
-    const cursor = document.createElement("div");
-    cursor.id = "custom-cursor";
-    cursor.style.cssText = `
-      position: fixed; width: 12px; height: 12px; background: #00FF85;
-      border-radius: 50%; pointer-events: none; z-index: 99999;
-      transition: transform 0.15s ease-out, opacity 0.15s;
-      mix-blend-mode: difference; transform: translate(-50%, -50%);
-    `;
-    document.body.appendChild(cursor);
-    document.body.style.cursor = "none";
 
-    const move = (e: MouseEvent) => {
-      cursor.style.left = e.clientX + "px";
-      cursor.style.top = e.clientY + "px";
-    };
-    window.addEventListener("mousemove", move);
-
-    return () => {
-      window.removeEventListener("mousemove", move);
-      cursor.remove();
-      document.body.style.cursor = "";
-    };
-  }, []);
 
   const scrollToForm = () => {
     formRef.current?.scrollIntoView({ behavior: "smooth" });
