@@ -6,16 +6,17 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppProvider } from "@/context/AppContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { FeatureProvider } from "@/context/FeatureContext";
 import TierCelebration from "@/components/TierCelebration";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import LaunchGate from "@/components/LaunchGate";
+import AdminRoute from "./components/AdminRoute";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
-
 import MyRep from "./pages/MyRep";
 import Grow from "./pages/Grow";
 import Affiliates from "./pages/Affiliates";
@@ -42,7 +43,7 @@ import AdminPayouts from "./pages/AdminPayouts";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminUsers from "./pages/AdminUsers";
 import AdminSettings from "./pages/AdminSettings";
-import AdminRoute from "./components/AdminRoute";
+import AdminFeatureToggles from "./pages/AdminFeatureToggles";
 import ContentLibrary from "./pages/ContentLibrary";
 import CreatorSpace from "./pages/CreatorSpace";
 import Launchpad from "./pages/Launchpad";
@@ -55,56 +56,60 @@ const App = () => (
       <TooltipProvider>
         <AuthProvider>
           <AppProvider>
-            <Toaster />
-            <Sonner />
-            <TierCelebration />
-            <LaunchGate>
-            <BrowserRouter>
-              <Routes>
-                {/* Public routes */}
-                <Route path="/" element={<Landing />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/p/:slug" element={<JointProduct isPublic />} />
-                <Route path="/live" element={<Live />} />
-                <Route path="/stream/:id" element={<Stream />} />
-                <Route path="/leaderboard" element={<Leaderboard />} />
-                <Route path="/creator/:username" element={<CreatorProfile />} />
-                <Route path="/space/:creatorId" element={<CreatorSpace />} />
-                <Route path="/discover" element={<Discover />} />
+            <FeatureProvider>
+              <Toaster />
+              <Sonner />
+              <TierCelebration />
+              <LaunchGate>
+              <BrowserRouter>
+                <Routes>
+                  {/* Public routes */}
+                  <Route path="/" element={<Landing />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/p/:slug" element={<JointProduct isPublic />} />
+                  <Route path="/live" element={<Live />} />
+                  <Route path="/stream/:id" element={<Stream />} />
+                  <Route path="/leaderboard" element={<Leaderboard />} />
+                  <Route path="/creator/:username" element={<CreatorProfile />} />
+                  <Route path="/space/:creatorId" element={<CreatorSpace />} />
+                  <Route path="/discover" element={<Discover />} />
 
-                {/* Protected routes */}
-                <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                <Route path="/grow" element={<ProtectedRoute><Grow /></ProtectedRoute>} />
-                <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
-                
-                <Route path="/affiliates" element={<ProtectedRoute><Affiliates /></ProtectedRoute>} />
-                <Route path="/collaborate" element={<ProtectedRoute><Collaborate /></ProtectedRoute>} />
-                <Route path="/collaborate/product" element={<ProtectedRoute><JointProduct /></ProtectedRoute>} />
-                <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-                <Route path="/my-rep" element={<ProtectedRoute><MyRep /></ProtectedRoute>} />
-                <Route path="/go-live" element={<ProtectedRoute><GoLive /></ProtectedRoute>} />
-                <Route path="/buy-credits" element={<ProtectedRoute><BuyCredits /></ProtectedRoute>} />
-                <Route path="/ad-integrations" element={<ProtectedRoute><AdIntegrations /></ProtectedRoute>} />
-                <Route path="/jobs" element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
-                <Route path="/jobs/:id" element={<ProtectedRoute><JobDetail /></ProtectedRoute>} />
-                <Route path="/post-job" element={<ProtectedRoute><PostJob /></ProtectedRoute>} />
-                <Route path="/talent-profile" element={<ProtectedRoute><TalentProfile /></ProtectedRoute>} />
-                <Route path="/job-messages" element={<ProtectedRoute><JobMessages /></ProtectedRoute>} />
-                <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-                <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
-                <Route path="/admin/payouts" element={<AdminRoute><AdminPayouts /></AdminRoute>} />
-                <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-                <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
-                <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
-                <Route path="/content-library" element={<ProtectedRoute><ContentLibrary /></ProtectedRoute>} />
-                <Route path="/launchpad" element={<ProtectedRoute><Launchpad /></ProtectedRoute>} />
+                  {/* Protected routes */}
+                  <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+                  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                  <Route path="/grow" element={<ProtectedRoute><Grow /></ProtectedRoute>} />
+                  <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
+                  <Route path="/affiliates" element={<ProtectedRoute><Affiliates /></ProtectedRoute>} />
+                  <Route path="/collaborate" element={<ProtectedRoute><Collaborate /></ProtectedRoute>} />
+                  <Route path="/collaborate/product" element={<ProtectedRoute><JointProduct /></ProtectedRoute>} />
+                  <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                  <Route path="/my-rep" element={<ProtectedRoute><MyRep /></ProtectedRoute>} />
+                  <Route path="/go-live" element={<ProtectedRoute><GoLive /></ProtectedRoute>} />
+                  <Route path="/buy-credits" element={<ProtectedRoute><BuyCredits /></ProtectedRoute>} />
+                  <Route path="/ad-integrations" element={<ProtectedRoute><AdIntegrations /></ProtectedRoute>} />
+                  <Route path="/jobs" element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
+                  <Route path="/jobs/:id" element={<ProtectedRoute><JobDetail /></ProtectedRoute>} />
+                  <Route path="/post-job" element={<ProtectedRoute><PostJob /></ProtectedRoute>} />
+                  <Route path="/talent-profile" element={<ProtectedRoute><TalentProfile /></ProtectedRoute>} />
+                  <Route path="/job-messages" element={<ProtectedRoute><JobMessages /></ProtectedRoute>} />
+                  <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+                  <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
+                  <Route path="/content-library" element={<ProtectedRoute><ContentLibrary /></ProtectedRoute>} />
+                  <Route path="/launchpad" element={<ProtectedRoute><Launchpad /></ProtectedRoute>} />
 
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-            </LaunchGate>
+                  {/* Admin routes */}
+                  <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+                  <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+                  <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
+                  <Route path="/admin/payouts" element={<AdminRoute><AdminPayouts /></AdminRoute>} />
+                  <Route path="/admin/features" element={<AdminRoute><AdminFeatureToggles /></AdminRoute>} />
+
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+              </LaunchGate>
+            </FeatureProvider>
           </AppProvider>
         </AuthProvider>
       </TooltipProvider>
