@@ -61,6 +61,10 @@ export default function Products() {
   const [videoStatus, setVideoStatus] = useState<string | null>(null);
   const [videoPlaybackId, setVideoPlaybackId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
 
   const { data: products, isLoading } = useProducts();
   const createProduct = useCreateProduct();
