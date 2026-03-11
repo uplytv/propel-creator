@@ -2,11 +2,12 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Rocket, BookOpen, Users, Radio, Briefcase, ArrowRight,
-  Sparkles, Zap, X, Loader2, CheckCircle2, ImagePlus
+  Sparkles, Zap, X, Loader2, CheckCircle2, ImagePlus, Wand2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
 import { useAuth } from "@/context/AuthContext";
@@ -82,6 +83,8 @@ export default function Launchpad() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [idea, setIdea] = useState("");
+  const [generating, setGenerating] = useState(false);
 
   const option = launchOptions.find((o) => o.id === selected);
 
@@ -98,6 +101,25 @@ export default function Launchpad() {
     setSuccess(false);
     setImageFile(null);
     setImagePreview(null);
+    setIdea("");
+  };
+
+  const handleGenerate = async () => {
+    if (!idea.trim() || !option) return;
+    setGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-product-copy", {
+        body: { idea: idea.trim(), productType: option.id },
+      });
+      if (error) throw error;
+      if (data?.name) setName(data.name);
+      if (data?.description) setDescription(data.description);
+      toast.success("AI filled in your name & description!");
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to generate. Try again.");
+    } finally {
+      setGenerating(false);
+    }
   };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -167,6 +189,7 @@ export default function Launchpad() {
     setSuccess(false);
     setImageFile(null);
     setImagePreview(null);
+    setIdea("");
   };
 
   return (
@@ -293,6 +316,37 @@ export default function Launchpad() {
                     <div>
                       <h2 className="text-lg font-bold text-foreground">Launch your {option?.title}</h2>
                       <p className="text-xs text-muted-foreground">Fill in the basics — you can customize later.</p>
+                    </div>
+                  </div>
+
+                  {/* AI Idea Generator */}
+                  <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Wand2 className="w-4 h-4 text-primary" />
+                      <span className="text-sm font-semibold text-foreground">AI Auto-fill</span>
+                      <span className="text-[10px] text-muted-foreground ml-auto">Describe your idea</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        value={idea}
+                        onChange={(e) => setIdea(e.target.value)}
+                        placeholder="e.g. Help beginners grow on YouTube fast"
+                        className="text-sm flex-1"
+                        onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleGenerate}
+                        disabled={!idea.trim() || generating}
+                        className="shrink-0 border-primary/30 hover:bg-primary/10"
+                      >
+                        {generating ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <><Sparkles className="w-3.5 h-3.5 mr-1" /> Generate</>
+                        )}
+                      </Button>
                     </div>
                   </div>
 
