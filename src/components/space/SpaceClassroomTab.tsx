@@ -83,6 +83,8 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
   const completeLesson = useCompleteLesson();
   const reorderModules = useReorderModules();
   const reorderLessons = useReorderLessons();
+  const deleteModule = useDeleteModule();
+  const deleteLesson = useDeleteLesson();
 
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
