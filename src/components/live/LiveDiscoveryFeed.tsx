@@ -50,6 +50,8 @@ interface Props {
 }
 
 export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
+  const { user } = useAuth();
+  const { followingIds } = useFollows();
   const [activeTab, setActiveTab] = useState<string>("foryou");
   const [liveStreams, setLiveStreams] = useState<LiveStream[]>([]);
   const [vodAssets, setVodAssets] = useState<any[]>([]);
