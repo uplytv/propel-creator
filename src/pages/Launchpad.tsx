@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
 import { useAuth } from "@/context/AuthContext";
 import { useCreateProduct } from "@/hooks/useProducts";
+import { supabase } from "@/integrations/supabase/client";
 
 const launchOptions = [
   {
