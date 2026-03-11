@@ -28,6 +28,14 @@ export default function CreatorSpace() {
   const tabFromState = (location.state as any)?.tab;
   const searchParams = new URLSearchParams(location.search);
   const tabFromQuery = searchParams.get("tab");
+  const refCode = searchParams.get("ref");
+
+  // Handle creator affiliate cookie
+  useEffect(() => {
+    if (refCode) {
+      setAffiliateCookie("uply_creator_ref", refCode, 30);
+    }
+  }, [refCode]);
   const resolveTab = (val?: string): Tab => {
     if (val === "classroom") return "Classroom";
     if (val === "community") return "Community";
