@@ -364,8 +364,11 @@ export default function Stream() {
                     <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">{featuredProduct.name}</p>
                     <p className="text-xs text-muted-foreground capitalize">{featuredProduct.type} · <span className="text-primary font-semibold">${featuredProduct.price}</span></p>
                   </div>
-                  <div className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold flex-shrink-0">
-                    View
+                  <div className="flex flex-col items-center gap-1 flex-shrink-0">
+                    <div className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold shadow-sm">
+                      {featuredProduct.type === 'course' ? 'Enroll' : featuredProduct.type === 'coaching' ? 'Book' : 'Buy Now'}
+                    </div>
+                    <span className="text-[10px] text-muted-foreground font-medium">${featuredProduct.price}</span>
                   </div>
                 </button>
               )}
