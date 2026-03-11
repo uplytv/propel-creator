@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useApp, tierNames } from "@/context/AppContext";
-import { TrendingUp, Users, DollarSign, Brain, MessageSquare, Phone, Clock, CheckCircle2, Zap, ChevronRight, BarChart3, Target, Briefcase, Info, Film, Play, Loader2 } from "lucide-react";
+import { TrendingUp, Users, DollarSign, Brain, MessageSquare, Phone, Clock, CheckCircle2, Zap, ChevronRight, BarChart3, Target, Briefcase, Info, Film, Play, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
 import { AIGrowthEngine } from "@/components/AIGrowthEngine";
@@ -9,6 +9,8 @@ import { MyJobsTab } from "@/components/dashboard/MyJobsTab";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useDashboardStats } from "@/hooks/useDashboardStats";
+import { AriaPanel } from "@/components/aria/AriaPanel";
 
 const tierTargets = [
   { members: 100, mrr: 1000 },
@@ -23,7 +25,8 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"overview" | "growth" | "jobs">("overview");
   const [recordings, setRecordings] = useState<any[]>([]);
-
+  const [ariaOpen, setAriaOpen] = useState(false);
+  const { data: dashStats, isLoading: statsLoading } = useDashboardStats();
   useEffect(() => {
     if (!user) return;
     const fetch = async () => {
@@ -145,7 +148,7 @@ export default function Dashboard() {
               </div>
             </motion.div>
 
-            {/* Card 3 - Growth Partner */}
+            {/* Card 3 - ARIA Growth Partner */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }} className="glass-card p-6 group">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 group-hover:text-primary transition-colors duration-300">Your Growth Partner</h3>
               <div className="flex items-start gap-4">
@@ -154,9 +157,9 @@ export default function Dashboard() {
                 </div>
                 <div className="flex-1">
                   <p className="font-bold">ARIA — Your AI Growth Partner</p>
-                  <p className="text-sm text-muted-foreground mt-1 mb-3">AI-powered growth recommendations coming soon. Connect your data to unlock personalized insights.</p>
-                  <Button variant="outline" size="sm" disabled>
-                    <MessageSquare className="w-4 h-4 mr-1" /> Coming Soon
+                  <p className="text-sm text-muted-foreground mt-1 mb-3">AI-powered growth recommendations based on your real data. Ask ARIA anything.</p>
+                  <Button variant="outline" size="sm" onClick={() => setAriaOpen(true)} className="gap-1.5 border-primary/30 hover:border-primary hover:bg-primary/10">
+                    <Sparkles className="w-4 h-4 text-primary" /> Ask ARIA
                   </Button>
                 </div>
               </div>
@@ -189,15 +192,20 @@ export default function Dashboard() {
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider group-hover:text-primary transition-colors duration-300">Revenue Tracker</h3>
               </div>
-              {profile.mrr > 0 || profile.totalRevenue > 0 ? (
+              {statsLoading ? (
+                <div className="grid grid-cols-2 gap-4">
+                  <div><div className="h-3 w-16 bg-secondary rounded animate-pulse mb-2" /><div className="h-7 w-24 bg-secondary rounded animate-pulse" /></div>
+                  <div><div className="h-3 w-16 bg-secondary rounded animate-pulse mb-2" /><div className="h-7 w-24 bg-secondary rounded animate-pulse" /></div>
+                </div>
+              ) : (dashStats?.totalRevenue ?? 0) > 0 ? (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-xs text-muted-foreground">MRR</p>
-                    <p className="text-2xl font-bold">${profile.mrr.toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground">Total Revenue</p>
+                    <p className="text-2xl font-bold">${(dashStats?.totalRevenue ?? 0).toLocaleString()}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Total Revenue</p>
-                    <p className="text-2xl font-bold">${profile.totalRevenue.toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground">This Month</p>
+                    <p className="text-2xl font-bold">${(dashStats?.revenueThisMonth ?? 0).toLocaleString()}</p>
                   </div>
                 </div>
               ) : (
@@ -209,14 +217,30 @@ export default function Dashboard() {
               )}
             </motion.div>
 
-            {/* Card 6 - Action Plan Placeholder */}
+            {/* Card 6 - Live Stats */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }} className="glass-card p-6 group">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 group-hover:text-primary transition-colors duration-300">This Week's Action Plan</h3>
-              <div className="flex flex-col items-center justify-center py-6 text-center">
-                <Info className="w-8 h-8 text-muted-foreground/40 mb-2" />
-                <p className="text-sm text-muted-foreground">Connect your growth data to see your action plan.</p>
-                <p className="text-xs text-muted-foreground mt-1">AI-powered recommendations will appear here once ARIA is integrated.</p>
-              </div>
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 group-hover:text-primary transition-colors duration-300">Platform Stats</h3>
+              {statsLoading ? (
+                <div className="grid grid-cols-3 gap-3">
+                  {[0,1,2].map(i => (<div key={i}><div className="h-3 w-14 bg-secondary rounded animate-pulse mb-2" /><div className="h-6 w-10 bg-secondary rounded animate-pulse" /></div>))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Members</p>
+                    <p className="text-xl font-bold">{dashStats?.totalMembers ?? 0}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Subscribers</p>
+                    <p className="text-xl font-bold">{dashStats?.activeSubscribers ?? 0}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Streams</p>
+                    <p className="text-xl font-bold">{dashStats?.totalLiveStreams ?? 0}</p>
+                  </div>
+                </div>
+              )}
+              {!statsLoading && <p className="text-xs mt-3" style={{ color: "#888" }}>Dashboard syncing...</p>}
             </motion.div>
           </div>
 
@@ -306,6 +330,7 @@ export default function Dashboard() {
           </>
         )}
       </div>
+      {user && <AriaPanel open={ariaOpen} onClose={() => setAriaOpen(false)} />}
     </AppLayout>
   );
 }
