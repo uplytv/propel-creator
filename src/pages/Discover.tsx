@@ -1,107 +1,92 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Search, ArrowLeft, Users } from "lucide-react";
+import { Search, Compass } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { useDiscoveryFeed, type FilterCategory, type SortOption } from "@/hooks/useDiscoveryFeed";
+import FeedCard from "@/components/discovery/FeedCard";
+import FeedFilters from "@/components/discovery/FeedFilters";
+import BackNav from "@/components/BackNav";
 
 export default function Discover() {
-  const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<FilterCategory>("all");
+  const [sort, setSort] = useState<SortOption>("trending");
+  const [liveOnly, setLiveOnly] = useState(false);
 
-  const { data: creators, isLoading } = useQuery({
-    queryKey: ["discover-creators", search],
-    queryFn: async () => {
-      let query = supabase
-        .from("profiles")
-        .select("user_id, display_name, avatar_url, bio, creator_type")
-        .not("display_name", "is", null)
-        .order("created_at", { ascending: false })
-        .limit(50);
-
-      if (search) {
-        query = query.or(`display_name.ilike.%${search}%,creator_type.ilike.%${search}%`);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
-    },
-  });
+  const { data: items, isLoading } = useDiscoveryFeed(filter, sort, search, liveOnly);
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card/50 backdrop-blur-xl sticky top-0 z-30">
-        <div className="container flex items-center gap-4 h-14">
-          <button onClick={() => navigate("/")} className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-primary" />
-            <h1 className="text-lg font-bold">Discover Creators</h1>
-          </div>
+      {/* Header */}
+      <header className="border-b border-border bg-card/60 backdrop-blur-xl sticky top-0 z-30">
+        <div className="container flex items-center gap-3 h-14 px-4">
+          <BackNav />
+          <Compass className="w-5 h-5 text-primary" />
+          <h1 className="text-lg font-bold tracking-tight">Discover</h1>
         </div>
       </header>
 
-      <div className="container py-8 max-w-4xl">
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <div className="relative max-w-md mx-auto">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by name or creator type..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-        </motion.div>
+      <div className="container px-4 py-4 max-w-3xl space-y-4">
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search creators, courses, communities…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 bg-secondary/50"
+          />
+        </div>
 
+        {/* Filters */}
+        <FeedFilters
+          filter={filter}
+          sort={sort}
+          liveOnly={liveOnly}
+          onFilterChange={setFilter}
+          onSortChange={setSort}
+          onLiveOnlyChange={setLiveOnly}
+        />
+
+        {/* Feed */}
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="rounded-2xl border border-border bg-card/40 p-6 animate-pulse">
-                <div className="w-16 h-16 rounded-full bg-secondary mx-auto mb-3" />
-                <div className="h-4 w-24 bg-secondary mx-auto rounded mb-2" />
-                <div className="h-3 w-32 bg-secondary mx-auto rounded" />
+              <div key={i} className="rounded-2xl border border-border bg-card overflow-hidden animate-pulse">
+                <div className="aspect-[16/10] bg-muted" />
+                <div className="p-3 space-y-2">
+                  <div className="flex gap-2.5">
+                    <div className="w-9 h-9 rounded-full bg-muted" />
+                    <div className="flex-1 space-y-1.5">
+                      <div className="h-3.5 w-3/4 bg-muted rounded" />
+                      <div className="h-2.5 w-1/2 bg-muted rounded" />
+                    </div>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
-        ) : creators && creators.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {creators.map((creator: any, i: number) => (
-              <motion.button
-                key={creator.user_id}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.03 }}
-                onClick={() => navigate(`/creator/${encodeURIComponent(creator.display_name)}`)}
-                className="rounded-2xl border border-border bg-card/40 p-6 text-center hover:border-primary/30 hover:shadow-md transition-all group"
-              >
-                {creator.avatar_url ? (
-                  <img src={creator.avatar_url} alt={creator.display_name} className="w-16 h-16 rounded-full object-cover mx-auto mb-3 group-hover:scale-105 transition-transform" />
-                ) : (
-                  <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center text-xl font-bold text-primary mx-auto mb-3 group-hover:scale-105 transition-transform">
-                    {(creator.display_name || "C").charAt(0)}
-                  </div>
-                )}
-                <h3 className="font-semibold">{creator.display_name}</h3>
-                {creator.creator_type && (
-                  <span className="text-xs text-primary font-medium">{creator.creator_type}</span>
-                )}
-                {creator.bio && (
-                  <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{creator.bio}</p>
-                )}
-              </motion.button>
+        ) : items && items.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {items.map((item, i) => (
+              <FeedCard key={`${item.type}-${item.id}`} item={item} index={i} />
             ))}
           </div>
         ) : (
-          <div className="text-center py-16">
-            <Users className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-            <h3 className="text-lg font-bold mb-1">No creators found</h3>
-            <p className="text-muted-foreground">Try a different search term.</p>
-          </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-16"
+          >
+            <Compass className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <h3 className="text-lg font-bold mb-1">Nothing found</h3>
+            <p className="text-sm text-muted-foreground">
+              {liveOnly
+                ? "No one is live right now. Try disabling the Live filter."
+                : "Try adjusting your filters or search term."}
+            </p>
+          </motion.div>
         )}
       </div>
     </div>
