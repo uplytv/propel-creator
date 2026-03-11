@@ -143,9 +143,9 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
         .from("mux_assets")
         .select("mux_asset_id, status, mux_playback_id")
         .in("mux_asset_id", lessonAssetIds);
-      const map: Record<string, { status: string; hasPlayback: boolean }> = {};
+      const map: Record<string, { status: string; hasPlayback: boolean; playbackId: string | null }> = {};
       (data || []).forEach((a: any) => {
-        map[a.mux_asset_id] = { status: a.status || "preparing", hasPlayback: !!a.mux_playback_id };
+        map[a.mux_asset_id] = { status: a.status || "preparing", hasPlayback: !!a.mux_playback_id, playbackId: a.mux_playback_id || null };
       });
       return map;
     },
