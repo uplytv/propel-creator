@@ -31,6 +31,7 @@ const templates = [
 ];
 
 type CreateMode = null | "ai" | "url" | "template" | "scratch";
+type EditingProduct = { id: string; name: string; description: string | null; type: string; price: number; status: string; image_url: string | null } | null;
 
 export default function Products() {
   const [view, setView] = useState<"grid" | "list">("grid");
