@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useDiscoveryFeed, type FilterCategory, type SortOption } from "@/hooks/useDiscoveryFeed";
 import FeedCard from "@/components/discovery/FeedCard";
 import FeedFilters from "@/components/discovery/FeedFilters";
+import FeaturedCarousel from "@/components/discovery/FeaturedCarousel";
 import BackNav from "@/components/BackNav";
 
 const PAGE_SIZE = 8;
@@ -80,6 +81,9 @@ export default function Discover() {
           onSortChange={setSort}
           onLiveOnlyChange={setLiveOnly}
         />
+
+        {/* Staff Picks */}
+        {filter === "all" && !search && <FeaturedCarousel />}
 
         {/* Feed */}
         {isLoading ? (
