@@ -229,7 +229,7 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
   };
 
   return (
-    <div className={`relative w-full aspect-video bg-black ${className || ''}`}>
+    <div ref={containerRef} className={`relative w-full aspect-video bg-black ${className || ''}`}>
       <video
         ref={videoRef}
         autoPlay
