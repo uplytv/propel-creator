@@ -52,6 +52,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <TierCelebration />
+            <LaunchGate>
             <BrowserRouter>
               <Routes>
                 {/* Public routes */}
