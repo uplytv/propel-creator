@@ -37,7 +37,24 @@ export default function NotificationBell() {
     setOpen(false);
   };
 
+  const socialNotifIcon: Record<string, { icon: any; color: string }> = {
+    community_comment: { icon: MessageSquare, color: "bg-primary/10 text-primary" },
+    community_like: { icon: Heart, color: "bg-destructive/10 text-destructive" },
+    new_follower: { icon: UserPlus, color: "bg-primary/10 text-primary" },
+    tip_received: { icon: Coins, color: "bg-primary/15 text-primary" },
+    member_joined: { icon: Users, color: "bg-primary/10 text-primary" },
+  };
+
   const getIcon = (n: any) => {
+    if (n.source === "social") {
+      const config = socialNotifIcon[n.type] || { icon: Bell, color: "bg-secondary text-muted-foreground" };
+      const Icon = config.icon;
+      return (
+        <div className={`mt-0.5 flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center ${config.color}`}>
+          <Icon className="w-3.5 h-3.5" />
+        </div>
+      );
+    }
     if (n.source === "job") {
       const config = jobNotifIcon[n.type] || jobNotifIcon.new_application;
       const Icon = config.icon;
