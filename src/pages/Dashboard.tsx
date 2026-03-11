@@ -87,6 +87,29 @@ export default function Dashboard() {
           <p className="text-muted-foreground mt-1">Here's how your business is doing.</p>
         </motion.div>
 
+        {/* Live Now Banner */}
+        {activeStream && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 rounded-xl border border-destructive/30 bg-destructive/5 flex items-center justify-between gap-4"
+          >
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-destructive text-destructive-foreground">
+                <span className="w-2 h-2 rounded-full bg-destructive-foreground animate-pulse" />
+                LIVE
+              </span>
+              <div>
+                <p className="text-sm font-semibold">{activeStream.title || "Your Live Stream"}</p>
+                <p className="text-xs text-muted-foreground">{activeStream.viewer_count || 0} viewers</p>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => navigate(`/stream/${activeStream.id}`)} className="gap-1.5 border-destructive/30 hover:border-destructive">
+              <Radio className="w-3.5 h-3.5" /> View Stream
+            </Button>
+          </motion.div>
+        )}
+
         {/* Tab Toggle */}
         <div className="flex gap-2 mb-6">
           <button
