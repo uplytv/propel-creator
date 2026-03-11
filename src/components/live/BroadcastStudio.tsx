@@ -180,10 +180,9 @@ export default function BroadcastStudio({
         .from('mux_live_streams')
         .update({
           status: active ? 'active' : 'idle',
-          started_at: active ? new Date().toISOString() : undefined,
-          ended_at: active ? undefined : new Date().toISOString(),
+          ...(active ? { started_at: new Date().toISOString() } : { ended_at: new Date().toISOString() }),
         })
-        .eq('mux_stream_id', streamData.streamId);
+        .eq('id', streamData.streamId);
     } catch (err) {
       console.error('Failed to update stream status:', err);
     }
