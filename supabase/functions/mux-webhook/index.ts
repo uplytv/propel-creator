@@ -157,25 +157,37 @@ serve(async (req) => {
         }
         break
 
-      case 'video.live_stream.active':
-        await supabase.from('mux_live_streams')
+      case 'video.live_stream.active': {
+        console.log(`🔴 Stream going ACTIVE: mux_stream_id=${data.id}`)
+        const { data: activeResult, error: activeErr } = await supabase.from('mux_live_streams')
           .update({
             status: 'active',
             started_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           })
           .eq('mux_stream_id', data.id)
+          .select()
+        if (activeErr) console.error('Failed to set stream active:', activeErr)
+        else if (!activeResult?.length) console.warn(`No row found for mux_stream_id=${data.id} — stream not tracked`)
+        else console.log(`Stream ${activeResult[0].id} set to active`)
         break
+      }
 
-      case 'video.live_stream.idle':
-        await supabase.from('mux_live_streams')
+      case 'video.live_stream.idle': {
+        console.log(`⚪ Stream going IDLE: mux_stream_id=${data.id}`)
+        const { data: idleResult, error: idleErr } = await supabase.from('mux_live_streams')
           .update({
             status: 'idle',
             ended_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           })
           .eq('mux_stream_id', data.id)
+          .select()
+        if (idleErr) console.error('Failed to set stream idle:', idleErr)
+        else if (!idleResult?.length) console.warn(`No row found for mux_stream_id=${data.id}`)
+        else console.log(`Stream ${idleResult[0].id} set to idle`)
         break
+      }
     }
 
     return new Response(JSON.stringify({ received: true }), {
