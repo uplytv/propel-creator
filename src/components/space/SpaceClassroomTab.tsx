@@ -1,5 +1,8 @@
 import { useState, useCallback } from "react";
 import { ChevronDown, ChevronRight, CheckCircle, Lock, Play, Plus, ArrowLeft, ArrowRight, GripVertical, Trash2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { UPLYMuxPlayer } from "@/components/MuxPlayer";
 import { useAuth } from "@/context/AuthContext";
 import { useClassroomModules, useClassroomLessons, useLessonCompletions, useCompleteLesson, useCreateModule, useCreateLesson, useReorderModules, useReorderLessons, useDeleteModule, useDeleteLesson } from "@/hooks/useClassroom";
 import { Button } from "@/components/ui/button";
@@ -69,6 +72,39 @@ function SortableLesson({ lesson, children, isOwner }: { lesson: any; children: 
         </div>
       )}
       <div className="flex-1">{children}</div>
+    </div>
+  );
+}
+
+function LessonPlayer({ lesson }: { lesson: any }) {
+  const { data: playbackId } = useQuery({
+    queryKey: ["lesson-playback", lesson.mux_asset_id],
+    enabled: !!lesson.mux_asset_id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("mux_assets")
+        .select("mux_playback_id")
+        .eq("mux_asset_id", lesson.mux_asset_id)
+        .maybeSingle();
+      return data?.mux_playback_id || null;
+    },
+  });
+
+  if (playbackId) {
+    return <UPLYMuxPlayer playbackId={playbackId} title={lesson.title} autoPlay />;
+  }
+
+  if (lesson.video_url) {
+    return (
+      <div className="w-full aspect-video bg-black">
+        <video src={lesson.video_url} controls autoPlay playsInline className="w-full h-full object-contain" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full aspect-video flex items-center justify-center" style={{ background: "#111111" }}>
+      <Play className="w-12 h-12" style={{ color: "#888" }} />
     </div>
   );
 }
@@ -158,9 +194,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
           <span className="text-sm font-semibold text-white truncate">{selectedLesson.title}</span>
         </div>
         <div className="flex-1 overflow-y-auto">
-          <div className="w-full aspect-video flex items-center justify-center" style={{ background: "#111111" }}>
-            <Play className="w-12 h-12" style={{ color: "#888" }} />
-          </div>
+          <LessonPlayer lesson={selectedLesson} />
           <div className="p-4">
             <h2 className="text-lg font-bold text-white mb-2">{selectedLesson.title}</h2>
             <p className="text-sm mb-4" style={{ color: "#ccc" }}>{selectedLesson.description}</p>
