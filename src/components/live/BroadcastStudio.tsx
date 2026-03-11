@@ -309,6 +309,9 @@ export default function BroadcastStudio({
 
     // Mark stream as active in DB for discovery feed
     await setStreamActive(true);
+
+    // Start WebRTC host so viewers can connect
+    startWebRTCHost();
   };
 
   const stopRecording = async () => {
@@ -317,6 +320,9 @@ export default function BroadcastStudio({
       recordingTimerRef.current = null;
     }
     setIsRecording(false);
+
+    // Stop WebRTC host
+    stopWebRTCHost();
 
     // Mark stream as idle in DB
     await setStreamActive(false);
