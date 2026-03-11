@@ -83,8 +83,9 @@ export default function Discover() {
           onLiveOnlyChange={setLiveOnly}
         />
 
-        {/* Staff Picks */}
+        {/* Staff Picks / Category Hero */}
         {filter === "all" && !search && <FeaturedCarousel />}
+        {filter !== "all" && <CategoryHeroBanner category={filter} />}
 
         {/* Feed */}
         {isLoading ? (
