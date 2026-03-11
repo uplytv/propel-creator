@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Rocket, BookOpen, Users, Radio, Briefcase, ArrowRight,
-  Sparkles, Zap, X, Loader2, CheckCircle2
+  Sparkles, Zap, X, Loader2, CheckCircle2, ImagePlus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
