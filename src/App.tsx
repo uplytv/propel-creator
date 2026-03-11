@@ -8,6 +8,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import TierCelebration from "@/components/TierCelebration";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import LaunchGate from "@/components/LaunchGate";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
@@ -51,6 +52,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <TierCelebration />
+            <LaunchGate>
             <BrowserRouter>
               <Routes>
                 {/* Public routes */}
@@ -91,6 +93,7 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
+            </LaunchGate>
           </AppProvider>
         </AuthProvider>
       </TooltipProvider>

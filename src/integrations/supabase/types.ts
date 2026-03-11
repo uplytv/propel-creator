@@ -538,6 +538,24 @@ export type Database = {
         }
         Relationships: []
       }
+      launch_config: {
+        Row: {
+          id: string
+          is_launched: boolean
+          total_applicants: number
+        }
+        Insert: {
+          id?: string
+          is_launched?: boolean
+          total_applicants?: number
+        }
+        Update: {
+          id?: string
+          is_launched?: boolean
+          total_applicants?: number
+        }
+        Relationships: []
+      }
       leaderboard_entries: {
         Row: {
           created_at: string
@@ -1099,6 +1117,42 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      waitlist: {
+        Row: {
+          created_at: string
+          creator_type: string | null
+          email: string
+          follower_count: string | null
+          full_name: string
+          id: string
+          one_sentence: string | null
+          primary_platform: string | null
+          social_handle: string | null
+        }
+        Insert: {
+          created_at?: string
+          creator_type?: string | null
+          email: string
+          follower_count?: string | null
+          full_name: string
+          id?: string
+          one_sentence?: string | null
+          primary_platform?: string | null
+          social_handle?: string | null
+        }
+        Update: {
+          created_at?: string
+          creator_type?: string | null
+          email?: string
+          follower_count?: string | null
+          full_name?: string
+          id?: string
+          one_sentence?: string | null
+          primary_platform?: string | null
+          social_handle?: string | null
         }
         Relationships: []
       }
