@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import BackNav from "@/components/BackNav";
 import { useParams } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useCreatorSpace, useEnsureSpace } from "@/hooks/useCreatorSpace";
@@ -51,8 +52,9 @@ export default function CreatorSpace() {
 
   return (
     <div className="min-h-screen" style={{ background: "#0A0A0A" }}>
+      <BackNav />
       {/* Top Header */}
-      <div className="px-4 pt-4 pb-2 flex items-center gap-3">
+      <div className="px-4 pb-2 flex items-center gap-3">
         {spaceAvatar ? (
           <img src={spaceAvatar} alt="" className="w-8 h-8 rounded-full object-cover" />
         ) : (
