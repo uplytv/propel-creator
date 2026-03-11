@@ -35,19 +35,19 @@ export default function Live() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen" style={{ backgroundColor: '#0A0A0A' }}>
       {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-        <div className="container flex h-16 items-center justify-between">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5" style={{ backgroundColor: 'rgba(10,10,10,0.85)', backdropFilter: 'blur(16px)' }}>
+        <div className="container flex h-14 items-center justify-between">
           <div className="flex items-center gap-3">
             <img
               src="/logo.png"
               alt="Uply"
-              className="h-[74px] cursor-pointer hover:opacity-80 transition-opacity"
+              className="h-[60px] cursor-pointer hover:opacity-80 transition-opacity"
               onClick={() => navigate("/")}
             />
-            <span className="text-border">|</span>
-            <div className="flex items-center gap-1.5 text-primary">
+            <span className="text-white/10">|</span>
+            <div className="flex items-center gap-1.5 text-[#00FF85]">
               <Radio className="w-4 h-4" />
               <span className="text-sm font-semibold">Live</span>
             </div>
@@ -55,73 +55,60 @@ export default function Live() {
 
           <div className="hidden md:flex items-center gap-3 flex-1 max-w-md mx-8">
             <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#888888]" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search streams, creators, topics..."
-                className="w-full bg-secondary/50 border border-border rounded-lg pl-9 pr-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors"
+                placeholder="Search streams, creators..."
+                className="w-full rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder:text-[#888888] focus:outline-none focus:ring-1 focus:ring-[#00FF85]/50 transition-colors border border-white/10"
+                style={{ backgroundColor: '#111111' }}
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {user ? (
               <>
-                <Button variant="outline" size="sm" onClick={() => navigate("/go-live")}>
+                <Button
+                  size="sm"
+                  onClick={() => navigate("/go-live")}
+                  className="bg-[#00FF85] text-[#0A0A0A] font-bold hover:brightness-110 border-0"
+                >
                   <Radio className="w-3.5 h-3.5 mr-1.5" />
                   Go Live
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
+                <Button variant="ghost" size="sm" className="text-[#888888] hover:text-white" onClick={() => navigate("/dashboard")}>
                   Dashboard
                 </Button>
               </>
             ) : (
               <>
-                <Button variant="ghost" size="sm" onClick={() => navigate("/auth")}>Log in</Button>
-                <Button variant="default" size="sm" onClick={() => navigate("/auth")}>Start Free</Button>
+                <Button variant="ghost" size="sm" className="text-[#888888] hover:text-white" onClick={() => navigate("/auth")}>Log in</Button>
+                <Button size="sm" className="bg-[#00FF85] text-[#0A0A0A] font-bold hover:brightness-110 border-0" onClick={() => navigate("/auth")}>Start Free</Button>
               </>
             )}
           </div>
         </div>
       </nav>
 
-      {/* Hero banner */}
-      <section className="pt-24 pb-8">
-        <div className="container">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="flex items-center gap-3 mb-2"
-          >
-            <div className="live-badge flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold">
-              <span className="live-dot w-2.5 h-2.5 rounded-full" />
-              {liveCount} LIVE NOW
-            </div>
-          </motion.div>
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-3xl md:text-4xl font-bold text-foreground mb-2"
-          >
-            Discover Live Knowledge
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-muted-foreground text-lg"
-          >
-            Watch creators teach, build, and share — live and unfiltered.
-          </motion.p>
+      {/* Mobile search */}
+      <div className="md:hidden pt-16 px-4 pb-2" style={{ backgroundColor: '#0A0A0A' }}>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#888888]" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search streams..."
+            className="w-full rounded-lg pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-[#888888] focus:outline-none focus:ring-1 focus:ring-[#00FF85]/50 border border-white/10"
+            style={{ backgroundColor: '#111111' }}
+          />
         </div>
-      </section>
+      </div>
 
       {/* Discovery Feed */}
-      <section className="pb-20">
+      <section className="pt-4 md:pt-20 pb-20">
         <div className="container">
           <LiveDiscoveryFeed searchQuery={search} />
         </div>
