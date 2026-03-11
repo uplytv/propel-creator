@@ -126,14 +126,23 @@ export default function CreatorProfile() {
           {products && products.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {products.map((p: any) => (
-                <motion.div key={p.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl border border-border bg-card/40 p-5">
-                  <h4 className="font-semibold">{p.name}</h4>
+                <motion.button
+                  key={p.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  onClick={() => navigate(`/space/${profile.user_id}`, { state: { tab: p.type === 'course' ? 'classroom' : 'community' } })}
+                  className="rounded-2xl border border-border bg-card/40 p-5 text-left hover:border-primary/30 hover:shadow-md transition-all group"
+                >
+                  {p.image_url && (
+                    <img src={p.image_url} alt={p.name} className="w-full h-32 object-cover rounded-lg mb-3" />
+                  )}
+                  <h4 className="font-semibold group-hover:text-primary transition-colors">{p.name}</h4>
                   {p.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{p.description}</p>}
                   <div className="flex items-center justify-between mt-3">
                     <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground capitalize">{p.type}</span>
                     <span className="font-bold text-primary">${Number(p.price).toFixed(2)}</span>
                   </div>
-                </motion.div>
+                </motion.button>
               ))}
             </div>
           ) : (

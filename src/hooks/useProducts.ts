@@ -34,6 +34,7 @@ export function useCreateProduct() {
       type: string;
       price: number;
       status?: string;
+      image_url?: string;
     }) => {
       const { data, error } = await supabase
         .from("products")
