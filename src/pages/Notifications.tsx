@@ -34,7 +34,24 @@ function NotificationItem({
   onNavigate: () => void;
   onDelete: () => void;
 }) {
+  const socialNotifIcon: Record<string, { icon: any; color: string }> = {
+    community_comment: { icon: MessageSquare, color: "bg-primary/10 text-primary" },
+    community_like: { icon: Heart, color: "bg-destructive/10 text-destructive" },
+    new_follower: { icon: UserPlus, color: "bg-primary/10 text-primary" },
+    tip_received: { icon: Coins, color: "bg-primary/15 text-primary" },
+    member_joined: { icon: Users, color: "bg-primary/10 text-primary" },
+  };
+
   const getIcon = () => {
+    if (n.source === "social") {
+      const config = socialNotifIcon[n.type] || { icon: Bell, color: "bg-secondary text-muted-foreground" };
+      const Icon = config.icon;
+      return (
+        <div className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center ${config.color}`}>
+          <Icon className="w-5 h-5" />
+        </div>
+      );
+    }
     if (n.source === "job") {
       const config = jobNotifIcon[n.type] || jobNotifIcon.new_application;
       const Icon = config.icon;
