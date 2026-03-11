@@ -393,18 +393,6 @@ export default function WaitlistPage() {
                       placeholder="Have an invite code? Enter it here for priority access."
                     />
                   </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold mb-2">Instagram or TikTok handle</label>
-                    <input
-                      type="text"
-                      value={socialHandle}
-                      onChange={(e) => setSocialHandle(e.target.value)}
-                      className="w-full bg-[#111] border border-[#333] rounded-[4px] px-4 py-3 text-sm text-white placeholder:text-[#555] focus:outline-none focus:border-[#00FF85] transition-colors"
-                      placeholder="@yourhandle"
-                      style={{ cursor: "none" }}
-                    />
-                  </div>
                   <button
                     onClick={() => {
                       if (!fullName.trim() || !email.trim()) {
@@ -419,7 +407,6 @@ export default function WaitlistPage() {
                       setStep(2);
                     }}
                     className="w-full bg-[#00FF85] text-[#0A0A0A] font-bold text-sm px-6 py-3.5 rounded-[4px] hover:shadow-[0_0_20px_rgba(0,255,133,0.4)] transition-shadow"
-                    style={{ cursor: "none" }}
                   >
                     Continue →
                   </button>
