@@ -42,6 +42,7 @@ export default function Stream() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isRealStream, setIsRealStream] = useState(false);
+  const [featuredProduct, setFeaturedProduct] = useState<any>(null);
 
   const searchParams = new URLSearchParams(window.location.search);
   const isVod = searchParams.get('type') === 'vod';
