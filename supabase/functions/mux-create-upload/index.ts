@@ -14,12 +14,18 @@ serve(async (req) => {
   try {
     const { title, description, userId } = await req.json()
 
+    if (!userId) {
+      throw new Error('userId is required')
+    }
+
     const muxTokenId = Deno.env.get('MUX_TOKEN_ID')
     const muxTokenSecret = Deno.env.get('MUX_TOKEN_SECRET')
 
     if (!muxTokenId || !muxTokenSecret) {
       throw new Error('Mux API credentials not configured')
     }
+
+    console.log(`Creating upload for user ${userId}, title: "${title}"`)
 
     const muxResponse = await fetch('https://api.mux.com/video/v1/uploads', {
       method: 'POST',
@@ -41,28 +47,39 @@ serve(async (req) => {
     }
 
     const muxData = await muxResponse.json()
+    const uploadId = muxData.data.id
+
+    console.log(`Mux upload created: ${uploadId}`)
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
-    await supabase.from('mux_assets').insert({
+    const { data: insertData, error: insertError } = await supabase.from('mux_assets').insert({
       user_id: userId,
-      mux_asset_id: muxData.data.asset_id || 'pending',
-      upload_id: muxData.data.id,
-      title,
-      description,
+      mux_asset_id: 'pending',
+      upload_id: uploadId,
+      title: title || 'Untitled Video',
+      description: description || null,
       status: 'preparing'
-    })
+    }).select()
+
+    if (insertError) {
+      console.error(`DB insert failed: ${JSON.stringify(insertError)}`)
+      throw new Error(`Failed to save asset record: ${insertError.message}`)
+    }
+
+    console.log(`DB record created: ${insertData?.[0]?.id} for upload ${uploadId}`)
 
     return new Response(JSON.stringify({
       uploadUrl: muxData.data.url,
-      uploadId: muxData.data.id
+      uploadId: uploadId
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
   } catch (error) {
+    console.error(`Upload error: ${error.message}`)
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
