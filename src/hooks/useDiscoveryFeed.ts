@@ -42,7 +42,7 @@ export function useDiscoveryFeed(
         (filter === "all" || filter === "livestream")
           ? supabase
               .from("mux_live_streams")
-              .select("*, profiles!inner(display_name, avatar_url, creator_type)")
+              .select("*")
               .eq("is_public", true)
               .order("viewer_count", { ascending: false })
               .limit(20)
@@ -52,7 +52,7 @@ export function useDiscoveryFeed(
         (filter === "all" || filter === "course" || filter === "community" || filter === "service")
           ? supabase
               .from("products")
-              .select("*, profiles!inner(display_name, avatar_url, creator_type)")
+              .select("*")
               .eq("status", "active")
               .order("sales", { ascending: false })
               .limit(30)
@@ -62,7 +62,7 @@ export function useDiscoveryFeed(
         (filter === "all" || filter === "community")
           ? supabase
               .from("creator_spaces")
-              .select("*, profiles!inner(display_name, avatar_url, creator_type)")
+              .select("*")
               .eq("is_public", true)
               .order("created_at", { ascending: false })
               .limit(20)
@@ -78,6 +78,25 @@ export function useDiscoveryFeed(
               .limit(20)
           : Promise.resolve({ data: [], error: null }),
       ]);
+
+      // Collect all unique user IDs to batch-fetch profiles
+      const userIds = new Set<string>();
+      if (streamsRes.data) (streamsRes.data as any[]).forEach((s) => userIds.add(s.user_id));
+      if (productsRes.data) (productsRes.data as any[]).forEach((p) => userIds.add(p.user_id));
+      if (spacesRes.data) (spacesRes.data as any[]).forEach((sp) => userIds.add(sp.creator_id));
+
+      const profileMap = new Map<string, { display_name: string | null; avatar_url: string | null; creator_type: string | null }>();
+      if (userIds.size > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, display_name, avatar_url, creator_type")
+          .in("user_id", Array.from(userIds));
+        if (profiles) {
+          for (const p of profiles) {
+            profileMap.set(p.user_id, p);
+          }
+        }
+      }
 
       // Map livestreams
       if (streamsRes.data) {
