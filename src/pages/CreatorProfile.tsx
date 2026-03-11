@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { ArrowLeft, Package, User } from "lucide-react";
+import { ArrowLeft, Package, User, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import FollowButton from "@/components/FollowButton";
@@ -35,6 +35,19 @@ export default function CreatorProfile() {
         .eq("status", "active");
       if (error) throw error;
       return data;
+    },
+    enabled: !!profile?.user_id,
+  });
+
+  const { data: followerCount } = useQuery({
+    queryKey: ["follower-count", profile?.user_id],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("follows")
+        .select("*", { count: "exact", head: true })
+        .eq("following_id", profile!.user_id);
+      if (error) throw error;
+      return count || 0;
     },
     enabled: !!profile?.user_id,
   });
@@ -83,8 +96,12 @@ export default function CreatorProfile() {
           )}
           <h2 className="text-2xl font-bold">{profile.display_name}</h2>
           {profile.user_id && (
-            <div className="mt-3">
+            <div className="mt-3 flex items-center gap-3">
               <FollowButton targetUserId={profile.user_id} size="md" />
+              <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <Users className="w-4 h-4" />
+                <span className="font-semibold text-foreground">{followerCount ?? 0}</span> follower{followerCount !== 1 ? 's' : ''}
+              </span>
             </div>
           )}
           {profile.creator_type && (
