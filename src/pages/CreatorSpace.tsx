@@ -16,6 +16,7 @@ import { MemberEarnTab } from "@/components/affiliates/MemberEarnTab";
 import { CreatorAffiliateProgramSettings } from "@/components/affiliates/CreatorAffiliateProgramSettings";
 import { useCreatorAffiliateProgram } from "@/hooks/useAffiliates";
 import { useQuery as useRQQuery } from "@tanstack/react-query";
+import { setAffiliateCookie } from "@/lib/affiliateCookies";
 
 const BASE_TABS = ["Community", "Classroom", "Calendar", "Members", "Leaderboard", "About"] as const;
 type Tab = typeof BASE_TABS[number] | "Earn" | "Manage";
