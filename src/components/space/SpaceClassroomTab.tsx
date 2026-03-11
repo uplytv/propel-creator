@@ -122,6 +122,35 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
   const deleteModule = useDeleteModule();
   const deleteLesson = useDeleteLesson();
 
+  // Fetch mux_asset statuses for lessons that have a mux_asset_id
+  const lessonAssetIds = allLessons
+    .filter((l: any) => l.mux_asset_id && l.mux_asset_id !== "")
+    .map((l: any) => l.mux_asset_id);
+
+  const { data: assetStatuses = {} } = useQuery({
+    queryKey: ["lesson-asset-statuses", lessonAssetIds],
+    enabled: lessonAssetIds.length > 0,
+    refetchInterval: (query) => {
+      const data = query.state.data as Record<string, { status: string }> | undefined;
+      if (!data) return false;
+      const hasPending = Object.values(data).some(
+        (a) => a.status === "preparing" || a.status === "pending"
+      );
+      return hasPending ? 15000 : false;
+    },
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("mux_assets")
+        .select("mux_asset_id, status, mux_playback_id")
+        .in("mux_asset_id", lessonAssetIds);
+      const map: Record<string, { status: string; hasPlayback: boolean }> = {};
+      (data || []).forEach((a: any) => {
+        map[a.mux_asset_id] = { status: a.status || "preparing", hasPlayback: !!a.mux_playback_id };
+      });
+      return map;
+    },
+  });
+
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
   const [showAddModule, setShowAddModule] = useState(false);
