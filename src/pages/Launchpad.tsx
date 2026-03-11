@@ -319,6 +319,37 @@ export default function Launchpad() {
                     </div>
                   </div>
 
+                  {/* AI Idea Generator */}
+                  <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Wand2 className="w-4 h-4 text-primary" />
+                      <span className="text-sm font-semibold text-foreground">AI Auto-fill</span>
+                      <span className="text-[10px] text-muted-foreground ml-auto">Describe your idea</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        value={idea}
+                        onChange={(e) => setIdea(e.target.value)}
+                        placeholder="e.g. Help beginners grow on YouTube fast"
+                        className="text-sm flex-1"
+                        onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleGenerate}
+                        disabled={!idea.trim() || generating}
+                        className="shrink-0 border-primary/30 hover:bg-primary/10"
+                      >
+                        {generating ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <><Sparkles className="w-3.5 h-3.5 mr-1" /> Generate</>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+
                   {/* Name */}
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">Name</label>
