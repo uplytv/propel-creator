@@ -15,7 +15,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
-import Community from "./pages/Community";
+
 import MyRep from "./pages/MyRep";
 import Grow from "./pages/Grow";
 import Affiliates from "./pages/Affiliates";
@@ -73,7 +73,7 @@ const App = () => (
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="/grow" element={<ProtectedRoute><Grow /></ProtectedRoute>} />
                 <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
-                <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
+                
                 <Route path="/affiliates" element={<ProtectedRoute><Affiliates /></ProtectedRoute>} />
                 <Route path="/collaborate" element={<ProtectedRoute><Collaborate /></ProtectedRoute>} />
                 <Route path="/collaborate/product" element={<ProtectedRoute><JointProduct /></ProtectedRoute>} />

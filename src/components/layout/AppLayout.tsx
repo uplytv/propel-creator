@@ -23,7 +23,7 @@ const navItems = [
   { label: "Grow", icon: Rocket, path: "/grow", desc: "Launch Protocol" },
   { label: "Products", icon: Package, path: "/products", desc: "What you sell" },
   { label: "My Space", icon: LayoutGrid, path: "__space__", desc: "Your creator space" },
-  { label: "Community", icon: Users, path: "/community", desc: "Your audience" },
+  
   { label: "Affiliates", icon: Share2, path: "/affiliates", desc: "Referral program" },
   { label: "Collaborate", icon: Handshake, path: "/collaborate", desc: "Co-creator collabs", badgeKey: "collaborate" },
   { label: "Leaderboard", icon: Trophy, path: "/leaderboard", desc: "Top creators" },
