@@ -99,6 +99,7 @@ export default function Products() {
     setVideoUploadUrl(null); setVideoUploadId(null);
     setVideoUploading(false); setVideoProgress(0);
     setVideoStatus(null); setVideoPlaybackId(null);
+    setImageFile(null); setImagePreview(null); setImageUploading(false);
   };
 
   const closeSheet = () => { setShowCreate(false); resetForm(); };
