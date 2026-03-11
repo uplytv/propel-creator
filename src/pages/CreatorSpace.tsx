@@ -50,7 +50,7 @@ export default function CreatorSpace() {
   const { data: affiliateProgram } = useCreatorAffiliateProgram(creatorId);
 
   // Check if current user is a member (for Earn tab)
-  const { data: isMember } = useRQQuery({
+  const { data: isMember } = useQuery({
     queryKey: ["is-member", creatorId, user?.id],
     enabled: !!creatorId && !!user && !isOwner,
     queryFn: async () => {
