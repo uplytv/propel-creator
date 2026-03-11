@@ -76,6 +76,7 @@ export default function WaitlistPage() {
       full_name: fullName.trim(),
       email: email.trim().toLowerCase(),
       social_handle: socialHandle.trim() || null,
+      invite_code: inviteCode.trim() || null,
       creator_type: creatorType,
       follower_count: followerCount,
       primary_platform: primaryPlatform,
