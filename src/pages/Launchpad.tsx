@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Rocket, BookOpen, Users, Radio, Briefcase, ArrowRight,
-  Sparkles, Zap, X, Loader2, CheckCircle2
+  Sparkles, Zap, X, Loader2, CheckCircle2, ImagePlus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
 import { useAuth } from "@/context/AuthContext";
 import { useCreateProduct } from "@/hooks/useProducts";
+import { supabase } from "@/integrations/supabase/client";
 
 const launchOptions = [
   {
@@ -77,6 +78,10 @@ export default function Launchpad() {
   const [price, setPrice] = useState("");
   const [creating, setCreating] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const option = launchOptions.find((o) => o.id === selected);
 
@@ -91,12 +96,40 @@ export default function Launchpad() {
     setDescription("");
     setPrice(String(opt.fields!.defaultPrice));
     setSuccess(false);
+    setImageFile(null);
+    setImagePreview(null);
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setImagePreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const uploadImage = async (): Promise<string | null> => {
+    if (!imageFile || !user) return null;
+    setUploadingImage(true);
+    const ext = imageFile.name.split(".").pop();
+    const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabase.storage
+      .from("product-images")
+      .upload(path, imageFile, { upsert: true });
+    setUploadingImage(false);
+    if (error) return null;
+    const { data: urlData } = supabase.storage
+      .from("product-images")
+      .getPublicUrl(path);
+    return urlData.publicUrl;
   };
 
   const handleLaunch = async () => {
     if (!name.trim() || !option) return;
     setCreating(true);
 
+    const imageUrl = await uploadImage();
     const productType = option.id === "service" ? "coaching" : option.id;
 
     createProduct.mutate(
@@ -106,6 +139,7 @@ export default function Launchpad() {
         type: productType,
         price: parseFloat(price) || 0,
         status: "active",
+        image_url: imageUrl || undefined,
       },
       {
         onSuccess: () => {
@@ -131,6 +165,8 @@ export default function Launchpad() {
     setDescription("");
     setPrice("");
     setSuccess(false);
+    setImageFile(null);
+    setImagePreview(null);
   };
 
   return (
@@ -284,6 +320,41 @@ export default function Launchpad() {
                       rows={3}
                       className="text-sm resize-none"
                     />
+                  </div>
+
+                  {/* Cover Image */}
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">
+                      Cover Image <span className="text-muted-foreground font-normal">(optional)</span>
+                    </label>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageSelect}
+                    />
+                    {imagePreview ? (
+                      <div className="relative rounded-xl overflow-hidden border border-border">
+                        <img src={imagePreview} alt="Cover preview" className="w-full h-36 object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => { setImageFile(null); setImagePreview(null); }}
+                          className="absolute top-2 right-2 w-7 h-7 rounded-full bg-background/80 backdrop-blur flex items-center justify-center hover:bg-background transition-colors"
+                        >
+                          <X className="w-4 h-4 text-foreground" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-full h-28 rounded-xl border-2 border-dashed border-border hover:border-primary/40 bg-muted/30 flex flex-col items-center justify-center gap-1.5 transition-colors"
+                      >
+                        <ImagePlus className="w-6 h-6 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">Tap to upload a cover image</span>
+                      </button>
+                    )}
                   </div>
 
                   {/* Price */}
