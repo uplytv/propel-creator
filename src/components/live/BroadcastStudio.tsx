@@ -391,6 +391,7 @@ export default function BroadcastStudio({
   useEffect(() => {
     return () => {
       stopCurrentStream();
+      stopWebRTCHost();
       if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
       // Ensure stream is set back to idle if user navigates away mid-recording
       supabase
@@ -399,7 +400,7 @@ export default function BroadcastStudio({
         .eq('id', streamData.streamId)
         .then(() => {});
     };
-  }, [stopCurrentStream, streamData.streamId]);
+  }, [stopCurrentStream, stopWebRTCHost, streamData.streamId]);
 
   const isLive = streamStatus === "active";
 
