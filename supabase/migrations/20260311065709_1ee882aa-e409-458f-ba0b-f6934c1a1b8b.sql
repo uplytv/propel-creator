@@ -1,0 +1,1 @@
+ALTER TABLE public.waitlist ADD COLUMN invite_code text DEFAULT NULL;
