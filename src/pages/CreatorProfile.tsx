@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Package, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import FollowButton from "@/components/FollowButton";
 
 export default function CreatorProfile() {
   const { username } = useParams<{ username: string }>();
