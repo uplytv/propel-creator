@@ -236,6 +236,11 @@ export default function Stream() {
                 muted={false}
                 streamType="on-demand"
               />
+            ) : isActive && dbStream.stream_type === 'browser' ? (
+              <WebRTCPlayer
+                streamId={dbStream.id}
+                title={dbStream.title || 'Live Stream'}
+              />
             ) : isActive && playbackId ? (
               <UPLYMuxPlayer
                 playbackId={playbackId}
