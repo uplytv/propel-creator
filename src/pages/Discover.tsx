@@ -82,6 +82,9 @@ export default function Discover() {
           onLiveOnlyChange={setLiveOnly}
         />
 
+        {/* Staff Picks */}
+        {filter === "all" && !search && <FeaturedCarousel />}
+
         {/* Feed */}
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
