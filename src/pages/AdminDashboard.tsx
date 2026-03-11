@@ -94,6 +94,9 @@ export default function AdminDashboard() {
             <Button size="sm" variant="outline" onClick={() => navigate("/admin/payouts")}>
               <DollarSign className="w-4 h-4 mr-1" /> Payouts
             </Button>
+            <Button size="sm" variant="outline" onClick={() => navigate("/admin/features")}>
+              <ToggleLeft className="w-4 h-4 mr-1" /> Features
+            </Button>
             <Button size="sm" variant="outline" onClick={() => navigate("/admin/settings")}>
               Settings
             </Button>
