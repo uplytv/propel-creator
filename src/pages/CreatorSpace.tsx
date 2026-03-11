@@ -21,7 +21,7 @@ const BASE_TABS = ["Community", "Classroom", "Calendar", "Members", "Leaderboard
 type Tab = typeof BASE_TABS[number] | "Earn" | "Manage";
 
 export default function CreatorSpace() {
-  const { creatorId } = useParams<{ creatorId: string }>();
+  const { creatorId: rawCreatorId } = useParams<{ creatorId: string }>();
   const { user } = useAuth();
   const location = useLocation();
   const tabFromState = (location.state as any)?.tab;
