@@ -52,6 +52,7 @@ export default function CreatorSpace() {
 
   return (
     <div className="min-h-screen" style={{ background: "#0A0A0A" }}>
+      <BackNav />
       {/* Top Header */}
       <div className="px-4 pt-4 pb-2 flex items-center gap-3">
         {spaceAvatar ? (
