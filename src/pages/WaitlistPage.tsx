@@ -361,7 +361,6 @@ export default function WaitlistPage() {
                       onChange={(e) => setFullName(e.target.value)}
                       className="w-full bg-[#111] border border-[#333] rounded-[4px] px-4 py-3 text-sm text-white placeholder:text-[#555] focus:outline-none focus:border-[#00FF85] transition-colors"
                       placeholder="Your full name"
-                      style={{ cursor: "none" }}
                     />
                   </div>
                   <div>
@@ -372,8 +371,28 @@ export default function WaitlistPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full bg-[#111] border border-[#333] rounded-[4px] px-4 py-3 text-sm text-white placeholder:text-[#555] focus:outline-none focus:border-[#00FF85] transition-colors"
                       placeholder="you@email.com"
-                      style={{ cursor: "none" }}
                     />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Instagram or TikTok handle</label>
+                    <input
+                      type="text"
+                      value={socialHandle}
+                      onChange={(e) => setSocialHandle(e.target.value)}
+                      className="w-full bg-[#111] border border-[#333] rounded-[4px] px-4 py-3 text-sm text-white placeholder:text-[#555] focus:outline-none focus:border-[#00FF85] transition-colors"
+                      placeholder="@yourhandle"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Invite Code</label>
+                    <input
+                      type="text"
+                      value={inviteCode}
+                      onChange={(e) => setInviteCode(e.target.value)}
+                      className="w-full bg-[#111] border border-[#333] rounded-[4px] px-4 py-3 text-sm text-white placeholder:text-[#555] focus:outline-none focus:border-[#00FF85] transition-colors"
+                      placeholder="Have an invite code? Enter it here for priority access."
+                    />
+                  </div>
                   </div>
                   <div>
                     <label className="block text-sm font-semibold mb-2">Instagram or TikTok handle</label>
