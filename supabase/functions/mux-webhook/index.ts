@@ -19,7 +19,6 @@ async function verifyMuxSignature(req: Request, body: string): Promise<boolean> 
     return false
   }
 
-  // Parse "t=<timestamp>,v1=<hash>" format
   const parts: Record<string, string> = {}
   for (const part of header.split(',')) {
     const [key, value] = part.split('=')
@@ -34,7 +33,6 @@ async function verifyMuxSignature(req: Request, body: string): Promise<boolean> 
     return false
   }
 
-  // Reject if timestamp is older than 5 minutes
   const fiveMinutes = 5 * 60
   const now = Math.floor(Date.now() / 1000)
   if (Math.abs(now - parseInt(timestamp)) > fiveMinutes) {
@@ -42,7 +40,6 @@ async function verifyMuxSignature(req: Request, body: string): Promise<boolean> 
     return false
   }
 
-  // Compute HMAC-SHA256 of "timestamp.body"
   const encoder = new TextEncoder()
   const key = await crypto.subtle.importKey(
     'raw',
@@ -72,7 +69,6 @@ serve(async (req) => {
   try {
     const rawBody = await req.text()
 
-    // Verify webhook signature
     const isValid = await verifyMuxSignature(req, rawBody)
     if (!isValid) {
       return new Response(JSON.stringify({ error: 'Invalid signature' }), {
@@ -158,18 +154,28 @@ serve(async (req) => {
         break
 
       case 'video.live_stream.active': {
-        console.log(`🔴 Stream going ACTIVE: mux_stream_id=${data.id}`)
+        // FIX 5: Extract and store playback_id when stream goes active
+        const activePlaybackId = data.playback_ids?.[0]?.id
+        console.log(`🔴 Stream going ACTIVE: mux_stream_id=${data.id}, playback_id=${activePlaybackId}`)
+        
+        const updatePayload: Record<string, any> = {
+          status: 'active',
+          started_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }
+        
+        // Store the playback_id from the active event to ensure it's always current
+        if (activePlaybackId) {
+          updatePayload.mux_playback_id = activePlaybackId
+        }
+        
         const { data: activeResult, error: activeErr } = await supabase.from('mux_live_streams')
-          .update({
-            status: 'active',
-            started_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
+          .update(updatePayload)
           .eq('mux_stream_id', data.id)
           .select()
         if (activeErr) console.error('Failed to set stream active:', activeErr)
         else if (!activeResult?.length) console.warn(`No row found for mux_stream_id=${data.id} — stream not tracked`)
-        else console.log(`Stream ${activeResult[0].id} set to active`)
+        else console.log(`Stream ${activeResult[0].id} set to active with playback_id=${activePlaybackId}`)
         break
       }
 
