@@ -395,6 +395,12 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
       {showAddLesson && (
         <AddLessonDialog open={!!showAddLesson} onClose={() => setShowAddLesson(null)} moduleId={showAddLesson} creatorId={creatorId} />
       )}
+      {editingModule && (
+        <EditModuleDialog open={!!editingModule} onClose={() => setEditingModule(null)} module={editingModule} />
+      )}
+      {editingLesson && (
+        <EditLessonDialog open={!!editingLesson} onClose={() => setEditingLesson(null)} lesson={editingLesson} />
+      )}
     </div>
   );
 }
