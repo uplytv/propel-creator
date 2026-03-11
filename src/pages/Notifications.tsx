@@ -2,7 +2,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Bell, Check, CheckCheck, AlertTriangle, Flag, Briefcase,
-  CheckCircle2, XCircle, Eye, Star, Filter, Trash2
+  CheckCircle2, XCircle, Eye, Star, Filter, Trash2,
+  MessageSquare, Heart, UserPlus, Coins, Users
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useNotifications, AppNotification } from "@/hooks/useNotifications";
