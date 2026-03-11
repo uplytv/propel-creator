@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Check, Share2, Zap, Mic, Crown, Video, DollarSign, Bot } from "lucide-react";
+import { Check, Share2, Zap, Mic, Crown, Video, DollarSign, Bot, Trophy, Ticket, Sparkles, Eye, TrendingUp, Users } from "lucide-react";
 
 const CREATOR_TYPES = ["Fitness", "Finance", "Gaming", "Lifestyle", "Business", "Education", "Music", "Other"];
 const FOLLOWER_RANGES = ["Under 1K", "1K–10K", "10K–100K", "100K–500K", "500K+"];
