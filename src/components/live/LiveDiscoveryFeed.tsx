@@ -271,7 +271,47 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
       </div>
 
       {/* ─── Empty State ───────────────────────────────────────── */}
-      {filtered.length === 0 && !hasLiveStreams ? (
+      {activeTab === "following" && filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <Users className="w-12 h-12 text-[#888888] mb-4" />
+          {!user ? (
+            <>
+              <p className="text-white font-semibold mb-1">Log in to see who you follow</p>
+              <button
+                onClick={() => navigate('/auth')}
+                className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#00FF85] text-[#0A0A0A] text-sm font-bold hover:brightness-110 transition-all"
+              >
+                Log in
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </>
+          ) : followingIds.length === 0 ? (
+            <>
+              <p className="text-white font-semibold mb-1">You're not following anyone yet.</p>
+              <p className="text-[#888888] text-sm">Follow creators to see their streams here.</p>
+              <button
+                onClick={() => navigate('/discover')}
+                className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#00FF85] text-[#0A0A0A] text-sm font-bold hover:brightness-110 transition-all"
+              >
+                Discover creators
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-white font-semibold mb-1">None of your followed creators are live.</p>
+              <p className="text-[#888888] text-sm">Check back later or explore other streams.</p>
+              <button
+                onClick={() => setActiveTab('foryou')}
+                className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#00FF85] text-[#0A0A0A] text-sm font-bold hover:brightness-110 transition-all"
+              >
+                Browse all streams
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </>
+          )}
+        </div>
+      ) : filtered.length === 0 && !hasLiveStreams ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <Tv className="w-12 h-12 text-[#888888] mb-4" />
           <p className="text-white font-semibold mb-1">No one is live right now.</p>
