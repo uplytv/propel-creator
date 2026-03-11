@@ -1,0 +1,1 @@
+ALTER TABLE public.mux_assets DROP CONSTRAINT IF EXISTS mux_assets_mux_asset_id_key;
