@@ -96,8 +96,12 @@ export default function CreatorProfile() {
           )}
           <h2 className="text-2xl font-bold">{profile.display_name}</h2>
           {profile.user_id && (
-            <div className="mt-3">
+            <div className="mt-3 flex items-center gap-3">
               <FollowButton targetUserId={profile.user_id} size="md" />
+              <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <Users className="w-4 h-4" />
+                <span className="font-semibold text-foreground">{followerCount ?? 0}</span> follower{followerCount !== 1 ? 's' : ''}
+              </span>
             </div>
           )}
           {profile.creator_type && (
