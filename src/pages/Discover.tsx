@@ -1,20 +1,52 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Search, Compass } from "lucide-react";
+import { Search, Compass, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useDiscoveryFeed, type FilterCategory, type SortOption } from "@/hooks/useDiscoveryFeed";
 import FeedCard from "@/components/discovery/FeedCard";
 import FeedFilters from "@/components/discovery/FeedFilters";
 import BackNav from "@/components/BackNav";
 
+const PAGE_SIZE = 8;
+
 export default function Discover() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterCategory>("all");
   const [sort, setSort] = useState<SortOption>("trending");
   const [liveOnly, setLiveOnly] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const { data: items, isLoading } = useDiscoveryFeed(filter, sort, search, liveOnly);
+
+  // Reset visible count when filters change
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [filter, sort, search, liveOnly]);
+
+  const visibleItems = items?.slice(0, visibleCount) ?? [];
+  const hasMore = items ? visibleCount < items.length : false;
+
+  // Intersection observer for infinite scroll
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const loadMore = useCallback(() => {
+    if (hasMore) {
+      setVisibleCount((prev) => prev + PAGE_SIZE);
+    }
+  }, [hasMore]);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) loadMore();
+      },
+      { rootMargin: "200px" }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [loadMore]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -67,12 +99,27 @@ export default function Discover() {
               </div>
             ))}
           </div>
-        ) : items && items.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {items.map((item, i) => (
-              <FeedCard key={`${item.type}-${item.id}`} item={item} index={i} />
-            ))}
-          </div>
+        ) : visibleItems.length > 0 ? (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {visibleItems.map((item, i) => (
+                <FeedCard key={`${item.type}-${item.id}`} item={item} index={i} />
+              ))}
+            </div>
+
+            {/* Infinite scroll sentinel + loading indicator */}
+            {hasMore && (
+              <div ref={sentinelRef} className="flex justify-center py-6">
+                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+              </div>
+            )}
+
+            {!hasMore && items && items.length > PAGE_SIZE && (
+              <p className="text-center text-xs text-muted-foreground py-4">
+                You've seen everything ✨
+              </p>
+            )}
+          </>
         ) : (
           <motion.div
             initial={{ opacity: 0 }}
