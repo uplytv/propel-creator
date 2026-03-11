@@ -197,17 +197,19 @@ export default function BroadcastStudio({
   };
 
   const stopRecording = async () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-      mediaRecorderRef.current.stop();
-    }
     if (recordingTimerRef.current) {
       clearInterval(recordingTimerRef.current);
       recordingTimerRef.current = null;
     }
     setIsRecording(false);
 
-    // Wait a tick for the final chunk
-    await new Promise((r) => setTimeout(r, 200));
+    // Wait for the recorder to fully stop and flush all chunks
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      await new Promise<void>((resolve) => {
+        mediaRecorderRef.current!.onstop = () => resolve();
+        mediaRecorderRef.current!.stop();
+      });
+    }
 
     if (chunksRef.current.length === 0) {
       toast({ title: "No recording data", description: "Recording was too short.", variant: "destructive" });
