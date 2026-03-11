@@ -330,6 +330,7 @@ export default function Dashboard() {
           </>
         )}
       </div>
+      {user && <AriaPanel open={ariaOpen} onClose={() => setAriaOpen(false)} />}
     </AppLayout>
   );
 }
