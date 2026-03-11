@@ -15,6 +15,8 @@ import { useNavigate } from "react-router-dom";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { AriaPanel } from "@/components/aria/AriaPanel";
 import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist";
+
+export default function Dashboard() {
   const { profile } = useApp();
   const { user } = useAuth();
   const navigate = useNavigate();
