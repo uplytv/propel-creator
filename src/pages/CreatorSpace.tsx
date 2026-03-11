@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import BackNav from "@/components/BackNav";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useCreatorSpace, useEnsureSpace } from "@/hooks/useCreatorSpace";
 import { useMemberCount } from "@/hooks/useCommunityMembers";
@@ -19,7 +19,10 @@ type Tab = typeof TABS[number];
 export default function CreatorSpace() {
   const { creatorId } = useParams<{ creatorId: string }>();
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<Tab>("Community");
+  const location = useLocation();
+  const tabFromState = (location.state as any)?.tab;
+  const initialTab: Tab = tabFromState === 'classroom' ? 'Classroom' : tabFromState === 'community' ? 'Community' : 'Community';
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
   const isOwner = user?.id === creatorId;
 
   const { data: space } = useCreatorSpace(creatorId);

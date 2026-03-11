@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, MoreVertical, Grid, List, Brain, Link as LinkIcon,
   LayoutTemplate, Pencil, Users, DollarSign, X, ArrowLeft,
-  Loader2, Sparkles, Trash2, Video, Upload,
+  Loader2, Sparkles, Trash2, Video, Upload, ImageIcon,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,6 +38,7 @@ export default function Products() {
   const [mode, setMode] = useState<CreateMode>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Scratch / shared form state
   const [name, setName] = useState("");
@@ -59,6 +61,10 @@ export default function Products() {
   const [videoStatus, setVideoStatus] = useState<string | null>(null);
   const [videoPlaybackId, setVideoPlaybackId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
 
   const { data: products, isLoading } = useProducts();
   const createProduct = useCreateProduct();
@@ -93,14 +99,47 @@ export default function Products() {
     setVideoUploadUrl(null); setVideoUploadId(null);
     setVideoUploading(false); setVideoProgress(0);
     setVideoStatus(null); setVideoPlaybackId(null);
+    setImageFile(null); setImagePreview(null); setImageUploading(false);
   };
 
   const closeSheet = () => { setShowCreate(false); resetForm(); };
 
-  const handleScratchSubmit = () => {
+  const uploadImage = async (): Promise<string | null> => {
+    if (!imageFile || !user) return null;
+    setImageUploading(true);
+    try {
+      const ext = imageFile.name.split('.').pop();
+      const path = `${user.id}/${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from('product-images').upload(path, imageFile);
+      if (error) throw error;
+      const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(path);
+      return publicUrl;
+    } catch (e: any) {
+      toast({ title: "Image upload failed", description: e.message, variant: "destructive" });
+      return null;
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  const handleImageSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const handleScratchSubmit = async () => {
     if (!name.trim()) return;
+    let image_url: string | undefined;
+    if (imageFile) {
+      const url = await uploadImage();
+      if (url) image_url = url;
+    }
     createProduct.mutate(
-      { name, description, type, price: parseFloat(price) || 0, status: "active" },
+      { name, description, type, price: parseFloat(price) || 0, status: "active", image_url },
       { onSuccess: closeSheet },
     );
   };
@@ -237,28 +276,41 @@ export default function Products() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className={`glass-card-hover p-5 ${view === "list" ? "flex items-center gap-4" : ""}`}
+                className={`glass-card-hover cursor-pointer overflow-hidden ${view === "list" ? "flex items-center gap-4 p-5" : ""}`}
+                onClick={() => user && navigate(`/space/${user.id}`, { state: { tab: p.type === 'course' ? 'classroom' : 'community' } })}
               >
-                <div className={`text-3xl ${view === "list" ? "" : "mb-3"}`}>{typeIcons[p.type] || "📦"}</div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-bold">{p.name}</h3>
-                    <button
-                      onClick={() => deleteProduct.mutate(p.id)}
-                      className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                  {p.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{p.description}</p>}
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium capitalize">{p.type}</span>
-                    <span className="text-sm font-semibold text-primary">${p.price}</span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium capitalize">{p.status}</span>
-                  </div>
-                  <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1"><DollarSign className="w-3.5 h-3.5" />${Number(p.revenue).toLocaleString()}</span>
-                    <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" />{p.sales} sales</span>
+                {view === "grid" && (p as any).image_url && (
+                  <img src={(p as any).image_url} alt={p.name} className="w-full h-36 object-cover" />
+                )}
+                <div className={`flex-1 ${view === "grid" ? "p-5" : ""}`}>
+                  {view === "list" && (
+                    (p as any).image_url
+                      ? <img src={(p as any).image_url} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                      : <div className="text-3xl">{typeIcons[p.type] || "📦"}</div>
+                  )}
+                  {view === "grid" && !(p as any).image_url && (
+                    <div className="text-3xl mb-3">{typeIcons[p.type] || "📦"}</div>
+                  )}
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold">{p.name}</h3>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); deleteProduct.mutate(p.id); }}
+                        className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    {p.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{p.description}</p>}
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium capitalize">{p.type}</span>
+                      <span className="text-sm font-semibold text-primary">${p.price}</span>
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium capitalize">{p.status}</span>
+                    </div>
+                    <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1"><DollarSign className="w-3.5 h-3.5" />${Number(p.revenue).toLocaleString()}</span>
+                      <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" />{p.sales} sales</span>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -415,7 +467,40 @@ export default function Products() {
                       </div>
                     </div>
 
-                    {/* Video Upload Section */}
+                    {/* Image Upload Section */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <ImageIcon className="w-4 h-4" /> Product Image
+                      </Label>
+                      {imagePreview ? (
+                        <div className="relative rounded-lg overflow-hidden border border-border">
+                          <img src={imagePreview} alt="Preview" className="w-full h-36 object-cover" />
+                          <button
+                            onClick={() => { setImageFile(null); setImagePreview(null); }}
+                            className="absolute top-2 right-2 p-1 rounded-full bg-background/80 hover:bg-background text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => imageInputRef.current?.click()}
+                          className="w-full flex flex-col items-center justify-center gap-1.5 p-4 rounded-lg border border-dashed border-border hover:border-primary/30 hover:bg-secondary/30 transition-colors cursor-pointer"
+                        >
+                          <ImageIcon className="w-5 h-5 text-primary" />
+                          <span className="text-xs text-muted-foreground">Click to upload an image</span>
+                        </button>
+                      )}
+                      <input
+                        ref={imageInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleImageSelected}
+                      />
+                    </div>
+
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2">
                         <Video className="w-4 h-4" /> Video Content
@@ -458,8 +543,8 @@ export default function Products() {
                       )}
                     </div>
 
-                    <Button onClick={handleScratchSubmit} disabled={createProduct.isPending || !name.trim()} className="w-full">
-                      {createProduct.isPending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Creating...</> : "Create Product"}
+                    <Button onClick={handleScratchSubmit} disabled={createProduct.isPending || imageUploading || !name.trim()} className="w-full">
+                      {createProduct.isPending || imageUploading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {imageUploading ? "Uploading image..." : "Creating..."}</> : "Create Product"}
                     </Button>
                   </div>
                 )}
