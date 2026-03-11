@@ -23,28 +23,25 @@ export function useDashboardStats() {
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
       const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
-      // Run all queries in parallel, each failing gracefully
-      const [
-        liveStreamsResult,
-        walletResult,
-      ] = await Promise.all([
-        // Total live streams
-        supabase
+      let liveStreamsCount = 0;
+      let walletData: { lifetime_earned: number | null } | null = null;
+
+      try {
+        const r = await supabase
           .from("mux_live_streams")
           .select("id", { count: "exact", head: true })
-          .eq("user_id", user.id)
-          .then(r => r.count ?? 0)
-          .catch(() => 0),
+          .eq("user_id", user.id);
+        liveStreamsCount = r.count ?? 0;
+      } catch {}
 
-        // Wallet data for revenue
-        supabase
+      try {
+        const r = await supabase
           .from("wallets")
-          .select("lifetime_earned, available_balance, pending_balance")
+          .select("lifetime_earned")
           .eq("user_id", user.id)
-          .maybeSingle()
-          .then(r => r.data)
-          .catch(() => null),
-      ]);
+          .maybeSingle();
+        walletData = r.data;
+      } catch {}
 
       return {
         totalMembers: 0, // No subscriptions table yet
