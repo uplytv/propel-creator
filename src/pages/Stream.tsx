@@ -88,6 +88,16 @@ export default function Stream() {
             .eq('user_id', muxStream.user_id)
             .single();
           setProfile(prof);
+
+          // Fetch featured product if set
+          if ((muxStream as any).featured_product_id) {
+            const { data: prod } = await supabase
+              .from('products')
+              .select('*')
+              .eq('id', (muxStream as any).featured_product_id)
+              .single();
+            if (prod) setFeaturedProduct(prod);
+          }
         }
       }
       setLoading(false);
