@@ -13,6 +13,7 @@ import { useState, useCallback, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import UPLYMuxPlayer from "@/components/MuxPlayer";
+import WebRTCPlayer from "@/components/live/WebRTCPlayer";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const tierIcons = [Shield, TrendingUp, Zap, Crown];
