@@ -55,7 +55,6 @@ export function AriaPanel({ open, onClose }: AriaPanelProps) {
     }
   }, [getCreatorContext]);
 
-  // Auto-open greeting
   useEffect(() => {
     if (open && !hasInitialized) {
       setMessages([]);
@@ -79,11 +78,8 @@ export function AriaPanel({ open, onClose }: AriaPanelProps) {
     }
   }, [open, hasInitialized, getCreatorContext, sendToAria]);
 
-  // Reset on close
   useEffect(() => {
-    if (!open) {
-      setHasInitialized(false);
-    }
+    if (!open) setHasInitialized(false);
   }, [open]);
 
   useEffect(() => {
@@ -109,33 +105,27 @@ export function AriaPanel({ open, onClose }: AriaPanelProps) {
 
   return (
     <>
-      {/* Backdrop */}
       <div className="fixed inset-0 bg-black/50 z-40 md:bg-transparent" onClick={onClose} />
 
-      {/* Panel */}
       <div
-        className="fixed top-0 right-0 h-full z-50 flex flex-col w-full md:w-[420px]"
-        style={{
-          background: "#0F0F0F",
-          borderTop: "2px solid #00FF85",
-          animation: "slideInRight 0.3s ease-out",
-        }}
+        className="fixed top-0 right-0 h-full z-50 flex flex-col w-full md:w-[420px] bg-surface border-t-2 border-accent-green"
+        style={{ animation: "slideInRight 0.3s ease-out" }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-surface-border">
           <div>
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4" style={{ color: "#00FF85" }} />
-              <span className="font-bold text-base" style={{ color: "#00FF85", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              <Sparkles className="w-4 h-4 text-accent-green" />
+              <span className="font-bold text-base text-accent-green font-sans">
                 ARIA
               </span>
             </div>
-            <p className="text-xs mt-0.5" style={{ color: "#888" }}>
+            <p className="text-xs mt-0.5 text-text-dim">
               Your AI growth partner · Powered by Claude
             </p>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5 transition-colors">
-            <X className="w-5 h-5" style={{ color: "#888" }} />
+            <X className="w-5 h-5 text-text-dim" />
           </button>
         </div>
 
@@ -144,15 +134,14 @@ export function AriaPanel({ open, onClose }: AriaPanelProps) {
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
               <div
-                className="max-w-[85%] px-4 py-3 rounded-xl text-sm leading-relaxed"
-                style={
+                className={`max-w-[85%] px-4 py-3 rounded-xl text-sm leading-relaxed ${
                   msg.role === "assistant"
-                    ? { background: "#1a1a1a", borderLeft: "3px solid #00FF85", color: "#e0e0e0" }
-                    : { background: "#1e1e1e", color: "#fff" }
-                }
+                    ? "bg-surface-raised border-l-[3px] border-accent-green text-foreground/90"
+                    : "bg-surface-raised text-foreground"
+                }`}
               >
                 {msg.role === "assistant" && (
-                  <span style={{ color: "#00FF85", marginRight: 6 }}>✦</span>
+                  <span className="text-accent-green mr-1.5">✦</span>
                 )}
                 {msg.content}
               </div>
@@ -160,11 +149,11 @@ export function AriaPanel({ open, onClose }: AriaPanelProps) {
           ))}
           {isTyping && (
             <div className="flex justify-start">
-              <div className="px-4 py-3 rounded-xl" style={{ background: "#1a1a1a", borderLeft: "3px solid #00FF85" }}>
+              <div className="px-4 py-3 rounded-xl bg-surface-raised border-l-[3px] border-accent-green">
                 <div className="flex gap-1.5">
-                  <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: "#00FF85", animationDelay: "0ms" }} />
-                  <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: "#00FF85", animationDelay: "150ms" }} />
-                  <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: "#00FF85", animationDelay: "300ms" }} />
+                  <span className="w-2 h-2 rounded-full bg-accent-green animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <span className="w-2 h-2 rounded-full bg-accent-green animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <span className="w-2 h-2 rounded-full bg-accent-green animate-bounce" style={{ animationDelay: "300ms" }} />
                 </div>
               </div>
             </div>
@@ -173,7 +162,7 @@ export function AriaPanel({ open, onClose }: AriaPanelProps) {
         </div>
 
         {/* Input */}
-        <div className="px-4 py-3 border-t border-white/5">
+        <div className="px-4 py-3 border-t border-surface-border">
           <div className="flex gap-2">
             <input
               ref={inputRef}
@@ -181,14 +170,12 @@ export function AriaPanel({ open, onClose }: AriaPanelProps) {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
               placeholder="Ask ARIA anything..."
-              className="flex-1 px-4 py-2.5 rounded-lg text-sm outline-none"
-              style={{ background: "#1a1a1a", color: "#fff", border: "1px solid #2a2a2a" }}
+              className="flex-1 px-4 py-2.5 rounded-lg text-sm outline-none bg-surface-raised text-foreground border border-surface-border placeholder:text-text-dim"
             />
             <button
               onClick={handleSend}
               disabled={!input.trim() || isTyping}
-              className="px-3 py-2.5 rounded-lg font-medium text-sm transition-all disabled:opacity-40"
-              style={{ background: "#00FF85", color: "#0A0A0A" }}
+              className="px-3 py-2.5 rounded-lg font-medium text-sm transition-all disabled:opacity-40 bg-accent-green text-accent-green-foreground"
             >
               <Send className="w-4 h-4" />
             </button>

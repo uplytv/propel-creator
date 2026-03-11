@@ -21,7 +21,14 @@ export default function CreatorSpace() {
   const { user } = useAuth();
   const location = useLocation();
   const tabFromState = (location.state as any)?.tab;
-  const initialTab: Tab = tabFromState === 'classroom' ? 'Classroom' : tabFromState === 'community' ? 'Community' : 'Community';
+  const searchParams = new URLSearchParams(location.search);
+  const tabFromQuery = searchParams.get("tab");
+  const resolveTab = (val?: string): Tab => {
+    if (val === "classroom") return "Classroom";
+    if (val === "community") return "Community";
+    return "Community";
+  };
+  const initialTab: Tab = resolveTab(tabFromQuery || tabFromState);
   const [activeTab, setActiveTab] = useState<Tab>(initialTab);
   const isOwner = user?.id === creatorId;
 
@@ -29,7 +36,6 @@ export default function CreatorSpace() {
   const { data: memberCount = 0 } = useMemberCount(creatorId);
   const ensureSpace = useEnsureSpace();
 
-  // Fetch creator profile
   const { data: creatorProfile } = useQuery({
     queryKey: ["creator-profile-space", creatorId],
     enabled: !!creatorId,
@@ -43,7 +49,6 @@ export default function CreatorSpace() {
     },
   });
 
-  // Auto-create space if owner visits and no space exists
   useEffect(() => {
     if (isOwner && space === null) {
       ensureSpace.mutate();
@@ -54,33 +59,34 @@ export default function CreatorSpace() {
   const spaceAvatar = space?.avatar_url || creatorProfile?.avatar_url;
 
   return (
-    <div className="min-h-screen" style={{ background: "#0A0A0A" }}>
+    <div className="min-h-screen bg-surface">
       <BackNav />
       {/* Top Header */}
       <div className="px-4 pb-2 flex items-center gap-3">
         {spaceAvatar ? (
           <img src={spaceAvatar} alt="" className="w-8 h-8 rounded-full object-cover" />
         ) : (
-          <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#111111", color: "#fff" }}>
+          <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-surface-raised text-foreground">
             {spaceName.charAt(0)}
           </div>
         )}
-        <h1 className="text-base font-bold text-white truncate">{spaceName}</h1>
+        <h1 className="text-base font-bold text-foreground truncate">{spaceName}</h1>
       </div>
 
       {/* Sticky Tab Bar */}
-      <div className="sticky top-0 z-40" style={{ background: "#0A0A0A", borderBottom: "1px solid #1e1e1e" }}>
+      <div className="sticky top-0 z-40 bg-surface border-b border-surface-border">
         <div className="flex overflow-x-auto scrollbar-none">
           {TABS.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className="relative px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0"
-              style={{ color: activeTab === tab ? "#fff" : "#888" }}
+              className={`relative px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
+                activeTab === tab ? "text-foreground" : "text-text-dim"
+              }`}
             >
               {tab === "Members" ? `Members (${memberCount})` : tab}
               {activeTab === tab && (
-                <div className="absolute bottom-0 left-2 right-2 h-0.5" style={{ background: "#00FF85" }} />
+                <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-accent-green" />
               )}
             </button>
           ))}
