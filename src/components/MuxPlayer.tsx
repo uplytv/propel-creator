@@ -2,6 +2,7 @@ import { useRef, useEffect, useState, useCallback } from 'react';
 import Hls from 'hls.js';
 import { Loader2, RefreshCw, WifiOff, PictureInPicture2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAutoPip } from '@/hooks/useAutoPip';
 
 interface MuxPlayerProps {
   playbackId: string;
