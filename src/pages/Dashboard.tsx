@@ -45,7 +45,29 @@ export default function Dashboard() {
       .channel("dashboard-assets")
       .on("postgres_changes", { event: "*", schema: "public", table: "mux_assets" }, () => fetch())
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+
+    // Check if this creator is currently live
+    const fetchActiveStream = async () => {
+      const { data } = await supabase
+        .from("mux_live_streams")
+        .select("id, title, mux_playback_id, viewer_count, started_at")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .limit(1)
+        .maybeSingle();
+      setActiveStream(data);
+    };
+    fetchActiveStream();
+
+    const liveChannel = supabase
+      .channel("dashboard-live-status")
+      .on("postgres_changes", { event: "*", schema: "public", table: "mux_live_streams", filter: `user_id=eq.${user.id}` }, () => fetchActiveStream())
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+      supabase.removeChannel(liveChannel);
+    };
   }, [user]);
 
   const target = tierTargets[profile.tier - 1];
