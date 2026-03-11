@@ -289,8 +289,14 @@ export default function BroadcastStudio({
     return () => {
       stopCurrentStream();
       if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+      // Ensure stream is set back to idle if user navigates away mid-recording
+      supabase
+        .from('mux_live_streams')
+        .update({ status: 'idle', ended_at: new Date().toISOString() })
+        .eq('id', streamData.streamId)
+        .then(() => {});
     };
-  }, [stopCurrentStream]);
+  }, [stopCurrentStream, streamData.streamId]);
 
   const isLive = streamStatus === "active";
 
