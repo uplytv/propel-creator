@@ -39,6 +39,28 @@ export default function CreatorSpace() {
   const { data: space } = useCreatorSpace(creatorId);
   const { data: memberCount = 0 } = useMemberCount(creatorId);
   const ensureSpace = useEnsureSpace();
+  const { data: affiliateProgram } = useCreatorAffiliateProgram(creatorId);
+
+  // Check if current user is a member (for Earn tab)
+  const { data: isMember } = useRQQuery({
+    queryKey: ["is-member", creatorId, user?.id],
+    enabled: !!creatorId && !!user && !isOwner,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("community_members")
+        .select("id")
+        .eq("creator_id", creatorId!)
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return !!data;
+    },
+  });
+
+  const showEarnTab = !isOwner && isMember && affiliateProgram?.is_active;
+  const TABS: Tab[] = [
+    ...BASE_TABS,
+    ...(showEarnTab ? ["Earn" as Tab] : []),
+  ];
 
   const { data: creatorProfile } = useQuery({
     queryKey: ["creator-profile-space", creatorId],
