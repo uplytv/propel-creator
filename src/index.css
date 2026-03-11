@@ -37,6 +37,12 @@
     --warning-foreground: 0 0% 0%;
     --success: 152 72% 40%;
     --success-foreground: 0 0% 100%;
+    --accent-green: 145 100% 50%;
+    --accent-green-foreground: 0 0% 4%;
+    --surface: 0 0% 7%;
+    --surface-raised: 0 0% 10%;
+    --surface-border: 0 0% 12%;
+    --text-dim: 0 0% 53%;
     --glow-green: 265 85% 58% / 0.08;
     --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
     --card-shadow-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
@@ -78,6 +84,12 @@
     --warning-foreground: 0 0% 0%;
     --success: 152 100% 50%;
     --success-foreground: 0 0% 0%;
+    --accent-green: 145 100% 50%;
+    --accent-green-foreground: 0 0% 4%;
+    --surface: 0 0% 6%;
+    --surface-raised: 0 0% 10%;
+    --surface-border: 0 0% 12%;
+    --text-dim: 0 0% 53%;
     --glow-green: 265 90% 65% / 0.15;
     --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
     --card-shadow-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.4);

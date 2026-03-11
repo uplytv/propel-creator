@@ -268,12 +268,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           {!collapsed ? (
             <button
               onClick={() => navigate("/wallet")}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[#00FF85]/5 border border-[#00FF85]/20 hover:bg-[#00FF85]/10 transition-colors mb-3"
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-accent-green/5 border border-accent-green/20 hover:bg-accent-green/10 transition-colors mb-3"
             >
-              <Wallet className="w-4 h-4 text-[#00FF85]" />
+              <Wallet className="w-4 h-4 text-accent-green" />
               <div className="flex-1 text-left">
                 <p className="text-[10px] text-muted-foreground">Balance</p>
-                <p className="text-sm font-bold text-[#00FF85]">${Number(wallet?.available_balance ?? 0).toFixed(2)}</p>
+                <p className="text-sm font-bold text-accent-green">${Number(wallet?.available_balance ?? 0).toFixed(2)}</p>
               </div>
             </button>
           ) : (
@@ -281,9 +281,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               <TooltipTrigger asChild>
                 <button
                   onClick={() => navigate("/wallet")}
-                  className="w-full flex justify-center py-2 mb-2 rounded-lg hover:bg-[#00FF85]/10 transition-colors"
+                  className="w-full flex justify-center py-2 mb-2 rounded-lg hover:bg-accent-green/10 transition-colors"
                 >
-                  <Wallet className="w-4 h-4 text-[#00FF85]" />
+                  <Wallet className="w-4 h-4 text-accent-green" />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="right">

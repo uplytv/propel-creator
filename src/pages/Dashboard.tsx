@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { AriaPanel } from "@/components/aria/AriaPanel";
+import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist";
 
 export default function Dashboard() {
   const { profile } = useApp();
@@ -117,6 +118,9 @@ export default function Dashboard() {
             </Button>
           </motion.div>
         )}
+
+        {/* Onboarding Checklist */}
+        <OnboardingChecklist />
 
         {/* Stats Row */}
         <motion.div
