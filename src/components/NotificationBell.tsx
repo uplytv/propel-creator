@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, Check, AlertTriangle, Flag, Briefcase, CheckCircle2, XCircle, Eye, Star } from "lucide-react";
+import { Bell, Check, AlertTriangle, Flag, Briefcase, CheckCircle2, XCircle, Eye, Star, MessageSquare, Heart, UserPlus, Coins, Users } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
