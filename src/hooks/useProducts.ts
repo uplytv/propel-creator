@@ -58,6 +58,41 @@ export function useCreateProduct() {
   });
 }
 
+export function useUpdateProduct() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      ...updates
+    }: {
+      id: string;
+      name?: string;
+      description?: string;
+      type?: string;
+      price?: number;
+      status?: string;
+      image_url?: string | null;
+    }) => {
+      const { data, error } = await supabase
+        .from("products")
+        .update(updates)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Product updated!");
+    },
+    onError: (e: Error) => {
+      toast.error(e.message);
+    },
+  });
+}
+
 export function useDeleteProduct() {
   const qc = useQueryClient();
 

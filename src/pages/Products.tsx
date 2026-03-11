@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import AppLayout from "@/components/layout/AppLayout";
-import { useProducts, useCreateProduct, useDeleteProduct } from "@/hooks/useProducts";
+import { useProducts, useCreateProduct, useDeleteProduct, useUpdateProduct } from "@/hooks/useProducts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -31,6 +31,7 @@ const templates = [
 ];
 
 type CreateMode = null | "ai" | "url" | "template" | "scratch";
+type EditingProduct = { id: string; name: string; description: string | null; type: string; price: number; status: string; image_url: string | null } | null;
 
 export default function Products() {
   const [view, setView] = useState<"grid" | "list">("grid");
@@ -69,6 +70,79 @@ export default function Products() {
   const { data: products, isLoading } = useProducts();
   const createProduct = useCreateProduct();
   const deleteProduct = useDeleteProduct();
+  const updateProduct = useUpdateProduct();
+
+  // Edit state
+  const [editingProduct, setEditingProduct] = useState<EditingProduct>(null);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editType, setEditType] = useState("digital");
+  const [editPrice, setEditPrice] = useState("");
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
+  const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
+  const [editImageUploading, setEditImageUploading] = useState(false);
+  const editImageInputRef = useRef<HTMLInputElement>(null);
+
+  const openEdit = (p: any) => {
+    setEditingProduct(p);
+    setEditName(p.name);
+    setEditDescription(p.description || "");
+    setEditType(p.type);
+    setEditPrice(String(p.price));
+    setEditImagePreview(p.image_url || null);
+    setEditImageFile(null);
+  };
+
+  const closeEdit = () => {
+    setEditingProduct(null);
+    setEditImageFile(null);
+    setEditImagePreview(null);
+    setEditImageUploading(false);
+  };
+
+  const handleEditImageSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setEditImageFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setEditImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const handleEditSubmit = async () => {
+    if (!editingProduct || !editName.trim()) return;
+    let image_url: string | null | undefined = undefined;
+
+    if (editImageFile && user) {
+      setEditImageUploading(true);
+      try {
+        const ext = editImageFile.name.split('.').pop();
+        const path = `${user.id}/${Date.now()}.${ext}`;
+        const { error } = await supabase.storage.from('product-images').upload(path, editImageFile);
+        if (error) throw error;
+        const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(path);
+        image_url = publicUrl;
+      } catch (e: any) {
+        toast({ title: "Image upload failed", description: e.message, variant: "destructive" });
+        setEditImageUploading(false);
+        return;
+      }
+      setEditImageUploading(false);
+    } else if (!editImagePreview && editingProduct.image_url) {
+      image_url = null; // removed
+    }
+
+    const updates: any = {
+      id: editingProduct.id,
+      name: editName,
+      description: editDescription,
+      type: editType,
+      price: parseFloat(editPrice) || 0,
+    };
+    if (image_url !== undefined) updates.image_url = image_url;
+
+    updateProduct.mutate(updates, { onSuccess: closeEdit });
+  };
 
   // Poll for video asset status
   useEffect(() => {
@@ -294,12 +368,20 @@ export default function Products() {
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
                       <h3 className="font-bold">{p.name}</h3>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); deleteProduct.mutate(p.id); }}
-                        className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); openEdit(p); }}
+                          className="p-1 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); deleteProduct.mutate(p.id); }}
+                          className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                     {p.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{p.description}</p>}
                     <div className="flex items-center gap-2 mt-2">
@@ -548,6 +630,91 @@ export default function Products() {
                     </Button>
                   </div>
                 )}
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Edit Product Sheet */}
+        <AnimatePresence>
+          {editingProduct && (
+            <>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50" onClick={closeEdit} />
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="fixed bottom-0 left-0 right-0 bg-card border-t border-border rounded-t-2xl z-50 p-6 max-h-[85vh] overflow-y-auto"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-bold">Edit Product</h3>
+                  <button onClick={closeEdit} className="p-1 rounded hover:bg-secondary"><X className="w-5 h-5" /></button>
+                </div>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Name</Label>
+                    <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Product name" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Description</Label>
+                    <Textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} placeholder="Description" rows={3} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label>Type</Label>
+                      <Select value={editType} onValueChange={setEditType}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="digital">Digital Product</SelectItem>
+                          <SelectItem value="course">Course</SelectItem>
+                          <SelectItem value="community">Community</SelectItem>
+                          <SelectItem value="coaching">Coaching</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Price ($)</Label>
+                      <Input type="number" value={editPrice} onChange={(e) => setEditPrice(e.target.value)} placeholder="0" min="0" />
+                    </div>
+                  </div>
+
+                  {/* Image */}
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2"><ImageIcon className="w-4 h-4" /> Product Image</Label>
+                    {editImagePreview ? (
+                      <div className="relative rounded-lg overflow-hidden border border-border">
+                        <img src={editImagePreview} alt="Preview" className="w-full h-36 object-cover" />
+                        <button
+                          onClick={() => { setEditImageFile(null); setEditImagePreview(null); }}
+                          className="absolute top-2 right-2 p-1 rounded-full bg-background/80 hover:bg-background text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => editImageInputRef.current?.click()}
+                        className="w-full flex flex-col items-center justify-center gap-1.5 p-4 rounded-lg border border-dashed border-border hover:border-primary/30 hover:bg-secondary/30 transition-colors cursor-pointer"
+                      >
+                        <ImageIcon className="w-5 h-5 text-primary" />
+                        <span className="text-xs text-muted-foreground">Click to upload an image</span>
+                      </button>
+                    )}
+                    <input
+                      ref={editImageInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleEditImageSelected}
+                    />
+                  </div>
+
+                  <Button onClick={handleEditSubmit} disabled={updateProduct.isPending || editImageUploading || !editName.trim()} className="w-full">
+                    {updateProduct.isPending || editImageUploading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {editImageUploading ? "Uploading image..." : "Saving..."}</> : "Save Changes"}
+                  </Button>
+                </div>
               </motion.div>
             </>
           )}
