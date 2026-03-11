@@ -17,10 +17,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 
 const navItems = [
   { label: "Home", icon: Home, path: "/dashboard", desc: "Overview & metrics" },
+  { label: "Launchpad", icon: Rocket, path: "/launchpad", desc: "Launch something new" },
   { label: "Discover", icon: Search, path: "/discover", desc: "Find creators" },
   { label: "Live", icon: Radio, path: "/live", desc: "Watch & stream live" },
   { label: "Content Library", icon: Film, path: "/content-library", desc: "Your recordings & videos" },
-  { label: "Grow", icon: Rocket, path: "/grow", desc: "Launch Protocol" },
+  { label: "Grow", icon: Sparkles, path: "/grow", desc: "Launch Protocol" },
   { label: "Products", icon: Package, path: "/products", desc: "What you sell" },
   { label: "My Space", icon: LayoutGrid, path: "__space__", desc: "Your creator space" },
   
