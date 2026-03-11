@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-type FilterTab = "all" | "unread" | "job" | "campaign";
+type FilterTab = "all" | "unread" | "job" | "campaign" | "social";
 
 const jobNotifIcon: Record<string, { icon: any; color: string; label: string }> = {
   new_application: { icon: Briefcase, color: "bg-primary/10 text-primary", label: "New Application" },

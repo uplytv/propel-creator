@@ -31,8 +31,10 @@ export default function NotificationBell() {
     if (!n.read) markRead(n.id, n.source);
     if (n.source === "job" && n.job_id) {
       navigate(`/jobs/${n.job_id}`);
-      setOpen(false);
+    } else if (n.source === "social") {
+      navigate("/notifications");
     }
+    setOpen(false);
   };
 
   const getIcon = (n: any) => {
