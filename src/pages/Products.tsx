@@ -276,28 +276,41 @@ export default function Products() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className={`glass-card-hover p-5 ${view === "list" ? "flex items-center gap-4" : ""}`}
+                className={`glass-card-hover cursor-pointer overflow-hidden ${view === "list" ? "flex items-center gap-4 p-5" : ""}`}
+                onClick={() => user && navigate(`/space/${user.id}`, { state: { tab: p.type === 'course' ? 'classroom' : 'community' } })}
               >
-                <div className={`text-3xl ${view === "list" ? "" : "mb-3"}`}>{typeIcons[p.type] || "📦"}</div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-bold">{p.name}</h3>
-                    <button
-                      onClick={() => deleteProduct.mutate(p.id)}
-                      className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                  {p.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{p.description}</p>}
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium capitalize">{p.type}</span>
-                    <span className="text-sm font-semibold text-primary">${p.price}</span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium capitalize">{p.status}</span>
-                  </div>
-                  <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1"><DollarSign className="w-3.5 h-3.5" />${Number(p.revenue).toLocaleString()}</span>
-                    <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" />{p.sales} sales</span>
+                {view === "grid" && (p as any).image_url && (
+                  <img src={(p as any).image_url} alt={p.name} className="w-full h-36 object-cover" />
+                )}
+                <div className={`flex-1 ${view === "grid" ? "p-5" : ""}`}>
+                  {view === "list" && (
+                    (p as any).image_url
+                      ? <img src={(p as any).image_url} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                      : <div className="text-3xl">{typeIcons[p.type] || "📦"}</div>
+                  )}
+                  {view === "grid" && !(p as any).image_url && (
+                    <div className="text-3xl mb-3">{typeIcons[p.type] || "📦"}</div>
+                  )}
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold">{p.name}</h3>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); deleteProduct.mutate(p.id); }}
+                        className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    {p.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{p.description}</p>}
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium capitalize">{p.type}</span>
+                      <span className="text-sm font-semibold text-primary">${p.price}</span>
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium capitalize">{p.status}</span>
+                    </div>
+                    <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1"><DollarSign className="w-3.5 h-3.5" />${Number(p.revenue).toLocaleString()}</span>
+                      <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" />{p.sales} sales</span>
+                    </div>
                   </div>
                 </div>
               </motion.div>
