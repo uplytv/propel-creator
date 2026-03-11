@@ -791,6 +791,15 @@ export default function BroadcastStudio({
         </div>
       )}
 
+      {/* Featured Product Picker */}
+      {products.length > 0 && (
+        <FeaturedProductPicker
+          products={products}
+          featuredProductId={featuredProductId}
+          onSelect={onFeaturedProductChange}
+        />
+      )}
+
       <Button variant="destructive" size="lg" onClick={onEndStream} className="w-full">
         {isLive ? "End Stream" : "Cancel & Start Over"}
       </Button>
