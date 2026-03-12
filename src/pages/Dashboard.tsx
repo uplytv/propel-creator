@@ -89,9 +89,9 @@ export default function Dashboard() {
 
   return (
     <AppLayout>
-      <div className="p-4 md:p-8 max-w-5xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         {/* Welcome */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 md:p-8 pb-0 md:pb-0 mb-6">
           <h1 className="text-2xl md:text-3xl font-bold">Welcome back, {profile.name} 👋</h1>
           <p className="text-muted-foreground mt-1">Here's your command center.</p>
         </motion.div>
