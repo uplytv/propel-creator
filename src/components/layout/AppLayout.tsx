@@ -34,19 +34,12 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
     ],
   },
   {
-    core: "learn",
-    label: "LEARN",
-    icon: GraduationCap,
-    items: [
-      { label: "Content Library", icon: Film, path: "/content-library", desc: "Videos & uploads", featureKey: "content_library" },
-    ],
-  },
-  {
     core: "live",
     label: "LIVE",
     icon: Radio,
     items: [
       { label: "Live", icon: Radio, path: "/live", desc: "Watch & stream" },
+      { label: "Content Library", icon: Film, path: "/content-library", desc: "Videos & uploads", featureKey: "content_library" },
       { label: "Ad Campaigns", icon: Plug, path: "/ad-integrations", desc: "Boost streams", featureKey: "stream_boost" },
     ],
   },
@@ -74,7 +67,6 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
 ];
 
 const utilityNav: NavItem[] = [
-  { label: "Discover", icon: Search, path: "/discover", desc: "Find creators" },
   { label: "Messages", icon: MessageSquare, path: "/job-messages", desc: "Conversations", badgeKey: "job-messages" },
   { label: "Notifications", icon: BellIcon, path: "/notifications", desc: "Alerts", badgeKey: "notifications" },
   { label: "My Rep", icon: UserCheck, path: "/my-rep", desc: "Growth partner", requiresTier: 3 },
@@ -213,7 +205,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   const renderDesktopNav = () => (
     <nav className={`flex-1 mt-2 ${collapsed ? "px-2" : "px-3"} overflow-y-auto`}>
-      {/* Home */}
+      {/* Discover + Home */}
+      {renderNavItem({ label: "Discover", icon: Search, path: "/discover", desc: "Find creators" }, collapsed)}
       {renderNavItem({ label: "Home", icon: Home, path: "/dashboard", desc: "Overview" }, collapsed)}
 
       {/* 5 Cores */}
@@ -486,6 +479,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               </div>
 
               <nav className="flex-1 py-2 px-3 overflow-y-auto">
+                {renderNavItem({ label: "Discover", icon: Search, path: "/discover", desc: "Find creators" }, false, () => setMobileMenuOpen(false))}
                 {renderNavItem({ label: "Home", icon: Home, path: "/dashboard", desc: "Overview" }, false, () => setMobileMenuOpen(false))}
 
                 {coreNav.map(group => {
