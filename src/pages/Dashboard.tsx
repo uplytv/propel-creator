@@ -159,7 +159,8 @@ export default function Dashboard() {
               )}
             </motion.div>
           ))}
-        </motion.div>
+          </motion.div>
+        </div>
 
         {/* Quick Actions - Core Features */}
         <motion.div
