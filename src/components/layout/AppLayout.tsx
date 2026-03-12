@@ -205,7 +205,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   const renderDesktopNav = () => (
     <nav className={`flex-1 mt-2 ${collapsed ? "px-2" : "px-3"} overflow-y-auto`}>
-      {/* Home */}
+      {/* Discover + Home */}
+      {renderNavItem({ label: "Discover", icon: Search, path: "/discover", desc: "Find creators" }, collapsed)}
       {renderNavItem({ label: "Home", icon: Home, path: "/dashboard", desc: "Overview" }, collapsed)}
 
       {/* 5 Cores */}
