@@ -17,8 +17,8 @@ import { CreatorAffiliateProgramSettings } from "@/components/affiliates/Creator
 import { useCreatorAffiliateProgram } from "@/hooks/useAffiliates";
 import { setAffiliateCookie } from "@/lib/affiliateCookies";
 
-const BASE_TABS = ["Community", "Classroom", "Calendar", "Members", "Leaderboard", "About"] as const;
-type Tab = typeof BASE_TABS[number] | "Earn" | "Manage";
+const BASE_TABS = ["Community", "Classroom", "Calendar", "Members", "Leaderboard", "Earn", "About"] as const;
+type Tab = typeof BASE_TABS[number];
 
 export default function CreatorSpace() {
   const { creatorId: rawCreatorId } = useParams<{ creatorId: string }>();
@@ -65,11 +65,8 @@ export default function CreatorSpace() {
     },
   });
 
-  const showEarnTab = !isOwner && isMember && affiliateProgram?.is_active;
-  const TABS: Tab[] = [
-    ...BASE_TABS,
-    ...(showEarnTab ? ["Earn" as Tab] : []),
-  ];
+  const showMemberEarn = !isOwner && isMember && affiliateProgram?.is_active;
+  const TABS: Tab[] = [...BASE_TABS];
 
   const { data: creatorProfile } = useQuery({
     queryKey: ["creator-profile-space", creatorId],
@@ -135,18 +132,19 @@ export default function CreatorSpace() {
         {activeTab === "Calendar" && <SpaceCalendarTab creatorId={creatorId!} isOwner={isOwner} />}
         {activeTab === "Members" && <SpaceMembersTab creatorId={creatorId!} />}
         {activeTab === "Leaderboard" && <SpaceLeaderboardTab creatorId={creatorId!} />}
-        {activeTab === "About" && (
-          <div>
-            <SpaceAboutTab creatorId={creatorId!} isOwner={isOwner} />
-            {isOwner && (
-              <div className="px-4 mt-4">
-                <CreatorAffiliateProgramSettings />
-              </div>
-            )}
-          </div>
-        )}
-        {activeTab === "Earn" && showEarnTab && affiliateProgram && (
-          <MemberEarnTab programId={affiliateProgram.id} creatorId={creatorId!} />
+        {activeTab === "About" && <SpaceAboutTab creatorId={creatorId!} isOwner={isOwner} />}
+        {activeTab === "Earn" && (
+          isOwner ? (
+            <div className="px-4 pt-4">
+              <CreatorAffiliateProgramSettings />
+            </div>
+          ) : showMemberEarn && affiliateProgram ? (
+            <MemberEarnTab programId={affiliateProgram.id} creatorId={creatorId!} />
+          ) : (
+            <div className="p-8 text-center">
+              <p className="text-sm text-muted-foreground">The affiliate program is not active yet.</p>
+            </div>
+          )
         )}
       </div>
     </div>
