@@ -367,7 +367,7 @@ export default function Landing() {
               <p className="text-sm text-muted-foreground mt-1">Built for creators who are serious about growth.</p>
             </div>
             <div className="flex gap-8 text-sm text-muted-foreground">
-              <a href="#social-proof" className="hover:text-foreground transition-colors">Creators</a>
+              <a href="#social-proof" className="hover:text-foreground transition-colors">Early Access</a>
               <a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a>
               <button onClick={() => navigate("/discover")} className="hover:text-foreground transition-colors">Discover</button>
             </div>
