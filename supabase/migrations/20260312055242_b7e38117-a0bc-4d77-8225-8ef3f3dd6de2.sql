@@ -1,0 +1,1 @@
+UPDATE feature_registry SET default_enabled = true WHERE key IN ('jobs_marketplace', 'affiliates');
