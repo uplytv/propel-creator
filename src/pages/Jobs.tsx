@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useJobs, useTalentProfiles, SKILL_LABELS, SKILL_CATEGORIES, type SkillCategory, type Job } from "@/hooks/useJobs";
+import SEOHead from "@/components/SEOHead";
 import { formatDistanceToNow, differenceInHours } from "date-fns";
 
 const tierIcons = ["🛡️", "📈", "⚡", "👑"];
