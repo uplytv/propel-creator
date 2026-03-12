@@ -161,7 +161,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     }
   }, [location.pathname, user]);
 
-  const resolvePath = (item: NavItem) => item.path === "__space__" ? (user ? `/community/${user.id}` : "/auth") : item.path;
+  const resolvePath = (item: NavItem) => {
+    if (item.path === "__space__") return user ? `/community/${user.id}` : "/auth";
+    if (item.path === "__public_profile__") return user ? `/creator/${profile.name || user.id}` : "/auth";
+    return item.path;
+  };
 
   const renderNavItem = (item: NavItem, inCollapsed: boolean, onNavigate?: () => void) => {
     // Check feature visibility
