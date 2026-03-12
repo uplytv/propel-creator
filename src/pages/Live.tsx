@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import SEOHead from "@/components/SEOHead";
 
 export default function Live() {
   const { user } = useAuth();
@@ -36,6 +37,10 @@ export default function Live() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#0A0A0A' }}>
+      <SEOHead
+        title="Live Streams"
+        description="Watch live streams from creators on Uply. Discover live content, tip your favorites, and join the conversation."
+      />
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5" style={{ backgroundColor: 'rgba(10,10,10,0.85)', backdropFilter: 'blur(16px)' }}>
         <div className="container flex h-14 items-center justify-between">

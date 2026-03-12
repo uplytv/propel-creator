@@ -9,6 +9,7 @@ import FeedFilters from "@/components/discovery/FeedFilters";
 import FeaturedCarousel from "@/components/discovery/FeaturedCarousel";
 import CategoryHeroBanner from "@/components/discovery/CategoryHeroBanner";
 import BackNav from "@/components/BackNav";
+import SEOHead from "@/components/SEOHead";
 
 const PAGE_SIZE = 8;
 
@@ -52,6 +53,10 @@ export default function Discover() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Discover Creators"
+        description="Explore top creators, communities, courses, and live streams on Uply. Find creators to follow and learn from."
+      />
       {/* Header */}
       <header className="border-b border-border bg-card/60 backdrop-blur-xl sticky top-0 z-30">
         <div className="container flex items-center gap-3 h-14 px-4">
