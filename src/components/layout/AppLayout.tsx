@@ -563,10 +563,33 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                   );
                 })}
 
-                <div className="mt-3 pt-3 border-t border-border/50 space-y-0.5">
-                  {utilityNav.map(item => renderNavItem(item, false, () => setMobileMenuOpen(false)))}
-                  {isAdmin && renderNavItem({ label: "Admin", icon: Shield, path: "/admin", desc: "Platform admin" }, false, () => setMobileMenuOpen(false))}
-                </div>
+                {(() => {
+                  const moreToolsCore = "more_tools";
+                  const isExpanded = expandedCores.includes(moreToolsCore);
+                  const allUtilityItems = [
+                    ...utilityNav,
+                    ...(isAdmin ? [{ label: "Admin", icon: Shield, path: "/admin", desc: "Platform admin" } as NavItem] : []),
+                  ];
+                  return (
+                    <div className="mt-3 pt-3 border-t border-border/50">
+                      <button
+                        onClick={() => setExpandedCores(prev =>
+                          prev.includes(moreToolsCore) ? prev.filter(c => c !== moreToolsCore) : [...prev, moreToolsCore]
+                        )}
+                        className="w-full flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
+                      >
+                        <Settings className="w-3.5 h-3.5" />
+                        <span className="flex-1 text-left">MORE TOOLS</span>
+                        <ChevronDown className={`w-3 h-3 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                      </button>
+                      {isExpanded && (
+                        <div className="space-y-0.5 ml-1">
+                          {allUtilityItems.map(item => renderNavItem(item, false, () => setMobileMenuOpen(false)))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </nav>
 
               <div className="border-t border-border p-3">
