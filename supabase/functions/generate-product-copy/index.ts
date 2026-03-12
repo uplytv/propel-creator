@@ -15,9 +15,12 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const { idea, productType } = await req.json();
-    if (!idea || !productType) {
-      return new Response(JSON.stringify({ error: "idea and productType are required" }), {
+    const body = await req.json();
+    const idea = body.idea || body.prompt;
+    const productType = body.productType;
+
+    if (!idea) {
+      return new Response(JSON.stringify({ error: "idea/prompt is required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -27,8 +30,14 @@ serve(async (req) => {
       course: "online course",
       community: "paid membership community",
       service: "coaching/consulting service",
+      digital: "digital product",
+      coaching: "coaching/consulting service",
     };
-    const label = typeLabels[productType] || productType;
+    const label = productType ? (typeLabels[productType] || productType) : "digital product or service";
+
+    const systemPrompt = productType
+      ? `You are a world-class creator economy copywriter. Generate a compelling product name and description for a ${label}. Return the product type and a suggested price.`
+      : `You are a world-class creator economy copywriter. Based on the user's idea, determine the best product type (one of: course, community, coaching, digital) and generate a compelling name, description, suggested price, and the chosen type.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -39,28 +48,24 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
-          {
-            role: "system",
-            content: `You are a world-class creator economy copywriter. Generate a compelling product name and description for a ${label}. Return ONLY a JSON object with "name" (catchy, max 60 chars) and "description" (benefit-driven, 1-2 sentences, max 160 chars). No markdown, no code fences, just raw JSON.`,
-          },
-          {
-            role: "user",
-            content: `My idea: ${idea}`,
-          },
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `My idea: ${idea}` },
         ],
         tools: [
           {
             type: "function",
             function: {
               name: "generate_copy",
-              description: "Return a product name and description",
+              description: "Return product details including name, description, type, and price",
               parameters: {
                 type: "object",
                 properties: {
                   name: { type: "string", description: "Catchy product name, max 60 chars" },
                   description: { type: "string", description: "Benefit-driven description, 1-2 sentences, max 160 chars" },
+                  type: { type: "string", enum: ["course", "community", "coaching", "digital"], description: "Product type" },
+                  price: { type: "number", description: "Suggested price in USD" },
                 },
-                required: ["name", "description"],
+                required: ["name", "description", "type", "price"],
                 additionalProperties: false,
               },
             },
@@ -92,12 +97,13 @@ serve(async (req) => {
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
     if (toolCall?.function?.arguments) {
       const result = JSON.parse(toolCall.function.arguments);
+      // If productType was provided, override the type
+      if (productType) result.type = productType === "service" ? "coaching" : productType;
       return new Response(JSON.stringify(result), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Fallback: try parsing content directly
     const content = data.choices?.[0]?.message?.content || "";
     const parsed = JSON.parse(content);
     return new Response(JSON.stringify(parsed), {
