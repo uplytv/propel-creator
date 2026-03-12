@@ -454,21 +454,52 @@ export default function Launchpad() {
                     )}
                   </div>
 
-                  {/* Price */}
-                  <div>
-                    <label className="text-sm font-medium text-foreground mb-1.5 block">Price (USD)</label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
-                      <Input
-                        type="number"
-                        min="0"
-                        value={price}
-                        onChange={(e) => setPrice(e.target.value)}
-                        className="pl-7 text-sm"
-                        placeholder="0"
-                      />
+                  {/* Visibility & Pricing (community only) */}
+                  {selected === "community" && (
+                    <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {isPublic ? <Globe className="w-4 h-4 text-muted-foreground" /> : <Lock className="w-4 h-4 text-muted-foreground" />}
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{isPublic ? "Public" : "Private"}</p>
+                            <p className="text-[11px] text-muted-foreground">{isPublic ? "Anyone can discover & view" : "Invite-only access"}</p>
+                          </div>
+                        </div>
+                        <Switch checked={isPublic} onCheckedChange={setIsPublic} />
+                      </div>
+                      <div className="border-t border-border" />
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Tag className="w-4 h-4 text-muted-foreground" />
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{isFree ? "Free" : "Paid"}</p>
+                            <p className="text-[11px] text-muted-foreground">{isFree ? "No charge to join" : "Monthly membership fee"}</p>
+                          </div>
+                        </div>
+                        <Switch checked={!isFree} onCheckedChange={(checked) => setIsFree(!checked)} />
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {/* Price — show for non-community, or community when paid */}
+                  {(selected !== "community" || !isFree) && (
+                    <div>
+                      <label className="text-sm font-medium text-foreground mb-1.5 block">
+                        {selected === "community" ? "Monthly Price (USD)" : "Price (USD)"}
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                        <Input
+                          type="number"
+                          min="0"
+                          value={price}
+                          onChange={(e) => setPrice(e.target.value)}
+                          className="pl-7 text-sm"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+                  )}
 
                   {/* Launch Button */}
                   <Button
