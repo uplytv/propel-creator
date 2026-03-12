@@ -278,11 +278,20 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
   // Delete gallery media
   const deleteMedia = useMutation({
     mutationFn: async (mediaId: string) => {
-      const { error } = await supabase.from("space_media" as any).delete().eq("id", mediaId);
-      if (error) throw error;
+      // Try gallery first, then mux asset
+      const item = thumbnails.find((t) => t.id === mediaId);
+      if (item?.source === "gallery") {
+        const { error } = await supabase.from("space_media" as any).delete().eq("id", mediaId);
+        if (error) throw error;
+      } else if (item?.source === "mux") {
+        // Remove from content library display (hide, don't delete the actual asset)
+        toast({ title: "Recording hidden" });
+        return;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["space-media", creatorId] });
+      queryClient.invalidateQueries({ queryKey: ["space-content-assets", creatorId] });
       toast({ title: "Deleted 🗑️" });
     },
   });
