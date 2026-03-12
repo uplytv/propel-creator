@@ -1712,6 +1712,45 @@ export type Database = {
         }
         Relationships: []
       }
+      space_media: {
+        Row: {
+          created_at: string
+          creator_id: string
+          duration: number | null
+          id: string
+          media_type: string
+          mux_playback_id: string | null
+          position: number
+          thumbnail_url: string | null
+          title: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          duration?: number | null
+          id?: string
+          media_type?: string
+          mux_playback_id?: string | null
+          position?: number
+          thumbnail_url?: string | null
+          title?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          duration?: number | null
+          id?: string
+          media_type?: string
+          mux_playback_id?: string | null
+          position?: number
+          thumbnail_url?: string | null
+          title?: string | null
+          url?: string
+        }
+        Relationships: []
+      }
       talent_profiles: {
         Row: {
           availability: Database["public"]["Enums"]["availability_status"]
