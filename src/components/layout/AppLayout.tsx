@@ -148,6 +148,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         setExpandedCores(prev => [...prev, group.core]);
       }
     }
+    // Auto-expand More Tools if a utility item is active
+    const utilityActive = utilityNav.some(item => location.pathname === item.path) || location.pathname === "/admin";
+    if (utilityActive && !expandedCores.includes("more_tools")) {
+      setExpandedCores(prev => [...prev, "more_tools"]);
+    }
   }, [location.pathname, user]);
 
   const resolvePath = (item: NavItem) => item.path === "__space__" ? (user ? `/community/${user.id}` : "/auth") : item.path;
