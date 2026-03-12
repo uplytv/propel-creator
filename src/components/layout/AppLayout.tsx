@@ -150,7 +150,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     }
   }, [location.pathname, user]);
 
-  const resolvePath = (item: NavItem) => item.path === "__space__" ? (user ? `/space/${user.id}` : "/auth") : item.path;
+  const resolvePath = (item: NavItem) => item.path === "__space__" ? (user ? `/community/${user.id}` : "/auth") : item.path;
 
   const renderNavItem = (item: NavItem, inCollapsed: boolean, onNavigate?: () => void) => {
     // Check feature visibility

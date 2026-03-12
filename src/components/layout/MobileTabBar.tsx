@@ -19,7 +19,7 @@ export default function MobileTabBar() {
   const { profile } = useApp();
 
   const resolvePath = (path: string) =>
-    path === "__profile__" ? (user ? `/space/${user.id}` : "/auth") : path;
+    path === "__profile__" ? (user ? `/community/${user.id}` : "/auth") : path;
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-xl safe-area-bottom">
