@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import SEOHead from "@/components/SEOHead";
 
-const testimonials = [
-  { name: "Sarah Chen", role: "Fitness Creator", avatar: "SC", quote: "I went from 0 to 2,000 members in 6 months. The AI growth partner is like having a CMO on speed dial.", revenue: "$48K/mo" },
-  { name: "Marcus Rivera", role: "Photography Coach", avatar: "MR", quote: "The tier system actually motivated me to level up. Once I hit Scaling, my rep helped me 3x my revenue.", revenue: "$36K/mo" },
-  { name: "Aisha Patel", role: "Business Strategist", avatar: "AP", quote: "Every other platform felt like a tool. This one feels like a partner that actually cares about my growth.", revenue: "$31K/mo" },
+const earlyAccessPerks = [
+  { icon: Zap, title: "Founding Creator Status", desc: "Lifetime badge, priority support, and early feature access forever." },
+  { icon: Shield, title: "Locked-in Pricing", desc: "Your rate never goes up — even as we add premium features." },
+  { icon: Users, title: "Shape the Product", desc: "Direct line to the team. Vote on features. Your feedback builds the roadmap." },
+  { icon: Rocket, title: "Zero Risk", desc: "Start completely free. No credit card. Cancel whenever." },
 ];
 
 const pricing = [
