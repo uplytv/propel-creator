@@ -218,7 +218,8 @@ export default function Dashboard() {
               </div>
             </motion.button>
           </div>
-        </motion.div>
+        </div>
+        </div>
 
         {/* Getting Started / Health */}
         <motion.div
