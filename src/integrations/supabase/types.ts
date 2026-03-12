@@ -390,6 +390,7 @@ export type Database = {
       }
       classroom_modules: {
         Row: {
+          cover_image_url: string | null
           created_at: string
           creator_id: string
           description: string
@@ -399,6 +400,7 @@ export type Database = {
           title: string
         }
         Insert: {
+          cover_image_url?: string | null
           created_at?: string
           creator_id: string
           description?: string
@@ -408,6 +410,7 @@ export type Database = {
           title: string
         }
         Update: {
+          cover_image_url?: string | null
           created_at?: string
           creator_id?: string
           description?: string

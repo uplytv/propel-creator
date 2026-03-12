@@ -1,0 +1,1 @@
+ALTER TABLE public.classroom_modules ADD COLUMN IF NOT EXISTS cover_image_url TEXT DEFAULT NULL;
