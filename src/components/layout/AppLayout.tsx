@@ -510,7 +510,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main className="pb-16 md:pb-0">{children}</main>
+        <main id="main-content" className="pb-16 md:pb-0" tabIndex={-1}>{children}</main>
       </div>
 
       {/* Mobile Tab Bar */}
