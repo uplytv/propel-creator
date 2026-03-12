@@ -22,8 +22,8 @@ export default function MobileTabBar() {
     path === "__profile__" ? (user ? `/community/${user.id}` : "/auth") : path;
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-xl safe-area-bottom">
-      <div className="flex items-center justify-around h-14 px-1">
+    <nav aria-label="Mobile navigation" className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-xl safe-area-bottom">
+      <div className="flex items-center justify-around h-14 px-1" role="tablist">
         {tabs.map((tab) => {
           const resolved = resolvePath(tab.path);
           const isActive = location.pathname === resolved || 
@@ -34,6 +34,10 @@ export default function MobileTabBar() {
             <button
               key={tab.label}
               onClick={() => navigate(resolved)}
+              aria-label={tab.label}
+              aria-current={isActive ? "page" : undefined}
+              role="tab"
+              aria-selected={isActive}
               className="relative flex flex-col items-center justify-center flex-1 py-1.5 tab-press group"
             >
               <div className="relative">

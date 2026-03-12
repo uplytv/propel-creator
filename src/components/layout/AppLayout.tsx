@@ -326,8 +326,15 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background flex">
+      {/* Skip to content */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-primary focus:text-primary-foreground focus:text-sm focus:font-medium focus:outline-none"
+      >
+        Skip to content
+      </a>
       {/* Desktop Sidebar */}
-      <aside className={`hidden md:flex flex-col border-r border-border bg-card/20 backdrop-blur-xl fixed inset-y-0 left-0 z-30 transition-all duration-300 ${
+      <aside aria-label="Main navigation" className={`hidden md:flex flex-col border-r border-border bg-card/20 backdrop-blur-xl fixed inset-y-0 left-0 z-30 transition-all duration-300 ${
         collapsed ? "w-[68px]" : "w-60"
       }`}>
         {/* Logo + Collapse */}
@@ -337,6 +344,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           </div>
           <button
             onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             className={`p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors ${collapsed ? "mx-auto" : ""}`}
           >
             {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -423,7 +431,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
           <div className="flex items-center justify-between px-4 md:px-8 h-14">
             <div className="flex items-center gap-2 md:hidden">
-              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground">
+              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Open menu" className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground">
                 <Menu className="w-5 h-5" />
               </button>
               <img src="/logo.png" alt="Uply" className="h-[50px] cursor-pointer" onClick={() => navigate("/")} />
@@ -438,6 +446,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               <div ref={profileRef} className="relative">
                 <button
                   onClick={(e) => { e.stopPropagation(); setProfileOpen(!profileOpen); }}
+                  aria-label="Account menu"
+                  aria-expanded={profileOpen}
+                  aria-haspopup="true"
                   className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-secondary transition-colors cursor-pointer"
                 >
                   {profile.avatarUrl ? (
@@ -499,7 +510,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main className="pb-16 md:pb-0">{children}</main>
+        <main id="main-content" className="pb-16 md:pb-0" tabIndex={-1}>{children}</main>
       </div>
 
       {/* Mobile Tab Bar */}
@@ -522,7 +533,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             >
               <div className="flex items-center justify-between p-4 border-b border-border">
                 <img src="/logo.png" alt="Uply" className="h-[50px] cursor-pointer" onClick={() => { navigate("/"); setMobileMenuOpen(false); }} />
-                <button onClick={() => setMobileMenuOpen(false)} className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground">
+                <button onClick={() => setMobileMenuOpen(false)} aria-label="Close menu" className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground">
                   <X className="w-5 h-5" />
                 </button>
               </div>
