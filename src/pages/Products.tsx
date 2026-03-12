@@ -328,7 +328,7 @@ export default function Products() {
           <div className="flex items-center gap-2">
             <button onClick={() => setView("grid")} className={`p-2 rounded-md ${view === "grid" ? "bg-secondary" : ""}`}><Grid className="w-4 h-4" /></button>
             <button onClick={() => setView("list")} className={`p-2 rounded-md ${view === "list" ? "bg-secondary" : ""}`}><List className="w-4 h-4" /></button>
-            <Button variant="default" size="sm" className="hidden md:flex" onClick={() => setShowCreate(true)}><Plus className="w-4 h-4 mr-1" /> New Product</Button>
+            <Button variant="soft" size="sm" className="hidden md:flex" onClick={() => setShowCreate(true)}><Plus className="w-4 h-4 mr-1" /> New Product</Button>
           </div>
         </div>
 
