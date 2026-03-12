@@ -463,7 +463,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
       {/* Thumbnail Strip — iOS-style hold-to-jiggle + drag-to-reorder */}
       <div className="px-4 mb-4">
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={galleryIds} strategy={horizontalListSortingStrategy}>
+          <SortableContext items={allIds} strategy={horizontalListSortingStrategy}>
             <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 items-start">
               {thumbnails.map((thumb, i) => (
                 <div
