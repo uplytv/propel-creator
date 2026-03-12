@@ -34,6 +34,10 @@ export default function MobileTabBar() {
             <button
               key={tab.label}
               onClick={() => navigate(resolved)}
+              aria-label={tab.label}
+              aria-current={isActive ? "page" : undefined}
+              role="tab"
+              aria-selected={isActive}
               className="relative flex flex-col items-center justify-center flex-1 py-1.5 tab-press group"
             >
               <div className="relative">

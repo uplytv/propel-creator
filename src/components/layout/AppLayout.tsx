@@ -533,7 +533,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             >
               <div className="flex items-center justify-between p-4 border-b border-border">
                 <img src="/logo.png" alt="Uply" className="h-[50px] cursor-pointer" onClick={() => { navigate("/"); setMobileMenuOpen(false); }} />
-                <button onClick={() => setMobileMenuOpen(false)} className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground">
+                <button onClick={() => setMobileMenuOpen(false)} aria-label="Close menu" className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground">
                   <X className="w-5 h-5" />
                 </button>
               </div>

@@ -84,6 +84,9 @@ export default function NotificationBell() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
+        aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
+        aria-expanded={open}
+        aria-haspopup="true"
         className="relative p-2 rounded-lg hover:bg-secondary transition-colors"
       >
         <Bell className="w-[18px] h-[18px] text-muted-foreground" />
