@@ -64,7 +64,7 @@ function SortableThumb({
   onSelect: (i: number) => void;
   onDelete: (id: string) => void;
 }) {
-  const canDrag = editMode && thumb.source === "gallery";
+  const canDrag = editMode;
   const {
     attributes,
     listeners,
