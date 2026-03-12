@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from "react";
+import EmptyState from "@/components/ui/EmptyState";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, MoreVertical, Grid, List, Brain, Link as LinkIcon,
   LayoutTemplate, Pencil, Users, DollarSign, X, ArrowLeft,
-  Loader2, Sparkles, Trash2, Video, Upload, ImageIcon,
+  Loader2, Sparkles, Trash2, Video, Upload, ImageIcon, Package,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -327,7 +328,7 @@ export default function Products() {
           <div className="flex items-center gap-2">
             <button onClick={() => setView("grid")} className={`p-2 rounded-md ${view === "grid" ? "bg-secondary" : ""}`}><Grid className="w-4 h-4" /></button>
             <button onClick={() => setView("list")} className={`p-2 rounded-md ${view === "list" ? "bg-secondary" : ""}`}><List className="w-4 h-4" /></button>
-            <Button variant="default" size="sm" className="hidden md:flex" onClick={() => setShowCreate(true)}><Plus className="w-4 h-4 mr-1" /> New Product</Button>
+            <Button variant="soft" size="sm" className="hidden md:flex" onClick={() => setShowCreate(true)}><Plus className="w-4 h-4 mr-1" /> New Product</Button>
           </div>
         </div>
 
@@ -336,12 +337,15 @@ export default function Products() {
             <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
           </div>
         ) : isEmpty ? (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-12 text-center">
-            <span className="text-5xl mb-4 block">📦</span>
-            <h3 className="text-xl font-bold mb-2">Your first product is one idea away.</h3>
-            <p className="text-muted-foreground mb-6">Let AI build it for you — just describe what you want to sell.</p>
-            <Button variant="default" size="lg" onClick={() => setShowCreate(true)}>Create Your First Product</Button>
-          </motion.div>
+          <EmptyState
+            icon={Package}
+            title="Your first product is one idea away"
+            description="Sell courses, downloads, coaching sessions, or memberships. Let AI build it for you — just describe what you want to sell."
+            actionLabel="Create Your First Product"
+            onAction={() => setShowCreate(true)}
+            secondaryLabel="Browse Templates"
+            onSecondary={() => { setShowCreate(true); setMode("template"); }}
+          />
         ) : (
           <div className={view === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : "space-y-3"}>
             {products?.map((p, i) => (

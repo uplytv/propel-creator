@@ -49,6 +49,8 @@
     --glow-shadow: 0 0 20px hsl(265 85% 58% / 0.12);
     --glow-shadow-strong: 0 0 30px hsl(265 85% 58% / 0.18);
     --gradient-mid: 280 75% 65%;
+    --surface-alt: 260 5% 95%;
+    --section-divider: linear-gradient(to right, transparent, hsl(260 8% 88% / 0.5), transparent);
   }
 
   .dark {
@@ -96,6 +98,8 @@
     --glow-shadow: 0 0 20px hsl(265 90% 65% / 0.15);
     --glow-shadow-strong: 0 0 30px hsl(265 90% 65% / 0.3);
     --gradient-mid: 280 80% 72%;
+    --surface-alt: 260 12% 8%;
+    --section-divider: linear-gradient(to right, transparent, hsl(260 10% 15% / 0.6), transparent);
   }
 }
 
@@ -219,6 +223,28 @@
 
   .safe-area-bottom {
     padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+
+  /* Visual rhythm: alternating section backgrounds */
+  .section-alt {
+    background-color: hsl(var(--surface-alt));
+  }
+  .section-divider {
+    height: 1px;
+    background: var(--section-divider);
+  }
+  .section-glow {
+    position: relative;
+  }
+  .section-glow::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.15), transparent);
   }
 }
 

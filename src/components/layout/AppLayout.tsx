@@ -1,5 +1,6 @@
 import { ReactNode, useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import MobileTabBar from "./MobileTabBar";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Package, Lock,
@@ -437,8 +438,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main>{children}</main>
+        <main className="pb-16 md:pb-0">{children}</main>
       </div>
+
+      {/* Mobile Tab Bar */}
+      <MobileTabBar />
 
       {/* Mobile Navigation Drawer */}
       <AnimatePresence>
