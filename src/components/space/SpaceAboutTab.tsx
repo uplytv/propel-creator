@@ -40,9 +40,16 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
   const [editingDesc, setEditingDesc] = useState(false);
   const [descInput, setDescInput] = useState("");
 
-  // Media upload state
+  // Media upload/playback state
   const coverInputRef = useRef<HTMLInputElement>(null);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [isPlayingVideo, setIsPlayingVideo] = useState(false);
+
+  const isVideoFileUrl = (url?: string | null) => {
+    if (!url) return false;
+    const clean = url.split("?")[0].toLowerCase();
+    return [".mp4", ".webm", ".mov", ".m4v", ".ogg"].some((ext) => clean.endsWith(ext));
+  };
 
   const { data: creatorProfile } = useQuery({
     queryKey: ["creator-profile-about", creatorId],
