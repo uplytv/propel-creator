@@ -164,61 +164,60 @@ export default function Dashboard() {
 
         {/* Quick Actions - Core Features */}
         <div className="px-4 md:px-8 py-6">
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="mb-8"
-        >
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Your Tools</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {quickActions.map((action, i) => (
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+          >
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Your Tools</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {quickActions.map((action, i) => (
+                <motion.button
+                  key={action.label}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 + i * 0.06 }}
+                  whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }}
+                  onClick={action.action}
+                  className="glass-card p-5 text-left group relative overflow-hidden hover:border-primary/20 transition-all"
+                >
+                  <div className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className={`w-10 h-10 rounded-xl bg-secondary/80 flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
+                        <action.icon className={`w-5 h-5 ${action.iconColor}`} />
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-muted-foreground/0 group-hover:text-muted-foreground group-hover:translate-x-0.5 transition-all duration-300" />
+                    </div>
+                    <h3 className="font-bold text-foreground text-base mb-1">{action.label}</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{action.desc}</p>
+                  </div>
+                </motion.button>
+              ))}
+
+              {/* ARIA Card */}
               <motion.button
-                key={action.label}
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 + i * 0.06 }}
+                transition={{ delay: 0.15 + quickActions.length * 0.06 }}
                 whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }}
-                onClick={action.action}
-                className="glass-card p-5 text-left group relative overflow-hidden hover:border-primary/20 transition-all"
+                onClick={() => setAriaOpen(true)}
+                className="glass-card p-5 text-left group relative overflow-hidden hover:border-primary/20 transition-all border-dashed"
               >
-                <div className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/15 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="relative z-10">
                   <div className="flex items-center justify-between mb-3">
-                    <div className={`w-10 h-10 rounded-xl bg-secondary/80 flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                      <action.icon className={`w-5 h-5 ${action.iconColor}`} />
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <Sparkles className="w-5 h-5 text-primary" />
                     </div>
-                    <ArrowRight className="w-4 h-4 text-muted-foreground/0 group-hover:text-muted-foreground group-hover:translate-x-0.5 transition-all duration-300" />
+                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">AI</span>
                   </div>
-                  <h3 className="font-bold text-foreground text-base mb-1">{action.label}</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{action.desc}</p>
+                  <h3 className="font-bold text-foreground text-base mb-1">Ask ARIA</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">Your AI growth partner — get personalized advice</p>
                 </div>
               </motion.button>
-            ))}
-
-            {/* ARIA Card */}
-            <motion.button
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 + quickActions.length * 0.06 }}
-              whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }}
-              onClick={() => setAriaOpen(true)}
-              className="glass-card p-5 text-left group relative overflow-hidden hover:border-primary/20 transition-all border-dashed"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/15 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                    <Sparkles className="w-5 h-5 text-primary" />
-                  </div>
-                  <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">AI</span>
-                </div>
-                <h3 className="font-bold text-foreground text-base mb-1">Ask ARIA</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">Your AI growth partner — get personalized advice</p>
-              </div>
-            </motion.button>
-          </div>
-        </div>
+            </div>
+          </motion.div>
         </div>
 
         {/* Getting Started / Health */}
