@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.generate-product-copy]
 verify_jwt = false
+
+[functions.import-from-url]
+verify_jwt = false
