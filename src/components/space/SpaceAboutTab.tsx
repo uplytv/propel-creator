@@ -516,7 +516,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
           )}
         </AnimatePresence>
 
-        {!editMode && isOwner && thumbnails.some(t => t.source === "gallery") && (
+        {!editMode && isOwner && thumbnails.length > 0 && (
           <p className="text-[10px] text-muted-foreground/50 mt-1">Hold to rearrange</p>
         )}
       </div>
