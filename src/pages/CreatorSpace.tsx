@@ -17,8 +17,8 @@ import { CreatorAffiliateProgramSettings } from "@/components/affiliates/Creator
 import { useCreatorAffiliateProgram } from "@/hooks/useAffiliates";
 import { setAffiliateCookie } from "@/lib/affiliateCookies";
 
-const BASE_TABS = ["Community", "Classroom", "Calendar", "Members", "Leaderboard", "About"] as const;
-type Tab = typeof BASE_TABS[number] | "Earn" | "Manage";
+const BASE_TABS = ["Community", "Classroom", "Calendar", "Members", "Leaderboard", "Earn", "About"] as const;
+type Tab = typeof BASE_TABS[number];
 
 export default function CreatorSpace() {
   const { creatorId: rawCreatorId } = useParams<{ creatorId: string }>();
