@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { useCreatorSpace } from "@/hooks/useCreatorSpace";
+import { useCreatorSpace, useUpdateSpace } from "@/hooks/useCreatorSpace";
 import { useMemberCount, useIsMember, useJoinCommunity } from "@/hooks/useCommunityMembers";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, Lock, Globe, Tag, CheckCircle, Play, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 
