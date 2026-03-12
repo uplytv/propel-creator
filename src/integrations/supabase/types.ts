@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_integrations: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          pixel_id: string
+          platform: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          pixel_id: string
+          platform: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          pixel_id?: string
+          platform?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       affiliate_conversions: {
         Row: {
           affiliate_code: string
