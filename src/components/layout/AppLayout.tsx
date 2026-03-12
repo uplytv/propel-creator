@@ -438,8 +438,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main>{children}</main>
+        <main className="pb-16 md:pb-0">{children}</main>
       </div>
+
+      {/* Mobile Tab Bar */}
+      <MobileTabBar />
 
       {/* Mobile Navigation Drawer */}
       <AnimatePresence>
