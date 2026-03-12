@@ -182,6 +182,8 @@ export default function FeaturedCarousel() {
                     <img
                       src={item.imageUrl}
                       alt={item.title}
+                      width={300}
+                      height={400}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       loading="lazy"
                     />

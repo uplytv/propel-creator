@@ -119,7 +119,10 @@ export default function FeedCard({ item, index }: { item: FeedItem; index: numbe
               <img
                 src={item.creatorAvatar}
                 alt={item.creatorName}
+                width={36}
+                height={36}
                 className="w-9 h-9 rounded-full object-cover ring-2 ring-border group-hover:ring-primary/30 transition-all"
+                loading="lazy"
               />
             ) : (
               <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary ring-2 ring-border">

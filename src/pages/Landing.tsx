@@ -396,7 +396,7 @@ export default function Landing() {
         <div className="container">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div>
-              <img src="/logo.png" alt="Uply" className="h-[88px]" />
+              <img src="/logo.png" alt="Uply" className="h-[88px]" width="176" height="88" loading="lazy" />
               <p className="text-sm text-muted-foreground mt-1">Built for creators who are serious about growth.</p>
             </div>
             <div className="flex gap-8 text-sm text-muted-foreground">
