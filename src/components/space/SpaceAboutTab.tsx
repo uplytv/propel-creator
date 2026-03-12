@@ -351,14 +351,18 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const galleryItems = thumbnails.filter((t) => t.source === "gallery");
-    const oldIndex = galleryItems.findIndex((t) => t.id === active.id);
-    const newIndex = galleryItems.findIndex((t) => t.id === over.id);
+    const oldIndex = thumbnails.findIndex((t) => t.id === active.id);
+    const newIndex = thumbnails.findIndex((t) => t.id === over.id);
     if (oldIndex < 0 || newIndex < 0) return;
 
-    const reordered = arrayMove(galleryItems, oldIndex, newIndex);
-    const updates = reordered.map((item, i) => ({ id: item.id, position: i }));
-    reorderMedia.mutate(updates);
+    const reordered = arrayMove(thumbnails, oldIndex, newIndex);
+    // Persist positions for gallery items
+    const galleryUpdates = reordered
+      .filter((item) => item.source === "gallery")
+      .map((item, i) => ({ id: item.id, position: i }));
+    if (galleryUpdates.length > 0) {
+      reorderMedia.mutate(galleryUpdates);
+    }
   };
 
   const formatDuration = (seconds: number | null) => {
