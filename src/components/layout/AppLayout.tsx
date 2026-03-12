@@ -34,19 +34,12 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
     ],
   },
   {
-    core: "learn",
-    label: "LEARN",
-    icon: GraduationCap,
-    items: [
-      { label: "Content Library", icon: Film, path: "/content-library", desc: "Videos & uploads", featureKey: "content_library" },
-    ],
-  },
-  {
     core: "live",
     label: "LIVE",
     icon: Radio,
     items: [
       { label: "Live", icon: Radio, path: "/live", desc: "Watch & stream" },
+      { label: "Content Library", icon: Film, path: "/content-library", desc: "Videos & uploads", featureKey: "content_library" },
       { label: "Ad Campaigns", icon: Plug, path: "/ad-integrations", desc: "Boost streams", featureKey: "stream_boost" },
     ],
   },
