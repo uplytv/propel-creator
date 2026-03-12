@@ -179,20 +179,25 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
     }
   };
 
-  // Build thumbnail list from content assets + cover
-  const thumbnails = contentAssets.length > 0
-    ? contentAssets.map(a => ({
-        id: a.id,
-        src: a.thumbnail_url || (a.mux_playback_id ? `https://image.mux.com/${a.mux_playback_id}/thumbnail.png?time=2` : null),
-        playbackId: a.mux_playback_id,
-        duration: a.duration,
-        isVideo: !!a.mux_playback_id,
-      }))
-    : coverImage
-      ? [{ id: "cover", src: coverImage, playbackId: null, duration: null, isVideo: isVideoFileUrl(coverImage) }]
-      : [];
+  // Build thumbnail list from cover + content assets (cover first)
+  const thumbnails = [
+    ...(coverImage
+      ? [{ id: "cover", src: coverImage, playbackId: null as string | null, duration: null as number | null, isVideo: isVideoFileUrl(coverImage) }]
+      : []),
+    ...contentAssets.map((a) => ({
+      id: a.id,
+      src: a.thumbnail_url || (a.mux_playback_id ? `https://image.mux.com/${a.mux_playback_id}/thumbnail.png?time=2` : null),
+      playbackId: a.mux_playback_id,
+      duration: a.duration,
+      isVideo: !!a.mux_playback_id,
+    })),
+  ].filter((t) => !!t.src);
 
   const activeAsset = thumbnails[activeThumb] || thumbnails[0];
+
+  useEffect(() => {
+    if (activeThumb >= thumbnails.length) setActiveThumb(0);
+  }, [activeThumb, thumbnails.length]);
 
   useEffect(() => {
     setIsPlayingVideo(false);
