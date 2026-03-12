@@ -116,16 +116,24 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
   // Upload cover image or photo
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !isOwner) return;
 
     setUploadingCover(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        throw new Error("Session expired. Please sign in again.");
+      const { data: sessionData } = await supabase.auth.getSession();
+      let activeSession = sessionData.session;
+
+      if (!activeSession) {
+        const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError) throw refreshError;
+        activeSession = refreshed.session;
       }
 
-      const ownerId = session.user.id;
+      if (!activeSession?.user?.id) {
+        throw new Error("Please sign in to upload photos or videos.");
+      }
+
+      const ownerId = activeSession.user.id;
       const rawExt = file.name.split(".").pop()?.toLowerCase() || "bin";
       const ext = rawExt.replace(/[^a-z0-9]/g, "") || "bin";
       const path = `${ownerId}/${crypto.randomUUID()}.${ext}`;
@@ -143,12 +151,12 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
         .eq("creator_id", ownerId);
       if (updateError) throw updateError;
 
-      queryClient.invalidateQueries({ queryKey: ["creator-space"] });
+      queryClient.invalidateQueries({ queryKey: ["creator-space", creatorId] });
       toast({ title: "Cover updated 📸" });
     } catch (err: any) {
       const message = String(err?.message || "Upload failed");
       const friendly = message.toLowerCase().includes("row-level security")
-        ? "Your session isn’t authenticated in preview. Please sign in again, then retry upload."
+        ? "You need an active account session in preview. Please sign in again, then retry upload."
         : message;
       toast({ title: "Upload failed", description: friendly, variant: "destructive" });
     } finally {
