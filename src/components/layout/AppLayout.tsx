@@ -1,5 +1,6 @@
 import { ReactNode, useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import MobileTabBar from "./MobileTabBar";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Package, Lock,
