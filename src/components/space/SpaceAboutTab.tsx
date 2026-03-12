@@ -24,7 +24,10 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
   const { data: memberCount = 0 } = useMemberCount(creatorId);
   const { data: isMember = false } = useIsMember(creatorId);
   const joinCommunity = useJoinCommunity();
+  const updateSpace = useUpdateSpace();
   const [activeThumb, setActiveThumb] = useState(0);
+  const [editingPrice, setEditingPrice] = useState(false);
+  const [priceInput, setPriceInput] = useState("");
 
   const { data: creatorProfile } = useQuery({
     queryKey: ["creator-profile-about", creatorId],
