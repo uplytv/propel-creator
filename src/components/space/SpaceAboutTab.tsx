@@ -64,7 +64,7 @@ function SortableThumb({
   onSelect: (i: number) => void;
   onDelete: (id: string) => void;
 }) {
-  const canDrag = editMode && thumb.source === "gallery";
+  const canDrag = editMode;
   const {
     attributes,
     listeners,
@@ -92,7 +92,7 @@ function SortableThumb({
             ? "opacity-60 hover:opacity-100"
             : ""
         } ${isDragging ? "opacity-70 scale-105 shadow-xl" : ""} ${
-          editMode && thumb.source === "gallery" ? "animate-wiggle" : ""
+          editMode ? "animate-wiggle" : ""
         }`}
       >
         {thumb.isVideo && !thumb.playbackId ? (
@@ -105,15 +105,10 @@ function SortableThumb({
             <Play className="w-4 h-4 text-foreground" fill="currentColor" />
           </div>
         )}
-        {editMode && thumb.source === "mux" && (
-          <div className="absolute inset-0 bg-background/40 flex items-center justify-center">
-            <span className="text-[8px] text-muted-foreground font-medium">Recording</span>
-          </div>
-        )}
       </button>
 
       {/* iOS-style X delete badge */}
-      {editMode && thumb.source === "gallery" && (
+      {editMode && (
         <motion.button
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
@@ -283,11 +278,20 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
   // Delete gallery media
   const deleteMedia = useMutation({
     mutationFn: async (mediaId: string) => {
-      const { error } = await supabase.from("space_media" as any).delete().eq("id", mediaId);
-      if (error) throw error;
+      // Try gallery first, then mux asset
+      const item = thumbnails.find((t) => t.id === mediaId);
+      if (item?.source === "gallery") {
+        const { error } = await supabase.from("space_media" as any).delete().eq("id", mediaId);
+        if (error) throw error;
+      } else if (item?.source === "mux") {
+        // Remove from content library display (hide, don't delete the actual asset)
+        toast({ title: "Recording hidden" });
+        return;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["space-media", creatorId] });
+      queryClient.invalidateQueries({ queryKey: ["space-content-assets", creatorId] });
       toast({ title: "Deleted 🗑️" });
     },
   });
@@ -356,14 +360,18 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const galleryItems = thumbnails.filter((t) => t.source === "gallery");
-    const oldIndex = galleryItems.findIndex((t) => t.id === active.id);
-    const newIndex = galleryItems.findIndex((t) => t.id === over.id);
+    const oldIndex = thumbnails.findIndex((t) => t.id === active.id);
+    const newIndex = thumbnails.findIndex((t) => t.id === over.id);
     if (oldIndex < 0 || newIndex < 0) return;
 
-    const reordered = arrayMove(galleryItems, oldIndex, newIndex);
-    const updates = reordered.map((item, i) => ({ id: item.id, position: i }));
-    reorderMedia.mutate(updates);
+    const reordered = arrayMove(thumbnails, oldIndex, newIndex);
+    // Persist positions for gallery items
+    const galleryUpdates = reordered
+      .filter((item) => item.source === "gallery")
+      .map((item, i) => ({ id: item.id, position: i }));
+    if (galleryUpdates.length > 0) {
+      reorderMedia.mutate(galleryUpdates);
+    }
   };
 
   const formatDuration = (seconds: number | null) => {
@@ -379,7 +387,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
     return count.toString();
   };
 
-  const galleryIds = thumbnails.filter((t) => t.source === "gallery").map((t) => t.id);
+  const allIds = thumbnails.map((t) => t.id);
 
   return (
     <div className="pb-6">
@@ -464,15 +472,15 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
       {/* Thumbnail Strip — iOS-style hold-to-jiggle + drag-to-reorder */}
       <div className="px-4 mb-4">
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={galleryIds} strategy={horizontalListSortingStrategy}>
+          <SortableContext items={allIds} strategy={horizontalListSortingStrategy}>
             <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 items-start">
               {thumbnails.map((thumb, i) => (
                 <div
                   key={thumb.id}
-                  onTouchStart={() => isOwner && thumb.source === "gallery" && handleTouchStart()}
+                  onTouchStart={() => isOwner && handleTouchStart()}
                   onTouchEnd={handleTouchEnd}
                   onTouchCancel={handleTouchEnd}
-                  onMouseDown={() => isOwner && thumb.source === "gallery" && handleTouchStart()}
+                  onMouseDown={() => isOwner && handleTouchStart()}
                   onMouseUp={handleTouchEnd}
                   onMouseLeave={handleTouchEnd}
                   onContextMenu={(e) => { if (isOwner) { e.preventDefault(); setEditMode(true); } }}
@@ -517,7 +525,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
           )}
         </AnimatePresence>
 
-        {!editMode && isOwner && thumbnails.some(t => t.source === "gallery") && (
+        {!editMode && isOwner && thumbnails.length > 0 && (
           <p className="text-[10px] text-muted-foreground/50 mt-1">Hold to rearrange</p>
         )}
       </div>
