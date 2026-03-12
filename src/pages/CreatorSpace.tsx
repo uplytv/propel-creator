@@ -65,11 +65,8 @@ export default function CreatorSpace() {
     },
   });
 
-  const showEarnTab = !isOwner && isMember && affiliateProgram?.is_active;
-  const TABS: Tab[] = [
-    ...BASE_TABS,
-    ...(showEarnTab ? ["Earn" as Tab] : []),
-  ];
+  const showMemberEarn = !isOwner && isMember && affiliateProgram?.is_active;
+  const TABS: Tab[] = [...BASE_TABS];
 
   const { data: creatorProfile } = useQuery({
     queryKey: ["creator-profile-space", creatorId],
