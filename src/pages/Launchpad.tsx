@@ -159,18 +159,53 @@ export default function Launchpad() {
 
     const imageUrl = await uploadImage();
     const productType = option.id === "service" ? "coaching" : option.id;
+    const finalPrice = isFree && option.id === "community" ? 0 : (parseFloat(price) || 0);
 
     createProduct.mutate(
       {
         name,
         description: description || undefined,
         type: productType,
-        price: parseFloat(price) || 0,
+        price: finalPrice,
         status: "active",
         image_url: imageUrl || undefined,
       },
       {
-        onSuccess: () => {
+        onSuccess: async () => {
+          // For community, also create/update the creator_spaces entry
+          if (option.id === "community" && user) {
+            const { data: existing } = await supabase
+              .from("creator_spaces")
+              .select("id")
+              .eq("creator_id", user.id)
+              .maybeSingle();
+
+            if (existing) {
+              await supabase
+                .from("creator_spaces")
+                .update({
+                  is_public: isPublic,
+                  is_free: isFree,
+                  price: finalPrice,
+                  name: name.trim(),
+                  description: description || "",
+                  cover_image_url: imageUrl || undefined,
+                } as any)
+                .eq("creator_id", user.id);
+            } else {
+              await supabase
+                .from("creator_spaces")
+                .insert({
+                  creator_id: user.id,
+                  is_public: isPublic,
+                  is_free: isFree,
+                  price: finalPrice,
+                  name: name.trim(),
+                  description: description || "",
+                  cover_image_url: imageUrl || undefined,
+                } as any);
+            }
+          }
           setCreating(false);
           setSuccess(true);
         },
