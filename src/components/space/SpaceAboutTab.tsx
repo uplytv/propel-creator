@@ -1,24 +1,36 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useCreatorSpace, useUpdateSpace } from "@/hooks/useCreatorSpace";
 import { useMemberCount, useIsMember, useJoinCommunity } from "@/hooks/useCommunityMembers";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Users, Lock, Globe, Tag, CheckCircle, Play, Star,
-  Pencil, X, Check, ImagePlus, Loader2, Plus
+  Pencil, X, Check, ImagePlus, Loader2, Plus, Trash2,
+  ArrowLeft, ArrowRight, RefreshCw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { UPLYMuxPlayer } from "@/components/MuxPlayer";
 
 interface Props {
   creatorId: string;
   isOwner: boolean;
+}
+
+interface MediaItem {
+  id: string;
+  src: string;
+  playbackId: string | null;
+  duration: number | null;
+  isVideo: boolean;
+  position: number;
+  mediaType: string;
+  source: "gallery" | "mux";
 }
 
 export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
@@ -41,9 +53,15 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
   const [descInput, setDescInput] = useState("");
 
   // Media upload/playback state
-  const coverInputRef = useRef<HTMLInputElement>(null);
-  const [uploadingCover, setUploadingCover] = useState(false);
+  const mediaInputRef = useRef<HTMLInputElement>(null);
+  const replaceInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingMedia, setUploadingMedia] = useState(false);
   const [isPlayingVideo, setIsPlayingVideo] = useState(false);
+
+  // Long-press menu state
+  const [longPressIndex, setLongPressIndex] = useState<number | null>(null);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [replacingMediaId, setReplacingMediaId] = useState<string | null>(null);
 
   const isVideoFileUrl = (url?: string | null) => {
     if (!url) return false;
@@ -59,7 +77,20 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
     },
   });
 
-  // Fetch content assets (videos/images) for the thumbnail strip
+  // Fetch gallery media from space_media table
+  const { data: galleryMedia = [] } = useQuery({
+    queryKey: ["space-media", creatorId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("space_media" as any)
+        .select("*")
+        .eq("creator_id", creatorId)
+        .order("position", { ascending: true });
+      return (data || []) as any[];
+    },
+  });
+
+  // Fetch Mux video assets
   const { data: contentAssets = [] } = useQuery({
     queryKey: ["space-content-assets", creatorId],
     queryFn: async () => {
@@ -85,7 +116,6 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
   };
 
   const spaceName = space?.name || creatorProfile?.display_name || "Community";
-  const coverImage = space?.cover_image_url;
   const avatar = space?.avatar_url || creatorProfile?.avatar_url;
   const bio = space?.description || creatorProfile?.bio || "";
   const isPublic = space?.is_public !== false;
@@ -113,25 +143,21 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
     });
   };
 
-  // Upload cover image or photo
-  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Upload media to gallery
+  const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !isOwner) return;
 
-    setUploadingCover(true);
+    setUploadingMedia(true);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       let activeSession = sessionData.session;
-
       if (!activeSession) {
         const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
         if (refreshError) throw refreshError;
         activeSession = refreshed.session;
       }
-
-      if (!activeSession?.user?.id) {
-        throw new Error("Please sign in to upload photos or videos.");
-      }
+      if (!activeSession?.user?.id) throw new Error("Please sign in to upload.");
 
       const ownerId = activeSession.user.id;
       const rawExt = file.name.split(".").pop()?.toLowerCase() || "bin";
@@ -144,44 +170,136 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
       if (uploadError) throw uploadError;
 
       const { data: urlData } = supabase.storage.from("covers").getPublicUrl(path);
-      const publicUrl = urlData.publicUrl;
+      const isVideo = file.type.startsWith("video/") || isVideoFileUrl(file.name);
+      const maxPos = galleryMedia.length > 0
+        ? Math.max(...galleryMedia.map((m: any) => m.position)) + 1
+        : 0;
 
-      const { error: updateError } = await supabase
-        .from("creator_spaces")
-        .update({ cover_image_url: publicUrl } as any)
-        .eq("creator_id", ownerId);
-      if (updateError) throw updateError;
+      const { error: insertError } = await supabase
+        .from("space_media" as any)
+        .insert({
+          creator_id: ownerId,
+          media_type: isVideo ? "video" : "image",
+          url: urlData.publicUrl,
+          position: maxPos,
+        } as any);
+      if (insertError) throw insertError;
 
-      // Update cache with real URL and refetch
-      queryClient.setQueryData(["creator-space", creatorId], (prev: any) =>
-        prev ? { ...prev, cover_image_url: publicUrl } : prev
-      );
-      await queryClient.invalidateQueries({ queryKey: ["creator-space", creatorId] });
-      setActiveThumb(0);
-      toast({ title: "Cover updated 📸" });
+      await queryClient.invalidateQueries({ queryKey: ["space-media", creatorId] });
+      toast({ title: isVideo ? "Video added 🎬" : "Photo added 📸" });
     } catch (err: any) {
       const message = String(err?.message || "Upload failed");
       const friendly = message.toLowerCase().includes("row-level security")
-        ? "You need an active account session in preview. Please sign in again, then retry upload."
+        ? "Please sign in again, then retry."
         : message;
       toast({ title: "Upload failed", description: friendly, variant: "destructive" });
     } finally {
-      setUploadingCover(false);
-      if (coverInputRef.current) coverInputRef.current.value = "";
+      setUploadingMedia(false);
+      if (mediaInputRef.current) mediaInputRef.current.value = "";
     }
   };
 
-  // Build thumbnail list from cover + content assets (cover first)
-  const thumbnails = [
-    ...(coverImage
-      ? [{ id: "cover", src: coverImage, playbackId: null as string | null, duration: null as number | null, isVideo: isVideoFileUrl(coverImage) }]
-      : []),
-    ...contentAssets.map((a) => ({
+  // Replace media file
+  const handleReplaceMedia = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !replacingMediaId) return;
+
+    setUploadingMedia(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const ownerId = sessionData.session?.user?.id;
+      if (!ownerId) throw new Error("Please sign in.");
+
+      const rawExt = file.name.split(".").pop()?.toLowerCase() || "bin";
+      const ext = rawExt.replace(/[^a-z0-9]/g, "") || "bin";
+      const path = `${ownerId}/${crypto.randomUUID()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("covers")
+        .upload(path, file, { upsert: true, contentType: file.type || undefined });
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage.from("covers").getPublicUrl(path);
+      const isVideo = file.type.startsWith("video/") || isVideoFileUrl(file.name);
+
+      await supabase
+        .from("space_media" as any)
+        .update({ url: urlData.publicUrl, media_type: isVideo ? "video" : "image" } as any)
+        .eq("id", replacingMediaId);
+
+      await queryClient.invalidateQueries({ queryKey: ["space-media", creatorId] });
+      toast({ title: "Media replaced ✨" });
+    } catch (err: any) {
+      toast({ title: "Replace failed", description: String(err?.message || ""), variant: "destructive" });
+    } finally {
+      setUploadingMedia(false);
+      setReplacingMediaId(null);
+      setLongPressIndex(null);
+      if (replaceInputRef.current) replaceInputRef.current.value = "";
+    }
+  };
+
+  // Delete gallery media
+  const deleteMedia = useMutation({
+    mutationFn: async (mediaId: string) => {
+      const { error } = await supabase
+        .from("space_media" as any)
+        .delete()
+        .eq("id", mediaId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["space-media", creatorId] });
+      setLongPressIndex(null);
+      toast({ title: "Media deleted 🗑️" });
+    },
+  });
+
+  // Move media (swap positions)
+  const moveMedia = useMutation({
+    mutationFn: async ({ mediaId, direction }: { mediaId: string; direction: "left" | "right" }) => {
+      const sorted = [...galleryMedia].sort((a: any, b: any) => a.position - b.position);
+      const idx = sorted.findIndex((m: any) => m.id === mediaId);
+      if (idx < 0) return;
+      const swapIdx = direction === "left" ? idx - 1 : idx + 1;
+      if (swapIdx < 0 || swapIdx >= sorted.length) return;
+
+      const current = sorted[idx] as any;
+      const swap = sorted[swapIdx] as any;
+
+      await Promise.all([
+        supabase.from("space_media" as any).update({ position: swap.position } as any).eq("id", current.id),
+        supabase.from("space_media" as any).update({ position: current.position } as any).eq("id", swap.id),
+      ]);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["space-media", creatorId] });
+      setLongPressIndex(null);
+      toast({ title: "Media reordered ↔️" });
+    },
+  });
+
+  // Build combined thumbnails: gallery items first, then Mux videos
+  const thumbnails: MediaItem[] = [
+    ...galleryMedia.map((m: any) => ({
+      id: m.id,
+      src: m.url,
+      playbackId: m.mux_playback_id || null,
+      duration: m.duration || null,
+      isVideo: m.media_type === "video" || isVideoFileUrl(m.url),
+      position: m.position,
+      mediaType: m.media_type,
+      source: "gallery" as const,
+    })),
+    ...contentAssets.map((a: any) => ({
       id: a.id,
-      src: a.thumbnail_url || (a.mux_playback_id ? `https://image.mux.com/${a.mux_playback_id}/thumbnail.png?time=2` : null),
+      src: a.thumbnail_url || (a.mux_playback_id ? `https://image.mux.com/${a.mux_playback_id}/thumbnail.png?time=2` : ""),
       playbackId: a.mux_playback_id,
       duration: a.duration,
-      isVideo: !!a.mux_playback_id,
+      isVideo: true,
+      position: 999,
+      mediaType: "video",
+      source: "mux" as const,
     })),
   ].filter((t) => !!t.src);
 
@@ -194,6 +312,33 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
   useEffect(() => {
     setIsPlayingVideo(false);
   }, [activeAsset?.id]);
+
+  // Long press handlers
+  const handleTouchStart = useCallback((index: number) => {
+    longPressTimerRef.current = setTimeout(() => {
+      setLongPressIndex(index);
+    }, 500);
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  }, []);
+
+  // Close menu on outside click
+  useEffect(() => {
+    if (longPressIndex === null) return;
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest("[data-media-menu]")) {
+        setLongPressIndex(null);
+      }
+    };
+    document.addEventListener("click", handleClick, { capture: true });
+    return () => document.removeEventListener("click", handleClick, { capture: true });
+  }, [longPressIndex]);
 
   const formatDuration = (seconds: number | null) => {
     if (!seconds) return "";
@@ -243,7 +388,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
         )}
       </div>
 
-      {/* Main Video / Cover — with upload overlay for owner */}
+      {/* Main Video / Cover */}
       <div className="px-4 mb-3">
         <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-secondary/30 group">
           {activeAsset?.src ? (
@@ -296,15 +441,15 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-secondary/50 to-secondary/20">
               {isOwner ? (
                 <button
-                  onClick={() => coverInputRef.current?.click()}
+                  onClick={() => mediaInputRef.current?.click()}
                   className="flex flex-col items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {uploadingCover ? (
+                  {uploadingMedia ? (
                     <Loader2 className="w-8 h-8 animate-spin" />
                   ) : (
                     <>
                       <ImagePlus className="w-10 h-10" />
-                      <span className="text-sm font-medium">Add cover photo or video</span>
+                      <span className="text-sm font-medium">Add photos or videos</span>
                     </>
                   )}
                 </button>
@@ -314,72 +459,159 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
             </div>
           )}
 
-          {/* Owner overlay button to change cover */}
-          {isOwner && activeAsset?.src && (
-            <button
-              onClick={() => coverInputRef.current?.click()}
-              className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm rounded-lg px-3 py-1.5 flex items-center gap-1.5 text-xs font-medium text-foreground hover:bg-background/90"
-            >
-              {uploadingCover ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <>
-                  <ImagePlus className="w-3.5 h-3.5" />
-                  Change
-                </>
-              )}
-            </button>
-          )}
-
           <input
-            ref={coverInputRef}
+            ref={mediaInputRef}
             type="file"
             accept="image/*,video/*"
             className="hidden"
-            onChange={handleCoverUpload}
+            onChange={handleMediaUpload}
+          />
+          <input
+            ref={replaceInputRef}
+            type="file"
+            accept="image/*,video/*"
+            className="hidden"
+            onChange={handleReplaceMedia}
           />
         </div>
       </div>
 
-      {/* Thumbnail Strip + Add Media button for owner */}
+      {/* Thumbnail Strip with long-press management */}
       <div className="px-4 mb-4">
         <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1">
           {thumbnails.map((thumb, i) => (
-            <button
-              key={thumb.id}
-              onClick={() => setActiveThumb(i)}
-              className={`relative flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden transition-all ${
-                activeThumb === i
-                  ? "ring-2 ring-primary ring-offset-1 ring-offset-background"
-                  : "opacity-60 hover:opacity-100"
-              }`}
-            >
-              {thumb.src ? (
-                thumb.isVideo && !thumb.playbackId ? (
+            <div key={thumb.id} className="relative flex-shrink-0">
+              <button
+                onClick={() => {
+                  if (longPressIndex !== null) {
+                    setLongPressIndex(null);
+                    return;
+                  }
+                  setActiveThumb(i);
+                }}
+                onTouchStart={() => isOwner && handleTouchStart(i)}
+                onTouchEnd={handleTouchEnd}
+                onTouchCancel={handleTouchEnd}
+                onMouseDown={() => isOwner && handleTouchStart(i)}
+                onMouseUp={handleTouchEnd}
+                onMouseLeave={handleTouchEnd}
+                onContextMenu={(e) => {
+                  if (isOwner) {
+                    e.preventDefault();
+                    setLongPressIndex(i);
+                  }
+                }}
+                className={`relative w-20 h-14 rounded-lg overflow-hidden transition-all ${
+                  activeThumb === i
+                    ? "ring-2 ring-primary ring-offset-1 ring-offset-background"
+                    : "opacity-60 hover:opacity-100"
+                } ${longPressIndex === i ? "ring-2 ring-destructive scale-95" : ""}`}
+              >
+                {thumb.isVideo && !thumb.playbackId ? (
                   <video src={thumb.src} muted playsInline preload="metadata" className="w-full h-full object-cover" />
                 ) : (
                   <img src={thumb.src} alt="" className="w-full h-full object-cover" />
-                )
-              ) : (
-                <div className="w-full h-full bg-secondary/40" />
-              )}
-              {thumb.isVideo && activeThumb !== i && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Play className="w-4 h-4 text-foreground" fill="currentColor" />
-                </div>
-              )}
-            </button>
+                )}
+                {thumb.isVideo && activeThumb !== i && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Play className="w-4 h-4 text-foreground" fill="currentColor" />
+                  </div>
+                )}
+              </button>
+
+              {/* Long-press action menu */}
+              <AnimatePresence>
+                {longPressIndex === i && isOwner && (
+                  <motion.div
+                    data-media-menu
+                    initial={{ opacity: 0, scale: 0.85, y: 4 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.85, y: 4 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute -top-12 left-1/2 -translate-x-1/2 z-50 flex items-center gap-0.5 bg-background border border-border rounded-xl shadow-lg px-1 py-1"
+                  >
+                    {/* Move Left */}
+                    {thumb.source === "gallery" && i > 0 && thumbnails[i - 1]?.source === "gallery" && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          moveMedia.mutate({ mediaId: thumb.id, direction: "left" });
+                        }}
+                        className="p-1.5 rounded-lg hover:bg-secondary/60 transition-colors"
+                        title="Move left"
+                      >
+                        <ArrowLeft className="w-3.5 h-3.5 text-muted-foreground" />
+                      </button>
+                    )}
+                    {/* Replace */}
+                    {thumb.source === "gallery" && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setReplacingMediaId(thumb.id);
+                          replaceInputRef.current?.click();
+                        }}
+                        className="p-1.5 rounded-lg hover:bg-secondary/60 transition-colors"
+                        title="Replace"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5 text-muted-foreground" />
+                      </button>
+                    )}
+                    {/* Delete */}
+                    {thumb.source === "gallery" && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteMedia.mutate(thumb.id);
+                        }}
+                        className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                      </button>
+                    )}
+                    {/* Move Right */}
+                    {thumb.source === "gallery" && i < thumbnails.filter(t => t.source === "gallery").length - 1 && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          moveMedia.mutate({ mediaId: thumb.id, direction: "right" });
+                        }}
+                        className="p-1.5 rounded-lg hover:bg-secondary/60 transition-colors"
+                        title="Move right"
+                      >
+                        <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
+                      </button>
+                    )}
+                    {/* Mux videos are read-only */}
+                    {thumb.source === "mux" && (
+                      <span className="px-2 py-1 text-[10px] text-muted-foreground whitespace-nowrap">
+                        Stream recording
+                      </span>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           ))}
+
           {/* Add media button for owner */}
           {isOwner && (
             <button
-              onClick={() => coverInputRef.current?.click()}
+              onClick={() => mediaInputRef.current?.click()}
               className="flex-shrink-0 w-20 h-14 rounded-lg border-2 border-dashed border-border hover:border-primary/40 flex items-center justify-center transition-colors"
             >
-              <Plus className="w-5 h-5 text-muted-foreground" />
+              {uploadingMedia ? (
+                <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
+              ) : (
+                <Plus className="w-5 h-5 text-muted-foreground" />
+              )}
             </button>
           )}
         </div>
+        {isOwner && thumbnails.length > 0 && (
+          <p className="text-[10px] text-muted-foreground/50 mt-1">Hold to manage media</p>
+        )}
       </div>
 
       {/* Metadata Row */}
