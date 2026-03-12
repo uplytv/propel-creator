@@ -434,7 +434,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Open menu" className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground">
                 <Menu className="w-5 h-5" />
               </button>
-              <img src="/logo.png" alt="Uply" className="h-[50px] cursor-pointer" onClick={() => navigate("/")} />
+              <img src="/logo.png" alt="Uply" className="h-[75px] w-auto object-contain cursor-pointer" onClick={() => navigate("/")} />
             </div>
             <div className="hidden md:flex items-center gap-3">
               <span className="text-sm font-medium">{profile.name}</span>
