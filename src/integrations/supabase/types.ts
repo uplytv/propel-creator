@@ -1618,6 +1618,7 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           business_category: string | null
+          cover_image_url: string | null
           created_at: string
           creator_challenge: string | null
           creator_stage: string | null
@@ -1634,12 +1635,14 @@ export type Database = {
           updated_at: string
           user_id: string
           user_type: string | null
+          username: string | null
           website: string | null
         }
         Insert: {
           avatar_url?: string | null
           bio?: string | null
           business_category?: string | null
+          cover_image_url?: string | null
           created_at?: string
           creator_challenge?: string | null
           creator_stage?: string | null
@@ -1656,12 +1659,14 @@ export type Database = {
           updated_at?: string
           user_id: string
           user_type?: string | null
+          username?: string | null
           website?: string | null
         }
         Update: {
           avatar_url?: string | null
           bio?: string | null
           business_category?: string | null
+          cover_image_url?: string | null
           created_at?: string
           creator_challenge?: string | null
           creator_stage?: string | null
@@ -1678,7 +1683,32 @@ export type Database = {
           updated_at?: string
           user_id?: string
           user_type?: string | null
+          username?: string | null
           website?: string | null
+        }
+        Relationships: []
+      }
+      social_links: {
+        Row: {
+          created_at: string
+          id: string
+          platform: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          platform: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          platform?: string
+          url?: string
+          user_id?: string
         }
         Relationships: []
       }
