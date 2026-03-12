@@ -334,7 +334,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         Skip to content
       </a>
       {/* Desktop Sidebar */}
-      <aside className={`hidden md:flex flex-col border-r border-border bg-card/20 backdrop-blur-xl fixed inset-y-0 left-0 z-30 transition-all duration-300 ${
+      <aside aria-label="Main navigation" className={`hidden md:flex flex-col border-r border-border bg-card/20 backdrop-blur-xl fixed inset-y-0 left-0 z-30 transition-all duration-300 ${
         collapsed ? "w-[68px]" : "w-60"
       }`}>
         {/* Logo + Collapse */}
