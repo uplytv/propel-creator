@@ -42,17 +42,19 @@ function useCreatorProfileData(username: string | undefined) {
     queryKey: ["creator-public-profile", username],
     queryFn: async () => {
       // Try username first, then display_name as fallback
-      let { data, error } = await supabase
+      let { data, error } = await (supabase as any)
         .from("profiles")
         .select("*")
-        .eq("username" as any, username)
+        .eq("username", username)
         .maybeSingle();
       if (!data) {
-        ({ data, error } = await supabase
+        const res = await supabase
           .from("profiles")
           .select("*")
-          .eq("display_name", username)
-          .maybeSingle());
+          .eq("display_name", username!)
+          .maybeSingle();
+        data = res.data;
+        error = res.error;
       }
       if (error) throw error;
       return data;
