@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import EmptyState from "@/components/ui/EmptyState";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, MoreVertical, Grid, List, Brain, Link as LinkIcon,
