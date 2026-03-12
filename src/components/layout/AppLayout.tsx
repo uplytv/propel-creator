@@ -255,11 +255,56 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         );
       })}
 
-      {/* Utility */}
-      <div className="mt-3 pt-3 border-t border-border/50 space-y-0.5">
-        {utilityNav.map(item => renderNavItem(item, collapsed))}
-        {isAdmin && renderNavItem({ label: "Admin", icon: Shield, path: "/admin", desc: "Platform admin" }, collapsed)}
-      </div>
+      {/* More Tools */}
+      {(() => {
+        const moreToolsCore = "more_tools";
+        const isExpanded = expandedCores.includes(moreToolsCore);
+        const allUtilityItems = [
+          ...utilityNav,
+          ...(isAdmin ? [{ label: "Admin", icon: Shield, path: "/admin", desc: "Platform admin" } as NavItem] : []),
+        ];
+
+        if (collapsed) {
+          return (
+            <div className="mt-3 pt-3 border-t border-border/50 space-y-0.5">
+              {allUtilityItems.map(item => (
+                <Tooltip key={item.label}>
+                  <TooltipTrigger asChild>{renderNavItem(item, true)}</TooltipTrigger>
+                  <TooltipContent side="right">{item.label}</TooltipContent>
+                </Tooltip>
+              ))}
+            </div>
+          );
+        }
+
+        return (
+          <div className="mt-3 pt-3 border-t border-border/50">
+            <button
+              onClick={() => setExpandedCores(prev =>
+                prev.includes(moreToolsCore) ? prev.filter(c => c !== moreToolsCore) : [...prev, moreToolsCore]
+              )}
+              className="w-full flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Settings className="w-3.5 h-3.5" />
+              <span className="flex-1 text-left">MORE TOOLS</span>
+              <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />
+            </button>
+            <AnimatePresence>
+              {isExpanded && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden space-y-0.5 ml-1"
+                >
+                  {allUtilityItems.map(item => renderNavItem(item, false))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      })()}
     </nav>
   );
 
