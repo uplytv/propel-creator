@@ -202,25 +202,32 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
           {/* Price */}
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             {isOwner ? (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
-                    if (!isFree) {
-                      updateSpace.mutate({ is_free: true, price: 0 }, {
-                        onSuccess: () => toast({ title: "Set to Free ✨" }),
-                      });
-                      setEditingPrice(false);
-                    } else {
-                      setEditingPrice(true);
-                    }
-                  }}
-                  className="flex items-center gap-2 px-2 py-1 -mx-2 rounded-md hover:bg-secondary/50 transition-colors"
-                >
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-2 px-2 py-1 -mx-2 rounded-md">
                   <Tag className="w-4 h-4" />
-                  <span>{isFree ? "Free" : `$${space?.price || 0}/mo`}</span>
-                  <Switch checked={!isFree} className="scale-75 ml-1" />
-                </button>
-                {editingPrice && isFree && (
+                  <span>{isFree && !editingPrice ? "Free" : `$${space?.price || 0}/mo`}</span>
+                  <Switch
+                    checked={!isFree}
+                    className="scale-75 ml-1"
+                    onCheckedChange={(checked) => {
+                      if (!checked) {
+                        // Switching to Free
+                        updateSpace.mutate({ is_free: true, price: 0 }, {
+                          onSuccess: () => {
+                            toast({ title: "Set to Free ✨" });
+                            setEditingPrice(false);
+                            setPriceInput("");
+                          },
+                        });
+                      } else {
+                        // Switching to Paid — show price input
+                        setEditingPrice(true);
+                        setPriceInput(String(space?.price || ""));
+                      }
+                    }}
+                  />
+                </div>
+                {editingPrice && (
                   <form
                     className="flex items-center gap-1"
                     onSubmit={(e) => {
@@ -232,7 +239,12 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
                             toast({ title: `Set to $${price}/mo 💰` });
                             setEditingPrice(false);
                           },
+                          onError: () => {
+                            toast({ title: "Failed to update price", variant: "destructive" });
+                          },
                         });
+                      } else {
+                        toast({ title: "Enter a price greater than 0", variant: "destructive" });
                       }
                     }}
                   >
@@ -247,7 +259,9 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
                       className="w-16 h-7 text-xs"
                       autoFocus
                     />
-                    <Button type="submit" size="sm" variant="ghost" className="h-7 px-2 text-xs">Set</Button>
+                    <Button type="submit" size="sm" variant="ghost" className="h-7 px-2 text-xs">
+                      {updateSpace.isPending ? "…" : "✓"}
+                    </Button>
                   </form>
                 )}
               </div>
