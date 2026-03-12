@@ -111,7 +111,7 @@ export default function CreatorProfile() {
           <Button
             variant="outline"
             className="mt-4 gap-2"
-            onClick={() => navigate(`/space/${profile.user_id}`)}
+            onClick={() => navigate(`/community/${profile.user_id}`)}
           >
             <Users className="w-4 h-4" />
             Visit Space
