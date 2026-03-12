@@ -285,7 +285,8 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-        </motion.div>
+          </motion.div>
+        </div>
       </div>
       {user && <AriaPanel open={ariaOpen} onClose={() => setAriaOpen(false)} />}
     </AppLayout>

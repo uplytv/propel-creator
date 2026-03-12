@@ -67,6 +67,7 @@ export default {
           DEFAULT: "hsl(var(--surface))",
           raised: "hsl(var(--surface-raised))",
           border: "hsl(var(--surface-border))",
+          alt: "hsl(var(--surface-alt))",
         },
         "text-dim": "hsl(var(--text-dim))",
         sidebar: {
