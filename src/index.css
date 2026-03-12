@@ -224,6 +224,28 @@
   .safe-area-bottom {
     padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
   }
+
+  /* Visual rhythm: alternating section backgrounds */
+  .section-alt {
+    background-color: hsl(var(--surface-alt));
+  }
+  .section-divider {
+    height: 1px;
+    background: var(--section-divider);
+  }
+  .section-glow {
+    position: relative;
+  }
+  .section-glow::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.15), transparent);
+  }
 }
 
 /* Skeleton pulse */
