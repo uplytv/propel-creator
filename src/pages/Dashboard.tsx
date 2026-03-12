@@ -113,7 +113,7 @@ export default function Dashboard() {
                 <p className="text-xs text-muted-foreground">{activeStream.viewer_count || 0} viewers</p>
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={() => navigate(`/stream/${activeStream.id}`)} className="gap-1.5 border-destructive/30 hover:border-destructive">
+            <Button variant="soft" size="sm" onClick={() => navigate(`/stream/${activeStream.id}`)} className="gap-1.5">
               <Radio className="w-3.5 h-3.5" /> View Stream
             </Button>
           </motion.div>
