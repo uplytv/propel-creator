@@ -4,6 +4,7 @@ import { Check, ArrowRight, Sparkles, Rocket, Users, Zap, Shield } from "lucide-
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import SEOHead from "@/components/SEOHead";
+import { supabase } from "@/integrations/supabase/client";
 
 const earlyAccessPerks = [
   { icon: Zap, title: "Founding Creator Status", desc: "Lifetime badge, priority support, and early feature access forever." },
