@@ -49,6 +49,7 @@ const JSON_LD = {
 
 export default function Landing() {
   const navigate = useNavigate();
+  const [applicantCount, setApplicantCount] = useState<number | null>(null);
   const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const glowY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
