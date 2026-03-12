@@ -105,11 +105,6 @@ function SortableThumb({
             <Play className="w-4 h-4 text-foreground" fill="currentColor" />
           </div>
         )}
-        {editMode && thumb.source === "mux" && (
-          <div className="absolute inset-0 bg-background/40 flex items-center justify-center">
-            <span className="text-[8px] text-muted-foreground font-medium">Recording</span>
-          </div>
-        )}
       </button>
 
       {/* iOS-style X delete badge */}
