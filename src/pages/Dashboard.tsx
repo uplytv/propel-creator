@@ -123,12 +123,13 @@ export default function Dashboard() {
         <OnboardingChecklist />
 
         {/* Stats Row */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8"
-        >
+        <div className="section-glow bg-surface-alt rounded-none px-4 md:px-8 py-6">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-3"
+          >
           {[
             { label: "Members", value: dashStats?.totalMembers ?? 0, icon: Users, iconColor: "text-violet-400" },
             { label: "Revenue", value: `$${(dashStats?.totalRevenue ?? 0).toLocaleString()}`, icon: DollarSign, iconColor: "text-emerald-400" },
