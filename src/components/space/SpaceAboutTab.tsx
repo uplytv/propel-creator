@@ -92,7 +92,7 @@ function SortableThumb({
             ? "opacity-60 hover:opacity-100"
             : ""
         } ${isDragging ? "opacity-70 scale-105 shadow-xl" : ""} ${
-          editMode && thumb.source === "gallery" ? "animate-wiggle" : ""
+          editMode ? "animate-wiggle" : ""
         }`}
       >
         {thumb.isVideo && !thumb.playbackId ? (
