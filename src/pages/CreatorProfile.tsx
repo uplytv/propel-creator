@@ -323,6 +323,11 @@ export default function CreatorProfile() {
 
   return (
     <div className="min-h-screen" style={{ background: "#0A0A0A" }}>
+      <SEOHead
+        title={profile.display_name || profile.username || "Creator"}
+        description={profile.bio || `Check out ${profile.display_name || profile.username}'s community, courses, and live streams on Uply.`}
+        image={profile.avatar_url || undefined}
+      />
       {/* NAVBAR */}
       <nav className="sticky top-0 z-50 flex items-center justify-between px-4 h-14 backdrop-blur-xl" style={{ background: "rgba(10,10,10,0.85)", borderBottom: "1px solid #1E1E1E" }}>
         <Link to="/" className="font-bold text-lg text-white tracking-tight">UPLY</Link>

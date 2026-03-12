@@ -148,6 +148,10 @@ export default function Jobs() {
 
   return (
     <AppLayout>
+      <SEOHead
+        title="Creator Jobs"
+        description="Browse and post freelance jobs for the creator economy — video editing, design, copywriting, and more on Uply."
+      />
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-6 space-y-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
