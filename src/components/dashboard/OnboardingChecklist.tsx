@@ -85,9 +85,20 @@ export function OnboardingChecklist() {
     {
       id: "member",
       label: "Invite your first member",
-      desc: "Share your space link",
+      desc: "Share your community link",
       icon: Users,
-      action: () => navigate(user ? `/space/${user.id}` : "/auth"),
+      action: () => {
+        if (user) {
+          const spaceUrl = `${window.location.origin}/space/${user.id}`;
+          if (navigator.share) {
+            navigator.share({ title: "Join my community on Uply", url: spaceUrl }).catch(() => {});
+          } else {
+            navigator.clipboard.writeText(spaceUrl);
+          }
+        } else {
+          navigate("/auth");
+        }
+      },
       checkFn: async () => {
         if (!user) return false;
         const { count } = await supabase
