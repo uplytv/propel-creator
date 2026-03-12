@@ -11,6 +11,7 @@ import {
   ExternalLink, Users, BookOpen, FileText, Pencil
 } from "lucide-react";
 import CreatorProfileEditDrawer from "@/components/creator-profile/CreatorProfileEditDrawer";
+import SEOHead from "@/components/SEOHead";
 
 // Social platform icons as simple SVG components
 const socialIcons: Record<string, React.FC<{ className?: string }>> = {
