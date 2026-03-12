@@ -431,7 +431,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
           <div className="flex items-center justify-between px-4 md:px-8 h-14">
             <div className="flex items-center gap-2 md:hidden">
-              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground">
+              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Open menu" className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground">
                 <Menu className="w-5 h-5" />
               </button>
               <img src="/logo.png" alt="Uply" className="h-[50px] cursor-pointer" onClick={() => navigate("/")} />
