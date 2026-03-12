@@ -212,22 +212,36 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
 
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
+  const [uploadingCover, setUploadingCover] = useState<string | null>(null);
+
   // Cover image upload for modules
   const handleModuleCoverUpload = async (moduleId: string, file: File) => {
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Please use an image under 5MB.", variant: "destructive" });
+      return;
+    }
+    setUploadingCover(moduleId);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const session = sessionData.session;
-      if (!session?.user?.id) return;
+      if (!session?.user?.id) {
+        toast({ title: "Not authenticated", variant: "destructive" });
+        return;
+      }
       const ext = file.name.split(".").pop()?.toLowerCase()?.replace(/[^a-z0-9]/g, "") || "jpg";
-      const path = `${session.user.id}/module-${moduleId}.${ext}`;
+      const path = `${session.user.id}/module-${moduleId}-${Date.now()}.${ext}`;
       const { error: uploadError } = await supabase.storage.from("covers").upload(path, file, { upsert: true, contentType: file.type });
       if (uploadError) throw uploadError;
       const { data: urlData } = supabase.storage.from("covers").getPublicUrl(path);
-      await supabase.from("classroom_modules").update({ cover_image_url: urlData.publicUrl } as any).eq("id", moduleId);
+      const { error: updateError } = await supabase.from("classroom_modules").update({ cover_image_url: urlData.publicUrl } as any).eq("id", moduleId);
+      if (updateError) throw updateError;
       queryClient.invalidateQueries({ queryKey: ["classroom-modules"] });
       toast({ title: "Cover image updated!" });
     } catch (err: any) {
-      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+      console.error("Cover upload error:", err);
+      toast({ title: "Upload failed", description: err.message || "Something went wrong", variant: "destructive" });
+    } finally {
+      setUploadingCover(null);
     }
   };
 
