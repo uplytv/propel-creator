@@ -237,18 +237,44 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
         <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-secondary/30 group">
           {activeAsset?.src ? (
             <>
-              <img src={activeAsset.src} alt="" className="w-full h-full object-cover" />
-              {activeAsset.isVideo && (
+              {activeAsset.isVideo && isPlayingVideo ? (
+                activeAsset.playbackId ? (
+                  <UPLYMuxPlayer playbackId={activeAsset.playbackId} autoPlay className="h-full" />
+                ) : (
+                  <video
+                    src={activeAsset.src}
+                    controls
+                    autoPlay
+                    playsInline
+                    className="w-full h-full object-contain bg-black"
+                  />
+                )
+              ) : activeAsset.isVideo && !activeAsset.playbackId ? (
+                <video
+                  src={activeAsset.src}
+                  muted
+                  playsInline
+                  preload="metadata"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <img src={activeAsset.src} alt="" className="w-full h-full object-cover" />
+              )}
+
+              {activeAsset.isVideo && !isPlayingVideo && (
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <motion.div
+                  <motion.button
+                    type="button"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
+                    onClick={() => setIsPlayingVideo(true)}
                     className="w-16 h-16 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center cursor-pointer shadow-lg"
                   >
                     <Play className="w-7 h-7 text-foreground ml-1" fill="currentColor" />
-                  </motion.div>
+                  </motion.button>
                 </div>
               )}
+
               {activeAsset.duration && (
                 <span className="absolute bottom-3 right-3 px-2 py-0.5 rounded-md bg-background/80 backdrop-blur-sm text-xs font-medium text-foreground">
                   {formatDuration(activeAsset.duration)}
