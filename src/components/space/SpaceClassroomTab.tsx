@@ -212,22 +212,36 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
 
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
+  const [uploadingCover, setUploadingCover] = useState<string | null>(null);
+
   // Cover image upload for modules
   const handleModuleCoverUpload = async (moduleId: string, file: File) => {
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Please use an image under 5MB.", variant: "destructive" });
+      return;
+    }
+    setUploadingCover(moduleId);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const session = sessionData.session;
-      if (!session?.user?.id) return;
+      if (!session?.user?.id) {
+        toast({ title: "Not authenticated", variant: "destructive" });
+        return;
+      }
       const ext = file.name.split(".").pop()?.toLowerCase()?.replace(/[^a-z0-9]/g, "") || "jpg";
-      const path = `${session.user.id}/module-${moduleId}.${ext}`;
+      const path = `${session.user.id}/module-${moduleId}-${Date.now()}.${ext}`;
       const { error: uploadError } = await supabase.storage.from("covers").upload(path, file, { upsert: true, contentType: file.type });
       if (uploadError) throw uploadError;
       const { data: urlData } = supabase.storage.from("covers").getPublicUrl(path);
-      await supabase.from("classroom_modules").update({ cover_image_url: urlData.publicUrl } as any).eq("id", moduleId);
+      const { error: updateError } = await supabase.from("classroom_modules").update({ cover_image_url: urlData.publicUrl } as any).eq("id", moduleId);
+      if (updateError) throw updateError;
       queryClient.invalidateQueries({ queryKey: ["classroom-modules"] });
       toast({ title: "Cover image updated!" });
     } catch (err: any) {
-      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+      console.error("Cover upload error:", err);
+      toast({ title: "Upload failed", description: err.message || "Something went wrong", variant: "destructive" });
+    } finally {
+      setUploadingCover(null);
     }
   };
 
@@ -410,7 +424,12 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                       >
                         {/* Cover image */}
                         <div className="relative w-full aspect-[16/9] bg-secondary overflow-hidden">
-                          {coverUrl ? (
+                          {uploadingCover === mod.id ? (
+                            <div className="w-full h-full flex flex-col items-center justify-center bg-secondary gap-2">
+                              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                              <span className="text-xs text-muted-foreground">Uploading…</span>
+                            </div>
+                          ) : coverUrl ? (
                             <img src={coverUrl} alt={mod.title} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-secondary to-secondary/50">
@@ -418,8 +437,8 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                             </div>
                           )}
                           {/* Owner: upload cover overlay */}
-                          {isOwner && !coverUrl && (
-                            <label className="absolute inset-0 flex flex-col items-center justify-center gap-1 cursor-pointer bg-background/40 opacity-0 hover:opacity-100 transition-opacity">
+                          {isOwner && !coverUrl && uploadingCover !== mod.id && (
+                            <label className="absolute inset-0 flex flex-col items-center justify-center gap-1 cursor-pointer bg-background/40" onClick={(e) => e.stopPropagation()}>
                               <ImagePlus className="w-6 h-6 text-foreground/70" />
                               <span className="text-xs text-foreground/70 font-medium">Add cover</span>
                               <input
@@ -435,8 +454,8 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                               />
                             </label>
                           )}
-                          {isOwner && coverUrl && (
-                            <label className="absolute top-2 right-2 p-1.5 rounded-full bg-background/60 backdrop-blur-sm cursor-pointer hover:bg-background/80 transition-colors">
+                          {isOwner && coverUrl && uploadingCover !== mod.id && (
+                            <label className="absolute top-2 right-2 p-1.5 rounded-full bg-background/60 backdrop-blur-sm cursor-pointer hover:bg-background/80 transition-colors" onClick={(e) => e.stopPropagation()}>
                               <Pencil className="w-3.5 h-3.5 text-foreground" />
                               <input
                                 type="file"
