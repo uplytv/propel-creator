@@ -434,7 +434,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Open menu" className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground">
                 <Menu className="w-5 h-5" />
               </button>
-              <img src="/logo.png" alt="Uply" className="h-[50px] cursor-pointer" onClick={() => navigate("/")} />
+              <img src="/logo.png" alt="Uply" className="h-[75px] w-auto object-contain cursor-pointer" onClick={() => navigate("/")} />
             </div>
             <div className="hidden md:flex items-center gap-3">
               <span className="text-sm font-medium">{profile.name}</span>
@@ -532,7 +532,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               className="md:hidden fixed inset-y-0 left-0 w-72 bg-card border-r border-border z-50 flex flex-col"
             >
               <div className="flex items-center justify-between p-4 border-b border-border">
-                <img src="/logo.png" alt="Uply" className="h-[50px] cursor-pointer" onClick={() => { navigate("/"); setMobileMenuOpen(false); }} />
+                <img src="/logo.png" alt="Uply" className="h-[75px] w-auto object-contain cursor-pointer" onClick={() => { navigate("/"); setMobileMenuOpen(false); }} />
                 <button onClick={() => setMobileMenuOpen(false)} aria-label="Close menu" className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground">
                   <X className="w-5 h-5" />
                 </button>
