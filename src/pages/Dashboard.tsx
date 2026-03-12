@@ -222,12 +222,13 @@ export default function Dashboard() {
         </div>
 
         {/* Getting Started / Health */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4"
-        >
+        <div className="section-glow bg-surface-alt rounded-none px-4 md:px-8 py-6">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          >
           {/* Tier Progress */}
           <div className="glass-card p-5">
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Your Level</h3>
