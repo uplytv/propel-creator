@@ -419,7 +419,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                           )}
                           {/* Owner: upload cover overlay */}
                           {isOwner && !coverUrl && (
-                            <label className="absolute inset-0 flex flex-col items-center justify-center gap-1 cursor-pointer bg-background/40 opacity-0 hover:opacity-100 transition-opacity">
+                            <label className="absolute inset-0 flex flex-col items-center justify-center gap-1 cursor-pointer bg-background/40" onClick={(e) => e.stopPropagation()}>
                               <ImagePlus className="w-6 h-6 text-foreground/70" />
                               <span className="text-xs text-foreground/70 font-medium">Add cover</span>
                               <input
