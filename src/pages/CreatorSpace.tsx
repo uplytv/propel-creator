@@ -90,7 +90,7 @@ export default function CreatorSpace() {
     }
   }, [isOwner, space]);
 
-  const spaceName = space?.name || creatorProfile?.display_name || "Creator Space";
+  const spaceName = space?.name || creatorProfile?.display_name || "Community";
   const spaceAvatar = space?.avatar_url || creatorProfile?.avatar_url;
 
   return (
