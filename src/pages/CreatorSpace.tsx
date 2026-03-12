@@ -132,18 +132,19 @@ export default function CreatorSpace() {
         {activeTab === "Calendar" && <SpaceCalendarTab creatorId={creatorId!} isOwner={isOwner} />}
         {activeTab === "Members" && <SpaceMembersTab creatorId={creatorId!} />}
         {activeTab === "Leaderboard" && <SpaceLeaderboardTab creatorId={creatorId!} />}
-        {activeTab === "About" && (
-          <div>
-            <SpaceAboutTab creatorId={creatorId!} isOwner={isOwner} />
-            {isOwner && (
-              <div className="px-4 mt-4">
-                <CreatorAffiliateProgramSettings />
-              </div>
-            )}
-          </div>
-        )}
-        {activeTab === "Earn" && showEarnTab && affiliateProgram && (
-          <MemberEarnTab programId={affiliateProgram.id} creatorId={creatorId!} />
+        {activeTab === "About" && <SpaceAboutTab creatorId={creatorId!} isOwner={isOwner} />}
+        {activeTab === "Earn" && (
+          isOwner ? (
+            <div className="px-4 pt-4">
+              <CreatorAffiliateProgramSettings />
+            </div>
+          ) : showMemberEarn && affiliateProgram ? (
+            <MemberEarnTab programId={affiliateProgram.id} creatorId={creatorId!} />
+          ) : (
+            <div className="p-8 text-center">
+              <p className="text-sm text-muted-foreground">The affiliate program is not active yet.</p>
+            </div>
+          )
         )}
       </div>
     </div>
