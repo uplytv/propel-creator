@@ -344,7 +344,11 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
               }`}
             >
               {thumb.src ? (
-                <img src={thumb.src} alt="" className="w-full h-full object-cover" />
+                thumb.isVideo && !thumb.playbackId ? (
+                  <video src={thumb.src} muted playsInline preload="metadata" className="w-full h-full object-cover" />
+                ) : (
+                  <img src={thumb.src} alt="" className="w-full h-full object-cover" />
+                )
               ) : (
                 <div className="w-full h-full bg-secondary/40" />
               )}
