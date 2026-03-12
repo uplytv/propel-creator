@@ -41,6 +41,7 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
     icon: Radio,
     items: [
       { label: "Live", icon: Radio, path: "/live", desc: "Watch & stream" },
+      { label: "Go Live", icon: Video, path: "/go-live", desc: "Start streaming" },
       { label: "Content Library", icon: Film, path: "/content-library", desc: "Videos & uploads", featureKey: "content_library" },
       { label: "Ad Campaigns", icon: Plug, path: "/ad-integrations", desc: "Boost streams", featureKey: "stream_boost" },
     ],
@@ -52,7 +53,10 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
     items: [
       { label: "Products", icon: Package, path: "/products", desc: "What you sell", featureKey: "product_store" },
       { label: "Wallet", icon: Wallet, path: "/wallet", desc: "Earnings & payouts", featureKey: "wallet" },
+      { label: "Buy Credits", icon: CreditCard, path: "/buy-credits", desc: "Purchase credits" },
       { label: "Jobs & Talent", icon: Briefcase, path: "/jobs", desc: "Freelance marketplace", featureKey: "jobs_marketplace" },
+      { label: "Post a Job", icon: UserPlus, path: "/post-job", desc: "Hire talent", featureKey: "jobs_marketplace" },
+      { label: "Talent Profile", icon: User, path: "/talent-profile", desc: "Your freelance profile", featureKey: "jobs_marketplace" },
       { label: "Collaborate", icon: Handshake, path: "/collaborate", desc: "Co-creator collabs", badgeKey: "collaborate", featureKey: "collaborations" },
       { label: "Affiliates", icon: Share2, path: "/affiliates", desc: "Referral program", featureKey: "affiliates" },
     ],
@@ -69,6 +73,7 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
 ];
 
 const utilityNav: NavItem[] = [
+  { label: "My Public Profile", icon: Globe, path: "__public_profile__", desc: "Your public page" },
   { label: "Messages", icon: MessageSquare, path: "/job-messages", desc: "Conversations", badgeKey: "job-messages" },
   { label: "Notifications", icon: BellIcon, path: "/notifications", desc: "Alerts", badgeKey: "notifications" },
   { label: "My Rep", icon: UserCheck, path: "/my-rep", desc: "Growth partner", requiresTier: 3 },
