@@ -55,8 +55,6 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
       { label: "Wallet", icon: Wallet, path: "/wallet", desc: "Earnings & payouts", featureKey: "wallet" },
       { label: "Buy Credits", icon: CreditCard, path: "/buy-credits", desc: "Purchase credits" },
       { label: "Jobs & Talent", icon: Briefcase, path: "/jobs", desc: "Freelance marketplace", featureKey: "jobs_marketplace" },
-      { label: "Post a Job", icon: UserPlus, path: "/post-job", desc: "Hire talent", featureKey: "jobs_marketplace" },
-      { label: "Talent Profile", icon: User, path: "/talent-profile", desc: "Your freelance profile", featureKey: "jobs_marketplace" },
       { label: "Collaborate", icon: Handshake, path: "/collaborate", desc: "Co-creator collabs", badgeKey: "collaborate", featureKey: "collaborations" },
       { label: "Affiliates", icon: Share2, path: "/affiliates", desc: "Referral program", featureKey: "affiliates" },
     ],
