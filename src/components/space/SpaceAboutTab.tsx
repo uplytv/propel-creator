@@ -378,7 +378,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
     return count.toString();
   };
 
-  const galleryIds = thumbnails.filter((t) => t.source === "gallery").map((t) => t.id);
+  const allIds = thumbnails.map((t) => t.id);
 
   return (
     <div className="pb-6">
