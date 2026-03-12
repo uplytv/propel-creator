@@ -337,12 +337,15 @@ export default function Products() {
             <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
           </div>
         ) : isEmpty ? (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-12 text-center">
-            <span className="text-5xl mb-4 block">📦</span>
-            <h3 className="text-xl font-bold mb-2">Your first product is one idea away.</h3>
-            <p className="text-muted-foreground mb-6">Let AI build it for you — just describe what you want to sell.</p>
-            <Button variant="default" size="lg" onClick={() => setShowCreate(true)}>Create Your First Product</Button>
-          </motion.div>
+          <EmptyState
+            icon={Package}
+            title="Your first product is one idea away"
+            description="Sell courses, downloads, coaching sessions, or memberships. Let AI build it for you — just describe what you want to sell."
+            actionLabel="Create Your First Product"
+            onAction={() => setShowCreate(true)}
+            secondaryLabel="Browse Templates"
+            onSecondary={() => { setShowCreate(true); setMode("template"); }}
+          />
         ) : (
           <div className={view === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : "space-y-3"}>
             {products?.map((p, i) => (
