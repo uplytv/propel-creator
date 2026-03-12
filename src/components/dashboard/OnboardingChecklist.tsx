@@ -21,6 +21,7 @@ export function OnboardingChecklist() {
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [dismissed, setDismissed] = useState(false);
+  const [showInviteLink, setShowInviteLink] = useState(false);
 
   const steps: ChecklistStep[] = [
     {
