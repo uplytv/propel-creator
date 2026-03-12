@@ -80,6 +80,18 @@ export default function Landing() {
     })), []
   );
 
+  useEffect(() => {
+    const fetchCount = async () => {
+      const { data } = await supabase
+        .from("launch_config")
+        .select("total_applicants")
+        .limit(1)
+        .single();
+      if (data) setApplicantCount(data.total_applicants);
+    };
+    fetchCount();
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <SEOHead />
