@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useCreatorSpace, useUpdateSpace } from "@/hooks/useCreatorSpace";
 import { useMemberCount, useIsMember, useJoinCommunity } from "@/hooks/useCommunityMembers";
@@ -6,7 +6,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Users, Lock, Globe, Tag, CheckCircle, Play, Star,
-  Pencil, X, Check, ImagePlus, Video, Loader2, Plus
+  Pencil, X, Check, ImagePlus, Loader2, Plus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
+import { UPLYMuxPlayer } from "@/components/MuxPlayer";
 
 interface Props {
   creatorId: string;
@@ -39,9 +40,16 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
   const [editingDesc, setEditingDesc] = useState(false);
   const [descInput, setDescInput] = useState("");
 
-  // Media upload state
+  // Media upload/playback state
   const coverInputRef = useRef<HTMLInputElement>(null);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [isPlayingVideo, setIsPlayingVideo] = useState(false);
+
+  const isVideoFileUrl = (url?: string | null) => {
+    if (!url) return false;
+    const clean = url.split("?")[0].toLowerCase();
+    return [".mp4", ".webm", ".mov", ".m4v", ".ogg"].some((ext) => clean.endsWith(ext));
+  };
 
   const { data: creatorProfile } = useQuery({
     queryKey: ["creator-profile-about", creatorId],
@@ -108,16 +116,24 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
   // Upload cover image or photo
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !isOwner) return;
 
     setUploadingCover(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        throw new Error("Session expired. Please sign in again.");
+      const { data: sessionData } = await supabase.auth.getSession();
+      let activeSession = sessionData.session;
+
+      if (!activeSession) {
+        const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError) throw refreshError;
+        activeSession = refreshed.session;
       }
 
-      const ownerId = session.user.id;
+      if (!activeSession?.user?.id) {
+        throw new Error("Please sign in to upload photos or videos.");
+      }
+
+      const ownerId = activeSession.user.id;
       const rawExt = file.name.split(".").pop()?.toLowerCase() || "bin";
       const ext = rawExt.replace(/[^a-z0-9]/g, "") || "bin";
       const path = `${ownerId}/${crypto.randomUUID()}.${ext}`;
@@ -135,12 +151,12 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
         .eq("creator_id", ownerId);
       if (updateError) throw updateError;
 
-      queryClient.invalidateQueries({ queryKey: ["creator-space"] });
+      queryClient.invalidateQueries({ queryKey: ["creator-space", creatorId] });
       toast({ title: "Cover updated 📸" });
     } catch (err: any) {
       const message = String(err?.message || "Upload failed");
       const friendly = message.toLowerCase().includes("row-level security")
-        ? "Your session isn’t authenticated in preview. Please sign in again, then retry upload."
+        ? "You need an active account session in preview. Please sign in again, then retry upload."
         : message;
       toast({ title: "Upload failed", description: friendly, variant: "destructive" });
     } finally {
@@ -159,10 +175,14 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
         isVideo: !!a.mux_playback_id,
       }))
     : coverImage
-      ? [{ id: "cover", src: coverImage, playbackId: null, duration: null, isVideo: false }]
+      ? [{ id: "cover", src: coverImage, playbackId: null, duration: null, isVideo: isVideoFileUrl(coverImage) }]
       : [];
 
   const activeAsset = thumbnails[activeThumb] || thumbnails[0];
+
+  useEffect(() => {
+    setIsPlayingVideo(false);
+  }, [activeAsset?.id]);
 
   const formatDuration = (seconds: number | null) => {
     if (!seconds) return "";
@@ -217,18 +237,44 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
         <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-secondary/30 group">
           {activeAsset?.src ? (
             <>
-              <img src={activeAsset.src} alt="" className="w-full h-full object-cover" />
-              {activeAsset.isVideo && (
+              {activeAsset.isVideo && isPlayingVideo ? (
+                activeAsset.playbackId ? (
+                  <UPLYMuxPlayer playbackId={activeAsset.playbackId} autoPlay className="h-full" />
+                ) : (
+                  <video
+                    src={activeAsset.src}
+                    controls
+                    autoPlay
+                    playsInline
+                    className="w-full h-full object-contain bg-black"
+                  />
+                )
+              ) : activeAsset.isVideo && !activeAsset.playbackId ? (
+                <video
+                  src={activeAsset.src}
+                  muted
+                  playsInline
+                  preload="metadata"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <img src={activeAsset.src} alt="" className="w-full h-full object-cover" />
+              )}
+
+              {activeAsset.isVideo && !isPlayingVideo && (
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <motion.div
+                  <motion.button
+                    type="button"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
+                    onClick={() => setIsPlayingVideo(true)}
                     className="w-16 h-16 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center cursor-pointer shadow-lg"
                   >
                     <Play className="w-7 h-7 text-foreground ml-1" fill="currentColor" />
-                  </motion.div>
+                  </motion.button>
                 </div>
               )}
+
               {activeAsset.duration && (
                 <span className="absolute bottom-3 right-3 px-2 py-0.5 rounded-md bg-background/80 backdrop-blur-sm text-xs font-medium text-foreground">
                   {formatDuration(activeAsset.duration)}
@@ -298,7 +344,11 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
               }`}
             >
               {thumb.src ? (
-                <img src={thumb.src} alt="" className="w-full h-full object-cover" />
+                thumb.isVideo && !thumb.playbackId ? (
+                  <video src={thumb.src} muted playsInline preload="metadata" className="w-full h-full object-cover" />
+                ) : (
+                  <img src={thumb.src} alt="" className="w-full h-full object-cover" />
+                )
               ) : (
                 <div className="w-full h-full bg-secondary/40" />
               )}
