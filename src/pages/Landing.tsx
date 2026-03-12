@@ -90,7 +90,7 @@ export default function Landing() {
         <div className="container flex h-16 items-center justify-between">
           <img src="/logo.png" alt="Uply" className="h-[110px]" />
           <div className="hidden md:flex items-center gap-8">
-            <a href="#social-proof" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Creators</a>
+            <a href="#social-proof" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Early Access</a>
             <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
           </div>
           <div className="flex items-center gap-3">
