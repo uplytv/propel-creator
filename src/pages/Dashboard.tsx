@@ -163,6 +163,7 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Actions - Core Features */}
+        <div className="px-4 md:px-8 py-6">
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
