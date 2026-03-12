@@ -430,9 +430,9 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
                   <video src={activeAsset.src} controls autoPlay playsInline className="w-full h-full object-contain bg-black" />
                 )
               ) : activeAsset.isVideo && !activeAsset.playbackId ? (
-                <video src={activeAsset.src} muted playsInline preload="metadata" className="w-full h-full object-cover" />
+                <video src={activeAsset.src} muted playsInline preload="metadata" className="w-full h-full object-contain bg-black" />
               ) : (
-                <img src={activeAsset.src} alt="" className="w-full h-full object-cover" />
+                <img src={activeAsset.src} alt="" className="w-full h-full object-contain bg-black" />
               )}
 
               {activeAsset.isVideo && !isPlayingVideo && (
