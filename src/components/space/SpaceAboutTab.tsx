@@ -108,7 +108,7 @@ function SortableThumb({
       </button>
 
       {/* iOS-style X delete badge */}
-      {editMode && thumb.source === "gallery" && (
+      {editMode && (
         <motion.button
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
