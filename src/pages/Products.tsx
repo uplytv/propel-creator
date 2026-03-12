@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, MoreVertical, Grid, List, Brain, Link as LinkIcon,
   LayoutTemplate, Pencil, Users, DollarSign, X, ArrowLeft,
-  Loader2, Sparkles, Trash2, Video, Upload, ImageIcon,
+  Loader2, Sparkles, Trash2, Video, Upload, ImageIcon, Package,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
