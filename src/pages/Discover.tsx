@@ -9,6 +9,7 @@ import FeedFilters from "@/components/discovery/FeedFilters";
 import FeaturedCarousel from "@/components/discovery/FeaturedCarousel";
 import CategoryHeroBanner from "@/components/discovery/CategoryHeroBanner";
 import BackNav from "@/components/BackNav";
+import SEOHead from "@/components/SEOHead";
 
 const PAGE_SIZE = 8;
 
