@@ -27,10 +27,10 @@ type NavItem = { label: string; icon: React.ElementType; path: string; desc: str
 const coreNav: { core: string; label: string; icon: React.ElementType; items: NavItem[] }[] = [
   {
     core: "space",
-    label: "SPACE",
+    label: "COMMUNITY",
     icon: LayoutGrid,
     items: [
-      { label: "My Space", icon: LayoutGrid, path: "__space__", desc: "Your community hub" },
+      { label: "My Community", icon: LayoutGrid, path: "__space__", desc: "Your community hub" },
       { label: "Leaderboard", icon: Trophy, path: "/leaderboard", desc: "Top members", featureKey: "leaderboard" },
     ],
   },
