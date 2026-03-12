@@ -130,6 +130,29 @@ export function useMemberAffiliateCode(programId?: string) {
   });
 }
 
+export function useMemberAffiliateStats(programId?: string) {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ["member-affiliate-stats", programId, user?.id],
+    enabled: !!programId && !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("creator_affiliate_members")
+        .select("clicks, conversions, earnings, created_at")
+        .eq("program_id", programId!)
+        .eq("member_id", user!.id)
+        .maybeSingle();
+
+      return {
+        clicks: data?.clicks ?? 0,
+        conversions: data?.conversions ?? 0,
+        earnings: Number(data?.earnings ?? 0),
+      };
+    },
+  });
+}
+
 // Admin hooks
 export function useAdminAffiliateStats() {
   return useQuery({
