@@ -7,7 +7,8 @@ import {
   LogOut, Settings, ChevronLeft, ChevronRight, Shield, TrendingUp,
   Zap, Crown, Sparkles, BarChart3, Radio, Menu, X, Wallet, LayoutGrid, ChevronDown,
   GraduationCap, DollarSign, Bot, Briefcase, Handshake, Share2, Film,
-  Trophy, Plug, MessageSquare, Bell as BellIcon, UserCheck, Search, Rocket
+  Trophy, Plug, MessageSquare, Bell as BellIcon, UserCheck, Search, Rocket,
+  Video, CreditCard, UserPlus, User, Globe
 } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import { useApp, tierNames } from "@/context/AppContext";
@@ -40,6 +41,7 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
     icon: Radio,
     items: [
       { label: "Live", icon: Radio, path: "/live", desc: "Watch & stream" },
+      { label: "Go Live", icon: Video, path: "/go-live", desc: "Start streaming" },
       { label: "Content Library", icon: Film, path: "/content-library", desc: "Videos & uploads", featureKey: "content_library" },
       { label: "Ad Campaigns", icon: Plug, path: "/ad-integrations", desc: "Boost streams", featureKey: "stream_boost" },
     ],
@@ -51,7 +53,10 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
     items: [
       { label: "Products", icon: Package, path: "/products", desc: "What you sell", featureKey: "product_store" },
       { label: "Wallet", icon: Wallet, path: "/wallet", desc: "Earnings & payouts", featureKey: "wallet" },
+      { label: "Buy Credits", icon: CreditCard, path: "/buy-credits", desc: "Purchase credits" },
       { label: "Jobs & Talent", icon: Briefcase, path: "/jobs", desc: "Freelance marketplace", featureKey: "jobs_marketplace" },
+      { label: "Post a Job", icon: UserPlus, path: "/post-job", desc: "Hire talent", featureKey: "jobs_marketplace" },
+      { label: "Talent Profile", icon: User, path: "/talent-profile", desc: "Your freelance profile", featureKey: "jobs_marketplace" },
       { label: "Collaborate", icon: Handshake, path: "/collaborate", desc: "Co-creator collabs", badgeKey: "collaborate", featureKey: "collaborations" },
       { label: "Affiliates", icon: Share2, path: "/affiliates", desc: "Referral program", featureKey: "affiliates" },
     ],
@@ -68,6 +73,7 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
 ];
 
 const utilityNav: NavItem[] = [
+  { label: "My Public Profile", icon: Globe, path: "__public_profile__", desc: "Your public page" },
   { label: "Messages", icon: MessageSquare, path: "/job-messages", desc: "Conversations", badgeKey: "job-messages" },
   { label: "Notifications", icon: BellIcon, path: "/notifications", desc: "Alerts", badgeKey: "notifications" },
   { label: "My Rep", icon: UserCheck, path: "/my-rep", desc: "Growth partner", requiresTier: 3 },
@@ -141,21 +147,28 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     for (const group of coreNav) {
       const hasActive = group.items.some(item => {
-        const resolved = item.path === "__space__" ? (user ? `/community/${user.id}` : "/auth") : item.path;
-        return location.pathname === resolved;
+        const resolved = resolvePath(item);
+        return location.pathname === resolved || location.pathname.startsWith(resolved + "/");
       });
       if (hasActive && !expandedCores.includes(group.core)) {
         setExpandedCores(prev => [...prev, group.core]);
       }
     }
     // Auto-expand More Tools if a utility item is active
-    const utilityActive = utilityNav.some(item => location.pathname === item.path) || location.pathname === "/admin";
+    const utilityActive = utilityNav.some(item => {
+      const resolved = resolvePath(item);
+      return location.pathname === resolved;
+    }) || location.pathname.startsWith("/admin");
     if (utilityActive && !expandedCores.includes("more_tools")) {
       setExpandedCores(prev => [...prev, "more_tools"]);
     }
   }, [location.pathname, user]);
 
-  const resolvePath = (item: NavItem) => item.path === "__space__" ? (user ? `/community/${user.id}` : "/auth") : item.path;
+  const resolvePath = (item: NavItem) => {
+    if (item.path === "__space__") return user ? `/community/${user.id}` : "/auth";
+    if (item.path === "__public_profile__") return user ? `/creator/${profile.name || user.id}` : "/auth";
+    return item.path;
+  };
 
   const renderNavItem = (item: NavItem, inCollapsed: boolean, onNavigate?: () => void) => {
     // Check feature visibility
