@@ -1,8 +1,9 @@
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
-import { useRef, useMemo, useCallback } from "react";
+import { useRef, useMemo, useCallback, useEffect } from "react";
 import { Check, ArrowRight, Star, Heart, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import SEOHead from "@/components/SEOHead";
 
 const testimonials = [
   { name: "Sarah Chen", role: "Fitness Creator", avatar: "SC", quote: "I went from 0 to 2,000 members in 6 months. The AI growth partner is like having a CMO on speed dial.", revenue: "$48K/mo" },
@@ -21,6 +22,27 @@ const item = { hidden: { opacity: 0, y: 30, scale: 0.97 }, show: { opacity: 1, y
 const sectionHeading = {
   hidden: { opacity: 0, y: 40 },
   show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" as const } },
+};
+
+const JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Uply",
+  "url": "https://propel-creator.lovable.app",
+  "description": "Social network for creators to monetize. The only creator platform that invests more in you as you grow.",
+  "applicationCategory": "SocialNetworkingApplication",
+  "operatingSystem": "Web",
+  "offers": {
+    "@type": "AggregateOffer",
+    "lowPrice": "0",
+    "highPrice": "99",
+    "priceCurrency": "USD",
+    "offerCount": "3"
+  },
+  "creator": {
+    "@type": "Organization",
+    "name": "Uply"
+  }
 };
 
 export default function Landing() {
@@ -57,6 +79,11 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
+      />
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container flex h-16 items-center justify-between">
