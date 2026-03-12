@@ -167,10 +167,14 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
         isVideo: !!a.mux_playback_id,
       }))
     : coverImage
-      ? [{ id: "cover", src: coverImage, playbackId: null, duration: null, isVideo: false }]
+      ? [{ id: "cover", src: coverImage, playbackId: null, duration: null, isVideo: isVideoFileUrl(coverImage) }]
       : [];
 
   const activeAsset = thumbnails[activeThumb] || thumbnails[0];
+
+  useEffect(() => {
+    setIsPlayingVideo(false);
+  }, [activeAsset?.id]);
 
   const formatDuration = (seconds: number | null) => {
     if (!seconds) return "";
