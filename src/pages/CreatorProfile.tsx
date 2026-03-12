@@ -65,8 +65,8 @@ function useCreatorProfileData(username: string | undefined) {
   const socialLinksQuery = useQuery({
     queryKey: ["creator-social-links", userId],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("social_links" as any)
+      const { data } = await (supabase as any)
+        .from("social_links")
         .select("*")
         .eq("user_id", userId!);
       return (data as any[]) || [];
