@@ -43,7 +43,7 @@ export default function CreatorSpace() {
   };
   const initialTab: Tab = resolveTab(tabFromQuery || tabFromState);
   const [activeTab, setActiveTab] = useState<Tab>(initialTab);
-  const isOwner = user?.id === creatorId;
+  const isOwner = !!user?.id && !!creatorId && user.id === creatorId;
 
   const { data: space } = useCreatorSpace(creatorId);
   const { data: memberCount = 0 } = useMemberCount(creatorId);

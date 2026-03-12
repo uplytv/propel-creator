@@ -108,24 +108,41 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
   // Upload cover image or photo
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !user) return;
+    if (!file) return;
+
     setUploadingCover(true);
     try {
-      const ext = file.name.split(".").pop();
-      const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
-      const { error } = await supabase.storage
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error("Session expired. Please sign in again.");
+      }
+
+      const ownerId = session.user.id;
+      const rawExt = file.name.split(".").pop()?.toLowerCase() || "bin";
+      const ext = rawExt.replace(/[^a-z0-9]/g, "") || "bin";
+      const path = `${ownerId}/${crypto.randomUUID()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
         .from("covers")
-        .upload(path, file, { upsert: true });
-      if (error) throw error;
+        .upload(path, file, { upsert: true, contentType: file.type || undefined });
+      if (uploadError) throw uploadError;
+
       const { data: urlData } = supabase.storage.from("covers").getPublicUrl(path);
-      await supabase
+
+      const { error: updateError } = await supabase
         .from("creator_spaces")
         .update({ cover_image_url: urlData.publicUrl } as any)
-        .eq("creator_id", user.id);
+        .eq("creator_id", ownerId);
+      if (updateError) throw updateError;
+
       queryClient.invalidateQueries({ queryKey: ["creator-space"] });
       toast({ title: "Cover updated 📸" });
     } catch (err: any) {
-      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+      const message = String(err?.message || "Upload failed");
+      const friendly = message.toLowerCase().includes("row-level security")
+        ? "Your session isn’t authenticated in preview. Please sign in again, then retry upload."
+        : message;
+      toast({ title: "Upload failed", description: friendly, variant: "destructive" });
     } finally {
       setUploadingCover(false);
       if (coverInputRef.current) coverInputRef.current.value = "";
