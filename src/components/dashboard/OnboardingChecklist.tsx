@@ -91,12 +91,7 @@ export function OnboardingChecklist() {
       icon: Users,
       action: () => {
         if (user) {
-          const spaceUrl = `${window.location.origin}/space/${user.id}`;
-          if (navigator.share) {
-            navigator.share({ title: "Join my community on Uply", url: spaceUrl }).catch(() => {});
-          } else {
-            navigator.clipboard.writeText(spaceUrl);
-          }
+          setShowInviteLink(prev => !prev);
         } else {
           navigate("/auth");
         }
