@@ -231,6 +231,8 @@ export default function Launchpad() {
     setImageFile(null);
     setImagePreview(null);
     setIdea("");
+    setIsPublic(true);
+    setIsFree(true);
   };
 
   return (
