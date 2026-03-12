@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { ChevronDown, ChevronRight, CheckCircle, Lock, Play, Plus, ArrowLeft, ArrowRight, GripVertical, Trash2, Pencil, Loader2, AlertCircle } from "lucide-react";
+import { ChevronDown, ChevronRight, CheckCircle, Lock, Play, Plus, ArrowLeft, ArrowRight, GripVertical, Trash2, Pencil, Loader2, AlertCircle, BookOpen, Clock, Layers } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UPLYMuxPlayer } from "@/components/MuxPlayer";
@@ -34,24 +34,19 @@ interface Props {
   isOwner: boolean;
 }
 
+/* ── Sortable wrappers ── */
 function SortableModule({ mod, children, isOwner }: { mod: any; children: React.ReactNode; isOwner: boolean }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: mod.id, disabled: !isOwner });
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    background: "#111111",
-    border: "1px solid #1e1e1e",
-  };
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
   return (
-    <div ref={setNodeRef} style={style} className="rounded-lg overflow-hidden" {...attributes}>
+    <div ref={setNodeRef} style={style} {...attributes}>
       <div className="flex items-center">
         {isOwner && (
-          <div {...listeners} className="px-2 cursor-grab active:cursor-grabbing touch-none" style={{ color: "#888" }}>
-            <GripVertical className="w-4 h-4" />
+          <div {...listeners} className="px-1.5 cursor-grab active:cursor-grabbing touch-none" style={{ color: "#555" }}>
+            <GripVertical className="w-3.5 h-3.5" />
           </div>
         )}
-        <div className="flex-1">{children}</div>
+        <div className="flex-1 min-w-0">{children}</div>
       </div>
     </div>
   );
@@ -59,23 +54,20 @@ function SortableModule({ mod, children, isOwner }: { mod: any; children: React.
 
 function SortableLesson({ lesson, children, isOwner }: { lesson: any; children: React.ReactNode; isOwner: boolean }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: lesson.id, disabled: !isOwner });
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
   return (
     <div ref={setNodeRef} style={style} className="flex items-center" {...attributes}>
       {isOwner && (
-        <div {...listeners} className="px-2 cursor-grab active:cursor-grabbing touch-none" style={{ color: "#888" }}>
+        <div {...listeners} className="px-1 cursor-grab active:cursor-grabbing touch-none" style={{ color: "#555" }}>
           <GripVertical className="w-3 h-3" />
         </div>
       )}
-      <div className="flex-1">{children}</div>
+      <div className="flex-1 min-w-0">{children}</div>
     </div>
   );
 }
 
+/* ── Lesson Video Player ── */
 function LessonPlayer({ lesson }: { lesson: any }) {
   const { data: playbackId } = useQuery({
     queryKey: ["lesson-playback", lesson.mux_asset_id],
@@ -90,10 +82,7 @@ function LessonPlayer({ lesson }: { lesson: any }) {
     },
   });
 
-  if (playbackId) {
-    return <UPLYMuxPlayer playbackId={playbackId} title={lesson.title} autoPlay />;
-  }
-
+  if (playbackId) return <UPLYMuxPlayer playbackId={playbackId} title={lesson.title} autoPlay />;
   if (lesson.video_url) {
     return (
       <div className="w-full aspect-video bg-black">
@@ -101,14 +90,16 @@ function LessonPlayer({ lesson }: { lesson: any }) {
       </div>
     );
   }
-
   return (
-    <div className="w-full aspect-video flex items-center justify-center" style={{ background: "#111111" }}>
-      <Play className="w-12 h-12" style={{ color: "#888" }} />
+    <div className="w-full aspect-video flex items-center justify-center" style={{ background: "#111" }}>
+      <Play className="w-12 h-12" style={{ color: "#555" }} />
     </div>
   );
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   MAIN COMPONENT
+   ═══════════════════════════════════════════════════════════════ */
 export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -122,41 +113,37 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
   const deleteModule = useDeleteModule();
   const deleteLesson = useDeleteLesson();
 
-  // Fetch mux_asset statuses for lessons that have a mux_asset_id
-  const lessonAssetIds = allLessons
-    .filter((l: any) => l.mux_asset_id && l.mux_asset_id !== "")
-    .map((l: any) => l.mux_asset_id);
-
+  // Asset statuses for thumbnails & processing indicators
+  const lessonAssetIds = allLessons.filter((l: any) => l.mux_asset_id && l.mux_asset_id !== "").map((l: any) => l.mux_asset_id);
   const { data: assetStatuses = {} } = useQuery({
     queryKey: ["lesson-asset-statuses", lessonAssetIds],
     enabled: lessonAssetIds.length > 0,
     refetchInterval: (query) => {
-      const data = query.state.data as Record<string, { status: string }> | undefined;
+      const data = query.state.data as Record<string, any> | undefined;
       if (!data) return false;
-      const hasPending = Object.values(data).some(
-        (a) => a.status === "preparing" || a.status === "pending"
-      );
-      return hasPending ? 15000 : false;
+      return Object.values(data).some((a: any) => a.status === "preparing" || a.status === "pending") ? 15000 : false;
     },
     queryFn: async () => {
-      const { data } = await supabase
-        .from("mux_assets")
-        .select("mux_asset_id, status, mux_playback_id")
-        .in("mux_asset_id", lessonAssetIds);
-      const map: Record<string, { status: string; hasPlayback: boolean; playbackId: string | null }> = {};
-      (data || []).forEach((a: any) => {
-        map[a.mux_asset_id] = { status: a.status || "preparing", hasPlayback: !!a.mux_playback_id, playbackId: a.mux_playback_id || null };
-      });
+      const { data } = await supabase.from("mux_assets").select("mux_asset_id, status, mux_playback_id").in("mux_asset_id", lessonAssetIds);
+      const map: Record<string, any> = {};
+      (data || []).forEach((a: any) => { map[a.mux_asset_id] = { status: a.status || "preparing", hasPlayback: !!a.mux_playback_id, playbackId: a.mux_playback_id || null }; });
       return map;
     },
   });
 
-  const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
+  const [expandedModules, setExpandedModules] = useState<Set<string>>(() => new Set(modules.map((m: any) => m.id)));
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
   const [showAddModule, setShowAddModule] = useState(false);
   const [showAddLesson, setShowAddLesson] = useState<string | null>(null);
   const [editingModule, setEditingModule] = useState<any>(null);
   const [editingLesson, setEditingLesson] = useState<any>(null);
+
+  // Expand all modules when they load
+  useState(() => {
+    if (modules.length > 0 && expandedModules.size === 0) {
+      setExpandedModules(new Set(modules.map((m: any) => m.id)));
+    }
+  });
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -166,6 +153,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
   const totalLessons = allLessons.length;
   const completedCount = allLessons.filter((l: any) => (completions as Set<string>).has(l.id)).length;
   const progressPct = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
+  const totalDuration = allLessons.reduce((sum: number, l: any) => sum + (l.duration_seconds || 0), 0);
 
   const toggleModule = (id: string) => {
     const next = new Set(expandedModules);
@@ -173,8 +161,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
     setExpandedModules(next);
   };
 
-  const getLessonsForModule = (moduleId: string) =>
-    allLessons.filter((l: any) => l.module_id === moduleId);
+  const getLessonsForModule = (moduleId: string) => allLessons.filter((l: any) => l.module_id === moduleId);
 
   const handleComplete = async (lessonId: string) => {
     try {
@@ -191,8 +178,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
     const oldIndex = modules.findIndex((m: any) => m.id === active.id);
     const newIndex = modules.findIndex((m: any) => m.id === over.id);
     const reordered = arrayMove(modules, oldIndex, newIndex);
-    const updates = reordered.map((m: any, i: number) => ({ id: m.id, position: i }));
-    reorderModules.mutate(updates);
+    reorderModules.mutate(reordered.map((m: any, i: number) => ({ id: m.id, position: i })));
   }, [modules, reorderModules]);
 
   const handleLessonDragEnd = useCallback((moduleId: string) => (event: DragEndEvent) => {
@@ -202,8 +188,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
     const oldIndex = lessons.findIndex((l: any) => l.id === active.id);
     const newIndex = lessons.findIndex((l: any) => l.id === over.id);
     const reordered = arrayMove(lessons, oldIndex, newIndex);
-    const updates = reordered.map((l: any, i: number) => ({ id: l.id, position: i }));
-    reorderLessons.mutate(updates);
+    reorderLessons.mutate(reordered.map((l: any, i: number) => ({ id: l.id, position: i })));
   }, [allLessons, reorderLessons]);
 
   const currentLessonIdx = selectedLesson ? allLessons.findIndex((l: any) => l.id === selectedLesson.id) : -1;
@@ -211,13 +196,23 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
   const nextLesson = currentLessonIdx < allLessons.length - 1 ? allLessons[currentLessonIdx + 1] : null;
 
   const formatDuration = (seconds: number) => {
+    if (!seconds) return "";
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
-  // Lesson Player View
-  if (selectedLesson) {
+  const formatTotalDuration = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    if (h > 0) return `${h}h ${m}m`;
+    return `${m}m`;
+  };
+
+  /* ── Mobile: Full-screen lesson view ── */
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+
+  if (isMobile && selectedLesson) {
     return (
       <div className="fixed inset-0 z-50 flex flex-col" style={{ background: "#0A0A0A" }}>
         <div className="flex items-center gap-3 p-4" style={{ borderBottom: "1px solid #1e1e1e" }}>
@@ -226,24 +221,23 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
         </div>
         <div className="flex-1 overflow-y-auto">
           <LessonPlayer lesson={selectedLesson} />
-          <div className="p-4">
-            <h2 className="text-lg font-bold text-white mb-2">{selectedLesson.title}</h2>
-            <p className="text-sm mb-4" style={{ color: "#ccc" }}>{selectedLesson.description}</p>
-            {user && !(completions as Set<string>).has(selectedLesson.id) && (
-              <Button onClick={() => handleComplete(selectedLesson.id)} className="w-full font-semibold mb-4" style={{ background: "#00FF85", color: "#0A0A0A" }}>
-                <CheckCircle className="w-4 h-4 mr-2" /> Mark as Complete
+          <div className="p-4 space-y-4">
+            <h2 className="text-lg font-bold text-white">{selectedLesson.title}</h2>
+            {selectedLesson.description && <p className="text-sm" style={{ color: "#aaa" }}>{selectedLesson.description}</p>}
+            {user && !(completions as Set<string>).has(selectedLesson.id) ? (
+              <Button onClick={() => handleComplete(selectedLesson.id)} className="w-full font-semibold" style={{ background: "#00FF85", color: "#0A0A0A" }}>
+                <CheckCircle className="w-4 h-4 mr-2" /> Mark Complete
               </Button>
-            )}
-            {(completions as Set<string>).has(selectedLesson.id) && (
-              <div className="flex items-center gap-2 mb-4 text-sm" style={{ color: "#00FF85" }}>
+            ) : (completions as Set<string>).has(selectedLesson.id) ? (
+              <div className="flex items-center gap-2 text-sm" style={{ color: "#00FF85" }}>
                 <CheckCircle className="w-4 h-4" /> Completed
               </div>
-            )}
-            <div className="flex justify-between">
-              <button onClick={() => prevLesson && setSelectedLesson(prevLesson)} disabled={!prevLesson} className="flex items-center gap-1 text-sm" style={{ color: prevLesson ? "#fff" : "#888" }}>
+            ) : null}
+            <div className="flex justify-between pt-2">
+              <button onClick={() => prevLesson && setSelectedLesson(prevLesson)} disabled={!prevLesson} className="flex items-center gap-1 text-sm" style={{ color: prevLesson ? "#fff" : "#555" }}>
                 <ArrowLeft className="w-4 h-4" /> Previous
               </button>
-              <button onClick={() => nextLesson && setSelectedLesson(nextLesson)} disabled={!nextLesson} className="flex items-center gap-1 text-sm" style={{ color: nextLesson ? "#fff" : "#888" }}>
+              <button onClick={() => nextLesson && setSelectedLesson(nextLesson)} disabled={!nextLesson} className="flex items-center gap-1 text-sm" style={{ color: nextLesson ? "#fff" : "#555" }}>
                 Next <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -253,226 +247,320 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
     );
   }
 
-  return (
-    <div className="px-4 pt-4">
-      {/* Progress Bar */}
+  /* ── Sidebar: Module list ── */
+  const renderSidebar = () => (
+    <div className="flex flex-col h-full">
+      {/* Progress */}
       {totalLessons > 0 && (
-        <div className="mb-4 p-3 rounded-lg" style={{ background: "#111111", border: "1px solid #1e1e1e" }}>
-          <p className="text-xs font-medium mb-2 text-white">You've completed {completedCount} of {totalLessons} lessons</p>
+        <div className="p-4" style={{ borderBottom: "1px solid #1e1e1e" }}>
+          <p className="text-xs font-medium mb-2" style={{ color: "#aaa" }}>
+            {completedCount} of {totalLessons} lessons complete
+          </p>
           <div className="h-2 rounded-full overflow-hidden" style={{ background: "#1e1e1e" }}>
-            <div className="h-full rounded-full transition-all" style={{ width: `${progressPct}%`, background: "#00FF85" }} />
+            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${progressPct}%`, background: "#00FF85" }} />
           </div>
         </div>
       )}
 
-      {isOwner && (
-        <button onClick={() => setShowAddModule(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold mb-4" style={{ border: "1px dashed #1e1e1e", color: "#00FF85" }}>
-          <Plus className="w-4 h-4" /> Add Module
-        </button>
-      )}
+      {/* Module list */}
+      <div className="flex-1 overflow-y-auto">
+        {modules.length === 0 ? (
+          <div className="p-8 text-center">
+            <BookOpen className="w-8 h-8 mx-auto mb-2" style={{ color: "#555" }} />
+            <p className="text-sm font-medium text-white mb-1">No courses yet</p>
+            <p className="text-xs" style={{ color: "#888" }}>
+              {isOwner ? "Add your first module to get started." : "No content available yet."}
+            </p>
+          </div>
+        ) : (
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleModuleDragEnd}>
+            <SortableContext items={modules.map((m: any) => m.id)} strategy={verticalListSortingStrategy}>
+              <div>
+                {modules.map((mod: any, idx: number) => {
+                  const lessons = getLessonsForModule(mod.id);
+                  const modCompleted = lessons.length > 0 && lessons.every((l: any) => (completions as Set<string>).has(l.id));
+                  const isExpanded = expandedModules.has(mod.id);
 
-      {modules.length === 0 ? (
-        <div className="p-12 text-center rounded-lg" style={{ background: "#111111" }}>
-          <span className="text-4xl block mb-3">📚</span>
-          <p className="font-semibold text-white mb-1">No courses yet</p>
-          <p className="text-sm" style={{ color: "#888" }}>
-            {isOwner ? "Add your first module to start building your classroom." : "The creator hasn't added any courses yet."}
-          </p>
-        </div>
-      ) : (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleModuleDragEnd}>
-          <SortableContext items={modules.map((m: any) => m.id)} strategy={verticalListSortingStrategy}>
-            <div className="space-y-2">
-              {modules.map((mod: any) => {
-                const lessons = getLessonsForModule(mod.id);
-                const modCompleted = lessons.length > 0 && lessons.every((l: any) => (completions as Set<string>).has(l.id));
-                const isExpanded = expandedModules.has(mod.id);
-
-                return (
-                  <SortableModule key={mod.id} mod={mod} isOwner={isOwner}>
-                    <div>
-                      <div className="flex items-center">
-                        <button onClick={() => toggleModule(mod.id)} className="flex-1 flex items-center justify-between p-4">
-                          <div className="flex items-center gap-3">
-                            {isExpanded ? <ChevronDown className="w-4 h-4 text-white" /> : <ChevronRight className="w-4 h-4 text-white" />}
-                            <div className="text-left">
-                              <p className="text-sm font-semibold text-white">{mod.title}</p>
-                              <p className="text-xs" style={{ color: "#888" }}>{lessons.length} lessons</p>
+                  return (
+                    <SortableModule key={mod.id} mod={mod} isOwner={isOwner}>
+                      <div style={{ borderBottom: "1px solid #1e1e1e" }}>
+                        {/* Module header */}
+                        <div className="flex items-center">
+                          <button onClick={() => toggleModule(mod.id)} className="flex-1 flex items-center gap-2.5 px-3 py-3 text-left hover:bg-white/5 transition-colors">
+                            <span className="text-xs font-bold flex-shrink-0 w-5 h-5 rounded flex items-center justify-center" style={{ background: modCompleted ? "#00FF85" : "#1e1e1e", color: modCompleted ? "#0A0A0A" : "#888" }}>
+                              {modCompleted ? <CheckCircle className="w-3 h-3" /> : idx + 1}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-white truncate">{mod.title}</p>
+                              <p className="text-[11px]" style={{ color: "#666" }}>{lessons.length} lesson{lessons.length !== 1 ? "s" : ""}</p>
                             </div>
-                          </div>
-                          {modCompleted && <CheckCircle className="w-4 h-4" style={{ color: "#00FF85" }} />}
-                        </button>
-                        {isOwner && (
-                          <div className="flex items-center mr-2 gap-1">
-                            <button
-                              onClick={() => setEditingModule(mod)}
-                              className="p-2 rounded hover:bg-white/10 transition-colors"
-                              style={{ color: "#888" }}
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </button>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <button className="p-2 rounded hover:bg-white/10 transition-colors" style={{ color: "#888" }}>
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent style={{ background: "#111111", border: "1px solid #1e1e1e" }}>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle className="text-white">Delete Module</AlertDialogTitle>
-                                  <AlertDialogDescription style={{ color: "#888" }}>
-                                    This will permanently delete "{mod.title}" and all its lessons. This cannot be undone.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel className="border-0" style={{ background: "#1e1e1e", color: "#fff" }}>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => { deleteModule.mutate(mod.id); toast({ title: "Module deleted" }); }}
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                  >Delete</AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-                        )}
-                      </div>
+                            {isExpanded ? <ChevronDown className="w-4 h-4 flex-shrink-0" style={{ color: "#666" }} /> : <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: "#666" }} />}
+                          </button>
+                          {isOwner && (
+                            <div className="flex items-center pr-2 gap-0.5">
+                              <button onClick={() => setEditingModule(mod)} className="p-1.5 rounded hover:bg-white/10" style={{ color: "#666" }}><Pencil className="w-3.5 h-3.5" /></button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <button className="p-1.5 rounded hover:bg-white/10" style={{ color: "#666" }}><Trash2 className="w-3.5 h-3.5" /></button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent style={{ background: "#111", border: "1px solid #1e1e1e" }}>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle className="text-white">Delete Module</AlertDialogTitle>
+                                    <AlertDialogDescription style={{ color: "#888" }}>Delete "{mod.title}" and all its lessons? This cannot be undone.</AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel className="border-0" style={{ background: "#1e1e1e", color: "#fff" }}>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => { deleteModule.mutate(mod.id); toast({ title: "Module deleted" }); }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          )}
+                        </div>
 
-                      {isExpanded && (
-                        <div style={{ borderTop: "1px solid #1e1e1e" }}>
-                          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleLessonDragEnd(mod.id)}>
-                            <SortableContext items={lessons.map((l: any) => l.id)} strategy={verticalListSortingStrategy}>
-                              {lessons.map((lesson: any) => {
-                                const isComplete = (completions as Set<string>).has(lesson.id);
-                                return (
-                                  <SortableLesson key={lesson.id} lesson={lesson} isOwner={isOwner}>
-                                    <div className="flex items-center">
-                                      <button
-                                        onClick={() => setSelectedLesson(lesson)}
-                                        className="flex-1 flex items-center gap-3 p-3 text-left hover:bg-white/5 transition-colors"
-                                      >
-                                        {(() => {
-                                          const asset = lesson.mux_asset_id ? (assetStatuses as Record<string, { status: string; hasPlayback: boolean; playbackId: string | null }>)[lesson.mux_asset_id] : null;
-                                          const thumbnailUrl = asset?.playbackId && asset?.status === "ready"
-                                            ? `https://image.mux.com/${asset.playbackId}/thumbnail.webp?width=80&height=80&fit_mode=smartcrop`
-                                            : null;
-                                          return thumbnailUrl ? (
-                                            <div className="w-10 h-10 rounded overflow-hidden flex-shrink-0 relative">
-                                              <img src={thumbnailUrl} alt="" className="w-full h-full object-cover" />
-                                              <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                                                <Play className="w-3.5 h-3.5 text-white" />
-                                              </div>
-                                            </div>
-                                          ) : (
-                                            <div className="w-10 h-10 rounded flex items-center justify-center flex-shrink-0" style={{ background: "#1e1e1e" }}>
-                                              {lesson.is_free || true ? (
-                                                <Play className="w-4 h-4" style={{ color: "#888" }} />
-                                              ) : (
-                                                <Lock className="w-4 h-4" style={{ color: "#888" }} />
+                        {/* Expanded lessons */}
+                        {isExpanded && (
+                          <div>
+                            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleLessonDragEnd(mod.id)}>
+                              <SortableContext items={lessons.map((l: any) => l.id)} strategy={verticalListSortingStrategy}>
+                                {lessons.map((lesson: any) => {
+                                  const isComplete = (completions as Set<string>).has(lesson.id);
+                                  const isActive = selectedLesson?.id === lesson.id;
+                                  return (
+                                    <SortableLesson key={lesson.id} lesson={lesson} isOwner={isOwner}>
+                                      <div className="flex items-center">
+                                        <button
+                                          onClick={() => setSelectedLesson(lesson)}
+                                          className={`flex-1 flex items-center gap-2.5 pl-10 pr-3 py-2.5 text-left transition-colors hover:bg-white/5`}
+                                          style={{
+                                            borderLeft: isActive ? "3px solid #00FF85" : "3px solid transparent",
+                                            background: isActive ? "rgba(0,255,133,0.05)" : undefined,
+                                          }}
+                                        >
+                                          {/* Completion circle */}
+                                          <div className="flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center"
+                                            style={{
+                                              borderColor: isComplete ? "#00FF85" : "#333",
+                                              background: isComplete ? "#00FF85" : "transparent"
+                                            }}
+                                          >
+                                            {isComplete && <CheckCircle className="w-3 h-3" style={{ color: "#0A0A0A" }} />}
+                                          </div>
+                                          <div className="flex-1 min-w-0">
+                                            <p className="text-sm truncate" style={{ color: isActive ? "#00FF85" : "#ddd", fontWeight: isActive ? 600 : 400 }}>{lesson.title}</p>
+                                            <div className="flex items-center gap-2">
+                                              {lesson.duration_seconds > 0 && (
+                                                <span className="text-[11px]" style={{ color: "#666" }}>{formatDuration(lesson.duration_seconds)}</span>
                                               )}
-                                            </div>
-                                          );
-                                        })()}
-                                        <div className="flex-1 min-w-0">
-                                          <p className="text-sm font-medium text-white truncate">{lesson.title}</p>
-                                          <div className="flex items-center gap-2">
-                                            {lesson.duration_seconds > 0 && (
-                                              <p className="text-xs" style={{ color: "#888" }}>{formatDuration(lesson.duration_seconds)}</p>
-                                            )}
-                                            {isOwner && lesson.mux_asset_id && (() => {
-                                              const asset = (assetStatuses as Record<string, { status: string; hasPlayback: boolean; playbackId: string | null }>)[lesson.mux_asset_id];
-                                              const status = asset?.status || (lesson.mux_asset_id === "pending" ? "preparing" : null);
-                                              if (!status || status === "ready") {
-                                                if (asset?.hasPlayback) return (
-                                                  <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: "rgba(0,255,133,0.15)", color: "#00FF85" }}>
-                                                    <CheckCircle className="w-2.5 h-2.5" /> Ready
+                                              {isOwner && lesson.mux_asset_id && (() => {
+                                                const asset = (assetStatuses as Record<string, any>)[lesson.mux_asset_id];
+                                                const status = asset?.status || (lesson.mux_asset_id === "pending" ? "preparing" : null);
+                                                if (!status || status === "ready") return null;
+                                                if (status === "preparing" || status === "pending") return (
+                                                  <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(255,187,0,0.15)", color: "#FFBB00" }}>
+                                                    <Loader2 className="w-2.5 h-2.5 animate-spin" /> Processing
+                                                  </span>
+                                                );
+                                                if (status === "errored") return (
+                                                  <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(255,50,50,0.15)", color: "#FF3232" }}>
+                                                    <AlertCircle className="w-2.5 h-2.5" /> Error
                                                   </span>
                                                 );
                                                 return null;
-                                              }
-                                              if (status === "preparing" || status === "pending") return (
-                                                <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: "rgba(255,187,0,0.15)", color: "#FFBB00" }}>
-                                                  <Loader2 className="w-2.5 h-2.5 animate-spin" /> Processing
-                                                </span>
-                                              );
-                                              if (status === "errored") return (
-                                                <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: "rgba(255,50,50,0.15)", color: "#FF3232" }}>
-                                                  <AlertCircle className="w-2.5 h-2.5" /> Error
-                                                </span>
-                                              );
-                                              return null;
-                                            })()}
+                                              })()}
+                                            </div>
                                           </div>
-                                        </div>
-                                        {isComplete && <CheckCircle className="w-4 h-4 flex-shrink-0" style={{ color: "#00FF85" }} />}
-                                      </button>
-                                      {isOwner && (
-                                        <div className="flex items-center mr-2 gap-0.5">
-                                          <button
-                                            onClick={() => setEditingLesson(lesson)}
-                                            className="p-2 rounded hover:bg-white/10 transition-colors"
-                                            style={{ color: "#888" }}
-                                          >
-                                            <Pencil className="w-3.5 h-3.5" />
-                                          </button>
-                                          <AlertDialog>
-                                            <AlertDialogTrigger asChild>
-                                              <button className="p-2 rounded hover:bg-white/10 transition-colors" style={{ color: "#888" }}>
-                                                <Trash2 className="w-3.5 h-3.5" />
-                                              </button>
-                                            </AlertDialogTrigger>
-                                            <AlertDialogContent style={{ background: "#111111", border: "1px solid #1e1e1e" }}>
-                                              <AlertDialogHeader>
-                                                <AlertDialogTitle className="text-white">Delete Lesson</AlertDialogTitle>
-                                                <AlertDialogDescription style={{ color: "#888" }}>
-                                                  Delete "{lesson.title}"? This cannot be undone.
-                                                </AlertDialogDescription>
-                                              </AlertDialogHeader>
-                                              <AlertDialogFooter>
-                                                <AlertDialogCancel className="border-0" style={{ background: "#1e1e1e", color: "#fff" }}>Cancel</AlertDialogCancel>
-                                                <AlertDialogAction
-                                                  onClick={() => { deleteLesson.mutate(lesson.id); toast({ title: "Lesson deleted" }); }}
-                                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                                >Delete</AlertDialogAction>
-                                              </AlertDialogFooter>
-                                            </AlertDialogContent>
-                                          </AlertDialog>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </SortableLesson>
-                                );
-                              })}
-                            </SortableContext>
-                          </DndContext>
-                          {isOwner && (
-                            <button onClick={() => setShowAddLesson(mod.id)} className="w-full flex items-center gap-2 p-3 text-xs" style={{ color: "#00FF85" }}>
-                              <Plus className="w-3 h-3" /> Add Lesson
-                            </button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </SortableModule>
-                );
-              })}
-            </div>
-          </SortableContext>
-        </DndContext>
-      )}
+                                          {lesson.is_free === false && <Lock className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "#555" }} />}
+                                        </button>
+                                        {isOwner && (
+                                          <div className="flex items-center pr-2 gap-0.5">
+                                            <button onClick={() => setEditingLesson(lesson)} className="p-1.5 rounded hover:bg-white/10" style={{ color: "#666" }}><Pencil className="w-3 h-3" /></button>
+                                            <AlertDialog>
+                                              <AlertDialogTrigger asChild>
+                                                <button className="p-1.5 rounded hover:bg-white/10" style={{ color: "#666" }}><Trash2 className="w-3 h-3" /></button>
+                                              </AlertDialogTrigger>
+                                              <AlertDialogContent style={{ background: "#111", border: "1px solid #1e1e1e" }}>
+                                                <AlertDialogHeader>
+                                                  <AlertDialogTitle className="text-white">Delete Lesson</AlertDialogTitle>
+                                                  <AlertDialogDescription style={{ color: "#888" }}>Delete "{lesson.title}"?</AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                  <AlertDialogCancel className="border-0" style={{ background: "#1e1e1e", color: "#fff" }}>Cancel</AlertDialogCancel>
+                                                  <AlertDialogAction onClick={() => { deleteLesson.mutate(lesson.id); if (selectedLesson?.id === lesson.id) setSelectedLesson(null); toast({ title: "Lesson deleted" }); }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                                                </AlertDialogFooter>
+                                              </AlertDialogContent>
+                                            </AlertDialog>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </SortableLesson>
+                                  );
+                                })}
+                              </SortableContext>
+                            </DndContext>
+                            {isOwner && (
+                              <button onClick={() => setShowAddLesson(mod.id)} className="w-full flex items-center gap-2 pl-10 py-2.5 text-xs font-medium" style={{ color: "#00FF85" }}>
+                                <Plus className="w-3 h-3" /> Add Lesson
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </SortableModule>
+                  );
+                })}
+              </div>
+            </SortableContext>
+          </DndContext>
+        )}
 
+        {isOwner && (
+          <button onClick={() => setShowAddModule(true)} className="w-full flex items-center gap-2 px-4 py-3 text-sm font-semibold hover:bg-white/5 transition-colors" style={{ color: "#00FF85", borderTop: modules.length > 0 ? "1px solid #1e1e1e" : undefined }}>
+            <Plus className="w-4 h-4" /> Add Module
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
+  /* ── Right panel: Course overview or lesson detail ── */
+  const renderContent = () => {
+    if (!selectedLesson) {
+      // Course overview
+      return (
+        <div className="flex items-center justify-center h-full p-6">
+          <div className="max-w-md w-full text-center space-y-6">
+            <div className="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center" style={{ background: "rgba(0,255,133,0.1)" }}>
+              <BookOpen className="w-8 h-8" style={{ color: "#00FF85" }} />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white mb-2">Course Overview</h2>
+              <p className="text-sm" style={{ color: "#888" }}>Explore the modules and lessons below to get started.</p>
+            </div>
+            <div className="flex justify-center gap-6">
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1.5 mb-1">
+                  <Layers className="w-4 h-4" style={{ color: "#00FF85" }} />
+                  <span className="text-lg font-bold text-white">{modules.length}</span>
+                </div>
+                <p className="text-xs" style={{ color: "#888" }}>Modules</p>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1.5 mb-1">
+                  <BookOpen className="w-4 h-4" style={{ color: "#00FF85" }} />
+                  <span className="text-lg font-bold text-white">{totalLessons}</span>
+                </div>
+                <p className="text-xs" style={{ color: "#888" }}>Lessons</p>
+              </div>
+              {totalDuration > 0 && (
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-1.5 mb-1">
+                    <Clock className="w-4 h-4" style={{ color: "#00FF85" }} />
+                    <span className="text-lg font-bold text-white">{formatTotalDuration(totalDuration)}</span>
+                  </div>
+                  <p className="text-xs" style={{ color: "#888" }}>Total</p>
+                </div>
+              )}
+            </div>
+            {totalLessons > 0 && (
+              <Button
+                onClick={() => {
+                  const first = allLessons[0];
+                  if (first) setSelectedLesson(first);
+                }}
+                className="font-semibold px-8"
+                style={{ background: "#00FF85", color: "#0A0A0A" }}
+              >
+                Start Course
+              </Button>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // Lesson detail view
+    return (
+      <div className="h-full overflow-y-auto">
+        <LessonPlayer lesson={selectedLesson} />
+        <div className="p-6 space-y-6">
+          <h1 className="text-xl font-bold text-white">{selectedLesson.title}</h1>
+          {selectedLesson.description && (
+            <div className="text-sm leading-relaxed" style={{ color: "#bbb" }}>
+              {selectedLesson.description}
+            </div>
+          )}
+
+          {/* Bottom nav */}
+          <div className="flex items-center justify-between pt-4" style={{ borderTop: "1px solid #1e1e1e" }}>
+            <button
+              onClick={() => prevLesson && setSelectedLesson(prevLesson)}
+              disabled={!prevLesson}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+              style={{ color: prevLesson ? "#ddd" : "#333" }}
+            >
+              <ArrowLeft className="w-4 h-4" /> Previous
+            </button>
+
+            {user && !(completions as Set<string>).has(selectedLesson.id) ? (
+              <Button onClick={() => handleComplete(selectedLesson.id)} className="font-semibold" style={{ background: "#00FF85", color: "#0A0A0A" }}>
+                <CheckCircle className="w-4 h-4 mr-2" /> Mark Complete
+              </Button>
+            ) : (completions as Set<string>).has(selectedLesson.id) ? (
+              <div className="flex items-center gap-2 text-sm font-medium" style={{ color: "#00FF85" }}>
+                <CheckCircle className="w-4 h-4" /> Completed
+              </div>
+            ) : null}
+
+            <button
+              onClick={() => nextLesson && setSelectedLesson(nextLesson)}
+              disabled={!nextLesson}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+              style={{
+                color: nextLesson ? "#0A0A0A" : "#333",
+                background: nextLesson ? "#00FF85" : "transparent",
+              }}
+            >
+              Next Lesson <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  /* ── RENDER ── */
+  return (
+    <div>
+      {/* Desktop: Two-column layout */}
+      <div className="hidden md:flex" style={{ height: "calc(100vh - 120px)" }}>
+        {/* Left sidebar */}
+        <div className="w-[300px] flex-shrink-0 overflow-hidden flex flex-col" style={{ borderRight: "1px solid #1e1e1e", background: "#0A0A0A" }}>
+          {renderSidebar()}
+        </div>
+        {/* Right content */}
+        <div className="flex-1 overflow-hidden" style={{ background: "#0e0e0e" }}>
+          {renderContent()}
+        </div>
+      </div>
+
+      {/* Mobile: Single column */}
+      <div className="md:hidden">
+        {renderSidebar()}
+      </div>
+
+      {/* Dialogs */}
       <AddModuleDialog open={showAddModule} onClose={() => setShowAddModule(false)} creatorId={creatorId} />
-      {showAddLesson && (
-        <AddLessonDialog open={!!showAddLesson} onClose={() => setShowAddLesson(null)} moduleId={showAddLesson} creatorId={creatorId} />
-      )}
-      {editingModule && (
-        <EditModuleDialog open={!!editingModule} onClose={() => setEditingModule(null)} module={editingModule} />
-      )}
-      {editingLesson && (
-        <EditLessonDialog open={!!editingLesson} onClose={() => setEditingLesson(null)} lesson={editingLesson} />
-      )}
+      {showAddLesson && <AddLessonDialog open={!!showAddLesson} onClose={() => setShowAddLesson(null)} moduleId={showAddLesson} creatorId={creatorId} />}
+      {editingModule && <EditModuleDialog open={!!editingModule} onClose={() => setEditingModule(null)} module={editingModule} />}
+      {editingLesson && <EditLessonDialog open={!!editingLesson} onClose={() => setEditingLesson(null)} lesson={editingLesson} />}
     </div>
   );
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   DIALOGS (unchanged logic, cleaned up styling)
+   ═══════════════════════════════════════════════════════════════ */
 
 function AddModuleDialog({ open, onClose, creatorId }: { open: boolean; onClose: () => void; creatorId: string }) {
   const [title, setTitle] = useState("");
@@ -490,7 +578,7 @@ function AddModuleDialog({ open, onClose, creatorId }: { open: boolean; onClose:
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="border-0" style={{ background: "#111111", color: "#fff" }}>
+      <DialogContent className="border-0" style={{ background: "#111", color: "#fff" }}>
         <DialogHeader><DialogTitle className="text-white">Add Module</DialogTitle></DialogHeader>
         <div className="space-y-3">
           <Input placeholder="Module title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
@@ -514,26 +602,18 @@ function AddLessonDialog({ open, onClose, moduleId, creatorId }: { open: boolean
 
   const uploadToMux = async (file: File): Promise<string | null> => {
     if (!user) return null;
-    // Create upload URL via edge function
     const { data, error } = await supabase.functions.invoke("mux-create-upload", {
       body: { title, description, userId: user.id },
     });
-    if (error || !data?.uploadUrl) {
-      throw new Error(error?.message || "Failed to create upload");
-    }
-
-    // Upload file directly to Mux
+    if (error || !data?.uploadUrl) throw new Error(error?.message || "Failed to create upload");
     const xhr = new XMLHttpRequest();
     await new Promise<void>((resolve, reject) => {
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100));
-      };
+      xhr.upload.onprogress = (e) => { if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100)); };
       xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error("Upload failed")));
       xhr.onerror = () => reject(new Error("Upload failed"));
       xhr.open("PUT", data.uploadUrl);
       xhr.send(file);
     });
-
     return data.uploadId;
   };
 
@@ -542,14 +622,9 @@ function AddLessonDialog({ open, onClose, moduleId, creatorId }: { open: boolean
     setUploading(true);
     try {
       let uploadId: string | null = null;
-      if (videoFile) {
-        uploadId = await uploadToMux(videoFile);
-      }
+      if (videoFile) uploadId = await uploadToMux(videoFile);
       await createLesson.mutateAsync({
-        module_id: moduleId,
-        creator_id: creatorId,
-        title,
-        description,
+        module_id: moduleId, creator_id: creatorId, title, description,
         ...(uploadId ? { mux_asset_id: "pending", video_url: `upload:${uploadId}` } : {}),
       });
       setTitle(""); setDescription(""); setVideoFile(null); setUploadProgress(0);
@@ -557,35 +632,23 @@ function AddLessonDialog({ open, onClose, moduleId, creatorId }: { open: boolean
       toast({ title: videoFile ? "Lesson added! Video is processing..." : "Lesson added!" });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
-    } finally {
-      setUploading(false);
-    }
+    } finally { setUploading(false); }
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o && !uploading) { onClose(); } }}>
-      <DialogContent className="border-0" style={{ background: "#111111", color: "#fff" }}>
+    <Dialog open={open} onOpenChange={(o) => { if (!o && !uploading) onClose(); }}>
+      <DialogContent className="border-0" style={{ background: "#111", color: "#fff" }}>
         <DialogHeader><DialogTitle className="text-white">Add Lesson</DialogTitle></DialogHeader>
         <div className="space-y-3">
           <Input placeholder="Lesson title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
           <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
-          
-          {/* Video Upload */}
           <div>
             <label className="block text-xs font-medium mb-1.5" style={{ color: "#888" }}>Video (optional)</label>
             {!videoFile ? (
-              <label
-                className="flex flex-col items-center justify-center gap-1.5 p-4 rounded-lg cursor-pointer hover:bg-white/5 transition-colors"
-                style={{ border: "1px dashed #333" }}
-              >
+              <label className="flex flex-col items-center justify-center gap-1.5 p-4 rounded-lg cursor-pointer hover:bg-white/5 transition-colors" style={{ border: "1px dashed #333" }}>
                 <Play className="w-5 h-5" style={{ color: "#00FF85" }} />
                 <span className="text-xs" style={{ color: "#888" }}>Click to select a video file</span>
-                <input
-                  type="file"
-                  accept="video/*"
-                  className="hidden"
-                  onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
-                />
+                <input type="file" accept="video/*" className="hidden" onChange={(e) => setVideoFile(e.target.files?.[0] || null)} />
               </label>
             ) : (
               <div className="flex items-center gap-2 p-2.5 rounded-lg" style={{ background: "#1e1e1e" }}>
@@ -595,7 +658,6 @@ function AddLessonDialog({ open, onClose, moduleId, creatorId }: { open: boolean
               </div>
             )}
           </div>
-
           {uploading && (
             <div className="space-y-1">
               <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "#1e1e1e" }}>
@@ -604,7 +666,6 @@ function AddLessonDialog({ open, onClose, moduleId, creatorId }: { open: boolean
               <p className="text-xs text-center" style={{ color: "#888" }}>Uploading… {uploadProgress}%</p>
             </div>
           )}
-
           <Button onClick={handleSubmit} disabled={!title.trim() || uploading} className="w-full font-semibold" style={{ background: "#00FF85", color: "#0A0A0A" }}>
             {uploading ? "Uploading…" : "Add Lesson"}
           </Button>
@@ -629,7 +690,7 @@ function EditModuleDialog({ open, onClose, module: mod }: { open: boolean; onClo
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="border-0" style={{ background: "#111111", color: "#fff" }}>
+      <DialogContent className="border-0" style={{ background: "#111", color: "#fff" }}>
         <DialogHeader><DialogTitle className="text-white">Edit Module</DialogTitle></DialogHeader>
         <div className="space-y-3">
           <Input placeholder="Module title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
@@ -659,14 +720,10 @@ function EditLessonDialog({ open, onClose, lesson }: { open: boolean; onClose: (
     const { data, error } = await supabase.functions.invoke("mux-create-upload", {
       body: { title, description, userId: user.id },
     });
-    if (error || !data?.uploadUrl) {
-      throw new Error(error?.message || "Failed to create upload");
-    }
+    if (error || !data?.uploadUrl) throw new Error(error?.message || "Failed to create upload");
     const xhr = new XMLHttpRequest();
     await new Promise<void>((resolve, reject) => {
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100));
-      };
+      xhr.upload.onprogress = (e) => { if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100)); };
       xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error("Upload failed")));
       xhr.onerror = () => reject(new Error("Upload failed"));
       xhr.open("PUT", data.uploadUrl);
@@ -680,37 +737,27 @@ function EditLessonDialog({ open, onClose, lesson }: { open: boolean; onClose: (
     setUploading(true);
     try {
       let updateData: any = { id: lesson.id, title, description };
-
       if (videoFile) {
         const uploadId = await uploadToMux(videoFile);
-        if (uploadId) {
-          updateData.mux_asset_id = "pending";
-          updateData.video_url = `upload:${uploadId}`;
-        }
+        if (uploadId) { updateData.mux_asset_id = "pending"; updateData.video_url = `upload:${uploadId}`; }
       } else if (removeVideo) {
-        updateData.mux_asset_id = null;
-        updateData.video_url = null;
+        updateData.mux_asset_id = null; updateData.video_url = null;
       }
-
       await updateLesson.mutateAsync(updateData);
       onClose();
       toast({ title: videoFile ? "Lesson updated! Video is processing..." : "Lesson updated!" });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
-    } finally {
-      setUploading(false);
-    }
+    } finally { setUploading(false); }
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o && !uploading) { onClose(); } }}>
-      <DialogContent className="border-0" style={{ background: "#111111", color: "#fff" }}>
+    <Dialog open={open} onOpenChange={(o) => { if (!o && !uploading) onClose(); }}>
+      <DialogContent className="border-0" style={{ background: "#111", color: "#fff" }}>
         <DialogHeader><DialogTitle className="text-white">Edit Lesson</DialogTitle></DialogHeader>
         <div className="space-y-3">
           <Input placeholder="Lesson title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
           <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
-
-          {/* Video Upload / Replace */}
           <div>
             <label className="block text-xs font-medium mb-1.5" style={{ color: "#888" }}>Video</label>
             {videoFile ? (
@@ -723,24 +770,20 @@ function EditLessonDialog({ open, onClose, lesson }: { open: boolean; onClose: (
               <div className="flex items-center gap-2 p-2.5 rounded-lg" style={{ background: "#1e1e1e" }}>
                 <CheckCircle className="w-4 h-4 flex-shrink-0" style={{ color: "#00FF85" }} />
                 <span className="text-xs text-white flex-1">Video attached</span>
-                <label className="text-xs px-2 py-0.5 rounded cursor-pointer hover:bg-white/10 transition-colors" style={{ color: "#00FF85" }}>
+                <label className="text-xs px-2 py-0.5 rounded cursor-pointer hover:bg-white/10" style={{ color: "#00FF85" }}>
                   Replace
                   <input type="file" accept="video/*" className="hidden" onChange={(e) => { setVideoFile(e.target.files?.[0] || null); setRemoveVideo(false); }} />
                 </label>
                 <button onClick={() => { setRemoveVideo(true); setVideoFile(null); }} className="text-xs px-2 py-0.5 rounded" style={{ color: "#FF3232" }}>Remove</button>
               </div>
             ) : (
-              <label
-                className="flex flex-col items-center justify-center gap-1.5 p-4 rounded-lg cursor-pointer hover:bg-white/5 transition-colors"
-                style={{ border: "1px dashed #333" }}
-              >
+              <label className="flex flex-col items-center justify-center gap-1.5 p-4 rounded-lg cursor-pointer hover:bg-white/5 transition-colors" style={{ border: "1px dashed #333" }}>
                 <Play className="w-5 h-5" style={{ color: "#00FF85" }} />
                 <span className="text-xs" style={{ color: "#888" }}>Click to select a video file</span>
                 <input type="file" accept="video/*" className="hidden" onChange={(e) => { setVideoFile(e.target.files?.[0] || null); setRemoveVideo(false); }} />
               </label>
             )}
           </div>
-
           {uploading && (
             <div className="space-y-1">
               <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "#1e1e1e" }}>
@@ -749,7 +792,6 @@ function EditLessonDialog({ open, onClose, lesson }: { open: boolean; onClose: (
               <p className="text-xs text-center" style={{ color: "#888" }}>Uploading… {uploadProgress}%</p>
             </div>
           )}
-
           <Button onClick={handleSubmit} disabled={!title.trim() || uploading} className="w-full font-semibold" style={{ background: "#00FF85", color: "#0A0A0A" }}>
             {uploading ? "Uploading…" : "Save Changes"}
           </Button>
