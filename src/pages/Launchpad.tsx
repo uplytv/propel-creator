@@ -2,11 +2,13 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Rocket, BookOpen, Users, Radio, Briefcase, ArrowRight,
-  Sparkles, Zap, X, Loader2, CheckCircle2, ImagePlus, Wand2
+  Sparkles, Zap, X, Loader2, CheckCircle2, ImagePlus, Wand2,
+  Globe, Lock, Tag
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
@@ -85,6 +87,8 @@ export default function Launchpad() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [idea, setIdea] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [isPublic, setIsPublic] = useState(true);
+  const [isFree, setIsFree] = useState(true);
 
   const option = launchOptions.find((o) => o.id === selected);
 
@@ -102,6 +106,8 @@ export default function Launchpad() {
     setImageFile(null);
     setImagePreview(null);
     setIdea("");
+    setIsPublic(true);
+    setIsFree(id === "community");
   };
 
   const handleGenerate = async () => {
@@ -153,18 +159,53 @@ export default function Launchpad() {
 
     const imageUrl = await uploadImage();
     const productType = option.id === "service" ? "coaching" : option.id;
+    const finalPrice = isFree && option.id === "community" ? 0 : (parseFloat(price) || 0);
 
     createProduct.mutate(
       {
         name,
         description: description || undefined,
         type: productType,
-        price: parseFloat(price) || 0,
+        price: finalPrice,
         status: "active",
         image_url: imageUrl || undefined,
       },
       {
-        onSuccess: () => {
+        onSuccess: async () => {
+          // For community, also create/update the creator_spaces entry
+          if (option.id === "community" && user) {
+            const { data: existing } = await supabase
+              .from("creator_spaces")
+              .select("id")
+              .eq("creator_id", user.id)
+              .maybeSingle();
+
+            if (existing) {
+              await supabase
+                .from("creator_spaces")
+                .update({
+                  is_public: isPublic,
+                  is_free: isFree,
+                  price: finalPrice,
+                  name: name.trim(),
+                  description: description || "",
+                  cover_image_url: imageUrl || undefined,
+                } as any)
+                .eq("creator_id", user.id);
+            } else {
+              await supabase
+                .from("creator_spaces")
+                .insert({
+                  creator_id: user.id,
+                  is_public: isPublic,
+                  is_free: isFree,
+                  price: finalPrice,
+                  name: name.trim(),
+                  description: description || "",
+                  cover_image_url: imageUrl || undefined,
+                } as any);
+            }
+          }
           setCreating(false);
           setSuccess(true);
         },
@@ -190,6 +231,8 @@ export default function Launchpad() {
     setImageFile(null);
     setImagePreview(null);
     setIdea("");
+    setIsPublic(true);
+    setIsFree(true);
   };
 
   return (
@@ -411,21 +454,52 @@ export default function Launchpad() {
                     )}
                   </div>
 
-                  {/* Price */}
-                  <div>
-                    <label className="text-sm font-medium text-foreground mb-1.5 block">Price (USD)</label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
-                      <Input
-                        type="number"
-                        min="0"
-                        value={price}
-                        onChange={(e) => setPrice(e.target.value)}
-                        className="pl-7 text-sm"
-                        placeholder="0"
-                      />
+                  {/* Visibility & Pricing (community only) */}
+                  {selected === "community" && (
+                    <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {isPublic ? <Globe className="w-4 h-4 text-muted-foreground" /> : <Lock className="w-4 h-4 text-muted-foreground" />}
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{isPublic ? "Public" : "Private"}</p>
+                            <p className="text-[11px] text-muted-foreground">{isPublic ? "Anyone can discover & view" : "Invite-only access"}</p>
+                          </div>
+                        </div>
+                        <Switch checked={isPublic} onCheckedChange={setIsPublic} />
+                      </div>
+                      <div className="border-t border-border" />
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Tag className="w-4 h-4 text-muted-foreground" />
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{isFree ? "Free" : "Paid"}</p>
+                            <p className="text-[11px] text-muted-foreground">{isFree ? "No charge to join" : "Monthly membership fee"}</p>
+                          </div>
+                        </div>
+                        <Switch checked={!isFree} onCheckedChange={(checked) => setIsFree(!checked)} />
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {/* Price — show for non-community, or community when paid */}
+                  {(selected !== "community" || !isFree) && (
+                    <div>
+                      <label className="text-sm font-medium text-foreground mb-1.5 block">
+                        {selected === "community" ? "Monthly Price (USD)" : "Price (USD)"}
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                        <Input
+                          type="number"
+                          min="0"
+                          value={price}
+                          onChange={(e) => setPrice(e.target.value)}
+                          className="pl-7 text-sm"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+                  )}
 
                   {/* Launch Button */}
                   <Button
