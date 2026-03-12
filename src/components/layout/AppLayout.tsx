@@ -67,7 +67,6 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
 ];
 
 const utilityNav: NavItem[] = [
-  { label: "Discover", icon: Search, path: "/discover", desc: "Find creators" },
   { label: "Messages", icon: MessageSquare, path: "/job-messages", desc: "Conversations", badgeKey: "job-messages" },
   { label: "Notifications", icon: BellIcon, path: "/notifications", desc: "Alerts", badgeKey: "notifications" },
   { label: "My Rep", icon: UserCheck, path: "/my-rep", desc: "Growth partner", requiresTier: 3 },
