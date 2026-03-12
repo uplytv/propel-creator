@@ -223,34 +223,49 @@ export default function Products() {
     if (!aiPrompt.trim()) return;
     setAiLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("ai-product-create", {
+      const { data, error } = await supabase.functions.invoke("generate-product-copy", {
         body: { prompt: aiPrompt },
       });
       if (error) throw error;
-      const result = data;
-      setName(result.name || "");
-      setDescription(result.description || "");
-      setType(result.type || "digital");
-      setPrice(String(result.price || 0));
+      setName(data.name || aiPrompt.slice(0, 60));
+      setDescription(data.description || "");
+      setType(data.type || "digital");
+      setPrice(String(data.price || 29));
       setMode("scratch");
+      toast({ title: "AI generated your product details!" });
     } catch (e: any) {
-      setName(aiPrompt.slice(0, 60));
-      setDescription(`AI-generated product based on: "${aiPrompt}"`);
-      setType("digital");
-      setPrice("29");
-      setMode("scratch");
+      toast({ title: "AI generation failed", description: e.message || "Please try again", variant: "destructive" });
     } finally {
       setAiLoading(false);
     }
   };
 
-  const handleUrlImport = () => {
+  const [urlLoading, setUrlLoading] = useState(false);
+
+  const handleUrlImport = async () => {
     if (!urlInput.trim()) return;
-    setName(`Imported from ${new URL(urlInput).hostname}`);
-    setDescription(`Product imported from ${urlInput}`);
-    setType("digital");
-    setPrice("0");
-    setMode("scratch");
+    setUrlLoading(true);
+    try {
+      // Ensure it's a valid URL
+      let finalUrl = urlInput.trim();
+      if (!finalUrl.startsWith("http")) finalUrl = "https://" + finalUrl;
+      new URL(finalUrl); // validate
+
+      const { data, error } = await supabase.functions.invoke("import-from-url", {
+        body: { url: finalUrl },
+      });
+      if (error) throw error;
+      setName(data.name || `Imported from ${new URL(finalUrl).hostname}`);
+      setDescription(data.description || "");
+      setType(data.type || "digital");
+      setPrice(String(data.price || 0));
+      setMode("scratch");
+      toast({ title: "Product imported from URL!" });
+    } catch (e: any) {
+      toast({ title: "Import failed", description: e.message || "Could not import from that URL", variant: "destructive" });
+    } finally {
+      setUrlLoading(false);
+    }
   };
 
   const handleTemplateSelect = (t: typeof templates[0]) => {
