@@ -326,6 +326,13 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background flex">
+      {/* Skip to content */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-primary focus:text-primary-foreground focus:text-sm focus:font-medium focus:outline-none"
+      >
+        Skip to content
+      </a>
       {/* Desktop Sidebar */}
       <aside className={`hidden md:flex flex-col border-r border-border bg-card/20 backdrop-blur-xl fixed inset-y-0 left-0 z-30 transition-all duration-300 ${
         collapsed ? "w-[68px]" : "w-60"
