@@ -107,7 +107,7 @@ export default function Launchpad() {
     setImagePreview(null);
     setIdea("");
     setIsPublic(true);
-    setIsFree(id === "community");
+    setIsFree(id === "community" || id === "course");
   };
 
   const handleGenerate = async () => {
