@@ -446,6 +446,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               <div ref={profileRef} className="relative">
                 <button
                   onClick={(e) => { e.stopPropagation(); setProfileOpen(!profileOpen); }}
+                  aria-label="Account menu"
+                  aria-expanded={profileOpen}
+                  aria-haspopup="true"
                   className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-secondary transition-colors cursor-pointer"
                 >
                   {profile.avatarUrl ? (
