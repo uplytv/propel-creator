@@ -1,9 +1,10 @@
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
-import { useRef, useMemo, useCallback, useEffect } from "react";
+import { useRef, useMemo, useCallback, useEffect, useState } from "react";
 import { Check, ArrowRight, Sparkles, Rocket, Users, Zap, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import SEOHead from "@/components/SEOHead";
+import { supabase } from "@/integrations/supabase/client";
 
 const earlyAccessPerks = [
   { icon: Zap, title: "Founding Creator Status", desc: "Lifetime badge, priority support, and early feature access forever." },
@@ -48,6 +49,7 @@ const JSON_LD = {
 
 export default function Landing() {
   const navigate = useNavigate();
+  const [applicantCount, setApplicantCount] = useState<number | null>(null);
   const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const glowY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
@@ -77,6 +79,18 @@ export default function Landing() {
       drift: Math.random() * 60 - 30,
     })), []
   );
+
+  useEffect(() => {
+    const fetchCount = async () => {
+      const { data } = await supabase
+        .from("launch_config")
+        .select("total_applicants")
+        .limit(1)
+        .single();
+      if (data) setApplicantCount(data.total_applicants);
+    };
+    fetchCount();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -248,6 +262,25 @@ export default function Landing() {
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">
               We're onboarding our first wave of creators. Join now and lock in perks that won't be available after launch.
             </p>
+            {applicantCount !== null && applicantCount > 0 && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+                className="inline-flex items-center gap-2.5 mt-5 bg-card border border-border/60 rounded-full px-5 py-2.5 shadow-sm"
+              >
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
+                </span>
+                <span className="text-sm font-semibold text-foreground">
+                  {applicantCount.toLocaleString()}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  creators already joined
+                </span>
+              </motion.div>
+            )}
           </motion.div>
           <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }} className="grid sm:grid-cols-2 gap-5 max-w-3xl mx-auto mb-12">
             {earlyAccessPerks.map((perk) => (
