@@ -246,13 +246,15 @@ export default function Jobs() {
               ))}
             </div>
           ) : recentJobs.length === 0 ? (
-            <div className="glass-card p-12 text-center space-y-3">
-              <Briefcase className="w-10 h-10 mx-auto text-muted-foreground/40" />
-              <p className="text-muted-foreground">No jobs posted yet. Be the first to post!</p>
-              <Button size="sm" onClick={() => navigate("/post-job")}>
-                <Plus className="w-4 h-4 mr-1.5" /> Post a Job
-              </Button>
-            </div>
+            <EmptyState
+              icon={Briefcase}
+              title="The marketplace is waiting for you"
+              description="Post a job to find talented creators, or check back later as the community grows."
+              actionLabel="Post a Job"
+              onAction={() => navigate("/post-job")}
+              secondaryLabel="Browse Talent"
+              onSecondary={() => navigate("/jobs?tab=talent")}
+            />
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
               {recentJobs.map((job) => (
