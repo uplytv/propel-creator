@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { useCreatorSpace } from "@/hooks/useCreatorSpace";
+import { useCreatorSpace, useUpdateSpace } from "@/hooks/useCreatorSpace";
 import { useMemberCount, useIsMember, useJoinCommunity } from "@/hooks/useCommunityMembers";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, Lock, Globe, Tag, CheckCircle, Play, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 
@@ -21,7 +24,10 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
   const { data: memberCount = 0 } = useMemberCount(creatorId);
   const { data: isMember = false } = useIsMember(creatorId);
   const joinCommunity = useJoinCommunity();
+  const updateSpace = useUpdateSpace();
   const [activeThumb, setActiveThumb] = useState(0);
+  const [editingPrice, setEditingPrice] = useState(false);
+  const [priceInput, setPriceInput] = useState("");
 
   const { data: creatorProfile } = useQuery({
     queryKey: ["creator-profile-about", creatorId],
@@ -168,8 +174,25 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
         <div className="grid grid-cols-2 gap-3">
           {/* Private / Public */}
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            {isPublic ? <Globe className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
-            <span>{isPublic ? "Public" : "Private"}</span>
+            {isOwner ? (
+              <button
+                onClick={() => {
+                  updateSpace.mutate({ is_public: !isPublic }, {
+                    onSuccess: () => toast({ title: isPublic ? "Set to Private 🔒" : "Set to Public 🌐" }),
+                  });
+                }}
+                className="flex items-center gap-2 px-2 py-1 -mx-2 rounded-md hover:bg-secondary/50 transition-colors"
+              >
+                {isPublic ? <Globe className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+                <span>{isPublic ? "Public" : "Private"}</span>
+                <Switch checked={isPublic} className="scale-75 ml-1" />
+              </button>
+            ) : (
+              <>
+                {isPublic ? <Globe className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+                <span>{isPublic ? "Public" : "Private"}</span>
+              </>
+            )}
           </div>
           {/* Members */}
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -178,8 +201,62 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
           </div>
           {/* Price */}
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Tag className="w-4 h-4" />
-            <span>{isFree ? "Free" : `$${space?.price || 0}/mo`}</span>
+            {isOwner ? (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    if (!isFree) {
+                      updateSpace.mutate({ is_free: true, price: 0 }, {
+                        onSuccess: () => toast({ title: "Set to Free ✨" }),
+                      });
+                      setEditingPrice(false);
+                    } else {
+                      setEditingPrice(true);
+                    }
+                  }}
+                  className="flex items-center gap-2 px-2 py-1 -mx-2 rounded-md hover:bg-secondary/50 transition-colors"
+                >
+                  <Tag className="w-4 h-4" />
+                  <span>{isFree ? "Free" : `$${space?.price || 0}/mo`}</span>
+                  <Switch checked={!isFree} className="scale-75 ml-1" />
+                </button>
+                {editingPrice && isFree && (
+                  <form
+                    className="flex items-center gap-1"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const price = parseFloat(priceInput);
+                      if (price > 0) {
+                        updateSpace.mutate({ is_free: false, price }, {
+                          onSuccess: () => {
+                            toast({ title: `Set to $${price}/mo 💰` });
+                            setEditingPrice(false);
+                          },
+                        });
+                      }
+                    }}
+                  >
+                    <span className="text-xs text-muted-foreground">$</span>
+                    <Input
+                      type="number"
+                      min="1"
+                      step="1"
+                      placeholder="49"
+                      value={priceInput}
+                      onChange={(e) => setPriceInput(e.target.value)}
+                      className="w-16 h-7 text-xs"
+                      autoFocus
+                    />
+                    <Button type="submit" size="sm" variant="ghost" className="h-7 px-2 text-xs">Set</Button>
+                  </form>
+                )}
+              </div>
+            ) : (
+              <>
+                <Tag className="w-4 h-4" />
+                <span>{isFree ? "Free" : `$${space?.price || 0}/mo`}</span>
+              </>
+            )}
           </div>
           {/* Creator */}
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
