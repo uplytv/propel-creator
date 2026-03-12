@@ -38,7 +38,7 @@ export default function FeedCard({ item, index }: { item: FeedItem; index: numbe
     if (item.type === "livestream") {
       navigate(`/stream/${item.id}`);
     } else if (item.spaceId || item.type === "community" || item.type === "course") {
-      navigate(`/space/${item.creatorId}`);
+      navigate(`/community/${item.creatorId}`);
     } else {
       navigate(`/creator/${encodeURIComponent(item.creatorName)}`);
     }
