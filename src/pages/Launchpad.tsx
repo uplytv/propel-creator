@@ -159,7 +159,7 @@ export default function Launchpad() {
 
     const imageUrl = await uploadImage();
     const productType = option.id === "service" ? "coaching" : option.id;
-    const finalPrice = isFree && option.id === "community" ? 0 : (parseFloat(price) || 0);
+    const finalPrice = isFree && (option.id === "community" || option.id === "course") ? 0 : (parseFloat(price) || 0);
 
     createProduct.mutate(
       {
