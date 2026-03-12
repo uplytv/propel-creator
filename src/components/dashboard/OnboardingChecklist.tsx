@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, LayoutGrid, Radio, GraduationCap, Package, Users, ChevronRight, Sparkles, X } from "lucide-react";
+import { Check, LayoutGrid, Radio, GraduationCap, Package, Users, ChevronRight, Sparkles, X, Copy, Link } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface ChecklistStep {
   id: string;
@@ -20,6 +21,7 @@ export function OnboardingChecklist() {
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [dismissed, setDismissed] = useState(false);
+  const [showInviteLink, setShowInviteLink] = useState(false);
 
   const steps: ChecklistStep[] = [
     {
@@ -89,12 +91,7 @@ export function OnboardingChecklist() {
       icon: Users,
       action: () => {
         if (user) {
-          const spaceUrl = `${window.location.origin}/space/${user.id}`;
-          if (navigator.share) {
-            navigator.share({ title: "Join my community on Uply", url: spaceUrl }).catch(() => {});
-          } else {
-            navigator.clipboard.writeText(spaceUrl);
-          }
+          setShowInviteLink(prev => !prev);
         } else {
           navigate("/auth");
         }
@@ -214,6 +211,44 @@ export function OnboardingChecklist() {
           );
         })}
       </div>
+
+      {/* Invite link popout */}
+      <AnimatePresence>
+        {showInviteLink && user && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="mt-3 p-3 rounded-lg bg-secondary/60 border border-border">
+              <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
+                <Link className="w-3 h-3" />
+                Your community invite link
+              </p>
+              <div className="flex items-center gap-2">
+                <input
+                  readOnly
+                  value={`${window.location.origin}/space/${user.id}`}
+                  className="flex-1 text-xs bg-background border border-border rounded-md px-3 py-2 text-foreground select-all truncate"
+                  onFocus={(e) => e.target.select()}
+                />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigator.clipboard.writeText(`${window.location.origin}/space/${user.id}`);
+                    toast.success("Link copied to clipboard!");
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors shrink-0"
+                >
+                  <Copy className="w-3 h-3" />
+                  Copy
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
