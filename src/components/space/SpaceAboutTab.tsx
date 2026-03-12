@@ -118,6 +118,14 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
     const file = e.target.files?.[0];
     if (!file || !isOwner) return;
 
+    const optimisticUrl = URL.createObjectURL(file);
+    const previousSpace = queryClient.getQueryData<any>(["creator-space", creatorId]);
+
+    queryClient.setQueryData(["creator-space", creatorId], (prev: any) =>
+      prev ? { ...prev, cover_image_url: optimisticUrl } : prev
+    );
+    setActiveThumb(0);
+
     setUploadingCover(true);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
@@ -151,34 +159,45 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
         .eq("creator_id", ownerId);
       if (updateError) throw updateError;
 
+      queryClient.setQueryData(["creator-space", creatorId], (prev: any) =>
+        prev ? { ...prev, cover_image_url: urlData.publicUrl } : prev
+      );
       queryClient.invalidateQueries({ queryKey: ["creator-space", creatorId] });
+      setActiveThumb(0);
       toast({ title: "Cover updated 📸" });
     } catch (err: any) {
+      queryClient.setQueryData(["creator-space", creatorId], previousSpace);
       const message = String(err?.message || "Upload failed");
       const friendly = message.toLowerCase().includes("row-level security")
         ? "You need an active account session in preview. Please sign in again, then retry upload."
         : message;
       toast({ title: "Upload failed", description: friendly, variant: "destructive" });
     } finally {
+      URL.revokeObjectURL(optimisticUrl);
       setUploadingCover(false);
       if (coverInputRef.current) coverInputRef.current.value = "";
     }
   };
 
-  // Build thumbnail list from content assets + cover
-  const thumbnails = contentAssets.length > 0
-    ? contentAssets.map(a => ({
-        id: a.id,
-        src: a.thumbnail_url || (a.mux_playback_id ? `https://image.mux.com/${a.mux_playback_id}/thumbnail.png?time=2` : null),
-        playbackId: a.mux_playback_id,
-        duration: a.duration,
-        isVideo: !!a.mux_playback_id,
-      }))
-    : coverImage
-      ? [{ id: "cover", src: coverImage, playbackId: null, duration: null, isVideo: isVideoFileUrl(coverImage) }]
-      : [];
+  // Build thumbnail list from cover + content assets (cover first)
+  const thumbnails = [
+    ...(coverImage
+      ? [{ id: "cover", src: coverImage, playbackId: null as string | null, duration: null as number | null, isVideo: isVideoFileUrl(coverImage) }]
+      : []),
+    ...contentAssets.map((a) => ({
+      id: a.id,
+      src: a.thumbnail_url || (a.mux_playback_id ? `https://image.mux.com/${a.mux_playback_id}/thumbnail.png?time=2` : null),
+      playbackId: a.mux_playback_id,
+      duration: a.duration,
+      isVideo: !!a.mux_playback_id,
+    })),
+  ].filter((t) => !!t.src);
 
   const activeAsset = thumbnails[activeThumb] || thumbnails[0];
+
+  useEffect(() => {
+    if (activeThumb >= thumbnails.length) setActiveThumb(0);
+  }, [activeThumb, thumbnails.length]);
 
   useEffect(() => {
     setIsPlayingVideo(false);
