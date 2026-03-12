@@ -23,11 +23,11 @@ export default function FeedCard({ item, index }: { item: FeedItem; index: numbe
     } else if (item.type === "creator") {
       navigate(`/creator/${encodeURIComponent(item.creatorName)}`);
     } else if (item.spaceId) {
-      navigate(`/space/${item.creatorId}`);
+      navigate(`/community/${item.creatorId}`);
     } else if (item.type === "course") {
-      navigate(`/space/${item.creatorId}`, { state: { tab: "classroom" } });
+      navigate(`/community/${item.creatorId}`, { state: { tab: "classroom" } });
     } else if (item.type === "community") {
-      navigate(`/space/${item.creatorId}`, { state: { tab: "community" } });
+      navigate(`/community/${item.creatorId}`, { state: { tab: "community" } });
     } else {
       navigate(`/creator/${encodeURIComponent(item.creatorName)}`);
     }
