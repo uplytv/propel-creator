@@ -130,7 +130,7 @@ export default function CreatorProfile() {
                   key={p.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  onClick={() => navigate(`/space/${profile.user_id}`, { state: { tab: p.type === 'course' ? 'classroom' : 'community' } })}
+                  onClick={() => navigate(`/community/${profile.user_id}`, { state: { tab: p.type === 'course' ? 'classroom' : 'community' } })}
                   className="rounded-2xl border border-border bg-card/40 p-5 text-left hover:border-primary/30 hover:shadow-md transition-all group"
                 >
                   {p.image_url && (

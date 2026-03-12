@@ -141,7 +141,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     for (const group of coreNav) {
       const hasActive = group.items.some(item => {
-        const resolved = item.path === "__space__" ? (user ? `/space/${user.id}` : "/auth") : item.path;
+        const resolved = item.path === "__space__" ? (user ? `/community/${user.id}` : "/auth") : item.path;
         return location.pathname === resolved;
       });
       if (hasActive && !expandedCores.includes(group.core)) {

@@ -116,7 +116,7 @@ export default function FeaturedCarousel() {
     if (item.type === "creator") {
       navigate(`/creator/${encodeURIComponent(item.title)}`);
     } else {
-      navigate(`/space/${item.userId}`);
+      navigate(`/community/${item.userId}`);
     }
   };
 

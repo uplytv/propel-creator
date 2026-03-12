@@ -178,7 +178,7 @@ export default function Launchpad() {
   const handleGoToProduct = () => {
     if (!user) return;
     const tab = option?.id === "course" ? "classroom" : "community";
-    navigate(`/space/${user.id}`, { state: { tab } });
+    navigate(`/community/${user.id}`, { state: { tab } });
   };
 
   const resetSelection = () => {

@@ -67,7 +67,7 @@ export default function Dashboard() {
       icon: GraduationCap,
       color: "from-blue-500/20 to-blue-600/5",
       iconColor: "text-blue-400",
-      action: () => navigate(user ? `/space/${user.id}?tab=classroom` : "/auth"),
+      action: () => navigate(user ? `/community/${user.id}?tab=classroom` : "/auth"),
     },
     {
       label: "Products",

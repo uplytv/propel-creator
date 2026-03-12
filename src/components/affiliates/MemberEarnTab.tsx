@@ -14,7 +14,7 @@ export function MemberEarnTab({ programId, creatorId }: MemberEarnTabProps) {
   const { data: codeData, isLoading } = useMemberAffiliateCode(programId);
 
   const affiliateLink = codeData?.code
-    ? `${window.location.origin}/space/${creatorId}?ref=${codeData.code}`
+    ? `${window.location.origin}/community/${creatorId}?ref=${codeData.code}`
     : "";
 
   const handleCopy = () => {

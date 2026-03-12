@@ -355,7 +355,7 @@ export default function Products() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
                 className={`glass-card-hover cursor-pointer overflow-hidden ${view === "list" ? "flex items-center gap-4 p-5" : ""}`}
-                onClick={() => user && navigate(`/space/${user.id}`, { state: { tab: p.type === 'course' ? 'classroom' : 'community' } })}
+                onClick={() => user && navigate(`/community/${user.id}`, { state: { tab: p.type === 'course' ? 'classroom' : 'community' } })}
               >
                 {view === "grid" && (p as any).image_url && (
                   <img src={(p as any).image_url} alt={p.name} className="w-full h-36 object-cover" />
