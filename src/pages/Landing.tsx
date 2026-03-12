@@ -102,7 +102,7 @@ export default function Landing() {
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container flex h-16 items-center justify-between">
-          <img src="/logo.png" alt="Uply" className="h-8 md:h-10" width="80" height="40" />
+          <img src="/logo.png" alt="Uply" className="h-12 md:h-14" width="112" height="56" />
           <div className="hidden md:flex items-center gap-8">
             <a href="#social-proof" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Early Access</a>
             <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
@@ -396,7 +396,7 @@ export default function Landing() {
         <div className="container">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div>
-              <img src="/logo.png" alt="Uply" className="h-10" width="80" height="40" loading="lazy" />
+              <img src="/logo.png" alt="Uply" className="h-14" width="112" height="56" loading="lazy" />
               <p className="text-sm text-muted-foreground mt-1">Built for creators who are serious about growth.</p>
             </div>
             <div className="flex gap-8 text-sm text-muted-foreground">
