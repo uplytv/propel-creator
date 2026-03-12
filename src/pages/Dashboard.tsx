@@ -51,7 +51,7 @@ export default function Dashboard() {
       icon: LayoutGrid,
       color: "from-violet-500/20 to-violet-600/5",
       iconColor: "text-violet-400",
-      action: () => navigate(user ? `/space/${user.id}` : "/auth"),
+      action: () => navigate(user ? `/community/${user.id}` : "/auth"),
     },
     {
       label: "Go Live",
