@@ -1,6 +1,6 @@
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import { useRef, useMemo, useCallback, useEffect } from "react";
-import { Check, ArrowRight, Star, Heart, Sparkles } from "lucide-react";
+import { Check, ArrowRight, Sparkles, Rocket, Users, Zap, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import SEOHead from "@/components/SEOHead";
