@@ -233,48 +233,53 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Social Proof — Testimonials */}
+      {/* Early Access */}
       <section id="social-proof" className="py-20 md:py-28 relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/[0.03] rounded-full blur-[120px] pointer-events-none" />
         <div className="container relative">
           <motion.div variants={sectionHeading} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }} className="text-center mb-14">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-4">
-              <Heart className="w-3.5 h-3.5" />
-              Loved by Creators
+              <Rocket className="w-3.5 h-3.5" />
+              Early Access — Limited Spots
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Creators are building real businesses here</h2>
-            <p className="text-muted-foreground text-lg">Don't just take our word for it.</p>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Get in early. Get rewarded <span className="text-gradient">forever.</span>
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+              We're onboarding our first wave of creators. Join now and lock in perks that won't be available after launch.
+            </p>
           </motion.div>
-          <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }} className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {testimonials.map((t) => (
+          <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }} className="grid sm:grid-cols-2 gap-5 max-w-3xl mx-auto mb-12">
+            {earlyAccessPerks.map((perk) => (
               <motion.div
-                key={t.name}
+                key={perk.title}
                 variants={item}
                 whileHover={{ y: -4, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }}
-                className="glass-card p-7 flex flex-col group"
+                className="glass-card p-6 flex gap-4 items-start group"
               >
-                <div className="flex gap-0.5 mb-4">
-                  {Array.from({ length: 5 }).map((_, j) => (
-                    <Star key={j} className="w-4 h-4 fill-primary text-primary" />
-                  ))}
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                  <perk.icon className="w-5 h-5 text-primary" />
                 </div>
-                <blockquote className="text-foreground font-medium leading-relaxed flex-1 mb-6">
-                  "{t.quote}"
-                </blockquote>
-                <div className="flex items-center justify-between pt-4 border-t border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
-                      {t.avatar}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-sm text-foreground">{t.name}</p>
-                      <p className="text-xs text-muted-foreground">{t.role}</p>
-                    </div>
-                  </div>
-                  <span className="text-primary font-bold text-sm">{t.revenue}</span>
+                <div>
+                  <h3 className="font-semibold text-foreground mb-1">{perk.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{perk.desc}</p>
                 </div>
               </motion.div>
             ))}
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="text-center"
+          >
+            <Button variant="hero" size="xl" onClick={() => navigate("/auth")}>
+              Claim Your Spot <ArrowRight className="ml-1" />
+            </Button>
+            <p className="text-xs text-muted-foreground mt-4">
+              Free forever plan available · No credit card needed
+            </p>
           </motion.div>
         </div>
       </section>
