@@ -468,7 +468,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
               {thumbnails.map((thumb, i) => (
                 <div
                   key={thumb.id}
-                  onTouchStart={() => isOwner && thumb.source === "gallery" && handleTouchStart()}
+                  onTouchStart={() => isOwner && handleTouchStart()}
                   onTouchEnd={handleTouchEnd}
                   onTouchCancel={handleTouchEnd}
                   onMouseDown={() => isOwner && thumb.source === "gallery" && handleTouchStart()}
