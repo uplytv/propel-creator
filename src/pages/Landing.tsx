@@ -102,7 +102,7 @@ export default function Landing() {
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container flex h-16 items-center justify-between">
-          <img src="/logo.png" alt="Uply" className="h-11 md:h-12 w-auto object-contain" width="1024" height="1024" />
+          <img src="/logo.png" alt="Uply" className="h-[77px] md:h-[84px] w-auto object-contain" width="1024" height="1024" />
           <div className="hidden md:flex items-center gap-8">
             <a href="#social-proof" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Early Access</a>
             <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
