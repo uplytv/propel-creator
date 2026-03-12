@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, LayoutGrid, Radio, GraduationCap, Package, Users, ChevronRight, Sparkles, X } from "lucide-react";
+import { Check, LayoutGrid, Radio, GraduationCap, Package, Users, ChevronRight, Sparkles, X, Copy, Link } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface ChecklistStep {
   id: string;
