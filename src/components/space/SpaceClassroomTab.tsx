@@ -424,7 +424,12 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                       >
                         {/* Cover image */}
                         <div className="relative w-full aspect-[16/9] bg-secondary overflow-hidden">
-                          {coverUrl ? (
+                          {uploadingCover === mod.id ? (
+                            <div className="w-full h-full flex flex-col items-center justify-center bg-secondary gap-2">
+                              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                              <span className="text-xs text-muted-foreground">Uploading…</span>
+                            </div>
+                          ) : coverUrl ? (
                             <img src={coverUrl} alt={mod.title} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-secondary to-secondary/50">
@@ -432,7 +437,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                             </div>
                           )}
                           {/* Owner: upload cover overlay */}
-                          {isOwner && !coverUrl && (
+                          {isOwner && !coverUrl && uploadingCover !== mod.id && (
                             <label className="absolute inset-0 flex flex-col items-center justify-center gap-1 cursor-pointer bg-background/40" onClick={(e) => e.stopPropagation()}>
                               <ImagePlus className="w-6 h-6 text-foreground/70" />
                               <span className="text-xs text-foreground/70 font-medium">Add cover</span>
@@ -449,8 +454,8 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                               />
                             </label>
                           )}
-                          {isOwner && coverUrl && (
-                            <label className="absolute top-2 right-2 p-1.5 rounded-full bg-background/60 backdrop-blur-sm cursor-pointer hover:bg-background/80 transition-colors">
+                          {isOwner && coverUrl && uploadingCover !== mod.id && (
+                            <label className="absolute top-2 right-2 p-1.5 rounded-full bg-background/60 backdrop-blur-sm cursor-pointer hover:bg-background/80 transition-colors" onClick={(e) => e.stopPropagation()}>
                               <Pencil className="w-3.5 h-3.5 text-foreground" />
                               <input
                                 type="file"
