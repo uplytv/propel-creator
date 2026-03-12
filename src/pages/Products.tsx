@@ -514,8 +514,8 @@ export default function Products() {
                       onChange={(e) => setUrlInput(e.target.value)}
                       type="url"
                     />
-                    <Button onClick={handleUrlImport} disabled={!urlInput.trim()} className="w-full">
-                      Import & Customize
+                    <Button onClick={handleUrlImport} disabled={!urlInput.trim() || urlLoading} className="w-full">
+                      {urlLoading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Importing...</> : "Import & Customize"}
                     </Button>
                   </div>
                 )}
