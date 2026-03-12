@@ -268,3 +268,12 @@
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted-foreground));
 }
+
+/* iOS-style wiggle animation for edit mode */
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-1.5deg); }
+  50% { transform: rotate(1.5deg); }
+}
+.animate-wiggle {
+  animation: wiggle 0.25s ease-in-out infinite;
+}
