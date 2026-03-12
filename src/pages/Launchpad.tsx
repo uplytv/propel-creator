@@ -87,6 +87,8 @@ export default function Launchpad() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [idea, setIdea] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [isPublic, setIsPublic] = useState(true);
+  const [isFree, setIsFree] = useState(true);
 
   const option = launchOptions.find((o) => o.id === selected);
 
