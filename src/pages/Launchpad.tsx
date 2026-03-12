@@ -107,7 +107,7 @@ export default function Launchpad() {
     setImagePreview(null);
     setIdea("");
     setIsPublic(true);
-    setIsFree(id === "community");
+    setIsFree(id === "community" || id === "course");
   };
 
   const handleGenerate = async () => {
@@ -159,7 +159,7 @@ export default function Launchpad() {
 
     const imageUrl = await uploadImage();
     const productType = option.id === "service" ? "coaching" : option.id;
-    const finalPrice = isFree && option.id === "community" ? 0 : (parseFloat(price) || 0);
+    const finalPrice = isFree && (option.id === "community" || option.id === "course") ? 0 : (parseFloat(price) || 0);
 
     createProduct.mutate(
       {
@@ -454,15 +454,17 @@ export default function Launchpad() {
                     )}
                   </div>
 
-                  {/* Visibility & Pricing (community only) */}
-                  {selected === "community" && (
+                  {/* Visibility & Pricing (community & course) */}
+                  {(selected === "community" || selected === "course") && (
                     <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           {isPublic ? <Globe className="w-4 h-4 text-muted-foreground" /> : <Lock className="w-4 h-4 text-muted-foreground" />}
                           <div>
                             <p className="text-sm font-medium text-foreground">{isPublic ? "Public" : "Private"}</p>
-                            <p className="text-[11px] text-muted-foreground">{isPublic ? "Anyone can discover & view" : "Invite-only access"}</p>
+                            <p className="text-[11px] text-muted-foreground">
+                              {isPublic ? "Anyone can discover & view" : "Invite-only access"}
+                            </p>
                           </div>
                         </div>
                         <Switch checked={isPublic} onCheckedChange={setIsPublic} />
@@ -473,7 +475,11 @@ export default function Launchpad() {
                           <Tag className="w-4 h-4 text-muted-foreground" />
                           <div>
                             <p className="text-sm font-medium text-foreground">{isFree ? "Free" : "Paid"}</p>
-                            <p className="text-[11px] text-muted-foreground">{isFree ? "No charge to join" : "Monthly membership fee"}</p>
+                            <p className="text-[11px] text-muted-foreground">
+                              {isFree
+                                ? (selected === "course" ? "No charge to enroll" : "No charge to join")
+                                : (selected === "course" ? "One-time purchase" : "Monthly membership fee")}
+                            </p>
                           </div>
                         </div>
                         <Switch checked={!isFree} onCheckedChange={(checked) => setIsFree(!checked)} />
@@ -481,8 +487,8 @@ export default function Launchpad() {
                     </div>
                   )}
 
-                  {/* Price — show for non-community, or community when paid */}
-                  {(selected !== "community" || !isFree) && (
+                  {/* Price — show for non-community/course, or when paid */}
+                  {((selected !== "community" && selected !== "course") || !isFree) && (
                     <div>
                       <label className="text-sm font-medium text-foreground mb-1.5 block">
                         {selected === "community" ? "Monthly Price (USD)" : "Price (USD)"}
