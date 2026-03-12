@@ -277,7 +277,7 @@ export default function Landing() {
                   {applicantCount.toLocaleString()}
                 </span>
                 <span className="text-sm text-muted-foreground">
-                  creators already joined
+                  {applicantCount === 1 ? 'creator' : 'creators'} already joined
                 </span>
               </motion.div>
             )}
