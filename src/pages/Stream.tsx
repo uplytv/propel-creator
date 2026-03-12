@@ -346,7 +346,7 @@ export default function Stream() {
               {/* Featured Product */}
               {featuredProduct && (
                 <button
-                  onClick={() => navigate(`/space/${dbStream.user_id}`, { state: { tab: featuredProduct.type === 'course' ? 'classroom' : 'community' } })}
+                  onClick={() => navigate(`/community/${dbStream.user_id}`, { state: { tab: featuredProduct.type === 'course' ? 'classroom' : 'community' } })}
                   className="mt-4 w-full flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/20 hover:bg-primary/10 hover:border-primary/30 transition-all text-left group"
                 >
                   {featuredProduct.image_url ? (

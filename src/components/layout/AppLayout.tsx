@@ -27,10 +27,10 @@ type NavItem = { label: string; icon: React.ElementType; path: string; desc: str
 const coreNav: { core: string; label: string; icon: React.ElementType; items: NavItem[] }[] = [
   {
     core: "space",
-    label: "SPACE",
+    label: "COMMUNITY",
     icon: LayoutGrid,
     items: [
-      { label: "My Space", icon: LayoutGrid, path: "__space__", desc: "Your community hub" },
+      { label: "My Community", icon: LayoutGrid, path: "__space__", desc: "Your community hub" },
       { label: "Leaderboard", icon: Trophy, path: "/leaderboard", desc: "Top members", featureKey: "leaderboard" },
     ],
   },
@@ -141,7 +141,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     for (const group of coreNav) {
       const hasActive = group.items.some(item => {
-        const resolved = item.path === "__space__" ? (user ? `/space/${user.id}` : "/auth") : item.path;
+        const resolved = item.path === "__space__" ? (user ? `/community/${user.id}` : "/auth") : item.path;
         return location.pathname === resolved;
       });
       if (hasActive && !expandedCores.includes(group.core)) {
@@ -150,7 +150,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     }
   }, [location.pathname, user]);
 
-  const resolvePath = (item: NavItem) => item.path === "__space__" ? (user ? `/space/${user.id}` : "/auth") : item.path;
+  const resolvePath = (item: NavItem) => item.path === "__space__" ? (user ? `/community/${user.id}` : "/auth") : item.path;
 
   const renderNavItem = (item: NavItem, inCollapsed: boolean, onNavigate?: () => void) => {
     // Check feature visibility

@@ -75,7 +75,8 @@ const App = () => (
                   <Route path="/leaderboard" element={<Leaderboard />} />
                   <Route path="/ref/:code" element={<ReferralRedirect />} />
                   <Route path="/creator/:username" element={<CreatorProfile />} />
-                  <Route path="/space/:creatorId" element={<CreatorSpace />} />
+                  <Route path="/community/:creatorId" element={<CreatorSpace />} />
+                  <Route path="/space/:creatorId" element={<CreatorSpace />} /> {/* legacy redirect */}
                   <Route path="/discover" element={<Discover />} />
 
                   {/* Protected routes */}
