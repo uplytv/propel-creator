@@ -2,11 +2,13 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Rocket, BookOpen, Users, Radio, Briefcase, ArrowRight,
-  Sparkles, Zap, X, Loader2, CheckCircle2, ImagePlus, Wand2
+  Sparkles, Zap, X, Loader2, CheckCircle2, ImagePlus, Wand2,
+  Globe, Lock, Tag
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
