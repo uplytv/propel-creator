@@ -43,7 +43,7 @@ function SortableModule({ mod, children, isOwner }: { mod: any; children: React.
     <div ref={setNodeRef} style={style} {...attributes}>
       <div className="flex items-center">
         {isOwner && (
-          <div {...listeners} className="px-1.5 cursor-grab active:cursor-grabbing touch-none" style={{ color: "#555" }}>
+          <div {...listeners} className="px-1.5 cursor-grab active:cursor-grabbing touch-none text-muted-foreground">
             <GripVertical className="w-3.5 h-3.5" />
           </div>
         )}
@@ -59,7 +59,7 @@ function SortableLesson({ lesson, children, isOwner }: { lesson: any; children: 
   return (
     <div ref={setNodeRef} style={style} className="flex items-center" {...attributes}>
       {isOwner && (
-        <div {...listeners} className="px-1 cursor-grab active:cursor-grabbing touch-none" style={{ color: "#555" }}>
+        <div {...listeners} className="px-1 cursor-grab active:cursor-grabbing touch-none text-muted-foreground">
           <GripVertical className="w-3 h-3" />
         </div>
       )}
@@ -92,8 +92,8 @@ function LessonPlayer({ lesson }: { lesson: any }) {
     );
   }
   return (
-    <div className="w-full aspect-video flex items-center justify-center" style={{ background: "#111" }}>
-      <Play className="w-12 h-12" style={{ color: "#555" }} />
+    <div className="w-full aspect-video flex items-center justify-center bg-card">
+      <Play className="w-12 h-12 text-muted-foreground" />
     </div>
   );
 }
@@ -255,11 +255,10 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
         <LessonPlayer lesson={selectedLesson} />
 
         {/* ← Menu / Next → bar */}
-        <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: "1px solid hsl(var(--border))" }}>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <button
             onClick={() => {
               setSelectedLesson(null);
-              // Go back to module view
             }}
             className="flex items-center gap-1.5 text-sm font-medium text-primary"
           >
@@ -268,8 +267,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
           <button
             onClick={() => nextLesson && setSelectedLesson(nextLesson)}
             disabled={!nextLesson}
-            className="flex items-center gap-1.5 text-sm font-medium"
-            style={{ color: nextLesson ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}
+            className={`flex items-center gap-1.5 text-sm font-medium ${nextLesson ? "text-primary" : "text-muted-foreground"}`}
           >
             Next <ArrowRight className="w-4 h-4" />
           </button>
@@ -287,7 +285,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
 
           {/* Complete button */}
           {user && !(completions as Set<string>).has(selectedLesson.id) ? (
-            <Button onClick={() => handleComplete(selectedLesson.id)} className="w-full font-semibold" style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
+            <Button onClick={() => handleComplete(selectedLesson.id)} className="w-full font-semibold">
               <CheckCircle className="w-4 h-4 mr-2" /> Mark Complete
             </Button>
           ) : (completions as Set<string>).has(selectedLesson.id) ? (
@@ -312,7 +310,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
     return (
       <div className="min-h-[60vh]">
         {/* Module header */}
-        <div className="px-4 pt-4 pb-3" style={{ borderBottom: "1px solid hsl(var(--border))" }}>
+        <div className="px-4 pt-4 pb-3 border-b border-border">
           <button
             onClick={() => setSelectedModule(null)}
             className="flex items-center gap-1.5 text-sm font-medium text-primary mb-3"
@@ -418,9 +416,8 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                   return (
                     <SortableModule key={mod.id} mod={mod} isOwner={isOwner}>
                       <div
-                        className="cursor-pointer"
+                        className="cursor-pointer border-b border-border"
                         onClick={() => setSelectedModule(mod)}
-                        style={{ borderBottom: "1px solid hsl(var(--border))" }}
                       >
                         {/* Cover image */}
                         <div className="relative w-full aspect-[16/9] bg-secondary overflow-hidden">
@@ -544,17 +541,17 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
     );
   }
 
-  /* ═══ DESKTOP: Two-column layout (unchanged) ═══ */
+  /* ═══ DESKTOP: Two-column layout ═══ */
 
   const renderSidebar = () => (
     <div className="flex flex-col h-full">
       {totalLessons > 0 && (
-        <div className="p-4" style={{ borderBottom: "1px solid #1e1e1e" }}>
-          <p className="text-xs font-medium mb-2" style={{ color: "#aaa" }}>
+        <div className="p-4 border-b border-border">
+          <p className="text-xs font-medium mb-2 text-muted-foreground">
             {completedCount} of {totalLessons} lessons complete
           </p>
-          <div className="h-2 rounded-full overflow-hidden" style={{ background: "#1e1e1e" }}>
-            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${progressPct}%`, background: "#00FF85" }} />
+          <div className="h-2 rounded-full overflow-hidden bg-muted">
+            <div className="h-full rounded-full transition-all duration-500 bg-primary" style={{ width: `${progressPct}%` }} />
           </div>
         </div>
       )}
@@ -562,9 +559,9 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
       <div className="flex-1 overflow-y-auto">
         {modules.length === 0 ? (
           <div className="p-8 text-center">
-            <BookOpen className="w-8 h-8 mx-auto mb-2" style={{ color: "#555" }} />
-            <p className="text-sm font-medium text-white mb-1">No courses yet</p>
-            <p className="text-xs" style={{ color: "#888" }}>
+            <BookOpen className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+            <p className="text-sm font-medium text-foreground mb-1">No courses yet</p>
+            <p className="text-xs text-muted-foreground">
               {isOwner ? "Add your first module to get started." : "No content available yet."}
             </p>
           </div>
@@ -579,32 +576,32 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
 
                   return (
                     <SortableModule key={mod.id} mod={mod} isOwner={isOwner}>
-                      <div style={{ borderBottom: "1px solid #1e1e1e" }}>
+                      <div className="border-b border-border">
                         <div className="flex items-center">
-                          <button onClick={() => toggleModule(mod.id)} className="flex-1 flex items-center gap-2.5 px-3 py-3 text-left hover:bg-white/5 transition-colors">
-                            <span className="text-xs font-bold flex-shrink-0 w-5 h-5 rounded flex items-center justify-center" style={{ background: modCompleted ? "#00FF85" : "#1e1e1e", color: modCompleted ? "#0A0A0A" : "#888" }}>
+                          <button onClick={() => toggleModule(mod.id)} className="flex-1 flex items-center gap-2.5 px-3 py-3 text-left hover:bg-secondary/50 transition-colors">
+                            <span className={`text-xs font-bold flex-shrink-0 w-5 h-5 rounded flex items-center justify-center ${modCompleted ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
                               {modCompleted ? <CheckCircle className="w-3 h-3" /> : idx + 1}
                             </span>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-white truncate">{mod.title}</p>
-                              <p className="text-[11px]" style={{ color: "#666" }}>{lessons.length} lesson{lessons.length !== 1 ? "s" : ""}</p>
+                              <p className="text-sm font-semibold text-foreground truncate">{mod.title}</p>
+                              <p className="text-[11px] text-muted-foreground">{lessons.length} lesson{lessons.length !== 1 ? "s" : ""}</p>
                             </div>
-                            {isExpanded ? <ChevronDown className="w-4 h-4 flex-shrink-0" style={{ color: "#666" }} /> : <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: "#666" }} />}
+                            {isExpanded ? <ChevronDown className="w-4 h-4 flex-shrink-0 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 flex-shrink-0 text-muted-foreground" />}
                           </button>
                           {isOwner && (
                             <div className="flex items-center pr-2 gap-0.5">
-                              <button onClick={() => setEditingModule(mod)} className="p-1.5 rounded hover:bg-white/10" style={{ color: "#666" }}><Pencil className="w-3.5 h-3.5" /></button>
+                              <button onClick={() => setEditingModule(mod)} className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Pencil className="w-3.5 h-3.5" /></button>
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                  <button className="p-1.5 rounded hover:bg-white/10" style={{ color: "#666" }}><Trash2 className="w-3.5 h-3.5" /></button>
+                                  <button className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Trash2 className="w-3.5 h-3.5" /></button>
                                 </AlertDialogTrigger>
-                                <AlertDialogContent style={{ background: "#111", border: "1px solid #1e1e1e" }}>
+                                <AlertDialogContent className="bg-card border-border">
                                   <AlertDialogHeader>
-                                    <AlertDialogTitle className="text-white">Delete Module</AlertDialogTitle>
-                                    <AlertDialogDescription style={{ color: "#888" }}>Delete "{mod.title}" and all its lessons?</AlertDialogDescription>
+                                    <AlertDialogTitle>Delete Module</AlertDialogTitle>
+                                    <AlertDialogDescription>Delete "{mod.title}" and all its lessons?</AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
-                                    <AlertDialogCancel className="border-0" style={{ background: "#1e1e1e", color: "#fff" }}>Cancel</AlertDialogCancel>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
                                     <AlertDialogAction onClick={() => { deleteModule.mutate(mod.id); toast({ title: "Module deleted" }); }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
                                   </AlertDialogFooter>
                                 </AlertDialogContent>
@@ -625,34 +622,28 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                                       <div className="flex items-center">
                                         <button
                                           onClick={() => setSelectedLesson(lesson)}
-                                          className="flex-1 flex items-center gap-2.5 pl-10 pr-3 py-2.5 text-left transition-colors hover:bg-white/5"
-                                          style={{
-                                            borderLeft: isActive ? "3px solid #00FF85" : "3px solid transparent",
-                                            background: isActive ? "rgba(0,255,133,0.05)" : undefined,
-                                          }}
+                                          className={`flex-1 flex items-center gap-2.5 pl-10 pr-3 py-2.5 text-left transition-colors hover:bg-secondary/50 ${isActive ? "border-l-[3px] border-l-primary bg-primary/5" : "border-l-[3px] border-l-transparent"}`}
                                         >
-                                          <div className="flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center"
-                                            style={{ borderColor: isComplete ? "#00FF85" : "#333", background: isComplete ? "#00FF85" : "transparent" }}
-                                          >
-                                            {isComplete && <CheckCircle className="w-3 h-3" style={{ color: "#0A0A0A" }} />}
+                                          <div className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center ${isComplete ? "border-primary bg-primary" : "border-muted-foreground/30 bg-transparent"}`}>
+                                            {isComplete && <CheckCircle className="w-3 h-3 text-primary-foreground" />}
                                           </div>
                                           <div className="flex-1 min-w-0">
-                                            <p className="text-sm truncate" style={{ color: isActive ? "#00FF85" : "#ddd", fontWeight: isActive ? 600 : 400 }}>{lesson.title}</p>
+                                            <p className={`text-sm truncate ${isActive ? "text-primary font-semibold" : "text-foreground"}`}>{lesson.title}</p>
                                             <div className="flex items-center gap-2">
                                               {lesson.duration_seconds > 0 && (
-                                                <span className="text-[11px]" style={{ color: "#666" }}>{formatDuration(lesson.duration_seconds)}</span>
+                                                <span className="text-[11px] text-muted-foreground">{formatDuration(lesson.duration_seconds)}</span>
                                               )}
                                               {isOwner && lesson.mux_asset_id && (() => {
                                                 const asset = (assetStatuses as Record<string, any>)[lesson.mux_asset_id];
                                                 const status = asset?.status || (lesson.mux_asset_id === "pending" ? "preparing" : null);
                                                 if (!status || status === "ready") return null;
                                                 if (status === "preparing" || status === "pending") return (
-                                                  <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(255,187,0,0.15)", color: "#FFBB00" }}>
+                                                  <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-yellow-500/15 text-yellow-500">
                                                     <Loader2 className="w-2.5 h-2.5 animate-spin" /> Processing
                                                   </span>
                                                 );
                                                 if (status === "errored") return (
-                                                  <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(255,50,50,0.15)", color: "#FF3232" }}>
+                                                  <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-destructive/15 text-destructive">
                                                     <AlertCircle className="w-2.5 h-2.5" /> Error
                                                   </span>
                                                 );
@@ -660,22 +651,22 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                                               })()}
                                             </div>
                                           </div>
-                                          {lesson.is_free === false && <Lock className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "#555" }} />}
+                                          {lesson.is_free === false && <Lock className="w-3.5 h-3.5 flex-shrink-0 text-muted-foreground" />}
                                         </button>
                                         {isOwner && (
                                           <div className="flex items-center pr-2 gap-0.5">
-                                            <button onClick={() => setEditingLesson(lesson)} className="p-1.5 rounded hover:bg-white/10" style={{ color: "#666" }}><Pencil className="w-3 h-3" /></button>
+                                            <button onClick={() => setEditingLesson(lesson)} className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Pencil className="w-3 h-3" /></button>
                                             <AlertDialog>
                                               <AlertDialogTrigger asChild>
-                                                <button className="p-1.5 rounded hover:bg-white/10" style={{ color: "#666" }}><Trash2 className="w-3 h-3" /></button>
+                                                <button className="p-1.5 rounded hover:bg-secondary text-muted-foreground"><Trash2 className="w-3 h-3" /></button>
                                               </AlertDialogTrigger>
-                                              <AlertDialogContent style={{ background: "#111", border: "1px solid #1e1e1e" }}>
+                                              <AlertDialogContent className="bg-card border-border">
                                                 <AlertDialogHeader>
-                                                  <AlertDialogTitle className="text-white">Delete Lesson</AlertDialogTitle>
-                                                  <AlertDialogDescription style={{ color: "#888" }}>Delete "{lesson.title}"?</AlertDialogDescription>
+                                                  <AlertDialogTitle>Delete Lesson</AlertDialogTitle>
+                                                  <AlertDialogDescription>Delete "{lesson.title}"?</AlertDialogDescription>
                                                 </AlertDialogHeader>
                                                 <AlertDialogFooter>
-                                                  <AlertDialogCancel className="border-0" style={{ background: "#1e1e1e", color: "#fff" }}>Cancel</AlertDialogCancel>
+                                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
                                                   <AlertDialogAction onClick={() => { deleteLesson.mutate(lesson.id); if (selectedLesson?.id === lesson.id) setSelectedLesson(null); toast({ title: "Lesson deleted" }); }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
                                                 </AlertDialogFooter>
                                               </AlertDialogContent>
@@ -689,7 +680,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                               </SortableContext>
                             </DndContext>
                             {isOwner && (
-                              <button onClick={() => setShowAddLesson(mod.id)} className="w-full flex items-center gap-2 pl-10 py-2.5 text-xs font-medium" style={{ color: "#00FF85" }}>
+                              <button onClick={() => setShowAddLesson(mod.id)} className="w-full flex items-center gap-2 pl-10 py-2.5 text-xs font-medium text-primary">
                                 <Plus className="w-3 h-3" /> Add Lesson
                               </button>
                             )}
@@ -705,7 +696,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
         )}
 
         {isOwner && (
-          <button onClick={() => setShowAddModule(true)} className="w-full flex items-center gap-2 px-4 py-3 text-sm font-semibold hover:bg-white/5 transition-colors" style={{ color: "#00FF85", borderTop: modules.length > 0 ? "1px solid #1e1e1e" : undefined }}>
+          <button onClick={() => setShowAddModule(true)} className={`w-full flex items-center gap-2 px-4 py-3 text-sm font-semibold hover:bg-secondary/50 transition-colors text-primary ${modules.length > 0 ? "border-t border-border" : ""}`}>
             <Plus className="w-4 h-4" /> Add Module
           </button>
         )}
@@ -718,40 +709,40 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
       return (
         <div className="flex items-center justify-center h-full p-6">
           <div className="max-w-md w-full text-center space-y-6">
-            <div className="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center" style={{ background: "rgba(0,255,133,0.1)" }}>
-              <BookOpen className="w-8 h-8" style={{ color: "#00FF85" }} />
+            <div className="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center bg-primary/10">
+              <BookOpen className="w-8 h-8 text-primary" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white mb-2">Course Overview</h2>
-              <p className="text-sm" style={{ color: "#888" }}>Explore the modules and lessons below to get started.</p>
+              <h2 className="text-xl font-bold text-foreground mb-2">Course Overview</h2>
+              <p className="text-sm text-muted-foreground">Explore the modules and lessons below to get started.</p>
             </div>
             <div className="flex justify-center gap-6">
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1.5 mb-1">
-                  <Layers className="w-4 h-4" style={{ color: "#00FF85" }} />
-                  <span className="text-lg font-bold text-white">{modules.length}</span>
+                  <Layers className="w-4 h-4 text-primary" />
+                  <span className="text-lg font-bold text-foreground">{modules.length}</span>
                 </div>
-                <p className="text-xs" style={{ color: "#888" }}>Modules</p>
+                <p className="text-xs text-muted-foreground">Modules</p>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1.5 mb-1">
-                  <BookOpen className="w-4 h-4" style={{ color: "#00FF85" }} />
-                  <span className="text-lg font-bold text-white">{totalLessons}</span>
+                  <BookOpen className="w-4 h-4 text-primary" />
+                  <span className="text-lg font-bold text-foreground">{totalLessons}</span>
                 </div>
-                <p className="text-xs" style={{ color: "#888" }}>Lessons</p>
+                <p className="text-xs text-muted-foreground">Lessons</p>
               </div>
               {totalDuration > 0 && (
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-1.5 mb-1">
-                    <Clock className="w-4 h-4" style={{ color: "#00FF85" }} />
-                    <span className="text-lg font-bold text-white">{formatTotalDuration(totalDuration)}</span>
+                    <Clock className="w-4 h-4 text-primary" />
+                    <span className="text-lg font-bold text-foreground">{formatTotalDuration(totalDuration)}</span>
                   </div>
-                  <p className="text-xs" style={{ color: "#888" }}>Total</p>
+                  <p className="text-xs text-muted-foreground">Total</p>
                 </div>
               )}
             </div>
             {totalLessons > 0 && (
-              <Button onClick={() => { const first = allLessons[0]; if (first) setSelectedLesson(first); }} className="font-semibold px-8" style={{ background: "#00FF85", color: "#0A0A0A" }}>
+              <Button onClick={() => { const first = allLessons[0]; if (first) setSelectedLesson(first); }} className="font-semibold px-8">
                 Start Course
               </Button>
             )}
@@ -764,28 +755,33 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
       <div className="h-full overflow-y-auto">
         <LessonPlayer lesson={selectedLesson} />
         <div className="p-6 space-y-6">
-          <h1 className="text-xl font-bold text-white">{selectedLesson.title}</h1>
+          <h1 className="text-xl font-bold text-foreground">{selectedLesson.title}</h1>
           {selectedLesson.description && (
-            <div className="text-sm leading-relaxed" style={{ color: "#bbb" }}>
+            <div className="text-sm leading-relaxed text-muted-foreground">
               {selectedLesson.description}
             </div>
           )}
-          <div className="flex items-center justify-between pt-4" style={{ borderTop: "1px solid #1e1e1e" }}>
-            <button onClick={() => prevLesson && setSelectedLesson(prevLesson)} disabled={!prevLesson} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-white/5" style={{ color: prevLesson ? "#ddd" : "#333" }}>
+          <div className="flex items-center justify-between pt-4 border-t border-border">
+            <button onClick={() => prevLesson && setSelectedLesson(prevLesson)} disabled={!prevLesson} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-secondary/50 ${prevLesson ? "text-foreground" : "text-muted-foreground/30"}`}>
               <ArrowLeft className="w-4 h-4" /> Previous
             </button>
             {user && !(completions as Set<string>).has(selectedLesson.id) ? (
-              <Button onClick={() => handleComplete(selectedLesson.id)} className="font-semibold" style={{ background: "#00FF85", color: "#0A0A0A" }}>
+              <Button onClick={() => handleComplete(selectedLesson.id)} className="font-semibold">
                 <CheckCircle className="w-4 h-4 mr-2" /> Mark Complete
               </Button>
             ) : (completions as Set<string>).has(selectedLesson.id) ? (
-              <div className="flex items-center gap-2 text-sm font-medium" style={{ color: "#00FF85" }}>
+              <div className="flex items-center gap-2 text-sm font-medium text-primary">
                 <CheckCircle className="w-4 h-4" /> Completed
               </div>
             ) : null}
-            <button onClick={() => nextLesson && setSelectedLesson(nextLesson)} disabled={!nextLesson} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors" style={{ color: nextLesson ? "#0A0A0A" : "#333", background: nextLesson ? "#00FF85" : "transparent" }}>
-              Next Lesson <ArrowRight className="w-4 h-4" />
-            </button>
+            <Button
+              onClick={() => nextLesson && setSelectedLesson(nextLesson)}
+              disabled={!nextLesson}
+              className="font-semibold"
+              variant={nextLesson ? "default" : "ghost"}
+            >
+              Next Lesson <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
           </div>
         </div>
       </div>
@@ -795,10 +791,10 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
   return (
     <div>
       <div className="hidden md:flex" style={{ height: "calc(100vh - 120px)" }}>
-        <div className="w-[300px] flex-shrink-0 overflow-hidden flex flex-col" style={{ borderRight: "1px solid #1e1e1e", background: "#0A0A0A" }}>
+        <div className="w-[300px] flex-shrink-0 overflow-hidden flex flex-col border-r border-border bg-background">
           {renderSidebar()}
         </div>
-        <div className="flex-1 overflow-hidden" style={{ background: "#0e0e0e" }}>
+        <div className="flex-1 overflow-hidden bg-card">
           {renderContent()}
         </div>
       </div>
@@ -831,12 +827,12 @@ function AddModuleDialog({ open, onClose, creatorId }: { open: boolean; onClose:
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="border-0" style={{ background: "#111", color: "#fff" }}>
-        <DialogHeader><DialogTitle className="text-white">Add Module</DialogTitle></DialogHeader>
+      <DialogContent className="bg-card border-border">
+        <DialogHeader><DialogTitle>Add Module</DialogTitle></DialogHeader>
         <div className="space-y-3">
-          <Input placeholder="Module title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
-          <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
-          <Button onClick={handleSubmit} disabled={!title.trim()} className="w-full font-semibold" style={{ background: "#00FF85", color: "#0A0A0A" }}>Add Module</Button>
+          <Input placeholder="Module title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 bg-muted" />
+          <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 bg-muted" />
+          <Button onClick={handleSubmit} disabled={!title.trim()} className="w-full font-semibold">Add Module</Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -890,36 +886,36 @@ function AddLessonDialog({ open, onClose, moduleId, creatorId }: { open: boolean
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o && !uploading) onClose(); }}>
-      <DialogContent className="border-0" style={{ background: "#111", color: "#fff" }}>
-        <DialogHeader><DialogTitle className="text-white">Add Lesson</DialogTitle></DialogHeader>
+      <DialogContent className="bg-card border-border">
+        <DialogHeader><DialogTitle>Add Lesson</DialogTitle></DialogHeader>
         <div className="space-y-3">
-          <Input placeholder="Lesson title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
-          <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
+          <Input placeholder="Lesson title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 bg-muted" />
+          <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 bg-muted" />
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: "#888" }}>Video (optional)</label>
+            <label className="block text-xs font-medium mb-1.5 text-muted-foreground">Video (optional)</label>
             {!videoFile ? (
-              <label className="flex flex-col items-center justify-center gap-1.5 p-4 rounded-lg cursor-pointer hover:bg-white/5 transition-colors" style={{ border: "1px dashed #333" }}>
-                <Play className="w-5 h-5" style={{ color: "#00FF85" }} />
-                <span className="text-xs" style={{ color: "#888" }}>Click to select a video file</span>
+              <label className="flex flex-col items-center justify-center gap-1.5 p-4 rounded-lg cursor-pointer hover:bg-secondary/50 transition-colors border border-dashed border-border">
+                <Play className="w-5 h-5 text-primary" />
+                <span className="text-xs text-muted-foreground">Click to select a video file</span>
                 <input type="file" accept="video/*" className="hidden" onChange={(e) => setVideoFile(e.target.files?.[0] || null)} />
               </label>
             ) : (
-              <div className="flex items-center gap-2 p-2.5 rounded-lg" style={{ background: "#1e1e1e" }}>
-                <Play className="w-4 h-4 flex-shrink-0" style={{ color: "#00FF85" }} />
-                <span className="text-xs text-white truncate flex-1">{videoFile.name}</span>
-                <button onClick={() => setVideoFile(null)} className="text-xs px-2 py-0.5 rounded" style={{ color: "#888" }}>Remove</button>
+              <div className="flex items-center gap-2 p-2.5 rounded-lg bg-muted">
+                <Play className="w-4 h-4 flex-shrink-0 text-primary" />
+                <span className="text-xs text-foreground truncate flex-1">{videoFile.name}</span>
+                <button onClick={() => setVideoFile(null)} className="text-xs px-2 py-0.5 rounded text-muted-foreground">Remove</button>
               </div>
             )}
           </div>
           {uploading && (
             <div className="space-y-1">
-              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "#1e1e1e" }}>
-                <div className="h-full rounded-full transition-all" style={{ width: `${uploadProgress}%`, background: "#00FF85" }} />
+              <div className="h-1.5 rounded-full overflow-hidden bg-muted">
+                <div className="h-full rounded-full transition-all bg-primary" style={{ width: `${uploadProgress}%` }} />
               </div>
-              <p className="text-xs text-center" style={{ color: "#888" }}>Uploading… {uploadProgress}%</p>
+              <p className="text-xs text-center text-muted-foreground">Uploading… {uploadProgress}%</p>
             </div>
           )}
-          <Button onClick={handleSubmit} disabled={!title.trim() || uploading} className="w-full font-semibold" style={{ background: "#00FF85", color: "#0A0A0A" }}>
+          <Button onClick={handleSubmit} disabled={!title.trim() || uploading} className="w-full font-semibold">
             {uploading ? "Uploading…" : "Add Lesson"}
           </Button>
         </div>
@@ -943,12 +939,12 @@ function EditModuleDialog({ open, onClose, module: mod }: { open: boolean; onClo
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="border-0" style={{ background: "#111", color: "#fff" }}>
-        <DialogHeader><DialogTitle className="text-white">Edit Module</DialogTitle></DialogHeader>
+      <DialogContent className="bg-card border-border">
+        <DialogHeader><DialogTitle>Edit Module</DialogTitle></DialogHeader>
         <div className="space-y-3">
-          <Input placeholder="Module title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
-          <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
-          <Button onClick={handleSubmit} disabled={!title.trim()} className="w-full font-semibold" style={{ background: "#00FF85", color: "#0A0A0A" }}>Save Changes</Button>
+          <Input placeholder="Module title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 bg-muted" />
+          <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 bg-muted" />
+          <Button onClick={handleSubmit} disabled={!title.trim()} className="w-full font-semibold">Save Changes</Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -1006,46 +1002,46 @@ function EditLessonDialog({ open, onClose, lesson }: { open: boolean; onClose: (
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o && !uploading) onClose(); }}>
-      <DialogContent className="border-0" style={{ background: "#111", color: "#fff" }}>
-        <DialogHeader><DialogTitle className="text-white">Edit Lesson</DialogTitle></DialogHeader>
+      <DialogContent className="bg-card border-border">
+        <DialogHeader><DialogTitle>Edit Lesson</DialogTitle></DialogHeader>
         <div className="space-y-3">
-          <Input placeholder="Lesson title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
-          <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "#1e1e1e" }} />
+          <Input placeholder="Lesson title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 bg-muted" />
+          <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 bg-muted" />
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: "#888" }}>Video</label>
+            <label className="block text-xs font-medium mb-1.5 text-muted-foreground">Video</label>
             {videoFile ? (
-              <div className="flex items-center gap-2 p-2.5 rounded-lg" style={{ background: "#1e1e1e" }}>
-                <Play className="w-4 h-4 flex-shrink-0" style={{ color: "#00FF85" }} />
-                <span className="text-xs text-white truncate flex-1">{videoFile.name}</span>
-                <button onClick={() => setVideoFile(null)} className="text-xs px-2 py-0.5 rounded" style={{ color: "#888" }}>Remove</button>
+              <div className="flex items-center gap-2 p-2.5 rounded-lg bg-muted">
+                <Play className="w-4 h-4 flex-shrink-0 text-primary" />
+                <span className="text-xs text-foreground truncate flex-1">{videoFile.name}</span>
+                <button onClick={() => setVideoFile(null)} className="text-xs px-2 py-0.5 rounded text-muted-foreground">Remove</button>
               </div>
             ) : hasExistingVideo ? (
-              <div className="flex items-center gap-2 p-2.5 rounded-lg" style={{ background: "#1e1e1e" }}>
-                <CheckCircle className="w-4 h-4 flex-shrink-0" style={{ color: "#00FF85" }} />
-                <span className="text-xs text-white flex-1">Video attached</span>
-                <label className="text-xs px-2 py-0.5 rounded cursor-pointer hover:bg-white/10" style={{ color: "#00FF85" }}>
+              <div className="flex items-center gap-2 p-2.5 rounded-lg bg-muted">
+                <CheckCircle className="w-4 h-4 flex-shrink-0 text-primary" />
+                <span className="text-xs text-foreground flex-1">Video attached</span>
+                <label className="text-xs px-2 py-0.5 rounded cursor-pointer hover:bg-secondary text-primary">
                   Replace
                   <input type="file" accept="video/*" className="hidden" onChange={(e) => { setVideoFile(e.target.files?.[0] || null); setRemoveVideo(false); }} />
                 </label>
-                <button onClick={() => { setRemoveVideo(true); setVideoFile(null); }} className="text-xs px-2 py-0.5 rounded" style={{ color: "#FF3232" }}>Remove</button>
+                <button onClick={() => { setRemoveVideo(true); setVideoFile(null); }} className="text-xs px-2 py-0.5 rounded text-destructive">Remove</button>
               </div>
             ) : (
-              <label className="flex flex-col items-center justify-center gap-1.5 p-4 rounded-lg cursor-pointer hover:bg-white/5 transition-colors" style={{ border: "1px dashed #333" }}>
-                <Play className="w-5 h-5" style={{ color: "#00FF85" }} />
-                <span className="text-xs" style={{ color: "#888" }}>Click to select a video file</span>
+              <label className="flex flex-col items-center justify-center gap-1.5 p-4 rounded-lg cursor-pointer hover:bg-secondary/50 transition-colors border border-dashed border-border">
+                <Play className="w-5 h-5 text-primary" />
+                <span className="text-xs text-muted-foreground">Click to select a video file</span>
                 <input type="file" accept="video/*" className="hidden" onChange={(e) => { setVideoFile(e.target.files?.[0] || null); setRemoveVideo(false); }} />
               </label>
             )}
           </div>
           {uploading && (
             <div className="space-y-1">
-              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "#1e1e1e" }}>
-                <div className="h-full rounded-full transition-all" style={{ width: `${uploadProgress}%`, background: "#00FF85" }} />
+              <div className="h-1.5 rounded-full overflow-hidden bg-muted">
+                <div className="h-full rounded-full transition-all bg-primary" style={{ width: `${uploadProgress}%` }} />
               </div>
-              <p className="text-xs text-center" style={{ color: "#888" }}>Uploading… {uploadProgress}%</p>
+              <p className="text-xs text-center text-muted-foreground">Uploading… {uploadProgress}%</p>
             </div>
           )}
-          <Button onClick={handleSubmit} disabled={!title.trim() || uploading} className="w-full font-semibold" style={{ background: "#00FF85", color: "#0A0A0A" }}>
+          <Button onClick={handleSubmit} disabled={!title.trim() || uploading} className="w-full font-semibold">
             {uploading ? "Uploading…" : "Save Changes"}
           </Button>
         </div>
