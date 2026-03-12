@@ -127,8 +127,8 @@ export default function Landing() {
             </motion.div>
 
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.08] mb-6">
-              The Creator Platform That{" "}
-              <span className="text-gradient">Replaces Everything Else.</span>
+              A Social Network for Creators to{" "}
+              <span className="text-gradient">Monetize.</span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-xl mx-auto leading-relaxed">
               Communities. Livestreams. Courses. Services. Everything creators need to grow and monetize — in one place.
