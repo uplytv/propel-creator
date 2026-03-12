@@ -58,6 +58,8 @@ export default function FeedCard({ item, index }: { item: FeedItem; index: numbe
           <img
             src={item.imageUrl}
             alt={item.title}
+            width={400}
+            height={250}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             loading="lazy"
           />
