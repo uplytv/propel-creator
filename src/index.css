@@ -98,6 +98,8 @@
     --glow-shadow: 0 0 20px hsl(265 90% 65% / 0.15);
     --glow-shadow-strong: 0 0 30px hsl(265 90% 65% / 0.3);
     --gradient-mid: 280 80% 72%;
+    --surface-alt: 260 12% 8%;
+    --section-divider: linear-gradient(to right, transparent, hsl(260 10% 15% / 0.6), transparent);
   }
 }
 
