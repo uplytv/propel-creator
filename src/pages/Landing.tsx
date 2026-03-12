@@ -24,6 +24,27 @@ const sectionHeading = {
   show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" as const } },
 };
 
+const JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Uply",
+  "url": "https://propel-creator.lovable.app",
+  "description": "Social network for creators to monetize. The only creator platform that invests more in you as you grow.",
+  "applicationCategory": "SocialNetworkingApplication",
+  "operatingSystem": "Web",
+  "offers": {
+    "@type": "AggregateOffer",
+    "lowPrice": "0",
+    "highPrice": "99",
+    "priceCurrency": "USD",
+    "offerCount": "3"
+  },
+  "creator": {
+    "@type": "Organization",
+    "name": "Uply"
+  }
+};
+
 export default function Landing() {
   const navigate = useNavigate();
   const heroRef = useRef<HTMLElement>(null);
