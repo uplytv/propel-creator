@@ -471,7 +471,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
                   onTouchStart={() => isOwner && handleTouchStart()}
                   onTouchEnd={handleTouchEnd}
                   onTouchCancel={handleTouchEnd}
-                  onMouseDown={() => isOwner && thumb.source === "gallery" && handleTouchStart()}
+                  onMouseDown={() => isOwner && handleTouchStart()}
                   onMouseUp={handleTouchEnd}
                   onMouseLeave={handleTouchEnd}
                   onContextMenu={(e) => { if (isOwner) { e.preventDefault(); setEditMode(true); } }}
