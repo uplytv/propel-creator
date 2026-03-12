@@ -1,0 +1,98 @@
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { initMetaPixel, initGoogleTag, resetMetaPixel, resetGoogleTag } from "@/lib/adTracking";
+
+type Platform = "meta" | "google";
+
+interface AdIntegration {
+  id: string;
+  platform: Platform;
+  pixel_id: string;
+  is_active: boolean;
+}
+
+export function useAdIntegrations() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [integrations, setIntegrations] = useState<AdIntegration[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchIntegrations = useCallback(async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("ad_integrations")
+      .select("*")
+      .eq("user_id", user.id);
+    if (error) {
+      console.error("Failed to fetch ad integrations:", error);
+    } else {
+      setIntegrations((data || []) as AdIntegration[]);
+      // Auto-init any active pixels
+      for (const int of data || []) {
+        if (int.is_active) {
+          if (int.platform === "meta") initMetaPixel(int.pixel_id);
+          if (int.platform === "google") initGoogleTag(int.pixel_id);
+        }
+      }
+    }
+    setLoading(false);
+  }, [user]);
+
+  useEffect(() => {
+    fetchIntegrations();
+  }, [fetchIntegrations]);
+
+  const getIntegration = (platform: Platform) =>
+    integrations.find((i) => i.platform === platform);
+
+  const saveIntegration = async (platform: Platform, pixelId: string) => {
+    if (!user) return;
+    const existing = getIntegration(platform);
+
+    if (existing) {
+      const { error } = await supabase
+        .from("ad_integrations")
+        .update({ pixel_id: pixelId, is_active: true, updated_at: new Date().toISOString() })
+        .eq("id", existing.id);
+      if (error) throw error;
+    } else {
+      const { error } = await supabase
+        .from("ad_integrations")
+        .insert({ user_id: user.id, platform, pixel_id: pixelId, is_active: true });
+      if (error) throw error;
+    }
+
+    // Init the pixel/tag immediately
+    if (platform === "meta") initMetaPixel(pixelId);
+    if (platform === "google") initGoogleTag(pixelId);
+
+    await fetchIntegrations();
+  };
+
+  const disconnectIntegration = async (platform: Platform) => {
+    if (!user) return;
+    const existing = getIntegration(platform);
+    if (!existing) return;
+
+    const { error } = await supabase
+      .from("ad_integrations")
+      .delete()
+      .eq("id", existing.id);
+    if (error) throw error;
+
+    if (platform === "meta") resetMetaPixel();
+    if (platform === "google") resetGoogleTag();
+
+    await fetchIntegrations();
+  };
+
+  return {
+    integrations,
+    loading,
+    getIntegration,
+    saveIntegration,
+    disconnectIntegration,
+  };
+}
