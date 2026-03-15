@@ -291,7 +291,7 @@ export default function CreatorProfile() {
     if (!user) {
       navigate(`/auth?ref=${username}`);
     } else {
-      navigate(`/community/${profile?.user_id}`);
+      navigate(`/community/${profile?.user_id}/community`);
     }
   };
 
