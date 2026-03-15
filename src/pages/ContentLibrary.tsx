@@ -212,6 +212,10 @@ export default function ContentLibrary() {
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/90 text-primary-foreground">
                           Ready
                         </span>
+                      ) : asset.status === "errored" ? (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-destructive/90 text-destructive-foreground flex items-center gap-1">
+                          <AlertTriangle className="w-3 h-3" /> Failed
+                        </span>
                       ) : (
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-warning/90 text-warning-foreground flex items-center gap-1">
                           <Loader2 className="w-3 h-3 animate-spin" /> Processing
