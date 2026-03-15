@@ -828,7 +828,40 @@ export default function BroadcastStudio({
           </div>
         )}
 
-        {!isRecording && !isUploading && (
+        {uploadFailed && !isUploading && (
+          <div className="glass-card p-4 space-y-3 border border-destructive/30">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground">Upload failed</p>
+                <p className="text-xs text-muted-foreground line-clamp-2">{uploadErrorMsg}</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="hero"
+                size="sm"
+                className="flex-1"
+                onClick={() => uploadRecording()}
+              >
+                <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
+                Retry Upload
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setUploadFailed(false);
+                  chunksRef.current = [];
+                }}
+              >
+                Discard
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {!isRecording && !isUploading && !uploadFailed && (
           <Button variant="ghost" size="sm" onClick={() => { stopCurrentStream(); setCameraOn(false); setMicOn(false); setStudioMode("select"); }} className="w-full text-muted-foreground">
             ← Choose Different Method
           </Button>
