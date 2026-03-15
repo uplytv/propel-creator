@@ -256,8 +256,7 @@ export default function Wallet() {
           </Button>
           <Button
             onClick={() => setSendDrawerOpen(true)}
-            variant="outline"
-            className="h-11 rounded-xl gap-1.5 font-semibold border-border text-xs px-3"
+            className="h-11 rounded-xl gap-1.5 font-semibold text-xs px-3 bg-card border border-foreground/30 text-foreground hover:bg-secondary"
           >
             <SendHorizontal className="w-4 h-4 shrink-0" /> Pay Creator
           </Button>
