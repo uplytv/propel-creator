@@ -179,6 +179,7 @@ export default function BroadcastStudio({
   const [isRecording, setIsRecording] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
   const [mediaError, setMediaError] = useState<string | null>(null);
 
@@ -495,6 +496,7 @@ export default function BroadcastStudio({
       return;
     }
     setIsUploading(true);
+    setUploadProgress(0);
     console.log("[BroadcastStudio] Starting upload...", {
       chunkCount: chunksRef.current.length,
       totalSize: chunksRef.current.reduce((s, c) => s + c.size, 0),
@@ -512,6 +514,7 @@ export default function BroadcastStudio({
         file: blob,
         onProgress: (pct) => {
           console.log(`[BroadcastStudio] Upload progress: ${pct}%`);
+          setUploadProgress(pct);
         },
       });
       console.log("[BroadcastStudio] Upload complete!", { uploadId });
@@ -793,10 +796,29 @@ export default function BroadcastStudio({
         )}
 
         {isUploading && (
-          <div className="glass-card p-4 text-center">
-            <Upload className="w-6 h-6 text-primary mx-auto animate-bounce mb-2" />
-            <p className="text-sm font-medium text-foreground">Uploading your recording…</p>
-            <p className="text-xs text-muted-foreground mt-1">This may take a moment depending on the length</p>
+          <div className="glass-card p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <Upload className="w-5 h-5 text-primary animate-bounce flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground">
+                  {uploadProgress < 100 ? "Uploading your recording…" : "Finalizing…"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {uploadProgress < 100
+                    ? `${uploadProgress}% complete`
+                    : "Almost done, processing upload"}
+                </p>
+              </div>
+              <span className="text-sm font-bold text-primary tabular-nums">{uploadProgress}%</span>
+            </div>
+            <div className="w-full h-2 rounded-full bg-secondary overflow-hidden">
+              <motion.div
+                className="h-full rounded-full bg-gradient-to-r from-primary to-primary/70"
+                initial={{ width: 0 }}
+                animate={{ width: `${uploadProgress}%` }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              />
+            </div>
           </div>
         )}
 
