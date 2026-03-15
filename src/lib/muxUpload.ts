@@ -11,6 +11,8 @@ interface UploadOptions {
   timeoutMs?: number;
 }
 
+const DEFAULT_TIMEOUT_MS = 300_000; // 5 minutes
+
 interface UploadResult {
   uploadId: string;
   uploadUrl: string;
