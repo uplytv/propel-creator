@@ -29,6 +29,9 @@ export default function ContentLibrary() {
   const navigate = useNavigate();
   const [assets, setAssets] = useState<MuxAsset[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reuploadingId, setReuploadingId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const reuploadAssetRef = useRef<MuxAsset | null>(null);
 
   const fetchAssets = async () => {
     if (!user) return;
