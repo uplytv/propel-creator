@@ -219,44 +219,44 @@ export default function Wallet() {
         </div>
 
         {/* Secondary Balances */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px" }}>
-          <div className="rounded-xl border border-yellow-500/15 bg-yellow-500/5 p-3">
+        <div className="flex gap-2">
+          <div className="flex-1 rounded-xl border border-yellow-500/15 bg-yellow-500/5 p-3">
             {walletLoading ? <Skeleton className="h-10 w-16" /> : (
               <>
                 <p className="text-[10px] font-medium text-yellow-400 mb-0.5">Pending</p>
-                <p className="text-lg font-bold text-yellow-400">${pending.toFixed(2)}</p>
+                <p className="text-base font-bold text-yellow-400">${pending.toFixed(2)}</p>
               </>
             )}
           </div>
-          <div className="rounded-xl border border-border bg-card p-3">
+          <div className="flex-1 rounded-xl border border-border bg-card p-3">
             {walletLoading ? <Skeleton className="h-10 w-16" /> : (
               <>
                 <p className="text-[10px] font-medium text-muted-foreground mb-0.5">Earned</p>
-                <p className="text-lg font-bold">${lifetime.toFixed(2)}</p>
+                <p className="text-base font-bold">${lifetime.toFixed(2)}</p>
               </>
             )}
           </div>
-          <div className="rounded-xl border border-border bg-card p-3">
+          <div className="flex-1 rounded-xl border border-border bg-card p-3">
             {walletLoading ? <Skeleton className="h-10 w-16" /> : (
               <>
                 <p className="text-[10px] font-medium text-muted-foreground mb-0.5">Withdrawn</p>
-                <p className="text-lg font-bold">${withdrawn.toFixed(2)}</p>
+                <p className="text-base font-bold">${withdrawn.toFixed(2)}</p>
               </>
             )}
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+        <div className="flex gap-3">
           <Button
             onClick={() => { setDrawerOpen(true); setPayoutSubmitted(false); setPayoutAmount(""); }}
-            className="h-11 bg-[#00FF85] hover:bg-[#00FF85]/90 text-black font-semibold rounded-xl gap-1.5 text-xs px-3"
+            className="flex-1 h-11 bg-[#00FF85] hover:bg-[#00FF85]/90 text-black font-semibold rounded-xl gap-1.5 text-xs min-w-0"
           >
             <ArrowUpCircle className="w-4 h-4 shrink-0" /> Withdraw
           </Button>
           <Button
             onClick={() => setSendDrawerOpen(true)}
-            className="h-11 rounded-xl gap-1.5 font-semibold text-xs px-3 bg-card border border-foreground/30 text-foreground hover:bg-secondary"
+            className="flex-1 h-11 rounded-xl gap-1.5 font-semibold text-xs min-w-0 bg-secondary border border-border text-foreground hover:bg-secondary/80"
           >
             <SendHorizontal className="w-4 h-4 shrink-0" /> Pay Creator
           </Button>
