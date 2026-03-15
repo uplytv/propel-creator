@@ -496,6 +496,7 @@ export default function BroadcastStudio({
       return;
     }
     setIsUploading(true);
+    setUploadProgress(0);
     console.log("[BroadcastStudio] Starting upload...", {
       chunkCount: chunksRef.current.length,
       totalSize: chunksRef.current.reduce((s, c) => s + c.size, 0),
