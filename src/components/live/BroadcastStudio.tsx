@@ -182,6 +182,8 @@ export default function BroadcastStudio({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
   const [mediaError, setMediaError] = useState<string | null>(null);
+  const [uploadFailed, setUploadFailed] = useState(false);
+  const [uploadErrorMsg, setUploadErrorMsg] = useState("");
 
   const analyserRef = useRef<AnalyserNode | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -497,6 +499,8 @@ export default function BroadcastStudio({
     }
     setIsUploading(true);
     setUploadProgress(0);
+    setUploadFailed(false);
+    setUploadErrorMsg("");
     console.log("[BroadcastStudio] Starting upload...", {
       chunkCount: chunksRef.current.length,
       totalSize: chunksRef.current.reduce((s, c) => s + c.size, 0),
@@ -522,6 +526,8 @@ export default function BroadcastStudio({
       chunksRef.current = [];
     } catch (err: any) {
       console.error("[BroadcastStudio] Upload FAILED", err);
+      setUploadFailed(true);
+      setUploadErrorMsg(err.message || "Upload failed");
       toast({ title: "Upload failed", description: err.message, variant: "destructive" });
     } finally {
       setIsUploading(false);
@@ -822,7 +828,40 @@ export default function BroadcastStudio({
           </div>
         )}
 
-        {!isRecording && !isUploading && (
+        {uploadFailed && !isUploading && (
+          <div className="glass-card p-4 space-y-3 border border-destructive/30">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground">Upload failed</p>
+                <p className="text-xs text-muted-foreground line-clamp-2">{uploadErrorMsg}</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="hero"
+                size="sm"
+                className="flex-1"
+                onClick={() => uploadRecording()}
+              >
+                <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
+                Retry Upload
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setUploadFailed(false);
+                  chunksRef.current = [];
+                }}
+              >
+                Discard
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {!isRecording && !isUploading && !uploadFailed && (
           <Button variant="ghost" size="sm" onClick={() => { stopCurrentStream(); setCameraOn(false); setMicOn(false); setStudioMode("select"); }} className="w-full text-muted-foreground">
             ← Choose Different Method
           </Button>
