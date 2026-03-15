@@ -113,6 +113,41 @@ export default function ContentLibrary() {
     return null;
   };
 
+  const handleReupload = (asset: MuxAsset) => {
+    reuploadAssetRef.current = asset;
+    fileInputRef.current?.click();
+  };
+
+  const handleReuploadFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const asset = reuploadAssetRef.current;
+    if (!file || !asset || !user) return;
+
+    setReuploadingId(asset.id);
+    try {
+      const { uploadToMuxWithRetry } = await import("@/lib/muxUpload");
+
+      // Delete the old errored record first
+      await supabase.from("mux_assets").delete().eq("id", asset.id);
+
+      const uploadId = await uploadToMuxWithRetry({
+        userId: user.id,
+        title: asset.title || "Untitled Video",
+        description: asset.description || "",
+        file,
+      });
+
+      toast({ title: "Re-upload started! 🎬", description: "Your video is processing and will appear shortly." });
+      fetchAssets();
+    } catch (err: any) {
+      toast({ title: "Re-upload failed", description: err.message, variant: "destructive" });
+    } finally {
+      setReuploadingId(null);
+      reuploadAssetRef.current = null;
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   return (
     <AppLayout>
       <div className="p-4 md:p-8 max-w-6xl mx-auto">
