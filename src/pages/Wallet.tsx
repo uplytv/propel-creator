@@ -182,7 +182,7 @@ export default function Wallet() {
   return (
     <AppLayout>
       <SEOHead title="Wallet | Uply" description="Your creator economy wallet — track earnings, request payouts, and manage your revenue." />
-      <div className="max-w-5xl mx-auto px-4 md:px-8 py-6 space-y-6 pb-24 md:pb-8">
+      <div className="max-w-5xl mx-auto px-4 md:px-8 py-6 space-y-5 pb-24 md:pb-8 overflow-x-hidden">
         
         {/* Header */}
         <div className="flex items-center justify-between">
