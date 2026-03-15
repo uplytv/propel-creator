@@ -182,6 +182,8 @@ export default function BroadcastStudio({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
   const [mediaError, setMediaError] = useState<string | null>(null);
+  const [uploadFailed, setUploadFailed] = useState(false);
+  const [uploadErrorMsg, setUploadErrorMsg] = useState("");
 
   const analyserRef = useRef<AnalyserNode | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
