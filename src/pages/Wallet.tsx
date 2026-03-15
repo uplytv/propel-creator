@@ -200,26 +200,64 @@ export default function Wallet() {
           </Badge>
         </div>
 
-        {/* Balance Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <BalanceCard label="Available" amount={available} subtitle="Ready to withdraw" accent="green" loading={walletLoading} />
-          <BalanceCard label="Pending" amount={pending} subtitle="Clears in 7 days" accent="yellow" loading={walletLoading} />
-          <BalanceCard label="Lifetime Earned" amount={lifetime} subtitle="Total earnings" loading={walletLoading} />
-          <BalanceCard label="Withdrawn" amount={withdrawn} subtitle="Total payouts" loading={walletLoading} />
+        {/* Primary Balance */}
+        <div className="rounded-2xl border border-[#00FF85]/15 bg-[#00FF85]/5 p-5">
+          {walletLoading ? <Skeleton className="h-16 w-40" /> : (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-[#00FF85] mb-1">Available Balance</p>
+                <p className="text-4xl font-bold tracking-tight text-[#00FF85]">
+                  ${available.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-1">Ready to withdraw</p>
+              </div>
+              <div className="w-12 h-12 rounded-2xl bg-[#00FF85]/10 flex items-center justify-center">
+                <WalletIcon className="w-6 h-6 text-[#00FF85]" />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Secondary Balances */}
+        <div className="grid grid-cols-3 gap-2">
+          <div className="rounded-xl border border-yellow-500/15 bg-yellow-500/5 p-3">
+            {walletLoading ? <Skeleton className="h-10 w-16" /> : (
+              <>
+                <p className="text-[10px] font-medium text-yellow-400 mb-0.5">Pending</p>
+                <p className="text-lg font-bold text-yellow-400">${pending.toFixed(2)}</p>
+              </>
+            )}
+          </div>
+          <div className="rounded-xl border border-border bg-card p-3">
+            {walletLoading ? <Skeleton className="h-10 w-16" /> : (
+              <>
+                <p className="text-[10px] font-medium text-muted-foreground mb-0.5">Earned</p>
+                <p className="text-lg font-bold">${lifetime.toFixed(2)}</p>
+              </>
+            )}
+          </div>
+          <div className="rounded-xl border border-border bg-card p-3">
+            {walletLoading ? <Skeleton className="h-10 w-16" /> : (
+              <>
+                <p className="text-[10px] font-medium text-muted-foreground mb-0.5">Withdrawn</p>
+                <p className="text-lg font-bold">${withdrawn.toFixed(2)}</p>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="flex gap-3">
           <Button
             onClick={() => { setDrawerOpen(true); setPayoutSubmitted(false); setPayoutAmount(""); }}
-            className="h-12 bg-[#00FF85] hover:bg-[#00FF85]/90 text-black font-semibold rounded-xl gap-2"
+            className="flex-1 h-11 bg-[#00FF85] hover:bg-[#00FF85]/90 text-black font-semibold rounded-xl gap-2 text-sm"
           >
             <ArrowUpCircle className="w-4 h-4" /> Withdraw
           </Button>
           <Button
             onClick={() => setSendDrawerOpen(true)}
             variant="outline"
-            className="h-12 rounded-xl gap-2 font-semibold border-border"
+            className="flex-1 h-11 rounded-xl gap-2 font-semibold border-border text-sm"
           >
             <SendHorizontal className="w-4 h-4" /> Pay Creator
           </Button>
