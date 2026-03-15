@@ -182,7 +182,7 @@ export default function Wallet() {
   return (
     <AppLayout>
       <SEOHead title="Wallet | Uply" description="Your creator economy wallet — track earnings, request payouts, and manage your revenue." />
-      <div className="max-w-5xl mx-auto px-4 md:px-8 py-6 space-y-6 pb-24 md:pb-8">
+      <div className="max-w-5xl mx-auto px-4 md:px-8 py-6 space-y-5 pb-24 md:pb-8 overflow-x-hidden">
         
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -200,28 +200,65 @@ export default function Wallet() {
           </Badge>
         </div>
 
-        {/* Balance Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <BalanceCard label="Available" amount={available} subtitle="Ready to withdraw" accent="green" loading={walletLoading} />
-          <BalanceCard label="Pending" amount={pending} subtitle="Clears in 7 days" accent="yellow" loading={walletLoading} />
-          <BalanceCard label="Lifetime Earned" amount={lifetime} subtitle="Total earnings" loading={walletLoading} />
-          <BalanceCard label="Withdrawn" amount={withdrawn} subtitle="Total payouts" loading={walletLoading} />
+        {/* Primary Balance */}
+        <div className="rounded-2xl border border-[#00FF85]/15 bg-[#00FF85]/5 p-5">
+          {walletLoading ? <Skeleton className="h-16 w-40" /> : (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-[#00FF85] mb-1">Available Balance</p>
+                <p className="text-4xl font-bold tracking-tight text-[#00FF85]">
+                  ${available.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-1">Ready to withdraw</p>
+              </div>
+              <div className="w-12 h-12 rounded-2xl bg-[#00FF85]/10 flex items-center justify-center">
+                <WalletIcon className="w-6 h-6 text-[#00FF85]" />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Secondary Balances */}
+        <div className="flex gap-2">
+          <div className="flex-1 rounded-xl border border-yellow-500/15 bg-yellow-500/5 p-3">
+            {walletLoading ? <Skeleton className="h-10 w-16" /> : (
+              <>
+                <p className="text-[10px] font-medium text-yellow-400 mb-0.5">Pending</p>
+                <p className="text-base font-bold text-yellow-400">${pending.toFixed(2)}</p>
+              </>
+            )}
+          </div>
+          <div className="flex-1 rounded-xl border border-border bg-card p-3">
+            {walletLoading ? <Skeleton className="h-10 w-16" /> : (
+              <>
+                <p className="text-[10px] font-medium text-muted-foreground mb-0.5">Earned</p>
+                <p className="text-base font-bold">${lifetime.toFixed(2)}</p>
+              </>
+            )}
+          </div>
+          <div className="flex-1 rounded-xl border border-border bg-card p-3">
+            {walletLoading ? <Skeleton className="h-10 w-16" /> : (
+              <>
+                <p className="text-[10px] font-medium text-muted-foreground mb-0.5">Withdrawn</p>
+                <p className="text-base font-bold">${withdrawn.toFixed(2)}</p>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="flex gap-3">
           <Button
             onClick={() => { setDrawerOpen(true); setPayoutSubmitted(false); setPayoutAmount(""); }}
-            className="h-12 bg-[#00FF85] hover:bg-[#00FF85]/90 text-black font-semibold rounded-xl gap-2"
+            className="flex-1 h-11 bg-[#00FF85] hover:bg-[#00FF85]/90 text-black font-semibold rounded-xl gap-1.5 text-xs min-w-0"
           >
-            <ArrowUpCircle className="w-4 h-4" /> Withdraw
+            <ArrowUpCircle className="w-4 h-4 shrink-0" /> Withdraw
           </Button>
           <Button
             onClick={() => setSendDrawerOpen(true)}
-            variant="outline"
-            className="h-12 rounded-xl gap-2 font-semibold border-border"
+            className="flex-1 h-11 rounded-xl gap-1.5 font-semibold text-xs min-w-0 bg-secondary border border-border text-foreground hover:bg-secondary/80"
           >
-            <SendHorizontal className="w-4 h-4" /> Pay Creator
+            <SendHorizontal className="w-4 h-4 shrink-0" /> Pay Creator
           </Button>
         </div>
 
