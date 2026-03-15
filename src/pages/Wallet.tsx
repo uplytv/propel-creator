@@ -247,19 +247,19 @@ export default function Wallet() {
         </div>
 
         {/* Quick Actions */}
-        <div className="flex gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <Button
             onClick={() => { setDrawerOpen(true); setPayoutSubmitted(false); setPayoutAmount(""); }}
-            className="flex-1 h-11 bg-[#00FF85] hover:bg-[#00FF85]/90 text-black font-semibold rounded-xl gap-2 text-sm"
+            className="h-11 bg-[#00FF85] hover:bg-[#00FF85]/90 text-black font-semibold rounded-xl gap-1.5 text-xs px-3"
           >
-            <ArrowUpCircle className="w-4 h-4" /> Withdraw
+            <ArrowUpCircle className="w-4 h-4 shrink-0" /> Withdraw
           </Button>
           <Button
             onClick={() => setSendDrawerOpen(true)}
             variant="outline"
-            className="flex-1 h-11 rounded-xl gap-2 font-semibold border-border text-sm"
+            className="h-11 rounded-xl gap-1.5 font-semibold border-border text-xs px-3"
           >
-            <SendHorizontal className="w-4 h-4" /> Pay Creator
+            <SendHorizontal className="w-4 h-4 shrink-0" /> Pay Creator
           </Button>
         </div>
 
