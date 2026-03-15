@@ -278,55 +278,32 @@ export default function Products() {
 
   const handleVideoUpload = async () => {
     if (!user) return;
-    try {
-      const { data, error } = await supabase.functions.invoke("mux-create-upload", {
-        body: { userId: user.id, title: name || "Video content", description },
-      });
-      if (error) throw error;
-      setVideoUploadUrl(data.uploadUrl);
-      setVideoUploadId(data.uploadId);
-      fileInputRef.current?.click();
-    } catch (e: any) {
-      toast({ title: "Upload error", description: e.message || "Failed to initialize upload", variant: "destructive" });
-    }
+    fileInputRef.current?.click();
   };
 
   const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !videoUploadUrl) return;
+    if (!file || !user) return;
 
     setVideoUploading(true);
     setVideoProgress(0);
     setVideoStatus('preparing');
 
     try {
-      const xhr = new XMLHttpRequest();
-      xhr.upload.addEventListener('progress', (event) => {
-        if (event.lengthComputable) {
-          setVideoProgress(Math.round((event.loaded / event.total) * 100));
-        }
+      const { uploadToMuxWithRetry } = await import("@/lib/muxUpload");
+      const uploadId = await uploadToMuxWithRetry({
+        userId: user.id,
+        title: name || "Video content",
+        description,
+        file,
+        onProgress: setVideoProgress,
       });
-
-      xhr.addEventListener('load', () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          setVideoUploading(false);
-          toast({ title: "Upload complete!", description: "Video is being processed..." });
-        } else {
-          throw new Error('Upload failed');
-        }
-      });
-
-      xhr.addEventListener('error', () => {
-        setVideoUploading(false);
-        toast({ title: "Upload failed", description: "Please try again", variant: "destructive" });
-      });
-
-      xhr.open('PUT', videoUploadUrl);
-      xhr.setRequestHeader('Content-Type', file.type);
-      xhr.send(file);
+      setVideoUploadId(uploadId);
+      setVideoUploading(false);
+      toast({ title: "Upload complete!", description: "Video is being processed..." });
     } catch (err: any) {
       setVideoUploading(false);
-      toast({ title: "Upload error", description: err.message, variant: "destructive" });
+      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
     }
   };
 

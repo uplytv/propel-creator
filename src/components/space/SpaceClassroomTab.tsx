@@ -851,19 +851,14 @@ function AddLessonDialog({ open, onClose, moduleId, creatorId }: { open: boolean
 
   const uploadToMux = async (file: File): Promise<string | null> => {
     if (!user) return null;
-    const { data, error } = await supabase.functions.invoke("mux-create-upload", {
-      body: { title, description, userId: user.id },
+    const { uploadToMuxWithRetry } = await import("@/lib/muxUpload");
+    return uploadToMuxWithRetry({
+      userId: user.id,
+      title,
+      description,
+      file,
+      onProgress: setUploadProgress,
     });
-    if (error || !data?.uploadUrl) throw new Error(error?.message || "Failed to create upload");
-    const xhr = new XMLHttpRequest();
-    await new Promise<void>((resolve, reject) => {
-      xhr.upload.onprogress = (e) => { if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100)); };
-      xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error("Upload failed")));
-      xhr.onerror = () => reject(new Error("Upload failed"));
-      xhr.open("PUT", data.uploadUrl);
-      xhr.send(file);
-    });
-    return data.uploadId;
   };
 
   const handleSubmit = async () => {
