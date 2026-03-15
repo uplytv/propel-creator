@@ -291,7 +291,7 @@ export default function CreatorProfile() {
     if (!user) {
       navigate(`/auth?ref=${username}`);
     } else {
-      navigate(`/community/${profile?.user_id}`);
+      navigate(`/community/${profile?.user_id}/community`);
     }
   };
 
@@ -450,7 +450,7 @@ export default function CreatorProfile() {
           <div className="flex flex-col items-center mt-6 mb-8">
             {isMember ? (
               <Link
-                to={`/community/${profile.user_id}`}
+                to={`/community/${profile.user_id}/community`}
                 className="px-8 py-3 rounded-xl text-sm font-semibold"
                 style={{ background: "#1a1a1a", border: "1px solid #1E1E1E", color: "#888" }}
               >
@@ -553,7 +553,7 @@ export default function CreatorProfile() {
                 More posts inside. Join the community →
               </button>
             ) : (
-              <Link to={`/community/${profile.user_id}`} className="text-[#00FF85] text-sm font-medium">
+              <Link to={`/community/${profile.user_id}/community`} className="text-[#00FF85] text-sm font-medium">
                 View all posts →
               </Link>
             )}
@@ -594,7 +594,7 @@ export default function CreatorProfile() {
                             className="flex items-center gap-3 py-2 px-2 rounded-md hover:bg-white/5 transition-colors cursor-pointer"
                             onClick={() => {
                               if (lesson.is_free) {
-                                navigate(`/community/${profile.user_id}`, { state: { tab: "classroom", lessonId: lesson.id } });
+                                navigate(`/community/${profile.user_id}/classroom`);
                               }
                             }}
                           >

@@ -86,7 +86,9 @@ const App = () => (
                     <Route path="/ref/:code" element={<ReferralRedirect />} />
                     <Route path="/creator/:username" element={<CreatorProfile />} />
                     <Route path="/community/:creatorId" element={<CreatorSpace />} />
+                    <Route path="/community/:creatorId/:tab" element={<CreatorSpace />} />
                     <Route path="/space/:creatorId" element={<CreatorSpace />} />
+                    <Route path="/space/:creatorId/:tab" element={<CreatorSpace />} />
                     <Route path="/discover" element={<Discover />} />
 
                     {/* Protected routes */}

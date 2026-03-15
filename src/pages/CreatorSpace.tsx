@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import BackNav from "@/components/BackNav";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useCreatorSpace, useEnsureSpace } from "@/hooks/useCreatorSpace";
 import { useMemberCount } from "@/hooks/useCommunityMembers";
@@ -17,18 +17,47 @@ import { CreatorAffiliateProgramSettings } from "@/components/affiliates/Creator
 import { useCreatorAffiliateProgram } from "@/hooks/useAffiliates";
 import { setAffiliateCookie } from "@/lib/affiliateCookies";
 
-const BASE_TABS = ["Community", "Classroom", "Calendar", "Members", "Leaderboard", "Earn", "About"] as const;
-type Tab = typeof BASE_TABS[number];
+const VALID_TABS = ["community", "classroom", "calendar", "members", "leaderboard", "earn", "about"] as const;
+type TabSlug = typeof VALID_TABS[number];
+
+const TAB_LABELS: Record<TabSlug, string> = {
+  community: "Community",
+  classroom: "Classroom",
+  calendar: "Calendar",
+  members: "Members",
+  leaderboard: "Leaderboard",
+  earn: "Earn",
+  about: "About",
+};
+
+function resolveTabFromUrl(tabParam?: string): TabSlug {
+  const slug = tabParam?.toLowerCase();
+  if (slug && VALID_TABS.includes(slug as TabSlug)) return slug as TabSlug;
+  return "community";
+}
 
 export default function CreatorSpace() {
-  const { creatorId: rawCreatorId } = useParams<{ creatorId: string }>();
+  const { creatorId: rawCreatorId, tab: tabParam } = useParams<{ creatorId: string; tab?: string }>();
   const { user } = useAuth();
-  const creatorId = rawCreatorId === "me" ? user?.id : rawCreatorId;
+  const navigate = useNavigate();
   const location = useLocation();
-  const tabFromState = (location.state as any)?.tab;
+  const creatorId = rawCreatorId === "me" ? user?.id : rawCreatorId;
+
   const searchParams = new URLSearchParams(location.search);
-  const tabFromQuery = searchParams.get("tab");
   const refCode = searchParams.get("ref");
+
+  // Handle legacy ?tab= and state.tab by redirecting to URL-based tab
+  useEffect(() => {
+    if (tabParam) return; // already have URL tab
+    const legacyTab = searchParams.get("tab") || (location.state as any)?.tab;
+    if (legacyTab) {
+      const resolved = resolveTabFromUrl(legacyTab);
+      navigate(`/community/${rawCreatorId}/${resolved}`, { replace: true });
+    }
+  }, [tabParam, rawCreatorId]);
+
+  // Derive active tab from URL
+  const activeTab = resolveTabFromUrl(tabParam);
 
   // Handle creator affiliate cookie
   useEffect(() => {
@@ -36,13 +65,7 @@ export default function CreatorSpace() {
       setAffiliateCookie("uply_creator_ref", refCode, 30);
     }
   }, [refCode]);
-  const resolveTab = (val?: string): Tab => {
-    if (val === "classroom") return "Classroom";
-    if (val === "community") return "Community";
-    return "Community";
-  };
-  const initialTab: Tab = resolveTab(tabFromQuery || tabFromState);
-  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
+
   const isOwner = !!user?.id && !!creatorId && user.id === creatorId;
 
   const { data: space } = useCreatorSpace(creatorId);
@@ -50,7 +73,6 @@ export default function CreatorSpace() {
   const ensureSpace = useEnsureSpace();
   const { data: affiliateProgram } = useCreatorAffiliateProgram(creatorId);
 
-  // Check if current user is a member (for Earn tab)
   const { data: isMember } = useQuery({
     queryKey: ["is-member", creatorId, user?.id],
     enabled: !!creatorId && !!user && !isOwner,
@@ -66,7 +88,6 @@ export default function CreatorSpace() {
   });
 
   const showMemberEarn = !isOwner && isMember && affiliateProgram?.is_active;
-  const TABS: Tab[] = [...BASE_TABS];
 
   const { data: creatorProfile } = useQuery({
     queryKey: ["creator-profile-space", creatorId],
@@ -90,6 +111,10 @@ export default function CreatorSpace() {
   const spaceName = space?.name || creatorProfile?.display_name || "Community";
   const spaceAvatar = space?.avatar_url || creatorProfile?.avatar_url;
 
+  const switchTab = (slug: TabSlug) => {
+    navigate(`/community/${rawCreatorId}/${slug}`, { replace: true });
+  };
+
   return (
     <div className="min-h-screen bg-surface">
       <BackNav />
@@ -108,16 +133,16 @@ export default function CreatorSpace() {
       {/* Sticky Tab Bar */}
       <div className="sticky top-0 z-40 bg-surface border-b border-surface-border">
         <div className="flex overflow-x-auto scrollbar-none">
-          {TABS.map((tab) => (
+          {VALID_TABS.map((slug) => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
+              key={slug}
+              onClick={() => switchTab(slug)}
               className={`relative px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
-                activeTab === tab ? "text-foreground" : "text-text-dim"
+                activeTab === slug ? "text-foreground" : "text-text-dim"
               }`}
             >
-              {tab === "Members" ? `Members (${memberCount})` : tab}
-              {activeTab === tab && (
+              {slug === "members" ? `Members (${memberCount})` : TAB_LABELS[slug]}
+              {activeTab === slug && (
                 <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-accent-green" />
               )}
             </button>
@@ -127,13 +152,13 @@ export default function CreatorSpace() {
 
       {/* Tab Content */}
       <div className="pb-20">
-        {activeTab === "Community" && <SpaceCommunityTab creatorId={creatorId!} isOwner={isOwner} />}
-        {activeTab === "Classroom" && <SpaceClassroomTab creatorId={creatorId!} isOwner={isOwner} />}
-        {activeTab === "Calendar" && <SpaceCalendarTab creatorId={creatorId!} isOwner={isOwner} />}
-        {activeTab === "Members" && <SpaceMembersTab creatorId={creatorId!} />}
-        {activeTab === "Leaderboard" && <SpaceLeaderboardTab creatorId={creatorId!} />}
-        {activeTab === "About" && <SpaceAboutTab creatorId={creatorId!} isOwner={isOwner} />}
-        {activeTab === "Earn" && (
+        {activeTab === "community" && <SpaceCommunityTab creatorId={creatorId!} isOwner={isOwner} />}
+        {activeTab === "classroom" && <SpaceClassroomTab creatorId={creatorId!} isOwner={isOwner} />}
+        {activeTab === "calendar" && <SpaceCalendarTab creatorId={creatorId!} isOwner={isOwner} />}
+        {activeTab === "members" && <SpaceMembersTab creatorId={creatorId!} />}
+        {activeTab === "leaderboard" && <SpaceLeaderboardTab creatorId={creatorId!} />}
+        {activeTab === "about" && <SpaceAboutTab creatorId={creatorId!} isOwner={isOwner} />}
+        {activeTab === "earn" && (
           isOwner ? (
             <div className="px-4 pt-4">
               <CreatorAffiliateProgramSettings />

@@ -6,10 +6,10 @@ import { type FeedItem } from "@/hooks/useDiscoveryFeed";
 
 const typeConfig: Record<string, { label: string; icon: React.ElementType; color: string }> = {
   livestream: { label: "LIVE", icon: Radio, color: "bg-destructive text-destructive-foreground" },
-  community: { label: "Community", icon: Users, color: "bg-primary text-primary-foreground" },
-  course: { label: "Course", icon: BookOpen, color: "bg-accent text-accent-foreground" },
+  community: { label: "COMMUNITY", icon: Users, color: "bg-primary text-primary-foreground" },
+  course: { label: "COURSE", icon: BookOpen, color: "bg-accent-green text-[#0A0A0A]" },
   service: { label: "Service", icon: Briefcase, color: "bg-secondary text-secondary-foreground" },
-  creator: { label: "Creator", icon: Star, color: "bg-primary/80 text-primary-foreground" },
+  creator: { label: "CREATOR", icon: Star, color: "bg-primary/80 text-primary-foreground" },
 };
 
 export default function FeedCard({ item, index }: { item: FeedItem; index: number }) {
@@ -17,31 +17,26 @@ export default function FeedCard({ item, index }: { item: FeedItem; index: numbe
   const config = typeConfig[item.type] || typeConfig.creator;
   const TypeIcon = config.icon;
 
-  const handleClick = () => {
-    if (item.type === "livestream" && item.playbackId) {
-      navigate(`/stream/${item.id}`);
-    } else if (item.type === "creator") {
-      navigate(`/creator/${encodeURIComponent(item.creatorName)}`);
-    } else if (item.spaceId) {
-      navigate(`/community/${item.creatorId}`);
-    } else if (item.type === "course") {
-      navigate(`/community/${item.creatorId}`, { state: { tab: "classroom" } });
-    } else if (item.type === "community") {
-      navigate(`/community/${item.creatorId}`, { state: { tab: "community" } });
-    } else {
-      navigate(`/creator/${encodeURIComponent(item.creatorName)}`);
+  const getDestination = () => {
+    switch (item.type) {
+      case "livestream":
+        return item.playbackId ? `/stream/${item.id}` : `/creator/${encodeURIComponent(item.creatorName)}`;
+      case "course":
+        return `/community/${item.creatorId}/classroom`;
+      case "community":
+        return `/community/${item.creatorId}/community`;
+      case "creator":
+        return `/creator/${encodeURIComponent(item.creatorName)}`;
+      default:
+        return `/creator/${encodeURIComponent(item.creatorName)}`;
     }
   };
 
+  const handleClick = () => navigate(getDestination());
+
   const handleJoin = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (item.type === "livestream") {
-      navigate(`/stream/${item.id}`);
-    } else if (item.spaceId || item.type === "community" || item.type === "course") {
-      navigate(`/community/${item.creatorId}`);
-    } else {
-      navigate(`/creator/${encodeURIComponent(item.creatorName)}`);
-    }
+    navigate(getDestination());
   };
 
   return (
@@ -69,7 +64,7 @@ export default function FeedCard({ item, index }: { item: FeedItem; index: numbe
           </div>
         )}
 
-        {/* Live badge / Type badge */}
+        {/* Type badge */}
         <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
           <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${config.color}`}>
             {item.isLive && (
@@ -147,7 +142,27 @@ export default function FeedCard({ item, index }: { item: FeedItem; index: numbe
           </div>
         </div>
 
-        {item.description && item.type !== "livestream" && (
+        {/* Course-specific stats */}
+        {item.type === "course" && (
+          <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+            <span className="flex items-center gap-0.5">
+              <BookOpen className="w-3 h-3" />
+              {item.memberCount} enrolled
+            </span>
+          </div>
+        )}
+
+        {/* Community-specific stats */}
+        {item.type === "community" && item.memberCount > 0 && (
+          <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+            <span className="flex items-center gap-0.5">
+              <Users className="w-3 h-3" />
+              {item.memberCount.toLocaleString()} members
+            </span>
+          </div>
+        )}
+
+        {item.description && item.type !== "livestream" && item.type !== "course" && item.type !== "community" && (
           <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
             {item.description}
           </p>
@@ -156,16 +171,16 @@ export default function FeedCard({ item, index }: { item: FeedItem; index: numbe
         {/* Stats row */}
         <div className="flex items-center justify-between pt-1">
           <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-            {item.memberCount > 0 && (
-              <span className="flex items-center gap-0.5">
-                <Users className="w-3 h-3" />
-                {item.memberCount.toLocaleString()}
-              </span>
-            )}
             {item.type === "creator" && (
               <span className="flex items-center gap-0.5">
                 <Crown className="w-3 h-3 text-primary" />
                 Creator
+              </span>
+            )}
+            {item.type === "creator" && item.memberCount > 0 && (
+              <span className="flex items-center gap-0.5">
+                <Users className="w-3 h-3" />
+                {item.memberCount.toLocaleString()}
               </span>
             )}
           </div>
@@ -177,7 +192,8 @@ export default function FeedCard({ item, index }: { item: FeedItem; index: numbe
               className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-primary text-primary-foreground hover:brightness-110 transition-all"
             >
               {item.type === "livestream" ? "Watch" :
-               item.type === "creator" ? "View" : "Join"}
+               item.type === "creator" ? "View" :
+               item.type === "course" ? "Enroll" : "Join"}
             </button>
           </div>
         </div>
