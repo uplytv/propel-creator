@@ -514,6 +514,7 @@ export default function BroadcastStudio({
         file: blob,
         onProgress: (pct) => {
           console.log(`[BroadcastStudio] Upload progress: ${pct}%`);
+          setUploadProgress(pct);
         },
       });
       console.log("[BroadcastStudio] Upload complete!", { uploadId });
