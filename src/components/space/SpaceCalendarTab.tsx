@@ -28,10 +28,10 @@ export default function SpaceCalendarTab({ creatorId, isOwner }: Props) {
   const paddedDays = Array(startDay).fill(null).concat(days);
 
   const eventsOnDay = (day: Date) =>
-    events.filter((e: any) => isSameDay(new Date(e.event_date), day));
+    events.filter((e: any) => isSameDay(parseISO(e.event_date), day));
 
   const upcomingEvents = events
-    .filter((e: any) => new Date(e.event_date) >= new Date())
+    .filter((e: any) => parseISO(e.event_date) >= new Date())
     .slice(0, 5);
 
   return (
