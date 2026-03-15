@@ -499,6 +499,8 @@ export default function BroadcastStudio({
     }
     setIsUploading(true);
     setUploadProgress(0);
+    setUploadFailed(false);
+    setUploadErrorMsg("");
     console.log("[BroadcastStudio] Starting upload...", {
       chunkCount: chunksRef.current.length,
       totalSize: chunksRef.current.reduce((s, c) => s + c.size, 0),
@@ -524,6 +526,8 @@ export default function BroadcastStudio({
       chunksRef.current = [];
     } catch (err: any) {
       console.error("[BroadcastStudio] Upload FAILED", err);
+      setUploadFailed(true);
+      setUploadErrorMsg(err.message || "Upload failed");
       toast({ title: "Upload failed", description: err.message, variant: "destructive" });
     } finally {
       setIsUploading(false);
