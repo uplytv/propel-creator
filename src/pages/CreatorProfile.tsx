@@ -553,7 +553,7 @@ export default function CreatorProfile() {
                 More posts inside. Join the community →
               </button>
             ) : (
-              <Link to={`/community/${profile.user_id}`} className="text-[#00FF85] text-sm font-medium">
+              <Link to={`/community/${profile.user_id}/community`} className="text-[#00FF85] text-sm font-medium">
                 View all posts →
               </Link>
             )}
