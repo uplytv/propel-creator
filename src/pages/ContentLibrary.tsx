@@ -300,6 +300,13 @@ export default function ContentLibrary() {
           </div>
         )}
       </div>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="video/*"
+        className="hidden"
+        onChange={handleReuploadFileSelected}
+      />
     </AppLayout>
   );
 }
