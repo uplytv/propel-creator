@@ -247,7 +247,7 @@ export default function Wallet() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-3">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
           <Button
             onClick={() => { setDrawerOpen(true); setPayoutSubmitted(false); setPayoutAmount(""); }}
             className="h-11 bg-[#00FF85] hover:bg-[#00FF85]/90 text-black font-semibold rounded-xl gap-1.5 text-xs px-3"
