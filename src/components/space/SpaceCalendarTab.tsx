@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, parseISO } from "date-fns";
 import { ChevronLeft, ChevronRight, Plus, CalendarDays, ExternalLink } from "lucide-react";
 import { useCommunityEvents, useCreateEvent } from "@/hooks/useCommunityMembers";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -28,10 +28,10 @@ export default function SpaceCalendarTab({ creatorId, isOwner }: Props) {
   const paddedDays = Array(startDay).fill(null).concat(days);
 
   const eventsOnDay = (day: Date) =>
-    events.filter((e: any) => isSameDay(new Date(e.event_date), day));
+    events.filter((e: any) => isSameDay(parseISO(e.event_date), day));
 
   const upcomingEvents = events
-    .filter((e: any) => new Date(e.event_date) >= new Date())
+    .filter((e: any) => parseISO(e.event_date) >= new Date())
     .slice(0, 5);
 
   return (
@@ -104,7 +104,7 @@ export default function SpaceCalendarTab({ creatorId, isOwner }: Props) {
                 <div>
                   <p className="text-sm font-semibold text-white">{event.title}</p>
                   <p className="text-xs" style={{ color: "#888" }}>
-                    {format(new Date(event.event_date), "MMM d, yyyy")}
+                    {format(parseISO(event.event_date), "MMM d, yyyy")}
                     {event.event_time && ` · ${event.event_time}`}
                   </p>
                   {event.description && <p className="text-xs mt-1" style={{ color: "#ccc" }}>{event.description}</p>}
