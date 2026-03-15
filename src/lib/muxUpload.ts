@@ -50,7 +50,7 @@ function uploadFile(url: string, file: Blob, onProgress?: (p: number) => void, t
  */
 export async function uploadToMuxWithRetry(opts: UploadOptions): Promise<string> {
   const maxRetries = opts.maxRetries ?? 2;
-  const timeoutMs = opts.timeoutMs ?? 120_000;
+  const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   let lastError: Error | null = null;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
