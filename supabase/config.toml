@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.import-from-url]
 verify_jwt = false
+
+[functions.mux-check-upload]
+verify_jwt = false
