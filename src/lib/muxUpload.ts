@@ -11,6 +11,8 @@ interface UploadOptions {
   timeoutMs?: number;
 }
 
+const DEFAULT_TIMEOUT_MS = 300_000; // 5 minutes
+
 interface UploadResult {
   uploadId: string;
   uploadUrl: string;
@@ -24,7 +26,7 @@ async function createMuxUpload(opts: { userId: string; title: string; descriptio
   return { uploadId: data.uploadId, uploadUrl: data.uploadUrl };
 }
 
-function uploadFile(url: string, file: Blob, onProgress?: (p: number) => void, timeoutMs = 120_000): Promise<void> {
+function uploadFile(url: string, file: Blob, onProgress?: (p: number) => void, timeoutMs = DEFAULT_TIMEOUT_MS): Promise<void> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.timeout = timeoutMs;
@@ -48,7 +50,7 @@ function uploadFile(url: string, file: Blob, onProgress?: (p: number) => void, t
  */
 export async function uploadToMuxWithRetry(opts: UploadOptions): Promise<string> {
   const maxRetries = opts.maxRetries ?? 2;
-  const timeoutMs = opts.timeoutMs ?? 120_000;
+  const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   let lastError: Error | null = null;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
