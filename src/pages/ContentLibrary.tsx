@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Film, Play, Clock, Upload, Trash2, Loader2 } from "lucide-react";
+import { Film, Play, Clock, Upload, Trash2, Loader2, RotateCcw, AlertTriangle } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +20,7 @@ interface MuxAsset {
   thumbnail_url: string | null;
   is_public: boolean | null;
   created_at: string | null;
+  upload_id: string | null;
 }
 
 export default function ContentLibrary() {
