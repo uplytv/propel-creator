@@ -1,0 +1,1 @@
+UPDATE public.mux_assets SET status = 'errored', updated_at = now() WHERE upload_id = 'GTLVCrf82dh7C2XVp1zgqAg3nd7edYK3Nlj2iQnuK02g';
