@@ -260,14 +260,30 @@ export default function ContentLibrary() {
 
                     {/* Actions */}
                     <div className="flex gap-2 mt-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 text-xs"
-                        onClick={() => toggleVisibility(asset)}
-                      >
-                        {asset.is_public ? "Make Private" : "Make Public"}
-                      </Button>
+                      {asset.status === "errored" ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 text-xs gap-1.5"
+                          onClick={() => handleReupload(asset)}
+                          disabled={reuploadingId === asset.id}
+                        >
+                          {reuploadingId === asset.id ? (
+                            <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Re-uploading...</>
+                          ) : (
+                            <><RotateCcw className="w-3.5 h-3.5" /> Re-upload</>
+                          )}
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 text-xs"
+                          onClick={() => toggleVisibility(asset)}
+                        >
+                          {asset.is_public ? "Make Private" : "Make Public"}
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="sm"
