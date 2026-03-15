@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Film, Play, Clock, Upload, Trash2, Loader2 } from "lucide-react";
+import { Film, Play, Clock, Upload, Trash2, Loader2, RotateCcw, AlertTriangle } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +20,7 @@ interface MuxAsset {
   thumbnail_url: string | null;
   is_public: boolean | null;
   created_at: string | null;
+  upload_id: string | null;
 }
 
 export default function ContentLibrary() {
@@ -28,6 +29,9 @@ export default function ContentLibrary() {
   const navigate = useNavigate();
   const [assets, setAssets] = useState<MuxAsset[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reuploadingId, setReuploadingId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const reuploadAssetRef = useRef<MuxAsset | null>(null);
 
   const fetchAssets = async () => {
     if (!user) return;
@@ -109,6 +113,41 @@ export default function ContentLibrary() {
     return null;
   };
 
+  const handleReupload = (asset: MuxAsset) => {
+    reuploadAssetRef.current = asset;
+    fileInputRef.current?.click();
+  };
+
+  const handleReuploadFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const asset = reuploadAssetRef.current;
+    if (!file || !asset || !user) return;
+
+    setReuploadingId(asset.id);
+    try {
+      const { uploadToMuxWithRetry } = await import("@/lib/muxUpload");
+
+      // Delete the old errored record first
+      await supabase.from("mux_assets").delete().eq("id", asset.id);
+
+      const uploadId = await uploadToMuxWithRetry({
+        userId: user.id,
+        title: asset.title || "Untitled Video",
+        description: asset.description || "",
+        file,
+      });
+
+      toast({ title: "Re-upload started! 🎬", description: "Your video is processing and will appear shortly." });
+      fetchAssets();
+    } catch (err: any) {
+      toast({ title: "Re-upload failed", description: err.message, variant: "destructive" });
+    } finally {
+      setReuploadingId(null);
+      reuploadAssetRef.current = null;
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   return (
     <AppLayout>
       <div className="p-4 md:p-8 max-w-6xl mx-auto">
@@ -173,6 +212,10 @@ export default function ContentLibrary() {
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/90 text-primary-foreground">
                           Ready
                         </span>
+                      ) : asset.status === "errored" ? (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-destructive/90 text-destructive-foreground flex items-center gap-1">
+                          <AlertTriangle className="w-3 h-3" /> Failed
+                        </span>
                       ) : (
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-warning/90 text-warning-foreground flex items-center gap-1">
                           <Loader2 className="w-3 h-3 animate-spin" /> Processing
@@ -217,14 +260,30 @@ export default function ContentLibrary() {
 
                     {/* Actions */}
                     <div className="flex gap-2 mt-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 text-xs"
-                        onClick={() => toggleVisibility(asset)}
-                      >
-                        {asset.is_public ? "Make Private" : "Make Public"}
-                      </Button>
+                      {asset.status === "errored" ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 text-xs gap-1.5"
+                          onClick={() => handleReupload(asset)}
+                          disabled={reuploadingId === asset.id}
+                        >
+                          {reuploadingId === asset.id ? (
+                            <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Re-uploading...</>
+                          ) : (
+                            <><RotateCcw className="w-3.5 h-3.5" /> Re-upload</>
+                          )}
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 text-xs"
+                          onClick={() => toggleVisibility(asset)}
+                        >
+                          {asset.is_public ? "Make Private" : "Make Public"}
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="sm"
@@ -241,6 +300,13 @@ export default function ContentLibrary() {
           </div>
         )}
       </div>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="video/*"
+        className="hidden"
+        onChange={handleReuploadFileSelected}
+      />
     </AppLayout>
   );
 }
