@@ -494,24 +494,14 @@ export default function BroadcastStudio({
     setIsUploading(true);
     try {
       const blob = new Blob(chunksRef.current, { type: "video/webm" });
-
-      // Create a Mux direct upload via the edge function
-      const { data: uploadData, error: uploadError } = await supabase.functions.invoke("mux-create-upload", {
-        body: { userId: user.id, title: `${title} (Recording)`, description: "Browser recording", isPublic: true },
+      const { uploadToMuxWithRetry } = await import("@/lib/muxUpload");
+      await uploadToMuxWithRetry({
+        userId: user.id,
+        title: `${title} (Recording)`,
+        description: "Browser recording",
+        isPublic: true,
+        file: blob,
       });
-
-      if (uploadError) throw uploadError;
-
-      // Upload the video to Mux's direct upload URL
-      const uploadUrl = uploadData.uploadUrl;
-      const uploadResp = await fetch(uploadUrl, {
-        method: "PUT",
-        body: blob,
-        headers: { "Content-Type": "video/webm" },
-      });
-
-      if (!uploadResp.ok) throw new Error("Upload to video service failed");
-
       toast({ title: "Recording saved! 🎬", description: "Your video is processing and will appear in your content library." });
       chunksRef.current = [];
     } catch (err: any) {
