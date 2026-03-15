@@ -594,7 +594,7 @@ export default function CreatorProfile() {
                             className="flex items-center gap-3 py-2 px-2 rounded-md hover:bg-white/5 transition-colors cursor-pointer"
                             onClick={() => {
                               if (lesson.is_free) {
-                                navigate(`/community/${profile.user_id}`, { state: { tab: "classroom", lessonId: lesson.id } });
+                                navigate(`/community/${profile.user_id}/classroom`);
                               }
                             }}
                           >

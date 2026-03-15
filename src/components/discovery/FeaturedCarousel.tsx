@@ -115,8 +115,10 @@ export default function FeaturedCarousel() {
   const handleClick = (item: FeaturedItem) => {
     if (item.type === "creator") {
       navigate(`/creator/${encodeURIComponent(item.title)}`);
+    } else if (item.type === "course") {
+      navigate(`/community/${item.userId}/classroom`);
     } else {
-      navigate(`/community/${item.userId}`);
+      navigate(`/community/${item.userId}/community`);
     }
   };
 
