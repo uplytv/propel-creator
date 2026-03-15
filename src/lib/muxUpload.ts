@@ -26,7 +26,7 @@ async function createMuxUpload(opts: { userId: string; title: string; descriptio
   return { uploadId: data.uploadId, uploadUrl: data.uploadUrl };
 }
 
-function uploadFile(url: string, file: Blob, onProgress?: (p: number) => void, timeoutMs = 120_000): Promise<void> {
+function uploadFile(url: string, file: Blob, onProgress?: (p: number) => void, timeoutMs = DEFAULT_TIMEOUT_MS): Promise<void> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.timeout = timeoutMs;
