@@ -179,6 +179,7 @@ export default function BroadcastStudio({
   const [isRecording, setIsRecording] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
   const [mediaError, setMediaError] = useState<string | null>(null);
 
