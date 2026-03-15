@@ -33,7 +33,8 @@ serve(async (req) => {
           playback_policy: ['public']
         },
         reconnect_window: 60,
-        reduced_latency: true
+        reduced_latency: true,
+        record: true
       })
     })
 
