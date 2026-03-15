@@ -450,7 +450,7 @@ export default function CreatorProfile() {
           <div className="flex flex-col items-center mt-6 mb-8">
             {isMember ? (
               <Link
-                to={`/community/${profile.user_id}`}
+                to={`/community/${profile.user_id}/community`}
                 className="px-8 py-3 rounded-xl text-sm font-semibold"
                 style={{ background: "#1a1a1a", border: "1px solid #1E1E1E", color: "#888" }}
               >
