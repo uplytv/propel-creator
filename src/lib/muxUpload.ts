@@ -62,9 +62,15 @@ export async function uploadToMuxWithRetry(opts: UploadOptions): Promise<string>
 
       // Use UpChunk for chunked, resumable upload
       await new Promise<void>((resolve, reject) => {
+        // UpChunk expects a File; wrap Blob if needed
+        const file =
+          opts.file instanceof File
+            ? opts.file
+            : new File([opts.file], "recording.webm", { type: opts.file.type || "video/webm" });
+
         const upload = createUpload({
           endpoint: uploadUrl,
-          file: opts.file,
+          file,
           chunkSize: opts.chunkSize ?? 5120, // 5 MB chunks (in KB)
           maxFileSize: undefined as any, // no limit
         });
