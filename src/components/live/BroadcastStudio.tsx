@@ -490,21 +490,35 @@ export default function BroadcastStudio({
   };
 
   const uploadRecording = async () => {
-    if (!user) return;
+    if (!user) {
+      console.error("[BroadcastStudio] No user — cannot upload");
+      return;
+    }
     setIsUploading(true);
+    console.log("[BroadcastStudio] Starting upload...", {
+      chunkCount: chunksRef.current.length,
+      totalSize: chunksRef.current.reduce((s, c) => s + c.size, 0),
+      chunkSizes: chunksRef.current.map((c) => c.size),
+    });
     try {
       const blob = new Blob(chunksRef.current, { type: "video/webm" });
+      console.log("[BroadcastStudio] Created blob", { blobSize: blob.size, blobType: blob.type });
       const { uploadToMuxWithRetry } = await import("@/lib/muxUpload");
-      await uploadToMuxWithRetry({
+      const uploadId = await uploadToMuxWithRetry({
         userId: user.id,
         title: `${title} (Recording)`,
         description: "Browser recording",
         isPublic: true,
         file: blob,
+        onProgress: (pct) => {
+          console.log(`[BroadcastStudio] Upload progress: ${pct}%`);
+        },
       });
+      console.log("[BroadcastStudio] Upload complete!", { uploadId });
       toast({ title: "Recording saved! 🎬", description: "Your video is processing and will appear in your content library." });
       chunksRef.current = [];
     } catch (err: any) {
+      console.error("[BroadcastStudio] Upload FAILED", err);
       toast({ title: "Upload failed", description: err.message, variant: "destructive" });
     } finally {
       setIsUploading(false);
