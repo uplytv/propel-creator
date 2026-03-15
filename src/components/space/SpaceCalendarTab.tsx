@@ -104,7 +104,7 @@ export default function SpaceCalendarTab({ creatorId, isOwner }: Props) {
                 <div>
                   <p className="text-sm font-semibold text-white">{event.title}</p>
                   <p className="text-xs" style={{ color: "#888" }}>
-                    {format(new Date(event.event_date), "MMM d, yyyy")}
+                    {format(parseISO(event.event_date), "MMM d, yyyy")}
                     {event.event_time && ` · ${event.event_time}`}
                   </p>
                   {event.description && <p className="text-xs mt-1" style={{ color: "#ccc" }}>{event.description}</p>}
