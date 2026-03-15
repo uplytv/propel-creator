@@ -219,7 +219,7 @@ export default function Wallet() {
         </div>
 
         {/* Secondary Balances */}
-        <div className="grid grid-cols-3 gap-2">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px" }}>
           <div className="rounded-xl border border-yellow-500/15 bg-yellow-500/5 p-3">
             {walletLoading ? <Skeleton className="h-10 w-16" /> : (
               <>
