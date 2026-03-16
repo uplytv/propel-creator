@@ -39,17 +39,42 @@ export function CreatorVideoOverlay({
   viewerCount: number;
   coachingNudge: string | null;
 }) {
+  const connection = useConnectionQuality(isRecording);
+
+  const qualityConfig: Record<ConnectionQuality, { color: string; bars: number; label: string }> = {
+    excellent: { color: "#22c55e", bars: 4, label: "Excellent" },
+    good: { color: "#00FF85", bars: 3, label: "Good" },
+    fair: { color: "#eab308", bars: 2, label: "Fair" },
+    poor: { color: "#ef4444", bars: 1, label: "Poor" },
+  };
+  const qc = qualityConfig[connection.quality];
+
   return (
     <div className="absolute inset-x-0 top-0 z-20 pointer-events-none">
       {/* Top stats bar */}
       <div
-        className="pointer-events-auto flex items-center justify-between px-3 py-2"
+        className="pointer-events-auto flex items-center justify-between px-3 py-2 gap-2"
         style={{ backgroundColor: "rgba(10,10,10,0.75)", backdropFilter: "blur(12px)" }}
       >
         {/* Timer */}
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
           <span className="text-xs font-mono font-bold text-red-400">{formatTimer(recordingDuration)}</span>
+        </div>
+        {/* Connection quality */}
+        <div className="flex items-center gap-1 group relative" title={`${qc.label}${connection.rttMs !== null ? ` · ${connection.rttMs}ms` : ''}`}>
+          <div className="flex items-end gap-[2px] h-3">
+            {[1, 2, 3, 4].map((bar) => (
+              <div
+                key={bar}
+                className="w-[3px] rounded-sm transition-colors duration-300"
+                style={{
+                  height: `${bar * 3}px`,
+                  backgroundColor: bar <= qc.bars ? qc.color : "rgba(255,255,255,0.15)",
+                }}
+              />
+            ))}
+          </div>
         </div>
         {/* Viewers */}
         <div className="flex items-center gap-1">
@@ -72,7 +97,6 @@ export function CreatorVideoOverlay({
         <button onClick={onEndStream} className="px-2 py-1 rounded-lg text-[10px] font-bold bg-red-500 text-white">
           End Stream
         </button>
-        {/* Close (X) for dismiss */}
       </div>
 
       {/* Coaching nudge floats over the video briefly */}
