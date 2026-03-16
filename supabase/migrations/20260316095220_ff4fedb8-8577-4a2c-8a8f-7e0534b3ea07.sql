@@ -1,0 +1,1 @@
+ALTER TABLE public.notification_preferences ADD COLUMN IF NOT EXISTS weekly_report_email boolean NOT NULL DEFAULT true;
