@@ -41,23 +41,12 @@ export default function StreamToCourseDialog({
     if (showNewModule && newModuleName.trim()) {
       setIsSaving(true);
       try {
-        await createModule.mutateAsync({
+        const newModule = await createModule.mutateAsync({
           title: newModuleName.trim(),
           description: "Created from live stream",
           creatorId,
         });
-        // Fetch updated modules to get the new ID
-        const { data } = await import("@/integrations/supabase/client").then(m =>
-          m.supabase
-            .from("classroom_modules")
-            .select("id")
-            .eq("creator_id", creatorId)
-            .eq("title", newModuleName.trim())
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .single()
-        );
-        moduleId = data?.id || null;
+        moduleId = newModule?.id || null;
       } catch {
         toast({ title: "Failed to create module", variant: "destructive" });
         setIsSaving(false);
