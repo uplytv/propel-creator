@@ -227,12 +227,15 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
   const { isPip, togglePip, containerRef } = useAutoPip(videoRef, status === 'playing');
 
   const toggleFullscreen = useCallback(() => {
-    const el = fullscreenContainerRef.current;
+    const el = fullscreenContainerRef.current as any;
     if (!el) return;
-    if (document.fullscreenElement) {
-      document.exitFullscreen();
+    const fullscreenEl = document.fullscreenElement || (document as any).webkitFullscreenElement;
+    if (fullscreenEl) {
+      if (document.exitFullscreen) document.exitFullscreen();
+      else if ((document as any).webkitExitFullscreen) (document as any).webkitExitFullscreen();
     } else {
-      el.requestFullscreen().catch(() => {});
+      if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
     }
   }, []);
 
