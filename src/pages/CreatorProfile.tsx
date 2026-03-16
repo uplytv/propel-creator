@@ -81,7 +81,7 @@ function useCreatorProfileData(username: string | undefined) {
     queryKey: ["creator-live-status", userId],
     queryFn: async () => {
       const { data } = await supabase
-        .from("mux_live_streams")
+        .from("mux_live_streams_public")
         .select("*")
         .eq("user_id", userId!)
         .eq("status", "active")
