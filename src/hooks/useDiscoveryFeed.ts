@@ -51,10 +51,9 @@ export function useDiscoveryFeed(
         // Products (courses, communities, services)
         (filter === "all" || filter === "course" || filter === "community" || filter === "service")
           ? supabase
-              .from("products")
+              .from("products_public")
               .select("*")
-              .eq("status", "active")
-              .order("sales", { ascending: false })
+              .order("created_at", { ascending: false })
               .limit(30)
           : Promise.resolve({ data: [], error: null }),
 
