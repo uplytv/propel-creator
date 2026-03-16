@@ -103,7 +103,7 @@ export default function Live() {
 
     const userIds = [...new Set(streams.map((s: any) => s.user_id))];
     const { data: profiles } = await supabase
-      .from('profiles')
+      .from('profiles_public' as any)
       .select('user_id, display_name, avatar_url, tier, tier_name')
       .in('user_id', userIds);
     const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
