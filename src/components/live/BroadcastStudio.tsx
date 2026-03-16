@@ -757,7 +757,7 @@ export default function BroadcastStudio({
             autoPlay
             playsInline
             muted
-            className={`w-full h-full object-cover ${!cameraOn && !screenShare ? "hidden" : ""}`}
+            className={`w-full h-full object-contain ${!cameraOn && !screenShare ? "hidden" : ""}`}
           />
 
           {!cameraOn && !screenShare && (
