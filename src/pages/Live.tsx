@@ -155,6 +155,28 @@ export default function Live() {
     }
   };
 
+  // ─── Fetch Shorts ───────────────────────────────────────────
+  const fetchShorts = async () => {
+    const { data } = await supabase
+      .from('shorts')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(20);
+    if (data && data.length > 0) {
+      const userIds = [...new Set(data.map((s: any) => s.creator_id))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, avatar_url')
+        .in('user_id', userIds);
+      const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
+      setShorts(data.map((s: any) => ({
+        ...s,
+        creator_name: profileMap.get(s.creator_id)?.display_name || 'Creator',
+        creator_avatar: profileMap.get(s.creator_id)?.avatar_url,
+      })));
+    }
+  };
+
   // ─── Fetch Recordings ───────────────────────────────────────
   const fetchRecordings = async () => {
     const { data } = await supabase
