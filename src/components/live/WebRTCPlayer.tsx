@@ -250,13 +250,18 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
 
   useEffect(() => {
     const handler = () => setIsFullscreen(!!(document.fullscreenElement || (document as any).webkitFullscreenElement));
+    const escHandler = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isFullscreen) setIsFullscreen(false);
+    };
     document.addEventListener("fullscreenchange", handler);
     document.addEventListener("webkitfullscreenchange", handler);
+    document.addEventListener("keydown", escHandler);
     return () => {
       document.removeEventListener("fullscreenchange", handler);
       document.removeEventListener("webkitfullscreenchange", handler);
+      document.removeEventListener("keydown", escHandler);
     };
-  }, []);
+  }, [isFullscreen]);
 
   const handleRetry = () => {
     setRetryCount(0);
