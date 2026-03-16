@@ -295,6 +295,14 @@ export default function Stream() {
               >
                 <Heart className={`w-4 h-4 ${liked ? "fill-current" : ""}`} />
               </button>
+              {isVod && (
+                <button
+                  onClick={() => setShareOpen(true)}
+                  className="p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Share2 className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </div>
         </div>
