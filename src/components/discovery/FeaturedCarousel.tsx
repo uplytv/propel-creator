@@ -78,7 +78,7 @@ export default function FeaturedCarousel() {
       }
 
       if (productsRes.data) {
-        for (const p of productsRes.data) {
+        for (const p of productsRes.data as any[]) {
           items.push({
             id: p.id,
             type: p.type === "course" ? "course" : "community",
@@ -87,7 +87,7 @@ export default function FeaturedCarousel() {
             imageUrl: p.image_url,
             avatarUrl: null,
             userId: p.user_id,
-            stat: `${p.sales || 0} enrolled`,
+            stat: "Popular",
           });
         }
       }
