@@ -236,6 +236,17 @@ export default function Dashboard() {
           </motion.div>
         </div>
 
+        {/* Payouts Section */}
+        {showPayouts && (
+          <div className="px-4 md:px-8 py-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Payouts</h2>
+              <button onClick={() => setShowPayouts(false)} className="text-xs text-muted-foreground hover:text-foreground">Close</button>
+            </div>
+            <PayoutsTab />
+          </div>
+        )}
+
         {/* Getting Started / Health */}
         <div className="section-glow bg-surface-alt rounded-none px-4 md:px-8 py-6">
           <motion.div
