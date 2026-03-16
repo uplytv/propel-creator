@@ -120,6 +120,9 @@ const App = () => (
                     <Route path="/content-library" element={<ProtectedRoute><ContentLibrary /></ProtectedRoute>} />
                     <Route path="/launchpad" element={<ProtectedRoute><Launchpad /></ProtectedRoute>} />
                     <Route path="/growth-reports" element={<ProtectedRoute><GrowthReports /></ProtectedRoute>} />
+                    <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
+                    <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+                    <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
 
                     {/* Admin routes */}
                     <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />

@@ -45,7 +45,7 @@ export default function AnalyticsPage() {
   return (
     <AppLayout>
       <div className="max-w-3xl mx-auto px-4 py-4 pb-24">
-        <BackNav title="Analytics" />
+        <BackNav label="Analytics" />
 
         {/* Metric cards */}
         <div className="grid grid-cols-2 gap-3 mt-4">

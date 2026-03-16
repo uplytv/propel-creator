@@ -53,7 +53,7 @@ export default function SearchPage() {
   return (
     <AppLayout>
       <div className="max-w-2xl mx-auto px-4 py-4 pb-24">
-        <BackNav title="Search" />
+        <BackNav label="Search" />
 
         <div className="relative mt-4">
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />

@@ -198,7 +198,7 @@ export default function MessagesPage() {
           <ChatView conversation={active} onBack={() => setActive(null)} />
         ) : (
           <>
-            <BackNav title="Messages" />
+            <BackNav label="Messages" />
             <div className="mt-4">
               <ConversationList conversations={conversations} loading={loading} onSelect={setActive} />
             </div>
