@@ -65,10 +65,6 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email!,
       line_items: [{ price: tier.stripe_price_id, quantity: 1 }],
       mode: "subscription",
-      payment_intent_data: {
-        application_fee_amount: Math.round(tier.price_monthly * 100 * 0.05),
-        transfer_data: { destination: stripeAccount.stripe_account_id },
-      },
       subscription_data: {
         application_fee_percent: 5,
         transfer_data: { destination: stripeAccount.stripe_account_id },
