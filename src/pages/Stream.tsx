@@ -461,6 +461,19 @@ export default function Stream() {
             creditsBalance={creditsBalance}
           />
         </div>
+
+        {isVod && (
+          <SharePanel
+            open={shareOpen}
+            onClose={() => setShareOpen(false)}
+            contentType={contentType === 'recording' ? 'recording' : 'clip'}
+            contentId={id || ''}
+            title={dbStream.title || 'Recording'}
+            playbackId={dbStream.mux_playback_id}
+            muxAssetId={dbStream.mux_asset_id}
+            creatorUsername={profile?.display_name}
+          />
+        )}
       </div>
     );
   }
