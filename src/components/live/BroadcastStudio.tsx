@@ -194,6 +194,22 @@ export default function BroadcastStudio({
   const audioContextRef = useRef<AudioContext | null>(null);
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Fullscreen toggle
+  const toggleFullscreen = useCallback(() => {
+    if (!videoContainerRef.current) return;
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      videoContainerRef.current.requestFullscreen().catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", handler);
+    return () => document.removeEventListener("fullscreenchange", handler);
+  }, []);
+
   // Stream engagement for creator overlay
   const engagement = useStreamEngagement(streamData.streamId, user?.id || "");
   const [coachingNudge, setCoachingNudge] = useState<string | null>(null);
