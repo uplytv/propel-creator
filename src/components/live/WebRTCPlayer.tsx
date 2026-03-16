@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, WifiOff, RefreshCw, PictureInPicture2 } from 'lucide-react';
+import { Loader2, WifiOff, RefreshCw, PictureInPicture2, Maximize, Minimize } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAutoPip } from '@/hooks/useAutoPip';
 
@@ -37,9 +37,11 @@ const ICE_SERVERS: RTCConfiguration = {
 
 export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const fullscreenContainerRef = useRef<HTMLDivElement>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const channelRef = useRef<any>(null);
   const viewerIdRef = useRef(crypto.randomUUID());
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [status, setStatus] = useState<'connecting' | 'playing' | 'failed'>('connecting');
   const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 8;
@@ -223,13 +225,35 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
 
   const { isPip, togglePip, containerRef } = useAutoPip(videoRef, status === 'playing');
 
+  const toggleFullscreen = useCallback(() => {
+    const el = fullscreenContainerRef.current;
+    if (!el) return;
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      el.requestFullscreen().catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", handler);
+    return () => document.removeEventListener("fullscreenchange", handler);
+  }, []);
+
   const handleRetry = () => {
     setRetryCount(0);
     connect();
   };
 
+  // Merge refs for container
+  const setContainerRefs = useCallback((node: HTMLDivElement | null) => {
+    (fullscreenContainerRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+    (containerRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+  }, [containerRef]);
+
   return (
-    <div ref={containerRef} className={`relative w-full aspect-video bg-black ${className || ''}`}>
+    <div ref={setContainerRefs} className={`relative w-full ${isFullscreen ? 'h-full' : 'aspect-video'} bg-black ${className || ''}`}>
       <video
         ref={videoRef}
         autoPlay
@@ -265,14 +289,26 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
         </div>
       )}
 
-      {status === 'playing' && document.pictureInPictureEnabled && (
-        <button
-          onClick={togglePip}
-          className="absolute top-3 right-3 z-10 p-2 rounded-lg bg-background/60 backdrop-blur-sm text-foreground hover:bg-background/80 transition-colors"
-          title={isPip ? 'Exit Picture-in-Picture' : 'Picture-in-Picture'}
-        >
-          <PictureInPicture2 className={`w-4 h-4 ${isPip ? 'text-primary' : ''}`} />
-        </button>
+      {/* Player controls overlay */}
+      {status === 'playing' && (
+        <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+          {document.pictureInPictureEnabled && (
+            <button
+              onClick={togglePip}
+              className="p-2 rounded-lg bg-black/40 backdrop-blur-sm text-white hover:bg-black/60 transition-colors"
+              title={isPip ? 'Exit Picture-in-Picture' : 'Picture-in-Picture'}
+            >
+              <PictureInPicture2 className={`w-4 h-4 ${isPip ? 'text-primary' : ''}`} />
+            </button>
+          )}
+          <button
+            onClick={toggleFullscreen}
+            className="p-2 rounded-lg bg-black/40 backdrop-blur-sm text-white hover:bg-black/60 transition-colors"
+            title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+          >
+            {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
+          </button>
+        </div>
       )}
     </div>
   );

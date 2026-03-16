@@ -4,7 +4,8 @@ import {
   Video, VideoOff, Mic, MicOff, Monitor, Camera,
   Settings, Copy, Check, Eye, EyeOff, Radio,
   RotateCcw, Volume2, Circle, Square, Upload,
-  Wifi, WifiOff, AlertCircle, ShoppingBag, X, ChevronDown
+  Wifi, WifiOff, AlertCircle, ShoppingBag, X, ChevronDown,
+  Maximize, Minimize
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -186,10 +187,28 @@ export default function BroadcastStudio({
   const [mediaError, setMediaError] = useState<string | null>(null);
   const [uploadFailed, setUploadFailed] = useState(false);
   const [uploadErrorMsg, setUploadErrorMsg] = useState("");
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
 
   const analyserRef = useRef<AnalyserNode | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Fullscreen toggle
+  const toggleFullscreen = useCallback(() => {
+    if (!videoContainerRef.current) return;
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      videoContainerRef.current.requestFullscreen().catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", handler);
+    return () => document.removeEventListener("fullscreenchange", handler);
+  }, []);
 
   // Stream engagement for creator overlay
   const engagement = useStreamEngagement(streamData.streamId, user?.id || "");
@@ -691,7 +710,7 @@ export default function BroadcastStudio({
         </div>
 
         {/* Preview Window */}
-        <div className="relative rounded-2xl overflow-hidden bg-secondary/80 border border-border aspect-video">
+        <div ref={videoContainerRef} className={`relative rounded-2xl overflow-hidden bg-secondary/80 border border-border ${isFullscreen ? 'w-full h-full' : 'aspect-video'}`}>
           <video
             ref={videoRef}
             autoPlay
@@ -753,6 +772,17 @@ export default function BroadcastStudio({
               viewerCount={engagement.viewerCount}
               coachingNudge={coachingNudge}
             />
+          )}
+
+          {/* Fullscreen toggle */}
+          {(cameraOn || screenShare) && (
+            <button
+              onClick={toggleFullscreen}
+              className="absolute bottom-3 right-3 z-10 p-2 rounded-lg bg-black/40 backdrop-blur-sm text-white hover:bg-black/60 transition-colors"
+              title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+            >
+              {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
+            </button>
           )}
 
           {/* Title overlay (only when NOT recording) */}
