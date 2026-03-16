@@ -221,15 +221,23 @@ export default function BroadcastStudio({
     }
   }, [isFullscreen]);
 
+  // Sync fullscreen state + Escape key to exit pseudo-fullscreen
   useEffect(() => {
     const handler = () => setIsFullscreen(!!(document.fullscreenElement || (document as any).webkitFullscreenElement));
+    const escHandler = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
     document.addEventListener("fullscreenchange", handler);
     document.addEventListener("webkitfullscreenchange", handler);
+    document.addEventListener("keydown", escHandler);
     return () => {
       document.removeEventListener("fullscreenchange", handler);
       document.removeEventListener("webkitfullscreenchange", handler);
+      document.removeEventListener("keydown", escHandler);
     };
-  }, []);
+  }, [isFullscreen]);
 
   // Stream engagement for creator overlay
   const engagement = useStreamEngagement(streamData.streamId, user?.id || "");
