@@ -52,6 +52,7 @@ const CreatorSpace = lazy(() => import("./pages/CreatorSpace"));
 const Launchpad = lazy(() => import("./pages/Launchpad"));
 const AdminAffiliates = lazy(() => import("./pages/AdminAffiliates"));
 const ReferralRedirect = lazy(() => import("./pages/ReferralRedirect"));
+const GrowthReports = lazy(() => import("./pages/GrowthReports"));
 
 const queryClient = new QueryClient();
 
