@@ -36,7 +36,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "propel-creator"
+const SITE_NAME = "UPLY"
 const SENDER_DOMAIN = "notify.uply.tv"
 const ROOT_DOMAIN = "uply.tv"
 const FROM_DOMAIN = "uply.tv" // Domain shown in From address (may be root or sender subdomain)
