@@ -191,7 +191,29 @@ serve(async (req) => {
           .select()
         if (idleErr) console.error('Failed to set stream idle:', idleErr)
         else if (!idleResult?.length) console.warn(`No row found for mux_stream_id=${data.id}`)
-        else console.log(`Stream ${idleResult[0].id} set to idle`)
+        else {
+          console.log(`Stream ${idleResult[0].id} set to idle`)
+          
+          // Trigger auto-shorts generation
+          try {
+            const funcUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/generate-shorts`
+            const shortsResp = await fetch(funcUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+              },
+              body: JSON.stringify({
+                stream_id: idleResult[0].id,
+                mux_stream_id: data.id,
+                user_id: idleResult[0].user_id,
+              }),
+            })
+            console.log(`Auto-shorts trigger response: ${shortsResp.status}`)
+          } catch (shortsErr) {
+            console.error('Failed to trigger auto-shorts:', shortsErr)
+          }
+        }
         break
       }
     }

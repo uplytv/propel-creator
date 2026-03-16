@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Eye, Heart, Share2, Shield, TrendingUp, Zap, Crown, Radio, Coins, Loader2, ShoppingBag } from "lucide-react";
+import { ArrowLeft, Eye, Heart, Share2, Shield, TrendingUp, Zap, Crown, Radio, Coins, Loader2, ShoppingBag, Scissors } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import StreamChat from "@/components/live/StreamChat";
@@ -17,6 +17,7 @@ import UPLYMuxPlayer from "@/components/MuxPlayer";
 import WebRTCPlayer from "@/components/live/WebRTCPlayer";
 import { Skeleton } from "@/components/ui/skeleton";
 import FollowButton from "@/components/FollowButton";
+import ClipCreator from "@/components/clips/ClipCreator";
 
 const tierIcons = [Shield, TrendingUp, Zap, Crown];
 const tierColors: Record<number, string> = {
@@ -411,6 +412,18 @@ export default function Stream() {
                     <span className="text-[10px] text-muted-foreground font-medium">${featuredProduct.price}</span>
                   </div>
                 </button>
+              )}
+
+              {/* Clip Creator — VOD only */}
+              {isVod && playbackId && dbStream.mux_asset_id && (
+                <div className="mt-4">
+                  <ClipCreator
+                    sourceAssetId={dbStream.mux_asset_id}
+                    creatorId={dbStream.user_id}
+                    duration={dbStream.duration || 300}
+                    playbackId={playbackId}
+                  />
+                </div>
               )}
             </div>
           </div>
