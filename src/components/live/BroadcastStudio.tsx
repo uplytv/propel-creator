@@ -11,7 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import CreatorStreamOverlay from "./CreatorStreamOverlay";
+import { CreatorVideoOverlay, CreatorDashboardPanel } from "./CreatorStreamOverlay";
+import { useStreamEngagement } from "@/hooks/useStreamEngagement";
 
 interface Product {
   id: string;
