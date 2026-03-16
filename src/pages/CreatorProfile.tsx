@@ -306,12 +306,32 @@ export default function CreatorProfile() {
     });
   };
 
-  const handleJoin = () => {
+  const handleJoin = async () => {
     if (!user) {
       navigate(`/auth?ref=${username}`);
+      return;
+    }
+    // If creator has paid tiers, redirect to Stripe checkout
+    if (tiers.length > 0) {
+      setJoinLoading(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("stripe-create-checkout", {
+          body: {
+            tier_id: tiers[0].id,
+            creator_id: profile?.user_id,
+            creator_username: username,
+          },
+        });
+        if (error) throw error;
+        if (data?.url) window.location.href = data.url;
+      } catch (err: any) {
+        toast({ title: "Error", description: err.message, variant: "destructive" });
+      }
+      setJoinLoading(false);
     } else {
       navigate(`/community/${profile?.user_id}/community`);
     }
+  };
   };
 
   // Loading
