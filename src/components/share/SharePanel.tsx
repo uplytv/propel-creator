@@ -339,10 +339,8 @@ export default function SharePanel({
                       <Loader2 className="w-6 h-6 animate-spin" />
                     ) : isCopy && copied ? (
                       <Check className="w-6 h-6 text-primary" />
-                    ) : typeof Icon === "function" ? (
-                      <Icon />
                     ) : (
-                      <Icon className="w-6 h-6" />
+                      <Icon />
                     )}
                   </div>
                   <span className="text-foreground text-[11px] font-medium leading-tight text-center">
