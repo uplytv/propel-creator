@@ -3,9 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Video, VideoOff, Mic, MicOff, Monitor, Camera,
   Settings, Copy, Check, Eye, EyeOff, Radio,
-  RotateCcw, Volume2, Circle, Square, Upload,
+  RotateCcw, Volume2, Circle, Square, Upload, Send,
   Wifi, WifiOff, AlertCircle, ShoppingBag, X, ChevronDown,
-  Maximize, Minimize
+  Maximize, Minimize, Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
