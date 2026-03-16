@@ -47,8 +47,9 @@ export default function StreamToCourseDialog({
           creatorId,
         });
         moduleId = newModule?.id || null;
-      } catch {
-        toast({ title: "Failed to create module", variant: "destructive" });
+      } catch (err: any) {
+        console.error("[StreamToCourse] Module creation failed:", err);
+        toast({ title: "Failed to create module", description: err?.message || "Unknown error", variant: "destructive" });
         setIsSaving(false);
         return;
       }

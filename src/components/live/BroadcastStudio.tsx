@@ -191,6 +191,7 @@ export default function BroadcastStudio({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showCourseDialog, setShowCourseDialog] = useState(false);
   const [lastRecordingDuration, setLastRecordingDuration] = useState(0);
+  const [lastUploadId, setLastUploadId] = useState<string | null>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const lastTapRef = useRef<number>(0);
   const [liveChatInput, setLiveChatInput] = useState("");
@@ -660,6 +661,7 @@ export default function BroadcastStudio({
         },
       });
       console.log("[BroadcastStudio] Upload complete!", { uploadId });
+      setLastUploadId(uploadId || null);
       toast({ title: "Recording saved! 🎬", description: "Your video is processing and will appear in your content library." });
       chunksRef.current = [];
       // Prompt to convert to course lesson
@@ -1153,6 +1155,7 @@ export default function BroadcastStudio({
             onClose={() => setShowCourseDialog(false)}
             creatorId={user.id}
             streamTitle={title}
+            muxAssetId={lastUploadId || undefined}
             durationSeconds={lastRecordingDuration}
           />
         )}

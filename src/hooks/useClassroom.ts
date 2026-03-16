@@ -94,8 +94,12 @@ export function useCreateModule() {
         .from("classroom_modules" as any)
         .insert({ creator_id: creatorId, title, description, position: nextPos } as any)
         .select()
-        .single();
-      if (error) throw error;
+        .maybeSingle();
+      if (error) {
+        console.error("Create module error:", JSON.stringify(error));
+        throw error;
+      }
+      if (!data) throw new Error("Module was created but could not be retrieved");
       return data as any;
     },
     onSuccess: () => {
