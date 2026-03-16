@@ -80,8 +80,18 @@ export default function RecordingsGrid({ recordings, isOwner, onTogglePublish, o
                 </span>
               </div>
 
+              {/* Share button for all */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-xs gap-1 mb-1"
+                onClick={() => setShareRec(rec)}
+              >
+                <Share2 className="w-3 h-3" /> Share
+              </Button>
+
               {isOwner && (
-                <div className="flex gap-2 mt-3">
+                <div className="flex gap-2">
                   <Button
                     variant="outline"
                     size="sm"
@@ -104,6 +114,18 @@ export default function RecordingsGrid({ recordings, isOwner, onTogglePublish, o
           </motion.div>
         );
       })}
+
+      {shareRec && (
+        <SharePanel
+          open={!!shareRec}
+          onClose={() => setShareRec(null)}
+          contentType="recording"
+          contentId={shareRec.id}
+          title={shareRec.title || "Recording"}
+          playbackId={shareRec.playback_id}
+          muxAssetId={shareRec.mux_asset_id}
+        />
+      )}
     </div>
   );
 }
