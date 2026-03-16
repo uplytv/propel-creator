@@ -602,6 +602,8 @@ export default function BroadcastStudio({
       console.log("[BroadcastStudio] Upload complete!", { uploadId });
       toast({ title: "Recording saved! 🎬", description: "Your video is processing and will appear in your content library." });
       chunksRef.current = [];
+      // Prompt to convert to course lesson
+      setShowCourseDialog(true);
     } catch (err: any) {
       console.error("[BroadcastStudio] Upload FAILED", err);
       setUploadFailed(true);
