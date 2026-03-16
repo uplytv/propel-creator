@@ -80,6 +80,7 @@ export default function Live() {
   const [liveStreams, setLiveStreams] = useState<LiveStream[]>([]);
   const [vodAssets, setVodAssets] = useState<any[]>([]);
   const [clips, setClips] = useState<any[]>([]);
+  const [shorts, setShorts] = useState<any[]>([]);
   const [communityPosts, setCommunityPosts] = useState<any[]>([]);
   const [recordings, setRecordings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
