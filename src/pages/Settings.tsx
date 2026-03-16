@@ -276,16 +276,22 @@ export default function Settings() {
                 <h2 className="text-lg font-semibold">Email Notifications</h2>
               </div>
               {[
-                { key: "emailNewMember" as const, label: "New member joins", desc: "Get notified when someone joins your community" },
-                { key: "emailRevenue" as const, label: "Revenue milestones", desc: "Alerts when you hit revenue goals" },
-                { key: "emailProductUpdates" as const, label: "Product updates", desc: "Platform feature announcements and tips" },
+                { key: "new_follower_email" as const, label: "New follower", desc: "Get notified when someone follows you" },
+                { key: "tip_received_email" as const, label: "Tips received", desc: "Get notified when you receive a tip" },
+                { key: "member_joined_email" as const, label: "New member joins", desc: "Get notified when someone joins your community" },
               ].map((item) => (
                 <div key={item.key} className="flex items-center justify-between py-2">
                   <div>
                     <p className="text-sm font-medium">{item.label}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
                   </div>
-                  <Switch checked={notifications[item.key]} onCheckedChange={() => handleNotifToggle(item.key)} />
+                  <Switch
+                    checked={campaignPrefs[item.key]}
+                    onCheckedChange={async (checked) => {
+                      await updatePrefs({ [item.key]: checked });
+                      toast({ title: checked ? `${item.label} emails enabled` : `${item.label} emails disabled` });
+                    }}
+                  />
                 </div>
               ))}
 
