@@ -189,6 +189,7 @@ export default function BroadcastStudio({
   const [uploadErrorMsg, setUploadErrorMsg] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const videoContainerRef = useRef<HTMLDivElement>(null);
+  const lastTapRef = useRef<number>(0);
 
   const analyserRef = useRef<AnalyserNode | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -710,7 +711,18 @@ export default function BroadcastStudio({
         </div>
 
         {/* Preview Window */}
-        <div ref={videoContainerRef} className={`relative rounded-2xl overflow-hidden bg-secondary/80 border border-border ${isFullscreen ? 'w-full h-full' : 'aspect-video'}`}>
+        <div
+          ref={videoContainerRef}
+          className={`relative rounded-2xl overflow-hidden bg-secondary/80 border border-border ${isFullscreen ? 'w-full h-full' : 'aspect-video'}`}
+          onTouchEnd={(cameraOn || screenShare) ? (e) => {
+            const now = Date.now();
+            if (now - lastTapRef.current < 300) {
+              e.preventDefault();
+              toggleFullscreen();
+            }
+            lastTapRef.current = now;
+          } : undefined}
+        >
           <video
             ref={videoRef}
             autoPlay
