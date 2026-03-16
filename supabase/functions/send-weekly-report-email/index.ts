@@ -12,6 +12,7 @@ function buildReportEmailHtml(report: {
   actionItem: string;
   weekStart: string;
   weekEnd: string;
+  unsubscribeUrl?: string;
 }) {
   const primaryColor = 'hsl(265, 85%, 58%)';
   const primaryForeground = '#ffffff';
@@ -95,7 +96,8 @@ function buildReportEmailHtml(report: {
         <!-- Footer -->
         <tr>
           <td style="padding: 16px 24px; border-top: 1px solid #f0f0f0; text-align: center;">
-            <div style="font-size: 12px; color: #999;">Powered by ARIA · Your AI Growth Partner on UPLY</div>
+            <div style="font-size: 12px; color: #999; margin-bottom: 8px;">Powered by ARIA · Your AI Growth Partner on UPLY</div>
+            ${report.unsubscribeUrl ? `<div style="font-size: 11px;"><a href="${report.unsubscribeUrl}" style="color: #999; text-decoration: underline;">Unsubscribe from weekly reports</a></div>` : ''}
           </td>
         </tr>
 
@@ -125,6 +127,26 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Generate or reuse unsubscribe token for this email
+    let unsubscribeUrl = '';
+    const { data: existingToken } = await supabase
+      .from('email_unsubscribe_tokens')
+      .select('token')
+      .eq('email', recipientEmail)
+      .is('used_at', null)
+      .maybeSingle();
+
+    const token = existingToken?.token || crypto.randomUUID();
+
+    if (!existingToken) {
+      await supabase.from('email_unsubscribe_tokens').insert({
+        email: recipientEmail,
+        token,
+      });
+    }
+
+    unsubscribeUrl = `${supabaseUrl}/functions/v1/handle-email-unsubscribe?token=${token}&type=weekly_report_email`;
+
     const html = buildReportEmailHtml({
       displayName: displayName || 'Creator',
       summary,
@@ -132,6 +154,7 @@ Deno.serve(async (req) => {
       actionItem: actionItem || '',
       weekStart: weekStart || '',
       weekEnd: weekEnd || '',
+      unsubscribeUrl,
     });
 
     const messageId = `aria-report-${weekStart}-${crypto.randomUUID().slice(0, 8)}`;
