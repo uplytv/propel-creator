@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Play, Eye, Scissors, Trash2 } from "lucide-react";
+import { Play, Eye, Scissors, Trash2, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import SharePanel from "@/components/share/SharePanel";
 import type { Clip } from "@/hooks/useClips";
 
 interface Props {
@@ -16,6 +18,8 @@ function formatDuration(seconds: number) {
 }
 
 export default function ClipsGrid({ clips, isOwner, onDelete, onPlay }: Props) {
+  const [shareClip, setShareClip] = useState<Clip | null>(null);
+
   if (clips.length === 0) {
     return (
       <div className="text-center py-16">
@@ -71,19 +75,51 @@ export default function ClipsGrid({ clips, isOwner, onDelete, onPlay }: Props) {
                 <span className="text-[10px] text-muted-foreground truncate">{clip.creator_name}</span>
               </div>
               {isOwner && (
+                <div className="flex gap-1.5">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="flex-1 text-xs h-7"
+                    onClick={(e) => { e.stopPropagation(); setShareClip(clip); }}
+                  >
+                    <Share2 className="w-3 h-3 mr-1" /> Share
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs text-destructive hover:text-destructive hover:bg-destructive/10 h-7"
+                    onClick={(e) => { e.stopPropagation(); onDelete?.(clip.id); }}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+              )}
+              {!isOwner && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-full mt-2 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 h-7"
-                  onClick={(e) => { e.stopPropagation(); onDelete?.(clip.id); }}
+                  className="w-full text-xs h-7 mt-1"
+                  onClick={(e) => { e.stopPropagation(); setShareClip(clip); }}
                 >
-                  <Trash2 className="w-3 h-3 mr-1" /> Delete
+                  <Share2 className="w-3 h-3 mr-1" /> Share
                 </Button>
               )}
             </div>
           </motion.div>
         );
       })}
+
+      {shareClip && (
+        <SharePanel
+          open={!!shareClip}
+          onClose={() => setShareClip(null)}
+          contentType="clip"
+          contentId={shareClip.id}
+          title={shareClip.caption || "Clip"}
+          playbackId={shareClip.clip_playback_id}
+          muxAssetId={shareClip.clip_asset_id}
+        />
+      )}
     </div>
   );
 }

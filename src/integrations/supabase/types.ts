@@ -751,6 +751,33 @@ export type Database = {
         }
         Relationships: []
       }
+      content_shares: {
+        Row: {
+          content_id: string
+          content_type: string
+          created_at: string
+          id: string
+          platform: string
+          shared_by_user_id: string
+        }
+        Insert: {
+          content_id: string
+          content_type: string
+          created_at?: string
+          id?: string
+          platform: string
+          shared_by_user_id: string
+        }
+        Update: {
+          content_id?: string
+          content_type?: string
+          created_at?: string
+          id?: string
+          platform?: string
+          shared_by_user_id?: string
+        }
+        Relationships: []
+      }
       creator_affiliate_members: {
         Row: {
           affiliate_code: string

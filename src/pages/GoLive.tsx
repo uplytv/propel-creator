@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import BroadcastStudio from "@/components/live/BroadcastStudio";
 import { useProducts } from "@/hooks/useProducts";
+import { useProfile } from "@/hooks/useProfile";
+import EndOfStreamScreen from "@/components/live/EndOfStreamScreen";
 
 export default function GoLive() {
   const navigate = useNavigate();
@@ -27,7 +29,11 @@ export default function GoLive() {
     rtmpUrl: string;
   } | null>(null);
   const [streamStatus, setStreamStatus] = useState<string>("idle");
+  const [showEndScreen, setShowEndScreen] = useState(false);
+  const [streamDuration, setStreamDuration] = useState(0);
+  const [streamStartTime, setStreamStartTime] = useState<number | null>(null);
 
+  const { data: profileData } = useProfile();
   const { data: products } = useProducts();
   const activeProducts = products?.filter(p => p.status === 'active') || [];
 
@@ -81,6 +87,7 @@ export default function GoLive() {
 
       setStreamData(data);
       setStreamStatus("idle");
+      setStreamStartTime(Date.now());
       toast({ title: "Stream created!", description: "Your broadcast studio is ready." });
     } catch (e: any) {
       toast({ title: "Error", description: e.message || "Failed to create stream", variant: "destructive" });
@@ -242,12 +249,30 @@ export default function GoLive() {
                 Your stream will be automatically recorded and saved to your content library.
               </p>
             </div>
+          ) : showEndScreen && streamData ? (
+            <EndOfStreamScreen
+              streamId={streamData.streamId}
+              creatorId={user?.id || ""}
+              streamTitle={title}
+              playbackId={streamData.playbackId}
+              durationSeconds={streamDuration}
+              onClose={() => {
+                setShowEndScreen(false);
+                setStreamData(null);
+                navigate("/dashboard");
+              }}
+              username={profileData?.display_name}
+            />
           ) : (
             <BroadcastStudio
               streamData={streamData}
               streamStatus={streamStatus}
               title={title}
-              onEndStream={() => setStreamData(null)}
+              onEndStream={() => {
+                const duration = streamStartTime ? Math.floor((Date.now() - streamStartTime) / 1000) : 0;
+                setStreamDuration(duration);
+                setShowEndScreen(true);
+              }}
               products={activeProducts}
               featuredProductId={featuredProductId}
               onFeaturedProductChange={async (productId) => {

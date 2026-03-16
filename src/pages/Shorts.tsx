@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, MessageCircle, Share2, ChevronUp, ChevronDown, Play, Volume2, VolumeX, Scissors, Copy, Check } from "lucide-react";
+import SharePanel from "@/components/share/SharePanel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useShorts, Short } from "@/hooks/useShorts";
 import { useClipLikes } from "@/hooks/useClipLikes";
@@ -19,6 +20,7 @@ export default function Shorts() {
   const [muted, setMuted] = useState(true);
   const [localLiked, setLocalLiked] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
 
@@ -107,11 +109,7 @@ export default function Shorts() {
   };
 
   const handleShare = () => {
-    const url = window.location.href;
-    navigator.clipboard.writeText(url);
-    setCopied(true);
-    toast({ title: "Link copied!", description: "Share it with your friends" });
-    setTimeout(() => setCopied(false), 2000);
+    setShareOpen(true);
   };
 
   if (loading && shorts.length === 0) {
@@ -276,6 +274,18 @@ export default function Shorts() {
           );
         })}
       </div>
+
+      {currentShort && (
+        <SharePanel
+          open={shareOpen}
+          onClose={() => setShareOpen(false)}
+          contentType="clip"
+          contentId={currentShort.id}
+          title={currentShort.caption || "Short"}
+          playbackId={currentShort.playback_id}
+          creatorUsername={currentShort.creator_name}
+        />
+      )}
     </div>
   );
 }

@@ -18,6 +18,7 @@ import WebRTCPlayer from "@/components/live/WebRTCPlayer";
 import { Skeleton } from "@/components/ui/skeleton";
 import FollowButton from "@/components/FollowButton";
 import ClipCreator from "@/components/clips/ClipCreator";
+import SharePanel from "@/components/share/SharePanel";
 
 const tierIcons = [Shield, TrendingUp, Zap, Crown];
 const tierColors: Record<number, string> = {
@@ -45,6 +46,7 @@ export default function Stream() {
   const [loading, setLoading] = useState(true);
   const [isRealStream, setIsRealStream] = useState(false);
   const [featuredProduct, setFeaturedProduct] = useState<any>(null);
+  const [shareOpen, setShareOpen] = useState(false);
 
   const searchParams = new URLSearchParams(window.location.search);
   const contentType = searchParams.get('type'); // 'vod' | 'recording' | null
@@ -293,6 +295,14 @@ export default function Stream() {
               >
                 <Heart className={`w-4 h-4 ${liked ? "fill-current" : ""}`} />
               </button>
+              {isVod && (
+                <button
+                  onClick={() => setShareOpen(true)}
+                  className="p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Share2 className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -451,6 +461,19 @@ export default function Stream() {
             creditsBalance={creditsBalance}
           />
         </div>
+
+        {isVod && (
+          <SharePanel
+            open={shareOpen}
+            onClose={() => setShareOpen(false)}
+            contentType={contentType === 'recording' ? 'recording' : 'clip'}
+            contentId={id || ''}
+            title={dbStream.title || 'Recording'}
+            playbackId={dbStream.mux_playback_id}
+            muxAssetId={dbStream.mux_asset_id}
+            creatorUsername={profile?.display_name}
+          />
+        )}
       </div>
     );
   }

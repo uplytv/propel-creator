@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Play, Clock, Eye, Trash2, Globe, Lock, Film } from "lucide-react";
+import { Play, Clock, Eye, Trash2, Globe, Lock, Film, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import SharePanel from "@/components/share/SharePanel";
 import type { StreamRecording } from "@/hooks/useStreamRecordings";
 
 interface Props {
@@ -19,6 +21,7 @@ function formatDuration(seconds: number) {
 
 export default function RecordingsGrid({ recordings, isOwner, onTogglePublish, onDelete }: Props) {
   const navigate = useNavigate();
+  const [shareRec, setShareRec] = useState<StreamRecording | null>(null);
 
   if (recordings.length === 0) {
     return (
@@ -77,8 +80,18 @@ export default function RecordingsGrid({ recordings, isOwner, onTogglePublish, o
                 </span>
               </div>
 
+              {/* Share button for all */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-xs gap-1 mb-1"
+                onClick={() => setShareRec(rec)}
+              >
+                <Share2 className="w-3 h-3" /> Share
+              </Button>
+
               {isOwner && (
-                <div className="flex gap-2 mt-3">
+                <div className="flex gap-2">
                   <Button
                     variant="outline"
                     size="sm"
@@ -101,6 +114,18 @@ export default function RecordingsGrid({ recordings, isOwner, onTogglePublish, o
           </motion.div>
         );
       })}
+
+      {shareRec && (
+        <SharePanel
+          open={!!shareRec}
+          onClose={() => setShareRec(null)}
+          contentType="recording"
+          contentId={shareRec.id}
+          title={shareRec.title || "Recording"}
+          playbackId={shareRec.playback_id}
+          muxAssetId={shareRec.mux_asset_id}
+        />
+      )}
     </div>
   );
 }
