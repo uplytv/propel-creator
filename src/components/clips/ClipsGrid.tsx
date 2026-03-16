@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Play, Eye, Scissors, Trash2 } from "lucide-react";
+import { Play, Eye, Scissors, Trash2, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import SharePanel from "@/components/share/SharePanel";
 import type { Clip } from "@/hooks/useClips";
 
 interface Props {
