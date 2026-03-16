@@ -1430,6 +1430,13 @@ export type Database = {
             referencedRelation: "mux_live_streams"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "live_stream_sessions_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "mux_live_streams_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       member_points: {
@@ -2267,7 +2274,125 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      mux_live_streams_public: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          ended_at: string | null
+          energy_score: number | null
+          featured_product_id: string | null
+          id: string | null
+          is_public: boolean | null
+          mux_playback_id: string | null
+          mux_stream_id: string | null
+          started_at: string | null
+          status: string | null
+          stream_type: string | null
+          title: string | null
+          updated_at: string | null
+          user_id: string | null
+          viewer_count: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          ended_at?: string | null
+          energy_score?: number | null
+          featured_product_id?: string | null
+          id?: string | null
+          is_public?: boolean | null
+          mux_playback_id?: string | null
+          mux_stream_id?: string | null
+          started_at?: string | null
+          status?: string | null
+          stream_type?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          viewer_count?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          ended_at?: string | null
+          energy_score?: number | null
+          featured_product_id?: string | null
+          id?: string | null
+          is_public?: boolean | null
+          mux_playback_id?: string | null
+          mux_stream_id?: string | null
+          started_at?: string | null
+          status?: string | null
+          stream_type?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          viewer_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mux_live_streams_featured_product_id_fkey"
+            columns: ["featured_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles_public: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          business_category: string | null
+          cover_image_url: string | null
+          created_at: string | null
+          creator_stage: string | null
+          creator_type: string | null
+          display_name: string | null
+          id: string | null
+          updated_at: string | null
+          user_id: string | null
+          user_type: string | null
+          username: string | null
+          website: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          business_category?: string | null
+          cover_image_url?: string | null
+          created_at?: string | null
+          creator_stage?: string | null
+          creator_type?: string | null
+          display_name?: string | null
+          id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          user_type?: string | null
+          username?: string | null
+          website?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          business_category?: string | null
+          cover_image_url?: string | null
+          created_at?: string | null
+          creator_stage?: string | null
+          creator_type?: string | null
+          display_name?: string | null
+          id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          user_type?: string | null
+          username?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       delete_email: {
