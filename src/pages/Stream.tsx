@@ -271,53 +271,64 @@ export default function Stream() {
         {/* Main content */}
         <div className="flex-1 flex pt-14">
           <div className="flex-1 flex flex-col min-w-0">
-            {/* Video player */}
-            {isVod && !playbackId ? (
-              <div className="w-full aspect-video bg-muted/50 flex items-center justify-center border-b border-border">
-                <div className="text-center">
-                  <Loader2 className="w-10 h-10 text-primary mx-auto mb-3 animate-spin" />
-                  <h2 className="text-lg font-bold text-foreground mb-1">Still processing</h2>
-                  <p className="text-sm text-muted-foreground">This recording is being prepared. Check back shortly.</p>
-                  <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate(-1)}>
-                    Go Back
-                  </Button>
+            {/* Video player with engagement overlay */}
+            <div className="relative">
+              {isVod && !playbackId ? (
+                <div className="w-full aspect-video bg-muted/50 flex items-center justify-center border-b border-border">
+                  <div className="text-center">
+                    <Loader2 className="w-10 h-10 text-primary mx-auto mb-3 animate-spin" />
+                    <h2 className="text-lg font-bold text-foreground mb-1">Still processing</h2>
+                    <p className="text-sm text-muted-foreground">This recording is being prepared. Check back shortly.</p>
+                    <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate(-1)}>
+                      Go Back
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ) : (isVod && playbackId) ? (
-              <UPLYMuxPlayer
-                playbackId={playbackId}
-                title={dbStream.title || 'Recording'}
-                autoPlay
-                muted={false}
-                streamType="on-demand"
-              />
-            ) : isActive && dbStream.stream_type === 'browser' ? (
-              <WebRTCPlayer
-                streamId={dbStream.id}
-                title={dbStream.title || 'Live Stream'}
-              />
-            ) : isActive && playbackId ? (
-              <UPLYMuxPlayer
-                playbackId={playbackId}
-                title={dbStream.title || 'Live Stream'}
-                autoPlay
-                muted
-                streamType="ll-live"
-              />
-            ) : (
-              <div className="w-full aspect-video bg-muted/50 flex items-center justify-center border-b border-border">
-                <div className="text-center">
-                  <Radio className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-                  <h2 className="text-lg font-bold text-foreground mb-1">
-                    {dbStream.status === 'idle' ? "Stream hasn't started yet" : "Stream has ended"}
-                  </h2>
-                  <p className="text-sm text-muted-foreground">Check back soon or browse other live streams.</p>
-                  <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate("/live")}>
-                    Browse Streams
-                  </Button>
+              ) : (isVod && playbackId) ? (
+                <UPLYMuxPlayer
+                  playbackId={playbackId}
+                  title={dbStream.title || 'Recording'}
+                  autoPlay
+                  muted={false}
+                  streamType="on-demand"
+                />
+              ) : isActive && dbStream.stream_type === 'browser' ? (
+                <WebRTCPlayer
+                  streamId={dbStream.id}
+                  title={dbStream.title || 'Live Stream'}
+                />
+              ) : isActive && playbackId ? (
+                <UPLYMuxPlayer
+                  playbackId={playbackId}
+                  title={dbStream.title || 'Live Stream'}
+                  autoPlay
+                  muted
+                  streamType="ll-live"
+                />
+              ) : (
+                <div className="w-full aspect-video bg-muted/50 flex items-center justify-center border-b border-border">
+                  <div className="text-center">
+                    <Radio className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                    <h2 className="text-lg font-bold text-foreground mb-1">
+                      {dbStream.status === 'idle' ? "Stream hasn't started yet" : "Stream has ended"}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">Check back soon or browse other live streams.</p>
+                    <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate("/live")}>
+                      Browse Streams
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+
+              {/* Viewer Engagement Overlay — only on active live streams */}
+              {isActive && id && (
+                <ViewerEngagementOverlay
+                  streamId={id}
+                  streamTitle={dbStream.title || 'Live Stream'}
+                  creatorUserId={dbStream.user_id}
+                />
+              )}
+            </div>
 
             {/* Stream info */}
             <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-border">
