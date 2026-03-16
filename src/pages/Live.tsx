@@ -45,6 +45,7 @@ const HARDCODED_CATEGORIES = [
 
 const SECTION_TABS = [
   { id: "live", label: "Live Now", icon: Radio },
+  { id: "shorts", label: "Shorts", icon: Smartphone },
   { id: "clips", label: "Clips", icon: Scissors },
   { id: "recordings", label: "Replays", icon: Film },
   { id: "community", label: "Community", icon: Users },
