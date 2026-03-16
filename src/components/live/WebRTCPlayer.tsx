@@ -37,7 +37,7 @@ const ICE_SERVERS: RTCConfiguration = {
 
 export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const fullscreenContainerRef = useRef<HTMLDivElement>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const channelRef = useRef<any>(null);
   const viewerIdRef = useRef(crypto.randomUUID());
