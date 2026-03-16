@@ -278,7 +278,7 @@ export default function CreatorProfile() {
 
   const {
     profile, profileLoading, socialLinks, liveStream,
-    memberCount, posts, modules, totalLessons, isMember, space,
+    memberCount, posts, modules, totalLessons, isMember, space, tiers,
   } = useCreatorProfileData(username);
 
   useCreatorSEO(profile);
