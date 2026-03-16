@@ -55,7 +55,6 @@ export default function Settings() {
   const [notifications, setNotifications] = useState({
     emailNewMember: true,
     emailRevenue: true,
-    emailWeeklyDigest: true,
     emailProductUpdates: false,
     pushNewMember: true,
     pushRevenue: false,
@@ -279,7 +278,6 @@ export default function Settings() {
               {[
                 { key: "emailNewMember" as const, label: "New member joins", desc: "Get notified when someone joins your community" },
                 { key: "emailRevenue" as const, label: "Revenue milestones", desc: "Alerts when you hit revenue goals" },
-                { key: "emailWeeklyDigest" as const, label: "Weekly digest", desc: "Summary of your growth metrics every Monday" },
                 { key: "emailProductUpdates" as const, label: "Product updates", desc: "Platform feature announcements and tips" },
               ].map((item) => (
                 <div key={item.key} className="flex items-center justify-between py-2">
@@ -290,6 +288,22 @@ export default function Settings() {
                   <Switch checked={notifications[item.key]} onCheckedChange={() => handleNotifToggle(item.key)} />
                 </div>
               ))}
+
+              <Separator />
+
+              <div className="flex items-center justify-between py-2">
+                <div>
+                  <p className="text-sm font-medium">ARIA Weekly Growth Report</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">AI-powered summary of your growth metrics delivered every Monday</p>
+                </div>
+                <Switch
+                  checked={campaignPrefs.weekly_report_email}
+                  onCheckedChange={async (checked) => {
+                    await updatePrefs({ weekly_report_email: checked });
+                    toast({ title: checked ? "Weekly report emails enabled" : "Weekly report emails disabled" });
+                  }}
+                />
+              </div>
             </div>
 
             <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-5">

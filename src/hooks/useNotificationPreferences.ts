@@ -5,9 +5,10 @@ import { useAuth } from "@/context/AuthContext";
 export interface NotificationPrefs {
   budget_warning: boolean;
   campaign_completed: boolean;
+  weekly_report_email: boolean;
 }
 
-const defaults: NotificationPrefs = { budget_warning: true, campaign_completed: true };
+const defaults: NotificationPrefs = { budget_warning: true, campaign_completed: true, weekly_report_email: true };
 
 export function useNotificationPreferences() {
   const { user } = useAuth();
@@ -19,7 +20,7 @@ export function useNotificationPreferences() {
     queryFn: async (): Promise<NotificationPrefs> => {
       const { data, error } = await supabase
         .from("notification_preferences" as any)
-        .select("budget_warning, campaign_completed")
+        .select("budget_warning, campaign_completed, weekly_report_email")
         .eq("user_id", user!.id)
         .maybeSingle();
       if (error) throw error;

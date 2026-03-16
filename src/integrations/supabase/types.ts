@@ -1589,6 +1589,7 @@ export type Database = {
           id: string
           updated_at: string
           user_id: string
+          weekly_report_email: boolean
         }
         Insert: {
           budget_warning?: boolean
@@ -1597,6 +1598,7 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id: string
+          weekly_report_email?: boolean
         }
         Update: {
           budget_warning?: boolean
@@ -1605,6 +1607,7 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+          weekly_report_email?: boolean
         }
         Relationships: []
       }
