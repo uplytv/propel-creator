@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { Copy, Check, Share2, Users, DollarSign, MousePointerClick, Clock, ExternalLink } from "lucide-react";
+import { SITE_URL } from "@/lib/siteUrl";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
