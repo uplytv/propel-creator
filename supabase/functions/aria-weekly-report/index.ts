@@ -197,6 +197,33 @@ Rules:
           link: '/dashboard',
         });
 
+        // Send email via transactional email queue
+        try {
+          // Get user email from auth
+          const { data: authUser } = await supabase.auth.admin.getUserById(userId);
+          if (authUser?.user?.email) {
+            await fetch(`${supabaseUrl}/functions/v1/send-weekly-report-email`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${serviceRoleKey}`,
+              },
+              body: JSON.stringify({
+                recipientEmail: authUser.user.email,
+                displayName: profile.display_name || 'Creator',
+                summary: report.summary,
+                highlights: report.highlights,
+                actionItem: report.action_item,
+                weekStart: weekStartStr,
+                weekEnd: weekEndStr,
+              }),
+            });
+          }
+        } catch (emailErr) {
+          console.error(`Failed to send report email for ${userId}:`, emailErr);
+          // Don't block report generation if email fails
+        }
+
         generated++;
       } catch (err) {
         console.error(`Error generating report for ${userId}:`, err);
