@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, ChevronRight, X, Target, TrendingUp, Flame, Calendar } from "lucide-react";
+import { Sparkles, ChevronRight, X, Target, TrendingUp, Flame, Calendar, History } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useLatestWeeklyReport, useMarkReportRead } from "@/hooks/useWeeklyReport";
 
 export function WeeklyGrowthReport() {
