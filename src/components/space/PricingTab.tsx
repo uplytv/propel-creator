@@ -7,7 +7,7 @@ import { Plus, Loader2, Trash2, DollarSign, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { EmptyState } from "@/components/ui/EmptyState";
+import EmptyState from "@/components/ui/EmptyState";
 
 interface PricingTabProps {
   creatorId: string;

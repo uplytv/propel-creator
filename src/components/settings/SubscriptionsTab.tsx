@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { CreditCard, ExternalLink, Loader2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/ui/EmptyState";
+import EmptyState from "@/components/ui/EmptyState";
 import { useToast } from "@/hooks/use-toast";
 
 export function SubscriptionsTab() {
