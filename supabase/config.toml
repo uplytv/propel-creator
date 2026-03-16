@@ -39,3 +39,7 @@ project_id = "dbjlhmbgskvhuzqvqfrl"
     verify_jwt = false
   [functions.stripe-create-portal]
     verify_jwt = false
+  [functions.create-clip]
+    verify_jwt = false
+  [functions.generate-shorts]
+    verify_jwt = false
