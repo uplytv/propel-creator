@@ -42,6 +42,7 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
   const channelRef = useRef<any>(null);
   const viewerIdRef = useRef(crypto.randomUUID());
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const lastTapRef = useRef<number>(0);
   const [status, setStatus] = useState<'connecting' | 'playing' | 'failed'>('connecting');
   const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 8;
