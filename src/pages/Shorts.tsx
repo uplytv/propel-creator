@@ -1,23 +1,36 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, MessageCircle, Share2, ChevronUp, ChevronDown, Play, Volume2, VolumeX } from "lucide-react";
+import { Heart, MessageCircle, Share2, ChevronUp, ChevronDown, Play, Volume2, VolumeX, Scissors, Copy, Check } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useShorts, Short } from "@/hooks/useShorts";
+import { useClipLikes } from "@/hooks/useClipLikes";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 import SEOHead from "@/components/SEOHead";
 
 export default function Shorts() {
   const { shorts, loading, hasMore, loadMore } = useShorts(8);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const { likedClips, toggleLike: toggleClipLike, fetchLikeStatus, getLikeCount, isLiked } = useClipLikes();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [muted, setMuted] = useState(true);
-  const [liked, setLiked] = useState<Set<string>>(new Set());
+  const [localLiked, setLocalLiked] = useState<Set<string>>(new Set());
+  const [copied, setCopied] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
 
   const currentShort = shorts[currentIndex];
+
+  // Fetch like statuses when shorts load
+  useEffect(() => {
+    if (shorts.length > 0) {
+      const clipIds = shorts.filter(s => s.source === "clip").map(s => s.id);
+      if (clipIds.length > 0) fetchLikeStatus(clipIds);
+    }
+  }, [shorts.length]);
 
   // Autoplay current, pause others
   useEffect(() => {
@@ -70,19 +83,41 @@ export default function Shorts() {
     return () => window.removeEventListener("keydown", handler);
   }, [goNext, goPrev]);
 
-  const toggleLike = (id: string) => {
-    setLiked((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+  const handleLike = (short: Short) => {
+    if (short.source === "clip") {
+      toggleClipLike(short.id);
+    } else {
+      setLocalLiked((prev) => {
+        const next = new Set(prev);
+        if (next.has(short.id)) next.delete(short.id);
+        else next.add(short.id);
+        return next;
+      });
+    }
+  };
+
+  const isShortLiked = (short: Short) => {
+    if (short.source === "clip") return isLiked(short.id);
+    return localLiked.has(short.id);
+  };
+
+  const getShortLikeCount = (short: Short) => {
+    if (short.source === "clip") return getLikeCount(short.id);
+    return short.like_count + (localLiked.has(short.id) ? 1 : 0);
+  };
+
+  const handleShare = () => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    toast({ title: "Link copied!", description: "Share it with your friends" });
+    setTimeout(() => setCopied(false), 2000);
   };
 
   if (loading && shorts.length === 0) {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#00FF85] border-t-transparent" />
       </div>
     );
   }
@@ -90,10 +125,10 @@ export default function Shorts() {
   if (shorts.length === 0) {
     return (
       <div className="fixed inset-0 bg-black flex flex-col items-center justify-center text-white">
-        <Play className="w-12 h-12 mb-4 text-muted-foreground" />
+        <Scissors className="w-12 h-12 mb-4 text-[#888]" />
         <h2 className="text-xl font-bold mb-2">No shorts yet</h2>
-        <p className="text-sm text-white/60">Be the first to upload a short!</p>
-        <button onClick={() => navigate(-1)} className="mt-6 px-4 py-2 rounded-lg bg-white/10 text-sm hover:bg-white/20 transition">
+        <p className="text-sm text-white/60">Clips from live streams will appear here.</p>
+        <button onClick={() => navigate(-1)} className="mt-6 px-4 py-2 rounded-lg bg-[#00FF85] text-[#0A0A0A] text-sm font-bold hover:brightness-110 transition">
           Go Back
         </button>
       </div>
@@ -107,7 +142,7 @@ export default function Shorts() {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <SEOHead title="Shorts" description="Watch short-form creator content on Uply." />
+      <SEOHead title="Shorts" description="Watch short-form creator clips on Uply." />
 
       {/* Back button */}
       <button
@@ -156,6 +191,13 @@ export default function Shorts() {
             {/* Bottom gradient */}
             <div className="absolute bottom-0 left-0 right-0 h-60 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
 
+            {/* Source badge */}
+            {currentShort.source === "clip" && (
+              <div className="absolute top-16 left-4 z-10 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold text-[#00FF85] bg-[#00FF85]/10 border border-[#00FF85]/30">
+                <Scissors className="w-3 h-3" /> CLIP
+              </div>
+            )}
+
             {/* Creator info + caption */}
             <div className="absolute bottom-20 left-4 right-20 z-10">
               <div
@@ -164,7 +206,7 @@ export default function Shorts() {
               >
                 <Avatar className="w-10 h-10 border-2 border-white/30">
                   <AvatarImage src={currentShort.creator_avatar || undefined} />
-                  <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                  <AvatarFallback className="bg-[#00FF85]/20 text-[#00FF85] text-xs">
                     {currentShort.creator_name?.slice(0, 2)}
                   </AvatarFallback>
                 </Avatar>
@@ -181,23 +223,23 @@ export default function Shorts() {
             {/* Right action bar */}
             <div className="absolute right-3 bottom-28 flex flex-col items-center gap-6 z-10">
               <button
-                onClick={() => toggleLike(currentShort.id)}
+                onClick={() => handleLike(currentShort)}
                 className="flex flex-col items-center gap-1"
               >
                 <Heart
-                  className={`w-7 h-7 transition-all ${liked.has(currentShort.id) ? "text-destructive fill-destructive scale-110" : "text-white"}`}
+                  className={`w-7 h-7 transition-all ${isShortLiked(currentShort) ? "text-red-500 fill-red-500 scale-110" : "text-white"}`}
                 />
                 <span className="text-white text-[10px] font-semibold">
-                  {currentShort.like_count + (liked.has(currentShort.id) ? 1 : 0)}
+                  {getShortLikeCount(currentShort)}
                 </span>
               </button>
               <button className="flex flex-col items-center gap-1">
                 <MessageCircle className="w-7 h-7 text-white" />
                 <span className="text-white text-[10px] font-semibold">0</span>
               </button>
-              <button className="flex flex-col items-center gap-1">
-                <Share2 className="w-7 h-7 text-white" />
-                <span className="text-white text-[10px] font-semibold">Share</span>
+              <button onClick={handleShare} className="flex flex-col items-center gap-1">
+                {copied ? <Check className="w-7 h-7 text-[#00FF85]" /> : <Share2 className="w-7 h-7 text-white" />}
+                <span className="text-white text-[10px] font-semibold">{copied ? "Copied" : "Share"}</span>
               </button>
             </div>
           </motion.div>
@@ -229,7 +271,7 @@ export default function Shorts() {
           return (
             <div
               key={s.id}
-              className={`w-1 rounded-full transition-all ${realIdx === currentIndex ? "h-4 bg-white" : "h-1.5 bg-white/30"}`}
+              className={`w-1 rounded-full transition-all ${realIdx === currentIndex ? "h-4 bg-[#00FF85]" : "h-1.5 bg-white/30"}`}
             />
           );
         })}

@@ -11,6 +11,7 @@ export interface Short {
   like_count: number;
   view_count: number;
   created_at: string;
+  source: "short" | "clip";
   // joined
   creator_name?: string;
   creator_avatar?: string;
@@ -26,31 +27,70 @@ export function useShorts(batchSize = 10) {
     const from = pageNum * batchSize;
     const to = from + batchSize - 1;
 
-    const { data } = await supabase
-      .from("shorts")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .range(from, to);
+    // Fetch from both shorts and clips tables
+    const [shortsRes, clipsRes] = await Promise.all([
+      supabase
+        .from("shorts")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .range(from, to),
+      supabase
+        .from("clips")
+        .select("*")
+        .eq("is_public", true)
+        .order("created_at", { ascending: false })
+        .range(from, to),
+    ]);
 
-    if (data) {
-      if (data.length < batchSize) setHasMore(false);
+    const shortsData = (shortsRes.data || []).map((s: any) => ({
+      id: s.id,
+      caption: s.caption,
+      creator_id: s.creator_id,
+      creator_type_tag: s.creator_type_tag,
+      mux_asset_id: s.mux_asset_id,
+      playback_id: s.playback_id,
+      like_count: s.like_count || 0,
+      view_count: s.view_count || 0,
+      created_at: s.created_at,
+      source: "short" as const,
+    }));
 
-      const creatorIds = [...new Set(data.map((s) => s.creator_id))];
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("user_id, display_name, avatar_url")
-        .in("user_id", creatorIds);
+    const clipsData = (clipsRes.data || []).map((c: any) => ({
+      id: c.id,
+      caption: c.caption,
+      creator_id: c.creator_id,
+      creator_type_tag: null,
+      mux_asset_id: c.clip_asset_id,
+      playback_id: c.clip_playback_id,
+      like_count: c.view_count || 0, // clips don't have like_count in main table
+      view_count: c.view_count || 0,
+      created_at: c.created_at,
+      source: "clip" as const,
+    }));
 
-      const profileMap = new Map(profiles?.map((p) => [p.user_id, p]) || []);
+    // Merge and sort by date
+    const combined = [...shortsData, ...clipsData].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
 
-      const enriched = data.map((s) => ({
-        ...s,
-        creator_name: profileMap.get(s.creator_id)?.display_name || "Creator",
-        creator_avatar: profileMap.get(s.creator_id)?.avatar_url || null,
-      }));
+    if (combined.length < batchSize) setHasMore(false);
 
-      setShorts((prev) => (pageNum === 0 ? enriched : [...prev, ...enriched]));
-    }
+    // Enrich with profiles
+    const creatorIds = [...new Set(combined.map((s) => s.creator_id))];
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("user_id, display_name, avatar_url")
+      .in("user_id", creatorIds);
+
+    const profileMap = new Map(profiles?.map((p) => [p.user_id, p]) || []);
+
+    const enriched = combined.map((s) => ({
+      ...s,
+      creator_name: profileMap.get(s.creator_id)?.display_name || "Creator",
+      creator_avatar: profileMap.get(s.creator_id)?.avatar_url || null,
+    }));
+
+    setShorts((prev) => (pageNum === 0 ? enriched : [...prev, ...enriched]));
     setLoading(false);
   }, [batchSize]);
 
