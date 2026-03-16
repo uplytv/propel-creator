@@ -272,7 +272,7 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
   return (
     <div
       ref={setContainerRefs}
-      className={`relative w-full ${isFullscreen ? 'h-full' : 'aspect-video'} bg-black ${className || ''}`}
+      className={`relative w-full ${isFullscreen ? 'fixed inset-0 z-[100] h-full' : 'aspect-video'} bg-black ${className || ''}`}
       onTouchEnd={status === 'playing' ? (e) => {
         const now = Date.now();
         if (now - lastTapRef.current < 300) {
