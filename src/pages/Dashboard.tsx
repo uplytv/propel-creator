@@ -88,6 +88,14 @@ export default function Dashboard() {
       iconColor: "text-emerald-400",
       action: () => navigate("/discover"),
     },
+    {
+      label: "Payouts",
+      desc: "Manage Stripe & view earnings",
+      icon: CreditCard,
+      color: "from-cyan-500/20 to-cyan-600/5",
+      iconColor: "text-cyan-400",
+      action: () => setShowPayouts(true),
+    },
   ];
 
   return (
