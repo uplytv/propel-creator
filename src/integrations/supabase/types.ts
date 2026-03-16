@@ -1587,6 +1587,9 @@ export type Database = {
           campaign_completed: boolean
           created_at: string
           id: string
+          member_joined_email: boolean
+          new_follower_email: boolean
+          tip_received_email: boolean
           updated_at: string
           user_id: string
           weekly_report_email: boolean
@@ -1596,6 +1599,9 @@ export type Database = {
           campaign_completed?: boolean
           created_at?: string
           id?: string
+          member_joined_email?: boolean
+          new_follower_email?: boolean
+          tip_received_email?: boolean
           updated_at?: string
           user_id: string
           weekly_report_email?: boolean
@@ -1605,6 +1611,9 @@ export type Database = {
           campaign_completed?: boolean
           created_at?: string
           id?: string
+          member_joined_email?: boolean
+          new_follower_email?: boolean
+          tip_received_email?: boolean
           updated_at?: string
           user_id?: string
           weekly_report_email?: boolean
