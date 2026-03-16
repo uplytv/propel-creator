@@ -451,6 +451,51 @@ export type Database = {
         }
         Relationships: []
       }
+      clips: {
+        Row: {
+          caption: string
+          clip_asset_id: string | null
+          clip_playback_id: string | null
+          clipped_by_user_id: string
+          created_at: string
+          creator_id: string
+          duration_seconds: number
+          id: string
+          is_public: boolean
+          source_asset_id: string | null
+          source_type: string
+          view_count: number
+        }
+        Insert: {
+          caption?: string
+          clip_asset_id?: string | null
+          clip_playback_id?: string | null
+          clipped_by_user_id: string
+          created_at?: string
+          creator_id: string
+          duration_seconds?: number
+          id?: string
+          is_public?: boolean
+          source_asset_id?: string | null
+          source_type?: string
+          view_count?: number
+        }
+        Update: {
+          caption?: string
+          clip_asset_id?: string | null
+          clip_playback_id?: string | null
+          clipped_by_user_id?: string
+          created_at?: string
+          creator_id?: string
+          duration_seconds?: number
+          id?: string
+          is_public?: boolean
+          source_asset_id?: string | null
+          source_type?: string
+          view_count?: number
+        }
+        Relationships: []
+      }
       collaborations: {
         Row: {
           created_at: string
@@ -781,6 +826,36 @@ export type Database = {
           name?: string
           price?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      creator_stripe_accounts: {
+        Row: {
+          charges_enabled: boolean
+          created_at: string
+          creator_id: string
+          details_submitted: boolean
+          id: string
+          payouts_enabled: boolean
+          stripe_account_id: string
+        }
+        Insert: {
+          charges_enabled?: boolean
+          created_at?: string
+          creator_id: string
+          details_submitted?: boolean
+          id?: string
+          payouts_enabled?: boolean
+          stripe_account_id: string
+        }
+        Update: {
+          charges_enabled?: boolean
+          created_at?: string
+          creator_id?: string
+          details_submitted?: boolean
+          id?: string
+          payouts_enabled?: boolean
+          stripe_account_id?: string
         }
         Relationships: []
       }
@@ -1466,6 +1541,53 @@ export type Database = {
         }
         Relationships: []
       }
+      member_subscriptions: {
+        Row: {
+          created_at: string
+          creator_id: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          member_id: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          tier_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          member_id: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tier_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          member_id?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tier_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_subscriptions_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mux_assets: {
         Row: {
           aspect_ratio: string | null
@@ -1887,6 +2009,42 @@ export type Database = {
         }
         Relationships: []
       }
+      shorts: {
+        Row: {
+          caption: string
+          created_at: string
+          creator_id: string
+          creator_type_tag: string | null
+          id: string
+          like_count: number
+          mux_asset_id: string | null
+          playback_id: string | null
+          view_count: number
+        }
+        Insert: {
+          caption?: string
+          created_at?: string
+          creator_id: string
+          creator_type_tag?: string | null
+          id?: string
+          like_count?: number
+          mux_asset_id?: string | null
+          playback_id?: string | null
+          view_count?: number
+        }
+        Update: {
+          caption?: string
+          created_at?: string
+          creator_id?: string
+          creator_type_tag?: string | null
+          id?: string
+          like_count?: number
+          mux_asset_id?: string | null
+          playback_id?: string | null
+          view_count?: number
+        }
+        Relationships: []
+      }
       social_links: {
         Row: {
           created_at: string
@@ -1947,6 +2105,84 @@ export type Database = {
           thumbnail_url?: string | null
           title?: string | null
           url?: string
+        }
+        Relationships: []
+      }
+      stream_recordings: {
+        Row: {
+          created_at: string
+          creator_id: string
+          description: string
+          duration_seconds: number
+          id: string
+          is_free: boolean
+          is_published: boolean
+          mux_asset_id: string | null
+          playback_id: string | null
+          title: string
+          view_count: number
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          description?: string
+          duration_seconds?: number
+          id?: string
+          is_free?: boolean
+          is_published?: boolean
+          mux_asset_id?: string | null
+          playback_id?: string | null
+          title?: string
+          view_count?: number
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          description?: string
+          duration_seconds?: number
+          id?: string
+          is_free?: boolean
+          is_published?: boolean
+          mux_asset_id?: string | null
+          playback_id?: string | null
+          title?: string
+          view_count?: number
+        }
+        Relationships: []
+      }
+      subscription_tiers: {
+        Row: {
+          created_at: string
+          creator_id: string
+          description: string
+          id: string
+          is_active: boolean
+          name: string
+          price_monthly: number
+          stripe_price_id: string | null
+          stripe_product_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          price_monthly?: number
+          stripe_price_id?: string | null
+          stripe_product_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          price_monthly?: number
+          stripe_price_id?: string | null
+          stripe_product_id?: string | null
         }
         Relationships: []
       }
@@ -2072,6 +2308,7 @@ export type Database = {
           platform_fee_amount: number | null
           reference_id: string | null
           status: string | null
+          stripe_payment_intent_id: string | null
           type: string | null
           wallet_id: string | null
         }
@@ -2085,6 +2322,7 @@ export type Database = {
           platform_fee_amount?: number | null
           reference_id?: string | null
           status?: string | null
+          stripe_payment_intent_id?: string | null
           type?: string | null
           wallet_id?: string | null
         }
@@ -2098,6 +2336,7 @@ export type Database = {
           platform_fee_amount?: number | null
           reference_id?: string | null
           status?: string | null
+          stripe_payment_intent_id?: string | null
           type?: string | null
           wallet_id?: string | null
         }
@@ -2161,6 +2400,30 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      views_log: {
+        Row: {
+          asset_id: string
+          asset_type: string
+          id: string
+          user_id: string | null
+          viewed_at: string
+        }
+        Insert: {
+          asset_id: string
+          asset_type: string
+          id?: string
+          user_id?: string | null
+          viewed_at?: string
+        }
+        Update: {
+          asset_id?: string
+          asset_type?: string
+          id?: string
+          user_id?: string | null
+          viewed_at?: string
         }
         Relationships: []
       }
@@ -2269,6 +2532,39 @@ export type Database = {
           user_id?: string
           week_end?: string
           week_start?: string
+        }
+        Relationships: []
+      }
+      youtube_imports: {
+        Row: {
+          created_at: string
+          creator_id: string
+          description: string
+          id: string
+          thumbnail_url: string | null
+          title: string
+          youtube_url: string
+          youtube_video_id: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          description?: string
+          id?: string
+          thumbnail_url?: string | null
+          title?: string
+          youtube_url: string
+          youtube_video_id: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          description?: string
+          id?: string
+          thumbnail_url?: string | null
+          title?: string
+          youtube_url?: string
+          youtube_video_id?: string
         }
         Relationships: []
       }
