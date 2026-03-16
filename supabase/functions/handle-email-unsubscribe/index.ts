@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
     return new Response(
       buildHtmlPage(
         'Unsubscribed ✓',
-        'You've been unsubscribed from ARIA Weekly Growth Reports. You can re-enable them anytime in Settings → Notifications.'
+        'You have been unsubscribed from ARIA Weekly Growth Reports. You can re-enable them anytime in Settings → Notifications.'
       ),
       { status: 200, headers: { 'Content-Type': 'text/html' } }
     );
