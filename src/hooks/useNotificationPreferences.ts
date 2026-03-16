@@ -6,9 +6,19 @@ export interface NotificationPrefs {
   budget_warning: boolean;
   campaign_completed: boolean;
   weekly_report_email: boolean;
+  new_follower_email: boolean;
+  tip_received_email: boolean;
+  member_joined_email: boolean;
 }
 
-const defaults: NotificationPrefs = { budget_warning: true, campaign_completed: true, weekly_report_email: true };
+const defaults: NotificationPrefs = {
+  budget_warning: true,
+  campaign_completed: true,
+  weekly_report_email: true,
+  new_follower_email: true,
+  tip_received_email: true,
+  member_joined_email: true,
+};
 
 export function useNotificationPreferences() {
   const { user } = useAuth();
