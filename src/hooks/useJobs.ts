@@ -205,9 +205,9 @@ export function useJobApplications(jobId?: string) {
       const applicantIds = [...new Set((data || []).map((a: any) => a.applicant_id))];
       let profiles: any[] = [];
       if (applicantIds.length > 0) {
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("user_id, display_name, avatar_url, tier, tier_name")
+        const { data: profileData } = await (supabase as any)
+          .from("profiles_public")
+          .select("user_id, display_name, avatar_url")
           .in("user_id", applicantIds);
         profiles = profileData || [];
       }
