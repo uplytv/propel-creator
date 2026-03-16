@@ -59,8 +59,8 @@ export function useJobConversations() {
       const otherIds = [...new Set(conversations.map((c: any) =>
         c.creator_id === user!.id ? c.applicant_id : c.creator_id
       ))];
-      const { data: profiles } = await supabase
-        .from("profiles")
+      const { data: profiles } = await (supabase as any)
+        .from("profiles_public")
         .select("user_id, display_name, avatar_url")
         .in("user_id", otherIds);
       const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
