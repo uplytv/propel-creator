@@ -20,6 +20,7 @@ export default function Shorts() {
   const [muted, setMuted] = useState(true);
   const [localLiked, setLocalLiked] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
 
