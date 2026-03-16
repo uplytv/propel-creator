@@ -120,6 +120,11 @@ export default function Dashboard() {
           </motion.div>
         )}
 
+        {/* ARIA Weekly Growth Report */}
+        <div className="px-4 md:px-8 mb-4">
+          <WeeklyGrowthReport />
+        </div>
+
         {/* Onboarding Checklist */}
         <OnboardingChecklist />
 

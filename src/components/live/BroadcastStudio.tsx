@@ -984,6 +984,17 @@ export default function BroadcastStudio({
             ← Choose Different Method
           </Button>
         )}
+
+        {/* Stream to Course Dialog */}
+        {user && (
+          <StreamToCourseDialog
+            open={showCourseDialog}
+            onClose={() => setShowCourseDialog(false)}
+            creatorId={user.id}
+            streamTitle={title}
+            durationSeconds={lastRecordingDuration}
+          />
+        )}
       </div>
     );
   }
