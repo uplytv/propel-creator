@@ -489,26 +489,54 @@ export default function CreatorProfile() {
           {/* CTA */}
           <div className="flex flex-col items-center mt-6 mb-8">
             {isMember ? (
-              <Link
-                to={`/community/${profile.user_id}/community`}
-                className="px-8 py-3 rounded-xl text-sm font-semibold"
-                style={{ background: "#1a1a1a", border: "1px solid #1E1E1E", color: "#888" }}
-              >
-                ✓ Member
-              </Link>
+              <div className="flex items-center gap-3">
+                <Link
+                  to={`/community/${profile.user_id}/community`}
+                  className="px-8 py-3 rounded-xl text-sm font-semibold"
+                  style={{ background: "#1a1a1a", border: "1px solid #1E1E1E", color: "#888" }}
+                >
+                  ✓ Member
+                </Link>
+                {!isOwner && user && (
+                  <button
+                    onClick={async () => {
+                      try {
+                        const { getOrCreateConversation } = await import("@/hooks/useDirectMessages").then(m => ({ getOrCreateConversation: null }));
+                        // Navigate to messages with recipient param
+                        navigate(`/messages?to=${profile.user_id}`);
+                      } catch {}
+                    }}
+                    className="px-4 py-3 rounded-xl text-sm font-semibold"
+                    style={{ background: "#1a1a1a", border: "1px solid #1E1E1E", color: "#ccc" }}
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             ) : (
-              <button
-                onClick={handleJoin}
-                className="px-8 py-3 rounded-xl text-sm font-bold transition-shadow"
-                style={{
-                  background: "#00FF85",
-                  color: "#0A0A0A",
-                  boxShadow: "0 0 24px rgba(0,255,133,0.3)",
-                  height: 48,
-                }}
-              >
-                Join {creatorName}'s Community →
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleJoin}
+                  className="px-8 py-3 rounded-xl text-sm font-bold transition-shadow"
+                  style={{
+                    background: "#00FF85",
+                    color: "#0A0A0A",
+                    boxShadow: "0 0 24px rgba(0,255,133,0.3)",
+                    height: 48,
+                  }}
+                >
+                  Join {creatorName}'s Community →
+                </button>
+                {!isOwner && user && (
+                  <button
+                    onClick={() => navigate(`/messages?to=${profile.user_id}`)}
+                    className="px-4 py-3 rounded-xl text-sm font-semibold"
+                    style={{ background: "#1a1a1a", border: "1px solid #1E1E1E", color: "#ccc" }}
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             )}
             {space && !space.is_free && (
               <p className="text-[#888] text-xs mt-2">From ${Number(space.price).toFixed(0)}/month</p>

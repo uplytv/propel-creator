@@ -96,6 +96,22 @@ export default function Dashboard() {
       iconColor: "text-cyan-400",
       action: () => setShowPayouts(true),
     },
+    {
+      label: "Analytics",
+      desc: "Deep insights into your growth",
+      icon: BarChart3,
+      color: "from-pink-500/20 to-pink-600/5",
+      iconColor: "text-pink-400",
+      action: () => navigate("/analytics"),
+    },
+    {
+      label: "Messages",
+      desc: "Direct messages with your audience",
+      icon: MessageCircle,
+      color: "from-indigo-500/20 to-indigo-600/5",
+      iconColor: "text-indigo-400",
+      action: () => navigate("/messages"),
+    },
   ];
 
   return (
