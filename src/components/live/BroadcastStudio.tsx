@@ -1153,6 +1153,7 @@ export default function BroadcastStudio({
             onClose={() => setShowCourseDialog(false)}
             creatorId={user.id}
             streamTitle={title}
+            muxAssetId={lastMuxAssetId}
             durationSeconds={lastRecordingDuration}
           />
         )}
