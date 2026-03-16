@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Radio, Search, Play, Film, Scissors, Users, ChevronRight, Eye, Flame, TrendingUp, Tv, MessageCircle } from "lucide-react";
+import { Radio, Search, Play, Film, Scissors, Users, ChevronRight, Eye, Flame, TrendingUp, Tv, MessageCircle, Smartphone } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -45,6 +45,7 @@ const HARDCODED_CATEGORIES = [
 
 const SECTION_TABS = [
   { id: "live", label: "Live Now", icon: Radio },
+  { id: "shorts", label: "Shorts", icon: Smartphone },
   { id: "clips", label: "Clips", icon: Scissors },
   { id: "recordings", label: "Replays", icon: Film },
   { id: "community", label: "Community", icon: Users },
@@ -79,6 +80,7 @@ export default function Live() {
   const [liveStreams, setLiveStreams] = useState<LiveStream[]>([]);
   const [vodAssets, setVodAssets] = useState<any[]>([]);
   const [clips, setClips] = useState<any[]>([]);
+  const [shorts, setShorts] = useState<any[]>([]);
   const [communityPosts, setCommunityPosts] = useState<any[]>([]);
   const [recordings, setRecordings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -153,6 +155,28 @@ export default function Live() {
     }
   };
 
+  // ─── Fetch Shorts ───────────────────────────────────────────
+  const fetchShorts = async () => {
+    const { data } = await supabase
+      .from('shorts')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(20);
+    if (data && data.length > 0) {
+      const userIds = [...new Set(data.map((s: any) => s.creator_id))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, avatar_url')
+        .in('user_id', userIds);
+      const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
+      setShorts(data.map((s: any) => ({
+        ...s,
+        creator_name: profileMap.get(s.creator_id)?.display_name || 'Creator',
+        creator_avatar: profileMap.get(s.creator_id)?.avatar_url,
+      })));
+    }
+  };
+
   // ─── Fetch Recordings ───────────────────────────────────────
   const fetchRecordings = async () => {
     const { data } = await supabase
@@ -223,7 +247,7 @@ export default function Live() {
   };
 
   useEffect(() => {
-    Promise.all([fetchLiveStreams(), fetchVodAssets(), fetchClips(), fetchRecordings(), fetchCommunityPosts()])
+    Promise.all([fetchLiveStreams(), fetchVodAssets(), fetchClips(), fetchShorts(), fetchRecordings(), fetchCommunityPosts()])
       .then(() => setLoading(false));
 
     const channel = supabase
@@ -581,6 +605,77 @@ export default function Live() {
                     );
                   })}
                 </div>
+              )}
+            </div>
+          )}
+
+          {/* ═══════════════════════════════════════════════════
+              SECTION: SHORTS
+            ═══════════════════════════════════════════════════ */}
+          {!loading && activeSection === 'shorts' && (
+            <div>
+              {shorts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                  <Smartphone className="w-12 h-12 text-[#888] mb-4" />
+                  <p className="text-white font-semibold mb-1">No shorts yet</p>
+                  <p className="text-[#888] text-sm">Short-form vertical videos will appear here.</p>
+                  <button onClick={() => navigate('/shorts')} className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#00FF85] text-[#0A0A0A] text-sm font-bold hover:brightness-110 transition-all">
+                    Go to Shorts feed <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-sm text-[#888]">{shorts.length} shorts</p>
+                    <button onClick={() => navigate('/shorts')} className="text-sm text-[#00FF85] font-medium hover:underline flex items-center gap-1">
+                      Full-screen feed <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+                    {shorts.map((short: any, i: number) => {
+                      const thumb = short.playback_id ? `https://image.mux.com/${short.playback_id}/thumbnail.png?width=360&height=640&time=1` : null;
+                      return (
+                        <motion.div key={short.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
+                          onClick={() => navigate('/shorts')} className="group cursor-pointer">
+                          <div className="relative aspect-[9/16] rounded-xl overflow-hidden bg-[#111] border-2 border-transparent group-hover:border-[#00FF85] transition-all group-hover:scale-[1.02]">
+                            {thumb ? (
+                              <img src={thumb} alt={short.caption} className="w-full h-full object-cover" loading="lazy" />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-b from-[#1a1a1a] to-[#111] flex items-center justify-center">
+                                <Smartphone className="w-6 h-6 text-[#888]/40" />
+                              </div>
+                            )}
+                            {/* Gradient overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                            {/* Play icon */}
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                                <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
+                              </div>
+                            </div>
+                            {/* Stats */}
+                            <div className="absolute bottom-2 left-2 right-2">
+                              <div className="flex items-center gap-2 text-[10px] text-white/80">
+                                <span className="flex items-center gap-0.5"><Eye className="w-3 h-3" />{short.view_count || 0}</span>
+                                <span className="flex items-center gap-0.5"><Flame className="w-3 h-3" />{short.like_count || 0}</span>
+                              </div>
+                            </div>
+                            {/* Creator type tag */}
+                            {short.creator_type_tag && (
+                              <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded text-[9px] font-bold text-[#00FF85] bg-black/50 backdrop-blur-sm">
+                                {short.creator_type_tag}
+                              </div>
+                            )}
+                          </div>
+                          <div className="mt-1.5">
+                            <p className="text-xs font-medium text-white truncate">{short.caption || 'Untitled'}</p>
+                            <p className="text-[10px] text-[#888] truncate">{short.creator_name}</p>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </>
               )}
             </div>
           )}
