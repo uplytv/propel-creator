@@ -238,7 +238,7 @@ function useCreatorSEO(profile: any) {
     const bio = profile.bio ? profile.bio.substring(0, 160) : "";
     const avatar = profile.avatar_url || "/logo.png";
     const username = profile.username || profile.display_name || "";
-    const url = `https://propel-creator.lovable.app/creator/${username}`;
+    const url = `https://uply.tv/creator/${username}`;
 
     document.title = `${name} on UPLY`;
 
@@ -278,8 +278,8 @@ function useCreatorSEO(profile: any) {
       "breadcrumb": {
         "@type": "BreadcrumbList",
         "itemListElement": [
-          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://propel-creator.lovable.app" },
-          { "@type": "ListItem", "position": 2, "name": "Creators", "item": "https://propel-creator.lovable.app/discover" },
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://uply.tv" },
+          { "@type": "ListItem", "position": 2, "name": "Creators", "item": "https://uply.tv/discover" },
           { "@type": "ListItem", "position": 3, "name": name, "item": url },
         ],
       },

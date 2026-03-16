@@ -8,7 +8,7 @@ interface SEOHeadProps {
   image?: string;
 }
 
-const BASE_URL = "https://propel-creator.lovable.app";
+const BASE_URL = "https://uply.tv";
 const DEFAULT_TITLE = "Uply — A Social Network for Creators to Monetize";
 const DEFAULT_DESCRIPTION =
   "The creator platform that invests more in you as you grow. Monetize your community, go live, sell courses, and scale with AI — all in one place.";
