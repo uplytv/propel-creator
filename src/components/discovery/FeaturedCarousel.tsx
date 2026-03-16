@@ -40,11 +40,10 @@ export default function FeaturedCarousel() {
           .order("created_at", { ascending: false })
           .limit(4),
         supabase
-          .from("products")
-          .select("id, user_id, name, description, image_url, sales, type")
-          .eq("status", "active")
+          .from("products_public" as any)
+          .select("id, user_id, name, description, image_url, type")
           .in("type", ["course", "community"])
-          .order("sales", { ascending: false })
+          .order("created_at", { ascending: false })
           .limit(4),
       ]);
 
@@ -79,7 +78,7 @@ export default function FeaturedCarousel() {
       }
 
       if (productsRes.data) {
-        for (const p of productsRes.data) {
+        for (const p of productsRes.data as any[]) {
           items.push({
             id: p.id,
             type: p.type === "course" ? "course" : "community",
@@ -88,7 +87,7 @@ export default function FeaturedCarousel() {
             imageUrl: p.image_url,
             avatarUrl: null,
             userId: p.user_id,
-            stat: `${p.sales || 0} enrolled`,
+            stat: "Popular",
           });
         }
       }
