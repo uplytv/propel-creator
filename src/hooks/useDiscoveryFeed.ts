@@ -70,10 +70,10 @@ export function useDiscoveryFeed(
         // Trending creators
         (filter === "all" || filter === "creator")
           ? supabase
-              .from("profiles")
-              .select("user_id, display_name, avatar_url, bio, creator_type, members, total_revenue, created_at")
+              .from("profiles_public" as any)
+              .select("user_id, display_name, avatar_url, bio, creator_type, tier, tier_name, created_at")
               .not("display_name", "is", null)
-              .order("total_revenue", { ascending: false })
+              .order("created_at", { ascending: false })
               .limit(20)
           : Promise.resolve({ data: [], error: null }),
       ]);
