@@ -773,7 +773,7 @@ export default function BroadcastStudio({
         </div>
 
         {/* Creator Dashboard Panel — below video, normal flow */}
-        {isRecording && user && (
+        {user && (cameraOn || screenShare) && (
           <CreatorDashboardPanel
             streamId={streamData.streamId}
             creatorUserId={user.id}
