@@ -17,12 +17,12 @@ const corsHeaders = {
 }
 
 const EMAIL_SUBJECTS: Record<string, string> = {
-  signup: 'Confirm your email',
-  invite: "You've been invited",
-  magiclink: 'Your login link',
-  recovery: 'Reset your password',
-  email_change: 'Confirm your new email',
-  reauthentication: 'Your verification code',
+  signup: 'Welcome to UPLY – verify your email 🚀',
+  invite: "You've been invited to UPLY 🎉",
+  magiclink: 'Your UPLY login link ✨',
+  recovery: 'Reset your UPLY password',
+  email_change: 'Confirm your new email for UPLY',
+  reauthentication: 'Your UPLY verification code',
 }
 
 // Template mapping
