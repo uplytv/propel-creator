@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, MessageCircle, Share2, ChevronUp, ChevronDown, Play, Volume2, VolumeX, Scissors, Copy, Check } from "lucide-react";
+import SharePanel from "@/components/share/SharePanel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useShorts, Short } from "@/hooks/useShorts";
 import { useClipLikes } from "@/hooks/useClipLikes";
