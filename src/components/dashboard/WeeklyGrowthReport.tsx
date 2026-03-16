@@ -7,6 +7,7 @@ import { useLatestWeeklyReport, useMarkReportRead } from "@/hooks/useWeeklyRepor
 export function WeeklyGrowthReport() {
   const { data: report, isLoading } = useLatestWeeklyReport();
   const markRead = useMarkReportRead();
+  const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
 
   if (isLoading || !report) return null;
