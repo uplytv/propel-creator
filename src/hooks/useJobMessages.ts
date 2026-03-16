@@ -87,8 +87,8 @@ export function useJobConversations() {
         return {
           ...conv,
           job_title: jobMap.get(conv.job_id) || "Unknown Job",
-          other_name: otherProfile?.display_name || "User",
-          other_avatar: otherProfile?.avatar_url,
+          other_name: (otherProfile as any)?.display_name || "User",
+          other_avatar: (otherProfile as any)?.avatar_url,
           last_message: lastMsg?.[0]?.content,
           last_message_at: lastMsg?.[0]?.created_at,
           unread_count: count || 0,
