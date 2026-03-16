@@ -191,6 +191,31 @@ export default function BroadcastStudio({
   const audioContextRef = useRef<AudioContext | null>(null);
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Stream engagement for creator overlay
+  const engagement = useStreamEngagement(streamData.streamId, user?.id || "");
+  const [coachingNudge, setCoachingNudge] = useState<string | null>(null);
+  const prevEnergyRef = useRef(0);
+
+  // Energy broadcast + coaching nudges
+  useEffect(() => {
+    if (isRecording) {
+      const cleanup = engagement.startEnergyBroadcast();
+      return cleanup;
+    }
+  }, [isRecording, engagement.startEnergyBroadcast]);
+
+  useEffect(() => {
+    const score = engagement.energyScore;
+    if (score >= 100 && prevEnergyRef.current < 100) {
+      setCoachingNudge("⚡ You're going viral right now.");
+      setTimeout(() => setCoachingNudge(null), 4000);
+    } else if (score >= 75 && prevEnergyRef.current < 75) {
+      setCoachingNudge("🔥 Keep pushing — chat is on fire.");
+      setTimeout(() => setCoachingNudge(null), 4000);
+    }
+    prevEnergyRef.current = score;
+  }, [engagement.energyScore]);
+
   const stopCurrentStream = useCallback(() => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
