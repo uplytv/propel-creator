@@ -87,7 +87,7 @@ export function useDiscoveryFeed(
       const profileMap = new Map<string, { display_name: string | null; avatar_url: string | null; creator_type: string | null }>();
       if (userIds.size > 0) {
         const { data: profiles } = await supabase
-          .from("profiles")
+          .from("profiles_public" as any)
           .select("user_id, display_name, avatar_url, creator_type")
           .in("user_id", Array.from(userIds));
         if (profiles) {

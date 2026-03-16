@@ -44,7 +44,7 @@ export function useDirectMessages() {
 
     const otherIds = convos.map((c) => c.participant_one === user.id ? c.participant_two : c.participant_one);
     const { data: profiles } = await supabase
-      .from("profiles")
+      .from("profiles_public" as any)
       .select("user_id, display_name, avatar_url, username")
       .in("user_id", otherIds);
 

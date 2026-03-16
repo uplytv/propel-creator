@@ -63,7 +63,7 @@ export default function AdminPayouts() {
       // Fetch user names
       const userIds = [...new Set((data || []).map((p: any) => p.user_id))];
       const { data: profiles } = await supabase
-        .from("profiles")
+        .from("profiles_public" as any)
         .select("user_id, display_name")
         .in("user_id", userIds);
       const nameMap = Object.fromEntries((profiles || []).map((p: any) => [p.user_id, p.display_name || "Unknown"]));
