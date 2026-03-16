@@ -43,3 +43,5 @@ project_id = "dbjlhmbgskvhuzqvqfrl"
     verify_jwt = false
   [functions.generate-shorts]
     verify_jwt = false
+  [functions.download-asset]
+    verify_jwt = false
