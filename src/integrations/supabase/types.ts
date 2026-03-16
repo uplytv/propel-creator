@@ -2106,6 +2106,42 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_growth_reports: {
+        Row: {
+          action_item: string | null
+          created_at: string
+          highlights: Json | null
+          id: string
+          read: boolean
+          report_content: string
+          user_id: string
+          week_end: string
+          week_start: string
+        }
+        Insert: {
+          action_item?: string | null
+          created_at?: string
+          highlights?: Json | null
+          id?: string
+          read?: boolean
+          report_content: string
+          user_id: string
+          week_end: string
+          week_start: string
+        }
+        Update: {
+          action_item?: string | null
+          created_at?: string
+          highlights?: Json | null
+          id?: string
+          read?: boolean
+          report_content?: string
+          user_id?: string
+          week_end?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

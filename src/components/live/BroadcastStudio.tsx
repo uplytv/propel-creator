@@ -14,6 +14,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CreatorVideoOverlay, CreatorDashboardPanel } from "./CreatorStreamOverlay";
 import { useStreamEngagement } from "@/hooks/useStreamEngagement";
+import StreamToCourseDialog from "./StreamToCourseDialog";
 
 interface Product {
   id: string;
@@ -188,6 +189,8 @@ export default function BroadcastStudio({
   const [uploadFailed, setUploadFailed] = useState(false);
   const [uploadErrorMsg, setUploadErrorMsg] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showCourseDialog, setShowCourseDialog] = useState(false);
+  const [lastRecordingDuration, setLastRecordingDuration] = useState(0);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const lastTapRef = useRef<number>(0);
 
@@ -543,6 +546,7 @@ export default function BroadcastStudio({
       recordingTimerRef.current = null;
     }
     setIsRecording(false);
+    setLastRecordingDuration(recordingDuration);
 
     // Stop WebRTC host
     stopWebRTCHost();
@@ -599,6 +603,8 @@ export default function BroadcastStudio({
       console.log("[BroadcastStudio] Upload complete!", { uploadId });
       toast({ title: "Recording saved! 🎬", description: "Your video is processing and will appear in your content library." });
       chunksRef.current = [];
+      // Prompt to convert to course lesson
+      setShowCourseDialog(true);
     } catch (err: any) {
       console.error("[BroadcastStudio] Upload FAILED", err);
       setUploadFailed(true);
@@ -977,6 +983,17 @@ export default function BroadcastStudio({
           <Button variant="ghost" size="sm" onClick={() => { stopCurrentStream(); setCameraOn(false); setMicOn(false); setStudioMode("select"); }} className="w-full text-muted-foreground">
             ← Choose Different Method
           </Button>
+        )}
+
+        {/* Stream to Course Dialog */}
+        {user && (
+          <StreamToCourseDialog
+            open={showCourseDialog}
+            onClose={() => setShowCourseDialog(false)}
+            creatorId={user.id}
+            streamTitle={title}
+            durationSeconds={lastRecordingDuration}
+          />
         )}
       </div>
     );

@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.mux-check-upload]
 verify_jwt = false
+
+[functions.aria-weekly-report]
+verify_jwt = false
