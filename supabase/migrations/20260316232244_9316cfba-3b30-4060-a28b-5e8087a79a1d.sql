@@ -1,0 +1,1 @@
+UPDATE public.mux_live_streams SET status = 'idle', ended_at = now() WHERE status = 'active';
