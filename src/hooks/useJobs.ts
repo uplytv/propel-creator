@@ -387,8 +387,8 @@ export function useJobReviews(userId?: string) {
       const reviewerIds = [...new Set((data || []).map((r: any) => r.reviewer_id))];
       let profiles: any[] = [];
       if (reviewerIds.length > 0) {
-        const { data: profileData } = await supabase
-          .from("profiles")
+        const { data: profileData } = await (supabase as any)
+          .from("profiles_public")
           .select("user_id, display_name, avatar_url")
           .in("user_id", reviewerIds);
         profiles = profileData || [];

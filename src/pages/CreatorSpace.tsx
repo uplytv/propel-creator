@@ -93,8 +93,8 @@ export default function CreatorSpace() {
     queryKey: ["creator-profile-space", creatorId],
     enabled: !!creatorId,
     queryFn: async () => {
-      const { data } = await supabase
-        .from("profiles")
+      const { data } = await (supabase as any)
+        .from("profiles_public")
         .select("display_name, avatar_url, bio")
         .eq("user_id", creatorId!)
         .maybeSingle();
