@@ -14,6 +14,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CreatorVideoOverlay, CreatorDashboardPanel } from "./CreatorStreamOverlay";
 import { useStreamEngagement } from "@/hooks/useStreamEngagement";
+import StreamToCourseDialog from "./StreamToCourseDialog";
 
 interface Product {
   id: string;
