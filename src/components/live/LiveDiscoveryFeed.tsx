@@ -173,7 +173,7 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
   });
 
   const hasLiveStreams = liveStreams.length > 0;
-  const allStreams = hasLiveStreams ? liveStreams.map(toMockFormat) : mockStreams;
+  const allStreams = liveStreams.map(toMockFormat);
 
   let filtered = searchQuery
     ? allStreams.filter(
