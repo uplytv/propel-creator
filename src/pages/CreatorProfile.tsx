@@ -230,7 +230,7 @@ function formatDuration(seconds: number) {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-// SEO head injection
+// SEO head injection with JSON-LD
 function useCreatorSEO(profile: any) {
   useEffect(() => {
     if (!profile) return;
@@ -238,6 +238,7 @@ function useCreatorSEO(profile: any) {
     const bio = profile.bio ? profile.bio.substring(0, 160) : "";
     const avatar = profile.avatar_url || "/logo.png";
     const username = profile.username || profile.display_name || "";
+    const url = `https://propel-creator.lovable.app/creator/${username}`;
 
     document.title = `${name} on UPLY`;
 
@@ -255,15 +256,48 @@ function useCreatorSEO(profile: any) {
     setMeta("property", "og:title", `${name} on UPLY`);
     setMeta("property", "og:description", bio);
     setMeta("property", "og:image", avatar);
-    setMeta("property", "og:url", `https://uply.tv/creator/${username}`);
+    setMeta("property", "og:url", url);
     setMeta("property", "og:type", "profile");
     setMeta("name", "twitter:card", "summary_large_image");
     setMeta("name", "twitter:title", `${name} on UPLY`);
     setMeta("name", "twitter:description", bio);
     setMeta("name", "twitter:image", avatar);
 
+    // JSON-LD structured data for creator profile
+    const jsonLd = {
+      "@context": "https://schema.org",
+      "@type": "ProfilePage",
+      "mainEntity": {
+        "@type": "Person",
+        "name": name,
+        "description": bio,
+        "image": avatar,
+        "url": url,
+        "sameAs": [],
+      },
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://propel-creator.lovable.app" },
+          { "@type": "ListItem", "position": 2, "name": "Creators", "item": "https://propel-creator.lovable.app/discover" },
+          { "@type": "ListItem", "position": 3, "name": name, "item": url },
+        ],
+      },
+    };
+
+    let script = document.querySelector('#creator-jsonld') as HTMLScriptElement | null;
+    if (!script) {
+      script = document.createElement("script");
+      script.id = "creator-jsonld";
+      script.type = "application/ld+json";
+      document.head.appendChild(script);
+    }
+    script.textContent = JSON.stringify(jsonLd);
+
     return () => {
       document.title = "UPLY";
+      const el = document.querySelector('#creator-jsonld');
+      if (el) el.remove();
     };
   }, [profile]);
 }
