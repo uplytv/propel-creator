@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   User, Bell, Shield, CreditCard, Palette, Mail,
-  Camera, Save, Eye, EyeOff, Trash2, Download, Megaphone, Loader2
+  Camera, Save, Eye, EyeOff, Trash2, Download, Megaphone, Loader2, Users
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useApp } from "@/context/AppContext";
@@ -14,12 +14,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useNotificationPreferences } from "@/hooks/useNotificationPreferences";
 import { useProfile, useUpdateProfile, useUploadAvatar } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
+import { SubscriptionsTab } from "@/components/settings/SubscriptionsTab";
 
-type SettingsTab = "profile" | "notifications" | "account";
+type SettingsTab = "profile" | "notifications" | "subscriptions" | "account";
 
 const tabs = [
   { id: "profile" as const, label: "Profile", icon: User },
   { id: "notifications" as const, label: "Notifications", icon: Bell },
+  { id: "subscriptions" as const, label: "Subscriptions", icon: Users },
   { id: "account" as const, label: "Account", icon: Shield },
 ];
 
