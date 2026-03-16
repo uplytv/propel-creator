@@ -238,7 +238,7 @@ function useCreatorSEO(profile: any) {
     const bio = profile.bio ? profile.bio.substring(0, 160) : "";
     const avatar = profile.avatar_url || "/logo.png";
     const username = profile.username || profile.display_name || "";
-    const url = `https://propel-creator.lovable.app/creator/${username}`;
+    const url = `https://uply.tv/creator/${username}`;
 
     document.title = `${name} on UPLY`;
 
