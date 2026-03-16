@@ -96,7 +96,8 @@ function buildReportEmailHtml(report: {
         <!-- Footer -->
         <tr>
           <td style="padding: 16px 24px; border-top: 1px solid #f0f0f0; text-align: center;">
-            <div style="font-size: 12px; color: #999;">Powered by ARIA · Your AI Growth Partner on UPLY</div>
+            <div style="font-size: 12px; color: #999; margin-bottom: 8px;">Powered by ARIA · Your AI Growth Partner on UPLY</div>
+            ${report.unsubscribeUrl ? `<div style="font-size: 11px;"><a href="${report.unsubscribeUrl}" style="color: #999; text-decoration: underline;">Unsubscribe from weekly reports</a></div>` : ''}
           </td>
         </tr>
 
