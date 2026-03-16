@@ -189,6 +189,7 @@ export default function BroadcastStudio({
   const [uploadErrorMsg, setUploadErrorMsg] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const videoContainerRef = useRef<HTMLDivElement>(null);
+  const lastTapRef = useRef<number>(0);
 
   const analyserRef = useRef<AnalyserNode | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
