@@ -413,6 +413,18 @@ export default function Stream() {
                   </div>
                 </button>
               )}
+
+              {/* Clip Creator — VOD only */}
+              {isVod && playbackId && dbStream.mux_asset_id && (
+                <div className="mt-4">
+                  <ClipCreator
+                    sourceAssetId={dbStream.mux_asset_id}
+                    creatorId={dbStream.user_id}
+                    duration={dbStream.duration || 300}
+                    playbackId={playbackId}
+                  />
+                </div>
+              )}
             </div>
           </div>
 
