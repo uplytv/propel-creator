@@ -21,6 +21,23 @@ export function useLatestWeeklyReport() {
   });
 }
 
+export function useAllWeeklyReports() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["weekly-reports-all", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("weekly_growth_reports" as any)
+        .select("*")
+        .eq("user_id", user!.id)
+        .order("week_start", { ascending: false });
+      if (error) throw error;
+      return (data || []) as any[];
+    },
+  });
+}
+
 export function useMarkReportRead() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -33,6 +50,7 @@ export function useMarkReportRead() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["weekly-report"] });
+      queryClient.invalidateQueries({ queryKey: ["weekly-reports-all"] });
     },
   });
 }
