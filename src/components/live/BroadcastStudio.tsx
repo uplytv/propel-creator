@@ -733,7 +733,7 @@ export default function BroadcastStudio({
         {/* Preview Window */}
         <div
           ref={videoContainerRef}
-          className={`relative rounded-2xl overflow-hidden bg-secondary/80 border border-border ${isFullscreen ? 'w-full h-full' : 'aspect-video'}`}
+          className={`relative overflow-hidden bg-secondary/80 border border-border ${isFullscreen ? 'fixed inset-0 z-[100] rounded-none border-none' : 'rounded-2xl aspect-video'}`}
           onTouchEnd={(cameraOn || screenShare) ? (e) => {
             const now = Date.now();
             if (now - lastTapRef.current < 300) {
