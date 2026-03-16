@@ -247,7 +247,7 @@ export default function Live() {
   };
 
   useEffect(() => {
-    Promise.all([fetchLiveStreams(), fetchVodAssets(), fetchClips(), fetchRecordings(), fetchCommunityPosts()])
+    Promise.all([fetchLiveStreams(), fetchVodAssets(), fetchClips(), fetchShorts(), fetchRecordings(), fetchCommunityPosts()])
       .then(() => setLoading(false));
 
     const channel = supabase
