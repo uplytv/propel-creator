@@ -2767,6 +2767,8 @@ export type Database = {
           creator_type: string | null
           display_name: string | null
           id: string | null
+          tier: number | null
+          tier_name: string | null
           updated_at: string | null
           user_id: string | null
           user_type: string | null
@@ -2783,6 +2785,8 @@ export type Database = {
           creator_type?: string | null
           display_name?: string | null
           id?: string | null
+          tier?: number | null
+          tier_name?: string | null
           updated_at?: string | null
           user_id?: string | null
           user_type?: string | null
@@ -2799,6 +2803,8 @@ export type Database = {
           creator_type?: string | null
           display_name?: string | null
           id?: string | null
+          tier?: number | null
+          tier_name?: string | null
           updated_at?: string | null
           user_id?: string | null
           user_type?: string | null
