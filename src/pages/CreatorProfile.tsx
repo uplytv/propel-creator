@@ -278,8 +278,8 @@ function useCreatorSEO(profile: any) {
       "breadcrumb": {
         "@type": "BreadcrumbList",
         "itemListElement": [
-          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://propel-creator.lovable.app" },
-          { "@type": "ListItem", "position": 2, "name": "Creators", "item": "https://propel-creator.lovable.app/discover" },
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://uply.tv" },
+          { "@type": "ListItem", "position": 2, "name": "Creators", "item": "https://uply.tv/discover" },
           { "@type": "ListItem", "position": 3, "name": name, "item": url },
         ],
       },

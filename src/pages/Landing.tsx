@@ -30,7 +30,7 @@ const JSON_LD = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
   "name": "Uply",
-  "url": "https://propel-creator.lovable.app",
+  "url": "https://uply.tv",
   "description": "Social network for creators to monetize. The only creator platform that invests more in you as you grow.",
   "applicationCategory": "SocialNetworkingApplication",
   "operatingSystem": "Web",
