@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Search, Home, Radio, Wallet, User } from "lucide-react";
+import { Search, Home, Radio, MessageCircle, User } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { useApp } from "@/context/AppContext";
@@ -8,7 +8,7 @@ const tabs = [
   { label: "Discover", icon: Search, path: "/discover" },
   { label: "Home", icon: Home, path: "/dashboard" },
   { label: "Live", icon: Radio, path: "/live" },
-  { label: "Wallet", icon: Wallet, path: "/wallet" },
+  { label: "Messages", icon: MessageCircle, path: "/messages" },
   { label: "Profile", icon: User, path: "__profile__" },
 ];
 

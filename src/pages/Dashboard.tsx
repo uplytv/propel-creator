@@ -5,7 +5,7 @@ import {
   TrendingUp, Users, DollarSign, Brain, Radio, Sparkles,
   BarChart3, ChevronRight, Film, Play, Loader2, Clock,
   LayoutGrid, Package, Search, ArrowRight, Zap, GraduationCap,
-  Plus, Eye, CreditCard
+  Plus, Eye, CreditCard, MessageCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
@@ -95,6 +95,22 @@ export default function Dashboard() {
       color: "from-cyan-500/20 to-cyan-600/5",
       iconColor: "text-cyan-400",
       action: () => setShowPayouts(true),
+    },
+    {
+      label: "Analytics",
+      desc: "Deep insights into your growth",
+      icon: BarChart3,
+      color: "from-pink-500/20 to-pink-600/5",
+      iconColor: "text-pink-400",
+      action: () => navigate("/analytics"),
+    },
+    {
+      label: "Messages",
+      desc: "Direct messages with your audience",
+      icon: MessageCircle,
+      color: "from-indigo-500/20 to-indigo-600/5",
+      iconColor: "text-indigo-400",
+      action: () => navigate("/messages"),
     },
   ];
 
