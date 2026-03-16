@@ -59,8 +59,8 @@ export function useJobConversations() {
       const otherIds = [...new Set(conversations.map((c: any) =>
         c.creator_id === user!.id ? c.applicant_id : c.creator_id
       ))];
-      const { data: profiles } = await supabase
-        .from("profiles")
+      const { data: profiles } = await (supabase as any)
+        .from("profiles_public")
         .select("user_id, display_name, avatar_url")
         .in("user_id", otherIds);
       const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
@@ -87,8 +87,8 @@ export function useJobConversations() {
         return {
           ...conv,
           job_title: jobMap.get(conv.job_id) || "Unknown Job",
-          other_name: otherProfile?.display_name || "User",
-          other_avatar: otherProfile?.avatar_url,
+          other_name: (otherProfile as any)?.display_name || "User",
+          other_avatar: (otherProfile as any)?.avatar_url,
           last_message: lastMsg?.[0]?.content,
           last_message_at: lastMsg?.[0]?.created_at,
           unread_count: count || 0,
@@ -119,8 +119,8 @@ export function useJobMessages(conversationId?: string) {
       const senderIds = [...new Set((data || []).map((m: any) => m.sender_id))];
       let profiles: any[] = [];
       if (senderIds.length > 0) {
-        const { data: profileData } = await supabase
-          .from("profiles")
+        const { data: profileData } = await (supabase as any)
+          .from("profiles_public")
           .select("user_id, display_name, avatar_url")
           .in("user_id", senderIds);
         profiles = profileData || [];

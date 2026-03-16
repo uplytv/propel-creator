@@ -42,8 +42,8 @@ export function usePosts(category?: string) {
       const userIds = [...new Set((posts || []).map((p: any) => p.user_id))];
       if (userIds.length === 0) return [];
 
-      const { data: profiles } = await supabase
-        .from("profiles")
+      const { data: profiles } = await (supabase as any)
+        .from("profiles_public")
         .select("user_id, display_name, avatar_url")
         .in("user_id", userIds);
 

@@ -81,9 +81,9 @@ export function useJobs(filters?: {
       const creatorIds = [...new Set((data || []).map((j: any) => j.creator_id))];
       let profiles: any[] = [];
       if (creatorIds.length > 0) {
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("user_id, display_name, avatar_url, tier, tier_name")
+        const { data: profileData } = await (supabase as any)
+          .from("profiles_public")
+          .select("user_id, display_name, avatar_url")
           .in("user_id", creatorIds);
         profiles = profileData || [];
       }
@@ -205,9 +205,9 @@ export function useJobApplications(jobId?: string) {
       const applicantIds = [...new Set((data || []).map((a: any) => a.applicant_id))];
       let profiles: any[] = [];
       if (applicantIds.length > 0) {
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("user_id, display_name, avatar_url, tier, tier_name")
+        const { data: profileData } = await (supabase as any)
+          .from("profiles_public")
+          .select("user_id, display_name, avatar_url")
           .in("user_id", applicantIds);
         profiles = profileData || [];
       }
@@ -305,9 +305,9 @@ export function useTalentProfiles(skillFilter?: SkillCategory) {
       const userIds = (data || []).map((t: any) => t.user_id);
       let profiles: any[] = [];
       if (userIds.length > 0) {
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("user_id, display_name, avatar_url, tier, tier_name")
+        const { data: profileData } = await (supabase as any)
+          .from("profiles_public")
+          .select("user_id, display_name, avatar_url")
           .in("user_id", userIds);
         profiles = profileData || [];
       }
@@ -387,8 +387,8 @@ export function useJobReviews(userId?: string) {
       const reviewerIds = [...new Set((data || []).map((r: any) => r.reviewer_id))];
       let profiles: any[] = [];
       if (reviewerIds.length > 0) {
-        const { data: profileData } = await supabase
-          .from("profiles")
+        const { data: profileData } = await (supabase as any)
+          .from("profiles_public")
           .select("user_id, display_name, avatar_url")
           .in("user_id", reviewerIds);
         profiles = profileData || [];
