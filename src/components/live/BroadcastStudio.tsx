@@ -311,7 +311,7 @@ export default function BroadcastStudio({
     setMediaError(null);
     try {
       const screenStream = await navigator.mediaDevices.getDisplayMedia({
-        video: { width: { ideal: 1920 }, height: { ideal: 1080 } },
+        video: true,
         audio: true,
       });
       try {
