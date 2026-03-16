@@ -249,12 +249,30 @@ export default function GoLive() {
                 Your stream will be automatically recorded and saved to your content library.
               </p>
             </div>
+          ) : showEndScreen && streamData ? (
+            <EndOfStreamScreen
+              streamId={streamData.streamId}
+              creatorId={user?.id || ""}
+              streamTitle={title}
+              playbackId={streamData.playbackId}
+              durationSeconds={streamDuration}
+              onClose={() => {
+                setShowEndScreen(false);
+                setStreamData(null);
+                navigate("/dashboard");
+              }}
+              username={profileData?.display_name}
+            />
           ) : (
             <BroadcastStudio
               streamData={streamData}
               streamStatus={streamStatus}
               title={title}
-              onEndStream={() => setStreamData(null)}
+              onEndStream={() => {
+                const duration = streamStartTime ? Math.floor((Date.now() - streamStartTime) / 1000) : 0;
+                setStreamDuration(duration);
+                setShowEndScreen(true);
+              }}
               products={activeProducts}
               featuredProductId={featuredProductId}
               onFeaturedProductChange={async (productId) => {
