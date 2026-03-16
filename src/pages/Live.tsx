@@ -495,6 +495,16 @@ export default function Live() {
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
+              ) : filtered.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <Tv className="w-10 h-10 text-[#888] mb-3" />
+                  <p className="text-white font-semibold mb-1">No one is live right now.</p>
+                  <p className="text-sm text-[#888]">Be the first to start streaming!</p>
+                  <button onClick={() => navigate('/go-live')}
+                    className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#00FF85] text-[#0A0A0A] text-sm font-bold hover:brightness-110 transition-all">
+                    Go Live <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
               ) : (
                 <>
                   {/* Stream Grid */}
@@ -503,15 +513,6 @@ export default function Live() {
                       {gridStreams.map((s, i) => <StreamCardNew key={s.id} stream={s} index={i} />)}
                     </AnimatePresence>
                   </div>
-
-                  {!hasLiveStreams && (
-                    <div className="mt-4 flex items-center gap-2.5 px-4 py-3 rounded-lg bg-[#111] border border-white/5">
-                      <Radio className="w-4 h-4 text-[#888] flex-shrink-0" />
-                      <p className="text-xs text-[#888]">
-                        Showing example streams — <span className="text-[#00FF85] font-medium cursor-pointer" onClick={() => navigate('/go-live')}>be the first to go live!</span>
-                      </p>
-                    </div>
-                  )}
                 </>
               )}
 
