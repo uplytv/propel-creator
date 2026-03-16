@@ -378,11 +378,51 @@ export default function BroadcastStudio({
     }
   };
 
-  const flipCamera = () => {
+  const flipCamera = useCallback(async () => {
     const next = facingMode === "user" ? "environment" : "user";
     setFacingMode(next);
-    if (cameraOn) startCamera(next);
-  };
+
+    if (!cameraOn || !streamRef.current) return;
+
+    // If recording or WebRTC is active, do a seamless track swap
+    // instead of tearing down the entire stream
+    if (isRecording || peerConnectionsRef.current.size > 0) {
+      try {
+        const newVideoStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: next },
+          audio: false, // keep existing audio track
+        });
+        const newVideoTrack = newVideoStream.getVideoTracks()[0];
+        const oldVideoTrack = streamRef.current.getVideoTracks()[0];
+
+        // Replace track in the live MediaStream (updates MediaRecorder automatically)
+        if (oldVideoTrack) {
+          streamRef.current.removeTrack(oldVideoTrack);
+          oldVideoTrack.stop();
+        }
+        streamRef.current.addTrack(newVideoTrack);
+
+        // Update video element
+        if (videoRef.current) {
+          videoRef.current.srcObject = streamRef.current;
+        }
+
+        // Replace track in all active WebRTC peer connections
+        peerConnectionsRef.current.forEach((pc) => {
+          const sender = pc.getSenders().find(s => s.track?.kind === 'video');
+          if (sender) {
+            sender.replaceTrack(newVideoTrack);
+          }
+        });
+      } catch (err) {
+        console.error('Failed to flip camera seamlessly:', err);
+        setMediaError("Could not switch camera.");
+      }
+    } else {
+      // Not recording — safe to do a full restart
+      startCamera(next);
+    }
+  }, [facingMode, cameraOn, isRecording, startCamera]);
 
   // Set stream status in DB so discovery feed picks it up
   const setStreamActive = async (active: boolean) => {
