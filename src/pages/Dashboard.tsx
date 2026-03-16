@@ -5,7 +5,7 @@ import {
   TrendingUp, Users, DollarSign, Brain, Radio, Sparkles,
   BarChart3, ChevronRight, Film, Play, Loader2, Clock,
   LayoutGrid, Package, Search, ArrowRight, Zap, GraduationCap,
-  Plus, Eye
+  Plus, Eye, CreditCard
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
@@ -16,6 +16,7 @@ import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { AriaPanel } from "@/components/aria/AriaPanel";
 import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist";
 import { WeeklyGrowthReport } from "@/components/dashboard/WeeklyGrowthReport";
+import { PayoutsTab } from "@/components/dashboard/PayoutsTab";
 
 export default function Dashboard() {
   const { profile } = useApp();
