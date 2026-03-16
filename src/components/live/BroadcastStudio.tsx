@@ -187,6 +187,8 @@ export default function BroadcastStudio({
   const [mediaError, setMediaError] = useState<string | null>(null);
   const [uploadFailed, setUploadFailed] = useState(false);
   const [uploadErrorMsg, setUploadErrorMsg] = useState("");
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
 
   const analyserRef = useRef<AnalyserNode | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
