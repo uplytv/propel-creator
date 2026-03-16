@@ -53,6 +53,7 @@ const Launchpad = lazy(() => import("./pages/Launchpad"));
 const AdminAffiliates = lazy(() => import("./pages/AdminAffiliates"));
 const ReferralRedirect = lazy(() => import("./pages/ReferralRedirect"));
 const GrowthReports = lazy(() => import("./pages/GrowthReports"));
+const Shorts = lazy(() => import("./pages/Shorts"));
 
 const queryClient = new QueryClient();
 
@@ -91,6 +92,7 @@ const App = () => (
                     <Route path="/space/:creatorId" element={<CreatorSpace />} />
                     <Route path="/space/:creatorId/:tab" element={<CreatorSpace />} />
                     <Route path="/discover" element={<Discover />} />
+                    <Route path="/shorts" element={<Shorts />} />
 
                     {/* Protected routes */}
                     <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
