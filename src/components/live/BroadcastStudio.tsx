@@ -772,6 +772,15 @@ export default function BroadcastStudio({
           )}
         </div>
 
+        {/* Creator Dashboard Panel — below video, normal flow */}
+        {isRecording && user && (
+          <CreatorDashboardPanel
+            streamId={streamData.streamId}
+            creatorUserId={user.id}
+            streamTitle={title}
+          />
+        )}
+
         {/* Controls */}
         <div className="flex items-center justify-center gap-2">
           <Button
