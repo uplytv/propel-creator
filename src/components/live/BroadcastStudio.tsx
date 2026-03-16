@@ -195,13 +195,17 @@ export default function BroadcastStudio({
   const audioContextRef = useRef<AudioContext | null>(null);
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Fullscreen toggle
+  // Fullscreen toggle (with webkit fallback for iOS Safari)
   const toggleFullscreen = useCallback(() => {
-    if (!videoContainerRef.current) return;
-    if (document.fullscreenElement) {
-      document.exitFullscreen();
+    const el = videoContainerRef.current as any;
+    if (!el) return;
+    const fullscreenEl = document.fullscreenElement || (document as any).webkitFullscreenElement;
+    if (fullscreenEl) {
+      if (document.exitFullscreen) document.exitFullscreen();
+      else if ((document as any).webkitExitFullscreen) (document as any).webkitExitFullscreen();
     } else {
-      videoContainerRef.current.requestFullscreen().catch(() => {});
+      if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
     }
   }, []);
 
