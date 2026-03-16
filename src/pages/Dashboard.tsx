@@ -24,6 +24,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [ariaOpen, setAriaOpen] = useState(false);
   const [activeStream, setActiveStream] = useState<any>(null);
+  const [showPayouts, setShowPayouts] = useState(false);
   const { data: dashStats, isLoading: statsLoading } = useDashboardStats();
 
   useEffect(() => {
