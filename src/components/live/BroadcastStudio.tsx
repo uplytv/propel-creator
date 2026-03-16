@@ -11,7 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import CreatorStreamOverlay from "./CreatorStreamOverlay";
+import { CreatorVideoOverlay, CreatorDashboardPanel } from "./CreatorStreamOverlay";
+import { useStreamEngagement } from "@/hooks/useStreamEngagement";
 
 interface Product {
   id: string;
@@ -189,6 +190,31 @@ export default function BroadcastStudio({
   const analyserRef = useRef<AnalyserNode | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Stream engagement for creator overlay
+  const engagement = useStreamEngagement(streamData.streamId, user?.id || "");
+  const [coachingNudge, setCoachingNudge] = useState<string | null>(null);
+  const prevEnergyRef = useRef(0);
+
+  // Energy broadcast + coaching nudges
+  useEffect(() => {
+    if (isRecording) {
+      const cleanup = engagement.startEnergyBroadcast();
+      return cleanup;
+    }
+  }, [isRecording, engagement.startEnergyBroadcast]);
+
+  useEffect(() => {
+    const score = engagement.energyScore;
+    if (score >= 100 && prevEnergyRef.current < 100) {
+      setCoachingNudge("⚡ You're going viral right now.");
+      setTimeout(() => setCoachingNudge(null), 4000);
+    } else if (score >= 75 && prevEnergyRef.current < 75) {
+      setCoachingNudge("🔥 Keep pushing — chat is on fire.");
+      setTimeout(() => setCoachingNudge(null), 4000);
+    }
+    prevEnergyRef.current = score;
+  }, [engagement.energyScore]);
 
   const stopCurrentStream = useCallback(() => {
     if (streamRef.current) {
@@ -715,19 +741,21 @@ export default function BroadcastStudio({
             </div>
           )}
 
-          {/* Creator Stream Overlay — replaces simple recording indicators */}
+          {/* Creator stats overlay — thin bar on top of video only */}
           {isRecording && user && (
-            <CreatorStreamOverlay
+            <CreatorVideoOverlay
               streamId={streamData.streamId}
-              streamTitle={title}
               creatorUserId={user.id}
               onEndStream={stopRecording}
               isRecording={isRecording}
               recordingDuration={recordingDuration}
+              energyScore={engagement.energyScore}
+              viewerCount={engagement.viewerCount}
+              coachingNudge={coachingNudge}
             />
           )}
 
-          {/* Title overlay (only when NOT recording — overlay handles it during recording) */}
+          {/* Title overlay (only when NOT recording) */}
           {!isRecording && (
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
               <p className="text-sm font-semibold text-white truncate">{title}</p>
@@ -743,6 +771,15 @@ export default function BroadcastStudio({
             </div>
           )}
         </div>
+
+        {/* Creator Dashboard Panel — below video, normal flow */}
+        {isRecording && user && (
+          <CreatorDashboardPanel
+            streamId={streamData.streamId}
+            creatorUserId={user.id}
+            streamTitle={title}
+          />
+        )}
 
         {/* Controls */}
         <div className="flex items-center justify-center gap-2">
