@@ -396,6 +396,16 @@ export default function Settings() {
           </motion.div>
         )}
 
+        {/* Subscriptions Tab */}
+        {activeTab === "subscriptions" && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+            <div className="rounded-2xl border border-border bg-card/40 p-6">
+              <h2 className="text-lg font-semibold mb-4">My Subscriptions</h2>
+              <SubscriptionsTab />
+            </div>
+          </motion.div>
+        )}
+
         {/* Account Tab */}
         {activeTab === "account" && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
