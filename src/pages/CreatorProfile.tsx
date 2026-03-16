@@ -88,7 +88,7 @@ function useCreatorProfileData(username: string | undefined) {
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
-      return data;
+      return data as any;
     },
     enabled: !!userId,
   });
