@@ -277,3 +277,12 @@
 .animate-wiggle {
   animation: wiggle 0.25s ease-in-out infinite;
 }
+
+/* Shimmer animation for new report card */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.animate-shimmer {
+  animation: shimmer 3s ease-in-out infinite;
+}

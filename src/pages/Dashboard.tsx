@@ -90,11 +90,11 @@ export default function Dashboard() {
 
   return (
     <AppLayout>
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-5xl mx-auto pb-20 md:pb-8">
         {/* Welcome */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 md:p-8 pb-0 md:pb-0 mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold">Welcome back, {profile.name} 👋</h1>
-          <p className="text-muted-foreground mt-1">Here's your command center.</p>
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="px-4 md:px-8 pt-4 md:pt-8 pb-2">
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">Welcome back, {profile.name} 👋</h1>
+          <p className="text-sm text-muted-foreground mt-1">Here's your command center.</p>
         </motion.div>
 
         {/* Live Now Banner */}
@@ -102,7 +102,7 @@ export default function Dashboard() {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-4 rounded-xl border border-destructive/30 bg-destructive/5 flex items-center justify-between gap-4"
+            className="mx-4 md:mx-8 mb-4 p-4 rounded-xl border border-destructive/30 bg-destructive/5 flex items-center justify-between gap-4"
           >
             <div className="flex items-center gap-3">
               <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-destructive text-destructive-foreground">
@@ -121,7 +121,7 @@ export default function Dashboard() {
         )}
 
         {/* ARIA Weekly Growth Report */}
-        <div className="px-4 md:px-8 mb-4">
+        <div className="px-4 md:px-8 mb-5">
           <WeeklyGrowthReport />
         </div>
 
@@ -176,7 +176,7 @@ export default function Dashboard() {
             transition={{ delay: 0.15 }}
           >
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Your Tools</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {quickActions.map((action, i) => (
                 <motion.button
                   key={action.label}
@@ -185,18 +185,18 @@ export default function Dashboard() {
                   transition={{ delay: 0.15 + i * 0.06 }}
                   whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }}
                   onClick={action.action}
-                  className="glass-card p-5 text-left group relative overflow-hidden hover:border-primary/20 transition-all"
+                  className="glass-card p-4 sm:p-5 text-left group relative overflow-hidden hover:border-primary/20 transition-all"
                 >
                   <div className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
                   <div className="relative z-10">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className={`w-10 h-10 rounded-xl bg-secondary/80 flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                        <action.icon className={`w-5 h-5 ${action.iconColor}`} />
+                    <div className="flex items-center justify-between mb-2 sm:mb-3">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-secondary/80 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <action.icon className={`w-4 h-4 sm:w-5 sm:h-5 ${action.iconColor}`} />
                       </div>
-                      <ArrowRight className="w-4 h-4 text-muted-foreground/0 group-hover:text-muted-foreground group-hover:translate-x-0.5 transition-all duration-300" />
+                      <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/0 group-hover:text-muted-foreground group-hover:translate-x-0.5 transition-all duration-300" />
                     </div>
-                    <h3 className="font-bold text-foreground text-base mb-1">{action.label}</h3>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{action.desc}</p>
+                    <h3 className="font-bold text-foreground text-sm sm:text-base mb-0.5">{action.label}</h3>
+                    <p className="text-[11px] sm:text-xs text-muted-foreground leading-relaxed line-clamp-2">{action.desc}</p>
                   </div>
                 </motion.button>
               ))}
@@ -208,18 +208,18 @@ export default function Dashboard() {
                 transition={{ delay: 0.15 + quickActions.length * 0.06 }}
                 whileHover={{ y: -3, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }}
                 onClick={() => setAriaOpen(true)}
-                className="glass-card p-5 text-left group relative overflow-hidden hover:border-primary/20 transition-all border-dashed"
+                className="glass-card p-4 sm:p-5 text-left group relative overflow-hidden hover:border-primary/20 transition-all border-dashed"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/15 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                      <Sparkles className="w-5 h-5 text-primary" />
+                  <div className="flex items-center justify-between mb-2 sm:mb-3">
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                     </div>
                     <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">AI</span>
                   </div>
-                  <h3 className="font-bold text-foreground text-base mb-1">Ask ARIA</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed">Your AI growth partner — get personalized advice</p>
+                  <h3 className="font-bold text-foreground text-sm sm:text-base mb-0.5">Ask ARIA</h3>
+                  <p className="text-[11px] sm:text-xs text-muted-foreground leading-relaxed line-clamp-2">Your AI growth partner — get personalized advice</p>
                 </div>
               </motion.button>
             </div>
