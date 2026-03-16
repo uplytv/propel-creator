@@ -127,6 +127,26 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Generate or reuse unsubscribe token for this email
+    let unsubscribeUrl = '';
+    const { data: existingToken } = await supabase
+      .from('email_unsubscribe_tokens')
+      .select('token')
+      .eq('email', recipientEmail)
+      .is('used_at', null)
+      .maybeSingle();
+
+    const token = existingToken?.token || crypto.randomUUID();
+
+    if (!existingToken) {
+      await supabase.from('email_unsubscribe_tokens').insert({
+        email: recipientEmail,
+        token,
+      });
+    }
+
+    unsubscribeUrl = `${supabaseUrl}/functions/v1/handle-email-unsubscribe?token=${token}&type=weekly_report_email`;
+
     const html = buildReportEmailHtml({
       displayName: displayName || 'Creator',
       summary,
@@ -134,6 +154,7 @@ Deno.serve(async (req) => {
       actionItem: actionItem || '',
       weekStart: weekStart || '',
       weekEnd: weekEnd || '',
+      unsubscribeUrl,
     });
 
     const messageId = `aria-report-${weekStart}-${crypto.randomUUID().slice(0, 8)}`;
