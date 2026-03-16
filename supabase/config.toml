@@ -27,3 +27,15 @@ project_id = "dbjlhmbgskvhuzqvqfrl"
     verify_jwt = false
   [functions.handle-email-unsubscribe]
     verify_jwt = false
+  [functions.stripe-webhook]
+    verify_jwt = false
+  [functions.stripe-connect-onboard]
+    verify_jwt = false
+  [functions.stripe-create-tier]
+    verify_jwt = false
+  [functions.stripe-create-checkout]
+    verify_jwt = false
+  [functions.stripe-dashboard-link]
+    verify_jwt = false
+  [functions.stripe-create-portal]
+    verify_jwt = false
