@@ -710,7 +710,7 @@ export default function BroadcastStudio({
         </div>
 
         {/* Preview Window */}
-        <div className="relative rounded-2xl overflow-hidden bg-secondary/80 border border-border aspect-video">
+        <div ref={videoContainerRef} className={`relative rounded-2xl overflow-hidden bg-secondary/80 border border-border ${isFullscreen ? 'w-full h-full' : 'aspect-video'}`}>
           <video
             ref={videoRef}
             autoPlay
