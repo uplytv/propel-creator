@@ -25,3 +25,5 @@ project_id = "dbjlhmbgskvhuzqvqfrl"
     verify_jwt = true
   [functions.send-weekly-report-email]
     verify_jwt = false
+  [functions.handle-email-unsubscribe]
+    verify_jwt = false
