@@ -41,7 +41,7 @@ export function useDiscoveryFeed(
         // Live streams
         (filter === "all" || filter === "livestream")
           ? supabase
-              .from("mux_live_streams")
+              .from("mux_live_streams_public")
               .select("*")
               .eq("is_public", true)
               .order("viewer_count", { ascending: false })

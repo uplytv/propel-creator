@@ -57,7 +57,7 @@ function useHeroStats(category: Exclude<FilterCategory, "all">) {
       switch (category) {
         case "livestream": {
           const { count } = await supabase
-            .from("mux_live_streams")
+            .from("mux_live_streams_public")
             .select("*", { count: "exact", head: true })
             .in("status", ["active", "live"]);
           return [

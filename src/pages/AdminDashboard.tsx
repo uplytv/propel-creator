@@ -50,8 +50,8 @@ export default function AdminDashboard() {
       ] = await Promise.all([
         supabase.from("profiles").select("*", { count: "exact", head: true }),
         supabase.from("products").select("*", { count: "exact", head: true }),
-        supabase.from("mux_live_streams").select("*", { count: "exact", head: true }),
-        supabase.from("mux_live_streams").select("*", { count: "exact", head: true }).eq("status", "active"),
+        supabase.from("mux_live_streams_public").select("*", { count: "exact", head: true }),
+        supabase.from("mux_live_streams_public").select("*", { count: "exact", head: true }).eq("status", "active"),
         supabase.from("jobs").select("*", { count: "exact", head: true }),
         supabase.from("payout_requests").select("*", { count: "exact", head: true }).eq("status", "pending"),
         supabase.from("transactions").select("amount, created_at, type").order("created_at", { ascending: false }).limit(500),
