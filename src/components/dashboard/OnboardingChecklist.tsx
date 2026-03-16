@@ -237,14 +237,15 @@ export function OnboardingChecklist() {
               <div className="flex items-center gap-2">
                 <input
                   readOnly
-                  value={`${window.location.origin}/space/${user.id}`}
+                  value={username ? `${window.location.origin}/creator/${username}` : `${window.location.origin}/community/${user.id}`}
                   className="flex-1 text-xs bg-background border border-border rounded-md px-3 py-2 text-foreground select-all truncate"
                   onFocus={(e) => e.target.select()}
                 />
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigator.clipboard.writeText(`${window.location.origin}/space/${user.id}`);
+                    const link = username ? `${window.location.origin}/creator/${username}` : `${window.location.origin}/community/${user.id}`;
+                    navigator.clipboard.writeText(link);
                     toast.success("Link copied to clipboard!");
                   }}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors shrink-0"
