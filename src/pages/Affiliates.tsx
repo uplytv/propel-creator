@@ -16,7 +16,7 @@ export default function Affiliates() {
   const { data: stats, isLoading: statsLoading } = useAffiliateStats();
 
   const isLoading = linkLoading || statsLoading;
-  const referralLink = linkData?.code ? `${window.location.origin}/ref/${linkData.code}` : "";
+  const referralLink = linkData?.code ? `${SITE_URL}/ref/${linkData.code}` : "";
 
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink);

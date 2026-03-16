@@ -46,7 +46,7 @@ export function MemberEarnTab({ programId, creatorId }: MemberEarnTabProps) {
   const isLoading = codeLoading || statsLoading;
 
   const affiliateLink = codeData?.code
-    ? `${window.location.origin}/community/${creatorId}?ref=${codeData.code}`
+    ? `${SITE_URL}/community/${creatorId}?ref=${codeData.code}`
     : "";
 
   const handleCopy = () => {
