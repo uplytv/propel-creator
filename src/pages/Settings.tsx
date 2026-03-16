@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   User, Bell, Shield, CreditCard, Palette, Mail,
-  Camera, Save, Eye, EyeOff, Trash2, Download, Megaphone, Loader2
+  Camera, Save, Eye, EyeOff, Trash2, Download, Megaphone, Loader2, Users
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useApp } from "@/context/AppContext";
@@ -14,12 +14,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useNotificationPreferences } from "@/hooks/useNotificationPreferences";
 import { useProfile, useUpdateProfile, useUploadAvatar } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
+import { SubscriptionsTab } from "@/components/settings/SubscriptionsTab";
 
-type SettingsTab = "profile" | "notifications" | "account";
+type SettingsTab = "profile" | "notifications" | "subscriptions" | "account";
 
 const tabs = [
   { id: "profile" as const, label: "Profile", icon: User },
   { id: "notifications" as const, label: "Notifications", icon: Bell },
+  { id: "subscriptions" as const, label: "Subscriptions", icon: Users },
   { id: "account" as const, label: "Account", icon: Shield },
 ];
 
@@ -390,6 +392,16 @@ export default function Settings() {
                   }}
                 />
               </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Subscriptions Tab */}
+        {activeTab === "subscriptions" && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+            <div className="rounded-2xl border border-border bg-card/40 p-6">
+              <h2 className="text-lg font-semibold mb-4">My Subscriptions</h2>
+              <SubscriptionsTab />
             </div>
           </motion.div>
         )}

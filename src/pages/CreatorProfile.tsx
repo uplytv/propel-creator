@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import CreatorProfileEditDrawer from "@/components/creator-profile/CreatorProfileEditDrawer";
 import SEOHead from "@/components/SEOHead";
+import { useToast } from "@/hooks/use-toast";
 
 // Social platform icons as simple SVG components
 const socialIcons: Record<string, React.FC<{ className?: string }>> = {
@@ -184,6 +185,20 @@ function useCreatorProfileData(username: string | undefined) {
     enabled: !!userId,
   });
 
+  const tiersQuery = useQuery({
+    queryKey: ["creator-tiers", userId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("subscription_tiers")
+        .select("*")
+        .eq("creator_id", userId!)
+        .eq("is_active", true)
+        .order("price_monthly", { ascending: true });
+      return data || [];
+    },
+    enabled: !!userId,
+  });
+
   return {
     profile: profileQuery.data,
     profileLoading: profileQuery.isLoading,
@@ -195,6 +210,7 @@ function useCreatorProfileData(username: string | undefined) {
     totalLessons: totalLessonsQuery.data || 0,
     isMember: isMemberQuery.data || false,
     space: spaceQuery.data,
+    tiers: tiersQuery.data || [],
   };
 }
 
@@ -252,18 +268,23 @@ function useCreatorSEO(profile: any) {
   }, [profile]);
 }
 
+
+
+
 export default function CreatorProfile() {
   const { username } = useParams<{ username: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
   const [bioExpanded, setBioExpanded] = useState(false);
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
   const [editOpen, setEditOpen] = useState(false);
   const [showStickyBar, setShowStickyBar] = useState(false);
+  const [joinLoading, setJoinLoading] = useState(false);
 
   const {
     profile, profileLoading, socialLinks, liveStream,
-    memberCount, posts, modules, totalLessons, isMember, space,
+    memberCount, posts, modules, totalLessons, isMember, space, tiers,
   } = useCreatorProfileData(username);
 
   useCreatorSEO(profile);
@@ -287,9 +308,28 @@ export default function CreatorProfile() {
     });
   };
 
-  const handleJoin = () => {
+  const handleJoin = async () => {
     if (!user) {
       navigate(`/auth?ref=${username}`);
+      return;
+    }
+    // If creator has paid tiers, redirect to Stripe checkout
+    if (tiers.length > 0) {
+      setJoinLoading(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("stripe-create-checkout", {
+          body: {
+            tier_id: tiers[0].id,
+            creator_id: profile?.user_id,
+            creator_username: username,
+          },
+        });
+        if (error) throw error;
+        if (data?.url) window.location.href = data.url;
+      } catch (err: any) {
+        toast({ title: "Error", description: err.message, variant: "destructive" });
+      }
+      setJoinLoading(false);
     } else {
       navigate(`/community/${profile?.user_id}/community`);
     }

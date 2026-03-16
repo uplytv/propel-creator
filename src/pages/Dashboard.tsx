@@ -5,7 +5,7 @@ import {
   TrendingUp, Users, DollarSign, Brain, Radio, Sparkles,
   BarChart3, ChevronRight, Film, Play, Loader2, Clock,
   LayoutGrid, Package, Search, ArrowRight, Zap, GraduationCap,
-  Plus, Eye
+  Plus, Eye, CreditCard
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
@@ -16,6 +16,7 @@ import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { AriaPanel } from "@/components/aria/AriaPanel";
 import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist";
 import { WeeklyGrowthReport } from "@/components/dashboard/WeeklyGrowthReport";
+import { PayoutsTab } from "@/components/dashboard/PayoutsTab";
 
 export default function Dashboard() {
   const { profile } = useApp();
@@ -23,6 +24,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [ariaOpen, setAriaOpen] = useState(false);
   const [activeStream, setActiveStream] = useState<any>(null);
+  const [showPayouts, setShowPayouts] = useState(false);
   const { data: dashStats, isLoading: statsLoading } = useDashboardStats();
 
   useEffect(() => {
@@ -85,6 +87,14 @@ export default function Dashboard() {
       color: "from-emerald-500/20 to-emerald-600/5",
       iconColor: "text-emerald-400",
       action: () => navigate("/discover"),
+    },
+    {
+      label: "Payouts",
+      desc: "Manage Stripe & view earnings",
+      icon: CreditCard,
+      color: "from-cyan-500/20 to-cyan-600/5",
+      iconColor: "text-cyan-400",
+      action: () => setShowPayouts(true),
     },
   ];
 
@@ -225,6 +235,17 @@ export default function Dashboard() {
             </div>
           </motion.div>
         </div>
+
+        {/* Payouts Section */}
+        {showPayouts && (
+          <div className="px-4 md:px-8 py-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Payouts</h2>
+              <button onClick={() => setShowPayouts(false)} className="text-xs text-muted-foreground hover:text-foreground">Close</button>
+            </div>
+            <PayoutsTab />
+          </div>
+        )}
 
         {/* Getting Started / Health */}
         <div className="section-glow bg-surface-alt rounded-none px-4 md:px-8 py-6">
