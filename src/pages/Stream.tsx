@@ -46,13 +46,41 @@ export default function Stream() {
   const [featuredProduct, setFeaturedProduct] = useState<any>(null);
 
   const searchParams = new URLSearchParams(window.location.search);
-  const isVod = searchParams.get('type') === 'vod';
+  const contentType = searchParams.get('type'); // 'vod' | 'recording' | null
+  const isVod = contentType === 'vod' || contentType === 'recording';
 
   useEffect(() => {
     const fetchStream = async () => {
       if (!id) return;
 
-      if (isVod) {
+      if (contentType === 'recording') {
+        // Fetch stream recording
+        const { data: rec } = await supabase
+          .from('stream_recordings')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (rec) {
+          setDbStream({
+            ...rec,
+            mux_playback_id: rec.playback_id,
+            user_id: rec.creator_id,
+          });
+          setIsRealStream(true);
+
+          const { data: prof } = await supabase
+            .from('profiles')
+            .select('display_name, avatar_url, tier, tier_name')
+            .eq('user_id', rec.creator_id)
+            .single();
+          setProfile(prof);
+        }
+        setLoading(false);
+        return;
+      }
+
+      if (contentType === 'vod') {
         // Fetch VOD asset
         const { data: asset } = await supabase
           .from('mux_assets')
