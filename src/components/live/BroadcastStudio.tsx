@@ -280,7 +280,7 @@ export default function BroadcastStudio({
     setMediaError(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 } },
+        video: { facingMode: facing },
         audio: true,
       });
       streamRef.current = stream;
