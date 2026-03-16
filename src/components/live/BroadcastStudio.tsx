@@ -927,7 +927,7 @@ export default function BroadcastStudio({
           >
             <Monitor className="w-4 h-4" />
           </Button>
-          {cameraOn && !isRecording && (
+          {cameraOn && (
             <Button variant="outline" size="icon" onClick={flipCamera} className="rounded-full w-11 h-11">
               <RotateCcw className="w-4 h-4" />
             </Button>
