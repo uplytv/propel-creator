@@ -20,7 +20,7 @@ export function useNotificationPreferences() {
     queryFn: async (): Promise<NotificationPrefs> => {
       const { data, error } = await supabase
         .from("notification_preferences" as any)
-        .select("budget_warning, campaign_completed")
+        .select("budget_warning, campaign_completed, weekly_report_email")
         .eq("user_id", user!.id)
         .maybeSingle();
       if (error) throw error;

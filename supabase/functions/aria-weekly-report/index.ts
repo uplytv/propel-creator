@@ -197,11 +197,20 @@ Rules:
           link: '/dashboard',
         });
 
-        // Send email via transactional email queue
+        // Send email via transactional email queue (check opt-out first)
         try {
+          // Check if user has opted out of weekly report emails
+          const { data: emailPref } = await supabase
+            .from('notification_preferences')
+            .select('weekly_report_email')
+            .eq('user_id', userId)
+            .maybeSingle();
+
+          const wantsEmail = emailPref?.weekly_report_email !== false; // default true
+
           // Get user email from auth
           const { data: authUser } = await supabase.auth.admin.getUserById(userId);
-          if (authUser?.user?.email) {
+          if (wantsEmail && authUser?.user?.email) {
             await fetch(`${supabaseUrl}/functions/v1/send-weekly-report-email`, {
               method: 'POST',
               headers: {
