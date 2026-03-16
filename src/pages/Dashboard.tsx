@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { AriaPanel } from "@/components/aria/AriaPanel";
 import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist";
+import { WeeklyGrowthReport } from "@/components/dashboard/WeeklyGrowthReport";
 
 export default function Dashboard() {
   const { profile } = useApp();
