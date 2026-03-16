@@ -265,6 +265,6 @@ export function useDiscoveryFeed(
 
       return filtered;
     },
-    refetchInterval: 30000,
+    refetchInterval: 10000,
   });
 }
