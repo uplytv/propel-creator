@@ -254,7 +254,18 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
   }, [containerRef]);
 
   return (
-    <div ref={setContainerRefs} className={`relative w-full ${isFullscreen ? 'h-full' : 'aspect-video'} bg-black ${className || ''}`}>
+    <div
+      ref={setContainerRefs}
+      className={`relative w-full ${isFullscreen ? 'h-full' : 'aspect-video'} bg-black ${className || ''}`}
+      onTouchEnd={status === 'playing' ? (e) => {
+        const now = Date.now();
+        if (now - lastTapRef.current < 300) {
+          e.preventDefault();
+          toggleFullscreen();
+        }
+        lastTapRef.current = now;
+      } : undefined}
+    >
       <video
         ref={videoRef}
         autoPlay
