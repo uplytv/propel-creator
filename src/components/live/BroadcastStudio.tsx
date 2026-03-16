@@ -193,6 +193,21 @@ export default function BroadcastStudio({
   const [lastRecordingDuration, setLastRecordingDuration] = useState(0);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const lastTapRef = useRef<number>(0);
+  const [liveChatInput, setLiveChatInput] = useState("");
+  const [liveChatProfile, setLiveChatProfile] = useState<{ display_name: string; avatar_url: string | null } | null>(null);
+
+  // Load profile for live chat
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("display_name, avatar_url").eq("user_id", user.id).single()
+      .then(({ data }) => { if (data) setLiveChatProfile(data); });
+  }, [user]);
+
+  const handleLiveChatSend = async () => {
+    if (!user || !liveChatProfile || !liveChatInput.trim()) return;
+    await engagement.sendChatMessage(user.id, liveChatProfile.display_name || "Creator", liveChatProfile.avatar_url, liveChatInput);
+    setLiveChatInput("");
+  };
 
   const analyserRef = useRef<AnalyserNode | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
