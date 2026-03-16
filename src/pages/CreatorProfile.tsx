@@ -268,7 +268,8 @@ function useCreatorSEO(profile: any) {
   }, [profile]);
 }
 
-import { useToast } from "@/hooks/use-toast";
+
+
 
 export default function CreatorProfile() {
   const { username } = useParams<{ username: string }>();
