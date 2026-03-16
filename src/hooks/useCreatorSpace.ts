@@ -89,7 +89,7 @@ export function useCommunityPosts(creatorId: string | undefined, category?: stri
       if (authorIds.length === 0) return [];
 
       const { data: profiles } = await supabase
-        .from("profiles")
+        .from("profiles_public" as any)
         .select("user_id, display_name, avatar_url")
         .in("user_id", authorIds);
 
@@ -208,7 +208,7 @@ export function useCommunityComments(postId: string | undefined) {
       if (authorIds.length === 0) return [];
 
       const { data: profiles } = await supabase
-        .from("profiles")
+        .from("profiles_public" as any)
         .select("user_id, display_name, avatar_url")
         .in("user_id", authorIds);
 

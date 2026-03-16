@@ -103,7 +103,7 @@ export default function Live() {
 
     const userIds = [...new Set(streams.map((s: any) => s.user_id))];
     const { data: profiles } = await supabase
-      .from('profiles')
+      .from('profiles_public' as any)
       .select('user_id, display_name, avatar_url, tier, tier_name')
       .in('user_id', userIds);
     const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
@@ -143,7 +143,7 @@ export default function Live() {
     if (data && data.length > 0) {
       const userIds = [...new Set(data.map((c: any) => c.creator_id))];
       const { data: profiles } = await supabase
-        .from('profiles')
+        .from('profiles_public' as any)
         .select('user_id, display_name, avatar_url')
         .in('user_id', userIds);
       const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
@@ -165,7 +165,7 @@ export default function Live() {
     if (data && data.length > 0) {
       const userIds = [...new Set(data.map((s: any) => s.creator_id))];
       const { data: profiles } = await supabase
-        .from('profiles')
+        .from('profiles_public' as any)
         .select('user_id, display_name, avatar_url')
         .in('user_id', userIds);
       const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
@@ -188,7 +188,7 @@ export default function Live() {
     if (data && data.length > 0) {
       const userIds = [...new Set(data.map((r: any) => r.creator_id))];
       const { data: profiles } = await supabase
-        .from('profiles')
+        .from('profiles_public' as any)
         .select('user_id, display_name, avatar_url')
         .in('user_id', userIds);
       const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
@@ -210,7 +210,7 @@ export default function Live() {
     if (data && data.length > 0) {
       const userIds = [...new Set(data.map((p: any) => p.author_id))];
       const { data: profiles } = await supabase
-        .from('profiles')
+        .from('profiles_public' as any)
         .select('user_id, display_name, avatar_url')
         .in('user_id', userIds);
       const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
@@ -234,7 +234,7 @@ export default function Live() {
     if (assets && assets.length > 0) {
       const userIds = [...new Set(assets.map((a: any) => a.user_id))];
       const { data: profiles } = await supabase
-        .from('profiles')
+        .from('profiles_public' as any)
         .select('user_id, display_name, avatar_url')
         .in('user_id', userIds);
       const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));

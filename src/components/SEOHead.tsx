@@ -11,7 +11,7 @@ interface SEOHeadProps {
 const BASE_URL = "https://propel-creator.lovable.app";
 const DEFAULT_TITLE = "Uply — A Social Network for Creators to Monetize";
 const DEFAULT_DESCRIPTION =
-  "Social network for creators to monetize. The only creator platform that invests more in you as you grow.";
+  "The creator platform that invests more in you as you grow. Monetize your community, go live, sell courses, and scale with AI — all in one place.";
 const DEFAULT_IMAGE =
   "https://storage.googleapis.com/gpt-engineer-file-uploads/cikFlxVx8jfBrfytYvhbk5DVvYT2/social-images/social-1773093383614-084CEBC0-15D0-4F96-A3BD-D7F3F8441A0D.webp";
 

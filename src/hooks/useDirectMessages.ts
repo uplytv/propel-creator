@@ -44,11 +44,11 @@ export function useDirectMessages() {
 
     const otherIds = convos.map((c) => c.participant_one === user.id ? c.participant_two : c.participant_one);
     const { data: profiles } = await supabase
-      .from("profiles")
+      .from("profiles_public" as any)
       .select("user_id, display_name, avatar_url, username")
       .in("user_id", otherIds);
 
-    const profileMap = new Map(profiles?.map((p) => [p.user_id, p]));
+    const profileMap = new Map((profiles as any[])?.map((p: any) => [p.user_id, p]));
 
     // Get last message and unread count per conversation
     const enriched = await Promise.all(

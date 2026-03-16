@@ -27,7 +27,7 @@ export function useSearch() {
     const term = `%${q.trim()}%`;
 
     const [profiles, products, streams, recordings, jobs] = await Promise.all([
-      supabase.from("profiles").select("user_id, display_name, username, avatar_url").or(`display_name.ilike.${term},username.ilike.${term}`).limit(5),
+      supabase.from("profiles_public" as any).select("user_id, display_name, username, avatar_url").or(`display_name.ilike.${term},username.ilike.${term}`).limit(5),
       supabase.from("products").select("id, name, image_url, type, price").ilike("name", term).eq("status", "active").limit(5),
       supabase.from("mux_live_streams_public").select("id, title, user_id, status, mux_playback_id").ilike("title", term).limit(5),
       supabase.from("stream_recordings").select("id, title, creator_id, playback_id").ilike("title", term).eq("is_published", true).limit(5),
@@ -35,7 +35,7 @@ export function useSearch() {
     ]);
 
     const mapped: SearchResult[] = [
-      ...(profiles.data ?? []).map((p) => ({
+      ...((profiles.data as any[]) ?? []).map((p: any) => ({
         id: p.user_id,
         type: "creator" as const,
         title: p.display_name || p.username || "Creator",
