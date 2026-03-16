@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import CreatorProfileEditDrawer from "@/components/creator-profile/CreatorProfileEditDrawer";
 import SEOHead from "@/components/SEOHead";
+import { useToast } from "@/hooks/use-toast";
 
 // Social platform icons as simple SVG components
 const socialIcons: Record<string, React.FC<{ className?: string }>> = {
