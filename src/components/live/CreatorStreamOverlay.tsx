@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, Clock, Send, Pin, PinOff, X, ChevronUp, Flame, MessageSquare, Users, Zap } from "lucide-react";
+import { Eye, Clock, Send, Pin, PinOff, X, ChevronUp, Flame, MessageSquare, Users, Zap, Wifi, WifiOff } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useStreamEngagement, type LiveChatMessage } from "@/hooks/useStreamEngagement";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
+import { useConnectionQuality, type ConnectionQuality } from "@/hooks/useConnectionQuality";
 
 interface Props {
   streamId: string;
