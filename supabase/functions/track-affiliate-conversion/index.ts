@@ -18,8 +18,49 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { affiliate_code, referred_user_id, conversion_type, amount = 0 } = body;
 
-    if (!affiliate_code || !referred_user_id || !conversion_type) {
+    if (!affiliate_code || !conversion_type) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400, headers: corsHeaders });
+    }
+
+    // ── Click tracking (no referred_user_id needed) ──
+    if (conversion_type === "click") {
+      // Try platform link first
+      const { data: platformLink } = await serviceClient
+        .from("affiliate_links")
+        .select("clicks")
+        .eq("code", affiliate_code)
+        .maybeSingle();
+
+      if (platformLink) {
+        await serviceClient
+          .from("affiliate_links")
+          .update({ clicks: (platformLink.clicks || 0) + 1 })
+          .eq("code", affiliate_code);
+        return new Response(JSON.stringify({ success: true, type: "platform_click" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      // Try creator affiliate member
+      const { data: creatorMember } = await serviceClient
+        .from("creator_affiliate_members")
+        .select("id, clicks")
+        .eq("affiliate_code", affiliate_code)
+        .maybeSingle();
+
+      if (creatorMember) {
+        await serviceClient
+          .from("creator_affiliate_members")
+          .update({ clicks: (creatorMember.clicks || 0) + 1 })
+          .eq("id", creatorMember.id);
+        return new Response(JSON.stringify({ success: true, type: "creator_click" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      // Unknown code — still OK, cookie was set
+      return new Response(JSON.stringify({ success: true, type: "unknown_click" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // ── Conversion tracking (signup/purchase) — requires referred_user_id ──
+    if (!referred_user_id) {
+      return new Response(JSON.stringify({ error: "Missing referred_user_id" }), { status: 400, headers: corsHeaders });
     }
 
     // Check platform affiliate links first
