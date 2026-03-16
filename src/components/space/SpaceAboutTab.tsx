@@ -167,7 +167,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
   const { data: creatorProfile } = useQuery({
     queryKey: ["creator-profile-about", creatorId],
     queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("*").eq("user_id", creatorId).maybeSingle();
+      const { data } = await (supabase as any).from("profiles_public").select("*").eq("user_id", creatorId).maybeSingle();
       return data;
     },
   });
