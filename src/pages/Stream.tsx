@@ -391,6 +391,8 @@ export default function Stream() {
           <div className="hidden lg:block w-80 flex-shrink-0">
             <div className="fixed top-14 right-0 w-80 bottom-0">
               <StreamChat
+                streamId={id}
+                creatorUserId={dbStream.user_id}
                 isLoggedIn={!!user}
                 onTipClick={() => setTipOpen(true)}
                 creditsBalance={creditsBalance}
@@ -401,6 +403,8 @@ export default function Stream() {
 
         <div className="lg:hidden">
           <MobileChatDrawer
+            streamId={id}
+            creatorUserId={dbStream.user_id}
             isLoggedIn={!!user}
             onTipClick={() => setTipOpen(true)}
             creditsBalance={creditsBalance}

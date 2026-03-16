@@ -1,160 +1,134 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Crown, Coins } from "lucide-react";
-import { mockChatMessages } from "@/data/mockStreams";
-
-interface ChatMessage {
-  id: string;
-  user: string;
-  message: string;
-  isMember: boolean;
-  timestamp: string;
-  isTip?: boolean;
-  tipAmount?: number;
-  tipEmoji?: string;
-}
+import { Send, Crown, Coins, Pin, PinOff, Star } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useStreamEngagement, type LiveChatMessage } from "@/hooks/useStreamEngagement";
 
 interface StreamChatProps {
+  streamId?: string;
+  creatorUserId?: string;
   isLoggedIn?: boolean;
   onTipClick?: () => void;
   creditsBalance?: number;
 }
 
-export default function StreamChat({ isLoggedIn = false, onTipClick, creditsBalance = 0 }: StreamChatProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>(mockChatMessages);
+export default function StreamChat({
+  streamId,
+  creatorUserId,
+  isLoggedIn = false,
+  onTipClick,
+  creditsBalance = 0,
+}: StreamChatProps) {
+  const { user } = useAuth();
+  const {
+    chatMessages,
+    sendChatMessage,
+    togglePinMessage,
+    viewerCount,
+  } = useStreamEngagement(streamId, creatorUserId);
+
   const [input, setInput] = useState("");
+  const [profile, setProfile] = useState<{ display_name: string; avatar_url: string | null } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Get user profile for sending messages
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("display_name, avatar_url")
+      .eq("user_id", user.id)
+      .single()
+      .then(({ data }) => {
+        if (data) setProfile(data);
+      });
+  }, [user]);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [chatMessages]);
 
-  // Simulate incoming messages + occasional tips
-  useEffect(() => {
-    const names = ["Chris L.", "Pat D.", "Quinn H.", "Dana S.", "Blake F."];
-    const msgs = [
-      "This is so helpful! 🙌",
-      "Can you dive deeper into that?",
-      "Just subscribed, let's go!",
-      "Love the energy today",
-      "Incredible value here 🔥",
-      "Taking notes like crazy rn",
-    ];
-    const tipMsgs = [
-      { amount: 5, emoji: "☕", text: "Coffee on me!" },
-      { amount: 25, emoji: "🔥", text: "Fire content!" },
-      { amount: 50, emoji: "💎", text: "You deserve this!" },
-      { amount: 100, emoji: "🚀", text: "To the moon!" },
-    ];
-
-    const interval = setInterval(() => {
-      const isTip = Math.random() < 0.15; // 15% chance of a tip
-      if (isTip) {
-        const tip = tipMsgs[Math.floor(Math.random() * tipMsgs.length)];
-        const newMsg: ChatMessage = {
-          id: Date.now().toString(),
-          user: names[Math.floor(Math.random() * names.length)],
-          message: tip.text,
-          isMember: true,
-          timestamp: "just now",
-          isTip: true,
-          tipAmount: tip.amount,
-          tipEmoji: tip.emoji,
-        };
-        setMessages((prev) => [...prev.slice(-50), newMsg]);
-      } else {
-        const newMsg: ChatMessage = {
-          id: Date.now().toString(),
-          user: names[Math.floor(Math.random() * names.length)],
-          message: msgs[Math.floor(Math.random() * msgs.length)],
-          isMember: Math.random() > 0.5,
-          timestamp: "just now",
-        };
-        setMessages((prev) => [...prev.slice(-50), newMsg]);
-      }
-    }, 4000 + Math.random() * 3000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Expose addTipMessage for parent
-  const addTipMessage = (amount: number, message: string) => {
-    const tipEmojis: Record<number, string> = { 5: "☕", 25: "🔥", 50: "💎", 100: "🚀" };
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: Date.now().toString(),
-        user: "You",
-        message: message || "Sent a tip!",
-        isMember: true,
-        timestamp: "just now",
-        isTip: true,
-        tipAmount: amount,
-        tipEmoji: tipEmojis[amount] ?? "✨",
-      },
-    ]);
-  };
-
-  // Expose via ref or just keep it internal since parent calls onTip
-  (StreamChat as any)._addTipMessage = addTipMessage;
-
-  const handleSend = () => {
-    if (!input.trim()) return;
-    setMessages((prev) => [
-      ...prev,
-      { id: Date.now().toString(), user: "You", message: input, isMember: true, timestamp: "just now" },
-    ]);
+  const handleSend = async () => {
+    if (!input.trim() || !user || !profile) return;
+    await sendChatMessage(
+      user.id,
+      profile.display_name || "Anon",
+      profile.avatar_url,
+      input
+    );
     setInput("");
   };
+
+  const pinnedMessages = chatMessages.filter((m) => m.is_pinned);
 
   return (
     <div className="flex flex-col h-full bg-card/40 backdrop-blur-xl border-l border-border">
       {/* Header */}
       <div className="px-4 py-3 border-b border-border flex items-center justify-between">
         <h3 className="text-sm font-semibold text-foreground">Live Chat</h3>
-        <span className="text-[10px] text-muted-foreground">{messages.length} messages</span>
+        <span className="text-[10px] text-muted-foreground">{viewerCount} watching</span>
       </div>
+
+      {/* Pinned messages */}
+      {pinnedMessages.length > 0 && (
+        <div className="px-4 py-2 border-b border-border">
+          {pinnedMessages.map((pm) => (
+            <div
+              key={pm.id}
+              className="rounded-lg px-3 py-2 text-xs mb-1 border border-primary/30 bg-primary/5"
+            >
+              <span className="font-bold text-primary">📌 {pm.username}:</span>{" "}
+              <span className="text-muted-foreground">{pm.message}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-2.5 scrollbar-thin">
         <AnimatePresence initial={false}>
-          {messages.map((msg) => (
-            <motion.div
-              key={msg.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2 }}
-              className={`text-sm ${msg.isTip ? "px-2.5 py-2 rounded-lg bg-warning/5 border border-warning/10" : ""}`}
-            >
-              {msg.isTip ? (
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-base">{msg.tipEmoji}</span>
-                    <span className="font-semibold text-warning">{msg.user}</span>
-                    <span className="text-muted-foreground">tipped</span>
-                    <span className="font-bold text-warning">{msg.tipAmount} credits</span>
-                  </div>
-                  {msg.message && (
-                    <p className="text-muted-foreground mt-0.5 ml-6">{msg.message}</p>
+          {chatMessages.map((msg) => {
+            const isCreator = creatorUserId && msg.user_id === creatorUserId;
+            const isMember = (msg as any).is_member;
+
+            return (
+              <motion.div
+                key={msg.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className="text-sm"
+              >
+                <span className="inline-flex items-center gap-1.5">
+                  {isCreator && <Star className="w-3 h-3 text-warning flex-shrink-0 fill-current" />}
+                  {!isCreator && isMember && (
+                    <Crown className="w-3 h-3 text-primary flex-shrink-0" />
                   )}
-                </div>
-              ) : (
-                <>
-                  <span className="inline-flex items-center gap-1.5">
-                    {msg.isMember && (
-                      <Crown className="w-3 h-3 text-primary flex-shrink-0" />
-                    )}
-                    <span className={`font-semibold ${msg.isMember ? "text-primary" : "text-foreground"}`}>
-                      {msg.user}
-                    </span>
+                  <span
+                    className={`font-semibold ${
+                      isCreator
+                        ? "text-warning"
+                        : isMember
+                        ? "text-primary"
+                        : "text-foreground"
+                    }`}
+                  >
+                    {msg.username}
                   </span>
-                  <span className="text-muted-foreground ml-1.5">{msg.message}</span>
-                </>
-              )}
-            </motion.div>
-          ))}
+                </span>
+                <span className="text-muted-foreground ml-1.5">{msg.message}</span>
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
+        {chatMessages.length === 0 && (
+          <p className="text-xs text-muted-foreground text-center py-8">
+            No messages yet — be the first to say something!
+          </p>
+        )}
       </div>
 
       {/* Input area */}
