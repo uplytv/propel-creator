@@ -184,6 +184,20 @@ function useCreatorProfileData(username: string | undefined) {
     enabled: !!userId,
   });
 
+  const tiersQuery = useQuery({
+    queryKey: ["creator-tiers", userId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("subscription_tiers")
+        .select("*")
+        .eq("creator_id", userId!)
+        .eq("is_active", true)
+        .order("price_monthly", { ascending: true });
+      return data || [];
+    },
+    enabled: !!userId,
+  });
+
   return {
     profile: profileQuery.data,
     profileLoading: profileQuery.isLoading,
@@ -195,6 +209,7 @@ function useCreatorProfileData(username: string | undefined) {
     totalLessons: totalLessonsQuery.data || 0,
     isMember: isMemberQuery.data || false,
     space: spaceQuery.data,
+    tiers: tiersQuery.data || [],
   };
 }
 
