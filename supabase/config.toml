@@ -1,34 +1,27 @@
 project_id = "dbjlhmbgskvhuzqvqfrl"
 
-[functions.match-talent]
-verify_jwt = false
-
-[functions.mux-webhook]
-verify_jwt = false
-
-[functions.mux-create-upload]
-verify_jwt = false
-
-[functions.mux-create-livestream]
-verify_jwt = false
-
-[functions.aria-chat]
-verify_jwt = false
-
-[functions.generate-product-copy]
-verify_jwt = false
-
-[functions.import-from-url]
-verify_jwt = false
-
-[functions.mux-check-upload]
-verify_jwt = false
-
-[functions.aria-weekly-report]
-verify_jwt = false
-
-[functions.process-email-queue]
-verify_jwt = true
-
-[functions.send-weekly-report-email]
-verify_jwt = false
+[functions]
+  [functions.aria-chat]
+    verify_jwt = false
+  [functions.aria-weekly-report]
+    verify_jwt = false
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.generate-product-copy]
+    verify_jwt = false
+  [functions.import-from-url]
+    verify_jwt = false
+  [functions.match-talent]
+    verify_jwt = false
+  [functions.mux-check-upload]
+    verify_jwt = false
+  [functions.mux-create-livestream]
+    verify_jwt = false
+  [functions.mux-create-upload]
+    verify_jwt = false
+  [functions.mux-webhook]
+    verify_jwt = false
+  [functions.process-email-queue]
+    verify_jwt = true
+  [functions.send-weekly-report-email]
+    verify_jwt = false
