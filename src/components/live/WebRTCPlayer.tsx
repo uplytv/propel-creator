@@ -37,9 +37,11 @@ const ICE_SERVERS: RTCConfiguration = {
 
 export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const channelRef = useRef<any>(null);
   const viewerIdRef = useRef(crypto.randomUUID());
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [status, setStatus] = useState<'connecting' | 'playing' | 'failed'>('connecting');
   const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 8;
