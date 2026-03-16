@@ -90,10 +90,13 @@ export function useCreateModule() {
         .order("position", { ascending: false })
         .limit(1);
       const nextPos = existing && (existing as any[]).length > 0 ? (existing as any[])[0].position + 1 : 0;
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("classroom_modules" as any)
-        .insert({ creator_id: creatorId, title, description, position: nextPos } as any);
+        .insert({ creator_id: creatorId, title, description, position: nextPos } as any)
+        .select()
+        .single();
       if (error) throw error;
+      return data as any;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["classroom-modules"] });
