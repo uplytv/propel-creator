@@ -74,15 +74,18 @@ interface SharePanelProps {
   creatorUsername?: string | null;
 }
 
+function DownloadIcon() { return <Download className="w-6 h-6" />; }
+function CopyIcon() { return <Copy className="w-6 h-6" />; }
+
 const PLATFORMS = [
-  { key: "tiktok", label: "TikTok", icon: TikTokIcon, mobileOnly: false },
-  { key: "instagram", label: "Instagram", icon: InstagramIcon, mobileOnly: false },
-  { key: "youtube", label: "YT Shorts", icon: YouTubeIcon, mobileOnly: false },
-  { key: "twitter", label: "X / Twitter", icon: TwitterIcon, mobileOnly: false },
-  { key: "linkedin", label: "LinkedIn", icon: LinkedInIcon, mobileOnly: false, tooltip: "Great for professional audiences." },
-  { key: "facebook", label: "Facebook", icon: FacebookIcon, mobileOnly: false },
-  { key: "download", label: "Download MP4", icon: Download, mobileOnly: false },
-  { key: "copy", label: "Copy Link", icon: Copy, mobileOnly: false },
+  { key: "tiktok", label: "TikTok", icon: TikTokIcon },
+  { key: "instagram", label: "Instagram", icon: InstagramIcon },
+  { key: "youtube", label: "YT Shorts", icon: YouTubeIcon },
+  { key: "twitter", label: "X / Twitter", icon: TwitterIcon },
+  { key: "linkedin", label: "LinkedIn", icon: LinkedInIcon, tooltip: "Great for professional audiences." },
+  { key: "facebook", label: "Facebook", icon: FacebookIcon },
+  { key: "download", label: "Download MP4", icon: DownloadIcon },
+  { key: "copy", label: "Copy Link", icon: CopyIcon },
 ];
 
 export default function SharePanel({
