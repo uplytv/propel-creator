@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, ChevronRight, X, Target, TrendingUp, Flame, Calendar } from "lucide-react";
+import { Sparkles, ChevronRight, X, Target, TrendingUp, Flame, Calendar, History } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useLatestWeeklyReport, useMarkReportRead } from "@/hooks/useWeeklyReport";
 
 export function WeeklyGrowthReport() {
   const { data: report, isLoading } = useLatestWeeklyReport();
   const markRead = useMarkReportRead();
+  const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
 
   if (isLoading || !report) return null;
@@ -189,9 +191,15 @@ export function WeeklyGrowthReport() {
                 )}
 
                 {/* Footer */}
-                <p className="text-[10px] text-muted-foreground/50 text-center pt-2">
-                  Powered by ARIA · Your AI Growth Partner
-                </p>
+                <div className="flex items-center justify-between pt-2">
+                  <p className="text-[10px] text-muted-foreground/50">Powered by ARIA</p>
+                  <button
+                    onClick={() => { setExpanded(false); navigate("/growth-reports"); }}
+                    className="flex items-center gap-1 text-[11px] font-semibold text-primary hover:text-primary/80 transition-colors"
+                  >
+                    <History className="w-3 h-3" /> View all reports
+                  </button>
+                </div>
               </div>
             </motion.div>
           </motion.div>

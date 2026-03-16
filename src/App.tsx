@@ -52,6 +52,7 @@ const CreatorSpace = lazy(() => import("./pages/CreatorSpace"));
 const Launchpad = lazy(() => import("./pages/Launchpad"));
 const AdminAffiliates = lazy(() => import("./pages/AdminAffiliates"));
 const ReferralRedirect = lazy(() => import("./pages/ReferralRedirect"));
+const GrowthReports = lazy(() => import("./pages/GrowthReports"));
 
 const queryClient = new QueryClient();
 
@@ -113,6 +114,7 @@ const App = () => (
                     <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
                     <Route path="/content-library" element={<ProtectedRoute><ContentLibrary /></ProtectedRoute>} />
                     <Route path="/launchpad" element={<ProtectedRoute><Launchpad /></ProtectedRoute>} />
+                    <Route path="/growth-reports" element={<ProtectedRoute><GrowthReports /></ProtectedRoute>} />
 
                     {/* Admin routes */}
                     <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
