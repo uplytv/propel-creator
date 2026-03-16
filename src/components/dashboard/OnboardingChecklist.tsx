@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { SITE_URL } from "@/lib/siteUrl";
 
 interface ChecklistStep {
   id: string;
@@ -237,14 +238,14 @@ export function OnboardingChecklist() {
               <div className="flex items-center gap-2">
                 <input
                   readOnly
-                  value={username ? `${window.location.origin}/creator/${username}` : `${window.location.origin}/community/${user.id}`}
+                  value={username ? `${SITE_URL}/creator/${username}` : `${SITE_URL}/community/${user.id}`}
                   className="flex-1 text-xs bg-background border border-border rounded-md px-3 py-2 text-foreground select-all truncate"
                   onFocus={(e) => e.target.select()}
                 />
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    const link = username ? `${window.location.origin}/creator/${username}` : `${window.location.origin}/community/${user.id}`;
+                    const link = username ? `${SITE_URL}/creator/${username}` : `${SITE_URL}/community/${user.id}`;
                     navigator.clipboard.writeText(link);
                     toast.success("Link copied to clipboard!");
                   }}

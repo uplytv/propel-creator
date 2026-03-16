@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, useInView, useSpring, useMotionValue } from "framer-motion";
+import { SITE_URL } from "@/lib/siteUrl";
 import {
   ArrowLeft, Users, DollarSign, TrendingUp, Star, Check,
   Play, BookOpen, MessageSquare, Zap, Shield, Clock,
@@ -109,7 +110,7 @@ export default function JointProduct({ isPublic = false }: { isPublic?: boolean 
   const spotsLeft = product.maxCapacity - product.enrolledCount;
 
   const handleCopyLink = () => {
-    const url = `${window.location.origin}/p/creator-revenue-blueprint`;
+    const url = `${SITE_URL}/p/creator-revenue-blueprint`;
     navigator.clipboard.writeText(url);
   };
 

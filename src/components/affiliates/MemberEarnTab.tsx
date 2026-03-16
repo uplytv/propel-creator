@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { Copy, Check, DollarSign, MousePointerClick, Users, ExternalLink, TrendingUp } from "lucide-react";
+import { SITE_URL } from "@/lib/siteUrl";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMemberAffiliateCode, useMemberAffiliateStats } from "@/hooks/useAffiliates";
@@ -45,7 +46,7 @@ export function MemberEarnTab({ programId, creatorId }: MemberEarnTabProps) {
   const isLoading = codeLoading || statsLoading;
 
   const affiliateLink = codeData?.code
-    ? `${window.location.origin}/community/${creatorId}?ref=${codeData.code}`
+    ? `${SITE_URL}/community/${creatorId}?ref=${codeData.code}`
     : "";
 
   const handleCopy = () => {
