@@ -4,12 +4,14 @@ import { motion } from "framer-motion";
 import StreamChat from "./StreamChat";
 
 interface MobileChatDrawerProps {
+  streamId?: string;
+  creatorUserId?: string;
   isLoggedIn: boolean;
   onTipClick: () => void;
   creditsBalance: number;
 }
 
-export default function MobileChatDrawer({ isLoggedIn, onTipClick, creditsBalance }: MobileChatDrawerProps) {
+export default function MobileChatDrawer({ streamId, creatorUserId, isLoggedIn, onTipClick, creditsBalance }: MobileChatDrawerProps) {
   return (
     <Drawer.Root>
       <Drawer.Trigger asChild>
@@ -32,6 +34,8 @@ export default function MobileChatDrawer({ isLoggedIn, onTipClick, creditsBalanc
           </div>
           <div className="flex-1 overflow-hidden" style={{ height: "75vh" }}>
             <StreamChat
+              streamId={streamId}
+              creatorUserId={creatorUserId}
               isLoggedIn={isLoggedIn}
               onTipClick={onTipClick}
               creditsBalance={creditsBalance}
