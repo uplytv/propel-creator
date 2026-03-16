@@ -442,14 +442,18 @@ export default function BroadcastStudio({
   // Set stream status in DB so discovery feed picks it up
   const setStreamActive = async (active: boolean) => {
     try {
-      await supabase
+      const now = new Date().toISOString();
+      const { error } = await supabase
         .from('mux_live_streams')
         .update({
           status: active ? 'active' : 'idle',
           stream_type: 'browser',
-          ...(active ? { started_at: new Date().toISOString() } : { ended_at: new Date().toISOString() }),
+          updated_at: now,
+          ...(active ? { started_at: now } : { ended_at: now }),
         })
         .eq('id', streamData.streamId);
+      if (error) console.error('Failed to update stream status:', error);
+      else console.log(`Stream ${streamData.streamId} set to ${active ? 'active' : 'idle'}`);
     } catch (err) {
       console.error('Failed to update stream status:', err);
     }
