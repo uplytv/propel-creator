@@ -741,12 +741,12 @@ export default function BroadcastStudio({
             </div>
           )}
 
-          {/* Creator stats overlay — thin bar on top of video only */}
-          {isRecording && user && (
+          {/* Creator stats overlay — thin bar on top of video */}
+          {user && (cameraOn || screenShare) && (
             <CreatorVideoOverlay
               streamId={streamData.streamId}
               creatorUserId={user.id}
-              onEndStream={stopRecording}
+              onEndStream={isRecording ? stopRecording : onEndStream}
               isRecording={isRecording}
               recordingDuration={recordingDuration}
               energyScore={engagement.energyScore}
