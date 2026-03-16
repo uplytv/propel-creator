@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import BroadcastStudio from "@/components/live/BroadcastStudio";
 import { useProducts } from "@/hooks/useProducts";
+import { useProfile } from "@/hooks/useProfile";
+import EndOfStreamScreen from "@/components/live/EndOfStreamScreen";
 
 export default function GoLive() {
   const navigate = useNavigate();
