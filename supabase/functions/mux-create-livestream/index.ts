@@ -32,7 +32,8 @@ serve(async (req) => {
         new_asset_settings: {
           playback_policy: ['public']
         },
-        reconnect_window: 60,
+        reconnect_window: 300,
+        max_continuous_duration: 43200,
         reduced_latency: true,
         record: true
       })

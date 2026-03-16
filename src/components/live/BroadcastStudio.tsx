@@ -221,15 +221,23 @@ export default function BroadcastStudio({
     }
   }, [isFullscreen]);
 
+  // Sync fullscreen state + Escape key to exit pseudo-fullscreen
   useEffect(() => {
     const handler = () => setIsFullscreen(!!(document.fullscreenElement || (document as any).webkitFullscreenElement));
+    const escHandler = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
     document.addEventListener("fullscreenchange", handler);
     document.addEventListener("webkitfullscreenchange", handler);
+    document.addEventListener("keydown", escHandler);
     return () => {
       document.removeEventListener("fullscreenchange", handler);
       document.removeEventListener("webkitfullscreenchange", handler);
+      document.removeEventListener("keydown", escHandler);
     };
-  }, []);
+  }, [isFullscreen]);
 
   // Stream engagement for creator overlay
   const engagement = useStreamEngagement(streamData.streamId, user?.id || "");
@@ -280,7 +288,7 @@ export default function BroadcastStudio({
     setMediaError(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 } },
+        video: { facingMode: facing },
         audio: true,
       });
       streamRef.current = stream;
@@ -303,7 +311,7 @@ export default function BroadcastStudio({
     setMediaError(null);
     try {
       const screenStream = await navigator.mediaDevices.getDisplayMedia({
-        video: { width: { ideal: 1920 }, height: { ideal: 1080 } },
+        video: true,
         audio: true,
       });
       try {
@@ -733,7 +741,8 @@ export default function BroadcastStudio({
         {/* Preview Window */}
         <div
           ref={videoContainerRef}
-          className={`relative overflow-hidden bg-secondary/80 border border-border ${isFullscreen ? 'fixed inset-0 z-[100] rounded-none border-none' : 'rounded-2xl aspect-video'}`}
+          className={`relative overflow-hidden bg-black ${isFullscreen ? 'fixed inset-0 z-[100] rounded-none border-none' : 'rounded-2xl border border-border w-full'}`}
+          style={isFullscreen ? undefined : { aspectRatio: 'auto', minHeight: '200px', maxHeight: '70vh' }}
           onTouchEnd={(cameraOn || screenShare) ? (e) => {
             const now = Date.now();
             if (now - lastTapRef.current < 300) {
@@ -748,7 +757,7 @@ export default function BroadcastStudio({
             autoPlay
             playsInline
             muted
-            className={`w-full h-full object-cover ${!cameraOn && !screenShare ? "hidden" : ""}`}
+            className={`w-full h-full object-contain ${!cameraOn && !screenShare ? "hidden" : ""}`}
           />
 
           {!cameraOn && !screenShare && (
