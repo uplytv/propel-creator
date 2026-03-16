@@ -5,9 +5,10 @@ import { useAuth } from "@/context/AuthContext";
 export interface NotificationPrefs {
   budget_warning: boolean;
   campaign_completed: boolean;
+  weekly_report_email: boolean;
 }
 
-const defaults: NotificationPrefs = { budget_warning: true, campaign_completed: true };
+const defaults: NotificationPrefs = { budget_warning: true, campaign_completed: true, weekly_report_email: true };
 
 export function useNotificationPreferences() {
   const { user } = useAuth();
