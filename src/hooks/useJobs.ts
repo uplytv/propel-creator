@@ -305,9 +305,9 @@ export function useTalentProfiles(skillFilter?: SkillCategory) {
       const userIds = (data || []).map((t: any) => t.user_id);
       let profiles: any[] = [];
       if (userIds.length > 0) {
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("user_id, display_name, avatar_url, tier, tier_name")
+        const { data: profileData } = await (supabase as any)
+          .from("profiles_public")
+          .select("user_id, display_name, avatar_url")
           .in("user_id", userIds);
         profiles = profileData || [];
       }
