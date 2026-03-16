@@ -35,7 +35,7 @@ export function useSearch() {
     ]);
 
     const mapped: SearchResult[] = [
-      ...(profiles.data ?? []).map((p) => ({
+      ...((profiles.data as any[]) ?? []).map((p: any) => ({
         id: p.user_id,
         type: "creator" as const,
         title: p.display_name || p.username || "Creator",

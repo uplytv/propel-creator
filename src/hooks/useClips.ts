@@ -50,7 +50,7 @@ export function useClips(options?: { creatorId?: string; publicOnly?: boolean; l
         .select("user_id, display_name, avatar_url")
         .in("user_id", creatorIds);
 
-      const profileMap = new Map(profiles?.map((p) => [p.user_id, p]) || []);
+      const profileMap = new Map((profiles as any[])?.map((p: any) => [p.user_id, p]) || []);
 
       setClips(
         data.map((c) => ({

@@ -91,7 +91,7 @@ export function useDiscoveryFeed(
           .select("user_id, display_name, avatar_url, creator_type")
           .in("user_id", Array.from(userIds));
         if (profiles) {
-          for (const p of profiles) {
+          for (const p of (profiles as any[])) {
             profileMap.set(p.user_id, p);
           }
         }
