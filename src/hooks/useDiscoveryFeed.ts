@@ -51,7 +51,7 @@ export function useDiscoveryFeed(
         // Products (courses, communities, services)
         (filter === "all" || filter === "course" || filter === "community" || filter === "service")
           ? supabase
-              .from("products_public")
+              .from("products_public" as any)
               .select("*")
               .order("created_at", { ascending: false })
               .limit(30)

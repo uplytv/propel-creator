@@ -90,7 +90,7 @@ function useHeroStats(category: Exclude<FilterCategory, "all">) {
         }
         case "service": {
           const { count: products } = await supabase
-            .from("products_public")
+            .from("products_public" as any)
             .select("*", { count: "exact", head: true })
             .eq("type", "service");
           return [
