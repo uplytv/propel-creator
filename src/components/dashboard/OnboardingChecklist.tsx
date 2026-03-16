@@ -22,6 +22,14 @@ export function OnboardingChecklist() {
   const [loading, setLoading] = useState(true);
   const [dismissed, setDismissed] = useState(false);
   const [showInviteLink, setShowInviteLink] = useState(false);
+  const [username, setUsername] = useState<string | null>(null);
+
+  // Fetch the user's username for the invite link
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("username").eq("user_id", user.id).single()
+      .then(({ data }) => { if (data?.username) setUsername(data.username); });
+  }, [user]);
 
   const steps: ChecklistStep[] = [
     {
