@@ -16,8 +16,9 @@ import { MemberEarnTab } from "@/components/affiliates/MemberEarnTab";
 import { CreatorAffiliateProgramSettings } from "@/components/affiliates/CreatorAffiliateProgramSettings";
 import { useCreatorAffiliateProgram } from "@/hooks/useAffiliates";
 import { setAffiliateCookie } from "@/lib/affiliateCookies";
+import { PricingTab } from "@/components/space/PricingTab";
 
-const VALID_TABS = ["community", "classroom", "calendar", "members", "leaderboard", "earn", "about"] as const;
+const VALID_TABS = ["community", "classroom", "calendar", "members", "leaderboard", "pricing", "earn", "about"] as const;
 type TabSlug = typeof VALID_TABS[number];
 
 const TAB_LABELS: Record<TabSlug, string> = {
@@ -26,6 +27,7 @@ const TAB_LABELS: Record<TabSlug, string> = {
   calendar: "Calendar",
   members: "Members",
   leaderboard: "Leaderboard",
+  pricing: "Pricing",
   earn: "Earn",
   about: "About",
 };
