@@ -695,7 +695,7 @@ export default function BroadcastStudio({
           )}
 
           {/* Audio level */}
-          {(cameraOn || screenShare) && (
+          {(cameraOn || screenShare) && !isRecording && (
             <div className="absolute top-4 right-4 flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-black/40 backdrop-blur-sm">
               <Volume2 className="w-3.5 h-3.5 text-white/80" />
               <div className="flex gap-0.5 items-end h-4">
@@ -715,21 +715,24 @@ export default function BroadcastStudio({
             </div>
           )}
 
-          {/* Recording indicator overlay */}
-          {isRecording && (
-            <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-destructive/90 backdrop-blur-sm">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
-              </span>
-              <span className="text-xs font-bold text-white tracking-wider">REC</span>
-            </div>
+          {/* Creator Stream Overlay — replaces simple recording indicators */}
+          {isRecording && user && (
+            <CreatorStreamOverlay
+              streamId={streamData.streamId}
+              streamTitle={title}
+              creatorUserId={user.id}
+              onEndStream={stopRecording}
+              isRecording={isRecording}
+              recordingDuration={recordingDuration}
+            />
           )}
 
-          {/* Title overlay */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-            <p className="text-sm font-semibold text-white truncate">{title}</p>
-          </div>
+          {/* Title overlay (only when NOT recording — overlay handles it during recording) */}
+          {!isRecording && (
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
+              <p className="text-sm font-semibold text-white truncate">{title}</p>
+            </div>
+          )}
 
           {mediaError && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
