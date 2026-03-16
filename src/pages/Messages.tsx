@@ -9,7 +9,7 @@ import { useDirectMessages, useConversationMessages, Conversation } from "@/hook
 import { useAuth } from "@/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
-import { EmptyState } from "@/components/ui/EmptyState";
+import EmptyState from "@/components/ui/EmptyState";
 
 function ConversationList({
   conversations,
