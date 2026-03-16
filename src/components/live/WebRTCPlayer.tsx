@@ -225,13 +225,39 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
 
   const { isPip, togglePip, containerRef } = useAutoPip(videoRef, status === 'playing');
 
+  const toggleFullscreen = useCallback(() => {
+    const el = fullscreenContainerRef.current;
+    if (!el) return;
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      el.requestFullscreen().catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", handler);
+    return () => document.removeEventListener("fullscreenchange", handler);
+  }, []);
+
   const handleRetry = () => {
     setRetryCount(0);
     connect();
   };
 
+  // Merge refs for container
+  const setContainerRefs = useCallback((node: HTMLDivElement | null) => {
+    (fullscreenContainerRef as any).current = node;
+    if (typeof containerRef === 'function') {
+      containerRef(node);
+    } else if (containerRef) {
+      (containerRef as any).current = node;
+    }
+  }, [containerRef]);
+
   return (
-    <div ref={containerRef} className={`relative w-full aspect-video bg-black ${className || ''}`}>
+    <div ref={setContainerRefs} className={`relative w-full ${isFullscreen ? 'h-full' : 'aspect-video'} bg-black ${className || ''}`}>
       <video
         ref={videoRef}
         autoPlay
@@ -267,14 +293,26 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
         </div>
       )}
 
-      {status === 'playing' && document.pictureInPictureEnabled && (
-        <button
-          onClick={togglePip}
-          className="absolute top-3 right-3 z-10 p-2 rounded-lg bg-background/60 backdrop-blur-sm text-foreground hover:bg-background/80 transition-colors"
-          title={isPip ? 'Exit Picture-in-Picture' : 'Picture-in-Picture'}
-        >
-          <PictureInPicture2 className={`w-4 h-4 ${isPip ? 'text-primary' : ''}`} />
-        </button>
+      {/* Player controls overlay */}
+      {status === 'playing' && (
+        <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+          {document.pictureInPictureEnabled && (
+            <button
+              onClick={togglePip}
+              className="p-2 rounded-lg bg-black/40 backdrop-blur-sm text-white hover:bg-black/60 transition-colors"
+              title={isPip ? 'Exit Picture-in-Picture' : 'Picture-in-Picture'}
+            >
+              <PictureInPicture2 className={`w-4 h-4 ${isPip ? 'text-primary' : ''}`} />
+            </button>
+          )}
+          <button
+            onClick={toggleFullscreen}
+            className="p-2 rounded-lg bg-black/40 backdrop-blur-sm text-white hover:bg-black/60 transition-colors"
+            title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+          >
+            {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
+          </button>
+        </div>
       )}
     </div>
   );
