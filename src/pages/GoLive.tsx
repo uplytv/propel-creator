@@ -29,7 +29,11 @@ export default function GoLive() {
     rtmpUrl: string;
   } | null>(null);
   const [streamStatus, setStreamStatus] = useState<string>("idle");
+  const [showEndScreen, setShowEndScreen] = useState(false);
+  const [streamDuration, setStreamDuration] = useState(0);
+  const [streamStartTime, setStreamStartTime] = useState<number | null>(null);
 
+  const { data: profileData } = useProfile();
   const { data: products } = useProducts();
   const activeProducts = products?.filter(p => p.status === 'active') || [];
 
