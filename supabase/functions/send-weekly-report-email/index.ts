@@ -12,6 +12,7 @@ function buildReportEmailHtml(report: {
   actionItem: string;
   weekStart: string;
   weekEnd: string;
+  unsubscribeUrl?: string;
 }) {
   const primaryColor = 'hsl(265, 85%, 58%)';
   const primaryForeground = '#ffffff';
