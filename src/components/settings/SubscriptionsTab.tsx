@@ -55,7 +55,7 @@ export function SubscriptionsTab() {
   if (!subscriptions?.length) {
     return (
       <EmptyState
-        icon={<Users className="w-8 h-8" />}
+        icon={Users}
         title="No active subscriptions"
         description="When you subscribe to a creator's community, it will appear here."
       />

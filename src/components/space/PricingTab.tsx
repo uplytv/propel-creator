@@ -136,7 +136,7 @@ export function PricingTab({ creatorId }: PricingTabProps) {
         </div>
       ) : (
         <EmptyState
-          icon={<DollarSign className="w-8 h-8" />}
+          icon={DollarSign}
           title="No subscription tiers yet"
           description="Create your first tier to start accepting recurring payments from members."
         />
