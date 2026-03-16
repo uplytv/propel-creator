@@ -18,6 +18,8 @@ function formatDuration(seconds: number) {
 }
 
 export default function ClipsGrid({ clips, isOwner, onDelete, onPlay }: Props) {
+  const [shareClip, setShareClip] = useState<Clip | null>(null);
+
   if (clips.length === 0) {
     return (
       <div className="text-center py-16">
