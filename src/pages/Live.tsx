@@ -280,7 +280,7 @@ export default function Live() {
   });
 
   const hasLiveStreams = liveStreams.length > 0;
-  const allStreams = hasLiveStreams ? liveStreams.map(toMockFormat) : mockStreams;
+  const allStreams = liveStreams.map(toMockFormat);
   let filtered = search
     ? allStreams.filter(s => s.title.toLowerCase().includes(search.toLowerCase()) || s.creatorName.toLowerCase().includes(search.toLowerCase()) || s.category.toLowerCase().includes(search.toLowerCase()))
     : allStreams;

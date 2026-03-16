@@ -311,7 +311,7 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
             </>
           )}
         </div>
-      ) : filtered.length === 0 && !hasLiveStreams ? (
+      ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <Tv className="w-12 h-12 text-[#888888] mb-4" />
           <p className="text-white font-semibold mb-1">No one is live right now.</p>
@@ -333,16 +333,6 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
               ))}
             </AnimatePresence>
           </div>
-
-          {/* No real streams banner */}
-          {!hasLiveStreams && (
-            <div className="mt-4 flex items-center gap-2.5 px-4 py-3 rounded-lg bg-[#111111] border border-white/5">
-              <Radio className="w-4 h-4 text-[#888888] flex-shrink-0" />
-              <p className="text-xs text-[#888888]">
-                Showing example streams — <span className="text-[#00FF85] font-medium cursor-pointer" onClick={() => navigate('/go-live')}>be the first to go live!</span>
-              </p>
-            </div>
-          )}
         </>
       )}
 
