@@ -107,7 +107,7 @@ export default function StreamToCourseDialog({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 60, scale: 0.95 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="w-full max-w-md bg-card border border-border rounded-2xl shadow-2xl overflow-hidden"
+          className="w-full max-w-md bg-card border border-border rounded-2xl shadow-2xl overflow-hidden mb-16 sm:mb-0"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
