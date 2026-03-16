@@ -1247,6 +1247,63 @@ export type Database = {
           },
         ]
       }
+      live_chat_messages: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          is_pinned: boolean
+          message: string
+          stream_id: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          is_pinned?: boolean
+          message: string
+          stream_id: string
+          user_id: string
+          username?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          is_pinned?: boolean
+          message?: string
+          stream_id?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      live_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          stream_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          stream_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          stream_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       live_stream_sessions: {
         Row: {
           ended_at: string | null
@@ -1372,6 +1429,7 @@ export type Database = {
           created_at: string | null
           description: string | null
           ended_at: string | null
+          energy_score: number
           featured_product_id: string | null
           id: string
           is_public: boolean | null
@@ -1391,6 +1449,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           ended_at?: string | null
+          energy_score?: number
           featured_product_id?: string | null
           id?: string
           is_public?: boolean | null
@@ -1410,6 +1469,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           ended_at?: string | null
+          energy_score?: number
           featured_product_id?: string | null
           id?: string
           is_public?: boolean | null
