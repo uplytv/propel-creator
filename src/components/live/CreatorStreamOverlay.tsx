@@ -140,93 +140,127 @@ export function CreatorDashboardPanel({
     togglePinMessage(msg.id, msg.is_pinned);
   };
 
+  const [collapsed, setCollapsed] = useState(false);
+
   return (
     <div className="rounded-xl overflow-hidden" style={{ backgroundColor: "rgba(10,10,10,0.85)", backdropFilter: "blur(16px)" }}>
-      {/* Activity feed as single-line ticker */}
-      <div className="px-3 py-1.5 flex items-center gap-2 overflow-x-auto scrollbar-none border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-        <AnimatePresence initial={false}>
-          {activityFeed.slice(-5).map((a) => (
-            <motion.span
-              key={a.id}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="text-[10px] whitespace-nowrap flex-shrink-0"
-              style={{ color: a.color }}
-            >
-              {a.text}
-            </motion.span>
-          ))}
-        </AnimatePresence>
-      </div>
+      {/* Collapse toggle */}
+      <button
+        onClick={() => setCollapsed((c) => !c)}
+        className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-white/70 hover:text-white transition-colors"
+        style={{ borderBottom: collapsed ? "none" : "1px solid rgba(255,255,255,0.06)" }}
+      >
+        <span className="flex items-center gap-1.5">
+          <MessageSquare className="w-3.5 h-3.5" />
+          Dashboard
+          {collapsed && (
+            <span className="text-[10px] text-white/40 font-normal ml-1">
+              {totalMessages} msgs · {viewerCount} viewers
+            </span>
+          )}
+        </span>
+        <motion.div animate={{ rotate: collapsed ? 180 : 0 }} transition={{ duration: 0.2 }}>
+          <ChevronUp className="w-4 h-4" />
+        </motion.div>
+      </button>
 
-      {/* Chat header */}
-      <div className="px-3 py-2 border-b flex items-center justify-between" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-        <span className="text-xs font-semibold text-white/80">Live Chat</span>
-        <span className="text-[10px] text-white/40">{viewerCount} watching</span>
-      </div>
-
-      {/* Pinned */}
-      {chatMessages.filter((m) => m.is_pinned).map((pm) => (
-        <div key={pm.id} className="mx-3 mt-2 rounded-lg px-3 py-2 text-xs"
-          style={{ border: "1px solid #00FF85", backgroundColor: "rgba(0,255,133,0.05)" }}>
-          <span className="font-bold" style={{ color: "#00FF85" }}>📌 {pm.username}:</span>{" "}
-          <span className="text-white/80">{pm.message}</span>
-        </div>
-      ))}
-
-      {/* Messages */}
-      <div ref={chatScrollRef} className="overflow-y-auto px-3 py-2 space-y-1 scrollbar-thin" style={{ maxHeight: "160px" }}>
-        {chatMessages.map((msg) => {
-          const isCreator = msg.user_id === creatorUserId;
-          return (
-            <div key={msg.id} className="text-xs group relative py-0.5 pr-6 cursor-pointer" onClick={() => handlePin(msg)}>
-              <span className="inline-flex items-center gap-1">
-                {isCreator && <span className="text-[10px]">⭐</span>}
-                <span className="font-semibold" style={{ color: isCreator ? "#FFD700" : "#00FF85" }}>
-                  {msg.username}
-                </span>
-              </span>
-              <span className="text-white/70 ml-1.5">{msg.message}</span>
-              <button className="absolute right-0 top-0.5 opacity-0 group-hover:opacity-100 transition-opacity text-white/30 hover:text-white/60">
-                {msg.is_pinned ? <PinOff className="w-3 h-3" /> : <Pin className="w-3 h-3" />}
-              </button>
+      <AnimatePresence initial={false}>
+        {!collapsed && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            {/* Activity feed as single-line ticker */}
+            <div className="px-3 py-1.5 flex items-center gap-2 overflow-x-auto scrollbar-none border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+              <AnimatePresence initial={false}>
+                {activityFeed.slice(-5).map((a) => (
+                  <motion.span
+                    key={a.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="text-[10px] whitespace-nowrap flex-shrink-0"
+                    style={{ color: a.color }}
+                  >
+                    {a.text}
+                  </motion.span>
+                ))}
+              </AnimatePresence>
             </div>
-          );
-        })}
-      </div>
 
-      {/* Chat input */}
-      <div className="px-3 py-2 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-        <div className="flex gap-2">
-          <input
-            value={chatInput}
-            onChange={(e) => setChatInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder="Say something..."
-            className="flex-1 rounded-lg px-3 py-2 text-xs text-white placeholder:text-white/30 focus:outline-none"
-            style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
-          />
-          <button onClick={handleSend} className="px-3 py-2 rounded-lg" style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}>
-            <Send className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </div>
+            {/* Chat header */}
+            <div className="px-3 py-2 border-b flex items-center justify-between" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+              <span className="text-xs font-semibold text-white/80">Live Chat</span>
+              <span className="text-[10px] text-white/40">{viewerCount} watching</span>
+            </div>
 
-      {/* Bottom stats bar */}
-      <div className="flex items-center gap-2 px-3 py-2 border-t flex-wrap" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-        {["🔥", "💰", "👑", "🚀", "💯", "❤️"].map((e) => (
-          <span key={e} className="text-[10px] text-white/50">{e} {reactionCounts[e] || 0}</span>
-        ))}
-        <div className="h-3 w-px mx-1" style={{ backgroundColor: "rgba(255,255,255,0.1)" }} />
-        <span className="text-[10px] text-white/50 flex items-center gap-0.5">
-          <MessageSquare className="w-2.5 h-2.5" /> {totalMessages}
-        </span>
-        <span className="text-[10px] text-white/50 flex items-center gap-0.5">
-          <Users className="w-2.5 h-2.5" /> {totalSubs} new
-        </span>
-        <div className="flex-1" />
-        <span className="text-[10px] text-white/20">📎 Clip — coming soon</span>
-      </div>
+            {/* Pinned */}
+            {chatMessages.filter((m) => m.is_pinned).map((pm) => (
+              <div key={pm.id} className="mx-3 mt-2 rounded-lg px-3 py-2 text-xs"
+                style={{ border: "1px solid #00FF85", backgroundColor: "rgba(0,255,133,0.05)" }}>
+                <span className="font-bold" style={{ color: "#00FF85" }}>📌 {pm.username}:</span>{" "}
+                <span className="text-white/80">{pm.message}</span>
+              </div>
+            ))}
+
+            {/* Messages */}
+            <div ref={chatScrollRef} className="overflow-y-auto px-3 py-2 space-y-1 scrollbar-thin" style={{ maxHeight: "160px" }}>
+              {chatMessages.map((msg) => {
+                const isCreator = msg.user_id === creatorUserId;
+                return (
+                  <div key={msg.id} className="text-xs group relative py-0.5 pr-6 cursor-pointer" onClick={() => handlePin(msg)}>
+                    <span className="inline-flex items-center gap-1">
+                      {isCreator && <span className="text-[10px]">⭐</span>}
+                      <span className="font-semibold" style={{ color: isCreator ? "#FFD700" : "#00FF85" }}>
+                        {msg.username}
+                      </span>
+                    </span>
+                    <span className="text-white/70 ml-1.5">{msg.message}</span>
+                    <button className="absolute right-0 top-0.5 opacity-0 group-hover:opacity-100 transition-opacity text-white/30 hover:text-white/60">
+                      {msg.is_pinned ? <PinOff className="w-3 h-3" /> : <Pin className="w-3 h-3" />}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Chat input */}
+            <div className="px-3 py-2 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+              <div className="flex gap-2">
+                <input
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                  placeholder="Say something..."
+                  className="flex-1 rounded-lg px-3 py-2 text-xs text-white placeholder:text-white/30 focus:outline-none"
+                  style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
+                />
+                <button onClick={handleSend} className="px-3 py-2 rounded-lg" style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}>
+                  <Send className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Bottom stats bar */}
+            <div className="flex items-center gap-2 px-3 py-2 border-t flex-wrap" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+              {["🔥", "💰", "👑", "🚀", "💯", "❤️"].map((e) => (
+                <span key={e} className="text-[10px] text-white/50">{e} {reactionCounts[e] || 0}</span>
+              ))}
+              <div className="h-3 w-px mx-1" style={{ backgroundColor: "rgba(255,255,255,0.1)" }} />
+              <span className="text-[10px] text-white/50 flex items-center gap-0.5">
+                <MessageSquare className="w-2.5 h-2.5" /> {totalMessages}
+              </span>
+              <span className="text-[10px] text-white/50 flex items-center gap-0.5">
+                <Users className="w-2.5 h-2.5" /> {totalSubs} new
+              </span>
+              <div className="flex-1" />
+              <span className="text-[10px] text-white/20">📎 Clip — coming soon</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
