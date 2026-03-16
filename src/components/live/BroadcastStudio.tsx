@@ -741,19 +741,21 @@ export default function BroadcastStudio({
             </div>
           )}
 
-          {/* Creator Stream Overlay — replaces simple recording indicators */}
+          {/* Creator stats overlay — thin bar on top of video only */}
           {isRecording && user && (
-            <CreatorStreamOverlay
+            <CreatorVideoOverlay
               streamId={streamData.streamId}
-              streamTitle={title}
               creatorUserId={user.id}
               onEndStream={stopRecording}
               isRecording={isRecording}
               recordingDuration={recordingDuration}
+              energyScore={engagement.energyScore}
+              viewerCount={engagement.viewerCount}
+              coachingNudge={coachingNudge}
             />
           )}
 
-          {/* Title overlay (only when NOT recording — overlay handles it during recording) */}
+          {/* Title overlay (only when NOT recording) */}
           {!isRecording && (
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
               <p className="text-sm font-semibold text-white truncate">{title}</p>
