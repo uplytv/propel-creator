@@ -21,6 +21,7 @@ function formatDuration(seconds: number) {
 
 export default function RecordingsGrid({ recordings, isOwner, onTogglePublish, onDelete }: Props) {
   const navigate = useNavigate();
+  const [shareRec, setShareRec] = useState<StreamRecording | null>(null);
 
   if (recordings.length === 0) {
     return (
