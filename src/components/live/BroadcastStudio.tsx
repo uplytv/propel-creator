@@ -774,6 +774,17 @@ export default function BroadcastStudio({
             />
           )}
 
+          {/* Fullscreen toggle */}
+          {(cameraOn || screenShare) && (
+            <button
+              onClick={toggleFullscreen}
+              className="absolute bottom-3 right-3 z-10 p-2 rounded-lg bg-black/40 backdrop-blur-sm text-white hover:bg-black/60 transition-colors"
+              title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+            >
+              {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
+            </button>
+          )}
+
           {/* Title overlay (only when NOT recording) */}
           {!isRecording && (
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
