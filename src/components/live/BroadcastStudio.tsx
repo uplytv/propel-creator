@@ -546,6 +546,7 @@ export default function BroadcastStudio({
       recordingTimerRef.current = null;
     }
     setIsRecording(false);
+    setLastRecordingDuration(recordingDuration);
 
     // Stop WebRTC host
     stopWebRTCHost();
