@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Radio, Search, Play, Film, Scissors, Users, ChevronRight, Eye, Flame, TrendingUp, Tv, MessageCircle } from "lucide-react";
+import { Radio, Search, Play, Film, Scissors, Users, ChevronRight, Eye, Flame, TrendingUp, Tv, MessageCircle, Smartphone } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
