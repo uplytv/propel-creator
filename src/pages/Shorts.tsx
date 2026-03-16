@@ -109,11 +109,7 @@ export default function Shorts() {
   };
 
   const handleShare = () => {
-    const url = window.location.href;
-    navigator.clipboard.writeText(url);
-    setCopied(true);
-    toast({ title: "Link copied!", description: "Share it with your friends" });
-    setTimeout(() => setCopied(false), 2000);
+    setShareOpen(true);
   };
 
   if (loading && shorts.length === 0) {
