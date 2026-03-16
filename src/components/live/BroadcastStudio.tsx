@@ -195,7 +195,7 @@ export default function BroadcastStudio({
   const audioContextRef = useRef<AudioContext | null>(null);
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Fullscreen toggle (with webkit fallback for iOS Safari)
+  // Fullscreen toggle (with webkit fallback + CSS pseudo-fullscreen for iframes)
   const toggleFullscreen = useCallback(() => {
     const el = videoContainerRef.current as any;
     if (!el) return;
@@ -203,11 +203,23 @@ export default function BroadcastStudio({
     if (fullscreenEl) {
       if (document.exitFullscreen) document.exitFullscreen();
       else if ((document as any).webkitExitFullscreen) (document as any).webkitExitFullscreen();
+    } else if (isFullscreen) {
+      // Exit CSS pseudo-fullscreen
+      setIsFullscreen(false);
     } else {
-      if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
-      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      // Try native fullscreen first
+      const tryNative = el.requestFullscreen
+        ? el.requestFullscreen()
+        : el.webkitRequestFullscreen
+        ? Promise.resolve(el.webkitRequestFullscreen())
+        : Promise.reject();
+
+      tryNative.catch(() => {
+        // Fallback: CSS pseudo-fullscreen (works inside iframes)
+        setIsFullscreen(true);
+      });
     }
-  }, []);
+  }, [isFullscreen]);
 
   useEffect(() => {
     const handler = () => setIsFullscreen(!!(document.fullscreenElement || (document as any).webkitFullscreenElement));
@@ -721,7 +733,7 @@ export default function BroadcastStudio({
         {/* Preview Window */}
         <div
           ref={videoContainerRef}
-          className={`relative rounded-2xl overflow-hidden bg-secondary/80 border border-border ${isFullscreen ? 'w-full h-full' : 'aspect-video'}`}
+          className={`relative overflow-hidden bg-secondary/80 border border-border ${isFullscreen ? 'fixed inset-0 z-[100] rounded-none border-none' : 'rounded-2xl aspect-video'}`}
           onTouchEnd={(cameraOn || screenShare) ? (e) => {
             const now = Date.now();
             if (now - lastTapRef.current < 300) {

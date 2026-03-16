@@ -233,11 +233,20 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
     if (fullscreenEl) {
       if (document.exitFullscreen) document.exitFullscreen();
       else if ((document as any).webkitExitFullscreen) (document as any).webkitExitFullscreen();
+    } else if (isFullscreen) {
+      setIsFullscreen(false);
     } else {
-      if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
-      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      const tryNative = el.requestFullscreen
+        ? el.requestFullscreen()
+        : el.webkitRequestFullscreen
+        ? Promise.resolve(el.webkitRequestFullscreen())
+        : Promise.reject();
+
+      tryNative.catch(() => {
+        setIsFullscreen(true);
+      });
     }
-  }, []);
+  }, [isFullscreen]);
 
   useEffect(() => {
     const handler = () => setIsFullscreen(!!(document.fullscreenElement || (document as any).webkitFullscreenElement));
@@ -263,7 +272,7 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
   return (
     <div
       ref={setContainerRefs}
-      className={`relative w-full ${isFullscreen ? 'h-full' : 'aspect-video'} bg-black ${className || ''}`}
+      className={`relative w-full ${isFullscreen ? 'fixed inset-0 z-[100] h-full' : 'aspect-video'} bg-black ${className || ''}`}
       onTouchEnd={status === 'playing' ? (e) => {
         const now = Date.now();
         if (now - lastTapRef.current < 300) {
