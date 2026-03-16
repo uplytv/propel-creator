@@ -38,22 +38,23 @@ export default function Auth() {
     e.preventDefault();
     setLoading(true);
 
-    // Check for platform referral cookie
+    // Check for platform referral cookie and creator affiliate cookie
     const refCode = getAffiliateCookie("uply_ref");
+    const creatorRefCode = getAffiliateCookie("uply_creator_ref");
 
     const { data: signUpData, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { full_name: name, referred_by: refCode || undefined },
+        data: { full_name: name, referred_by: refCode || creatorRefCode || undefined },
       },
     });
     setLoading(false);
     if (error) {
       toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
     } else {
-      // If we have a referral cookie, attribute the signup
+      // Track platform referral conversion
       if (refCode && signUpData?.user) {
         try {
           await supabase.functions.invoke("track-affiliate-conversion", {
@@ -65,7 +66,22 @@ export default function Auth() {
           });
           clearAffiliateCookie("uply_ref");
         } catch (err) {
-          console.error("Affiliate tracking failed:", err);
+          console.error("Platform affiliate tracking failed:", err);
+        }
+      }
+      // Track creator affiliate conversion
+      if (creatorRefCode && signUpData?.user) {
+        try {
+          await supabase.functions.invoke("track-affiliate-conversion", {
+            body: {
+              affiliate_code: creatorRefCode,
+              referred_user_id: signUpData.user.id,
+              conversion_type: "signup",
+            },
+          });
+          clearAffiliateCookie("uply_creator_ref");
+        } catch (err) {
+          console.error("Creator affiliate tracking failed:", err);
         }
       }
       setSignUpSuccess(true);

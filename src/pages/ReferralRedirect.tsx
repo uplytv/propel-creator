@@ -15,12 +15,21 @@ export default function ReferralRedirect() {
     }
 
     const handleRedirect = async () => {
-      // Set cookie
+      // Set cookie for attribution on signup
       setAffiliateCookie("uply_ref", code, 30);
 
-      // Increment clicks via direct update (public can't update, so we'll use edge function or just set cookie)
-      // The click tracking will happen server-side when they actually sign up
-      // For now, navigate to auth/waitlist
+      // Track click server-side
+      try {
+        await supabase.functions.invoke("track-affiliate-conversion", {
+          body: {
+            affiliate_code: code,
+            conversion_type: "click",
+          },
+        });
+      } catch (err) {
+        console.error("Click tracking failed:", err);
+      }
+
       navigate("/auth");
     };
 
