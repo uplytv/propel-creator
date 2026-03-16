@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, WifiOff, RefreshCw, PictureInPicture2 } from 'lucide-react';
+import { Loader2, WifiOff, RefreshCw, PictureInPicture2, Maximize, Minimize } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAutoPip } from '@/hooks/useAutoPip';
 

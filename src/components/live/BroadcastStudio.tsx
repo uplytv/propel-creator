@@ -4,7 +4,8 @@ import {
   Video, VideoOff, Mic, MicOff, Monitor, Camera,
   Settings, Copy, Check, Eye, EyeOff, Radio,
   RotateCcw, Volume2, Circle, Square, Upload,
-  Wifi, WifiOff, AlertCircle, ShoppingBag, X, ChevronDown
+  Wifi, WifiOff, AlertCircle, ShoppingBag, X, ChevronDown,
+  Maximize, Minimize
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
