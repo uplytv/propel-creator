@@ -245,7 +245,7 @@ export function OnboardingChecklist() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    const link = username ? `${window.location.origin}/creator/${username}` : `${window.location.origin}/community/${user.id}`;
+                    const link = username ? `${SITE_URL}/creator/${username}` : `${SITE_URL}/community/${user.id}`;
                     navigator.clipboard.writeText(link);
                     toast.success("Link copied to clipboard!");
                   }}

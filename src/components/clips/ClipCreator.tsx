@@ -78,7 +78,7 @@ export default function ClipCreator({ sourceAssetId, creatorId, duration, playba
       if (error) throw error;
 
       const clipId = data?.clip?.id;
-      setShareUrl(`${window.location.origin}/shorts`);
+      setShareUrl(`${SITE_URL}/shorts`);
       toast({
         title: "Clip created! ✂️",
         description: "Your clip is being processed by Mux.",

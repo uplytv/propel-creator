@@ -110,7 +110,7 @@ export default function JointProduct({ isPublic = false }: { isPublic?: boolean 
   const spotsLeft = product.maxCapacity - product.enrolledCount;
 
   const handleCopyLink = () => {
-    const url = `${window.location.origin}/p/creator-revenue-blueprint`;
+    const url = `${SITE_URL}/p/creator-revenue-blueprint`;
     navigator.clipboard.writeText(url);
   };
 
