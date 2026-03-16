@@ -81,9 +81,9 @@ export function useJobs(filters?: {
       const creatorIds = [...new Set((data || []).map((j: any) => j.creator_id))];
       let profiles: any[] = [];
       if (creatorIds.length > 0) {
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("user_id, display_name, avatar_url, tier, tier_name")
+        const { data: profileData } = await (supabase as any)
+          .from("profiles_public")
+          .select("user_id, display_name, avatar_url")
           .in("user_id", creatorIds);
         profiles = profileData || [];
       }
