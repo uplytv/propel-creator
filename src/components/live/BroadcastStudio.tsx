@@ -191,6 +191,7 @@ export default function BroadcastStudio({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showCourseDialog, setShowCourseDialog] = useState(false);
   const [lastRecordingDuration, setLastRecordingDuration] = useState(0);
+  const [lastUploadId, setLastUploadId] = useState<string | null>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const lastTapRef = useRef<number>(0);
   const [liveChatInput, setLiveChatInput] = useState("");
