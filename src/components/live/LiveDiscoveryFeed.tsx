@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Radio, Film, Tv, ChevronRight, Users } from "lucide-react";
 import StreamCardNew from "./StreamCardNew";
-import { mockStreams } from "@/data/mockStreams";
+
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
