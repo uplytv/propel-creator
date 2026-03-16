@@ -274,6 +274,18 @@ export default function Shorts() {
           );
         })}
       </div>
+
+      {currentShort && (
+        <SharePanel
+          open={shareOpen}
+          onClose={() => setShareOpen(false)}
+          contentType="clip"
+          contentId={currentShort.id}
+          title={currentShort.caption || "Short"}
+          playbackId={currentShort.playback_id}
+          creatorUsername={currentShort.creator_name}
+        />
+      )}
     </div>
   );
 }
