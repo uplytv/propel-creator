@@ -741,7 +741,8 @@ export default function BroadcastStudio({
         {/* Preview Window */}
         <div
           ref={videoContainerRef}
-          className={`relative overflow-hidden bg-secondary/80 border border-border ${isFullscreen ? 'fixed inset-0 z-[100] rounded-none border-none' : 'rounded-2xl aspect-video'}`}
+          className={`relative overflow-hidden bg-black ${isFullscreen ? 'fixed inset-0 z-[100] rounded-none border-none' : 'rounded-2xl border border-border w-full'}`}
+          style={isFullscreen ? undefined : { aspectRatio: 'auto', minHeight: '200px', maxHeight: '70vh' }}
           onTouchEnd={(cameraOn || screenShare) ? (e) => {
             const now = Date.now();
             if (now - lastTapRef.current < 300) {
