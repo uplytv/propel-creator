@@ -451,6 +451,35 @@ export type Database = {
         }
         Relationships: []
       }
+      clip_likes: {
+        Row: {
+          clip_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          clip_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          clip_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clip_likes_clip_id_fkey"
+            columns: ["clip_id"]
+            isOneToOne: false
+            referencedRelation: "clips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clips: {
         Row: {
           caption: string
@@ -461,6 +490,7 @@ export type Database = {
           creator_id: string
           duration_seconds: number
           id: string
+          is_auto_short: boolean
           is_public: boolean
           source_asset_id: string | null
           source_type: string
@@ -475,6 +505,7 @@ export type Database = {
           creator_id: string
           duration_seconds?: number
           id?: string
+          is_auto_short?: boolean
           is_public?: boolean
           source_asset_id?: string | null
           source_type?: string
@@ -489,6 +520,7 @@ export type Database = {
           creator_id?: string
           duration_seconds?: number
           id?: string
+          is_auto_short?: boolean
           is_public?: boolean
           source_asset_id?: string | null
           source_type?: string
