@@ -287,7 +287,7 @@ export default function Live() {
   if (activeStreamTab === "following" && hasLiveStreams) {
     filtered = filtered.filter(s => 'userId' in s && followingIds.includes((s as any).userId));
   }
-  const liveCount = hasLiveStreams ? liveStreams.length : filtered.filter(s => s.isLive).length;
+  const liveCount = liveStreams.length;
 
   // Hero stream = highest viewers
   const heroStream = filtered.length > 0 ? [...filtered].sort((a, b) => b.viewers - a.viewers)[0] : null;
