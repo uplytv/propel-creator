@@ -334,7 +334,6 @@ export default function CreatorProfile() {
       navigate(`/community/${profile?.user_id}/community`);
     }
   };
-  };
 
   // Loading
   if (profileLoading) {
