@@ -87,6 +87,7 @@ export default function GoLive() {
 
       setStreamData(data);
       setStreamStatus("idle");
+      setStreamStartTime(Date.now());
       toast({ title: "Stream created!", description: "Your broadcast studio is ready." });
     } catch (e: any) {
       toast({ title: "Error", description: e.message || "Failed to create stream", variant: "destructive" });
