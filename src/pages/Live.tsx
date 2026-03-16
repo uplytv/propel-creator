@@ -7,7 +7,7 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
 import StreamCardNew from "@/components/live/StreamCardNew";
-import { mockStreams } from "@/data/mockStreams";
+
 import { useFollows } from "@/hooks/useFollows";
 
 // ─── Types ──────────────────────────────────────────────────────
