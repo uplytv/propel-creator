@@ -248,12 +248,8 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
 
   // Merge refs for container
   const setContainerRefs = useCallback((node: HTMLDivElement | null) => {
-    (fullscreenContainerRef as any).current = node;
-    if (typeof containerRef === 'function') {
-      containerRef(node);
-    } else if (containerRef) {
-      (containerRef as any).current = node;
-    }
+    (fullscreenContainerRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+    (containerRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
   }, [containerRef]);
 
   return (
