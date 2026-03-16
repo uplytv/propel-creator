@@ -238,7 +238,7 @@ export function OnboardingChecklist() {
               <div className="flex items-center gap-2">
                 <input
                   readOnly
-                  value={username ? `${window.location.origin}/creator/${username}` : `${window.location.origin}/community/${user.id}`}
+                  value={username ? `${SITE_URL}/creator/${username}` : `${SITE_URL}/community/${user.id}`}
                   className="flex-1 text-xs bg-background border border-border rounded-md px-3 py-2 text-foreground select-all truncate"
                   onFocus={(e) => e.target.select()}
                 />
