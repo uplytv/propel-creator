@@ -53,9 +53,6 @@ export default function Settings() {
 
   // Notification state
   const [notifications, setNotifications] = useState({
-    emailNewMember: true,
-    emailRevenue: true,
-    emailProductUpdates: false,
     pushNewMember: true,
     pushRevenue: false,
     pushMilestones: true,
