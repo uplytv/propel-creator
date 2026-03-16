@@ -188,7 +188,7 @@ export default function Live() {
     if (data && data.length > 0) {
       const userIds = [...new Set(data.map((r: any) => r.creator_id))];
       const { data: profiles } = await supabase
-        .from('profiles')
+        .from('profiles_public' as any)
         .select('user_id, display_name, avatar_url')
         .in('user_id', userIds);
       const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
