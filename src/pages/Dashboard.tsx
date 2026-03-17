@@ -147,6 +147,9 @@ export default function Dashboard() {
           </motion.div>
         )}
 
+        {/* Platform Upgrade Banner */}
+        <PlatformUpgradeBanner />
+
         {/* ARIA Weekly Growth Report */}
         <div className="px-4 md:px-8 mb-5">
           <WeeklyGrowthReport />
