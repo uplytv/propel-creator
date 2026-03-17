@@ -97,6 +97,7 @@ const App = () => (
                     <Route path="/space/:creatorId/:tab" element={<CreatorSpace />} />
                     <Route path="/discover" element={<Discover />} />
                     <Route path="/shorts" element={<Shorts />} />
+                    <Route path="/pricing" element={<Pricing />} />
 
                     {/* Protected routes */}
                     <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
