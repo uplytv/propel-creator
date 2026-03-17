@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { format, subWeeks, startOfWeek } from "date-fns";
+import { format, subWeeks, subDays, startOfWeek, nextFriday } from "date-fns";
 import { 
   Wallet as WalletIcon, ArrowDownCircle, ArrowUpCircle, Clock, DollarSign, 
   CheckCircle2, CreditCard, Building2, CircleDollarSign, TrendingUp, 
   PieChart, Zap, Users, BookOpen, Video, Briefcase, SendHorizontal,
-  Receipt, ArrowUpRight, ArrowDownRight, Sparkles
+  Receipt, ArrowUpRight, ArrowDownRight, Sparkles, Calendar
 } from "lucide-react";
 import { PieChart as RechartsPie, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip } from "recharts";
 import AppLayout from "@/components/layout/AppLayout";
@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useMemo } from "react";
 import SEOHead from "@/components/SEOHead";
+import { trackEvent } from "@/lib/posthog";
 
 const REVENUE_SOURCES = [
   { key: "subscription", label: "Subscriptions", icon: Users, color: "#00FF85" },
