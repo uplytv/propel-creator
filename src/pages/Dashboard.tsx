@@ -209,6 +209,8 @@ export default function Dashboard() {
             { label: "Members", value: dashStats?.totalMembers ?? 0, icon: Users, iconColor: "text-violet-400" },
             { label: "Revenue", value: `$${(dashStats?.totalRevenue ?? 0).toLocaleString()}`, icon: DollarSign, iconColor: "text-emerald-400" },
             { label: "This Month", value: `$${(dashStats?.revenueThisMonth ?? 0).toLocaleString()}`, icon: TrendingUp, iconColor: "text-blue-400" },
+            { label: "Subscribers", value: dashStats?.activeSubscribers ?? 0, icon: CreditCard, iconColor: "text-cyan-400" },
+            { label: "Product Sales", value: dashStats?.totalProductSales ?? 0, icon: Package, iconColor: "text-amber-400" },
             { label: "Streams", value: dashStats?.totalLiveStreams ?? 0, icon: Radio, iconColor: "text-red-400" },
           ].map((stat, i) => (
             <motion.div
