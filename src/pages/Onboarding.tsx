@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Check, Loader2, ArrowRight, Search } from "lucide-react";
+import { trackEvent } from "@/lib/posthog";
 
 const stages = [
   { id: "just-starting" as const, label: "Just Starting Out", detail: "0 members, $0 MRR", desc: "You have the vision but haven't launched yet.", emoji: "🌱" },
@@ -95,9 +96,35 @@ export default function Onboarding() {
     loadProgress();
   }, [user]);
 
-  const next = () => setStep(s => s + 1);
+  // Track onboarding step completion
+  const trackOnboardingStep = async (stepName: string) => {
+    if (!user) return;
+    try {
+      await supabase.from("onboarding_events" as any).insert({
+        user_id: user.id,
+        step: stepName,
+      });
+      trackEvent("onboarding_step_completed", { step: stepName });
+    } catch (e) {
+      console.error("Failed to track onboarding step:", e);
+    }
+  };
+
+  const next = () => {
+    // Track the step that was just completed
+    const stepMap: Record<number, string> = {
+      2: "category_selected",
+      3: "creator_type_selected",
+      4: "stage_selected",
+    };
+    if (stepMap[step]) {
+      trackOnboardingStep(stepMap[step]);
+    }
+    setStep(s => s + 1);
+  };
 
   const startLoading = async () => {
+    trackOnboardingStep("profile_created");
     setStep(6);
     let i = 0;
     const interval = setInterval(() => {

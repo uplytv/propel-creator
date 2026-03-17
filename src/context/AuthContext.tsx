@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { setSentryUser, clearSentryUser } from "@/lib/sentry";
+import { identifyUser, resetPostHog } from "@/lib/posthog";
 
 interface AuthContextType {
   session: Session | null;
@@ -16,20 +18,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setLoading(false);
+
+      if (session?.user) {
+        setSentryUser(session.user.id);
+        identifyUser(session.user.id, {
+          email: session.user.email,
+          created_at: session.user.created_at,
+        });
+      } else {
+        clearSentryUser();
+        if (event === 'SIGNED_OUT') {
+          resetPostHog();
+        }
+      }
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
+      if (session?.user) {
+        setSentryUser(session.user.id);
+        identifyUser(session.user.id, {
+          email: session.user.email,
+          created_at: session.user.created_at,
+        });
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   const signOut = async () => {
+    clearSentryUser();
+    resetPostHog();
     await supabase.auth.signOut();
   };
 

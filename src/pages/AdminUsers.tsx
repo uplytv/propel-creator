@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ShieldCheck, Search, UserCog, Crown } from "lucide-react";
+import { ShieldCheck, Search, UserCog, Crown, BarChart3 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import BackNav from "@/components/BackNav";
@@ -61,6 +61,27 @@ export default function AdminUsers() {
     queryClient.invalidateQueries({ queryKey: ["admin-all-users"] });
   };
 
+
+  // Onboarding funnel data
+  const { data: funnelData = [] } = useQuery({
+    queryKey: ["admin-onboarding-funnel"],
+    queryFn: async () => {
+      const steps = ["category_selected", "creator_type_selected", "stage_selected", "profile_created"];
+      const { data, error } = await supabase
+        .from("onboarding_events" as any)
+        .select("step");
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      steps.forEach(s => counts[s] = 0);
+      (data || []).forEach((e: any) => {
+        if (counts[e.step] !== undefined) counts[e.step]++;
+      });
+      return steps.map(s => ({ step: s, count: counts[s], label: s.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()) }));
+    },
+  });
+
+  const maxFunnel = Math.max(...funnelData.map((d: any) => d.count), 1);
+
   return (
     <AppLayout>
       <div className="max-w-5xl mx-auto px-4 md:px-8 py-8 space-y-6">
@@ -69,6 +90,32 @@ export default function AdminUsers() {
           <UserCog className="w-7 h-7 text-accent-green" />
           <h1 className="text-2xl font-bold">User Management</h1>
         </div>
+
+        {/* Onboarding Funnel Card */}
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <BarChart3 className="w-4 h-4" /> Onboarding Funnel
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {funnelData.map((d: any, i: number) => (
+                <div key={d.step} className="flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground w-36 shrink-0">{d.label}</span>
+                  <div className="flex-1 h-6 rounded-md bg-secondary overflow-hidden">
+                    <div
+                      className="h-full rounded-md bg-primary/80 flex items-center px-2"
+                      style={{ width: `${Math.max((d.count / maxFunnel) * 100, 4)}%` }}
+                    >
+                      <span className="text-[10px] font-bold text-primary-foreground">{d.count}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

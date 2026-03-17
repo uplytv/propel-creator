@@ -94,7 +94,7 @@ export default function Dashboard() {
       icon: CreditCard,
       color: "from-cyan-500/20 to-cyan-600/5",
       iconColor: "text-cyan-400",
-      action: () => setShowPayouts(true),
+      action: () => navigate("/wallet"),
     },
     {
       label: "Analytics",

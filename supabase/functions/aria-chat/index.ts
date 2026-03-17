@@ -1,7 +1,45 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
+const RATE_LIMIT_MAX = 20;
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
+async function checkRateLimit(supabase: any, userId: string): Promise<boolean> {
+  const now = new Date();
+  const windowStart = new Date(now.getTime() - RATE_LIMIT_WINDOW_MS);
+
+  // Get existing rate limit record
+  const { data: existing } = await supabase
+    .from('aria_rate_limits')
+    .select('id, request_count, window_start')
+    .eq('user_id', userId)
+    .gte('window_start', windowStart.toISOString())
+    .order('window_start', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (existing) {
+    if (existing.request_count >= RATE_LIMIT_MAX) {
+      return false; // Rate limited
+    }
+    // Increment counter
+    await supabase
+      .from('aria_rate_limits')
+      .update({ request_count: existing.request_count + 1 })
+      .eq('id', existing.id);
+    return true;
+  }
+
+  // Create new window
+  await supabase
+    .from('aria_rate_limits')
+    .insert({ user_id: userId, request_count: 1, window_start: now.toISOString() });
+  return true;
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -9,6 +47,45 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // JWT verification
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+    // Verify user with anon client
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const userId = claimsData.claims.sub as string;
+
+    // Rate limiting with service role client
+    const adminClient = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
+    const withinLimit = await checkRateLimit(adminClient, userId);
+    if (!withinLimit) {
+      return new Response(
+        JSON.stringify({ error: 'Rate limit reached. Try again later.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
     if (!apiKey) {
       return new Response(

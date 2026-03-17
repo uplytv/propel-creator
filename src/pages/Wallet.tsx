@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { format, subWeeks, startOfWeek } from "date-fns";
+import { format, subWeeks, subDays, startOfWeek, nextFriday } from "date-fns";
 import { 
   Wallet as WalletIcon, ArrowDownCircle, ArrowUpCircle, Clock, DollarSign, 
   CheckCircle2, CreditCard, Building2, CircleDollarSign, TrendingUp, 
   PieChart, Zap, Users, BookOpen, Video, Briefcase, SendHorizontal,
-  Receipt, ArrowUpRight, ArrowDownRight, Sparkles
+  Receipt, ArrowUpRight, ArrowDownRight, Sparkles, Calendar
 } from "lucide-react";
 import { PieChart as RechartsPie, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip } from "recharts";
 import AppLayout from "@/components/layout/AppLayout";
@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useMemo } from "react";
 import SEOHead from "@/components/SEOHead";
+import { trackEvent } from "@/lib/posthog";
 
 const REVENUE_SOURCES = [
   { key: "subscription", label: "Subscriptions", icon: Users, color: "#00FF85" },
@@ -120,9 +121,13 @@ export default function Wallet() {
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
+      trackEvent("payout_requested", { amount: Number(payoutAmount) });
       setPayoutSubmitted(true);
     }
   };
+
+  // Time range filter for analytics
+  const [timeRange, setTimeRange] = useState<"7d" | "30d" | "all">("30d");
 
   // Revenue source breakdown
   const revenueBySource = useMemo(() => {
@@ -200,8 +205,30 @@ export default function Wallet() {
           </Badge>
         </div>
 
+        {/* Next Payout Banner */}
+        {!walletLoading && available > 0 && (
+          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-primary">Next Payout</p>
+                <p className="text-lg font-bold">${available.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                <p className="text-[10px] text-muted-foreground">Est. {format(nextFriday(new Date()), "MMM d, yyyy")}</p>
+              </div>
+            </div>
+            <Button
+              onClick={() => { setDrawerOpen(true); setPayoutSubmitted(false); setPayoutAmount(""); }}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl text-xs h-10 px-5"
+            >
+              Request Payout
+            </Button>
+          </div>
+        )}
+
         {/* Primary Balance */}
-        <div className="rounded-2xl border border-[#00FF85]/15 bg-[#00FF85]/5 p-5">
+        <div className="rounded-2xl border border-primary/15 bg-primary/5 p-5">
           {walletLoading ? <Skeleton className="h-16 w-40" /> : (
             <div className="flex items-center justify-between">
               <div>

@@ -110,6 +110,27 @@ export type Database = {
         }
         Relationships: []
       }
+      aria_rate_limits: {
+        Row: {
+          id: string
+          request_count: number
+          user_id: string
+          window_start: string
+        }
+        Insert: {
+          id?: string
+          request_count?: number
+          user_id: string
+          window_start?: string
+        }
+        Update: {
+          id?: string
+          request_count?: number
+          user_id?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       business_categories: {
         Row: {
           created_at: string
@@ -1906,6 +1927,30 @@ export type Database = {
         }
         Relationships: []
       }
+      onboarding_events: {
+        Row: {
+          completed_at: string
+          created_at: string
+          id: string
+          step: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          created_at?: string
+          id?: string
+          step: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          created_at?: string
+          id?: string
+          step?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       payout_requests: {
         Row: {
           amount: number
@@ -2265,6 +2310,42 @@ export type Database = {
           playback_id?: string | null
           title?: string
           view_count?: number
+        }
+        Relationships: []
+      }
+      stripe_webhook_log: {
+        Row: {
+          attempts: number
+          created_at: string
+          error_message: string | null
+          event_type: string
+          id: string
+          last_attempted_at: string | null
+          payload: Json
+          status: string
+          stripe_event_id: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          error_message?: string | null
+          event_type: string
+          id?: string
+          last_attempted_at?: string | null
+          payload?: Json
+          status?: string
+          stripe_event_id: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          error_message?: string | null
+          event_type?: string
+          id?: string
+          last_attempted_at?: string | null
+          payload?: Json
+          status?: string
+          stripe_event_id?: string
         }
         Relationships: []
       }
