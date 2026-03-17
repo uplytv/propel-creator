@@ -58,6 +58,7 @@ function PlatformUpgradeBanner() {
   );
 }
 
+export default function Dashboard() {
   const { profile } = useApp();
   const { user } = useAuth();
   const navigate = useNavigate();
