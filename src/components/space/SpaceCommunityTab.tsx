@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ThumbsUp, MessageCircle, Pin, MoreHorizontal, Send, ArrowLeft, SlidersHorizontal } from "lucide-react";
+import ContentGate from "@/components/ContentGate";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/context/AuthContext";
 import {
