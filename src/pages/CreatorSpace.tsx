@@ -169,7 +169,7 @@ export default function CreatorSpace() {
           </div>
         )}
         <h1 className="text-base font-bold text-foreground truncate flex-1">{spaceName}</h1>
-        {/* Join button for non-members */}
+        {/* Join / Upgrade button for non-owners */}
         {!isOwner && !isMember && (
           <Button
             size="sm"
@@ -179,6 +179,18 @@ export default function CreatorSpace() {
           >
             {freeJoining ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Users className="w-3.5 h-3.5" />}
             {hasPaidTiers ? "Subscribe" : "Join Free"}
+          </Button>
+        )}
+        {/* Upgrade button for existing members when paid tiers exist */}
+        {!isOwner && isMember && hasPaidTiers && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => switchTab("pricing")}
+            className="gap-1.5 rounded-full border-primary/40 text-primary hover:bg-primary/10"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            Upgrade
           </Button>
         )}
       </div>
