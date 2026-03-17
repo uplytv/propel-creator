@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
@@ -12,7 +11,7 @@ const logStep = (step: string, details?: any) => {
   console.log(`[STRIPE-WEBHOOK] ${step}${d}`);
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -46,6 +45,35 @@ serve(async (req) => {
 
   logStep("Event received", { type: event.type, id: event.id });
 
+  // Idempotency check: skip already processed events
+  const { data: existingLog } = await supabase
+    .from("stripe_webhook_log")
+    .select("id, status")
+    .eq("stripe_event_id", event.id)
+    .maybeSingle();
+
+  if (existingLog?.status === "processed") {
+    logStep("Event already processed, skipping", { id: event.id });
+    return new Response(JSON.stringify({ received: true, skipped: true }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200,
+    });
+  }
+
+  // Upsert log entry as pending
+  const { data: logEntry } = await supabase
+    .from("stripe_webhook_log")
+    .upsert({
+      stripe_event_id: event.id,
+      event_type: event.type,
+      payload: JSON.parse(body),
+      status: "pending",
+      attempts: (existingLog?.status === "failed" ? (existingLog as any).attempts || 0 : 0) + 1,
+      last_attempted_at: new Date().toISOString(),
+    }, { onConflict: "stripe_event_id" })
+    .select("id")
+    .maybeSingle();
+
   try {
     switch (event.type) {
       case "checkout.session.completed": {
@@ -54,7 +82,6 @@ serve(async (req) => {
         const { member_id, creator_id, tier_id } = metadata;
 
         if (member_id && creator_id) {
-          // Insert member subscription
           await supabase.from("member_subscriptions").upsert({
             member_id,
             creator_id,
@@ -65,13 +92,11 @@ serve(async (req) => {
             current_period_start: new Date().toISOString(),
           }, { onConflict: "member_id,creator_id" });
 
-          // Add to community members
           await supabase.from("community_members").upsert({
             user_id: member_id,
             creator_id,
           }, { onConflict: "user_id,creator_id" });
 
-          // Record transaction
           const amount = (session.amount_total || 0) / 100;
           const fee = Math.round(amount * 0.05 * 100) / 100;
           await supabase.from("transactions").insert({
@@ -165,12 +190,32 @@ serve(async (req) => {
         logStep("Unhandled event type", { type: event.type });
     }
 
+    // Mark as processed
+    if (logEntry?.id) {
+      await supabase
+        .from("stripe_webhook_log")
+        .update({ status: "processed", error_message: null })
+        .eq("id", logEntry.id);
+    }
+
     return new Response(JSON.stringify({ received: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
     logStep("Error processing event", { error: error.message });
+
+    // Mark as failed
+    if (logEntry?.id) {
+      await supabase
+        .from("stripe_webhook_log")
+        .update({
+          status: "failed",
+          error_message: error.message || "Unknown error",
+        })
+        .eq("id", logEntry.id);
+    }
+
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
