@@ -7,13 +7,22 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const logStep = (step: string, details?: any) => {
+  console.log(`[PLATFORM-CHECKOUT] ${step}${details ? ` - ${JSON.stringify(details)}` : ""}`);
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-  if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not set");
+  if (!stripeKey) {
+    logStep("ERROR", { message: "STRIPE_SECRET_KEY not set" });
+    return new Response(JSON.stringify({ error: "STRIPE_SECRET_KEY not set" }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500,
+    });
+  }
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -22,6 +31,8 @@ serve(async (req) => {
   );
 
   try {
+    logStep("Request received");
+
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("Unauthorized");
     const token = authHeader.replace("Bearer ", "");
@@ -29,8 +40,11 @@ serve(async (req) => {
     if (userError || !userData.user) throw new Error("Unauthorized");
 
     const user = userData.user;
+    logStep("User authenticated", { userId: user.id, email: user.email });
+
     const { price_id } = await req.json();
     if (!price_id) throw new Error("price_id required");
+    logStep("Price ID", { price_id });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
@@ -40,8 +54,10 @@ serve(async (req) => {
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
     }
+    logStep("Customer lookup", { customerId: customerId || "new" });
 
     const origin = req.headers.get("origin") || "https://uply.tv";
+    logStep("Origin", { origin });
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -56,11 +72,14 @@ serve(async (req) => {
       },
     });
 
+    logStep("Checkout session created", { sessionId: session.id, url: session.url ? "present" : "missing" });
+
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
+    logStep("ERROR", { message: error.message });
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

@@ -104,15 +104,24 @@ export default function Pricing() {
 
     setCheckoutLoading(planKey);
     try {
+      console.log("[Pricing] Starting checkout for", planKey, plan.priceId);
       const { data, error } = await supabase.functions.invoke("create-platform-checkout", {
         body: { price_id: plan.priceId },
       });
+      console.log("[Pricing] Checkout response:", { data, error });
       if (error) throw error;
-      if (data?.url) window.location.href = data.url;
+      if (data?.url) {
+        console.log("[Pricing] Redirecting to:", data.url);
+        window.location.href = data.url;
+        return; // Don't clear loading state — we're navigating away
+      } else {
+        throw new Error("No checkout URL returned");
+      }
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      console.error("[Pricing] Checkout error:", err);
+      toast({ title: "Error", description: err.message || "Failed to start checkout", variant: "destructive" });
+      setCheckoutLoading(null);
     }
-    setCheckoutLoading(null);
   };
 
   const planEntries = Object.entries(PLATFORM_PLANS) as [PlanKey, typeof PLATFORM_PLANS[PlanKey]][];
