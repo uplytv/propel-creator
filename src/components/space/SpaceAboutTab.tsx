@@ -130,6 +130,7 @@ function SortableThumb({
 /* ── Main Component ── */
 export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: space } = useCreatorSpace(creatorId);
