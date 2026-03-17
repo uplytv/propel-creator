@@ -188,7 +188,7 @@ export default function CreatorSpace() {
             className="gap-1.5 rounded-full"
           >
             {freeJoining ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Users className="w-3.5 h-3.5" />}
-            {hasPaidTiers ? "Subscribe" : "Join Free"}
+            {requiresPaidJoin ? "Subscribe" : "Join Free"}
           </Button>
         )}
         {/* Upgrade button for existing members when paid tiers exist */}

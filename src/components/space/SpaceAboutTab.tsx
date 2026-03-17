@@ -213,8 +213,26 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
     },
   });
 
+  const spaceName = space?.name || creatorProfile?.display_name || "Community";
+  const avatar = space?.avatar_url || creatorProfile?.avatar_url;
+  const bio = space?.description || creatorProfile?.bio || "";
+  const isPublic = space?.is_public !== false;
+  const isFree = space?.is_free !== false;
+  const requiresPaidJoin = activeTiers.length > 0 || !isFree || Number(space?.price || 0) > 0;
+
   const handleJoin = async () => {
     if (!user) return;
+    if (requiresPaidJoin) {
+      navigate(`/community/${creatorId}/pricing`);
+      if (activeTiers.length === 0) {
+        toast({
+          title: "No live plan yet",
+          description: "This creator hasn't published a live paid tier yet.",
+          variant: "destructive",
+        });
+      }
+      return;
+    }
     try {
       await joinCommunity.mutateAsync(creatorId);
       toast({ title: "Welcome to the community! 🎉" });
@@ -222,12 +240,6 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
   };
-
-  const spaceName = space?.name || creatorProfile?.display_name || "Community";
-  const avatar = space?.avatar_url || creatorProfile?.avatar_url;
-  const bio = space?.description || creatorProfile?.bio || "";
-  const isPublic = space?.is_public !== false;
-  const isFree = space?.is_free !== false;
 
   const handleSaveName = () => {
     const trimmed = nameInput.trim();
