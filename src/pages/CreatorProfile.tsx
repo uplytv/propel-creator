@@ -777,6 +777,73 @@ export default function CreatorProfile() {
         </section>
       )}
 
+      {/* DIGITAL PRODUCTS / SHOP */}
+      {products.length > 0 && (
+        <section className="max-w-[720px] mx-auto px-4 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-white text-xl font-bold">Shop</h2>
+            <span className="text-[#888] text-sm">{products.length} product{products.length !== 1 ? "s" : ""}</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {products.map((product: any) => {
+              const isFreeProduct = !product.price || product.price === 0;
+              const typeEmoji: Record<string, string> = { digital: "📦", course: "📚", community: "🤝", coaching: "🎯" };
+              return (
+                <div
+                  key={product.id}
+                  className="rounded-xl overflow-hidden"
+                  style={{ background: "#111", border: "1px solid #1E1E1E" }}
+                >
+                  {product.image_url && (
+                    <img src={product.image_url} alt={product.name} className="w-full h-32 object-cover" />
+                  )}
+                  <div className="p-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-lg">{typeEmoji[product.type] || "📦"}</span>
+                      <span className="text-[10px] font-medium uppercase px-1.5 py-0.5 rounded" style={{ background: "#1a1a1a", color: "#888" }}>
+                        {product.type}
+                      </span>
+                    </div>
+                    <h3 className="text-white text-sm font-bold mt-1">{product.name}</h3>
+                    {product.description && (
+                      <p className="text-[#888] text-xs line-clamp-2 mt-1">{product.description}</p>
+                    )}
+                    <div className="flex items-center justify-between mt-3">
+                      <span className="text-[#00FF85] font-bold text-base">
+                        {isFreeProduct ? "Free" : `$${product.price}`}
+                      </span>
+                      {!isOwner && !isFreeProduct && (
+                        <button
+                          onClick={() => handleBuyProduct(product.id)}
+                          disabled={buyingProductId === product.id}
+                          className="px-4 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50"
+                          style={{ background: "#00FF85", color: "#0A0A0A" }}
+                        >
+                          {buyingProductId === product.id ? (
+                            <BuyLoader className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            "Buy Now"
+                          )}
+                        </button>
+                      )}
+                      {!isOwner && isFreeProduct && (
+                        <button
+                          onClick={() => navigate(`/community/${profile.user_id}/${product.type === 'course' ? 'classroom' : 'community'}`)}
+                          className="px-4 py-1.5 rounded-lg text-xs font-bold"
+                          style={{ background: "#1a1a1a", color: "#00FF85", border: "1px solid #1E1E1E" }}
+                        >
+                          Access Free
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       {/* MOBILE STICKY BOTTOM BAR */}
       <AnimatePresence>
         {showStickyBar && !isOwner && (
