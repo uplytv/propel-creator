@@ -94,6 +94,9 @@ export function useDirectMessages() {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "direct_messages" }, () => {
         fetchConversations();
       })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "direct_messages" }, () => {
+        fetchConversations();
+      })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [user, fetchConversations]);
