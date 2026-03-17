@@ -57,6 +57,7 @@ const Shorts = lazy(() => import("./pages/Shorts"));
 const SearchPage = lazy(() => import("./pages/Search"));
 const Messages = lazy(() => import("./pages/Messages"));
 const Analytics = lazy(() => import("./pages/Analytics"));
+const Pricing = lazy(() => import("./pages/Pricing"));
 
 const queryClient = new QueryClient();
 
