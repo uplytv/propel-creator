@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { TrendingUp, TrendingDown, Users, Eye, DollarSign, UserPlus, Play, Loader2, BarChart3, Calendar, Activity } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import BackNav from "@/components/BackNav";
@@ -102,8 +102,7 @@ function RetentionIndicator({ sessions }: { sessions: any[] }) {
 
 export default function AnalyticsPage() {
   const { data, isLoading } = useCreatorAnalytics();
-
-  // Build weekly follower data from stream sessions for the chart
+  const [timeRange, setTimeRange] = useState<"7d" | "30d" | "all">("30d");
   const weeklyData = useMemo(() => {
     const weeks: { label: string; value: number }[] = [];
     const now = new Date();
@@ -151,9 +150,24 @@ export default function AnalyticsPage() {
     <AppLayout>
       <SEOHead title="Analytics" description="Track your creator growth metrics, revenue, and audience engagement." />
       <div className="max-w-3xl mx-auto px-4 py-4 pb-24">
-        <BackNav label="Analytics" />
-
-        {/* Metric cards */}
+        <div className="flex items-center justify-between mt-4 mb-2">
+          <BackNav label="Analytics" />
+          <div className="flex gap-1">
+            {(["7d", "30d", "all"] as const).map((r) => (
+              <button
+                key={r}
+                onClick={() => setTimeRange(r)}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors ${
+                  timeRange === r
+                    ? "bg-primary/15 text-primary border border-primary/30"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                }`}
+              >
+                {r === "7d" ? "7 Days" : r === "30d" ? "30 Days" : "All Time"}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="grid grid-cols-2 gap-3 mt-4">
           <MetricCard label="New Followers" value={String(m?.newFollowers ?? 0)} growth={m?.followerGrowth ?? 0} icon={UserPlus} />
           <MetricCard label="New Members" value={String(m?.newMembers ?? 0)} growth={m?.memberGrowth ?? 0} icon={Users} />

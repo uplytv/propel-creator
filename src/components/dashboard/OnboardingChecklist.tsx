@@ -157,7 +157,7 @@ export function OnboardingChecklist() {
           </div>
           <p className="text-xs text-muted-foreground">
             {allDone
-              ? "You've completed all setup steps. You're ready to grow!"
+              ? "You've completed all setup steps. Now let's grow!"
               : `${completedSteps.length} of ${steps.length} steps complete`}
           </p>
         </div>
@@ -171,6 +171,27 @@ export function OnboardingChecklist() {
           <X className="w-4 h-4" />
         </button>
       </div>
+
+      {/* All done CTA */}
+      {allDone && (
+        <div className="mb-4 p-3 rounded-xl bg-primary/5 border border-primary/15 space-y-2">
+          <p className="text-xs font-medium text-primary">🚀 What's next?</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => navigate("/go-live")}
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors"
+            >
+              <Radio className="w-3.5 h-3.5" /> Go Live
+            </button>
+            <button
+              onClick={() => navigate("/discover")}
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-secondary text-foreground text-xs font-semibold hover:bg-secondary/80 transition-colors border border-border"
+            >
+              <Users className="w-3.5 h-3.5" /> Discover Creators
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Progress bar */}
       <div className="h-1.5 rounded-full bg-secondary overflow-hidden mb-4">
