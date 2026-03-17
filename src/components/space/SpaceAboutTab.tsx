@@ -174,6 +174,19 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
     },
   });
 
+  const { data: activeTiers = [] } = useQuery({
+    queryKey: ["space-about-tiers", creatorId],
+    enabled: !!creatorId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("subscription_tiers")
+        .select("id")
+        .eq("creator_id", creatorId)
+        .eq("is_active", true);
+      return data || [];
+    },
+  });
+
   const { data: galleryMedia = [] } = useQuery({
     queryKey: ["space-media", creatorId],
     queryFn: async () => {
