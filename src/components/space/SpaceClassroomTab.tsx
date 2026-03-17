@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { UPLYMuxPlayer } from "@/components/MuxPlayer";
 import { useAuth } from "@/context/AuthContext";
 import { useClassroomModules, useClassroomLessons, useLessonCompletions, useCompleteLesson, useCreateModule, useCreateLesson, useReorderModules, useReorderLessons, useDeleteModule, useDeleteLesson, useUpdateModule, useUpdateLesson } from "@/hooks/useClassroom";
+import ContentGate from "@/components/ContentGate";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -250,54 +251,56 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
   // Level 3: Lesson view (Skool-style with ← Menu / Next →)
   if (isMobile && selectedLesson) {
     return (
-      <div className="min-h-[60vh]">
-        {/* Video player */}
-        <LessonPlayer lesson={selectedLesson} />
+      <ContentGate creatorId={creatorId} type="lesson" isFree={selectedLesson.is_free}>
+        <div className="min-h-[60vh]">
+          {/* Video player */}
+          <LessonPlayer lesson={selectedLesson} />
 
-        {/* ← Menu / Next → bar */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-          <button
-            onClick={() => {
-              setSelectedLesson(null);
-            }}
-            className="flex items-center gap-1.5 text-sm font-medium text-primary"
-          >
-            <ArrowLeft className="w-4 h-4" /> Menu
-          </button>
-          <button
-            onClick={() => nextLesson && setSelectedLesson(nextLesson)}
-            disabled={!nextLesson}
-            className={`flex items-center gap-1.5 text-sm font-medium ${nextLesson ? "text-primary" : "text-muted-foreground"}`}
-          >
-            Next <ArrowRight className="w-4 h-4" />
-          </button>
+          {/* ← Menu / Next → bar */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <button
+              onClick={() => {
+                setSelectedLesson(null);
+              }}
+              className="flex items-center gap-1.5 text-sm font-medium text-primary"
+            >
+              <ArrowLeft className="w-4 h-4" /> Menu
+            </button>
+            <button
+              onClick={() => nextLesson && setSelectedLesson(nextLesson)}
+              disabled={!nextLesson}
+              className={`flex items-center gap-1.5 text-sm font-medium ${nextLesson ? "text-primary" : "text-muted-foreground"}`}
+            >
+              Next <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Lesson content */}
+          <div className="px-4 py-5 space-y-4">
+            <h1 className="text-xl font-bold text-foreground">{selectedLesson.title}</h1>
+
+            {selectedLesson.description && (
+              <div className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">
+                {selectedLesson.description}
+              </div>
+            )}
+
+            {/* Complete button */}
+            {user && !(completions as Set<string>).has(selectedLesson.id) ? (
+              <Button onClick={() => handleComplete(selectedLesson.id)} className="w-full font-semibold">
+                <CheckCircle className="w-4 h-4 mr-2" /> Mark Complete
+              </Button>
+            ) : (completions as Set<string>).has(selectedLesson.id) ? (
+              <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                <CheckCircle className="w-4 h-4" /> Completed
+              </div>
+            ) : null}
+          </div>
+
+          {/* Dialogs */}
+          {editingLesson && <EditLessonDialog open={!!editingLesson} onClose={() => setEditingLesson(null)} lesson={editingLesson} />}
         </div>
-
-        {/* Lesson content */}
-        <div className="px-4 py-5 space-y-4">
-          <h1 className="text-xl font-bold text-foreground">{selectedLesson.title}</h1>
-
-          {selectedLesson.description && (
-            <div className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">
-              {selectedLesson.description}
-            </div>
-          )}
-
-          {/* Complete button */}
-          {user && !(completions as Set<string>).has(selectedLesson.id) ? (
-            <Button onClick={() => handleComplete(selectedLesson.id)} className="w-full font-semibold">
-              <CheckCircle className="w-4 h-4 mr-2" /> Mark Complete
-            </Button>
-          ) : (completions as Set<string>).has(selectedLesson.id) ? (
-            <div className="flex items-center gap-2 text-sm font-medium text-primary">
-              <CheckCircle className="w-4 h-4" /> Completed
-            </div>
-          ) : null}
-        </div>
-
-        {/* Dialogs */}
-        {editingLesson && <EditLessonDialog open={!!editingLesson} onClose={() => setEditingLesson(null)} lesson={editingLesson} />}
-      </div>
+      </ContentGate>
     );
   }
 

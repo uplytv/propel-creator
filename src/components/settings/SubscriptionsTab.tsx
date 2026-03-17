@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { CreditCard, ExternalLink, Loader2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import EmptyState from "@/components/ui/EmptyState";
 import { useToast } from "@/hooks/use-toast";
 
@@ -22,12 +23,24 @@ export function SubscriptionsTab() {
         .from("member_subscriptions")
         .select(`
           *,
-          subscription_tiers(name, price_monthly),
-          profiles:creator_id(display_name, avatar_url, username)
+          subscription_tiers(name, price_monthly)
         `)
         .eq("member_id", user!.id)
-        .eq("status", "active");
-      return data || [];
+        .in("status", ["active", "canceled", "past_due"]);
+      
+      // Fetch creator profiles separately
+      const creatorIds = [...new Set((data || []).map((s: any) => s.creator_id))];
+      const { data: profiles } = await supabase
+        .from("profiles" as any)
+        .select("user_id, display_name, avatar_url, username")
+        .in("user_id", creatorIds);
+      
+      const profileMap = Object.fromEntries((profiles || []).map((p: any) => [p.user_id, p]));
+      
+      return (data || []).map((s: any) => ({
+        ...s,
+        creator_profile: profileMap[s.creator_id] || null,
+      }));
     },
   });
 
@@ -56,17 +69,23 @@ export function SubscriptionsTab() {
     return (
       <EmptyState
         icon={Users}
-        title="No active subscriptions"
+        title="No subscriptions"
         description="When you subscribe to a creator's community, it will appear here."
       />
     );
   }
 
+  const statusColors: Record<string, string> = {
+    active: "bg-primary/10 text-primary",
+    canceled: "bg-destructive/10 text-destructive",
+    past_due: "bg-yellow-500/10 text-yellow-500",
+  };
+
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
       {subscriptions.map((sub: any) => {
         const tier = sub.subscription_tiers;
-        const creator = sub.profiles;
+        const creator = sub.creator_profile;
         return (
           <div key={sub.id} className="glass-card p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -84,12 +103,14 @@ export function SubscriptionsTab() {
                 </p>
                 {sub.current_period_end && (
                   <p className="text-[10px] text-muted-foreground">
-                    Renews {new Date(sub.current_period_end).toLocaleDateString()}
+                    {sub.status === "active" ? "Renews" : "Expires"} {new Date(sub.current_period_end).toLocaleDateString()}
                   </p>
                 )}
               </div>
             </div>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary">Active</span>
+            <Badge variant="outline" className={`border-0 text-[10px] font-bold capitalize ${statusColors[sub.status] || "bg-muted text-muted-foreground"}`}>
+              {sub.status === "past_due" ? "Past Due" : sub.status}
+            </Badge>
           </div>
         );
       })}
@@ -98,6 +119,9 @@ export function SubscriptionsTab() {
         {portalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ExternalLink className="w-4 h-4" />}
         Manage Subscriptions
       </Button>
+      <p className="text-[10px] text-muted-foreground text-center">
+        Update payment methods, cancel, or view invoices via the billing portal.
+      </p>
     </motion.div>
   );
 }
