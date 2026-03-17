@@ -200,6 +200,20 @@ function useCreatorProfileData(username: string | undefined) {
     enabled: !!userId,
   });
 
+  const productsQuery = useQuery({
+    queryKey: ["creator-public-products", userId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("products")
+        .select("id, name, description, type, price, image_url, status")
+        .eq("user_id", userId!)
+        .eq("status", "active")
+        .order("created_at", { ascending: false });
+      return data || [];
+    },
+    enabled: !!userId,
+  });
+
   return {
     profile: profileQuery.data,
     profileLoading: profileQuery.isLoading,
@@ -212,6 +226,7 @@ function useCreatorProfileData(username: string | undefined) {
     isMember: isMemberQuery.data || false,
     space: spaceQuery.data,
     tiers: tiersQuery.data || [],
+    products: productsQuery.data || [],
   };
 }
 
