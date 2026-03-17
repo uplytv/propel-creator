@@ -347,8 +347,15 @@ export default function CreatorProfile() {
       navigate(`/auth?ref=${username}`);
       return;
     }
-    // If creator has paid tiers, redirect to Stripe checkout
-    if (tiers.length > 0) {
+
+    const requiresPaidJoin = tiers.length > 0 || space?.is_free === false || Number(space?.price || 0) > 0;
+
+    if (tiers.length > 1) {
+      navigate(`/community/${profile?.user_id}/pricing`);
+      return;
+    }
+
+    if (tiers.length === 1) {
       setJoinLoading(true);
       try {
         const { data, error } = await supabase.functions.invoke("stripe-create-checkout", {
@@ -364,9 +371,20 @@ export default function CreatorProfile() {
         toast({ title: "Error", description: err.message, variant: "destructive" });
       }
       setJoinLoading(false);
-    } else {
-      navigate(`/community/${profile?.user_id}/community`);
+      return;
     }
+
+    if (requiresPaidJoin) {
+      toast({
+        title: "No live plan yet",
+        description: "This creator hasn't published a live paid tier yet.",
+        variant: "destructive",
+      });
+      navigate(`/community/${profile?.user_id}/pricing`);
+      return;
+    }
+
+    navigate(`/community/${profile?.user_id}/community`);
   };
 
   // Loading

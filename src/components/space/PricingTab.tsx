@@ -45,6 +45,19 @@ export function PricingTab({ creatorId }: PricingTabProps) {
     },
   });
 
+  const { data: space } = useQuery({
+    queryKey: ["creator-space-pricing", creatorId],
+    enabled: !!creatorId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("creator_spaces")
+        .select("is_free, price")
+        .eq("creator_id", creatorId)
+        .maybeSingle();
+      return data;
+    },
+  });
+
   const { data: tiers, isLoading } = useQuery({
     queryKey: ["subscription-tiers", creatorId],
     enabled: !!creatorId,
@@ -151,6 +164,8 @@ export function PricingTab({ creatorId }: PricingTabProps) {
     setSelectedTier(null);
   };
 
+  const requiresPaidJoin = (tiers?.length || 0) > 0 || space?.is_free === false || Number(space?.price || 0) > 0;
+
   if (isLoading) {
     return (
       <div className="space-y-3 p-4">
@@ -166,8 +181,8 @@ export function PricingTab({ creatorId }: PricingTabProps) {
         <div className="p-8 text-center">
           <EmptyState
             icon={DollarSign}
-            title="Free community"
-            description="This community is free to join. No paid tiers available."
+            title={requiresPaidJoin ? "Plans coming soon" : "Free community"}
+            description={requiresPaidJoin ? "This creator has marked the space as paid, but no live Stripe tier is published yet." : "This community is free to join. No paid tiers available."}
           />
         </div>
       );

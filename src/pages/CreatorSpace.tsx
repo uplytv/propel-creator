@@ -127,6 +127,7 @@ export default function CreatorSpace() {
   const spaceName = space?.name || creatorProfile?.display_name || "Community";
   const spaceAvatar = space?.avatar_url || creatorProfile?.avatar_url;
   const hasPaidTiers = tiers.length > 0;
+  const requiresPaidJoin = hasPaidTiers || space?.is_free === false || Number(space?.price || 0) > 0;
 
   const handleJoinClick = async () => {
     if (!user) {
@@ -135,20 +136,29 @@ export default function CreatorSpace() {
     }
     if (hasPaidTiers) {
       setShowTierModal(true);
+      return;
+    }
+    if (requiresPaidJoin) {
+      navigate(`/community/${rawCreatorId}/pricing`, { replace: true });
+      toast({
+        title: "No live plan yet",
+        description: "This creator hasn't published a live paid tier yet.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setFreeJoining(true);
+    const { error } = await supabase.from("community_members").upsert({
+      user_id: user.id,
+      creator_id: creatorId!,
+    }, { onConflict: "user_id,creator_id" });
+    setFreeJoining(false);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      // Free join
-      setFreeJoining(true);
-      const { error } = await supabase.from("community_members").upsert({
-        user_id: user.id,
-        creator_id: creatorId!,
-      }, { onConflict: "user_id,creator_id" });
-      setFreeJoining(false);
-      if (error) {
-        toast({ title: "Error", description: error.message, variant: "destructive" });
-      } else {
-        toast({ title: "Welcome! 🎉", description: "You've joined this community." });
-        queryClient.invalidateQueries({ queryKey: ["is-member"] });
-      }
+      toast({ title: "Welcome! 🎉", description: "You've joined this community." });
+      queryClient.invalidateQueries({ queryKey: ["is-member"] });
     }
   };
 
@@ -178,7 +188,7 @@ export default function CreatorSpace() {
             className="gap-1.5 rounded-full"
           >
             {freeJoining ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Users className="w-3.5 h-3.5" />}
-            {hasPaidTiers ? "Subscribe" : "Join Free"}
+            {requiresPaidJoin ? "Subscribe" : "Join Free"}
           </Button>
         )}
         {/* Upgrade button for existing members when paid tiers exist */}

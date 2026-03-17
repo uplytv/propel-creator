@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useCreatorSpace, useUpdateSpace } from "@/hooks/useCreatorSpace";
 import { useMemberCount, useIsMember, useJoinCommunity } from "@/hooks/useCommunityMembers";
@@ -129,6 +130,7 @@ function SortableThumb({
 /* ── Main Component ── */
 export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: space } = useCreatorSpace(creatorId);
@@ -172,6 +174,19 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
     },
   });
 
+  const { data: activeTiers = [] } = useQuery({
+    queryKey: ["space-about-tiers", creatorId],
+    enabled: !!creatorId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("subscription_tiers")
+        .select("id")
+        .eq("creator_id", creatorId)
+        .eq("is_active", true);
+      return data || [];
+    },
+  });
+
   const { data: galleryMedia = [] } = useQuery({
     queryKey: ["space-media", creatorId],
     queryFn: async () => {
@@ -198,8 +213,26 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
     },
   });
 
+  const spaceName = space?.name || creatorProfile?.display_name || "Community";
+  const avatar = space?.avatar_url || creatorProfile?.avatar_url;
+  const bio = space?.description || creatorProfile?.bio || "";
+  const isPublic = space?.is_public !== false;
+  const isFree = space?.is_free !== false;
+  const requiresPaidJoin = activeTiers.length > 0 || !isFree || Number(space?.price || 0) > 0;
+
   const handleJoin = async () => {
     if (!user) return;
+    if (requiresPaidJoin) {
+      navigate(`/community/${creatorId}/pricing`);
+      if (activeTiers.length === 0) {
+        toast({
+          title: "No live plan yet",
+          description: "This creator hasn't published a live paid tier yet.",
+          variant: "destructive",
+        });
+      }
+      return;
+    }
     try {
       await joinCommunity.mutateAsync(creatorId);
       toast({ title: "Welcome to the community! 🎉" });
@@ -207,12 +240,6 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
   };
-
-  const spaceName = space?.name || creatorProfile?.display_name || "Community";
-  const avatar = space?.avatar_url || creatorProfile?.avatar_url;
-  const bio = space?.description || creatorProfile?.bio || "";
-  const isPublic = space?.is_public !== false;
-  const isFree = space?.is_free !== false;
 
   const handleSaveName = () => {
     const trimmed = nameInput.trim();
