@@ -939,6 +939,30 @@ export type Database = {
         }
         Relationships: []
       }
+      credit_packages: {
+        Row: {
+          credits: number
+          id: string
+          label: string
+          price_usd: number
+          stripe_price_id: string | null
+        }
+        Insert: {
+          credits: number
+          id?: string
+          label: string
+          price_usd: number
+          stripe_price_id?: string | null
+        }
+        Update: {
+          credits?: number
+          id?: string
+          label?: string
+          price_usd?: number
+          stripe_price_id?: string | null
+        }
+        Relationships: []
+      }
       direct_conversations: {
         Row: {
           created_at: string | null
@@ -2052,6 +2076,44 @@ export type Database = {
         }
         Relationships: []
       }
+      product_purchases: {
+        Row: {
+          amount: number
+          buyer_id: string
+          created_at: string
+          creator_id: string
+          id: string
+          product_id: string
+          stripe_payment_intent_id: string | null
+        }
+        Insert: {
+          amount?: number
+          buyer_id: string
+          created_at?: string
+          creator_id: string
+          id?: string
+          product_id: string
+          stripe_payment_intent_id?: string | null
+        }
+        Update: {
+          amount?: number
+          buyer_id?: string
+          created_at?: string
+          creator_id?: string
+          id?: string
+          product_id?: string
+          stripe_payment_intent_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_purchases_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           created_at: string
@@ -2063,6 +2125,7 @@ export type Database = {
           revenue: number
           sales: number
           status: string
+          stripe_price_id: string | null
           type: string
           updated_at: string
           user_id: string
@@ -2077,6 +2140,7 @@ export type Database = {
           revenue?: number
           sales?: number
           status?: string
+          stripe_price_id?: string | null
           type?: string
           updated_at?: string
           user_id: string
@@ -2091,6 +2155,7 @@ export type Database = {
           revenue?: number
           sales?: number
           status?: string
+          stripe_price_id?: string | null
           type?: string
           updated_at?: string
           user_id?: string
@@ -2669,6 +2734,7 @@ export type Database = {
         Row: {
           available_balance: number | null
           created_at: string | null
+          credits: number
           currency: string | null
           id: string
           lifetime_earned: number | null
@@ -2679,6 +2745,7 @@ export type Database = {
         Insert: {
           available_balance?: number | null
           created_at?: string | null
+          credits?: number
           currency?: string | null
           id?: string
           lifetime_earned?: number | null
@@ -2689,6 +2756,7 @@ export type Database = {
         Update: {
           available_balance?: number | null
           created_at?: string | null
+          credits?: number
           currency?: string | null
           id?: string
           lifetime_earned?: number | null
