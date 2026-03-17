@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Coins, X, Sparkles, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const tipPresets = [
   { amount: 5, emoji: "☕", label: "Coffee" },
@@ -12,15 +14,18 @@ const tipPresets = [
 ];
 
 interface TipButtonProps {
+  creatorId: string;
   creatorName: string;
+  streamId?: string;
   creditsBalance: number;
   isLoggedIn: boolean;
   onTip: (amount: number, message: string) => void;
 }
 
-export default function TipButton({ creatorName, creditsBalance, isLoggedIn, onTip }: TipButtonProps) {
+export default function TipButton({ creatorId, creatorName, streamId, creditsBalance, isLoggedIn, onTip }: TipButtonProps) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [selected, setSelected] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState("");
   const [message, setMessage] = useState("");
@@ -28,23 +33,29 @@ export default function TipButton({ creatorName, creditsBalance, isLoggedIn, onT
   const [sent, setSent] = useState(false);
 
   const amount = selected ?? (customAmount ? parseInt(customAmount, 10) : 0);
-  const canSend = amount > 0 && amount <= creditsBalance;
 
-  const handleSend = () => {
-    if (!canSend) return;
+  const handleSend = async () => {
+    if (amount <= 0) return;
     setSending(true);
-    setTimeout(() => {
-      setSending(false);
-      setSent(true);
-      onTip(amount, message);
-      setTimeout(() => {
-        setSent(false);
-        setOpen(false);
-        setSelected(null);
-        setCustomAmount("");
-        setMessage("");
-      }, 1500);
-    }, 800);
+    try {
+      const { data, error } = await supabase.functions.invoke("stripe-create-tip", {
+        body: {
+          amount,
+          creator_id: creatorId,
+          stream_id: streamId,
+          message,
+        },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        // Redirect to Stripe checkout for real payment
+        window.location.href = data.url;
+        return;
+      }
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+    setSending(false);
   };
 
   if (!isLoggedIn) {
@@ -57,7 +68,6 @@ export default function TipButton({ creatorName, creditsBalance, isLoggedIn, onT
 
   return (
     <>
-      {/* Tip trigger */}
       <button
         onClick={() => setOpen(true)}
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-warning/10 text-warning hover:bg-warning/20 transition-all text-sm font-medium"
@@ -66,7 +76,6 @@ export default function TipButton({ creatorName, creditsBalance, isLoggedIn, onT
         Tip
       </button>
 
-      {/* Tip modal */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -76,7 +85,6 @@ export default function TipButton({ creatorName, creditsBalance, isLoggedIn, onT
             className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center"
           >
             <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setOpen(false)} />
-
             <motion.div
               initial={{ opacity: 0, y: 40, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -86,72 +94,50 @@ export default function TipButton({ creatorName, creditsBalance, isLoggedIn, onT
             >
               {sent ? (
                 <div className="glass-card glow-border p-8 text-center">
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                    className="text-5xl mb-4"
-                  >
+                  <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 200, damping: 15 }} className="text-5xl mb-4">
                     {tipPresets.find(p => p.amount === amount)?.emoji ?? "✨"}
                   </motion.div>
                   <h3 className="text-lg font-bold text-foreground mb-1">Tip Sent!</h3>
-                  <p className="text-sm text-muted-foreground">
-                    You sent {amount} credits to {creatorName}
-                  </p>
+                  <p className="text-sm text-muted-foreground">You sent ${amount} to {creatorName}</p>
                 </div>
               ) : (
                 <div className="glass-card border border-border overflow-hidden">
-                  {/* Header */}
                   <div className="flex items-center justify-between px-5 py-4 border-b border-border">
                     <div className="flex items-center gap-2">
                       <Coins className="w-4 h-4 text-warning" />
                       <h3 className="text-sm font-semibold text-foreground">Send a Tip</h3>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs text-muted-foreground">
-                        Balance: <span className="text-warning font-semibold">{creditsBalance}</span>
-                      </span>
-                      <button onClick={() => setOpen(false)} className="p-1 rounded text-muted-foreground hover:text-foreground transition-colors">
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
+                    <button onClick={() => setOpen(false)} className="p-1 rounded text-muted-foreground hover:text-foreground transition-colors">
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
-
                   <div className="p-5 space-y-4">
-                    {/* Presets */}
                     <div className="grid grid-cols-4 gap-2">
                       {tipPresets.map((preset) => (
                         <button
                           key={preset.amount}
                           onClick={() => { setSelected(preset.amount); setCustomAmount(""); }}
                           className={`flex flex-col items-center gap-1 p-3 rounded-xl border transition-all ${
-                            selected === preset.amount
-                              ? "border-warning bg-warning/10 shadow-sm"
-                              : "border-border bg-secondary/30 hover:border-warning/30"
+                            selected === preset.amount ? "border-warning bg-warning/10 shadow-sm" : "border-border bg-secondary/30 hover:border-warning/30"
                           }`}
                         >
                           <span className="text-xl">{preset.emoji}</span>
-                          <span className="text-xs font-semibold text-foreground">{preset.amount}</span>
+                          <span className="text-xs font-semibold text-foreground">${preset.amount}</span>
                           <span className="text-[10px] text-muted-foreground">{preset.label}</span>
                         </button>
                       ))}
                     </div>
-
-                    {/* Custom amount */}
                     <div className="relative">
                       <Coins className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <input
                         type="number"
                         min="1"
-                        max={creditsBalance}
                         value={customAmount}
                         onChange={(e) => { setCustomAmount(e.target.value); setSelected(null); }}
-                        placeholder="Custom amount..."
+                        placeholder="Custom amount ($)..."
                         className="w-full bg-secondary/50 border border-border rounded-xl pl-9 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-warning/50 transition-colors"
                       />
                     </div>
-
-                    {/* Message */}
                     <input
                       type="text"
                       value={message}
@@ -160,12 +146,10 @@ export default function TipButton({ creatorName, creditsBalance, isLoggedIn, onT
                       maxLength={100}
                       className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors"
                     />
-
-                    {/* Send button */}
                     <Button
                       variant="hero"
                       onClick={handleSend}
-                      disabled={!canSend || sending}
+                      disabled={amount <= 0 || sending}
                       className="w-full bg-warning text-warning-foreground hover:bg-warning/90"
                     >
                       {sending ? (
@@ -177,24 +161,13 @@ export default function TipButton({ creatorName, creditsBalance, isLoggedIn, onT
                       ) : (
                         <>
                           <Sparkles className="w-4 h-4 mr-1.5" />
-                          Send {amount > 0 ? `${amount} Credits` : "Tip"}
+                          Send ${amount > 0 ? amount : ""} Tip
                         </>
                       )}
                     </Button>
-
-                    {amount > creditsBalance && (
-                      <p className="text-xs text-destructive text-center">Not enough credits</p>
-                    )}
-
-                    {creditsBalance < 50 && (
-                      <button
-                        onClick={() => { setOpen(false); navigate("/buy-credits"); }}
-                        className="flex items-center justify-center gap-1.5 w-full text-xs text-primary hover:text-primary/80 font-medium transition-colors py-1"
-                      >
-                        <Plus className="w-3 h-3" />
-                        Get more credits
-                      </button>
-                    )}
+                    <p className="text-[10px] text-center text-muted-foreground">
+                      Powered by Stripe. 5% platform fee applies.
+                    </p>
                   </div>
                 </div>
               )}
