@@ -205,8 +205,30 @@ export default function Wallet() {
           </Badge>
         </div>
 
+        {/* Next Payout Banner */}
+        {!walletLoading && available > 0 && (
+          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-primary">Next Payout</p>
+                <p className="text-lg font-bold">${available.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                <p className="text-[10px] text-muted-foreground">Est. {format(nextFriday(new Date()), "MMM d, yyyy")}</p>
+              </div>
+            </div>
+            <Button
+              onClick={() => { setDrawerOpen(true); setPayoutSubmitted(false); setPayoutAmount(""); }}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl text-xs h-10 px-5"
+            >
+              Request Payout
+            </Button>
+          </div>
+        )}
+
         {/* Primary Balance */}
-        <div className="rounded-2xl border border-[#00FF85]/15 bg-[#00FF85]/5 p-5">
+        <div className="rounded-2xl border border-primary/15 bg-primary/5 p-5">
           {walletLoading ? <Skeleton className="h-16 w-40" /> : (
             <div className="flex items-center justify-between">
               <div>
