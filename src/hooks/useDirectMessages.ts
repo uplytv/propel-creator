@@ -178,6 +178,9 @@ export function useConversationMessages(conversationId: string | null) {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "direct_messages", filter: `conversation_id=eq.${conversationId}` }, (payload) => {
         setMessages((prev) => [...prev, payload.new as DirectMessage]);
       })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "direct_messages", filter: `conversation_id=eq.${conversationId}` }, (payload) => {
+        setMessages((prev) => prev.map((m) => m.id === payload.new.id ? { ...m, ...payload.new } as DirectMessage : m));
+      })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [conversationId]);

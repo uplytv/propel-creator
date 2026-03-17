@@ -151,9 +151,16 @@ function ChatView({
                 }`}
               >
                 <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-                <p className={`text-[10px] mt-1 ${isMine ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
-                  {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                </p>
+                <div className={`flex items-center gap-1 mt-1 ${isMine ? "justify-end" : ""}`}>
+                  <p className={`text-[10px] ${isMine ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
+                    {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                  {isMine && (
+                    <span className={`text-[10px] ${msg.read ? "text-primary-foreground/80" : "text-primary-foreground/40"}`}>
+                      {msg.read ? "✓✓" : "✓"}
+                    </span>
+                  )}
+                </div>
               </div>
             </motion.div>
           );
