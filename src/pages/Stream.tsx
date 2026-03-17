@@ -19,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import FollowButton from "@/components/FollowButton";
 import ClipCreator from "@/components/clips/ClipCreator";
 import SharePanel from "@/components/share/SharePanel";
+import SEOHead from "@/components/SEOHead";
 
 const tierIcons = [Shield, TrendingUp, Zap, Crown];
 const tierColors: Record<number, string> = {
