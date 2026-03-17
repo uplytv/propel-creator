@@ -125,13 +125,53 @@ Deno.serve(async (req) => {
             amount,
           });
 
-          // Update product sales count
-          await supabase.rpc("increment_product_sales" as any, { p_id: product_id }).catch(() => {
+          // Update product sales count and revenue
+          await supabase.rpc("increment_product_sales" as any, { p_id: product_id, p_amount: amount }).catch(async () => {
             // Fallback: manual increment
+            const { data: prod } = await supabase.from("products").select("sales, revenue").eq("id", product_id).maybeSingle();
+            if (prod) {
+              await supabase.from("products").update({
+                sales: (prod.sales || 0) + 1,
+                revenue: (prod.revenue || 0) + amount,
+              }).eq("id", product_id);
+            }
           });
 
+          // Get product name for notifications
+          const { data: purchasedProduct } = await supabase
+            .from("products").select("name").eq("id", product_id).maybeSingle();
+          const productName = purchasedProduct?.name || "a product";
+
+          // Get buyer profile for creator notification
+          const { data: buyerProfile } = await supabase
+            .from("profiles").select("display_name, username").eq("user_id", buyer_id).maybeSingle();
+          const buyerName = buyerProfile?.display_name || buyerProfile?.username || "Someone";
+
+          // Notify creator of the sale
+          await supabase.from("notifications").insert({
+            user_id: creator_id,
+            type: "sale",
+            title: "New Sale! 🎉",
+            message: `${buyerName} purchased "${productName}" for $${amount.toFixed(2)}`,
+            actor_id: buyer_id,
+            reference_id: product_id,
+            link: "/dashboard",
+          });
+
+          // Notify buyer of successful purchase
+          await supabase.from("notifications").insert({
+            user_id: buyer_id,
+            type: "purchase",
+            title: "Purchase Confirmed ✅",
+            message: `You purchased "${productName}" for $${amount.toFixed(2)}`,
+            actor_id: creator_id,
+            reference_id: product_id,
+            link: "/products",
+          });
+
+          // Record transaction and update creator wallet
           const { data: creatorWallet } = await supabase
-            .from("wallets").select("id").eq("user_id", creator_id).maybeSingle();
+            .from("wallets").select("id, available_balance, lifetime_earned").eq("user_id", creator_id).maybeSingle();
           if (creatorWallet) {
             await supabase.from("transactions").insert({
               wallet_id: creatorWallet.id,
@@ -141,11 +181,17 @@ Deno.serve(async (req) => {
               type: "earn",
               status: "completed",
               stripe_payment_intent_id: session.payment_intent as string,
-              description: "Product sale",
+              description: `Product sale: ${productName}`,
               completed_at: new Date().toISOString(),
             });
+
+            // Update wallet balances
+            await supabase.from("wallets").update({
+              available_balance: (creatorWallet.available_balance || 0) + (amount - fee),
+              lifetime_earned: (creatorWallet.lifetime_earned || 0) + (amount - fee),
+            }).eq("id", creatorWallet.id);
           }
-          logStep("Product purchase processed", { buyer_id, product_id });
+          logStep("Product purchase processed with notifications", { buyer_id, product_id, amount });
 
         } else if (purchaseType === "credits") {
           // Handle credit purchase
