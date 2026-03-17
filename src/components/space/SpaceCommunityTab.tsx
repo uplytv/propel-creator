@@ -176,82 +176,83 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
       ) : (
         <div className="space-y-3">
           {posts.map((post: any, i: number) => (
-            <motion.div
-              key={post.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.03 }}
-              className={`p-4 rounded-lg cursor-pointer bg-card border border-border ${
-                post.is_pinned ? "border-l-[3px] border-l-primary" : ""
-              }`}
-              onClick={() => setSelectedPost(post)}
-            >
-              {/* Pin label */}
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  {post.author_avatar ? (
-                    <img src={post.author_avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-muted text-foreground">
-                      {(post.author_name || "M").charAt(0)}
-                    </div>
-                  )}
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-sm font-bold text-foreground">{post.author_name}</span>
-                      {post.author_id === creatorId && <span>⭐</span>}
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-                      </span>
-                      {post.category !== "general" && (
-                        <span className="text-xs px-1.5 py-0.5 rounded-full bg-muted text-primary">
-                          {post.category}
+            <ContentGate key={post.id} creatorId={creatorId} type="post" onJoinClick={() => {}}>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.03 }}
+                className={`p-4 rounded-lg cursor-pointer bg-card border border-border ${
+                  post.is_pinned ? "border-l-[3px] border-l-primary" : ""
+                }`}
+                onClick={() => setSelectedPost(post)}
+              >
+                {/* Pin label */}
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    {post.author_avatar ? (
+                      <img src={post.author_avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-muted text-foreground">
+                        {(post.author_name || "M").charAt(0)}
+                      </div>
+                    )}
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-bold text-foreground">{post.author_name}</span>
+                        {post.author_id === creatorId && <span>⭐</span>}
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
                         </span>
-                      )}
+                        {post.category !== "general" && (
+                          <span className="text-xs px-1.5 py-0.5 rounded-full bg-muted text-primary">
+                            {post.category}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
+                  <div className="flex items-center gap-2">
+                    {post.is_pinned && (
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Pin className="w-3 h-3" /> Pinned
+                      </div>
+                    )}
+                    {isOwner && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          togglePin.mutate({ postId: post.id, isPinned: post.is_pinned });
+                        }}
+                        className="p-1 rounded"
+                      >
+                        <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  {post.is_pinned && (
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Pin className="w-3 h-3" /> Pinned
-                    </div>
-                  )}
-                  {isOwner && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        togglePin.mutate({ postId: post.id, isPinned: post.is_pinned });
-                      }}
-                      className="p-1 rounded"
-                    >
-                      <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
-                    </button>
-                  )}
+
+                {/* Content */}
+                {post.title && <p className="text-foreground font-semibold text-base mb-1">{post.title}</p>}
+                <p className="text-sm line-clamp-2 text-muted-foreground">{post.body}</p>
+
+                {/* Actions */}
+                <div className="flex items-center gap-4 mt-3">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleLike(post.id); }}
+                    className={`flex items-center gap-1 text-xs transition-colors ${
+                      (likedSet as Set<string>).has(post.id) ? "text-primary" : "text-muted-foreground"
+                    }`}
+                  >
+                    <ThumbsUp className="w-3.5 h-3.5" /> {post.like_count}
+                  </button>
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <MessageCircle className="w-3.5 h-3.5" /> {post.comment_count}
+                  </span>
                 </div>
-              </div>
-
-              {/* Content */}
-              {post.title && <p className="text-foreground font-semibold text-base mb-1">{post.title}</p>}
-              <p className="text-sm line-clamp-2 text-muted-foreground">{post.body}</p>
-
-              {/* Actions */}
-              <div className="flex items-center gap-4 mt-3">
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleLike(post.id); }}
-                  className={`flex items-center gap-1 text-xs transition-colors ${
-                    (likedSet as Set<string>).has(post.id) ? "text-primary" : "text-muted-foreground"
-                  }`}
-                >
-                  <ThumbsUp className="w-3.5 h-3.5" /> {post.like_count}
-                </button>
-                <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <MessageCircle className="w-3.5 h-3.5" /> {post.comment_count}
-                </span>
-              </div>
-            </motion.div>
+              </motion.div>
+            </ContentGate>
           ))}
         </div>
       )}
