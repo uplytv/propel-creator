@@ -404,6 +404,24 @@ export default function CreatorProfile() {
     navigate(`/community/${profile?.user_id}/community`);
   };
 
+  const handleBuyProduct = async (productId: string) => {
+    if (!user) {
+      navigate(`/auth?ref=${username}`);
+      return;
+    }
+    setBuyingProductId(productId);
+    try {
+      const { data, error } = await supabase.functions.invoke("stripe-create-product-checkout", {
+        body: { product_id: productId, creator_id: profile?.user_id },
+      });
+      if (error) throw error;
+      if (data?.url) window.location.href = data.url;
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+    setBuyingProductId(null);
+  };
+
   // Loading
   if (profileLoading) {
     return (
