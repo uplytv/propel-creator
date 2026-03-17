@@ -203,7 +203,7 @@ export default function Dashboard() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-3"
+            className="grid grid-cols-2 md:grid-cols-3 gap-3"
           >
           {[
             { label: "Members", value: dashStats?.totalMembers ?? 0, icon: Users, iconColor: "text-violet-400" },
