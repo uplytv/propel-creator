@@ -179,7 +179,7 @@ Deno.serve(async (req) => {
         conversion_type,
         amount: Number(amount),
         commission_amount: commissionAmount,
-        status: "pending",
+        status: commissionAmount > 0 ? "approved" : "pending",
       });
 
       // Update member stats
@@ -197,6 +197,36 @@ Deno.serve(async (req) => {
             earnings: Number(memberData.earnings || 0) + commissionAmount,
           })
           .eq("id", creatorMember.id);
+      }
+
+      // Credit member's wallet for purchase conversions
+      if (conversion_type === "purchase" && commissionAmount > 0) {
+        const { data: wallet } = await serviceClient
+          .from("wallets")
+          .select("id, available_balance, lifetime_earned")
+          .eq("user_id", creatorMember.member_id)
+          .maybeSingle();
+
+        if (wallet) {
+          await serviceClient
+            .from("wallets")
+            .update({
+              available_balance: Number(wallet.available_balance || 0) + commissionAmount,
+              lifetime_earned: Number(wallet.lifetime_earned || 0) + commissionAmount,
+            })
+            .eq("id", wallet.id);
+
+          await serviceClient.from("transactions").insert({
+            wallet_id: wallet.id,
+            amount: commissionAmount,
+            net_amount: commissionAmount,
+            platform_fee_amount: 0,
+            type: "earn",
+            status: "completed",
+            description: `Creator affiliate commission (${affiliate_code})`,
+            completed_at: new Date().toISOString(),
+          });
+        }
       }
 
       return new Response(JSON.stringify({ success: true, type: "creator" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
