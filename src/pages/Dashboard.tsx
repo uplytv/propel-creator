@@ -18,8 +18,46 @@ import { AriaPanel } from "@/components/aria/AriaPanel";
 import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist";
 import { WeeklyGrowthReport } from "@/components/dashboard/WeeklyGrowthReport";
 import { PayoutsTab } from "@/components/dashboard/PayoutsTab";
+import { Crown } from "lucide-react";
 
-export default function Dashboard() {
+function PlatformUpgradeBanner() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { data: planData } = useQuery({
+    queryKey: ["platform-subscription", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      try {
+        const { data } = await supabase.functions.invoke("check-platform-subscription");
+        return data;
+      } catch { return { plan: "free" }; }
+    },
+  });
+
+  if (planData?.plan && planData.plan !== "free") return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="mx-4 md:mx-8 mb-4 p-4 rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 to-primary/5 flex items-center justify-between gap-3"
+    >
+      <div className="flex items-center gap-3">
+        <div className="w-9 h-9 rounded-lg bg-primary/20 flex items-center justify-center">
+          <Crown className="w-5 h-5 text-primary" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-foreground">Upgrade to keep more earnings</p>
+          <p className="text-xs text-muted-foreground">Reduce fees from 5% to 0% with Pro or Scale</p>
+        </div>
+      </div>
+      <Button size="sm" onClick={() => navigate("/pricing")} className="gap-1.5 flex-shrink-0">
+        <Sparkles className="w-3.5 h-3.5" /> Upgrade
+      </Button>
+    </motion.div>
+  );
+}
+
   const { profile } = useApp();
   const { user } = useAuth();
   const navigate = useNavigate();
