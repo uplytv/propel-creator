@@ -248,6 +248,12 @@ export default function Stream() {
 
     return (
       <div className="min-h-screen bg-background flex flex-col">
+        <SEOHead
+          title={dbStream.title || (isVod ? "Recording" : "Live Stream")}
+          description={dbStream.description || `Watch ${creatorName}'s ${isActive ? "live stream" : "recording"} on Uply.`}
+          image={playbackId ? `https://image.mux.com/${playbackId}/thumbnail.webp?width=1200&height=630` : undefined}
+          type={isActive ? "video.other" : "video.movie"}
+        />
         {/* Top bar */}
         <div className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
           <div className="flex items-center justify-between h-14 px-3 sm:px-4">
