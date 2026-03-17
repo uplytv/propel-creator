@@ -13,6 +13,14 @@ export interface DashboardStats {
   productRevenue: number;
 }
 
+async function safeQuery<T>(fn: () => PromiseLike<T>, fallback: T): Promise<T> {
+  try {
+    return await fn();
+  } catch {
+    return fallback;
+  }
+}
+
 export function useDashboardStats() {
   const { user } = useAuth();
 
@@ -25,82 +33,59 @@ export function useDashboardStats() {
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
       const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
-      // Parallel queries
       const [
-        liveStreamsRes,
-        walletRes,
-        membersRes,
-        subscribersRes,
-        newMembersRes,
-        productSalesRes,
-        monthlyTransactionsRes,
+        liveStreamsCount,
+        walletData,
+        membersCount,
+        subscribersCount,
+        newMembersCount,
+        productSales,
+        monthlyRevenue,
       ] = await Promise.all([
-        supabase
-          .from("mux_live_streams")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", user.id)
-          .then(r => r.count ?? 0)
-          .catch(() => 0),
-        supabase
-          .from("wallets")
-          .select("lifetime_earned")
-          .eq("user_id", user.id)
-          .maybeSingle()
-          .then(r => r.data)
-          .catch(() => null),
-        supabase
-          .from("community_members")
-          .select("id", { count: "exact", head: true })
-          .eq("creator_id", user.id)
-          .then(r => r.count ?? 0)
-          .catch(() => 0),
-        supabase
-          .from("member_subscriptions")
-          .select("id", { count: "exact", head: true })
-          .eq("creator_id", user.id)
-          .eq("status", "active")
-          .then(r => r.count ?? 0)
-          .catch(() => 0),
-        supabase
-          .from("community_members")
-          .select("id", { count: "exact", head: true })
-          .eq("creator_id", user.id)
-          .gte("joined_at", sevenDaysAgo)
-          .then(r => r.count ?? 0)
-          .catch(() => 0),
-        supabase
-          .from("product_purchases")
-          .select("id, amount")
-          .eq("creator_id", user.id)
-          .then(r => {
-            const data = r.data || [];
-            return {
-              count: data.length,
-              revenue: data.reduce((sum: number, p: any) => sum + Number(p.amount || 0), 0),
-            };
-          })
-          .catch(() => ({ count: 0, revenue: 0 })),
-        supabase
-          .from("transactions")
-          .select("net_amount")
-          .gte("completed_at", startOfMonth)
-          .eq("status", "completed")
-          .then(r => {
-            const data = r.data || [];
-            return data.reduce((sum: number, t: any) => sum + Number(t.net_amount || 0), 0);
-          })
-          .catch(() => 0),
+        safeQuery(async () => {
+          const r = await supabase.from("mux_live_streams").select("id", { count: "exact", head: true }).eq("user_id", user.id);
+          return r.count ?? 0;
+        }, 0),
+        safeQuery(async () => {
+          const r = await supabase.from("wallets").select("lifetime_earned").eq("user_id", user.id).maybeSingle();
+          return r.data;
+        }, null),
+        safeQuery(async () => {
+          const r = await supabase.from("community_members").select("id", { count: "exact", head: true }).eq("creator_id", user.id);
+          return r.count ?? 0;
+        }, 0),
+        safeQuery(async () => {
+          const r = await supabase.from("member_subscriptions").select("id", { count: "exact", head: true }).eq("creator_id", user.id).eq("status", "active");
+          return r.count ?? 0;
+        }, 0),
+        safeQuery(async () => {
+          const r = await supabase.from("community_members").select("id", { count: "exact", head: true }).eq("creator_id", user.id).gte("joined_at", sevenDaysAgo);
+          return r.count ?? 0;
+        }, 0),
+        safeQuery(async () => {
+          const r = await supabase.from("product_purchases").select("id, amount").eq("creator_id", user.id);
+          const data = r.data || [];
+          return {
+            count: data.length,
+            revenue: data.reduce((sum, p: any) => sum + Number(p.amount || 0), 0),
+          };
+        }, { count: 0, revenue: 0 }),
+        safeQuery(async () => {
+          const r = await supabase.from("transactions").select("net_amount").gte("completed_at", startOfMonth).eq("status", "completed");
+          const data = r.data || [];
+          return data.reduce((sum, t: any) => sum + Number(t.net_amount || 0), 0);
+        }, 0),
       ]);
 
       return {
-        totalMembers: membersRes as number,
-        activeSubscribers: subscribersRes as number,
-        totalRevenue: Number((walletRes as any)?.lifetime_earned ?? 0),
-        revenueThisMonth: monthlyTransactionsRes as number,
-        newMembersThisWeek: newMembersRes as number,
-        totalLiveStreams: liveStreamsRes as number,
-        totalProductSales: (productSalesRes as any).count,
-        productRevenue: (productSalesRes as any).revenue,
+        totalMembers: membersCount,
+        activeSubscribers: subscribersCount,
+        totalRevenue: Number((walletData as any)?.lifetime_earned ?? 0),
+        revenueThisMonth: monthlyRevenue,
+        newMembersThisWeek: newMembersCount,
+        totalLiveStreams: liveStreamsCount,
+        totalProductSales: productSales.count,
+        productRevenue: productSales.revenue,
       };
     },
     enabled: !!user,
