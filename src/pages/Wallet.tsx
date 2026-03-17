@@ -121,9 +121,13 @@ export default function Wallet() {
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
+      trackEvent("payout_requested", { amount: Number(payoutAmount) });
       setPayoutSubmitted(true);
     }
   };
+
+  // Time range filter for analytics
+  const [timeRange, setTimeRange] = useState<"7d" | "30d" | "all">("30d");
 
   // Revenue source breakdown
   const revenueBySource = useMemo(() => {
