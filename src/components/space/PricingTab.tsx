@@ -45,6 +45,19 @@ export function PricingTab({ creatorId }: PricingTabProps) {
     },
   });
 
+  const { data: space } = useQuery({
+    queryKey: ["creator-space-pricing", creatorId],
+    enabled: !!creatorId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("creator_spaces")
+        .select("is_free, price")
+        .eq("creator_id", creatorId)
+        .maybeSingle();
+      return data;
+    },
+  });
+
   const { data: tiers, isLoading } = useQuery({
     queryKey: ["subscription-tiers", creatorId],
     enabled: !!creatorId,

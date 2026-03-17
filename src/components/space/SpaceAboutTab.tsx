@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useCreatorSpace, useUpdateSpace } from "@/hooks/useCreatorSpace";
 import { useMemberCount, useIsMember, useJoinCommunity } from "@/hooks/useCommunityMembers";
