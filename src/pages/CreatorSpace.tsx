@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import BackNav from "@/components/BackNav";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useCreatorSpace, useEnsureSpace } from "@/hooks/useCreatorSpace";
 import { useMemberCount } from "@/hooks/useCommunityMembers";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import SpaceCommunityTab from "@/components/space/SpaceCommunityTab";
 import SpaceClassroomTab from "@/components/space/SpaceClassroomTab";
 import SpaceCalendarTab from "@/components/space/SpaceCalendarTab";
@@ -17,6 +17,11 @@ import { CreatorAffiliateProgramSettings } from "@/components/affiliates/Creator
 import { useCreatorAffiliateProgram } from "@/hooks/useAffiliates";
 import { setAffiliateCookie } from "@/lib/affiliateCookies";
 import { PricingTab } from "@/components/space/PricingTab";
+import { useSubscriptionTiers } from "@/hooks/useStripeAccount";
+import TierSelectionModal from "@/components/TierSelectionModal";
+import { Button } from "@/components/ui/button";
+import { Users, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const VALID_TABS = ["community", "classroom", "calendar", "members", "leaderboard", "pricing", "earn", "about"] as const;
 type TabSlug = typeof VALID_TABS[number];
@@ -43,14 +48,19 @@ export default function CreatorSpace() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
   const creatorId = rawCreatorId === "me" ? user?.id : rawCreatorId;
 
   const searchParams = new URLSearchParams(location.search);
   const refCode = searchParams.get("ref");
+  const justJoined = searchParams.get("joined") === "true";
 
-  // Handle legacy ?tab= and state.tab by redirecting to URL-based tab
+  const [showTierModal, setShowTierModal] = useState(false);
+  const [freeJoining, setFreeJoining] = useState(false);
+
   useEffect(() => {
-    if (tabParam) return; // already have URL tab
+    if (tabParam) return;
     const legacyTab = searchParams.get("tab") || (location.state as any)?.tab;
     if (legacyTab) {
       const resolved = resolveTabFromUrl(legacyTab);
@@ -58,22 +68,28 @@ export default function CreatorSpace() {
     }
   }, [tabParam, rawCreatorId]);
 
-  // Derive active tab from URL
+  useEffect(() => {
+    if (justJoined) {
+      toast({ title: "Welcome! 🎉", description: "You've joined this community." });
+      queryClient.invalidateQueries({ queryKey: ["is-member"] });
+      queryClient.invalidateQueries({ queryKey: ["member-subscription"] });
+      // Clean URL
+      navigate(`/community/${rawCreatorId}/community`, { replace: true });
+    }
+  }, [justJoined]);
+
   const activeTab = resolveTabFromUrl(tabParam);
 
-  // Handle creator affiliate cookie
   useEffect(() => {
-    if (refCode) {
-      setAffiliateCookie("uply_creator_ref", refCode, 30);
-    }
+    if (refCode) setAffiliateCookie("uply_creator_ref", refCode, 30);
   }, [refCode]);
 
   const isOwner = !!user?.id && !!creatorId && user.id === creatorId;
-
   const { data: space } = useCreatorSpace(creatorId);
   const { data: memberCount = 0 } = useMemberCount(creatorId);
   const ensureSpace = useEnsureSpace();
   const { data: affiliateProgram } = useCreatorAffiliateProgram(creatorId);
+  const { data: tiers = [] } = useSubscriptionTiers(creatorId);
 
   const { data: isMember } = useQuery({
     queryKey: ["is-member", creatorId, user?.id],
@@ -105,13 +121,36 @@ export default function CreatorSpace() {
   });
 
   useEffect(() => {
-    if (isOwner && space === null) {
-      ensureSpace.mutate();
-    }
+    if (isOwner && space === null) ensureSpace.mutate();
   }, [isOwner, space]);
 
   const spaceName = space?.name || creatorProfile?.display_name || "Community";
   const spaceAvatar = space?.avatar_url || creatorProfile?.avatar_url;
+  const hasPaidTiers = tiers.length > 0;
+
+  const handleJoinClick = async () => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    if (hasPaidTiers) {
+      setShowTierModal(true);
+    } else {
+      // Free join
+      setFreeJoining(true);
+      const { error } = await supabase.from("community_members").upsert({
+        user_id: user.id,
+        creator_id: creatorId!,
+      }, { onConflict: "user_id,creator_id" });
+      setFreeJoining(false);
+      if (error) {
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+      } else {
+        toast({ title: "Welcome! 🎉", description: "You've joined this community." });
+        queryClient.invalidateQueries({ queryKey: ["is-member"] });
+      }
+    }
+  };
 
   const switchTab = (slug: TabSlug) => {
     navigate(`/community/${rawCreatorId}/${slug}`, { replace: true });
@@ -129,7 +168,19 @@ export default function CreatorSpace() {
             {spaceName.charAt(0)}
           </div>
         )}
-        <h1 className="text-base font-bold text-foreground truncate">{spaceName}</h1>
+        <h1 className="text-base font-bold text-foreground truncate flex-1">{spaceName}</h1>
+        {/* Join button for non-members */}
+        {!isOwner && !isMember && (
+          <Button
+            size="sm"
+            onClick={handleJoinClick}
+            disabled={freeJoining}
+            className="gap-1.5 rounded-full"
+          >
+            {freeJoining ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Users className="w-3.5 h-3.5" />}
+            {hasPaidTiers ? "Subscribe" : "Join Free"}
+          </Button>
+        )}
       </div>
 
       {/* Sticky Tab Bar */}
@@ -175,6 +226,14 @@ export default function CreatorSpace() {
           )
         )}
       </div>
+
+      {/* Tier Selection Modal */}
+      <TierSelectionModal
+        open={showTierModal}
+        onClose={() => setShowTierModal(false)}
+        tiers={tiers}
+        creatorId={creatorId!}
+      />
     </div>
   );
 }
