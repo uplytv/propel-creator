@@ -50,22 +50,22 @@ serve(async (req) => {
     if (!tier) throw new Error("Tier not found");
     logStep("Tier found", { name: tier.name, price: tier.price_monthly, stripe_price_id: tier.stripe_price_id });
 
-    // If tier has no stripe_price_id, create the price on-the-fly
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     let stripePriceId = tier.stripe_price_id;
+
+    // Check if creator has Stripe Connect (optional in hybrid model)
+    const { data: stripeAccount } = await supabase
+      .from("creator_stripe_accounts")
+      .select("stripe_account_id, charges_enabled")
+      .eq("creator_id", creator_id)
+      .maybeSingle();
+
+    const hasConnect = stripeAccount?.stripe_account_id && stripeAccount?.charges_enabled;
+    logStep("Creator Stripe status", { hasConnect, accountId: stripeAccount?.stripe_account_id });
 
     if (!stripePriceId) {
       logStep("No stripe_price_id, creating product and price on-the-fly");
 
-      // Get creator's Stripe account first
-      const { data: stripeAccount } = await supabase
-        .from("creator_stripe_accounts")
-        .select("stripe_account_id")
-        .eq("creator_id", creator_id)
-        .single();
-      if (!stripeAccount) throw new Error("Creator has not connected Stripe");
-
-      // Create product and price
       const product = await stripe.products.create({
         name: tier.name,
         description: tier.description || undefined,
@@ -80,7 +80,6 @@ serve(async (req) => {
 
       stripePriceId = price.id;
 
-      // Save the price_id back to the tier for future use
       await supabase
         .from("subscription_tiers")
         .update({ stripe_price_id: price.id, stripe_product_id: product.id })
@@ -88,14 +87,6 @@ serve(async (req) => {
 
       logStep("Created Stripe product/price", { productId: product.id, priceId: price.id });
     }
-
-    // Get creator's Stripe account
-    const { data: stripeAccount } = await supabase
-      .from("creator_stripe_accounts")
-      .select("stripe_account_id")
-      .eq("creator_id", creator_id)
-      .single();
-    if (!stripeAccount) throw new Error("Creator has not connected Stripe");
 
     // Check for existing customer
     const customers = await stripe.customers.list({ email: user.email!, limit: 1 });
@@ -107,15 +98,12 @@ serve(async (req) => {
     const origin = req.headers.get("origin") || "https://uply.tv";
     const creatorPath = creator_username ? `/creator/${creator_username}` : `/community/${creator_id}`;
 
-    const session = await stripe.checkout.sessions.create({
+    // Build session config — use Stripe Connect if creator has it, otherwise platform collects
+    const sessionConfig: any = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email!,
       line_items: [{ price: stripePriceId, quantity: 1 }],
       mode: "subscription",
-      subscription_data: {
-        application_fee_percent: 5,
-        transfer_data: { destination: stripeAccount.stripe_account_id },
-      },
       success_url: `${origin}${creatorPath}?joined=true`,
       cancel_url: `${origin}${creatorPath}`,
       metadata: {
@@ -123,7 +111,21 @@ serve(async (req) => {
         creator_id,
         tier_id,
       },
-    });
+    };
+
+    if (hasConnect) {
+      // Direct payout to creator via Stripe Connect
+      sessionConfig.subscription_data = {
+        application_fee_percent: 5,
+        transfer_data: { destination: stripeAccount!.stripe_account_id },
+      };
+      logStep("Using Stripe Connect flow", { destination: stripeAccount!.stripe_account_id });
+    } else {
+      // Platform collects — creator gets paid via manual payout later
+      logStep("Using platform-managed flow (no Connect)");
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
 
     logStep("Checkout session created", { sessionId: session.id });
 
