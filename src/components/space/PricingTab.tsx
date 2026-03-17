@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Loader2, Trash2, DollarSign, Tag, AlertTriangle } from "lucide-react";
+import { Plus, Loader2, Trash2, DollarSign, Tag, AlertTriangle, Check, Sparkles, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +20,7 @@ const MAX_TIERS = 5;
 export function PricingTab({ creatorId }: PricingTabProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const isOwner = user?.id === creatorId;
 
@@ -27,6 +29,8 @@ export function PricingTab({ creatorId }: PricingTabProps) {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [creating, setCreating] = useState(false);
+  const [selectedTier, setSelectedTier] = useState<string | null>(null);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   const { data: stripeAccount } = useQuery({
     queryKey: ["stripe-account", creatorId],
@@ -55,11 +59,27 @@ export function PricingTab({ creatorId }: PricingTabProps) {
     },
   });
 
-  // Check active subscriber counts per tier
+  // Check if visitor already has an active subscription
+  const { data: activeSub } = useQuery({
+    queryKey: ["member-subscription", creatorId, user?.id],
+    enabled: !!creatorId && !!user?.id && !isOwner,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("member_subscriptions")
+        .select("*, subscription_tiers(name, price_monthly)")
+        .eq("creator_id", creatorId)
+        .eq("member_id", user!.id)
+        .eq("status", "active")
+        .maybeSingle();
+      return data;
+    },
+  });
+
+  // Check active subscriber counts per tier (owner only)
   const tierIds = (tiers || []).map((t: any) => t.id);
   const { data: subscriberCounts = {} } = useQuery({
     queryKey: ["tier-subscriber-counts", tierIds],
-    enabled: tierIds.length > 0,
+    enabled: tierIds.length > 0 && isOwner,
     queryFn: async () => {
       const { data } = await supabase
         .from("member_subscriptions")
@@ -99,7 +119,6 @@ export function PricingTab({ creatorId }: PricingTabProps) {
   };
 
   const handleDeactivate = async (tierId: string, tierName: string) => {
-    const subCount = subscriberCounts[tierId] || 0;
     const { error } = await supabase
       .from("subscription_tiers")
       .update({ is_active: false })
@@ -112,6 +131,26 @@ export function PricingTab({ creatorId }: PricingTabProps) {
     }
   };
 
+  const handleSubscribe = async (tierId: string) => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    setSelectedTier(tierId);
+    setCheckoutLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("stripe-create-checkout", {
+        body: { tier_id: tierId, creator_id: creatorId },
+      });
+      if (error) throw error;
+      if (data?.url) window.location.href = data.url;
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+    setCheckoutLoading(false);
+    setSelectedTier(null);
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-3 p-4">
@@ -120,8 +159,122 @@ export function PricingTab({ creatorId }: PricingTabProps) {
     );
   }
 
-  if (!isOwner) return null;
+  // ── VISITOR / MEMBER VIEW ──
+  if (!isOwner) {
+    if (!tiers || tiers.length === 0) {
+      return (
+        <div className="p-8 text-center">
+          <EmptyState
+            icon={DollarSign}
+            title="Free community"
+            description="This community is free to join. No paid tiers available."
+          />
+        </div>
+      );
+    }
 
+    return (
+      <div className="px-4 pt-4 space-y-4">
+        {/* Active subscription badge */}
+        {activeSub && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-xl border-2 border-primary/30 bg-primary/5 p-4 flex items-center gap-3"
+          >
+            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+              <Crown className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-foreground">
+                You're on the {(activeSub as any).subscription_tiers?.name || "Active"} plan
+              </p>
+              <p className="text-xs text-muted-foreground">
+                ${(activeSub as any).subscription_tiers?.price_monthly || "—"}/mo • Manage in Settings → Subscriptions
+              </p>
+            </div>
+            <Check className="w-5 h-5 text-primary" />
+          </motion.div>
+        )}
+
+        <div className="text-center pb-2">
+          <h3 className="text-lg font-bold text-foreground">Choose Your Plan</h3>
+          <p className="text-xs text-muted-foreground mt-1">Unlock exclusive content, courses, and community access</p>
+        </div>
+
+        <div className="space-y-3">
+          {tiers.map((tier: any, idx: number) => {
+            const isCurrentPlan = activeSub?.tier_id === tier.id;
+            const isPopular = idx === Math.min(1, tiers.length - 1) && tiers.length > 1;
+            return (
+              <motion.div
+                key={tier.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.08 }}
+                className={`relative rounded-xl border-2 p-5 transition-all ${
+                  isCurrentPlan
+                    ? "border-primary bg-primary/5"
+                    : isPopular
+                    ? "border-primary/50 bg-card"
+                    : "border-border bg-card hover:border-primary/30"
+                }`}
+              >
+                {isPopular && !isCurrentPlan && (
+                  <div className="absolute -top-2.5 left-4 px-2.5 py-0.5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" /> POPULAR
+                  </div>
+                )}
+                {isCurrentPlan && (
+                  <div className="absolute -top-2.5 left-4 px-2.5 py-0.5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center gap-1">
+                    <Check className="w-3 h-3" /> YOUR PLAN
+                  </div>
+                )}
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h4 className="text-base font-bold text-foreground">{tier.name}</h4>
+                    {tier.description && (
+                      <p className="text-xs text-muted-foreground mt-1 max-w-[220px]">{tier.description}</p>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <span className="text-2xl font-bold text-primary">${tier.price_monthly}</span>
+                    <span className="text-xs text-muted-foreground">/mo</span>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  {isCurrentPlan ? (
+                    <Button variant="outline" size="sm" className="w-full" disabled>
+                      <Check className="w-4 h-4 mr-1.5" /> Current Plan
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      className="w-full gap-1.5"
+                      onClick={() => handleSubscribe(tier.id)}
+                      disabled={checkoutLoading && selectedTier === tier.id}
+                    >
+                      {checkoutLoading && selectedTier === tier.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Sparkles className="w-4 h-4" />
+                      )}
+                      {activeSub ? "Upgrade" : "Subscribe"}
+                    </Button>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+        <p className="text-[10px] text-center text-muted-foreground pt-1">
+          Cancel anytime. Secure payments via Stripe.
+        </p>
+      </div>
+    );
+  }
+
+  // ── OWNER VIEW ──
   if (!stripeAccount?.charges_enabled) {
     return (
       <div className="p-8 text-center">
@@ -133,7 +286,6 @@ export function PricingTab({ creatorId }: PricingTabProps) {
 
   return (
     <div className="px-4 pt-4 space-y-4">
-      {/* Existing tiers */}
       {tiers && tiers.length > 0 ? (
         <div className="space-y-3">
           {tiers.map((tier: any) => {
@@ -202,7 +354,6 @@ export function PricingTab({ creatorId }: PricingTabProps) {
         />
       )}
 
-      {/* Create form */}
       <AnimatePresence>
         {showForm && (
           <motion.div
