@@ -7,6 +7,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const logStep = (step: string, details?: any) => {
+  console.log(`[STRIPE-CHECKOUT] ${step}${details ? ` - ${JSON.stringify(details)}` : ""}`);
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -29,7 +33,11 @@ serve(async (req) => {
     if (userError || !userData.user) throw new Error("Unauthorized");
 
     const user = userData.user;
-    const { tier_id, creator_id, creator_username } = await req.json();
+    const body = await req.json();
+    const { tier_id, creator_id, creator_username } = body;
+
+    logStep("Request received", { tier_id, creator_id, userId: user.id });
+
     if (!tier_id || !creator_id) throw new Error("tier_id and creator_id required");
 
     // Get tier details
@@ -38,7 +46,48 @@ serve(async (req) => {
       .select("*")
       .eq("id", tier_id)
       .single();
-    if (!tier || !tier.stripe_price_id) throw new Error("Tier not found or not configured");
+
+    if (!tier) throw new Error("Tier not found");
+    logStep("Tier found", { name: tier.name, price: tier.price_monthly, stripe_price_id: tier.stripe_price_id });
+
+    // If tier has no stripe_price_id, create the price on-the-fly
+    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+    let stripePriceId = tier.stripe_price_id;
+
+    if (!stripePriceId) {
+      logStep("No stripe_price_id, creating product and price on-the-fly");
+
+      // Get creator's Stripe account first
+      const { data: stripeAccount } = await supabase
+        .from("creator_stripe_accounts")
+        .select("stripe_account_id")
+        .eq("creator_id", creator_id)
+        .single();
+      if (!stripeAccount) throw new Error("Creator has not connected Stripe");
+
+      // Create product and price
+      const product = await stripe.products.create({
+        name: tier.name,
+        description: tier.description || undefined,
+      });
+
+      const price = await stripe.prices.create({
+        product: product.id,
+        unit_amount: Math.round(tier.price_monthly * 100),
+        currency: "usd",
+        recurring: { interval: "month" },
+      });
+
+      stripePriceId = price.id;
+
+      // Save the price_id back to the tier for future use
+      await supabase
+        .from("subscription_tiers")
+        .update({ stripe_price_id: price.id, stripe_product_id: product.id })
+        .eq("id", tier_id);
+
+      logStep("Created Stripe product/price", { productId: product.id, priceId: price.id });
+    }
 
     // Get creator's Stripe account
     const { data: stripeAccount } = await supabase
@@ -48,8 +97,6 @@ serve(async (req) => {
       .single();
     if (!stripeAccount) throw new Error("Creator has not connected Stripe");
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-
     // Check for existing customer
     const customers = await stripe.customers.list({ email: user.email!, limit: 1 });
     let customerId: string | undefined;
@@ -58,12 +105,12 @@ serve(async (req) => {
     }
 
     const origin = req.headers.get("origin") || "https://uply.tv";
-    const creatorPath = creator_username ? `/creator/${creator_username}` : `/space/${creator_id}`;
+    const creatorPath = creator_username ? `/creator/${creator_username}` : `/community/${creator_id}`;
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email!,
-      line_items: [{ price: tier.stripe_price_id, quantity: 1 }],
+      line_items: [{ price: stripePriceId, quantity: 1 }],
       mode: "subscription",
       subscription_data: {
         application_fee_percent: 5,
@@ -78,11 +125,14 @@ serve(async (req) => {
       },
     });
 
+    logStep("Checkout session created", { sessionId: session.id });
+
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
+    logStep("ERROR", { message: error.message });
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

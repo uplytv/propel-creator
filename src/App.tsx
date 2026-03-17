@@ -57,6 +57,7 @@ const Shorts = lazy(() => import("./pages/Shorts"));
 const SearchPage = lazy(() => import("./pages/Search"));
 const Messages = lazy(() => import("./pages/Messages"));
 const Analytics = lazy(() => import("./pages/Analytics"));
+const Pricing = lazy(() => import("./pages/Pricing"));
 
 const queryClient = new QueryClient();
 
@@ -96,6 +97,7 @@ const App = () => (
                     <Route path="/space/:creatorId/:tab" element={<CreatorSpace />} />
                     <Route path="/discover" element={<Discover />} />
                     <Route path="/shorts" element={<Shorts />} />
+                    <Route path="/pricing" element={<Pricing />} />
 
                     {/* Protected routes */}
                     <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
