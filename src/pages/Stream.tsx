@@ -291,7 +291,9 @@ export default function Stream() {
                 </div>
               )}
               <TipButton
+                creatorId={dbStream?.user_id || ""}
                 creatorName={creatorName}
+                streamId={id}
                 creditsBalance={creditsBalance}
                 isLoggedIn={!!user}
                 onTip={handleTip}
