@@ -96,7 +96,32 @@ export default function Onboarding() {
     loadProgress();
   }, [user]);
 
-  const next = () => setStep(s => s + 1);
+  // Track onboarding step completion
+  const trackOnboardingStep = async (stepName: string) => {
+    if (!user) return;
+    try {
+      await supabase.from("onboarding_events" as any).insert({
+        user_id: user.id,
+        step: stepName,
+      });
+      trackEvent("onboarding_step_completed", { step: stepName });
+    } catch (e) {
+      console.error("Failed to track onboarding step:", e);
+    }
+  };
+
+  const next = () => {
+    // Track the step that was just completed
+    const stepMap: Record<number, string> = {
+      2: "category_selected",
+      3: "creator_type_selected",
+      4: "stage_selected",
+    };
+    if (stepMap[step]) {
+      trackOnboardingStep(stepMap[step]);
+    }
+    setStep(s => s + 1);
+  };
 
   const startLoading = async () => {
     setStep(6);
