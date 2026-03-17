@@ -102,8 +102,7 @@ function RetentionIndicator({ sessions }: { sessions: any[] }) {
 
 export default function AnalyticsPage() {
   const { data, isLoading } = useCreatorAnalytics();
-
-  // Build weekly follower data from stream sessions for the chart
+  const [timeRange, setTimeRange] = useState<"7d" | "30d" | "all">("30d");
   const weeklyData = useMemo(() => {
     const weeks: { label: string; value: number }[] = [];
     const now = new Date();
