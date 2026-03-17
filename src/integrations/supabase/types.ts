@@ -2979,6 +2979,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_product_sales: {
+        Args: { p_amount?: number; p_id: string }
+        Returns: undefined
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
