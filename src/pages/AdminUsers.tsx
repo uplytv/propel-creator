@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ShieldCheck, Search, UserCog, Crown } from "lucide-react";
+import { ShieldCheck, Search, UserCog, Crown, BarChart3 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import BackNav from "@/components/BackNav";
