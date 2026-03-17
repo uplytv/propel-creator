@@ -34,6 +34,7 @@ export default function GoLive() {
   const [streamStatus, setStreamStatus] = useState<string>("idle");
   const [showEndScreen, setShowEndScreen] = useState(false);
   const [streamDuration, setStreamDuration] = useState(0);
+  const [streamMuxAssetId, setStreamMuxAssetId] = useState<string | null>(null);
   const [streamStartTime, setStreamStartTime] = useState<number | null>(null);
 
   const { data: profileData } = useProfile();
@@ -80,7 +81,6 @@ export default function GoLive() {
       });
       if (error) throw error;
 
-      // Save featured product to the stream record
       if (featuredProductId && data?.streamId) {
         await supabase
           .from('mux_live_streams')
@@ -97,6 +97,13 @@ export default function GoLive() {
     } finally {
       setIsSettingUp(false);
     }
+  };
+
+  const handleEndStream = (info?: { muxAssetId?: string; durationSeconds?: number }) => {
+    const duration = info?.durationSeconds ?? (streamStartTime ? Math.floor((Date.now() - streamStartTime) / 1000) : 0);
+    setStreamDuration(duration);
+    setStreamMuxAssetId(info?.muxAssetId || null);
+    setShowEndScreen(true);
   };
 
   const selectedProduct = activeProducts.find(p => p.id === featuredProductId);
@@ -258,6 +265,7 @@ export default function GoLive() {
               creatorId={user?.id || ""}
               streamTitle={title}
               playbackId={streamData.playbackId}
+              muxAssetId={streamMuxAssetId}
               durationSeconds={streamDuration}
               onClose={() => {
                 setShowEndScreen(false);
@@ -271,13 +279,10 @@ export default function GoLive() {
               streamData={streamData}
               streamStatus={streamStatus}
               title={title}
-              onEndStream={() => {
-                const duration = streamStartTime ? Math.floor((Date.now() - streamStartTime) / 1000) : 0;
-                setStreamDuration(duration);
-                setShowEndScreen(true);
-              }}
+              onEndStream={handleEndStream}
               products={activeProducts}
               featuredProductId={featuredProductId}
+              creatorUsername={profileData?.display_name}
               onFeaturedProductChange={async (productId) => {
                 setFeaturedProductId(productId);
                 if (streamData) {
