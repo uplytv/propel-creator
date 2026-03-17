@@ -1,11 +1,34 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Video, VideoOff, Mic, MicOff, Monitor, Camera,
-  Settings, Copy, Check, Eye, EyeOff, Radio,
-  RotateCcw, Volume2, Circle, Square, Upload, Send,
-  Wifi, WifiOff, AlertCircle, ShoppingBag, X, ChevronDown,
-  Maximize, Minimize, Zap
+  Video,
+  VideoOff,
+  Mic,
+  MicOff,
+  Monitor,
+  Camera,
+  Settings,
+  Copy,
+  Check,
+  Eye,
+  EyeOff,
+  Radio,
+  RotateCcw,
+  Volume2,
+  Circle,
+  Square,
+  Upload,
+  Send,
+  Wifi,
+  WifiOff,
+  AlertCircle,
+  ShoppingBag,
+  X,
+  ChevronDown,
+  Maximize,
+  Minimize,
+  Zap,
+  Share2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +37,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CreatorVideoOverlay, CreatorDashboardPanel } from "./CreatorStreamOverlay";
 import { useStreamEngagement } from "@/hooks/useStreamEngagement";
-import StreamToCourseDialog from "./StreamToCourseDialog";
+import SharePanel from "@/components/share/SharePanel";
 
 interface Product {
   id: string;
@@ -34,10 +57,11 @@ interface BroadcastStudioProps {
   };
   streamStatus: string;
   title: string;
-  onEndStream: () => void;
+  onEndStream: (info?: { muxAssetId?: string; durationSeconds?: number }) => void;
   products?: Product[];
   featuredProductId?: string | null;
   onFeaturedProductChange?: (productId: string | null) => void;
+  creatorUsername?: string | null;
 }
 
 function FeaturedProductPicker({
@@ -162,6 +186,7 @@ export default function BroadcastStudio({
   products = [],
   featuredProductId,
   onFeaturedProductChange,
+  creatorUsername,
 }: BroadcastStudioProps) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -189,9 +214,10 @@ export default function BroadcastStudio({
   const [uploadFailed, setUploadFailed] = useState(false);
   const [uploadErrorMsg, setUploadErrorMsg] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showCourseDialog, setShowCourseDialog] = useState(false);
   const [lastRecordingDuration, setLastRecordingDuration] = useState(0);
   const [lastUploadId, setLastUploadId] = useState<string | null>(null);
+  const [showSharePanel, setShowSharePanel] = useState(false);
+  const [showEndConfirm, setShowEndConfirm] = useState(false);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const lastTapRef = useRef<number>(0);
   const [liveChatInput, setLiveChatInput] = useState("");
@@ -214,7 +240,7 @@ export default function BroadcastStudio({
   const audioContextRef = useRef<AudioContext | null>(null);
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Fullscreen toggle (with webkit fallback + CSS pseudo-fullscreen for iframes)
+  // Fullscreen toggle
   const toggleFullscreen = useCallback(() => {
     const el = videoContainerRef.current as any;
     if (!el) return;
@@ -223,10 +249,8 @@ export default function BroadcastStudio({
       if (document.exitFullscreen) document.exitFullscreen();
       else if ((document as any).webkitExitFullscreen) (document as any).webkitExitFullscreen();
     } else if (isFullscreen) {
-      // Exit CSS pseudo-fullscreen
       setIsFullscreen(false);
     } else {
-      // Try native fullscreen first
       const tryNative = el.requestFullscreen
         ? el.requestFullscreen()
         : el.webkitRequestFullscreen
@@ -234,13 +258,12 @@ export default function BroadcastStudio({
         : Promise.reject();
 
       tryNative.catch(() => {
-        // Fallback: CSS pseudo-fullscreen (works inside iframes)
         setIsFullscreen(true);
       });
     }
   }, [isFullscreen]);
 
-  // Sync fullscreen state + Escape key to exit pseudo-fullscreen
+  // Sync fullscreen state + Escape key
   useEffect(() => {
     const handler = () => setIsFullscreen(!!(document.fullscreenElement || (document as any).webkitFullscreenElement));
     const escHandler = (e: KeyboardEvent) => {
@@ -258,12 +281,11 @@ export default function BroadcastStudio({
     };
   }, [isFullscreen]);
 
-  // Stream engagement for creator overlay
+  // Stream engagement
   const engagement = useStreamEngagement(streamData.streamId, user?.id || "");
   const [coachingNudge, setCoachingNudge] = useState<string | null>(null);
   const prevEnergyRef = useRef(0);
 
-  // Energy broadcast + coaching nudges
   useEffect(() => {
     if (isRecording) {
       const cleanup = engagement.startEnergyBroadcast();
@@ -347,16 +369,15 @@ export default function BroadcastStudio({
       setScreenShare(true);
       setupAudioAnalyser(screenStream);
 
+      // If user stops screen share via browser UI, end the recording cleanly
       screenStream.getVideoTracks()[0].onended = () => {
-        if (isRecording) stopRecording();
-        setScreenShare(false);
-        stopCurrentStream();
+        handleEndStream();
       };
     } catch {
       setMediaError("Screen share cancelled or not supported.");
       setScreenShare(false);
     }
-  }, [stopCurrentStream, isRecording]);
+  }, [stopCurrentStream]);
 
   const setupAudioAnalyser = (stream: MediaStream) => {
     const audioTracks = stream.getAudioTracks();
@@ -400,30 +421,25 @@ export default function BroadcastStudio({
 
     if (!cameraOn || !streamRef.current) return;
 
-    // If recording or WebRTC is active, do a seamless track swap
-    // instead of tearing down the entire stream
     if (isRecording || peerConnectionsRef.current.size > 0) {
       try {
         const newVideoStream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: next },
-          audio: false, // keep existing audio track
+          audio: false,
         });
         const newVideoTrack = newVideoStream.getVideoTracks()[0];
         const oldVideoTrack = streamRef.current.getVideoTracks()[0];
 
-        // Replace track in the live MediaStream (updates MediaRecorder automatically)
         if (oldVideoTrack) {
           streamRef.current.removeTrack(oldVideoTrack);
           oldVideoTrack.stop();
         }
         streamRef.current.addTrack(newVideoTrack);
 
-        // Update video element
         if (videoRef.current) {
           videoRef.current.srcObject = streamRef.current;
         }
 
-        // Replace track in all active WebRTC peer connections
         peerConnectionsRef.current.forEach((pc) => {
           const sender = pc.getSenders().find(s => s.track?.kind === 'video');
           if (sender) {
@@ -435,12 +451,11 @@ export default function BroadcastStudio({
         setMediaError("Could not switch camera.");
       }
     } else {
-      // Not recording — safe to do a full restart
       startCamera(next);
     }
   }, [facingMode, cameraOn, isRecording, startCamera]);
 
-  // Set stream status in DB so discovery feed picks it up
+  // Set stream status in DB
   const setStreamActive = async (active: boolean) => {
     try {
       const now = new Date().toISOString();
@@ -454,13 +469,12 @@ export default function BroadcastStudio({
         })
         .eq('id', streamData.streamId);
       if (error) console.error('Failed to update stream status:', error);
-      else console.log(`Stream ${streamData.streamId} set to ${active ? 'active' : 'idle'}`);
     } catch (err) {
       console.error('Failed to update stream status:', err);
     }
   };
 
-  // WebRTC host: respond to viewer join requests
+  // WebRTC host
   const ICE_SERVERS: RTCConfiguration = {
     iceServers: [
       { urls: 'stun:stun.l.google.com:19302' },
@@ -500,12 +514,10 @@ export default function BroadcastStudio({
         const pc = new RTCPeerConnection(ICE_SERVERS);
         peerConnectionsRef.current.set(viewerId, pc);
 
-        // Add all tracks from the local stream
         streamRef.current.getTracks().forEach(track => {
           pc.addTrack(track, streamRef.current!);
         });
 
-        // Send ICE candidates to viewer
         pc.onicecandidate = (event) => {
           if (event.candidate) {
             channel.send({
@@ -582,10 +594,8 @@ export default function BroadcastStudio({
     recorder.ondataavailable = (e) => {
       if (e.data.size > 0) chunksRef.current.push(e.data);
     };
-    recorder.onstop = () => {
-      // Recording stopped, chunks are ready
-    };
-    recorder.start(1000); // collect in 1s chunks
+    recorder.onstop = () => {};
+    recorder.start(1000);
     mediaRecorderRef.current = recorder;
     setIsRecording(true);
     setRecordingDuration(0);
@@ -593,28 +603,28 @@ export default function BroadcastStudio({
       setRecordingDuration((d) => d + 1);
     }, 1000);
 
-    // Mark stream as active in DB for discovery feed
     await setStreamActive(true);
-
-    // Start WebRTC host so viewers can connect
     startWebRTCHost();
   };
 
-  const stopRecording = async () => {
+  // The main "end stream" handler — called from the End Stream button or screen share ending
+  const handleEndStream = useCallback(async () => {
+    const duration = recordingDuration;
+    
     if (recordingTimerRef.current) {
       clearInterval(recordingTimerRef.current);
       recordingTimerRef.current = null;
     }
     setIsRecording(false);
-    setLastRecordingDuration(recordingDuration);
+    setShowEndConfirm(false);
 
-    // Stop WebRTC host
+    // Stop WebRTC
     stopWebRTCHost();
 
-    // Mark stream as idle in DB
+    // Mark stream as idle
     await setStreamActive(false);
 
-    // Wait for the recorder to fully stop and flush all chunks
+    // Stop recorder and flush chunks
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       await new Promise<void>((resolve) => {
         mediaRecorderRef.current!.onstop = () => resolve();
@@ -622,32 +632,27 @@ export default function BroadcastStudio({
       });
     }
 
+    // Stop media tracks
+    stopCurrentStream();
+
     if (chunksRef.current.length === 0) {
       toast({ title: "No recording data", description: "Recording was too short.", variant: "destructive" });
+      onEndStream({ durationSeconds: duration });
       return;
     }
 
-    // Upload the recording
-    await uploadRecording();
-  };
-
-  const uploadRecording = async () => {
+    // Upload in background, then transition to end screen
     if (!user) {
-      console.error("[BroadcastStudio] No user — cannot upload");
+      onEndStream({ durationSeconds: duration });
       return;
     }
+
     setIsUploading(true);
     setUploadProgress(0);
     setUploadFailed(false);
-    setUploadErrorMsg("");
-    console.log("[BroadcastStudio] Starting upload...", {
-      chunkCount: chunksRef.current.length,
-      totalSize: chunksRef.current.reduce((s, c) => s + c.size, 0),
-      chunkSizes: chunksRef.current.map((c) => c.size),
-    });
+
     try {
       const blob = new Blob(chunksRef.current, { type: "video/webm" });
-      console.log("[BroadcastStudio] Created blob", { blobSize: blob.size, blobType: blob.type });
       const { uploadToMuxWithRetry } = await import("@/lib/muxUpload");
       const uploadId = await uploadToMuxWithRetry({
         userId: user.id,
@@ -655,26 +660,24 @@ export default function BroadcastStudio({
         description: "Browser recording",
         isPublic: true,
         file: blob,
-        onProgress: (pct) => {
-          console.log(`[BroadcastStudio] Upload progress: ${pct}%`);
-          setUploadProgress(pct);
-        },
+        onProgress: (pct) => setUploadProgress(pct),
       });
-      console.log("[BroadcastStudio] Upload complete!", { uploadId });
       setLastUploadId(uploadId || null);
-      toast({ title: "Recording saved! 🎬", description: "Your video is processing and will appear in your content library." });
+      toast({ title: "Recording saved! 🎬", description: "Your video is processing." });
       chunksRef.current = [];
-      // Prompt to convert to course lesson
-      setShowCourseDialog(true);
+      setIsUploading(false);
+      // Transition to EndOfStreamScreen via parent
+      onEndStream({ muxAssetId: uploadId || undefined, durationSeconds: duration });
     } catch (err: any) {
       console.error("[BroadcastStudio] Upload FAILED", err);
       setUploadFailed(true);
       setUploadErrorMsg(err.message || "Upload failed");
       toast({ title: "Upload failed", description: err.message, variant: "destructive" });
-    } finally {
       setIsUploading(false);
+      // Still go to end screen so user isn't stuck
+      onEndStream({ durationSeconds: duration });
     }
-  };
+  }, [recordingDuration, stopWebRTCHost, stopCurrentStream, user, title, onEndStream, toast]);
 
   const formatDuration = (seconds: number) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, "0");
@@ -688,11 +691,10 @@ export default function BroadcastStudio({
     setTimeout(() => setCopiedField(null), 2000);
   };
 
-  // Cleanup only on unmount — not on every re-render
+  // Cleanup on unmount
   useEffect(() => {
     const sid = streamData.streamId;
     return () => {
-      // Stop media and WebRTC
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((t) => t.stop());
         streamRef.current = null;
@@ -708,7 +710,6 @@ export default function BroadcastStudio({
       if (audioContextRef.current?.state !== "closed") {
         audioContextRef.current?.close();
       }
-      // Ensure stream is set back to idle if user navigates away mid-recording
       supabase
         .from('mux_live_streams')
         .update({ status: 'idle', ended_at: new Date().toISOString() })
@@ -762,7 +763,7 @@ export default function BroadcastStudio({
             <div className="flex-1">
               <p className="font-bold text-sm text-foreground">Go Live with OBS / Encoder</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Stream live to your audience using OBS, Streamyard, or any RTMP encoder. Viewers see your stream in real-time.
+                Stream live to your audience using OBS, Streamyard, or any RTMP encoder.
               </p>
               <div className="flex items-center gap-2 mt-2">
                 <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-destructive/10 text-destructive">Live to audience</span>
@@ -772,179 +773,254 @@ export default function BroadcastStudio({
           </div>
         </button>
 
-        <Button variant="ghost" size="sm" onClick={onEndStream} className="w-full text-muted-foreground">
+        <Button variant="ghost" size="sm" onClick={() => onEndStream()} className="w-full text-muted-foreground">
           ← Go Back
         </Button>
       </div>
     );
   }
 
-  // Browser recording mode
+  // Browser recording mode — IMMERSIVE LIVE VIEW
   if (studioMode === "browser-record") {
-    // When recording, show an immersive full-viewport layout
-    if (isRecording) {
+    if (isRecording || isUploading) {
       return (
-        <div className="fixed inset-0 z-[80] bg-black flex flex-col">
-          {/* Full-screen video */}
-          <div
-            ref={videoContainerRef}
-            className="relative flex-1 overflow-hidden"
-          >
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full h-full object-cover"
-            />
-
-            {/* Minimal top bar — semi-transparent pill */}
-            <div className="absolute inset-x-0 top-0 z-20 pointer-events-none">
-              <div
-                className="pointer-events-auto mx-3 mt-3 flex items-center justify-between gap-2 px-3 py-2 rounded-2xl"
-                style={{ backgroundColor: "rgba(0,0,0,0.45)", backdropFilter: "blur(16px)" }}
-              >
-                {/* Live indicator + timer */}
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full" style={{ backgroundColor: "rgba(239,68,68,0.3)" }}>
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
-                    </span>
-                    <span className="text-[11px] font-mono font-bold text-red-400">LIVE</span>
+        <>
+          <div className="fixed inset-0 z-[80] bg-black flex flex-col">
+            {/* Full-screen video */}
+            <div
+              ref={videoContainerRef}
+              className="relative flex-1 overflow-hidden"
+            >
+              {isUploading ? (
+                /* Upload progress overlay */
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 z-30">
+                  <Upload className="w-10 h-10 text-primary animate-bounce" />
+                  <p className="text-lg font-bold text-white">Saving your stream…</p>
+                  <div className="w-48 h-2 rounded-full bg-white/10 overflow-hidden">
+                    <motion.div
+                      className="h-full rounded-full bg-primary"
+                      animate={{ width: `${uploadProgress}%` }}
+                    />
                   </div>
-                  <span className="text-[11px] font-mono font-semibold text-white/70">{formatDuration(recordingDuration)}</span>
+                  <p className="text-sm text-white/60">{uploadProgress}% complete</p>
                 </div>
+              ) : (
+                <>
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover"
+                  />
 
-                {/* Viewers + Energy */}
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1">
-                    <Eye className="w-3.5 h-3.5 text-white/60" />
-                    <span className="text-[11px] font-semibold text-white">{engagement.viewerCount}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Zap className="w-3.5 h-3.5" style={{ color: "#00FF85" }} />
-                    <div className="w-12 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.1)" }}>
-                      <motion.div
-                        className="h-full rounded-full"
-                        style={{ backgroundColor: "#00FF85" }}
-                        animate={{ width: `${engagement.energyScore}%` }}
-                      />
+                  {/* Top bar — LIVE indicator */}
+                  <div className="absolute inset-x-0 top-0 z-20 pointer-events-none">
+                    <div
+                      className="pointer-events-auto mx-3 mt-3 flex items-center justify-between gap-2 px-3 py-2 rounded-2xl"
+                      style={{ backgroundColor: "rgba(0,0,0,0.45)", backdropFilter: "blur(16px)" }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full" style={{ backgroundColor: "rgba(239,68,68,0.3)" }}>
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+                          </span>
+                          <span className="text-[11px] font-mono font-bold text-red-400">LIVE</span>
+                        </div>
+                        <span className="text-[11px] font-mono font-semibold text-white/70">{formatDuration(recordingDuration)}</span>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1">
+                          <Eye className="w-3.5 h-3.5 text-white/60" />
+                          <span className="text-[11px] font-semibold text-white">{engagement.viewerCount}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Zap className="w-3.5 h-3.5" style={{ color: "#00FF85" }} />
+                          <div className="w-12 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.1)" }}>
+                            <motion.div
+                              className="h-full rounded-full"
+                              style={{ backgroundColor: "#00FF85" }}
+                              animate={{ width: `${engagement.energyScore}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>
 
-            {/* Coaching nudge */}
-            <AnimatePresence>
-              {coachingNudge && (
-                <motion.div
-                  initial={{ y: -20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: -20, opacity: 0 }}
-                  className="absolute top-16 inset-x-0 z-20 pointer-events-none mx-auto w-fit rounded-xl px-4 py-2 text-xs font-bold text-center"
-                  style={{ backgroundColor: "rgba(0,255,133,0.15)", color: "#00FF85", backdropFilter: "blur(12px)" }}
-                >
-                  {coachingNudge}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Floating transparent chat messages — bottom of screen */}
-            <div className="absolute bottom-28 left-0 right-16 z-10 pointer-events-none px-3">
-              <div className="flex flex-col gap-1 max-h-[35vh] overflow-hidden">
-                <AnimatePresence initial={false}>
-                  {engagement.chatMessages.slice(-8).map((msg) => {
-                    const isCreator = msg.user_id === user?.id;
-                    return (
+                  {/* Coaching nudge */}
+                  <AnimatePresence>
+                    {coachingNudge && (
                       <motion.div
-                        key={msg.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.25 }}
-                        className="text-[13px] leading-tight"
-                        style={{ textShadow: "0 1px 4px rgba(0,0,0,0.8)" }}
+                        initial={{ y: -20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: -20, opacity: 0 }}
+                        className="absolute top-16 inset-x-0 z-20 pointer-events-none mx-auto w-fit rounded-xl px-4 py-2 text-xs font-bold text-center"
+                        style={{ backgroundColor: "rgba(0,255,133,0.15)", color: "#00FF85", backdropFilter: "blur(12px)" }}
                       >
-                        <span className="font-bold" style={{ color: isCreator ? "#FFD700" : "#00FF85" }}>
-                          {isCreator && "⭐ "}{msg.username}
-                        </span>
-                        <span className="text-white/90 ml-1.5">{msg.message}</span>
+                        {coachingNudge}
                       </motion.div>
-                    );
-                  })}
-                </AnimatePresence>
-              </div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Floating chat messages */}
+                  <div className="absolute bottom-28 left-0 right-16 z-10 pointer-events-none px-3">
+                    <div className="flex flex-col gap-1 max-h-[35vh] overflow-hidden">
+                      <AnimatePresence initial={false}>
+                        {engagement.chatMessages.slice(-8).map((msg) => {
+                          const isCreator = msg.user_id === user?.id;
+                          return (
+                            <motion.div
+                              key={msg.id}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              exit={{ opacity: 0 }}
+                              transition={{ duration: 0.25 }}
+                              className="text-[13px] leading-tight"
+                              style={{ textShadow: "0 1px 4px rgba(0,0,0,0.8)" }}
+                            >
+                              <span className="font-bold" style={{ color: isCreator ? "#FFD700" : "#00FF85" }}>
+                                {isCreator && "⭐ "}{msg.username}
+                              </span>
+                              <span className="text-white/90 ml-1.5">{msg.message}</span>
+                            </motion.div>
+                          );
+                        })}
+                      </AnimatePresence>
+                    </div>
+                  </div>
+
+                  {/* Right-side action buttons — Share, Flip, Mute */}
+                  <div className="absolute right-3 bottom-28 z-20 flex flex-col gap-3 items-center">
+                    <button
+                      onClick={() => setShowSharePanel(true)}
+                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: "rgba(0,255,133,0.25)", backdropFilter: "blur(8px)" }}
+                    >
+                      <Share2 className="w-4.5 h-4.5 text-white" />
+                    </button>
+                    <button
+                      onClick={flipCamera}
+                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
+                    >
+                      <RotateCcw className="w-4.5 h-4.5 text-white" />
+                    </button>
+                    <button
+                      onClick={toggleMic}
+                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: micOn ? "rgba(255,255,255,0.15)" : "rgba(239,68,68,0.4)", backdropFilter: "blur(8px)" }}
+                    >
+                      {micOn ? <Mic className="w-4.5 h-4.5 text-white" /> : <MicOff className="w-4.5 h-4.5 text-white" />}
+                    </button>
+                  </div>
+
+                  {/* End Stream Confirmation Overlay */}
+                  <AnimatePresence>
+                    {showEndConfirm && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 z-40 bg-black/70 backdrop-blur-sm flex items-center justify-center"
+                        onClick={() => setShowEndConfirm(false)}
+                      >
+                        <motion.div
+                          initial={{ scale: 0.9, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0.9, opacity: 0 }}
+                          className="bg-card rounded-2xl p-6 max-w-xs mx-4 text-center space-y-4"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="w-14 h-14 rounded-2xl bg-destructive/10 flex items-center justify-center mx-auto">
+                            <Square className="w-7 h-7 text-destructive" />
+                          </div>
+                          <h3 className="text-lg font-bold text-foreground">End Stream?</h3>
+                          <p className="text-sm text-muted-foreground">Your recording will be saved and you'll see your stream stats.</p>
+                          <div className="flex gap-3">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => setShowEndConfirm(false)}
+                            >
+                              Keep Going
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="flex-1"
+                              onClick={handleEndStream}
+                            >
+                              End Stream
+                            </Button>
+                          </div>
+                        </motion.div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {mediaError && (
+                    <div className="absolute inset-0 z-30 bg-black/50 flex items-center justify-center">
+                      <div className="bg-card rounded-xl p-4 max-w-xs text-center mx-4">
+                        <p className="text-sm text-destructive font-medium">{mediaError}</p>
+                        <Button size="sm" variant="outline" className="mt-3" onClick={() => setMediaError(null)}>Dismiss</Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
 
-            {/* Right-side action buttons */}
-            <div className="absolute right-3 bottom-28 z-20 flex flex-col gap-3 items-center">
-              <button
-                onClick={flipCamera}
-                className="w-10 h-10 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
-              >
-                <RotateCcw className="w-4.5 h-4.5 text-white" />
-              </button>
-              <button
-                onClick={toggleMic}
-                className="w-10 h-10 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: micOn ? "rgba(255,255,255,0.15)" : "rgba(239,68,68,0.4)", backdropFilter: "blur(8px)" }}
-              >
-                {micOn ? <Mic className="w-4.5 h-4.5 text-white" /> : <MicOff className="w-4.5 h-4.5 text-white" />}
-              </button>
-              <button
-                onClick={toggleFullscreen}
-                className="w-10 h-10 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
-              >
-                {isFullscreen ? <Minimize className="w-4.5 h-4.5 text-white" /> : <Maximize className="w-4.5 h-4.5 text-white" />}
-              </button>
-            </div>
-
-            {mediaError && (
-              <div className="absolute inset-0 z-30 bg-black/50 flex items-center justify-center">
-                <div className="bg-card rounded-xl p-4 max-w-xs text-center mx-4">
-                  <p className="text-sm text-destructive font-medium">{mediaError}</p>
-                  <Button size="sm" variant="outline" className="mt-3" onClick={() => setMediaError(null)}>Dismiss</Button>
-                </div>
+            {/* Bottom bar: chat input + End Stream button */}
+            {!isUploading && (
+              <div className="relative z-20 px-3 py-3 flex items-center gap-2" style={{ backgroundColor: "rgba(0,0,0,0.7)", backdropFilter: "blur(16px)" }}>
+                <input
+                  value={liveChatInput}
+                  onChange={(e) => setLiveChatInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleLiveChatSend()}
+                  placeholder="Say something..."
+                  className="flex-1 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none"
+                  style={{ backgroundColor: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)" }}
+                />
+                <button
+                  onClick={handleLiveChatSend}
+                  className="p-2.5 rounded-xl"
+                  style={{ backgroundColor: "#00FF85" }}
+                >
+                  <Send className="w-4 h-4 text-black" />
+                </button>
+                {/* Prominent End Stream button */}
+                <button
+                  onClick={() => setShowEndConfirm(true)}
+                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 transition-colors text-white text-sm font-semibold"
+                >
+                  <Square className="w-3.5 h-3.5 fill-white" />
+                  End
+                </button>
               </div>
             )}
           </div>
 
-          {/* Bottom bar: chat input + stop button */}
-          <div className="relative z-20 px-3 py-3 flex items-center gap-2" style={{ backgroundColor: "rgba(0,0,0,0.7)", backdropFilter: "blur(16px)" }}>
-            <input
-              value={liveChatInput}
-              onChange={(e) => setLiveChatInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleLiveChatSend()}
-              placeholder="Say something..."
-              className="flex-1 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none"
-              style={{ backgroundColor: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)" }}
-            />
-            <button
-              onClick={handleLiveChatSend}
-              className="p-2.5 rounded-xl"
-              style={{ backgroundColor: "#00FF85" }}
-            >
-              <Send className="w-4 h-4 text-black" />
-            </button>
-            <button
-              onClick={stopRecording}
-              className="p-2.5 rounded-xl bg-red-500 hover:bg-red-600 transition-colors"
-            >
-              <Square className="w-4 h-4 text-white fill-white" />
-            </button>
-          </div>
-        </div>
+          {/* Share Panel — works while live */}
+          <SharePanel
+            open={showSharePanel}
+            onClose={() => setShowSharePanel(false)}
+            contentType="stream"
+            contentId={streamData.streamId}
+            title={title}
+            playbackId={streamData.playbackId}
+            creatorUsername={creatorUsername}
+          />
+        </>
       );
     }
 
     // Pre-recording setup view
     return (
       <div className="space-y-4">
-        {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <button onClick={() => { stopCurrentStream(); setStudioMode("select"); setCameraOn(false); setMicOn(false); }} className="text-muted-foreground hover:text-foreground transition-colors">
@@ -991,7 +1067,6 @@ export default function BroadcastStudio({
             </div>
           )}
 
-          {/* Audio level */}
           {(cameraOn || screenShare) && (
             <div className="absolute top-4 right-4 flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-black/40 backdrop-blur-sm">
               <Volume2 className="w-3.5 h-3.5 text-white/80" />
@@ -1012,7 +1087,6 @@ export default function BroadcastStudio({
             </div>
           )}
 
-          {/* Title overlay */}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
             <p className="text-sm font-semibold text-white truncate">{title}</p>
           </div>
@@ -1029,21 +1103,10 @@ export default function BroadcastStudio({
 
         {/* Controls */}
         <div className="flex items-center justify-center gap-2">
-          <Button
-            variant={cameraOn ? "default" : "outline"}
-            size="icon"
-            onClick={toggleCamera}
-            className="rounded-full w-11 h-11"
-          >
+          <Button variant={cameraOn ? "default" : "outline"} size="icon" onClick={toggleCamera} className="rounded-full w-11 h-11">
             {cameraOn ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
           </Button>
-          <Button
-            variant={micOn ? "default" : "outline"}
-            size="icon"
-            onClick={toggleMic}
-            disabled={!cameraOn && !screenShare}
-            className="rounded-full w-11 h-11"
-          >
+          <Button variant={micOn ? "default" : "outline"} size="icon" onClick={toggleMic} disabled={!cameraOn && !screenShare} className="rounded-full w-11 h-11">
             {micOn ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
           </Button>
           <Button
@@ -1072,41 +1135,9 @@ export default function BroadcastStudio({
 
         {/* Start Recording */}
         {(cameraOn || screenShare) && (
-          <Button
-            variant="hero"
-            size="lg"
-            onClick={startRecording}
-            className="w-full"
-          >
+          <Button variant="hero" size="lg" onClick={startRecording} className="w-full">
             <Circle className="w-4 h-4 mr-2 fill-current" /> Start Recording
           </Button>
-        )}
-
-        {isUploading && (
-          <div className="glass-card p-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <Upload className="w-5 h-5 text-primary animate-bounce flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground">
-                  {uploadProgress < 100 ? "Uploading your recording…" : "Finalizing…"}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {uploadProgress < 100
-                    ? `${uploadProgress}% complete`
-                    : "Almost done, processing upload"}
-                </p>
-              </div>
-              <span className="text-sm font-bold text-primary tabular-nums">{uploadProgress}%</span>
-            </div>
-            <div className="w-full h-2 rounded-full bg-secondary overflow-hidden">
-              <motion.div
-                className="h-full rounded-full bg-gradient-to-r from-primary to-primary/70"
-                initial={{ width: 0 }}
-                animate={{ width: `${uploadProgress}%` }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-              />
-            </div>
-          </div>
         )}
 
         {uploadFailed && !isUploading && (
@@ -1118,27 +1149,6 @@ export default function BroadcastStudio({
                 <p className="text-xs text-muted-foreground line-clamp-2">{uploadErrorMsg}</p>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant="hero"
-                size="sm"
-                className="flex-1"
-                onClick={() => uploadRecording()}
-              >
-                <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
-                Retry Upload
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setUploadFailed(false);
-                  chunksRef.current = [];
-                }}
-              >
-                Discard
-              </Button>
-            </div>
           </div>
         )}
 
@@ -1147,18 +1157,6 @@ export default function BroadcastStudio({
             ← Choose Different Method
           </Button>
         )}
-
-        {/* Stream to Course Dialog */}
-        {user && (
-          <StreamToCourseDialog
-            open={showCourseDialog}
-            onClose={() => setShowCourseDialog(false)}
-            creatorId={user.id}
-            streamTitle={title}
-            muxAssetId={lastUploadId || undefined}
-            durationSeconds={lastRecordingDuration}
-          />
-        )}
       </div>
     );
   }
@@ -1166,7 +1164,6 @@ export default function BroadcastStudio({
   // External encoder mode (OBS / RTMP)
   return (
     <div className="space-y-4">
-      {/* Header */}
       <div className="flex items-center gap-2">
         <button onClick={() => setStudioMode("select")} className="text-muted-foreground hover:text-foreground transition-colors">
           ← 
@@ -1177,7 +1174,6 @@ export default function BroadcastStudio({
         </div>
       </div>
 
-      {/* Status Card */}
       <div className="glass-card p-5">
         <div className="flex items-center gap-3 mb-4">
           {isLive ? (
@@ -1217,7 +1213,6 @@ export default function BroadcastStudio({
           </div>
         )}
 
-        {/* RTMP URL */}
         <div className="space-y-3">
           <div>
             <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1 block">RTMP URL</label>
@@ -1248,7 +1243,6 @@ export default function BroadcastStudio({
         </div>
       </div>
 
-      {/* Quick Steps */}
       {!isLive && (
         <div className="glass-card p-4">
           <p className="text-xs font-semibold text-foreground mb-2">How to go live:</p>
@@ -1261,7 +1255,6 @@ export default function BroadcastStudio({
         </div>
       )}
 
-      {/* Featured Product Picker */}
       {products.length > 0 && (
         <FeaturedProductPicker
           products={products}
@@ -1270,7 +1263,7 @@ export default function BroadcastStudio({
         />
       )}
 
-      <Button variant="destructive" size="lg" onClick={onEndStream} className="w-full">
+      <Button variant="destructive" size="lg" onClick={() => onEndStream()} className="w-full">
         {isLive ? "End Stream" : "Cancel & Start Over"}
       </Button>
     </div>
