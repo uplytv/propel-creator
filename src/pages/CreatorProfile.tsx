@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
   Heart, MessageCircle, Lock, Play, ChevronDown, ChevronUp,
-  ExternalLink, Users, BookOpen, FileText, Pencil
+  ExternalLink, Users, BookOpen, FileText, Pencil, ShoppingBag, Loader2 as BuyLoader
 } from "lucide-react";
 import CreatorProfileEditDrawer from "@/components/creator-profile/CreatorProfileEditDrawer";
 import SEOHead from "@/components/SEOHead";
