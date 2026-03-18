@@ -38,14 +38,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Find user by email
-    const { data: authUsers } = await supabase.auth.admin.listUsers({ perPage: 1, page: 1 });
-    // Use a direct lookup instead
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('user_id')
-      .limit(1000);
-
     // Look up user via auth admin API by email
     const { data: userLookup } = await supabase.auth.admin.listUsers();
     const matchedUser = (userLookup?.users || []).find(
@@ -58,11 +50,22 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Map unsubscribe type to notification_preferences column
+    const columnMap: Record<string, string> = {
+      weekly_report_email: 'weekly_report_email',
+      community_blast: 'member_joined_email', // reuse opt-out for blast emails
+      new_follower_email: 'new_follower_email',
+      tip_received_email: 'tip_received_email',
+      member_joined_email: 'member_joined_email',
+    };
+
+    const column = columnMap[type] || 'weekly_report_email';
+
     // Upsert notification preferences to opt out
     const { error: upsertErr } = await supabase
       .from('notification_preferences')
       .upsert(
-        { user_id: matchedUser.id, [type]: false },
+        { user_id: matchedUser.id, [column]: false },
         { onConflict: 'user_id' }
       );
 
@@ -79,10 +82,20 @@ Deno.serve(async (req) => {
       .update({ used_at: new Date().toISOString() })
       .eq('token', token);
 
+    const typeLabels: Record<string, string> = {
+      weekly_report_email: 'ARIA Weekly Growth Reports',
+      community_blast: 'community blast emails',
+      new_follower_email: 'new follower notifications',
+      tip_received_email: 'tip received notifications',
+      member_joined_email: 'new member notifications',
+    };
+
+    const label = typeLabels[type] || type;
+
     return new Response(
       buildHtmlPage(
         'Unsubscribed ✓',
-        'You have been unsubscribed from ARIA Weekly Growth Reports. You can re-enable them anytime in Settings → Notifications.'
+        `You have been unsubscribed from ${label}. You can re-enable them anytime in Settings → Notifications.`
       ),
       { status: 200, headers: { 'Content-Type': 'text/html' } }
     );
@@ -102,18 +115,18 @@ function buildHtmlPage(title: string, message: string): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title} – UPLY</title>
   <style>
-    body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: hsl(260, 20%, 97%); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    .card { background: white; border-radius: 12px; padding: 40px; max-width: 420px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-    h1 { font-size: 24px; color: hsl(260, 10%, 10%); margin: 0 0 12px; }
-    p { font-size: 15px; color: hsl(260, 5%, 45%); line-height: 1.6; margin: 0; }
-    a { display: inline-block; margin-top: 20px; color: hsl(265, 85%, 58%); text-decoration: none; font-weight: 600; }
+    body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #0A0A0A; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .card { background: #111111; border: 1px solid #1E1E1E; border-radius: 12px; padding: 40px; max-width: 420px; text-align: center; }
+    h1 { font-size: 24px; color: #FFFFFF; margin: 0 0 12px; }
+    p { font-size: 15px; color: #888888; line-height: 1.6; margin: 0; }
+    a { display: inline-block; margin-top: 20px; color: #00FF85; text-decoration: none; font-weight: 600; }
   </style>
 </head>
 <body>
   <div class="card">
     <h1>${title}</h1>
     <p>${message}</p>
-    <a href="https://propel-creator.lovable.app/settings">Go to Settings</a>
+    <a href="https://uply.tv/settings">Go to Settings</a>
   </div>
 </body>
 </html>`;

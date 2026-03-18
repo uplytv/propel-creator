@@ -11,6 +11,44 @@ const logStep = (step: string, details?: any) => {
   console.log(`[STRIPE-WEBHOOK] ${step}${d}`);
 };
 
+function buildNewSubscriberEmailHtml(subscriberName: string, tierName: string, amount: number): string {
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background-color:#0A0A0A;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;">
+  <div style="max-width:600px;margin:0 auto;background-color:#0A0A0A;">
+    <div style="height:4px;background-color:#00FF85;"></div>
+    <div style="padding:32px 28px;">
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="font-size:40px;margin-bottom:8px;">🎉</div>
+        <h1 style="color:#FFFFFF;font-size:22px;font-weight:700;margin:0 0 8px;">New Subscriber!</h1>
+        <p style="color:#888888;font-size:14px;margin:0;">Your community is growing.</p>
+      </div>
+      <div style="background:#111111;border:1px solid #1E1E1E;border-radius:12px;padding:20px;margin:20px 0;">
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="color:#888888;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;padding-bottom:4px;">Member</td>
+            <td style="color:#888888;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;padding-bottom:4px;text-align:right;">Amount</td>
+          </tr>
+          <tr>
+            <td style="color:#FFFFFF;font-size:16px;font-weight:600;">${subscriberName}</td>
+            <td style="color:#00FF85;font-size:16px;font-weight:700;text-align:right;">$${amount.toFixed(2)}/mo</td>
+          </tr>
+          ${tierName ? `<tr><td colspan="2" style="color:#888888;font-size:13px;padding-top:8px;">Tier: ${tierName}</td></tr>` : ''}
+        </table>
+      </div>
+      <div style="text-align:center;margin:28px 0;">
+        <a href="https://uply.tv/dashboard" style="display:inline-block;background-color:#00FF85;color:#0A0A0A;font-size:15px;font-weight:700;padding:14px 32px;border-radius:8px;text-decoration:none;">View Dashboard →</a>
+      </div>
+    </div>
+    <div style="padding:16px 28px;border-top:1px solid #1E1E1E;text-align:center;">
+      <p style="color:#555;font-size:11px;margin:0;">Powered by UPLY</p>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -80,7 +118,6 @@ Deno.serve(async (req) => {
         const purchaseType = metadata.purchase_type || "subscription";
 
         if (purchaseType === "tip") {
-          // Handle tip
           const { sender_id, creator_id, stream_id, message, amount } = metadata;
           const tipAmount = parseFloat(amount || "0");
           const fee = Math.round(tipAmount * 0.05 * 100) / 100;
@@ -93,7 +130,6 @@ Deno.serve(async (req) => {
             message: message || null,
           });
 
-          // Record transaction
           const { data: creatorWallet } = await supabase
             .from("wallets").select("id").eq("user_id", creator_id).maybeSingle();
           if (creatorWallet) {
@@ -112,7 +148,6 @@ Deno.serve(async (req) => {
           logStep("Tip processed", { sender_id, creator_id, amount: tipAmount });
 
         } else if (purchaseType === "product") {
-          // Handle product purchase
           const { buyer_id, product_id, creator_id } = metadata;
           const amount = (session.amount_total || 0) / 100;
           const fee = Math.round(amount * 0.05 * 100) / 100;
@@ -125,9 +160,7 @@ Deno.serve(async (req) => {
             amount,
           });
 
-          // Update product sales count and revenue
           await supabase.rpc("increment_product_sales" as any, { p_id: product_id, p_amount: amount }).catch(async () => {
-            // Fallback: manual increment
             const { data: prod } = await supabase.from("products").select("sales, revenue").eq("id", product_id).maybeSingle();
             if (prod) {
               await supabase.from("products").update({
@@ -137,17 +170,14 @@ Deno.serve(async (req) => {
             }
           });
 
-          // Get product name for notifications
           const { data: purchasedProduct } = await supabase
             .from("products").select("name").eq("id", product_id).maybeSingle();
           const productName = purchasedProduct?.name || "a product";
 
-          // Get buyer profile for creator notification
           const { data: buyerProfile } = await supabase
             .from("profiles").select("display_name, username").eq("user_id", buyer_id).maybeSingle();
           const buyerName = buyerProfile?.display_name || buyerProfile?.username || "Someone";
 
-          // Notify creator of the sale
           await supabase.from("notifications").insert({
             user_id: creator_id,
             type: "sale",
@@ -158,7 +188,6 @@ Deno.serve(async (req) => {
             link: "/dashboard",
           });
 
-          // Notify buyer of successful purchase
           await supabase.from("notifications").insert({
             user_id: buyer_id,
             type: "purchase",
@@ -169,7 +198,6 @@ Deno.serve(async (req) => {
             link: "/products",
           });
 
-          // Record transaction and update creator wallet
           const { data: creatorWallet } = await supabase
             .from("wallets").select("id, available_balance, lifetime_earned").eq("user_id", creator_id).maybeSingle();
           if (creatorWallet) {
@@ -185,7 +213,6 @@ Deno.serve(async (req) => {
               completed_at: new Date().toISOString(),
             });
 
-            // Update wallet balances
             await supabase.from("wallets").update({
               available_balance: (creatorWallet.available_balance || 0) + (amount - fee),
               lifetime_earned: (creatorWallet.lifetime_earned || 0) + (amount - fee),
@@ -194,9 +221,7 @@ Deno.serve(async (req) => {
           logStep("Product purchase processed with notifications", { buyer_id, product_id, amount });
 
         } else if (purchaseType === "credits") {
-          // Handle credit purchase
           const { buyer_id } = metadata;
-          // Get the credit package info from line items
           const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
           const priceId = lineItems.data[0]?.price?.id;
           
@@ -208,7 +233,6 @@ Deno.serve(async (req) => {
               .maybeSingle();
             
             if (pkg && buyer_id) {
-              // Add credits to wallet
               const { data: wallet } = await supabase
                 .from("wallets").select("id, credits").eq("user_id", buyer_id).maybeSingle();
               if (wallet) {
@@ -257,6 +281,75 @@ Deno.serve(async (req) => {
                 completed_at: new Date().toISOString(),
               });
             }
+
+            // Get subscriber info for notification email
+            const { data: subscriberProfile } = await supabase
+              .from("profiles")
+              .select("display_name, username")
+              .eq("user_id", member_id)
+              .maybeSingle();
+            const subscriberName = subscriberProfile?.display_name || subscriberProfile?.username || "Someone";
+
+            // Get tier name if available
+            let tierName = "";
+            if (tier_id) {
+              const { data: tier } = await supabase
+                .from("subscription_tiers")
+                .select("name")
+                .eq("id", tier_id)
+                .maybeSingle();
+              tierName = tier?.name || "";
+            }
+
+            // Send email notification to creator about new subscriber
+            try {
+              const { data: { user: creatorAuth } } = await supabase.auth.admin.getUserById(creator_id);
+              if (creatorAuth?.email) {
+                // Check if creator wants member_joined emails
+                const { data: emailPref } = await supabase
+                  .from("notification_preferences")
+                  .select("member_joined_email")
+                  .eq("user_id", creator_id)
+                  .maybeSingle();
+
+                const wantsEmail = emailPref?.member_joined_email !== false;
+
+                if (wantsEmail) {
+                  const emailHtml = buildNewSubscriberEmailHtml(subscriberName, tierName, amount);
+                  const messageId = `new-subscriber-${member_id}-${crypto.randomUUID().slice(0, 8)}`;
+
+                  await supabase.from("email_send_log").insert({
+                    message_id: messageId,
+                    template_name: "new_subscriber",
+                    recipient_email: creatorAuth.email,
+                    status: "pending",
+                  });
+
+                  await supabase.rpc("enqueue_email", {
+                    queue_name: "transactional_emails",
+                    payload: {
+                      run_id: crypto.randomUUID(),
+                      to: creatorAuth.email,
+                      from: "UPLY <noreply@notify.uply.tv>",
+                      sender_domain: "notify.uply.tv",
+                      subject: `🎉 New subscriber: ${subscriberName} joined your community!`,
+                      html: emailHtml,
+                      text: `${subscriberName} just subscribed to your community${tierName ? ` (${tierName} tier)` : ''} for $${amount.toFixed(2)}/mo. View your dashboard: https://uply.tv/dashboard`,
+                      purpose: "transactional",
+                      label: "new_subscriber",
+                      message_id: messageId,
+                      idempotency_key: messageId,
+                      queued_at: new Date().toISOString(),
+                    },
+                  });
+
+                  logStep("New subscriber email enqueued", { creator_id, subscriber: subscriberName });
+                }
+              }
+            } catch (emailErr) {
+              console.error("Failed to send new subscriber email:", emailErr);
+            }
+
             logStep("Subscription checkout completed", { member_id, creator_id });
           }
         }
@@ -292,7 +385,6 @@ Deno.serve(async (req) => {
         if (invoice.billing_reason === "subscription_cycle") {
           const amount = (invoice.amount_paid || 0) / 100;
           const fee = Math.round(amount * 0.05 * 100) / 100;
-          // Find the subscription to get creator_id
           const { data: memberSub } = await supabase
             .from("member_subscriptions")
             .select("creator_id")

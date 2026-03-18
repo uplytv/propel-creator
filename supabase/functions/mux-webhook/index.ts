@@ -61,6 +61,36 @@ async function verifyMuxSignature(req: Request, body: string): Promise<boolean> 
   return true
 }
 
+function buildStreamRecordingEmailHtml(title: string, videoUrl: string): string {
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background-color:#0A0A0A;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;">
+  <div style="max-width:600px;margin:0 auto;background-color:#0A0A0A;">
+    <div style="height:4px;background-color:#00FF85;"></div>
+    <div style="padding:32px 28px;">
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="font-size:40px;margin-bottom:8px;">🎬</div>
+        <h1 style="color:#FFFFFF;font-size:22px;font-weight:700;margin:0 0 8px;">Your Stream Has Been Saved</h1>
+        <p style="color:#888888;font-size:14px;margin:0;">Your full stream recording is ready to watch, share, and publish.</p>
+      </div>
+      <div style="background:#111111;border:1px solid #1E1E1E;border-radius:12px;padding:20px;margin:20px 0;">
+        <div style="color:#888888;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Recording Title</div>
+        <div style="color:#FFFFFF;font-size:16px;font-weight:600;">${title}</div>
+      </div>
+      <div style="text-align:center;margin:28px 0;">
+        <a href="${videoUrl}" style="display:inline-block;background-color:#00FF85;color:#0A0A0A;font-size:15px;font-weight:700;padding:14px 32px;border-radius:8px;text-decoration:none;">Watch Recording →</a>
+      </div>
+      <p style="color:#666666;font-size:13px;text-align:center;margin:0;">You can also add this recording to your classroom or share it with your community.</p>
+    </div>
+    <div style="padding:16px 28px;border-top:1px solid #1E1E1E;text-align:center;">
+      <p style="color:#555;font-size:11px;margin:0;">Powered by UPLY</p>
+    </div>
+  </div>
+</body>
+</html>`
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -169,6 +199,7 @@ serve(async (req) => {
             const creatorUsername = creatorProfile?.username || creatorProfile?.display_name || 'creator'
             const videoSlug = recording?.slug || 'recording'
             const videoLink = `/${encodeURIComponent(creatorUsername)}/videos/${videoSlug}`
+            const fullVideoUrl = `https://uply.tv${videoLink}`
 
             // Send in-platform notification
             await supabase.from('notifications').insert({
@@ -181,29 +212,36 @@ serve(async (req) => {
 
             // Send email notification via queue
             try {
-              const { data: profile } = await supabase
-                .from('profiles')
-                .select('user_id')
-                .eq('user_id', stream.user_id)
-                .single()
+              const { data: { user: authUser } } = await supabase.auth.admin.getUserById(stream.user_id)
+              if (authUser?.email) {
+                const emailHtml = buildStreamRecordingEmailHtml(recordingTitle, fullVideoUrl)
+                const messageId = `stream-recorded-${data.id}-${crypto.randomUUID().slice(0, 8)}`
 
-              if (profile) {
-                // Get user email from auth
-                const { data: { user: authUser } } = await supabase.auth.admin.getUserById(stream.user_id)
-                if (authUser?.email) {
-                  await supabase.rpc('enqueue_email', {
-                    queue_name: 'transactional_emails',
-                    payload: {
-                      to: authUser.email,
-                      subject: `Your stream recording is ready — ${recordingTitle}`,
-                      template_name: 'stream_recorded',
-                      template_data: {
-                        title: recordingTitle,
-                        link: `https://uply.tv${videoLink}`,
-                      },
-                    },
-                  })
-                }
+                // Log pending
+                await supabase.from('email_send_log').insert({
+                  message_id: messageId,
+                  template_name: 'stream_recorded',
+                  recipient_email: authUser.email,
+                  status: 'pending',
+                })
+
+                await supabase.rpc('enqueue_email', {
+                  queue_name: 'transactional_emails',
+                  payload: {
+                    run_id: crypto.randomUUID(),
+                    to: authUser.email,
+                    from: 'UPLY <noreply@notify.uply.tv>',
+                    sender_domain: 'notify.uply.tv',
+                    subject: `Your stream recording is ready — ${recordingTitle}`,
+                    html: emailHtml,
+                    text: `Your stream "${recordingTitle}" has been saved and is ready to watch, share, and publish.\n\nWatch it here: ${fullVideoUrl}`,
+                    purpose: 'transactional',
+                    label: 'stream_recorded',
+                    message_id: messageId,
+                    idempotency_key: messageId,
+                    queued_at: new Date().toISOString(),
+                  },
+                })
               }
             } catch (emailErr) {
               console.error('Failed to enqueue recording email:', emailErr)
