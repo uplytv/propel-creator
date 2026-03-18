@@ -116,13 +116,19 @@ export default function SharePanel({
 
   const contentSlug = title ? slugify(title) : contentId;
 
+  const baseUrl = getSiteUrl();
   const contentUrl =
-    contentType === "clip"
-      ? `https://uply.tv/clip/${contentId}`
-      : `https://uply.tv/creator/${encodeURIComponent(username)}/videos/${contentId}${title ? `?title=${encodeURIComponent(contentSlug)}` : ""}`;
+    contentType === "stream"
+      ? `${baseUrl}/stream/${contentId}`
+      : contentType === "clip"
+        ? `${baseUrl}/clip/${contentId}`
+        : `${baseUrl}/creator/${encodeURIComponent(username)}/videos/${contentId}${title ? `?title=${encodeURIComponent(contentSlug)}` : ""}`;
 
-  const defaultCaption = `Just dropped this on UPLY 🔥 Watch the full thing here → uply.tv/creator/${username}`;
-  const linkedInCaption = `New content just dropped on UPLY — watch the full version here → uply.tv/creator/${username}`;
+  const defaultCaption =
+    contentType === "stream"
+      ? `I'm live on UPLY 🔥 Join here → ${contentUrl}`
+      : `Just dropped this on UPLY 🔥 Watch the full thing here → ${contentUrl}`;
+  const linkedInCaption = `New content just dropped on UPLY — watch the full version here → ${contentUrl}`;
 
   useEffect(() => {
     if (open) {
