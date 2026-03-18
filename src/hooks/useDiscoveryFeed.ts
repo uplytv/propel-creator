@@ -84,16 +84,34 @@ export function useDiscoveryFeed(
       if (productsRes.data) (productsRes.data as any[]).forEach((p) => userIds.add(p.user_id));
       if (spacesRes.data) (spacesRes.data as any[]).forEach((sp) => userIds.add(sp.creator_id));
 
+      // Batch fetch profiles and member counts in parallel
+      const [profilesRes, memberCountsRes] = await Promise.all([
+        userIds.size > 0
+          ? supabase
+              .from("profiles_public" as any)
+              .select("user_id, display_name, avatar_url, creator_type")
+              .in("user_id", Array.from(userIds))
+          : Promise.resolve({ data: [] }),
+        userIds.size > 0
+          ? supabase
+              .from("community_members")
+              .select("creator_id")
+              .in("creator_id", Array.from(userIds))
+          : Promise.resolve({ data: [] }),
+      ]);
+
       const profileMap = new Map<string, { display_name: string | null; avatar_url: string | null; creator_type: string | null }>();
-      if (userIds.size > 0) {
-        const { data: profiles } = await supabase
-          .from("profiles_public" as any)
-          .select("user_id, display_name, avatar_url, creator_type")
-          .in("user_id", Array.from(userIds));
-        if (profiles) {
-          for (const p of (profiles as any[])) {
-            profileMap.set(p.user_id, p);
-          }
+      if (profilesRes.data) {
+        for (const p of (profilesRes.data as any[])) {
+          profileMap.set(p.user_id, p);
+        }
+      }
+
+      // Build member count map
+      const memberCountMap = new Map<string, number>();
+      if (memberCountsRes.data) {
+        for (const m of (memberCountsRes.data as any[])) {
+          memberCountMap.set(m.creator_id, (memberCountMap.get(m.creator_id) || 0) + 1);
         }
       }
 
@@ -134,6 +152,7 @@ export function useDiscoveryFeed(
             p.type === "course" ? "course" :
             p.type === "community" ? "community" : "service";
           if (filter !== "all" && filter !== pType) continue;
+          const memberCount = (p.sales || 0) + (memberCountMap.get(p.user_id) || 0);
           items.push({
             id: p.id,
             type: pType,
@@ -147,8 +166,8 @@ export function useDiscoveryFeed(
             creatorType: profileMap.get(p.user_id)?.creator_type || null,
             isLive: false,
             viewerCount: 0,
-            memberCount: p.sales || 0,
-            engagementScore: (p.sales || 0) * 5 + (p.revenue || 0) * 0.1,
+            memberCount,
+            engagementScore: memberCount * 8 + (p.revenue || 0) * 0.2 + (p.sales || 0) * 5,
             createdAt: p.created_at,
             playbackId: null,
             spaceId: null,
@@ -165,6 +184,7 @@ export function useDiscoveryFeed(
             (i) => i.type === "community" && i.creatorId === sp.creator_id
           );
           if (alreadyHasCommunity) continue;
+          const spMemberCount = memberCountMap.get(sp.creator_id) || 0;
           items.push({
             id: sp.id,
             type: "community",
@@ -178,8 +198,8 @@ export function useDiscoveryFeed(
             creatorType: profileMap.get(sp.creator_id)?.creator_type || null,
             isLive: false,
             viewerCount: 0,
-            memberCount: 0,
-            engagementScore: 50,
+            memberCount: spMemberCount,
+            engagementScore: spMemberCount * 10 + 50,
             createdAt: sp.created_at,
             playbackId: null,
             spaceId: sp.id,
