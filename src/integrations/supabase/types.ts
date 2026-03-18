@@ -591,6 +591,76 @@ export type Database = {
         }
         Relationships: []
       }
+      community_blasts: {
+        Row: {
+          created_at: string
+          creator_id: string
+          id: string
+          media_type: string | null
+          media_url: string | null
+          message: string
+          mux_asset_id: string | null
+          mux_playback_id: string | null
+          recipient_count: number
+          sent_at: string | null
+          space_id: string
+          status: string
+          subject: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          id?: string
+          media_type?: string | null
+          media_url?: string | null
+          message: string
+          mux_asset_id?: string | null
+          mux_playback_id?: string | null
+          recipient_count?: number
+          sent_at?: string | null
+          space_id: string
+          status?: string
+          subject: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          id?: string
+          media_type?: string | null
+          media_url?: string | null
+          message?: string
+          mux_asset_id?: string | null
+          mux_playback_id?: string | null
+          recipient_count?: number
+          sent_at?: string | null
+          space_id?: string
+          status?: string
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_blasts_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_blasts_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_blasts_space_id_fkey"
+            columns: ["space_id"]
+            isOneToOne: false
+            referencedRelation: "creator_spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_categories: {
         Row: {
           created_at: string
@@ -683,20 +753,26 @@ export type Database = {
       community_members: {
         Row: {
           creator_id: string
+          email_opt_in: boolean
           id: string
           joined_at: string
+          last_emailed_at: string | null
           user_id: string
         }
         Insert: {
           creator_id: string
+          email_opt_in?: boolean
           id?: string
           joined_at?: string
+          last_emailed_at?: string | null
           user_id: string
         }
         Update: {
           creator_id?: string
+          email_opt_in?: boolean
           id?: string
           joined_at?: string
+          last_emailed_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -877,6 +953,7 @@ export type Database = {
           id: string
           is_free: boolean
           is_public: boolean
+          last_blast_sent_at: string | null
           name: string
           price: number
           updated_at: string
@@ -890,6 +967,7 @@ export type Database = {
           id?: string
           is_free?: boolean
           is_public?: boolean
+          last_blast_sent_at?: string | null
           name?: string
           price?: number
           updated_at?: string
@@ -903,6 +981,7 @@ export type Database = {
           id?: string
           is_free?: boolean
           is_public?: boolean
+          last_blast_sent_at?: string | null
           name?: string
           price?: number
           updated_at?: string
