@@ -10,6 +10,7 @@ const typeConfig: Record<string, { label: string; icon: React.ElementType; color
   livestream: { label: "LIVE", icon: Radio, color: "bg-[#FF3B3B] text-white" },
   recording: { label: "VIDEO", icon: Film, color: "bg-secondary text-secondary-foreground" },
   clip: { label: "CLIP", icon: Scissors, color: "bg-secondary text-secondary-foreground" },
+  video: { label: "VIDEO", icon: Play, color: "bg-primary/80 text-primary-foreground" },
   community: { label: "COMMUNITY", icon: Users, color: "bg-primary text-primary-foreground" },
   course: { label: "COURSE", icon: BookOpen, color: "bg-accent-green text-background" },
   service: { label: "Service", icon: Briefcase, color: "bg-secondary text-secondary-foreground" },
