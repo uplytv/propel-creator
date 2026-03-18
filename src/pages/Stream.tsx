@@ -34,7 +34,7 @@ function formatViewers(n: number) {
 }
 
 export default function Stream() {
-  const { id } = useParams<{ id: string }>();
+  const { id, username: routeUsername } = useParams<{ id: string; username: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -51,14 +51,16 @@ export default function Stream() {
 
   const searchParams = new URLSearchParams(window.location.search);
   const contentType = searchParams.get('type'); // 'vod' | 'recording' | null
-  const isVod = contentType === 'vod' || contentType === 'recording';
+  // Auto-detect: if accessed via /creator/:username/videos/:id, it's a video
+  const isFromCreatorRoute = !!routeUsername;
+  const isVod = contentType === 'vod' || contentType === 'recording' || isFromCreatorRoute;
 
   useEffect(() => {
     const fetchStream = async () => {
       if (!id) return;
 
-      if (contentType === 'recording') {
-        // Fetch stream recording
+      if (contentType === 'recording' || (isFromCreatorRoute && !contentType)) {
+        // Try stream_recordings first
         const { data: rec } = await supabase
           .from('stream_recordings')
           .select('*')
@@ -72,14 +74,66 @@ export default function Stream() {
             user_id: rec.creator_id,
           });
           setIsRealStream(true);
-
           const { data: prof } = await supabase
             .from('profiles')
             .select('display_name, avatar_url, tier, tier_name')
             .eq('user_id', rec.creator_id)
             .single();
           setProfile(prof);
+          setLoading(false);
+          return;
         }
+
+        // If accessed via creator route, also try mux_assets (VOD)
+        if (isFromCreatorRoute) {
+          const { data: asset } = await supabase
+            .from('mux_assets')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+          if (asset) {
+            setDbStream(asset);
+            setIsRealStream(true);
+            const { data: prof } = await supabase
+              .from('profiles')
+              .select('display_name, avatar_url, tier, tier_name')
+              .eq('user_id', asset.user_id)
+              .single();
+            setProfile(prof);
+            setLoading(false);
+            return;
+          }
+
+          // Finally try mux_live_streams
+          const { data: muxStream } = await supabase
+            .from('mux_live_streams')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+          if (muxStream) {
+            setDbStream(muxStream);
+            setIsRealStream(true);
+            const { data: prof } = await supabase
+              .from('profiles')
+              .select('display_name, avatar_url, tier, tier_name')
+              .eq('user_id', muxStream.user_id)
+              .single();
+            setProfile(prof);
+            if ((muxStream as any).featured_product_id) {
+              const { data: prod } = await supabase
+                .from('products')
+                .select('*')
+                .eq('id', (muxStream as any).featured_product_id)
+                .single();
+              if (prod) setFeaturedProduct(prod);
+            }
+          }
+          setLoading(false);
+          return;
+        }
+
         setLoading(false);
         return;
       }

@@ -38,6 +38,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CreatorVideoOverlay, CreatorDashboardPanel } from "./CreatorStreamOverlay";
 import { useStreamEngagement } from "@/hooks/useStreamEngagement";
 import SharePanel from "@/components/share/SharePanel";
+import { clearChunks, appendChunk, getAllChunks } from "@/lib/recordingStore";
 
 interface Product {
   id: string;
@@ -586,16 +587,24 @@ export default function BroadcastStudio({
   // Recording
   const startRecording = async () => {
     if (!streamRef.current) return;
+    // Clear any previous recording chunks from IndexedDB
+    await clearChunks();
     chunksRef.current = [];
     const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9,opus")
       ? "video/webm;codecs=vp9,opus"
       : "video/webm";
     const recorder = new MediaRecorder(streamRef.current, { mimeType });
     recorder.ondataavailable = (e) => {
-      if (e.data.size > 0) chunksRef.current.push(e.data);
+      if (e.data.size > 0) {
+        // Store chunk in IndexedDB to avoid memory exhaustion on long recordings
+        appendChunk(e.data).catch((err) =>
+          console.error("[Recording] Failed to persist chunk:", err)
+        );
+      }
     };
     recorder.onstop = () => {};
-    recorder.start(1000);
+    // Use 5-second timeslice to reduce chunk count for long recordings
+    recorder.start(5000);
     mediaRecorderRef.current = recorder;
     setIsRecording(true);
     setRecordingDuration(0);
@@ -635,7 +644,9 @@ export default function BroadcastStudio({
     // Stop media tracks
     stopCurrentStream();
 
-    if (chunksRef.current.length === 0) {
+    // Retrieve all chunks from IndexedDB
+    const persistedChunks = await getAllChunks();
+    if (persistedChunks.length === 0) {
       toast({ title: "No recording data", description: "Recording was too short.", variant: "destructive" });
       onEndStream({ durationSeconds: duration });
       return;
@@ -652,7 +663,7 @@ export default function BroadcastStudio({
     setUploadFailed(false);
 
     try {
-      const blob = new Blob(chunksRef.current, { type: "video/webm" });
+      const blob = new Blob(persistedChunks, { type: "video/webm" });
       const { uploadToMuxWithRetry } = await import("@/lib/muxUpload");
       const uploadId = await uploadToMuxWithRetry({
         userId: user.id,
@@ -664,6 +675,8 @@ export default function BroadcastStudio({
       });
       setLastUploadId(uploadId || null);
       toast({ title: "Recording saved! 🎬", description: "Your video is processing." });
+      // Clear IndexedDB after successful upload
+      await clearChunks();
       chunksRef.current = [];
       setIsUploading(false);
       // Transition to EndOfStreamScreen via parent
