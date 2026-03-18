@@ -107,8 +107,18 @@
   * {
     @apply border-border;
   }
+  html {
+    /* Edge-to-edge: allow content behind system bars */
+    height: 100%;
+  }
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    /* Prevent root overscroll bounce (iOS) */
+    overscroll-behavior: none;
+    /* Ensure font loads correctly on Android */
+    font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+    min-height: 100%;
+    min-height: -webkit-fill-available;
   }
   h1, h2, h3 {
     font-family: "Space Grotesk", "Plus Jakarta Sans", system-ui, sans-serif;
