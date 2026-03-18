@@ -66,6 +66,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [dashMode, setDashMode] = useState<DashboardMode>("discover");
   const [activeStream, setActiveStream] = useState<any>(null);
+  const [uploadOpen, setUploadOpen] = useState(false);
   const { data: dashStats, isLoading: statsLoading } = useDashboardStats();
 
   useEffect(() => {
