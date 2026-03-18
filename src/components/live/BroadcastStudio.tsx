@@ -587,16 +587,24 @@ export default function BroadcastStudio({
   // Recording
   const startRecording = async () => {
     if (!streamRef.current) return;
+    // Clear any previous recording chunks from IndexedDB
+    await clearChunks();
     chunksRef.current = [];
     const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9,opus")
       ? "video/webm;codecs=vp9,opus"
       : "video/webm";
     const recorder = new MediaRecorder(streamRef.current, { mimeType });
     recorder.ondataavailable = (e) => {
-      if (e.data.size > 0) chunksRef.current.push(e.data);
+      if (e.data.size > 0) {
+        // Store chunk in IndexedDB to avoid memory exhaustion on long recordings
+        appendChunk(e.data).catch((err) =>
+          console.error("[Recording] Failed to persist chunk:", err)
+        );
+      }
     };
     recorder.onstop = () => {};
-    recorder.start(1000);
+    // Use 5-second timeslice to reduce chunk count for long recordings
+    recorder.start(5000);
     mediaRecorderRef.current = recorder;
     setIsRecording(true);
     setRecordingDuration(0);
