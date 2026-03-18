@@ -82,6 +82,28 @@ const PageLoader = () => (
   </div>
 );
 
+function NativeShell({ children }: { children: React.ReactNode }) {
+  useNativeInit();
+  useKeyboardState();
+
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+  useEffect(() => {
+    const goOffline = () => setIsOffline(true);
+    const goOnline = () => setIsOffline(false);
+    window.addEventListener('offline', goOffline);
+    window.addEventListener('online', goOnline);
+    return () => {
+      window.removeEventListener('offline', goOffline);
+      window.removeEventListener('online', goOnline);
+    };
+  }, []);
+
+  if (isOffline) return <OfflineScreen />;
+
+  return <>{children}</>;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
@@ -89,9 +111,11 @@ const App = () => (
         <AuthProvider>
           <AppProvider>
             <FeatureProvider>
+              <NativeShell>
               <Toaster />
               <Sonner />
               <TierCelebration />
+              <InstallPrompt />
               <LaunchGate>
               <BrowserRouter>
                 <ErrorBoundary>
@@ -157,6 +181,7 @@ const App = () => (
                 </ErrorBoundary>
               </BrowserRouter>
               </LaunchGate>
+              </NativeShell>
             </FeatureProvider>
           </AppProvider>
         </AuthProvider>
