@@ -152,6 +152,7 @@ export function useDiscoveryFeed(
             p.type === "course" ? "course" :
             p.type === "community" ? "community" : "service";
           if (filter !== "all" && filter !== pType) continue;
+          const memberCount = (p.sales || 0) + (memberCountMap.get(p.user_id) || 0);
           items.push({
             id: p.id,
             type: pType,
@@ -165,8 +166,8 @@ export function useDiscoveryFeed(
             creatorType: profileMap.get(p.user_id)?.creator_type || null,
             isLive: false,
             viewerCount: 0,
-            memberCount: p.sales || 0,
-            engagementScore: (p.sales || 0) * 5 + (p.revenue || 0) * 0.1,
+            memberCount,
+            engagementScore: memberCount * 8 + (p.revenue || 0) * 0.2 + (p.sales || 0) * 5,
             createdAt: p.created_at,
             playbackId: null,
             spaceId: null,
