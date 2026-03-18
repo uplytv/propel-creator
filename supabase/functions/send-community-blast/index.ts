@@ -46,13 +46,16 @@ serve(async (req) => {
     // Fetch creator profile for email template
     const { data: creatorProfile } = await supabase
       .from('profiles')
-      .select('display_name, avatar_url')
+      .select('display_name, avatar_url, username')
       .eq('user_id', creator_id)
       .single()
 
     const creatorName = creatorProfile?.display_name || 'A creator'
     const creatorAvatar = creatorProfile?.avatar_url || ''
     const spaceName = spaceData.name || creatorName + "'s Community"
+    const creatorUsername = creatorProfile?.username || creator_id
+
+    const spaceUrl = `https://uply.tv/${encodeURIComponent(creatorUsername)}/community`
 
     // Fetch eligible members
     const { data: members, error: membersErr } = await supabase
@@ -72,11 +75,10 @@ serve(async (req) => {
       if (u.email) emailMap.set(u.id, u.email)
     }
 
-    const spaceUrl = `https://propel-creator.lovable.app/community/${creator_id}/community`
     let successCount = 0
 
     // Build email HTML
-    const buildEmailHtml = () => {
+    const buildEmailHtml = (unsubUrl: string) => {
       const mediaBlock = media_type === 'image' && media_url
         ? `<img src="${media_url}" alt="" style="width:100%;max-height:400px;object-fit:cover;border-radius:8px;margin:20px 0;" />`
         : media_type === 'video' && mux_playback_id
@@ -120,14 +122,14 @@ serve(async (req) => {
     </div>
     <div style="padding:20px 28px;border-top:1px solid #1E1E1E;">
       <p style="color:#666;font-size:12px;line-height:1.5;margin:0;">You're receiving this because you're a member of ${creatorName}'s community on UPLY.</p>
-      <p style="margin:8px 0 0;"><a href="{{unsubscribe_url}}" style="color:#888;font-size:12px;text-decoration:underline;">Unsubscribe from blast emails</a></p>
+      <p style="margin:8px 0 0;"><a href="${unsubUrl}" style="color:#888;font-size:12px;text-decoration:underline;">Unsubscribe from blast emails</a></p>
     </div>
   </div>
 </body>
 </html>`
     }
 
-    const emailHtml = buildEmailHtml()
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 
     // Process each member
     for (const member of eligibleMembers) {
@@ -154,9 +156,8 @@ serve(async (req) => {
             token: unsubToken,
           })
 
-          const supabaseUrl = Deno.env.get('SUPABASE_URL')!
           const unsubUrl = `${supabaseUrl}/functions/v1/handle-email-unsubscribe?token=${unsubToken}&type=community_blast`
-          const personalizedHtml = emailHtml.replace('{{unsubscribe_url}}', unsubUrl)
+          const emailHtml = buildEmailHtml(unsubUrl)
 
           const messageId = `blast-${blast_id}-${member.user_id}`
           
@@ -168,14 +169,22 @@ serve(async (req) => {
             status: 'pending',
           })
 
-          // Enqueue via pgmq
+          // Enqueue via pgmq with all required fields
           await supabase.rpc('enqueue_email', {
             queue_name: 'transactional_emails',
             payload: {
+              run_id: crypto.randomUUID(),
               to: email,
+              from: `${creatorName} via UPLY <noreply@notify.uply.tv>`,
+              sender_domain: 'notify.uply.tv',
               subject: `${creatorName}: ${subject}`,
-              html: personalizedHtml,
+              html: emailHtml,
+              text: `${creatorName}: ${subject}\n\n${message}\n\nView in community: ${spaceUrl}`,
+              purpose: 'transactional',
+              label: 'community_blast',
               message_id: messageId,
+              idempotency_key: messageId,
+              queued_at: new Date().toISOString(),
             },
           })
 
