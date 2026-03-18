@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ThumbsUp, MessageCircle, Pin, MoreHorizontal, Send, ArrowLeft, SlidersHorizontal } from "lucide-react";
+import { ThumbsUp, MessageCircle, Pin, MoreHorizontal, Send, ArrowLeft, SlidersHorizontal, Megaphone } from "lucide-react";
 import ContentGate from "@/components/ContentGate";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/context/AuthContext";
@@ -13,12 +13,14 @@ import {
   useCreateComment,
   useCommunityCategories,
   useTogglePin,
+  useCreatorSpace,
 } from "@/hooks/useCreatorSpace";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import BlastComposer from "@/components/blast/BlastComposer";
 
 interface Props {
   creatorId: string;
@@ -31,6 +33,8 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [showComposer, setShowComposer] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
+  const [showBlastComposer, setShowBlastComposer] = useState(false);
+  const { data: space } = useCreatorSpace(creatorId);
 
   // Composer state
   const [postTitle, setPostTitle] = useState("");
@@ -63,7 +67,21 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
 
   return (
     <div className="px-4 pt-4">
-      {/* Category Filters */}
+      {/* Blast Button + Category Filters */}
+      {isOwner && (
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-sm font-semibold text-foreground">Community</span>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setShowBlastComposer(true)}
+            className="gap-1.5 text-xs border-primary/40 text-primary hover:bg-primary/10"
+          >
+            <Megaphone className="w-3.5 h-3.5" />
+            Blast
+          </Button>
+        </div>
+      )}
       <div className="flex gap-2 overflow-x-auto scrollbar-none pb-3">
         <button
           onClick={() => setCategoryFilter("all")}
@@ -264,6 +282,17 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
           creatorId={creatorId}
           isOwner={isOwner}
           onClose={() => setSelectedPost(null)}
+        />
+      )}
+
+      {/* Blast Composer */}
+      {isOwner && space && (
+        <BlastComposer
+          open={showBlastComposer}
+          onClose={() => setShowBlastComposer(false)}
+          creatorId={creatorId}
+          spaceId={space.id}
+          lastBlastSentAt={space.last_blast_sent_at}
         />
       )}
     </div>

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Bell, Check, CheckCheck, AlertTriangle, Flag, Briefcase,
   CheckCircle2, XCircle, Eye, Star, Filter, Trash2,
-  MessageSquare, Heart, UserPlus, Coins, Users
+  MessageSquare, Heart, UserPlus, Coins, Users, Megaphone
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useNotifications, AppNotification } from "@/hooks/useNotifications";
@@ -40,6 +40,7 @@ function NotificationItem({
     new_follower: { icon: UserPlus, color: "bg-primary/10 text-primary" },
     tip_received: { icon: Coins, color: "bg-primary/15 text-primary" },
     member_joined: { icon: Users, color: "bg-primary/10 text-primary" },
+    community_blast: { icon: Megaphone, color: "bg-primary/15 text-primary" },
   };
 
   const getIcon = () => {
@@ -84,7 +85,7 @@ function NotificationItem({
       onClick={onNavigate}
       className={`w-full text-left px-5 py-4 flex gap-4 hover:bg-secondary/40 transition-colors border-b border-border/50 last:border-0 group ${
         !n.read ? "bg-primary/[0.03]" : ""
-      }`}
+      } ${n.type === "community_blast" ? "border-l-[3px] border-l-primary" : ""}`}
     >
       {getIcon()}
       <div className="flex-1 min-w-0">

@@ -13,6 +13,7 @@ import SpaceMembersTab from "@/components/space/SpaceMembersTab";
 import SpaceLeaderboardTab from "@/components/space/SpaceLeaderboardTab";
 import SpaceAboutTab from "@/components/space/SpaceAboutTab";
 import { MemberEarnTab } from "@/components/affiliates/MemberEarnTab";
+import BlastHistory from "@/components/blast/BlastHistory";
 import { CreatorAffiliateProgramSettings } from "@/components/affiliates/CreatorAffiliateProgramSettings";
 import { useCreatorAffiliateProgram } from "@/hooks/useAffiliates";
 import { setAffiliateCookie } from "@/lib/affiliateCookies";
@@ -23,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Users, Loader2, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const VALID_TABS = ["community", "classroom", "calendar", "members", "leaderboard", "pricing", "earn", "about"] as const;
+const VALID_TABS = ["community", "classroom", "calendar", "members", "leaderboard", "pricing", "earn", "blasts", "about"] as const;
 type TabSlug = typeof VALID_TABS[number];
 
 const TAB_LABELS: Record<TabSlug, string> = {
@@ -34,6 +35,7 @@ const TAB_LABELS: Record<TabSlug, string> = {
   leaderboard: "Leaderboard",
   pricing: "Pricing",
   earn: "Earn",
+  blasts: "Blasts",
   about: "About",
 };
 
@@ -208,7 +210,11 @@ export default function CreatorSpace() {
       {/* Sticky Tab Bar */}
       <div className="sticky top-0 z-40 bg-surface border-b border-surface-border">
         <div className="flex overflow-x-auto scrollbar-none">
-          {VALID_TABS.map((slug) => (
+          {VALID_TABS.filter((slug) => {
+            // Only show "blasts" tab to the space owner
+            if (slug === "blasts" && !isOwner) return false;
+            return true;
+          }).map((slug) => (
             <button
               key={slug}
               onClick={() => switchTab(slug)}
@@ -234,6 +240,7 @@ export default function CreatorSpace() {
         {activeTab === "leaderboard" && <SpaceLeaderboardTab creatorId={creatorId!} />}
         {activeTab === "about" && <SpaceAboutTab creatorId={creatorId!} isOwner={isOwner} />}
         {activeTab === "pricing" && <PricingTab creatorId={creatorId!} />}
+        {activeTab === "blasts" && isOwner && <BlastHistory creatorId={creatorId!} />}
         {activeTab === "earn" && (
           isOwner ? (
             <div className="px-4 pt-4">
