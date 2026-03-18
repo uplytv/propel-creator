@@ -644,7 +644,9 @@ export default function BroadcastStudio({
     // Stop media tracks
     stopCurrentStream();
 
-    if (chunksRef.current.length === 0) {
+    // Retrieve all chunks from IndexedDB
+    const persistedChunks = await getAllChunks();
+    if (persistedChunks.length === 0) {
       toast({ title: "No recording data", description: "Recording was too short.", variant: "destructive" });
       onEndStream({ durationSeconds: duration });
       return;
