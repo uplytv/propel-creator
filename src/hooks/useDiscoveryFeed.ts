@@ -1,9 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useFollows } from "@/hooks/useFollows";
+import { useEffect, useState } from "react";
 
-export type FeedItemType = "livestream" | "community" | "course" | "service" | "creator";
+export type FeedItemType = "livestream" | "community" | "course" | "service" | "creator" | "recording" | "clip" | "post";
 export type FilterCategory = "all" | "livestream" | "community" | "course" | "service" | "creator";
 export type SortOption = "trending" | "newest" | "popular" | "price_low" | "price_high";
+export type FeedTab = "foryou" | "following";
 
 export interface FeedItem {
   id: string;
@@ -14,30 +17,62 @@ export interface FeedItem {
   price: number;
   creatorId: string;
   creatorName: string;
+  creatorUsername: string | null;
   creatorAvatar: string | null;
   creatorType: string | null;
   isLive: boolean;
   viewerCount: number;
   memberCount: number;
   engagementScore: number;
+  trendingScore: number;
   createdAt: string;
   playbackId: string | null;
   spaceId: string | null;
+  slug: string | null;
+  tier: "live" | "new" | "trending";
+}
+
+const FORTY_EIGHT_HOURS = 48 * 60 * 60 * 1000;
+
+function isNew(createdAt: string): boolean {
+  return Date.now() - new Date(createdAt).getTime() < FORTY_EIGHT_HOURS;
 }
 
 export function useDiscoveryFeed(
   filter: FilterCategory = "all",
   sort: SortOption = "trending",
   search: string = "",
-  liveOnly: boolean = false
+  liveOnly: boolean = false,
+  feedTab: FeedTab = "foryou"
 ) {
-  return useQuery({
-    queryKey: ["discovery-feed", filter, sort, search, liveOnly],
+  const { followingIds } = useFollows();
+  const [liveCount, setLiveCount] = useState(0);
+
+  // Realtime subscription for live stream changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('discovery-live-updates')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'mux_live_streams' },
+        () => {
+          // Trigger refetch by invalidating
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
+  const query = useQuery({
+    queryKey: ["discovery-feed", filter, sort, search, liveOnly, feedTab, followingIds],
     queryFn: async () => {
       const items: FeedItem[] = [];
+      const followingSet = new Set(followingIds);
+      const isFollowingTab = feedTab === "following";
 
       // Fetch in parallel
-      const [streamsRes, productsRes, spacesRes, creatorsRes] = await Promise.all([
+      const [streamsRes, productsRes, spacesRes, creatorsRes, recordingsRes, clipsRes] = await Promise.all([
         // Live streams
         (filter === "all" || filter === "livestream")
           ? supabase
@@ -45,10 +80,10 @@ export function useDiscoveryFeed(
               .select("*")
               .eq("is_public", true)
               .order("viewer_count", { ascending: false })
-              .limit(20)
+              .limit(50)
           : Promise.resolve({ data: [], error: null }),
 
-        // Products (courses, communities, services)
+        // Products
         (filter === "all" || filter === "course" || filter === "community" || filter === "service")
           ? supabase
               .from("products_public" as any)
@@ -67,29 +102,51 @@ export function useDiscoveryFeed(
               .limit(20)
           : Promise.resolve({ data: [], error: null }),
 
-        // Trending creators
+        // Creators
         (filter === "all" || filter === "creator")
           ? supabase
               .from("profiles_public" as any)
-              .select("user_id, display_name, avatar_url, bio, creator_type, tier, tier_name, created_at")
+              .select("user_id, display_name, username, avatar_url, bio, creator_type, tier, tier_name, created_at")
               .not("display_name", "is", null)
               .order("created_at", { ascending: false })
               .limit(20)
           : Promise.resolve({ data: [], error: null }),
+
+        // Recordings (videos)
+        (filter === "all" || filter === "livestream")
+          ? supabase
+              .from("stream_recordings")
+              .select("*")
+              .eq("is_published", true)
+              .order("created_at", { ascending: false })
+              .limit(30)
+          : Promise.resolve({ data: [], error: null }),
+
+        // Clips
+        (filter === "all" || filter === "livestream")
+          ? supabase
+              .from("clips")
+              .select("*")
+              .eq("is_public", true)
+              .order("created_at", { ascending: false })
+              .limit(30)
+          : Promise.resolve({ data: [], error: null }),
       ]);
 
-      // Collect all unique user IDs to batch-fetch profiles
+      // Collect all unique user IDs
       const userIds = new Set<string>();
       if (streamsRes.data) (streamsRes.data as any[]).forEach((s) => userIds.add(s.user_id));
       if (productsRes.data) (productsRes.data as any[]).forEach((p) => userIds.add(p.user_id));
       if (spacesRes.data) (spacesRes.data as any[]).forEach((sp) => userIds.add(sp.creator_id));
+      if (recordingsRes.data) (recordingsRes.data as any[]).forEach((r) => userIds.add(r.creator_id));
+      if (clipsRes.data) (clipsRes.data as any[]).forEach((c) => userIds.add(c.creator_id));
 
-      // Batch fetch profiles and member counts in parallel
+      // Batch fetch profiles
       const [profilesRes, memberCountsRes] = await Promise.all([
         userIds.size > 0
           ? supabase
               .from("profiles_public" as any)
-              .select("user_id, display_name, avatar_url, creator_type")
+              .select("user_id, display_name, username, avatar_url, creator_type")
               .in("user_id", Array.from(userIds))
           : Promise.resolve({ data: [] }),
         userIds.size > 0
@@ -100,14 +157,13 @@ export function useDiscoveryFeed(
           : Promise.resolve({ data: [] }),
       ]);
 
-      const profileMap = new Map<string, { display_name: string | null; avatar_url: string | null; creator_type: string | null }>();
+      const profileMap = new Map<string, { display_name: string | null; username: string | null; avatar_url: string | null; creator_type: string | null }>();
       if (profilesRes.data) {
         for (const p of (profilesRes.data as any[])) {
           profileMap.set(p.user_id, p);
         }
       }
 
-      // Build member count map
       const memberCountMap = new Map<string, number>();
       if (memberCountsRes.data) {
         for (const m of (memberCountsRes.data as any[])) {
@@ -115,11 +171,18 @@ export function useDiscoveryFeed(
         }
       }
 
+      // Helper
+      const getProfile = (userId: string) => profileMap.get(userId) || { display_name: null, username: null, avatar_url: null, creator_type: null };
+
       // Map livestreams
+      let activeLiveCount = 0;
       if (streamsRes.data) {
         for (const s of streamsRes.data as any[]) {
-          const isLive = s.status === "active";
-          if (liveOnly && !isLive) continue;
+          const live = s.status === "active";
+          if (live) activeLiveCount++;
+          if (liveOnly && !live) continue;
+          if (isFollowingTab && !followingSet.has(s.user_id)) continue;
+          const p = getProfile(s.user_id);
           items.push({
             id: s.id,
             type: "livestream",
@@ -130,29 +193,100 @@ export function useDiscoveryFeed(
               : null,
             price: 0,
             creatorId: s.user_id,
-            creatorName: profileMap.get(s.user_id)?.display_name || "Creator",
-            creatorAvatar: profileMap.get(s.user_id)?.avatar_url || null,
-            creatorType: profileMap.get(s.user_id)?.creator_type || null,
-            isLive,
+            creatorName: p.display_name || "Creator",
+            creatorUsername: p.username || p.display_name,
+            creatorAvatar: p.avatar_url,
+            creatorType: p.creator_type,
+            isLive: live,
             viewerCount: s.viewer_count || 0,
             memberCount: 0,
-            engagementScore: (s.viewer_count || 0) * 10 + (isLive ? 500 : 0),
+            engagementScore: (s.viewer_count || 0) * 10 + (live ? 500 : 0),
+            trendingScore: s.trending_score || 0,
             createdAt: s.created_at,
             playbackId: s.mux_playback_id,
             spaceId: null,
+            slug: s.slug,
+            tier: live ? "live" : isNew(s.created_at) ? "new" : "trending",
+          });
+        }
+      }
+
+      // Map recordings
+      if (recordingsRes.data && !liveOnly) {
+        for (const r of recordingsRes.data as any[]) {
+          if (isFollowingTab && !followingSet.has(r.creator_id)) continue;
+          const p = getProfile(r.creator_id);
+          items.push({
+            id: r.id,
+            type: "recording",
+            title: r.title || "Untitled Recording",
+            description: r.description,
+            imageUrl: r.playback_id
+              ? `https://image.mux.com/${r.playback_id}/thumbnail.webp?width=640&height=360&time=2`
+              : null,
+            price: r.is_free ? 0 : 5,
+            creatorId: r.creator_id,
+            creatorName: p.display_name || "Creator",
+            creatorUsername: p.username || p.display_name,
+            creatorAvatar: p.avatar_url,
+            creatorType: p.creator_type,
+            isLive: false,
+            viewerCount: r.view_count || 0,
+            memberCount: 0,
+            engagementScore: (r.view_count || 0) + (r.trending_score || 0),
+            trendingScore: r.trending_score || 0,
+            createdAt: r.created_at,
+            playbackId: r.playback_id,
+            spaceId: null,
+            slug: r.slug,
+            tier: isNew(r.created_at) ? "new" : "trending",
+          });
+        }
+      }
+
+      // Map clips
+      if (clipsRes.data && !liveOnly) {
+        for (const c of clipsRes.data as any[]) {
+          if (isFollowingTab && !followingSet.has(c.creator_id)) continue;
+          const p = getProfile(c.creator_id);
+          items.push({
+            id: c.id,
+            type: "clip",
+            title: c.caption || "Clip",
+            description: null,
+            imageUrl: c.clip_playback_id
+              ? `https://image.mux.com/${c.clip_playback_id}/thumbnail.webp?width=640&height=360&time=1`
+              : null,
+            price: 0,
+            creatorId: c.creator_id,
+            creatorName: p.display_name || "Creator",
+            creatorUsername: p.username || p.display_name,
+            creatorAvatar: p.avatar_url,
+            creatorType: p.creator_type,
+            isLive: false,
+            viewerCount: c.view_count || 0,
+            memberCount: 0,
+            engagementScore: (c.view_count || 0) + (c.like_count || 0) * 3 + (c.trending_score || 0),
+            trendingScore: c.trending_score || 0,
+            createdAt: c.created_at,
+            playbackId: c.clip_playback_id,
+            spaceId: null,
+            slug: c.slug,
+            tier: isNew(c.created_at) ? "new" : "trending",
           });
         }
       }
 
       // Map products
-      if (productsRes.data) {
+      if (productsRes.data && !liveOnly) {
         for (const p of productsRes.data as any[]) {
-          if (liveOnly) continue;
+          if (isFollowingTab && !followingSet.has(p.user_id)) continue;
           const pType: FeedItemType =
             p.type === "course" ? "course" :
             p.type === "community" ? "community" : "service";
           if (filter !== "all" && filter !== pType) continue;
           const memberCount = (p.sales || 0) + (memberCountMap.get(p.user_id) || 0);
+          const prof = getProfile(p.user_id);
           items.push({
             id: p.id,
             type: pType,
@@ -161,30 +295,34 @@ export function useDiscoveryFeed(
             imageUrl: p.image_url,
             price: p.price || 0,
             creatorId: p.user_id,
-            creatorName: profileMap.get(p.user_id)?.display_name || "Creator",
-            creatorAvatar: profileMap.get(p.user_id)?.avatar_url || null,
-            creatorType: profileMap.get(p.user_id)?.creator_type || null,
+            creatorName: prof.display_name || "Creator",
+            creatorUsername: prof.username || prof.display_name,
+            creatorAvatar: prof.avatar_url,
+            creatorType: prof.creator_type,
             isLive: false,
             viewerCount: 0,
             memberCount,
             engagementScore: memberCount * 8 + (p.revenue || 0) * 0.2 + (p.sales || 0) * 5,
+            trendingScore: 0,
             createdAt: p.created_at,
             playbackId: null,
             spaceId: null,
+            slug: null,
+            tier: isNew(p.created_at) ? "new" : "trending",
           });
         }
       }
 
       // Map spaces
-      if (spacesRes.data) {
+      if (spacesRes.data && !liveOnly) {
         for (const sp of spacesRes.data as any[]) {
-          if (liveOnly) continue;
-          // Avoid duplicating if we already have a community product for this creator
+          if (isFollowingTab && !followingSet.has(sp.creator_id)) continue;
           const alreadyHasCommunity = items.some(
             (i) => i.type === "community" && i.creatorId === sp.creator_id
           );
           if (alreadyHasCommunity) continue;
           const spMemberCount = memberCountMap.get(sp.creator_id) || 0;
+          const prof = getProfile(sp.creator_id);
           items.push({
             id: sp.id,
             type: "community",
@@ -193,26 +331,29 @@ export function useDiscoveryFeed(
             imageUrl: sp.cover_image_url,
             price: sp.is_free ? 0 : sp.price || 0,
             creatorId: sp.creator_id,
-            creatorName: profileMap.get(sp.creator_id)?.display_name || "Creator",
-            creatorAvatar: profileMap.get(sp.creator_id)?.avatar_url || null,
-            creatorType: profileMap.get(sp.creator_id)?.creator_type || null,
+            creatorName: prof.display_name || "Creator",
+            creatorUsername: prof.username || prof.display_name,
+            creatorAvatar: prof.avatar_url,
+            creatorType: prof.creator_type,
             isLive: false,
             viewerCount: 0,
             memberCount: spMemberCount,
             engagementScore: spMemberCount * 10 + 50,
+            trendingScore: 0,
             createdAt: sp.created_at,
             playbackId: null,
             spaceId: sp.id,
+            slug: sp.slug,
+            tier: isNew(sp.created_at) ? "new" : "trending",
           });
         }
       }
 
       // Map creators
-      if (creatorsRes.data) {
+      if (creatorsRes.data && !liveOnly) {
         for (const c of creatorsRes.data as any[]) {
-          if (liveOnly) continue;
-          const isNew =
-            new Date(c.created_at).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000;
+          if (isFollowingTab && !followingSet.has(c.user_id)) continue;
+          const isNewCreator = new Date(c.created_at).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000;
           items.push({
             id: c.user_id,
             type: "creator",
@@ -222,18 +363,19 @@ export function useDiscoveryFeed(
             price: 0,
             creatorId: c.user_id,
             creatorName: c.display_name || "Creator",
+            creatorUsername: c.username || c.display_name,
             creatorAvatar: c.avatar_url,
             creatorType: c.creator_type,
             isLive: false,
             viewerCount: 0,
-            memberCount: c.members || 0,
-            engagementScore:
-              (c.total_revenue || 0) * 0.01 +
-              (c.members || 0) * 3 +
-              (isNew ? 200 : 0),
+            memberCount: 0,
+            engagementScore: (isNewCreator ? 200 : 0),
+            trendingScore: 0,
             createdAt: c.created_at,
             playbackId: null,
             spaceId: null,
+            slug: null,
+            tier: isNew(c.created_at) ? "new" : "trending",
           });
         }
       }
@@ -251,40 +393,30 @@ export function useDiscoveryFeed(
         );
       }
 
-      // Sort
-      switch (sort) {
-        case "trending":
-          filtered.sort((a, b) => b.engagementScore - a.engagementScore);
-          break;
-        case "newest":
-          filtered.sort(
-            (a, b) =>
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
-          break;
-        case "popular":
-          filtered.sort(
-            (a, b) =>
-              b.viewerCount + b.memberCount - (a.viewerCount + a.memberCount)
-          );
-          break;
-        case "price_low":
-          filtered.sort((a, b) => a.price - b.price);
-          break;
-        case "price_high":
-          filtered.sort((a, b) => b.price - a.price);
-          break;
-      }
+      // Apply tiered sorting: LIVE → NEW → TRENDING
+      const liveItems = filtered.filter((i) => i.tier === "live")
+        .sort((a, b) => b.viewerCount - a.viewerCount);
+      const newItems = filtered.filter((i) => i.tier === "new" && !i.isLive)
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      const trendingItems = filtered.filter((i) => i.tier === "trending" && !i.isLive)
+        .sort((a, b) => {
+          if (sort === "newest") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          if (sort === "popular") return (b.viewerCount + b.memberCount) - (a.viewerCount + a.memberCount);
+          if (sort === "price_low") return a.price - b.price;
+          if (sort === "price_high") return b.price - a.price;
+          return b.engagementScore - a.engagementScore;
+        });
 
-      // Boost live streams to top in trending
-      if (sort === "trending") {
-        const live = filtered.filter((i) => i.isLive);
-        const rest = filtered.filter((i) => !i.isLive);
-        filtered = [...live, ...rest];
-      }
-
-      return filtered;
+      return {
+        live: liveItems,
+        new: newItems,
+        trending: trendingItems,
+        all: [...liveItems, ...newItems, ...trendingItems],
+        liveCount: activeLiveCount,
+      };
     },
     refetchInterval: 10000,
   });
+
+  return query;
 }
