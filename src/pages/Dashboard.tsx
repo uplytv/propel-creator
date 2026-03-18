@@ -160,10 +160,17 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <div className="max-w-5xl mx-auto pb-20 md:pb-8">
-        {/* Welcome */}
+        {/* Welcome + Mode Toggle */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="px-4 md:px-8 pt-4 md:pt-8 pb-2">
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">Welcome back, {profile.name} 👋</h1>
-          <p className="text-sm text-muted-foreground mt-1">Here's your command center.</p>
+          <div className="flex items-center justify-between gap-3 mb-2">
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">Welcome back, {profile.name} 👋</h1>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm text-muted-foreground">
+              {dashMode === "ai" ? "Your AI growth partner" : "Explore communities & products"}
+            </p>
+            <DashboardModeToggle mode={dashMode} onChange={setDashMode} />
+          </div>
         </motion.div>
 
         {/* Live Now Banner */}
