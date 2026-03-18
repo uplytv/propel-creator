@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Users, Loader2, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const VALID_TABS = ["community", "classroom", "calendar", "members", "leaderboard", "pricing", "earn", "about"] as const;
+const VALID_TABS = ["community", "classroom", "calendar", "members", "leaderboard", "pricing", "earn", "blasts", "about"] as const;
 type TabSlug = typeof VALID_TABS[number];
 
 const TAB_LABELS: Record<TabSlug, string> = {
@@ -35,6 +35,7 @@ const TAB_LABELS: Record<TabSlug, string> = {
   leaderboard: "Leaderboard",
   pricing: "Pricing",
   earn: "Earn",
+  blasts: "Blasts",
   about: "About",
 };
 
