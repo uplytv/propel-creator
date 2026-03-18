@@ -65,6 +65,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [ariaOpen, setAriaOpen] = useState(false);
+  const [dashMode, setDashMode] = useState<DashboardMode>("discover");
   const [activeStream, setActiveStream] = useState<any>(null);
   const [showPayouts, setShowPayouts] = useState(false);
   const { data: dashStats, isLoading: statsLoading } = useDashboardStats();
