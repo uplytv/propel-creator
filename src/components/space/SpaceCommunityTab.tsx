@@ -33,6 +33,8 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [showComposer, setShowComposer] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
+  const [showBlastComposer, setShowBlastComposer] = useState(false);
+  const { data: space } = useCreatorSpace(creatorId);
 
   // Composer state
   const [postTitle, setPostTitle] = useState("");
