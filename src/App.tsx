@@ -91,6 +91,7 @@ const App = () => (
               <TierCelebration />
               <LaunchGate>
               <BrowserRouter>
+                <ErrorBoundary>
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
                     {/* Public routes */}
