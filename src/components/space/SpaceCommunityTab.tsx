@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ThumbsUp, MessageCircle, Pin, MoreHorizontal, Send, ArrowLeft, SlidersHorizontal } from "lucide-react";
+import { ThumbsUp, MessageCircle, Pin, MoreHorizontal, Send, ArrowLeft, SlidersHorizontal, Megaphone } from "lucide-react";
 import ContentGate from "@/components/ContentGate";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/context/AuthContext";
@@ -13,12 +13,14 @@ import {
   useCreateComment,
   useCommunityCategories,
   useTogglePin,
+  useCreatorSpace,
 } from "@/hooks/useCreatorSpace";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import BlastComposer from "@/components/blast/BlastComposer";
 
 interface Props {
   creatorId: string;
