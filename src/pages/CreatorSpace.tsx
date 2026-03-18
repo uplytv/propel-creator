@@ -13,6 +13,7 @@ import SpaceMembersTab from "@/components/space/SpaceMembersTab";
 import SpaceLeaderboardTab from "@/components/space/SpaceLeaderboardTab";
 import SpaceAboutTab from "@/components/space/SpaceAboutTab";
 import { MemberEarnTab } from "@/components/affiliates/MemberEarnTab";
+import BlastHistory from "@/components/blast/BlastHistory";
 import { CreatorAffiliateProgramSettings } from "@/components/affiliates/CreatorAffiliateProgramSettings";
 import { useCreatorAffiliateProgram } from "@/hooks/useAffiliates";
 import { setAffiliateCookie } from "@/lib/affiliateCookies";
