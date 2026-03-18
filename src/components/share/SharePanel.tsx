@@ -111,24 +111,24 @@ export default function SharePanel({
   const [downloading, setDownloading] = useState(false);
   const [showQR, setShowQR] = useState<string | null>(null);
 
-  const slugify = (text: string) =>
+  const slugifyText = (text: string) =>
     text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 60);
 
-  const contentSlug = title ? slugify(title) : contentId;
+  const contentSlug = title ? slugifyText(title) : contentId;
 
   const baseUrl = getSiteUrl();
   const contentUrl =
     contentType === "stream"
-      ? `${baseUrl}/stream/${contentId}`
+      ? `${baseUrl}/${encodeURIComponent(username)}/live/${contentSlug}`
       : contentType === "clip"
-        ? `${baseUrl}/clip/${contentId}`
-        : `${baseUrl}/creator/${encodeURIComponent(username)}/videos/${contentId}${title ? `?title=${encodeURIComponent(contentSlug)}` : ""}`;
+        ? `${baseUrl}/${encodeURIComponent(username)}/clips/${contentSlug}`
+        : `${baseUrl}/${encodeURIComponent(username)}/videos/${contentSlug}`;
 
   const defaultCaption =
     contentType === "stream"
-      ? `I'm live on UPLY 🔥 Join here → ${contentUrl}`
-      : `Just dropped this on UPLY 🔥 Watch the full thing here → ${contentUrl}`;
-  const linkedInCaption = `New content just dropped on UPLY — watch the full version here → ${contentUrl}`;
+      ? `Watch ${title || 'my stream'} by ${username} on UPLY 🔥 → ${contentUrl}`
+      : `Watch ${title || 'this'} by ${username} on UPLY 🔥 → ${contentUrl}`;
+  const linkedInCaption = `Watch ${title || 'this'} by ${username} on UPLY → ${contentUrl}`;
 
   useEffect(() => {
     if (open) {

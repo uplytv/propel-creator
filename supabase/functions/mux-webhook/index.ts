@@ -100,6 +100,10 @@ serve(async (req) => {
             .single()
 
           if (stream) {
+            const recordingTitle = stream.title
+              ? `${stream.title} (Recording)`
+              : `Stream ${new Date().toLocaleDateString()}`
+
             await supabase.from('mux_assets').insert({
               user_id: stream.user_id,
               mux_asset_id: data.id,
@@ -108,21 +112,45 @@ serve(async (req) => {
               aspect_ratio: data.aspect_ratio,
               status: 'ready',
               is_public: true,
-              title: stream.title ? `${stream.title} (Recording)` : 'Live Stream Recording',
+              title: recordingTitle,
               description: stream.description,
             })
 
-            // Also create a stream_recordings entry for the Content Library
-            await supabase.from('stream_recordings').insert({
+            // Fetch download URL from Mux
+            let downloadUrl: string | null = null
+            try {
+              const muxTokenId = Deno.env.get('MUX_TOKEN_ID')
+              const muxTokenSecret = Deno.env.get('MUX_TOKEN_SECRET')
+              if (muxTokenId && muxTokenSecret) {
+                const muxResp = await fetch(`https://api.mux.com/video/v1/assets/${data.id}`, {
+                  headers: {
+                    'Authorization': `Basic ${btoa(`${muxTokenId}:${muxTokenSecret}`)}`,
+                  },
+                })
+                if (muxResp.ok) {
+                  const muxData = await muxResp.json()
+                  const mp4 = muxData?.data?.static_renditions?.files?.[0]
+                  if (mp4) {
+                    downloadUrl = `https://stream.mux.com/${playbackId}/${mp4.name}`
+                  }
+                }
+              }
+            } catch (dlErr) {
+              console.error('Failed to fetch Mux download URL:', dlErr)
+            }
+
+            // Create stream_recordings entry (auto-save)
+            const { data: recording } = await supabase.from('stream_recordings').insert({
               creator_id: stream.user_id,
-              title: stream.title ? `${stream.title} (Recording)` : 'Live Stream Recording',
+              title: recordingTitle,
               description: stream.description || '',
               mux_asset_id: data.id,
               playback_id: playbackId,
               duration_seconds: Math.round(data.duration || 0),
               is_published: true,
               is_free: true,
-            })
+              download_url: downloadUrl,
+            }).select('id, slug').single()
 
             await supabase.from('live_stream_sessions').insert({
               stream_id: stream.id,
@@ -131,7 +159,57 @@ serve(async (req) => {
               started_at: new Date().toISOString(),
             })
 
-            console.log(`Saved live stream recording + stream_recordings for user ${stream.user_id}, asset ${data.id}`)
+            // Get creator profile for SEO URL
+            const { data: creatorProfile } = await supabase
+              .from('profiles')
+              .select('username, display_name')
+              .eq('user_id', stream.user_id)
+              .single()
+
+            const creatorUsername = creatorProfile?.username || creatorProfile?.display_name || 'creator'
+            const videoSlug = recording?.slug || 'recording'
+            const videoLink = `/${encodeURIComponent(creatorUsername)}/videos/${videoSlug}`
+
+            // Send in-platform notification
+            await supabase.from('notifications').insert({
+              user_id: stream.user_id,
+              type: 'stream_recorded',
+              title: 'Your stream has been saved',
+              message: 'Your full stream recording is ready to watch, share, and publish to your classroom.',
+              link: videoLink,
+            })
+
+            // Send email notification via queue
+            try {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('user_id')
+                .eq('user_id', stream.user_id)
+                .single()
+
+              if (profile) {
+                // Get user email from auth
+                const { data: { user: authUser } } = await supabase.auth.admin.getUserById(stream.user_id)
+                if (authUser?.email) {
+                  await supabase.rpc('enqueue_email', {
+                    queue_name: 'transactional_emails',
+                    payload: {
+                      to: authUser.email,
+                      subject: `Your stream recording is ready — ${recordingTitle}`,
+                      template_name: 'stream_recorded',
+                      template_data: {
+                        title: recordingTitle,
+                        link: `https://uply.tv${videoLink}`,
+                      },
+                    },
+                  })
+                }
+              }
+            } catch (emailErr) {
+              console.error('Failed to enqueue recording email:', emailErr)
+            }
+
+            console.log(`✅ Auto-saved stream recording for user ${stream.user_id}, asset ${data.id}, slug ${videoSlug}`)
           }
         } else if (data.upload_id) {
           const { data: updateResult, error: updateError } = await supabase.from('mux_assets')
@@ -166,7 +244,6 @@ serve(async (req) => {
         break
 
       case 'video.live_stream.active': {
-        // FIX 5: Extract and store playback_id when stream goes active
         const activePlaybackId = data.playback_ids?.[0]?.id
         console.log(`🔴 Stream going ACTIVE: mux_stream_id=${data.id}, playback_id=${activePlaybackId}`)
         
@@ -176,7 +253,6 @@ serve(async (req) => {
           updated_at: new Date().toISOString(),
         }
         
-        // Store the playback_id from the active event to ensure it's always current
         if (activePlaybackId) {
           updatePayload.mux_playback_id = activePlaybackId
         }
