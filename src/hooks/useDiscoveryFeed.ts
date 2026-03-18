@@ -150,6 +150,7 @@ export function useDiscoveryFeed(
       if (spacesRes.data) (spacesRes.data as any[]).forEach((sp) => userIds.add(sp.creator_id));
       if (recordingsRes.data) (recordingsRes.data as any[]).forEach((r) => userIds.add(r.creator_id));
       if (clipsRes.data) (clipsRes.data as any[]).forEach((c) => userIds.add(c.creator_id));
+      if (videosRes.data) (videosRes.data as any[]).forEach((v: any) => userIds.add(v.creator_id));
 
       // Batch fetch profiles
       const [profilesRes, memberCountsRes] = await Promise.all([
