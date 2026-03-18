@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import {
   ShieldCheck, Users, DollarSign, Video, Package, Radio,
-  TrendingUp, AlertTriangle, Eye, ToggleLeft, Link2, CreditCard, Zap
+  TrendingUp, AlertTriangle, Eye, ToggleLeft, Link2, CreditCard, Zap, ClipboardList
 } from "lucide-react";
+import AdminWaitlistTab from "@/components/waitlist/AdminWaitlistTab";
 import { format, subDays } from "date-fns";
 
 function StatCard({ icon: Icon, label, value, sub, color = "text-primary" }: any) {
