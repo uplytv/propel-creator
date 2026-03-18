@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 
 export default function ReferralRedirect() {
   const { code } = useParams<{ code: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -15,10 +16,22 @@ export default function ReferralRedirect() {
     }
 
     const handleRedirect = async () => {
-      // Set cookie for attribution on signup
+      // Check if this is a waitlist referral code (8 char alphanumeric)
+      const isWaitlistRef = /^[A-Z0-9]{8}$/.test(code);
+
+      if (isWaitlistRef) {
+        // Waitlist referral — set waitlist cookie and redirect to waitlist page
+        setAffiliateCookie("uply_waitlist_ref", code, 30);
+        
+        // Track click by incrementing the referrer's click count is not needed for waitlist
+        // Just redirect to the waitlist application page
+        navigate("/waitlist");
+        return;
+      }
+
+      // Platform affiliate referral — existing behavior
       setAffiliateCookie("uply_ref", code, 30);
 
-      // Track click server-side
       try {
         await supabase.functions.invoke("track-affiliate-conversion", {
           body: {

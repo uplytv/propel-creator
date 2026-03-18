@@ -1,12 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { getAffiliateCookie, clearAffiliateCookie } from "@/lib/affiliateCookies";
 import {
   Check, Share2, Zap, Mic, Crown, Video, DollarSign, Bot,
   Trophy, Ticket, Sparkles, Eye, TrendingUp, Users,
   Twitter, Linkedin, Link2, ArrowRight, Globe, Shield, Rocket
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import WaitlistLiveCounter from "@/components/waitlist/WaitlistLiveCounter";
+import PostApplicationScreen from "@/components/waitlist/PostApplicationScreen";
 
 const CREATOR_TYPES = ["Fitness", "Finance", "Gaming", "Lifestyle", "Business", "Education", "Music", "Other"];
 const FOLLOWER_RANGES = ["Under 1K", "1K–10K", "10K–100K", "100K–500K", "500K+"];
@@ -22,17 +25,20 @@ const sectionHeading = {
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } },
 };
 
-const SHARE_URL = "https://uply.tv";
-const SHARE_TEXT = "I just applied to be a Founding Creator on UPLY — the platform built for serious creators. Check it out:";
+function generateReferralCode(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "";
+  for (let i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
 
 export default function WaitlistPage() {
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [applicantCount, setApplicantCount] = useState(0);
   const [submittedEmail, setSubmittedEmail] = useState("");
-  const [copied, setCopied] = useState(false);
+  const [submittedData, setSubmittedData] = useState<{ position: number; referral_code: string; referral_count: number } | null>(null);
   const formRef = useRef<HTMLDivElement>(null);
 
   const [fullName, setFullName] = useState("");
@@ -44,16 +50,10 @@ export default function WaitlistPage() {
   const [primaryPlatform, setPrimaryPlatform] = useState("");
   const [oneSentence, setOneSentence] = useState("");
 
+  // Pre-fill invite code from cookie
   useEffect(() => {
-    const fetchCount = async () => {
-      const { data } = await supabase
-        .from("launch_config")
-        .select("total_applicants")
-        .limit(1)
-        .single();
-      if (data) setApplicantCount(data.total_applicants);
-    };
-    fetchCount();
+    const ref = getAffiliateCookie("uply_waitlist_ref");
+    if (ref) setInviteCode(ref);
   }, []);
 
   const scrollToForm = () => {
@@ -65,7 +65,10 @@ export default function WaitlistPage() {
     setSubmitting(true);
     setError("");
 
-    const { error: insertError } = await supabase.from("waitlist").insert({
+    const referralCode = generateReferralCode();
+    const referredBy = getAffiliateCookie("uply_waitlist_ref") || inviteCode.trim() || null;
+
+    const { data: inserted, error: insertError } = await supabase.from("waitlist" as any).insert({
       full_name: fullName.trim(),
       email: email.trim().toLowerCase(),
       social_handle: socialHandle.trim() || null,
@@ -74,10 +77,25 @@ export default function WaitlistPage() {
       follower_count: followerCount,
       primary_platform: primaryPlatform,
       one_sentence: oneSentence.trim(),
-    });
+      referral_code: referralCode,
+      referred_by: referredBy,
+    }).select("position, referral_code, referral_count").single() as any;
 
     if (insertError) {
       if (insertError.message?.includes("duplicate") || insertError.code === "23505") {
+        // Check if it's a duplicate email — they may already have applied
+        const { data: existing } = await supabase
+          .from("waitlist" as any)
+          .select("position, referral_code, referral_count")
+          .eq("email", email.trim().toLowerCase())
+          .maybeSingle() as any;
+        if (existing) {
+          setSubmittedEmail(email.trim().toLowerCase());
+          setSubmittedData(existing);
+          setSubmitted(true);
+          setSubmitting(false);
+          return;
+        }
         setError("This email has already applied. We'll be in touch.");
       } else {
         setError("Something went wrong. Please try again.");
@@ -86,24 +104,13 @@ export default function WaitlistPage() {
       return;
     }
 
+    // Clear the referral cookie after successful submission
+    clearAffiliateCookie("uply_waitlist_ref");
+
     setSubmittedEmail(email.trim().toLowerCase());
-    setApplicantCount((c) => c + 1);
+    setSubmittedData(inserted || { position: 1, referral_code: referralCode, referral_count: 0 });
     setSubmitted(true);
     setSubmitting(false);
-  };
-
-  const handleCopyLink = async () => {
-    await navigator.clipboard.writeText(SHARE_URL);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
-  };
-
-  const shareTwitter = () => {
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(SHARE_TEXT)}&url=${encodeURIComponent(SHARE_URL)}`, "_blank");
-  };
-
-  const shareLinkedIn = () => {
-    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SHARE_URL)}`, "_blank");
   };
 
   const inputClasses =
@@ -161,19 +168,9 @@ export default function WaitlistPage() {
           </p>
 
           {/* Live counter */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-            className="inline-flex items-center gap-2.5 mb-8 bg-card border border-border/60 rounded-full px-5 py-2.5 shadow-sm"
-          >
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
-            </span>
-            <span className="text-sm font-semibold text-foreground">{applicantCount}</span>
-            <span className="text-sm text-muted-foreground">creators have applied</span>
-          </motion.div>
+          <div className="mb-8">
+            <WaitlistLiveCounter />
+          </div>
 
           {/* CTA */}
           <div className="flex flex-col items-center gap-4">
@@ -287,7 +284,7 @@ export default function WaitlistPage() {
             ))}
           </motion.div>
 
-          {/* Leaderboard */}
+          {/* Leaderboard teaser - replaced by real leaderboard post-submit */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -382,52 +379,6 @@ export default function WaitlistPage() {
         </div>
       </section>
 
-      {/* ─── SHARE BUTTONS ─── */}
-      <section className="py-16 px-6 section-alt">
-        <div className="max-w-md mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
-            <p className="text-foreground font-semibold text-lg mb-2">Spread the word</p>
-            <p className="text-muted-foreground text-sm mb-6">
-              Know a creator who should be here? Share with them.
-            </p>
-            <div className="flex items-center justify-center gap-3">
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={shareTwitter}
-                className="gap-2"
-              >
-                <Twitter className="w-4 h-4" />
-                Twitter
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={shareLinkedIn}
-                className="gap-2"
-              >
-                <Linkedin className="w-4 h-4" />
-                LinkedIn
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={handleCopyLink}
-                className="gap-2"
-              >
-                <Link2 className="w-4 h-4" />
-                {copied ? "Copied!" : "Copy Link"}
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
       {/* ─── APPLICATION FORM ─── */}
       <section className="py-20 md:py-28 px-6" ref={formRef}>
         <div className="max-w-xl mx-auto">
@@ -440,28 +391,13 @@ export default function WaitlistPage() {
             </p>
           </motion.div>
 
-          {submitted ? (
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }} className="text-center">
-              <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center mx-auto mb-6">
-                <Check className="w-8 h-8 text-primary-foreground" />
-              </div>
-              <h3 className="text-2xl font-extrabold mb-4">Application Received.</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed mb-8 max-w-md mx-auto">
-                We review applications every Monday. If you're a great fit for the Founding Creator class, you'll hear from us directly at{" "}
-                <span className="text-foreground font-semibold">{submittedEmail}</span>. In the meantime — tell a creator friend.
-              </p>
-              <div className="flex flex-wrap items-center justify-center gap-3">
-                <Button variant="default" onClick={shareTwitter} className="gap-2">
-                  <Twitter className="w-4 h-4" /> Share on Twitter
-                </Button>
-                <Button variant="default" onClick={shareLinkedIn} className="gap-2">
-                  <Linkedin className="w-4 h-4" /> Share on LinkedIn
-                </Button>
-                <Button variant="outline" onClick={handleCopyLink} className="gap-2">
-                  <Link2 className="w-4 h-4" /> {copied ? "Copied!" : "Copy Link"}
-                </Button>
-              </div>
-            </motion.div>
+          {submitted && submittedData ? (
+            <PostApplicationScreen
+              position={submittedData.position || 1}
+              referralCode={submittedData.referral_code}
+              referralCount={submittedData.referral_count}
+              email={submittedEmail}
+            />
           ) : (
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
               {/* Progress bar */}
@@ -612,31 +548,33 @@ export default function WaitlistPage() {
       </section>
 
       {/* ─── FINAL CTA ─── */}
-      <section className="py-24 md:py-32 px-6 relative overflow-hidden">
-        <div className="absolute inset-0 hero-glow-layer" />
-        <div className="absolute inset-0 hero-grid-layer opacity-50" />
-        <div className="max-w-2xl mx-auto text-center relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-          >
-            <h2 className="text-3xl md:text-5xl font-extrabold mb-5 leading-tight">
-              Be among the first <span className="text-gradient">creators.</span>
-            </h2>
-            <p className="text-lg text-muted-foreground mb-8 max-w-lg mx-auto leading-relaxed">
-              Founding Creator spots are limited. Join now before applications close.
-            </p>
-            <Button variant="hero" size="xl" onClick={scrollToForm}>
-              Join the Waitlist <ArrowRight className="ml-1" />
-            </Button>
-            <p className="text-xs text-muted-foreground mt-4">
-              No spam. Just your invite.
-            </p>
-          </motion.div>
-        </div>
-      </section>
+      {!submitted && (
+        <section className="py-24 md:py-32 px-6 relative overflow-hidden">
+          <div className="absolute inset-0 hero-glow-layer" />
+          <div className="absolute inset-0 hero-grid-layer opacity-50" />
+          <div className="max-w-2xl mx-auto text-center relative z-10">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7 }}
+            >
+              <h2 className="text-3xl md:text-5xl font-extrabold mb-5 leading-tight">
+                Be among the first <span className="text-gradient">creators.</span>
+              </h2>
+              <p className="text-lg text-muted-foreground mb-8 max-w-lg mx-auto leading-relaxed">
+                Founding Creator spots are limited. Join now before applications close.
+              </p>
+              <Button variant="hero" size="xl" onClick={scrollToForm}>
+                Join the Waitlist <ArrowRight className="ml-1" />
+              </Button>
+              <p className="text-xs text-muted-foreground mt-4">
+                No spam. Just your invite.
+              </p>
+            </motion.div>
+          </div>
+        </section>
+      )}
 
       {/* Footer */}
       <footer className="border-t border-border/50 py-12">
