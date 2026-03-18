@@ -288,6 +288,39 @@ export function useDiscoveryFeed(
         }
       }
 
+      // Map standalone videos
+      if (videosRes.data && !liveOnly) {
+        for (const v of videosRes.data as any[]) {
+          if (isFollowingTab && !followingSet.has(v.creator_id)) continue;
+          const p = getProfile(v.creator_id);
+          items.push({
+            id: v.id,
+            type: "video" as FeedItemType,
+            title: v.title || "Untitled Video",
+            description: v.description,
+            imageUrl: v.playback_id
+              ? `https://image.mux.com/${v.playback_id}/thumbnail.webp?width=640&height=360&time=2`
+              : v.thumbnail_url,
+            price: 0,
+            creatorId: v.creator_id,
+            creatorName: p.display_name || "Creator",
+            creatorUsername: p.username || p.display_name,
+            creatorAvatar: p.avatar_url,
+            creatorType: p.creator_type,
+            isLive: false,
+            viewerCount: v.view_count || 0,
+            memberCount: 0,
+            engagementScore: (v.like_count || 0) * 3 + (v.comment_count || 0) * 2 + (v.view_count || 0),
+            trendingScore: v.trending_score || 0,
+            createdAt: v.created_at,
+            playbackId: v.playback_id,
+            spaceId: null,
+            slug: v.slug,
+            tier: isNew(v.created_at) ? "new" : "trending",
+          });
+        }
+      }
+
       // Map products
       if (productsRes.data && !liveOnly) {
         for (const p of productsRes.data as any[]) {
