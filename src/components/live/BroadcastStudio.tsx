@@ -38,6 +38,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CreatorVideoOverlay, CreatorDashboardPanel } from "./CreatorStreamOverlay";
 import { useStreamEngagement } from "@/hooks/useStreamEngagement";
 import SharePanel from "@/components/share/SharePanel";
+import { clearChunks, appendChunk, getAllChunks } from "@/lib/recordingStore";
 
 interface Product {
   id: string;
