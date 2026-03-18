@@ -33,6 +33,11 @@ const FeedCard = forwardRef<HTMLDivElement, { item: FeedItem; index: number; isL
             return `/${encodeURIComponent(item.creatorUsername)}/videos/${item.slug}`;
           }
           return `/creator/${encodeURIComponent(item.creatorName)}/videos/${item.id}`;
+        case "video":
+          if (item.creatorUsername && item.slug) {
+            return `/${encodeURIComponent(item.creatorUsername)}/videos/${item.slug}`;
+          }
+          return `/creator/${encodeURIComponent(item.creatorName)}/videos/${item.id}`;
         case "clip":
           return `/stream/${item.id}`;
         case "course":
