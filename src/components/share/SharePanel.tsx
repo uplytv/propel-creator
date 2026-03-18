@@ -10,14 +10,15 @@ import { useContentShares } from "@/hooks/useContentShares";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Drawer, DrawerContent, DrawerHeader, DrawerTitle,
+  Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle,
 } from "@/components/ui/drawer";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
   Tooltip, TooltipContent, TooltipTrigger, TooltipProvider,
 } from "@/components/ui/tooltip";
+import { getSiteUrl } from "@/lib/siteUrl";
 
 // Platform icons as simple SVG components
 function TikTokIcon() {
@@ -115,13 +116,19 @@ export default function SharePanel({
 
   const contentSlug = title ? slugify(title) : contentId;
 
+  const baseUrl = getSiteUrl();
   const contentUrl =
-    contentType === "clip"
-      ? `https://uply.tv/clip/${contentId}`
-      : `https://uply.tv/creator/${encodeURIComponent(username)}/videos/${contentId}${title ? `?title=${encodeURIComponent(contentSlug)}` : ""}`;
+    contentType === "stream"
+      ? `${baseUrl}/stream/${contentId}`
+      : contentType === "clip"
+        ? `${baseUrl}/clip/${contentId}`
+        : `${baseUrl}/creator/${encodeURIComponent(username)}/videos/${contentId}${title ? `?title=${encodeURIComponent(contentSlug)}` : ""}`;
 
-  const defaultCaption = `Just dropped this on UPLY 🔥 Watch the full thing here → uply.tv/creator/${username}`;
-  const linkedInCaption = `New content just dropped on UPLY — watch the full version here → uply.tv/creator/${username}`;
+  const defaultCaption =
+    contentType === "stream"
+      ? `I'm live on UPLY 🔥 Join here → ${contentUrl}`
+      : `Just dropped this on UPLY 🔥 Watch the full thing here → ${contentUrl}`;
+  const linkedInCaption = `New content just dropped on UPLY — watch the full version here → ${contentUrl}`;
 
   useEffect(() => {
     if (open) {
@@ -429,7 +436,10 @@ export default function SharePanel({
         <DrawerContent className="max-h-[90vh]" style={{ background: "#0A0A0A" }}>
           <DrawerHeader className="pb-0">
             <div className="flex items-center justify-between">
-              <DrawerTitle className="text-foreground text-base">Share & Distribute</DrawerTitle>
+              <div>
+                <DrawerTitle className="text-foreground text-base">Share & Distribute</DrawerTitle>
+                <DrawerDescription className="sr-only">Share this content link or export it to external platforms.</DrawerDescription>
+              </div>
               <button onClick={onClose} className="p-1 rounded-lg text-muted-foreground hover:text-foreground">
                 <X className="w-4 h-4" />
               </button>
@@ -446,6 +456,7 @@ export default function SharePanel({
       <DialogContent className="max-w-[480px] max-h-[85vh] overflow-y-auto" style={{ background: "#0A0A0A" }}>
         <DialogHeader>
           <DialogTitle className="text-foreground">Share & Distribute</DialogTitle>
+          <DialogDescription className="sr-only">Share this content link or export it to external platforms.</DialogDescription>
         </DialogHeader>
         {panelContent}
       </DialogContent>

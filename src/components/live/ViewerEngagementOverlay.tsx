@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useStreamEngagement, filterProfanity, type LiveChatMessage } from "@/hooks/useStreamEngagement";
 import { Drawer } from "vaul";
+import { getSiteUrl } from "@/lib/siteUrl";
 
 const EMOJIS = ["🔥", "💰", "👑", "🚀", "💯", "❤️"];
 
@@ -162,10 +163,10 @@ function EnergyFlash({ score, onDismiss }: { score: number; onDismiss: () => voi
 // Share card
 function ShareCard({ title, streamId, onClose }: { title: string; streamId: string; onClose: () => void }) {
   const [copied, setCopied] = useState(false);
-  const url = `uply.tv/live/${streamId}`;
+  const url = `${getSiteUrl()}/stream/${streamId}`;
 
   const copyLink = () => {
-    navigator.clipboard.writeText(`https://${url}`);
+    navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
