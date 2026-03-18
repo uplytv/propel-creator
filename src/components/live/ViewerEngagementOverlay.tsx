@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useStreamEngagement, filterProfanity, type LiveChatMessage } from "@/hooks/useStreamEngagement";
 import { Drawer } from "vaul";
+import { getSiteUrl } from "@/lib/siteUrl";
 
 const EMOJIS = ["🔥", "💰", "👑", "🚀", "💯", "❤️"];
 
