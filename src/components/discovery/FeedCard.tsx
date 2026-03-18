@@ -223,6 +223,7 @@ const FeedCard = forwardRef<HTMLDivElement, { item: FeedItem; index: number; isL
                 {item.type === "livestream" ? "Watch" :
                  item.type === "recording" ? "Play" :
                  item.type === "clip" ? "Play" :
+                 item.type === "video" ? "Play" :
                  item.type === "creator" ? "View" :
                  item.type === "course" ? "Enroll" : "Join"}
               </button>
