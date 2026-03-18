@@ -456,6 +456,7 @@ export default function SharePanel({
       <DialogContent className="max-w-[480px] max-h-[85vh] overflow-y-auto" style={{ background: "#0A0A0A" }}>
         <DialogHeader>
           <DialogTitle className="text-foreground">Share & Distribute</DialogTitle>
+          <DialogDescription className="sr-only">Share this content link or export it to external platforms.</DialogDescription>
         </DialogHeader>
         {panelContent}
       </DialogContent>
