@@ -400,6 +400,7 @@ export type Database = {
           module_id: string
           mux_asset_id: string | null
           position: number
+          slug: string | null
           title: string
           video_url: string | null
         }
@@ -413,6 +414,7 @@ export type Database = {
           module_id: string
           mux_asset_id?: string | null
           position?: number
+          slug?: string | null
           title: string
           video_url?: string | null
         }
@@ -426,6 +428,7 @@ export type Database = {
           module_id?: string
           mux_asset_id?: string | null
           position?: number
+          slug?: string | null
           title?: string
           video_url?: string | null
         }
@@ -448,6 +451,7 @@ export type Database = {
           id: string
           is_free: boolean
           position: number
+          slug: string | null
           title: string
         }
         Insert: {
@@ -458,6 +462,7 @@ export type Database = {
           id?: string
           is_free?: boolean
           position?: number
+          slug?: string | null
           title: string
         }
         Update: {
@@ -468,6 +473,7 @@ export type Database = {
           id?: string
           is_free?: boolean
           position?: number
+          slug?: string | null
           title?: string
         }
         Relationships: []
@@ -513,8 +519,10 @@ export type Database = {
           id: string
           is_auto_short: boolean
           is_public: boolean
+          slug: string | null
           source_asset_id: string | null
           source_type: string
+          trending_score: number | null
           view_count: number
         }
         Insert: {
@@ -528,8 +536,10 @@ export type Database = {
           id?: string
           is_auto_short?: boolean
           is_public?: boolean
+          slug?: string | null
           source_asset_id?: string | null
           source_type?: string
+          trending_score?: number | null
           view_count?: number
         }
         Update: {
@@ -543,8 +553,10 @@ export type Database = {
           id?: string
           is_auto_short?: boolean
           is_public?: boolean
+          slug?: string | null
           source_asset_id?: string | null
           source_type?: string
+          trending_score?: number | null
           view_count?: number
         }
         Relationships: []
@@ -818,7 +830,9 @@ export type Database = {
           image_url: string | null
           is_pinned: boolean
           like_count: number
+          slug: string | null
           title: string
+          trending_score: number | null
         }
         Insert: {
           author_id: string
@@ -831,7 +845,9 @@ export type Database = {
           image_url?: string | null
           is_pinned?: boolean
           like_count?: number
+          slug?: string | null
           title?: string
+          trending_score?: number | null
         }
         Update: {
           author_id?: string
@@ -844,7 +860,9 @@ export type Database = {
           image_url?: string | null
           is_pinned?: boolean
           like_count?: number
+          slug?: string | null
           title?: string
+          trending_score?: number | null
         }
         Relationships: []
       }
@@ -956,6 +974,7 @@ export type Database = {
           last_blast_sent_at: string | null
           name: string
           price: number
+          slug: string | null
           updated_at: string
         }
         Insert: {
@@ -970,6 +989,7 @@ export type Database = {
           last_blast_sent_at?: string | null
           name?: string
           price?: number
+          slug?: string | null
           updated_at?: string
         }
         Update: {
@@ -984,6 +1004,7 @@ export type Database = {
           last_blast_sent_at?: string | null
           name?: string
           price?: number
+          slug?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -1843,6 +1864,7 @@ export type Database = {
           status: string | null
           thumbnail_url: string | null
           title: string | null
+          trending_score: number | null
           updated_at: string | null
           upload_id: string | null
           user_id: string
@@ -1859,6 +1881,7 @@ export type Database = {
           status?: string | null
           thumbnail_url?: string | null
           title?: string | null
+          trending_score?: number | null
           updated_at?: string | null
           upload_id?: string | null
           user_id: string
@@ -1875,6 +1898,7 @@ export type Database = {
           status?: string | null
           thumbnail_url?: string | null
           title?: string | null
+          trending_score?: number | null
           updated_at?: string | null
           upload_id?: string | null
           user_id?: string
@@ -1893,6 +1917,7 @@ export type Database = {
           is_public: boolean | null
           mux_playback_id: string | null
           mux_stream_id: string
+          slug: string | null
           started_at: string | null
           status: string | null
           stream_key: string | null
@@ -1913,6 +1938,7 @@ export type Database = {
           is_public?: boolean | null
           mux_playback_id?: string | null
           mux_stream_id: string
+          slug?: string | null
           started_at?: string | null
           status?: string | null
           stream_key?: string | null
@@ -1933,6 +1959,7 @@ export type Database = {
           is_public?: boolean | null
           mux_playback_id?: string | null
           mux_stream_id?: string
+          slug?: string | null
           started_at?: string | null
           status?: string | null
           stream_key?: string | null
@@ -2420,39 +2447,48 @@ export type Database = {
           created_at: string
           creator_id: string
           description: string
+          download_url: string | null
           duration_seconds: number
           id: string
           is_free: boolean
           is_published: boolean
           mux_asset_id: string | null
           playback_id: string | null
+          slug: string | null
           title: string
+          trending_score: number | null
           view_count: number
         }
         Insert: {
           created_at?: string
           creator_id: string
           description?: string
+          download_url?: string | null
           duration_seconds?: number
           id?: string
           is_free?: boolean
           is_published?: boolean
           mux_asset_id?: string | null
           playback_id?: string | null
+          slug?: string | null
           title?: string
+          trending_score?: number | null
           view_count?: number
         }
         Update: {
           created_at?: string
           creator_id?: string
           description?: string
+          download_url?: string | null
           duration_seconds?: number
           id?: string
           is_free?: boolean
           is_published?: boolean
           mux_asset_id?: string | null
           playback_id?: string | null
+          slug?: string | null
           title?: string
+          trending_score?: number | null
           view_count?: number
         }
         Relationships: []
@@ -3051,6 +3087,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      generate_slug: { Args: { input_text: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
