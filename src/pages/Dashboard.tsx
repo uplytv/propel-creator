@@ -96,6 +96,9 @@ export default function Dashboard() {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="px-4 md:px-8 pt-4 md:pt-8 pb-2">
           <div className="flex items-center justify-between gap-3 mb-2">
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">Welcome back, {profile.name} 👋</h1>
+            <Button size="sm" onClick={() => setUploadOpen(true)} className="gap-1.5 flex-shrink-0">
+              <Upload className="w-4 h-4" /> Upload Video
+            </Button>
           </div>
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">
