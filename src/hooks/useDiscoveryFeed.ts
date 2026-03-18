@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useFollows } from "@/hooks/useFollows";
 import { useEffect, useState } from "react";
 
-export type FeedItemType = "livestream" | "community" | "course" | "service" | "creator" | "recording" | "clip" | "post";
+export type FeedItemType = "livestream" | "community" | "course" | "service" | "creator" | "recording" | "clip" | "post" | "video";
 export type FilterCategory = "all" | "livestream" | "community" | "course" | "service" | "creator";
 export type SortOption = "trending" | "newest" | "popular" | "price_low" | "price_high";
 export type FeedTab = "foryou" | "following";
