@@ -59,7 +59,8 @@ export default function Stream() {
     const fetchStream = async () => {
       if (!id) return;
 
-      if (contentType === 'recording') {
+      if (contentType === 'recording' || (isFromCreatorRoute && !contentType)) {
+        // Try stream_recordings first, then mux_assets, then mux_live_streams
         // Fetch stream recording
         const { data: rec } = await supabase
           .from('stream_recordings')

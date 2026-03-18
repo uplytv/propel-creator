@@ -110,10 +110,15 @@ export default function SharePanel({
   const [downloading, setDownloading] = useState(false);
   const [showQR, setShowQR] = useState<string | null>(null);
 
+  const slugify = (text: string) =>
+    text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 60);
+
+  const contentSlug = title ? slugify(title) : contentId;
+
   const contentUrl =
     contentType === "clip"
       ? `https://uply.tv/clip/${contentId}`
-      : `https://uply.tv/creator/${username}/videos/${contentId}`;
+      : `https://uply.tv/creator/${encodeURIComponent(username)}/videos/${contentId}${title ? `?title=${encodeURIComponent(contentSlug)}` : ""}`;
 
   const defaultCaption = `Just dropped this on UPLY 🔥 Watch the full thing here → uply.tv/creator/${username}`;
   const linkedInCaption = `New content just dropped on UPLY — watch the full version here → uply.tv/creator/${username}`;
