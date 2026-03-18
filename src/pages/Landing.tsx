@@ -1,8 +1,9 @@
-import { motion, useMotionValue, useSpring } from "framer-motion";
+import { motion, useMotionValue, useSpring, useInView } from "framer-motion";
 import { useRef, useMemo, useCallback, useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
 import { useNavigate } from "react-router-dom";
 import SEOHead from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,13 +26,52 @@ const rewards = [
   { emoji: "🚀", title: "Platform Equity Access", desc: "Shape the platform before the public gets in." },
 ];
 
+function formatCurrency(n: number) {
+  if (n >= 1000) return `$${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k`;
+  return `$${Math.round(n)}`;
+}
+
+function formatFollowers(n: number) {
+  if (n >= 1000) return `${(n / 1000).toFixed(n >= 100000 ? 0 : n >= 10000 ? 0 : 1)}K`;
+  return `${n}`;
+}
+
+function AnimatedNumber({ value, prefix = "$", className }: { value: number; prefix?: string; className?: string }) {
+  const [display, setDisplay] = useState(value);
+  const ref = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(ref, { once: true });
+
+  useEffect(() => {
+    if (!isInView) return;
+    const start = display;
+    const diff = value - start;
+    const duration = 400;
+    const startTime = performance.now();
+
+    const animate = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplay(Math.round(start + diff * eased));
+      if (progress < 1) requestAnimationFrame(animate);
+    };
+    requestAnimationFrame(animate);
+  }, [value, isInView]);
+
+  return (
+    <span ref={ref} className={className}>
+      {prefix}{display.toLocaleString()}
+    </span>
+  );
+}
+
 export default function Landing() {
   const navigate = useNavigate();
   const [applicantCount, setApplicantCount] = useState<number | null>(null);
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [claimedToday] = useState(() => Math.floor(380 + Math.random() * 60));
   const heroRef = useRef<HTMLElement>(null);
+  const [followers, setFollowers] = useState(10000);
 
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -79,7 +119,6 @@ export default function Landing() {
       return;
     }
     setSubmitting(true);
-    // Navigate to auth/onboarding with email pre-filled
     navigate(`/auth?email=${encodeURIComponent(email)}`);
   };
 
@@ -87,15 +126,20 @@ export default function Landing() {
     document.getElementById("waitlist")?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Earnings calculator
+  const ytEarnings = Math.round(followers * 0.003);
+  const uplyEarnings = Math.round(followers * 0.02 * 9);
+  const multiplier = ytEarnings > 0 ? Math.round(uplyEarnings / ytEarnings) : 0;
+
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white font-sans selection:bg-primary/30">
+    <div className="min-h-screen bg-[#0A0A0A] text-white font-sans selection:bg-[#00FF85]/30">
       <SEOHead />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
       />
 
-      {/* Nav — slim top bar */}
+      {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06] bg-[#0A0A0A]/80 backdrop-blur-xl">
         <div className="container flex h-14 items-center justify-between">
           <img
@@ -116,7 +160,7 @@ export default function Landing() {
             </Button>
             <Button
               size="sm"
-              className="bg-[#00FF85] text-[#0A0A0A] font-bold hover:bg-[#00FF85]/90 border-0"
+              className="bg-[#00FF85] text-[#0A0A0A] font-bold hover:bg-[#00FF85]/90 border-0 active:scale-[0.96] transition-transform"
               onClick={() => navigate("/auth")}
             >
               Start Free
@@ -128,7 +172,7 @@ export default function Landing() {
       {/* ─── HERO ─── */}
       <section
         ref={heroRef}
-        className="relative overflow-hidden pt-28 pb-20 md:pt-40 md:pb-32 min-h-[90vh] flex items-center"
+        className="relative overflow-hidden pt-28 pb-16 md:pt-40 md:pb-24 min-h-[85vh] flex items-center"
         onMouseMove={handleMouseMove}
       >
         {/* Animated gradient blobs */}
@@ -155,7 +199,7 @@ export default function Landing() {
           />
         </div>
 
-        {/* Mouse-following glow — desktop */}
+        {/* Mouse-following glow */}
         <motion.div
           className="absolute z-[1] pointer-events-none w-[350px] h-[350px] rounded-full opacity-[0.06] blur-[100px] hidden md:block"
           style={{
@@ -205,7 +249,6 @@ export default function Landing() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="max-w-2xl mx-auto text-center"
           >
-            {/* Logo centered large */}
             <motion.img
               src="/logo.png"
               alt="Uply"
@@ -252,7 +295,7 @@ export default function Landing() {
             >
               <Button
                 size="lg"
-                className="bg-[#00FF85] text-[#0A0A0A] font-bold text-base px-8 py-6 rounded hover:bg-[#00FF85]/90 hover:shadow-[0_0_30px_rgba(0,255,133,0.3)] transition-all duration-300 border-0"
+                className="bg-[#00FF85] text-[#0A0A0A] font-bold text-base px-8 py-6 rounded hover:bg-[#00FF85]/90 hover:shadow-[0_0_30px_rgba(0,255,133,0.3)] transition-all duration-300 border-0 active:scale-[0.96]"
                 onClick={scrollToWaitlist}
               >
                 Apply for Early Access
@@ -266,8 +309,136 @@ export default function Landing() {
               transition={{ delay: 0.7 }}
               className="text-xs text-white/30 mt-4 italic"
             >
-              Limited spots. Real money. Real prizes.
+              Waitlist &amp; invite only.
             </motion.p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ─── EXCLUSIVITY BANNER ─── */}
+      <section className="py-12 md:py-16 relative">
+        <div className="container relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.7 }}
+            className="max-w-2xl mx-auto rounded-xl border border-[#00FF85]/10 bg-white/[0.02] p-8 md:p-10 text-center"
+            style={{
+              boxShadow: "0 0 60px rgba(0,255,133,0.04), inset 0 1px 0 rgba(255,255,255,0.03)",
+            }}
+          >
+            <p className="text-white/50 text-sm md:text-base mb-3">
+              Uply has hand selected its founding creators.
+            </p>
+            <p className="text-[#00FF85] font-bold text-xl md:text-2xl mb-3 font-heading">
+              The Uply Games begin.
+            </p>
+            <p className="text-white/30 text-xs md:text-sm leading-relaxed">
+              This is not a public launch.
+              <br />
+              You were either invited or you found us.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ─── EARNINGS CALCULATOR ─── */}
+      <section className="py-16 md:py-24 relative">
+        <div className="container relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7 }}
+            className="text-center mb-10"
+          >
+            <h2 className="text-2xl md:text-4xl font-bold mb-3 font-heading">
+              See what you'd actually make.
+            </h2>
+            <p className="text-white/40 text-sm md:text-base">
+              AdSense pays pennies. Memberships pay rent.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.6, delay: 0.15 }}
+            className="max-w-xl mx-auto rounded-xl border border-[#00FF85]/10 bg-white/[0.02] p-6 md:p-8"
+            style={{
+              boxShadow: "0 0 60px rgba(0,255,133,0.04), inset 0 1px 0 rgba(255,255,255,0.03)",
+            }}
+          >
+            {/* Slider */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm text-white/50">How many followers do you have?</span>
+                <span className="text-sm font-bold text-[#00FF85]">{formatFollowers(followers)}</span>
+              </div>
+              <Slider
+                min={1000}
+                max={500000}
+                step={1000}
+                value={[followers]}
+                onValueChange={(v) => setFollowers(v[0])}
+                className="[&_[data-orientation=horizontal]>.relative]:bg-white/10 [&_[role=slider]]:bg-[#00FF85] [&_[role=slider]]:border-[#00FF85] [&_span[data-orientation=horizontal]>span]:bg-[#00FF85]"
+              />
+              <div className="flex justify-between mt-2 text-[10px] text-white/20">
+                <span>1K</span>
+                <span>10K</span>
+                <span>50K</span>
+                <span>100K</span>
+                <span>500K</span>
+              </div>
+            </div>
+
+            {/* Comparison columns */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              {/* YouTube */}
+              <div className="rounded-lg bg-white/[0.03] border border-white/[0.06] p-4 text-center">
+                <span className="text-xs text-white/30 block mb-1">YouTube AdSense</span>
+                <AnimatedNumber
+                  value={ytEarnings}
+                  className="text-2xl md:text-3xl font-bold text-red-400/70"
+                />
+                <span className="text-[10px] text-white/20 block mt-1">/month est.</span>
+              </div>
+
+              {/* UPLY */}
+              <div className="rounded-lg bg-[#00FF85]/[0.05] border border-[#00FF85]/20 p-4 text-center">
+                <span className="text-xs text-[#00FF85]/60 block mb-1">Uply Memberships</span>
+                <AnimatedNumber
+                  value={uplyEarnings}
+                  className="text-2xl md:text-3xl font-bold text-[#00FF85]"
+                />
+                <span className="text-[10px] text-[#00FF85]/40 block mt-1">/month est.</span>
+              </div>
+            </div>
+
+            {/* Multiplier */}
+            {multiplier > 0 && (
+              <p className="text-center text-lg md:text-xl font-bold mb-4">
+                That's{" "}
+                <span className="text-[#00FF85]">{multiplier}x more</span>
+                {" "}with Uply
+              </p>
+            )}
+
+            <p className="text-[10px] text-white/15 text-center mb-5">
+              Estimates based on industry averages. Results vary by niche and engagement.
+            </p>
+
+            <div className="flex justify-center">
+              <Button
+                className="bg-[#00FF85] text-[#0A0A0A] font-bold hover:bg-[#00FF85]/90 border-0 active:scale-[0.96] transition-transform"
+                onClick={scrollToWaitlist}
+              >
+                Start earning like this
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            </div>
           </motion.div>
         </div>
       </section>
@@ -300,7 +471,7 @@ export default function Landing() {
                 onKeyDown={(e) => e.key === "Enter" && handleApply()}
               />
               <Button
-                className="bg-[#00FF85] text-[#0A0A0A] font-bold hover:bg-[#00FF85]/90 border-0 px-6 h-12 shrink-0"
+                className="bg-[#00FF85] text-[#0A0A0A] font-bold hover:bg-[#00FF85]/90 border-0 px-6 h-12 shrink-0 active:scale-[0.96] transition-transform"
                 onClick={handleApply}
                 disabled={submitting}
               >
@@ -308,7 +479,6 @@ export default function Landing() {
               </Button>
             </div>
 
-            {/* Social proof */}
             {applicantCount !== null && applicantCount > 0 && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -329,17 +499,6 @@ export default function Landing() {
                 </span>
               </motion.div>
             )}
-
-            {/* Urgency ticker */}
-            <motion.p
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.5 }}
-              className="text-xs text-white/25 mt-3"
-            >
-              🔥 {claimedToday} spots claimed today
-            </motion.p>
           </motion.div>
         </div>
       </section>
