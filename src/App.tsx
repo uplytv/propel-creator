@@ -134,6 +134,7 @@ const App = () => (
                     <Route path="/:username/clips/:slug" element={<Stream />} />
                     <Route path="/leaderboard" element={<Leaderboard />} />
                     <Route path="/ref/:code" element={<ReferralRedirect />} />
+                    <Route path="/join/:code" element={<ReferralRedirect />} />
                     <Route path="/creator/:username" element={<CreatorProfile />} />
                     <Route path="/community/:creatorId" element={<CreatorSpace />} />
                     <Route path="/community/:creatorId/:tab" element={<CreatorSpace />} />
