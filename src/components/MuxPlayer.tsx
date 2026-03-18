@@ -136,11 +136,14 @@ export const UPLYMuxPlayer = ({
 
   return (
     <div ref={containerRef} className={`relative w-full aspect-video bg-black ${className || ''}`}>
+      {/* eslint-disable-next-line */}
       <video
         ref={videoRef}
         autoPlay={autoPlay}
         muted={muted}
         playsInline
+        // @ts-ignore — webkit attribute needed for iOS inline playback
+        webkit-playsinline=""
         controls={status === 'playing'}
         className="w-full h-full object-contain"
         style={{ display: status === 'playing' ? 'block' : 'none' }}

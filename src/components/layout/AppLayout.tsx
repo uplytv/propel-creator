@@ -428,7 +428,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       {/* Main Content */}
       <div className={`flex-1 transition-all duration-300 ${collapsed ? "md:ml-[68px]" : "md:ml-60"}`}>
         {/* Top Bar */}
-        <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
+        <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl safe-area-top">
           <div className="flex items-center justify-between px-4 md:px-8 h-14">
             <div className="flex items-center gap-2 md:hidden">
               <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Open menu" className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground">

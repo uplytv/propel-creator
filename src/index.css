@@ -339,3 +339,14 @@
 .animate-shimmer {
   animation: shimmer 3s ease-in-out infinite;
 }
+
+/* Hide bottom nav when keyboard is open (native) */
+body.keyboard-open .mobile-tab-bar {
+  transform: translateY(100%);
+  pointer-events: none;
+}
+
+/* Prevent content jump on keyboard open */
+body.keyboard-open #main-content {
+  padding-bottom: 0 !important;
+}

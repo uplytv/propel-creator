@@ -38,7 +38,7 @@ export default function MobileTabBar() {
               aria-current={isActive ? "page" : undefined}
               role="tab"
               aria-selected={isActive}
-              className="relative flex flex-col items-center justify-center flex-1 py-1.5 tab-press group"
+              className="relative flex flex-col items-center justify-center flex-1 py-1.5 tab-press group touch-target"
             >
               <div className="relative">
                 {tab.path === "__profile__" && profile.avatarUrl ? (
