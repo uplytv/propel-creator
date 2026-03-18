@@ -25,7 +25,7 @@ export default function ReferralRedirect() {
         
         // Track click by incrementing the referrer's click count is not needed for waitlist
         // Just redirect to the waitlist application page
-        navigate("/waitlist");
+        navigate("/");
         return;
       }
 
