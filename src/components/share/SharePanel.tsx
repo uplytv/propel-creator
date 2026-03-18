@@ -436,7 +436,10 @@ export default function SharePanel({
         <DrawerContent className="max-h-[90vh]" style={{ background: "#0A0A0A" }}>
           <DrawerHeader className="pb-0">
             <div className="flex items-center justify-between">
-              <DrawerTitle className="text-foreground text-base">Share & Distribute</DrawerTitle>
+              <div>
+                <DrawerTitle className="text-foreground text-base">Share & Distribute</DrawerTitle>
+                <DrawerDescription className="sr-only">Share this content link or export it to external platforms.</DrawerDescription>
+              </div>
               <button onClick={onClose} className="p-1 rounded-lg text-muted-foreground hover:text-foreground">
                 <X className="w-4 h-4" />
               </button>
