@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useFollows } from "@/hooks/useFollows";
 import { useEffect, useState } from "react";
 
-export type FeedItemType = "livestream" | "community" | "course" | "service" | "creator" | "recording" | "clip" | "post";
+export type FeedItemType = "livestream" | "community" | "course" | "service" | "creator" | "recording" | "clip" | "post" | "video";
 export type FilterCategory = "all" | "livestream" | "community" | "course" | "service" | "creator";
 export type SortOption = "trending" | "newest" | "popular" | "price_low" | "price_high";
 export type FeedTab = "foryou" | "following";
@@ -72,7 +72,7 @@ export function useDiscoveryFeed(
       const isFollowingTab = feedTab === "following";
 
       // Fetch in parallel
-      const [streamsRes, productsRes, spacesRes, creatorsRes, recordingsRes, clipsRes] = await Promise.all([
+      const [streamsRes, productsRes, spacesRes, creatorsRes, recordingsRes, clipsRes, videosRes] = await Promise.all([
         // Live streams
         (filter === "all" || filter === "livestream")
           ? supabase
@@ -131,6 +131,16 @@ export function useDiscoveryFeed(
               .order("created_at", { ascending: false })
               .limit(30)
           : Promise.resolve({ data: [], error: null }),
+
+        // Standalone videos
+        (filter === "all" || filter === "livestream")
+          ? (supabase as any)
+              .from("videos")
+              .select("*")
+              .eq("is_public", true)
+              .order("created_at", { ascending: false })
+              .limit(30)
+          : Promise.resolve({ data: [], error: null }),
       ]);
 
       // Collect all unique user IDs
@@ -140,6 +150,7 @@ export function useDiscoveryFeed(
       if (spacesRes.data) (spacesRes.data as any[]).forEach((sp) => userIds.add(sp.creator_id));
       if (recordingsRes.data) (recordingsRes.data as any[]).forEach((r) => userIds.add(r.creator_id));
       if (clipsRes.data) (clipsRes.data as any[]).forEach((c) => userIds.add(c.creator_id));
+      if (videosRes.data) (videosRes.data as any[]).forEach((v: any) => userIds.add(v.creator_id));
 
       // Batch fetch profiles
       const [profilesRes, memberCountsRes] = await Promise.all([
@@ -273,6 +284,39 @@ export function useDiscoveryFeed(
             spaceId: null,
             slug: c.slug,
             tier: isNew(c.created_at) ? "new" : "trending",
+          });
+        }
+      }
+
+      // Map standalone videos
+      if (videosRes.data && !liveOnly) {
+        for (const v of videosRes.data as any[]) {
+          if (isFollowingTab && !followingSet.has(v.creator_id)) continue;
+          const p = getProfile(v.creator_id);
+          items.push({
+            id: v.id,
+            type: "video" as FeedItemType,
+            title: v.title || "Untitled Video",
+            description: v.description,
+            imageUrl: v.playback_id
+              ? `https://image.mux.com/${v.playback_id}/thumbnail.webp?width=640&height=360&time=2`
+              : v.thumbnail_url,
+            price: 0,
+            creatorId: v.creator_id,
+            creatorName: p.display_name || "Creator",
+            creatorUsername: p.username || p.display_name,
+            creatorAvatar: p.avatar_url,
+            creatorType: p.creator_type,
+            isLive: false,
+            viewerCount: v.view_count || 0,
+            memberCount: 0,
+            engagementScore: (v.like_count || 0) * 3 + (v.comment_count || 0) * 2 + (v.view_count || 0),
+            trendingScore: v.trending_score || 0,
+            createdAt: v.created_at,
+            playbackId: v.playback_id,
+            spaceId: null,
+            slug: v.slug,
+            tier: isNew(v.created_at) ? "new" : "trending",
           });
         }
       }

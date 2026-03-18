@@ -1,7 +1,7 @@
 import { forwardRef } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Radio, Users, BookOpen, Briefcase, Star, Eye, Crown, Film, Scissors } from "lucide-react";
+import { Radio, Users, BookOpen, Briefcase, Star, Eye, Crown, Film, Scissors, Play } from "lucide-react";
 import FollowButton from "@/components/FollowButton";
 import { type FeedItem } from "@/hooks/useDiscoveryFeed";
 import { timeAgo } from "@/lib/slugs";
@@ -10,6 +10,7 @@ const typeConfig: Record<string, { label: string; icon: React.ElementType; color
   livestream: { label: "LIVE", icon: Radio, color: "bg-[#FF3B3B] text-white" },
   recording: { label: "VIDEO", icon: Film, color: "bg-secondary text-secondary-foreground" },
   clip: { label: "CLIP", icon: Scissors, color: "bg-secondary text-secondary-foreground" },
+  video: { label: "VIDEO", icon: Play, color: "bg-primary/80 text-primary-foreground" },
   community: { label: "COMMUNITY", icon: Users, color: "bg-primary text-primary-foreground" },
   course: { label: "COURSE", icon: BookOpen, color: "bg-accent-green text-background" },
   service: { label: "Service", icon: Briefcase, color: "bg-secondary text-secondary-foreground" },
@@ -28,6 +29,11 @@ const FeedCard = forwardRef<HTMLDivElement, { item: FeedItem; index: number; isL
         case "livestream":
           return item.playbackId ? `/stream/${item.id}` : `/creator/${encodeURIComponent(item.creatorName)}`;
         case "recording":
+          if (item.creatorUsername && item.slug) {
+            return `/${encodeURIComponent(item.creatorUsername)}/videos/${item.slug}`;
+          }
+          return `/creator/${encodeURIComponent(item.creatorName)}/videos/${item.id}`;
+        case "video":
           if (item.creatorUsername && item.slug) {
             return `/${encodeURIComponent(item.creatorUsername)}/videos/${item.slug}`;
           }
@@ -182,7 +188,7 @@ const FeedCard = forwardRef<HTMLDivElement, { item: FeedItem; index: number; isL
             </div>
           )}
 
-          {(item.type === "recording" || item.type === "clip") && item.viewerCount > 0 && (
+          {(item.type === "recording" || item.type === "clip" || item.type === "video") && item.viewerCount > 0 && (
             <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
               <span className="flex items-center gap-0.5">
                 <Eye className="w-3 h-3" aria-hidden="true" />
@@ -191,7 +197,7 @@ const FeedCard = forwardRef<HTMLDivElement, { item: FeedItem; index: number; isL
             </div>
           )}
 
-          {item.description && !["livestream", "course", "community", "recording", "clip"].includes(item.type) && (
+          {item.description && !["livestream", "course", "community", "recording", "clip", "video"].includes(item.type) && (
             <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
               {item.description}
             </p>
@@ -217,6 +223,7 @@ const FeedCard = forwardRef<HTMLDivElement, { item: FeedItem; index: number; isL
                 {item.type === "livestream" ? "Watch" :
                  item.type === "recording" ? "Play" :
                  item.type === "clip" ? "Play" :
+                 item.type === "video" ? "Play" :
                  item.type === "creator" ? "View" :
                  item.type === "course" ? "Enroll" : "Join"}
               </button>

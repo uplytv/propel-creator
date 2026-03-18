@@ -74,7 +74,21 @@ serve(async (req) => {
       }
     }
 
-    console.log(`✅ Trending scores refreshed: ${recordings?.length || 0} recordings, ${posts?.length || 0} posts`)
+    // Update standalone videos
+    const { data: videos } = await supabase
+      .from('videos')
+      .select('id, like_count, comment_count, view_count, created_at')
+      .gte('created_at', new Date(Date.now() - 30 * 86400000).toISOString())
+
+    if (videos) {
+      for (const v of videos) {
+        const hoursSince = (Date.now() - new Date(v.created_at).getTime()) / 3600000
+        const score = ((v.like_count || 0) * 3 + (v.comment_count || 0) * 2 + (v.view_count || 0)) / (1 + hoursSince / 24)
+        await supabase.from('videos').update({ trending_score: Math.round(score * 100) / 100 }).eq('id', v.id)
+      }
+    }
+
+    console.log(`✅ Trending scores refreshed: ${recordings?.length || 0} recordings, ${posts?.length || 0} posts, ${videos?.length || 0} videos`)
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }

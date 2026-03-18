@@ -6,7 +6,7 @@ import {
   TrendingUp, Users, DollarSign, Brain, Radio, Sparkles,
   BarChart3, ChevronRight, Film, Play, Loader2, Clock,
   LayoutGrid, Package, Search, ArrowRight, Zap, GraduationCap,
-  Plus, Eye, CreditCard, MessageCircle, Crown
+  Plus, Eye, CreditCard, MessageCircle, Crown, Upload
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
@@ -20,6 +20,7 @@ import { PayoutsTab } from "@/components/dashboard/PayoutsTab";
 import DashboardModeToggle, { type DashboardMode } from "@/components/dashboard/DashboardModeToggle";
 import AriaChat from "@/components/dashboard/AriaChat";
 import DiscoverMarketplace from "@/components/dashboard/DiscoverMarketplace";
+import VideoUploadModal from "@/components/videos/VideoUploadModal";
 
 function PlatformUpgradeBanner() {
   const { user } = useAuth();
@@ -65,6 +66,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [dashMode, setDashMode] = useState<DashboardMode>("discover");
   const [activeStream, setActiveStream] = useState<any>(null);
+  const [uploadOpen, setUploadOpen] = useState(false);
   const { data: dashStats, isLoading: statsLoading } = useDashboardStats();
 
   useEffect(() => {
@@ -94,6 +96,9 @@ export default function Dashboard() {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="px-4 md:px-8 pt-4 md:pt-8 pb-2">
           <div className="flex items-center justify-between gap-3 mb-2">
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">Welcome back, {profile.name} 👋</h1>
+            <Button size="sm" onClick={() => setUploadOpen(true)} className="gap-1.5 flex-shrink-0">
+              <Upload className="w-4 h-4" /> Upload Video
+            </Button>
           </div>
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">
@@ -149,6 +154,7 @@ export default function Dashboard() {
           </motion.div>
         )}
       </div>
+      <VideoUploadModal open={uploadOpen} onClose={() => setUploadOpen(false)} />
     </AppLayout>
   );
 }

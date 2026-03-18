@@ -2782,6 +2782,136 @@ export type Database = {
         }
         Relationships: []
       }
+      video_comments: {
+        Row: {
+          body: string
+          created_at: string | null
+          id: string
+          like_count: number | null
+          user_id: string
+          video_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string | null
+          id?: string
+          like_count?: number | null
+          user_id: string
+          video_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string | null
+          id?: string
+          like_count?: number | null
+          user_id?: string
+          video_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_comments_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      video_likes: {
+        Row: {
+          created_at: string | null
+          id: string
+          user_id: string
+          video_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          user_id: string
+          video_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          user_id?: string
+          video_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_likes_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      videos: {
+        Row: {
+          category: string | null
+          comment_count: number | null
+          created_at: string | null
+          creator_id: string
+          description: string | null
+          download_url: string | null
+          duration_seconds: number | null
+          id: string
+          is_featured: boolean | null
+          is_public: boolean | null
+          like_count: number | null
+          mux_asset_id: string | null
+          playback_id: string | null
+          slug: string | null
+          tags: string[] | null
+          thumbnail_url: string | null
+          title: string
+          trending_score: number | null
+          view_count: number | null
+        }
+        Insert: {
+          category?: string | null
+          comment_count?: number | null
+          created_at?: string | null
+          creator_id: string
+          description?: string | null
+          download_url?: string | null
+          duration_seconds?: number | null
+          id?: string
+          is_featured?: boolean | null
+          is_public?: boolean | null
+          like_count?: number | null
+          mux_asset_id?: string | null
+          playback_id?: string | null
+          slug?: string | null
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title: string
+          trending_score?: number | null
+          view_count?: number | null
+        }
+        Update: {
+          category?: string | null
+          comment_count?: number | null
+          created_at?: string | null
+          creator_id?: string
+          description?: string | null
+          download_url?: string | null
+          duration_seconds?: number | null
+          id?: string
+          is_featured?: boolean | null
+          is_public?: boolean | null
+          like_count?: number | null
+          mux_asset_id?: string | null
+          playback_id?: string | null
+          slug?: string | null
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title?: string
+          trending_score?: number | null
+          view_count?: number | null
+        }
+        Relationships: []
+      }
       views_log: {
         Row: {
           asset_id: string
