@@ -188,7 +188,7 @@ const FeedCard = forwardRef<HTMLDivElement, { item: FeedItem; index: number; isL
             </div>
           )}
 
-          {(item.type === "recording" || item.type === "clip") && item.viewerCount > 0 && (
+          {(item.type === "recording" || item.type === "clip" || item.type === "video") && item.viewerCount > 0 && (
             <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
               <span className="flex items-center gap-0.5">
                 <Eye className="w-3 h-3" aria-hidden="true" />
