@@ -129,9 +129,9 @@ const App = () => (
                     <Route path="/p/:slug" element={<JointProduct isPublic />} />
                     <Route path="/live" element={<Live />} />
                     <Route path="/stream/:id" element={<Stream />} />
-                    <Route path="/creator/:username/videos/:id" element={<Stream />} />
+                    <Route path="/creator/:username/videos/:id" element={<VideoPlayer />} />
                     <Route path="/:username/live/:slug" element={<Stream />} />
-                    <Route path="/:username/videos/:slug" element={<Stream />} />
+                    <Route path="/:username/videos/:slug" element={<VideoPlayer />} />
                     <Route path="/:username/clips/:slug" element={<Stream />} />
                     <Route path="/leaderboard" element={<Leaderboard />} />
                     <Route path="/ref/:code" element={<ReferralRedirect />} />
