@@ -142,6 +142,7 @@ export default function AdminDashboard() {
                 <TabsTrigger value="transactions">Transactions</TabsTrigger>
                 <TabsTrigger value="users">Recent Users</TabsTrigger>
                 <TabsTrigger value="webhooks">Webhook Log</TabsTrigger>
+                <TabsTrigger value="waitlist">Waitlist</TabsTrigger>
               </TabsList>
 
               <TabsContent value="transactions">
