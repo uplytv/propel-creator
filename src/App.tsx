@@ -12,6 +12,7 @@ import TierCelebration from "@/components/TierCelebration";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import LaunchGate from "@/components/LaunchGate";
 import AdminRoute from "./components/AdminRoute";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Lazy-loaded pages
 const Landing = lazy(() => import("./pages/Landing"));
@@ -59,7 +60,18 @@ const Messages = lazy(() => import("./pages/Messages"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      staleTime: 30_000,
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: 1,
+    },
+  },
+});
 
 const PageLoader = () => (
   <div className="flex min-h-screen items-center justify-center bg-background">
@@ -79,6 +91,7 @@ const App = () => (
               <TierCelebration />
               <LaunchGate>
               <BrowserRouter>
+                <ErrorBoundary>
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
                     {/* Public routes */}
@@ -138,6 +151,7 @@ const App = () => (
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
+                </ErrorBoundary>
               </BrowserRouter>
               </LaunchGate>
             </FeatureProvider>
