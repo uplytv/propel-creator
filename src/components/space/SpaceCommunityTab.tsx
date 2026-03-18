@@ -67,7 +67,21 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
 
   return (
     <div className="px-4 pt-4">
-      {/* Category Filters */}
+      {/* Blast Button + Category Filters */}
+      {isOwner && (
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-sm font-semibold text-foreground">Community</span>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setShowBlastComposer(true)}
+            className="gap-1.5 text-xs border-primary/40 text-primary hover:bg-primary/10"
+          >
+            <Megaphone className="w-3.5 h-3.5" />
+            Blast
+          </Button>
+        </div>
+      )}
       <div className="flex gap-2 overflow-x-auto scrollbar-none pb-3">
         <button
           onClick={() => setCategoryFilter("all")}
