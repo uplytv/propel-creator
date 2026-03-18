@@ -184,6 +184,7 @@ export function useDiscoveryFeed(
             (i) => i.type === "community" && i.creatorId === sp.creator_id
           );
           if (alreadyHasCommunity) continue;
+          const spMemberCount = memberCountMap.get(sp.creator_id) || 0;
           items.push({
             id: sp.id,
             type: "community",
@@ -197,8 +198,8 @@ export function useDiscoveryFeed(
             creatorType: profileMap.get(sp.creator_id)?.creator_type || null,
             isLive: false,
             viewerCount: 0,
-            memberCount: 0,
-            engagementScore: 50,
+            memberCount: spMemberCount,
+            engagementScore: spMemberCount * 10 + 50,
             createdAt: sp.created_at,
             playbackId: null,
             spaceId: sp.id,
