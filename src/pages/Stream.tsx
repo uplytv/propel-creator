@@ -34,7 +34,7 @@ function formatViewers(n: number) {
 }
 
 export default function Stream() {
-  const { id } = useParams<{ id: string }>();
+  const { id, username: routeUsername } = useParams<{ id: string; username: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -51,7 +51,9 @@ export default function Stream() {
 
   const searchParams = new URLSearchParams(window.location.search);
   const contentType = searchParams.get('type'); // 'vod' | 'recording' | null
-  const isVod = contentType === 'vod' || contentType === 'recording';
+  // Auto-detect: if accessed via /creator/:username/videos/:id, it's a video
+  const isFromCreatorRoute = !!routeUsername;
+  const isVod = contentType === 'vod' || contentType === 'recording' || isFromCreatorRoute;
 
   useEffect(() => {
     const fetchStream = async () => {
