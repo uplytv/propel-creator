@@ -36,8 +36,9 @@ export default function DiscoverMarketplace() {
     setVisibleCount(PAGE_SIZE);
   }, [filter, search, sort]);
 
-  const visibleItems = items?.slice(0, visibleCount) ?? [];
-  const hasMore = items ? visibleCount < items.length : false;
+  const allItems = items?.all ?? [];
+  const visibleItems = allItems.slice(0, visibleCount);
+  const hasMore = visibleCount < allItems.length;
 
   const sentinelRef = useRef<HTMLDivElement>(null);
   const loadMore = useCallback(() => {
