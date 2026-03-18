@@ -154,6 +154,7 @@ export default function Dashboard() {
           </motion.div>
         )}
       </div>
+      <VideoUploadModal open={uploadOpen} onClose={() => setUploadOpen(false)} />
     </AppLayout>
   );
 }
