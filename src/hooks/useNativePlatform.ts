@@ -50,7 +50,9 @@ export function useStatusBar() {
 
     (async () => {
       try {
-        const { StatusBar, Style } = await import('@capacitor/status-bar');
+        // @ts-ignore - @capacitor/status-bar may not be installed in web-only builds
+        const mod = await import('@capacitor/status-bar');
+        const { StatusBar, Style } = mod;
         await StatusBar.setStyle({ style: Style.Dark });
         if (Capacitor.getPlatform() === 'android') {
           await StatusBar.setBackgroundColor({ color: '#0A0A0A' });
