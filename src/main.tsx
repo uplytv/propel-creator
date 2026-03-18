@@ -9,6 +9,19 @@ import { initPostHog } from "./lib/posthog";
 initSentry();
 initPostHog();
 
+// Register service worker offline handler
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.ready.then(() => {
+      console.log('SW ready');
+    });
+  });
+}
+
+// Online/offline detection
+window.addEventListener('offline', () => document.body.classList.add('app-offline'));
+window.addEventListener('online', () => document.body.classList.remove('app-offline'));
+
 const SentryApp = import.meta.env.VITE_SENTRY_DSN
   ? Sentry.withErrorBoundary(App, {
       fallback: (

@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +13,9 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import LaunchGate from "@/components/LaunchGate";
 import AdminRoute from "./components/AdminRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import InstallPrompt from "@/components/InstallPrompt";
+import OfflineScreen from "@/components/OfflineScreen";
+import { useNativeInit, useKeyboardState } from "@/hooks/useNativePlatform";
 
 // Lazy-loaded pages
 const Landing = lazy(() => import("./pages/Landing"));
@@ -79,6 +82,28 @@ const PageLoader = () => (
   </div>
 );
 
+function NativeShell({ children }: { children: React.ReactNode }) {
+  useNativeInit();
+  useKeyboardState();
+
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+  useEffect(() => {
+    const goOffline = () => setIsOffline(true);
+    const goOnline = () => setIsOffline(false);
+    window.addEventListener('offline', goOffline);
+    window.addEventListener('online', goOnline);
+    return () => {
+      window.removeEventListener('offline', goOffline);
+      window.removeEventListener('online', goOnline);
+    };
+  }, []);
+
+  if (isOffline) return <OfflineScreen />;
+
+  return <>{children}</>;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
@@ -86,9 +111,11 @@ const App = () => (
         <AuthProvider>
           <AppProvider>
             <FeatureProvider>
+              <NativeShell>
               <Toaster />
               <Sonner />
               <TierCelebration />
+              <InstallPrompt />
               <LaunchGate>
               <BrowserRouter>
                 <ErrorBoundary>
@@ -154,6 +181,7 @@ const App = () => (
                 </ErrorBoundary>
               </BrowserRouter>
               </LaunchGate>
+              </NativeShell>
             </FeatureProvider>
           </AppProvider>
         </AuthProvider>
