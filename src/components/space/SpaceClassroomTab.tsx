@@ -476,7 +476,12 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                         <div className="px-4 py-3 space-y-2">
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1 min-w-0">
-                              <h3 className="text-base font-bold text-foreground">{mod.title}</h3>
+                              <div className="flex items-center gap-2">
+                                <h3 className="text-base font-bold text-foreground">{mod.title}</h3>
+                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${mod.is_free ? "bg-primary/10 text-primary" : "bg-accent text-accent-foreground"}`}>
+                                  {mod.is_free ? "FREE" : "PAID"}
+                                </span>
+                              </div>
                               {mod.description && (
                                 <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">{mod.description}</p>
                               )}
