@@ -53,7 +53,7 @@ export default function VideoGrid({ videos, loading, emptyMessage }: VideoGridPr
   }
 
   if (videos.length === 0) {
-    return <EmptyState title="No videos yet" description={emptyMessage || "Videos will appear here once uploaded."} />;
+    return <EmptyState icon={Film} title="No videos yet" description={emptyMessage || "Videos will appear here once uploaded."} />;
   }
 
   return (
