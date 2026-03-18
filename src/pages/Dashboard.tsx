@@ -19,6 +19,8 @@ import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist"
 import { WeeklyGrowthReport } from "@/components/dashboard/WeeklyGrowthReport";
 import { PayoutsTab } from "@/components/dashboard/PayoutsTab";
 import { Crown } from "lucide-react";
+import DashboardModeToggle, { type DashboardMode } from "@/components/dashboard/DashboardModeToggle";
+import DashboardMarketplace from "@/components/dashboard/DashboardMarketplace";
 
 function PlatformUpgradeBanner() {
   const { user } = useAuth();
