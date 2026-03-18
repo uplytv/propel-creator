@@ -476,7 +476,12 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                         <div className="px-4 py-3 space-y-2">
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1 min-w-0">
-                              <h3 className="text-base font-bold text-foreground">{mod.title}</h3>
+                              <div className="flex items-center gap-2">
+                                <h3 className="text-base font-bold text-foreground">{mod.title}</h3>
+                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${mod.is_free ? "bg-primary/10 text-primary" : "bg-accent text-accent-foreground"}`}>
+                                  {mod.is_free ? "FREE" : "PAID"}
+                                </span>
+                              </div>
                               {mod.description && (
                                 <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">{mod.description}</p>
                               )}
@@ -817,13 +822,14 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
 function AddModuleDialog({ open, onClose, creatorId }: { open: boolean; onClose: () => void; creatorId: string }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [isFree, setIsFree] = useState(true);
   const createModule = useCreateModule();
   const { toast } = useToast();
 
   const handleSubmit = async () => {
     if (!title.trim()) return;
-    await createModule.mutateAsync({ title, description, creatorId });
-    setTitle(""); setDescription("");
+    await createModule.mutateAsync({ title, description, creatorId, is_free: isFree });
+    setTitle(""); setDescription(""); setIsFree(true);
     onClose();
     toast({ title: "Module added!" });
   };
@@ -835,6 +841,26 @@ function AddModuleDialog({ open, onClose, creatorId }: { open: boolean; onClose:
         <div className="space-y-3">
           <Input placeholder="Module title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 bg-muted" />
           <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 bg-muted" />
+          <div className="flex items-center justify-between rounded-lg bg-muted px-3 py-2.5">
+            <div>
+              <p className="text-sm font-medium text-foreground">Access</p>
+              <p className="text-xs text-muted-foreground">{isFree ? "Anyone can access this module" : "Only paid members can access"}</p>
+            </div>
+            <div className="flex gap-1 rounded-full bg-secondary p-0.5">
+              <button
+                onClick={() => setIsFree(true)}
+                className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${isFree ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+              >
+                Free
+              </button>
+              <button
+                onClick={() => setIsFree(false)}
+                className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${!isFree ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+              >
+                Paid
+              </button>
+            </div>
+          </div>
           <Button onClick={handleSubmit} disabled={!title.trim()} className="w-full font-semibold">Add Module</Button>
         </div>
       </DialogContent>
@@ -845,6 +871,7 @@ function AddModuleDialog({ open, onClose, creatorId }: { open: boolean; onClose:
 function AddLessonDialog({ open, onClose, moduleId, creatorId }: { open: boolean; onClose: () => void; moduleId: string; creatorId: string }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [isFree, setIsFree] = useState(false);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -871,10 +898,10 @@ function AddLessonDialog({ open, onClose, moduleId, creatorId }: { open: boolean
       let uploadId: string | null = null;
       if (videoFile) uploadId = await uploadToMux(videoFile);
       await createLesson.mutateAsync({
-        module_id: moduleId, creator_id: creatorId, title, description,
+        module_id: moduleId, creator_id: creatorId, title, description, is_free: isFree,
         ...(uploadId ? { mux_asset_id: "pending", video_url: `upload:${uploadId}` } : {}),
       });
-      setTitle(""); setDescription(""); setVideoFile(null); setUploadProgress(0);
+      setTitle(""); setDescription(""); setVideoFile(null); setUploadProgress(0); setIsFree(false);
       onClose();
       toast({ title: videoFile ? "Lesson added! Video is processing..." : "Lesson added!" });
     } catch (err: any) {
@@ -889,6 +916,26 @@ function AddLessonDialog({ open, onClose, moduleId, creatorId }: { open: boolean
         <div className="space-y-3">
           <Input placeholder="Lesson title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 bg-muted" />
           <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 bg-muted" />
+          <div className="flex items-center justify-between rounded-lg bg-muted px-3 py-2.5">
+            <div>
+              <p className="text-sm font-medium text-foreground">Access</p>
+              <p className="text-xs text-muted-foreground">{isFree ? "Free preview lesson" : "Paid members only"}</p>
+            </div>
+            <div className="flex gap-1 rounded-full bg-secondary p-0.5">
+              <button
+                onClick={() => setIsFree(true)}
+                className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${isFree ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+              >
+                Free
+              </button>
+              <button
+                onClick={() => setIsFree(false)}
+                className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${!isFree ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+              >
+                Paid
+              </button>
+            </div>
+          </div>
           <div>
             <label className="block text-xs font-medium mb-1.5 text-muted-foreground">Video (optional)</label>
             {!videoFile ? (

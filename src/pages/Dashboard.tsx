@@ -21,6 +21,7 @@ import { PayoutsTab } from "@/components/dashboard/PayoutsTab";
 import { Crown } from "lucide-react";
 import DashboardModeToggle, { type DashboardMode } from "@/components/dashboard/DashboardModeToggle";
 import DashboardMarketplace from "@/components/dashboard/DashboardMarketplace";
+import MyCommunities from "@/components/dashboard/MyCommunities";
 
 function PlatformUpgradeBanner() {
   const { user } = useAuth();
@@ -126,6 +127,9 @@ export default function Dashboard() {
             transition={{ duration: 0.25 }}
             className="px-4 md:px-8 pb-20 md:pb-8"
           >
+            <div className="mb-4">
+              <MyCommunities />
+            </div>
             <DashboardMarketplace />
           </motion.div>
         ) : (
