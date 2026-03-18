@@ -6,7 +6,7 @@ import {
   TrendingUp, Users, DollarSign, Brain, Radio, Sparkles,
   BarChart3, ChevronRight, Film, Play, Loader2, Clock,
   LayoutGrid, Package, Search, ArrowRight, Zap, GraduationCap,
-  Plus, Eye, CreditCard, MessageCircle, Crown
+  Plus, Eye, CreditCard, MessageCircle, Crown, Upload
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
@@ -20,6 +20,7 @@ import { PayoutsTab } from "@/components/dashboard/PayoutsTab";
 import DashboardModeToggle, { type DashboardMode } from "@/components/dashboard/DashboardModeToggle";
 import AriaChat from "@/components/dashboard/AriaChat";
 import DiscoverMarketplace from "@/components/dashboard/DiscoverMarketplace";
+import VideoUploadModal from "@/components/videos/VideoUploadModal";
 
 function PlatformUpgradeBanner() {
   const { user } = useAuth();
