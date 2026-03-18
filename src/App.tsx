@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +13,9 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import LaunchGate from "@/components/LaunchGate";
 import AdminRoute from "./components/AdminRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import InstallPrompt from "@/components/InstallPrompt";
+import OfflineScreen from "@/components/OfflineScreen";
+import { useNativeInit, useKeyboardState } from "@/hooks/useNativePlatform";
 
 // Lazy-loaded pages
 const Landing = lazy(() => import("./pages/Landing"));
