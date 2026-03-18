@@ -85,7 +85,7 @@ function NotificationItem({
       onClick={onNavigate}
       className={`w-full text-left px-5 py-4 flex gap-4 hover:bg-secondary/40 transition-colors border-b border-border/50 last:border-0 group ${
         !n.read ? "bg-primary/[0.03]" : ""
-      }`}
+      } ${n.type === "community_blast" ? "border-l-[3px] border-l-primary" : ""}`}
     >
       {getIcon()}
       <div className="flex-1 min-w-0">
