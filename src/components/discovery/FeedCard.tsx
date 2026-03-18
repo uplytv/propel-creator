@@ -197,7 +197,7 @@ const FeedCard = forwardRef<HTMLDivElement, { item: FeedItem; index: number; isL
             </div>
           )}
 
-          {item.description && !["livestream", "course", "community", "recording", "clip"].includes(item.type) && (
+          {item.description && !["livestream", "course", "community", "recording", "clip", "video"].includes(item.type) && (
             <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
               {item.description}
             </p>
