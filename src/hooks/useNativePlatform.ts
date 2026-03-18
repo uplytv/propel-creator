@@ -49,10 +49,14 @@ export function useStatusBar() {
     if (!Capacitor.isNativePlatform()) return;
 
     (async () => {
-      const { StatusBar, Style } = await import('@capacitor/status-bar');
-      await StatusBar.setStyle({ style: Style.Dark });
-      if (Capacitor.getPlatform() === 'android') {
-        await StatusBar.setBackgroundColor({ color: '#0A0A0A' });
+      try {
+        const { StatusBar, Style } = await import('@capacitor/status-bar');
+        await StatusBar.setStyle({ style: Style.Dark });
+        if (Capacitor.getPlatform() === 'android') {
+          await StatusBar.setBackgroundColor({ color: '#0A0A0A' });
+        }
+      } catch {
+        // @capacitor/status-bar not available in web builds
       }
     })();
   }, []);

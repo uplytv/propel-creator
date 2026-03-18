@@ -40,6 +40,13 @@ export default defineConfig(({ mode }) => ({
       manifest: false, // Use existing public/manifest.json
     }),
   ].filter(Boolean),
+  build: {
+    rollupOptions: {
+      external: [
+        "@capacitor/status-bar",
+      ],
+    },
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
