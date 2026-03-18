@@ -163,10 +163,10 @@ function EnergyFlash({ score, onDismiss }: { score: number; onDismiss: () => voi
 // Share card
 function ShareCard({ title, streamId, onClose }: { title: string; streamId: string; onClose: () => void }) {
   const [copied, setCopied] = useState(false);
-  const url = `uply.tv/live/${streamId}`;
+  const url = `${getSiteUrl()}/stream/${streamId}`;
 
   const copyLink = () => {
-    navigator.clipboard.writeText(`https://${url}`);
+    navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
