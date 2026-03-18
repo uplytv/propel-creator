@@ -81,7 +81,7 @@ export function useCreateModule() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ title, description, creatorId }: { title: string; description: string; creatorId: string }) => {
+    mutationFn: async ({ title, description, creatorId, is_free }: { title: string; description: string; creatorId: string; is_free?: boolean }) => {
       if (!user) throw new Error("Not authenticated");
       const { data: existing } = await supabase
         .from("classroom_modules" as any)
@@ -92,7 +92,7 @@ export function useCreateModule() {
       const nextPos = existing && (existing as any[]).length > 0 ? (existing as any[])[0].position + 1 : 0;
       const { data, error } = await supabase
         .from("classroom_modules" as any)
-        .insert({ creator_id: creatorId, title, description, position: nextPos } as any)
+        .insert({ creator_id: creatorId, title, description, position: nextPos, is_free: is_free ?? true } as any)
         .select()
         .maybeSingle();
       if (error) {

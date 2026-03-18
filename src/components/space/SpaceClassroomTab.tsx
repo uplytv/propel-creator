@@ -817,13 +817,14 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
 function AddModuleDialog({ open, onClose, creatorId }: { open: boolean; onClose: () => void; creatorId: string }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [isFree, setIsFree] = useState(true);
   const createModule = useCreateModule();
   const { toast } = useToast();
 
   const handleSubmit = async () => {
     if (!title.trim()) return;
-    await createModule.mutateAsync({ title, description, creatorId });
-    setTitle(""); setDescription("");
+    await createModule.mutateAsync({ title, description, creatorId, is_free: isFree });
+    setTitle(""); setDescription(""); setIsFree(true);
     onClose();
     toast({ title: "Module added!" });
   };
@@ -835,6 +836,26 @@ function AddModuleDialog({ open, onClose, creatorId }: { open: boolean; onClose:
         <div className="space-y-3">
           <Input placeholder="Module title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 bg-muted" />
           <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 bg-muted" />
+          <div className="flex items-center justify-between rounded-lg bg-muted px-3 py-2.5">
+            <div>
+              <p className="text-sm font-medium text-foreground">Access</p>
+              <p className="text-xs text-muted-foreground">{isFree ? "Anyone can access this module" : "Only paid members can access"}</p>
+            </div>
+            <div className="flex gap-1 rounded-full bg-secondary p-0.5">
+              <button
+                onClick={() => setIsFree(true)}
+                className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${isFree ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+              >
+                Free
+              </button>
+              <button
+                onClick={() => setIsFree(false)}
+                className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${!isFree ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+              >
+                Paid
+              </button>
+            </div>
+          </div>
           <Button onClick={handleSubmit} disabled={!title.trim()} className="w-full font-semibold">Add Module</Button>
         </div>
       </DialogContent>
