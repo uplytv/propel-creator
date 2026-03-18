@@ -2810,37 +2810,52 @@ export type Database = {
         Row: {
           created_at: string
           creator_type: string | null
+          early_access: boolean
           email: string
           follower_count: string | null
           full_name: string
           id: string
           invite_code: string | null
           one_sentence: string | null
+          position: number | null
           primary_platform: string | null
+          referral_code: string | null
+          referral_count: number
+          referred_by: string | null
           social_handle: string | null
         }
         Insert: {
           created_at?: string
           creator_type?: string | null
+          early_access?: boolean
           email: string
           follower_count?: string | null
           full_name: string
           id?: string
           invite_code?: string | null
           one_sentence?: string | null
+          position?: number | null
           primary_platform?: string | null
+          referral_code?: string | null
+          referral_count?: number
+          referred_by?: string | null
           social_handle?: string | null
         }
         Update: {
           created_at?: string
           creator_type?: string | null
+          early_access?: boolean
           email?: string
           follower_count?: string | null
           full_name?: string
           id?: string
           invite_code?: string | null
           one_sentence?: string | null
+          position?: number | null
           primary_platform?: string | null
+          referral_code?: string | null
+          referral_count?: number
+          referred_by?: string | null
           social_handle?: string | null
         }
         Relationships: []
@@ -3116,6 +3131,7 @@ export type Database = {
           read_ct: number
         }[]
       }
+      recalculate_waitlist_positions: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
