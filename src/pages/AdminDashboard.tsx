@@ -261,7 +261,6 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
               </TabsContent>
-              </TabsContent>
 
               <TabsContent value="waitlist">
                 <AdminWaitlistTab />
