@@ -210,7 +210,11 @@ export default function CreatorSpace() {
       {/* Sticky Tab Bar */}
       <div className="sticky top-0 z-40 bg-surface border-b border-surface-border">
         <div className="flex overflow-x-auto scrollbar-none">
-          {VALID_TABS.map((slug) => (
+          {VALID_TABS.filter((slug) => {
+            // Only show "blasts" tab to the space owner
+            if (slug === "blasts" && !isOwner) return false;
+            return true;
+          }).map((slug) => (
             <button
               key={slug}
               onClick={() => switchTab(slug)}
