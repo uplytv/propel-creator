@@ -284,6 +284,17 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
           onClose={() => setSelectedPost(null)}
         />
       )}
+
+      {/* Blast Composer */}
+      {isOwner && space && (
+        <BlastComposer
+          open={showBlastComposer}
+          onClose={() => setShowBlastComposer(false)}
+          creatorId={creatorId}
+          spaceId={space.id}
+          lastBlastSentAt={space.last_blast_sent_at}
+        />
+      )}
     </div>
   );
 }
