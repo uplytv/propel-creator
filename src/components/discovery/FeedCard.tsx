@@ -1,7 +1,7 @@
 import { forwardRef } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Radio, Users, BookOpen, Briefcase, Star, Eye, Crown, Film, Scissors } from "lucide-react";
+import { Radio, Users, BookOpen, Briefcase, Star, Eye, Crown, Film, Scissors, Play } from "lucide-react";
 import FollowButton from "@/components/FollowButton";
 import { type FeedItem } from "@/hooks/useDiscoveryFeed";
 import { timeAgo } from "@/lib/slugs";
