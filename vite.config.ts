@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => ({
       includeAssets: ["favicon.png", "logo.png"],
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
-        navigateFallbackDenylist: [/^\/~oauth/],
+        navigateFallbackDenylist: [/^\/~oauth/, /^\/api/],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
@@ -34,6 +34,8 @@ export default defineConfig(({ mode }) => ({
             options: { cacheName: "mux-thumbnails", expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 7 } },
           },
         ],
+        // Never cache live stream or payment endpoints
+        navigateFallback: "index.html",
       },
       manifest: false, // Use existing public/manifest.json
     }),
