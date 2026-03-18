@@ -10,14 +10,15 @@ import { useContentShares } from "@/hooks/useContentShares";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Drawer, DrawerContent, DrawerHeader, DrawerTitle,
+  Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle,
 } from "@/components/ui/drawer";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
   Tooltip, TooltipContent, TooltipTrigger, TooltipProvider,
 } from "@/components/ui/tooltip";
+import { getSiteUrl } from "@/lib/siteUrl";
 
 // Platform icons as simple SVG components
 function TikTokIcon() {
