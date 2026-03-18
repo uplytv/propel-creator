@@ -72,7 +72,7 @@ export function useDiscoveryFeed(
       const isFollowingTab = feedTab === "following";
 
       // Fetch in parallel
-      const [streamsRes, productsRes, spacesRes, creatorsRes, recordingsRes, clipsRes] = await Promise.all([
+      const [streamsRes, productsRes, spacesRes, creatorsRes, recordingsRes, clipsRes, videosRes] = await Promise.all([
         // Live streams
         (filter === "all" || filter === "livestream")
           ? supabase
@@ -126,6 +126,16 @@ export function useDiscoveryFeed(
         (filter === "all" || filter === "livestream")
           ? supabase
               .from("clips")
+              .select("*")
+              .eq("is_public", true)
+              .order("created_at", { ascending: false })
+              .limit(30)
+          : Promise.resolve({ data: [], error: null }),
+
+        // Standalone videos
+        (filter === "all" || filter === "livestream")
+          ? (supabase as any)
+              .from("videos")
               .select("*")
               .eq("is_public", true)
               .order("created_at", { ascending: false })
