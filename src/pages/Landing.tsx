@@ -1,83 +1,64 @@
-import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
+import { motion, useMotionValue, useSpring } from "framer-motion";
 import { useRef, useMemo, useCallback, useEffect, useState } from "react";
-import { Check, ArrowRight, Sparkles, Rocket, Users, Zap, Shield } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import SEOHead from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
-
-const earlyAccessPerks = [
-  { icon: Zap, title: "Founding Creator Status", desc: "Lifetime badge, priority support, and early feature access forever." },
-  { icon: Shield, title: "Locked-in Pricing", desc: "Your rate never goes up — even as we add premium features." },
-  { icon: Users, title: "Shape the Product", desc: "Direct line to the team. Vote on features. Your feedback builds the roadmap." },
-  { icon: Rocket, title: "Zero Risk", desc: "Start completely free. No credit card. Cancel whenever." },
-];
-
-const pricing = [
-  { name: "Free", price: "0", period: "forever", fee: "5% transaction fee", features: ["AI Growth Partner", "Community tools", "Up to 100 members", "Basic analytics"] },
-  { name: "Pro", price: "49", period: "/month", fee: "2% transaction fee", features: ["Everything in Free", "Unlimited members", "Advanced analytics", "Priority support"], popular: true },
-  { name: "Scale", price: "99", period: "/month", fee: "0% transaction fee", features: ["Everything in Pro", "Dedicated success rep", "Custom integrations", "White-label options"] },
-];
-
-const container = { hidden: {}, show: { transition: { staggerChildren: 0.12 } } };
-const item = { hidden: { opacity: 0, y: 30, scale: 0.97 }, show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: "easeOut" as const } } };
-const sectionHeading = {
-  hidden: { opacity: 0, y: 40 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" as const } },
-};
+import { toast } from "sonner";
 
 const JSON_LD = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Uply",
-  "url": "https://uply.tv",
-  "description": "Social network for creators to monetize. The only creator platform that invests more in you as you grow.",
-  "applicationCategory": "SocialNetworkingApplication",
-  "operatingSystem": "Web",
-  "offers": {
-    "@type": "AggregateOffer",
-    "lowPrice": "0",
-    "highPrice": "99",
-    "priceCurrency": "USD",
-    "offerCount": "3"
-  },
-  "creator": {
-    "@type": "Organization",
-    "name": "Uply"
-  }
+  name: "Uply",
+  url: "https://uply.tv",
+  description: "Don't be late again. The creator platform for those who move first.",
+  applicationCategory: "SocialNetworkingApplication",
+  operatingSystem: "Web",
+  creator: { "@type": "Organization", name: "Uply" },
 };
+
+const rewards = [
+  { emoji: "🏆", title: "Cash Prize", desc: "Top early creators earn real money at launch." },
+  { emoji: "🎙️", title: "Founding Creator Badge", desc: "Permanent recognition. First-mover perks." },
+  { emoji: "🚀", title: "Platform Equity Access", desc: "Shape the platform before the public gets in." },
+];
 
 export default function Landing() {
   const navigate = useNavigate();
   const [applicantCount, setApplicantCount] = useState<number | null>(null);
+  const [email, setEmail] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [claimedToday] = useState(() => Math.floor(380 + Math.random() * 60));
   const heroRef = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const glowY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-  const glowScale = useTransform(scrollYProgress, [0, 1], [1, 1.2]);
-  const gridY = useTransform(scrollYProgress, [0, 1], ["0%", "15%"]);
-  const gridOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.3]);
 
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-  const springX = useSpring(mouseX, { stiffness: 80, damping: 30 });
-  const springY = useSpring(mouseY, { stiffness: 80, damping: 30 });
+  const springX = useSpring(mouseX, { stiffness: 60, damping: 30 });
+  const springY = useSpring(mouseY, { stiffness: 60, damping: 30 });
 
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    mouseX.set(e.clientX - rect.left);
-    mouseY.set(e.clientY - rect.top);
-  }, [mouseX, mouseY]);
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      mouseX.set(e.clientX - rect.left);
+      mouseY.set(e.clientY - rect.top);
+    },
+    [mouseX, mouseY]
+  );
 
-  const particles = useMemo(() =>
-    Array.from({ length: 8 }, (_, i) => ({
-      id: i,
-      x: `${Math.random() * 100}%`,
-      y: `${Math.random() * 100}%`,
-      size: Math.random() * 4 + 2,
-      duration: Math.random() * 8 + 6,
-      delay: Math.random() * 4,
-      drift: Math.random() * 60 - 30,
-    })), []
+  const particles = useMemo(
+    () =>
+      Array.from({ length: 12 }, (_, i) => ({
+        id: i,
+        x: `${Math.random() * 100}%`,
+        y: `${Math.random() * 100}%`,
+        size: Math.random() * 3 + 1.5,
+        duration: Math.random() * 10 + 8,
+        delay: Math.random() * 5,
+        drift: Math.random() * 50 - 25,
+      })),
+    []
   );
 
   useEffect(() => {
@@ -92,319 +73,343 @@ export default function Landing() {
     fetchCount();
   }, []);
 
+  const handleApply = async () => {
+    if (!email || !email.includes("@")) {
+      toast.error("Enter a valid email address.");
+      return;
+    }
+    setSubmitting(true);
+    // Navigate to auth/onboarding with email pre-filled
+    navigate(`/auth?email=${encodeURIComponent(email)}`);
+  };
+
+  const scrollToWaitlist = () => {
+    document.getElementById("waitlist")?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#0A0A0A] text-white font-sans selection:bg-primary/30">
       <SEOHead />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
       />
-      {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-        <div className="container flex h-16 items-center justify-between">
-          <img src="/logo.png" alt="Uply" className="h-[77px] md:h-[84px] w-auto object-contain" width="1024" height="1024" />
-          <div className="hidden md:flex items-center gap-8">
-            <a href="#social-proof" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Early Access</a>
-            <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
-          </div>
+
+      {/* Nav — slim top bar */}
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06] bg-[#0A0A0A]/80 backdrop-blur-xl">
+        <div className="container flex h-14 items-center justify-between">
+          <img
+            src="/logo.png"
+            alt="Uply"
+            className="h-[60px] md:h-[70px] w-auto object-contain"
+            width="1024"
+            height="1024"
+          />
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => navigate("/auth")}>Log in</Button>
-            <Button variant="default" size="sm" onClick={() => navigate("/auth")}>Start Free</Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white/60 hover:text-white hover:bg-white/5"
+              onClick={() => navigate("/auth")}
+            >
+              Log in
+            </Button>
+            <Button
+              size="sm"
+              className="bg-[#00FF85] text-[#0A0A0A] font-bold hover:bg-[#00FF85]/90 border-0"
+              onClick={() => navigate("/auth")}
+            >
+              Start Free
+            </Button>
           </div>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section ref={heroRef} className="relative overflow-hidden pt-32 pb-16 md:pt-44 md:pb-24" onMouseMove={handleMouseMove}>
-        {/* Animated gradient mesh — reduced for mobile */}
+      {/* ─── HERO ─── */}
+      <section
+        ref={heroRef}
+        className="relative overflow-hidden pt-28 pb-20 md:pt-40 md:pb-32 min-h-[90vh] flex items-center"
+        onMouseMove={handleMouseMove}
+      >
+        {/* Animated gradient blobs */}
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
           <motion.div
-            className="absolute w-[600px] h-[600px] rounded-full blur-[120px] opacity-20 dark:opacity-30 hidden md:block"
-            style={{ background: "radial-gradient(circle, hsl(var(--gradient-mid)) 0%, transparent 70%)", top: "-10%", left: "-5%" }}
-            animate={{ x: [0, 80, 0], y: [0, 40, 0], scale: [1, 1.15, 1] }}
-            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute w-[700px] h-[700px] rounded-full blur-[160px] opacity-[0.12]"
+            style={{
+              background: "radial-gradient(circle, #00FF85 0%, transparent 70%)",
+              top: "-20%",
+              left: "20%",
+            }}
+            animate={{ x: [0, 60, 0], y: [0, 30, 0], scale: [1, 1.1, 1] }}
+            transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
           />
           <motion.div
-            className="absolute w-[500px] h-[500px] rounded-full blur-[100px] opacity-15 dark:opacity-25 hidden md:block"
-            style={{ background: "radial-gradient(circle, hsl(var(--gradient-mid)) 0%, transparent 70%)", top: "20%", right: "-10%" }}
-            animate={{ x: [0, -60, 0], y: [0, -50, 0], scale: [1.1, 0.95, 1.1] }}
-            transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute w-[500px] h-[500px] rounded-full blur-[140px] opacity-[0.08]"
+            style={{
+              background: "radial-gradient(circle, #8B5CF6 0%, transparent 70%)",
+              bottom: "-10%",
+              right: "10%",
+            }}
+            animate={{ x: [0, -40, 0], y: [0, -30, 0], scale: [1.05, 0.95, 1.05] }}
+            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
           />
         </div>
-        {/* Mouse-following glow — desktop only */}
+
+        {/* Mouse-following glow — desktop */}
         <motion.div
-          className="absolute z-[1] pointer-events-none w-[400px] h-[400px] rounded-full opacity-30 dark:opacity-40 blur-[100px] bg-primary/30 hidden md:block"
-          style={{ left: springX, top: springY, translateX: "-50%", translateY: "-50%" }}
+          className="absolute z-[1] pointer-events-none w-[350px] h-[350px] rounded-full opacity-[0.06] blur-[100px] hidden md:block"
+          style={{
+            background: "#00FF85",
+            left: springX,
+            top: springY,
+            translateX: "-50%",
+            translateY: "-50%",
+          }}
         />
-        <motion.div className="absolute inset-0 z-0 hero-glow-layer" style={{ y: glowY, scale: glowScale }} />
-        <motion.div className="absolute inset-0 z-0 hero-grid-layer" style={{ y: gridY, opacity: gridOpacity }} />
-        {/* Floating particles — reduced count */}
+
+        {/* Floating particles */}
         <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden hidden md:block">
           {particles.map((p) => (
             <motion.div
               key={p.id}
-              className="absolute rounded-full bg-primary/20 dark:bg-primary/30"
+              className="absolute rounded-full bg-[#00FF85]/20"
               style={{ left: p.x, top: p.y, width: p.size, height: p.size }}
-              animate={{ y: [0, -40, 0], x: [0, p.drift, 0], opacity: [0, 0.8, 0], scale: [0.5, 1, 0.5] }}
-              transition={{ duration: p.duration, delay: p.delay, repeat: Infinity, ease: "easeInOut" }}
+              animate={{
+                y: [0, -50, 0],
+                x: [0, p.drift, 0],
+                opacity: [0, 0.6, 0],
+                scale: [0.5, 1, 0.5],
+              }}
+              transition={{
+                duration: p.duration,
+                delay: p.delay,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
             />
           ))}
         </div>
+
+        {/* Grain texture */}
+        <div
+          className="absolute inset-0 z-[2] pointer-events-none opacity-[0.03]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E")`,
+          }}
+        />
+
         <div className="container relative z-10">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            className="max-w-3xl mx-auto text-center"
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="max-w-2xl mx-auto text-center"
           >
-            {/* Trust badge */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+            {/* Logo centered large */}
+            <motion.img
+              src="/logo.png"
+              alt="Uply"
+              className="h-20 md:h-28 w-auto object-contain mx-auto mb-10"
+              width="1024"
+              height="1024"
+              initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-6"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              Built for creators who want to own their audience
-            </motion.div>
+              transition={{ delay: 0.1, duration: 0.6 }}
+            />
 
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.08] mb-6">
-              A Social Network for Creators to{" "}
-              <span className="text-gradient">Monetize.</span>
+            <h1 className="text-[2.5rem] md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.05] mb-6 font-heading">
+              Don't be late again.
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-xl mx-auto leading-relaxed">
-              Communities. Livestreams. Courses. Services. Everything creators need to grow and monetize — in one place.
+
+            <p className="text-base md:text-lg text-white/40 mb-10 max-w-lg mx-auto leading-relaxed italic">
+              You were late to YouTube. Late to Instagram. Late to TikTok.
+              <br className="hidden md:block" />
+              Uply is your last chance to be early.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button variant="hero" size="xl" onClick={() => navigate("/onboarding")}>
-                Start Free <ArrowRight className="ml-1" />
-              </Button>
-              <Button variant="hero-outline" size="xl" onClick={() => navigate("/discover")}>
-                Explore Creators
-              </Button>
+
+            {/* Stat pills */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 mb-10">
+              {[
+                { emoji: "🚫", label: "No Censorship" },
+                { emoji: "🤝", label: "Co-Collaborate" },
+                { emoji: "💸", label: "Go Live & Monetize" },
+              ].map((pill) => (
+                <span
+                  key={pill.label}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/[0.08] bg-white/[0.03] text-sm text-white/60"
+                >
+                  <span>{pill.emoji}</span>
+                  {pill.label}
+                </span>
+              ))}
             </div>
 
-            {/* Micro-copy */}
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
-              className="text-xs text-muted-foreground mt-5 text-center"
-            >
-              No tech skills required · Launch in minutes
-            </motion.p>
-
-            {/* Dashboard mockup card */}
+            {/* Primary CTA */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1, duration: 0.7 }}
-              className="mt-10 max-w-lg mx-auto"
+              transition={{ delay: 0.4, duration: 0.6 }}
             >
-              <div className="rounded-xl border border-border/60 overflow-hidden shadow-2xl bg-card">
-                {/* Title bar */}
-                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border/40">
-                  <span className="w-3 h-3 rounded-full bg-destructive" />
-                  <span className="w-3 h-3 rounded-full bg-warning" />
-                  <span className="w-3 h-3 rounded-full bg-success" />
-                  <span className="ml-3 text-xs font-medium text-muted-foreground">UPLY Dashboard</span>
-                </div>
-                {/* Tab bar */}
-                <div className="flex items-center gap-0 px-3 pt-2 border-b border-border/40 overflow-x-auto">
-                  {['Community', 'Livestream', 'Courses', 'Marketplace', 'Analytics'].map((tab) => (
-                    <span
-                      key={tab}
-                      className={`text-xs font-semibold px-3 py-2 whitespace-nowrap transition-colors border-b-2 ${
-                        tab === 'Livestream'
-                          ? 'text-primary border-primary'
-                          : 'text-muted-foreground border-transparent'
-                      }`}
-                    >
-                      {tab}
-                    </span>
-                  ))}
-                </div>
-                {/* Content area */}
-                <div className="p-5 bg-background">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="flex items-center gap-1.5 text-xs font-bold px-2 py-1 rounded bg-destructive text-destructive-foreground">
-                        ● LIVE
-                      </span>
-                      <span className="text-sm font-medium text-foreground">My Studio Stream</span>
-                    </div>
-                    <span className="text-xs font-medium text-muted-foreground">👁 1,247 viewers</span>
-                  </div>
-                  <div className="rounded-lg h-20 bg-secondary" />
-                </div>
-              </div>
-              {/* Caption */}
-              <p className="text-center mt-4 text-[13px] text-muted-foreground">
-                "Replace 6 platforms with one."
-              </p>
+              <Button
+                size="lg"
+                className="bg-[#00FF85] text-[#0A0A0A] font-bold text-base px-8 py-6 rounded hover:bg-[#00FF85]/90 hover:shadow-[0_0_30px_rgba(0,255,133,0.3)] transition-all duration-300 border-0"
+                onClick={scrollToWaitlist}
+              >
+                Apply for Early Access
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
             </motion.div>
+
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.7 }}
+              className="text-xs text-white/30 mt-4 italic"
+            >
+              Limited spots. Real money. Real prizes.
+            </motion.p>
           </motion.div>
         </div>
       </section>
 
-      {/* Early Access */}
-      <section id="social-proof" className="py-20 md:py-28 relative overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/[0.03] rounded-full blur-[120px] pointer-events-none" />
-        <div className="container relative">
-          <motion.div variants={sectionHeading} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }} className="text-center mb-14">
-            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-4">
-              <Rocket className="w-3.5 h-3.5" />
-              Early Access — Limited Spots
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Get in early. Get rewarded <span className="text-gradient">forever.</span>
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              We're onboarding our first wave of creators. Join now and lock in perks that won't be available after launch.
-            </p>
-            {applicantCount !== null && applicantCount > 0 && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.3, duration: 0.5 }}
-                className="inline-flex items-center gap-2.5 mt-5 bg-card border border-border/60 rounded-full px-5 py-2.5 shadow-sm"
-              >
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
-                </span>
-                <span className="text-sm font-semibold text-foreground">
-                  {applicantCount.toLocaleString()}
-                </span>
-                <span className="text-sm text-muted-foreground">
-                  {applicantCount === 1 ? 'creator' : 'creators'} already joined
-                </span>
-              </motion.div>
-            )}
-          </motion.div>
-          <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }} className="grid sm:grid-cols-2 gap-5 max-w-3xl mx-auto mb-12">
-            {earlyAccessPerks.map((perk) => (
-              <motion.div
-                key={perk.title}
-                variants={item}
-                whileHover={{ y: -4, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }}
-                className="glass-card p-6 flex gap-4 items-start group"
-              >
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                  <perk.icon className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground mb-1">{perk.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{perk.desc}</p>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="text-center"
-          >
-            <Button variant="hero" size="xl" onClick={() => navigate("/auth")}>
-              Claim Your Spot <ArrowRight className="ml-1" />
-            </Button>
-            <p className="text-xs text-muted-foreground mt-4">
-              Free forever plan available · No credit card needed
-            </p>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Pricing */}
-      <section id="pricing" className="py-20 md:py-28">
-        <div className="container">
-          <motion.div variants={sectionHeading} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }} className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Simple, transparent pricing</h2>
-            <p className="text-muted-foreground text-lg">Start free. Upgrade when you're ready.</p>
-          </motion.div>
-          <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }} className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {pricing.map((p) => (
-              <motion.div
-                key={p.name}
-                variants={item}
-                whileHover={{ y: -4, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } }}
-                className={`glass-card p-8 relative ${p.popular ? "glow-border" : ""}`}
-              >
-                {p.popular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">
-                    Most Popular
-                  </span>
-                )}
-                <h3 className="text-lg font-bold mb-2">{p.name}</h3>
-                <div className="flex items-baseline gap-1 mb-1">
-                  <span className="text-4xl font-extrabold">${p.price}</span>
-                  <span className="text-muted-foreground text-sm">{p.period}</span>
-                </div>
-                <p className="text-sm text-primary font-medium mb-6">{p.fee}</p>
-                <ul className="space-y-3 mb-8">
-                  {p.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-sm">
-                      <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">{f}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Button variant={p.popular ? "hero" : "outline"} className="w-full" onClick={() => navigate("/onboarding")}>
-                  Get Started
-                </Button>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="py-24 md:py-32 relative overflow-hidden">
-        <div className="absolute inset-0 hero-glow-layer" />
-        <div className="absolute inset-0 hero-grid-layer opacity-50" />
+      {/* ─── WAITLIST ─── */}
+      <section id="waitlist" className="py-20 md:py-28 relative">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[#00FF85]/[0.04] rounded-full blur-[120px] pointer-events-none" />
         <div className="container relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.7 }}
-            className="max-w-2xl mx-auto text-center"
+            className="max-w-md mx-auto text-center"
           >
-            <h2 className="text-3xl md:text-5xl font-extrabold mb-5 leading-tight">
-              Ready to build something{" "}
-              <span className="text-gradient">extraordinary?</span>
+            <h2 className="text-2xl md:text-3xl font-bold mb-3 font-heading">
+              Claim your spot.
             </h2>
-            <p className="text-lg text-muted-foreground mb-8 max-w-lg mx-auto leading-relaxed">
-              Join creators who chose the platform that actually invests in their growth.
+            <p className="text-white/40 text-sm mb-8">
+              Enter your email. We'll let you know when it's your turn.
             </p>
-            <Button variant="hero" size="xl" onClick={() => navigate("/onboarding")}>
-              Start Free Today <ArrowRight className="ml-1" />
-            </Button>
-            <p className="text-xs text-muted-foreground mt-4 flex items-center justify-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-primary" /> No credit card required
-              <span className="mx-1.5 text-border">·</span>
-              <Check className="w-3.5 h-3.5 text-primary" /> Cancel anytime
-            </p>
+
+            <div className="flex gap-2">
+              <Input
+                type="email"
+                placeholder="you@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="bg-white/[0.05] border-white/[0.1] text-white placeholder:text-white/25 focus-visible:ring-[#00FF85]/40 h-12"
+                onKeyDown={(e) => e.key === "Enter" && handleApply()}
+              />
+              <Button
+                className="bg-[#00FF85] text-[#0A0A0A] font-bold hover:bg-[#00FF85]/90 border-0 px-6 h-12 shrink-0"
+                onClick={handleApply}
+                disabled={submitting}
+              >
+                {submitting ? "..." : "Apply Now"}
+              </Button>
+            </div>
+
+            {/* Social proof */}
+            {applicantCount !== null && applicantCount > 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="flex items-center justify-center gap-2 mt-5"
+              >
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00FF85] opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00FF85]" />
+                </span>
+                <span className="text-sm text-white/50">
+                  Join{" "}
+                  <span className="text-white/80 font-semibold">
+                    {applicantCount.toLocaleString()}
+                  </span>{" "}
+                  creators already on the waitlist
+                </span>
+              </motion.div>
+            )}
+
+            {/* Urgency ticker */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.5 }}
+              className="text-xs text-white/25 mt-3"
+            >
+              🔥 {claimedToday} spots claimed today
+            </motion.p>
           </motion.div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border/50 py-12">
-        <div className="container">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div>
-              <img src="/logo.png" alt="Uply" className="h-12 w-auto object-contain" width="1024" height="1024" loading="lazy" />
-              <p className="text-sm text-muted-foreground mt-1">Built for creators who are serious about growth.</p>
-            </div>
-            <div className="flex gap-8 text-sm text-muted-foreground">
-              <a href="#social-proof" className="hover:text-foreground transition-colors">Early Access</a>
-              <a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a>
-              <button onClick={() => navigate("/discover")} className="hover:text-foreground transition-colors">Discover</button>
-            </div>
+      {/* ─── PRIZES ─── */}
+      <section className="py-20 md:py-28 relative">
+        <div className="container relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7 }}
+            className="text-center mb-14"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 font-heading">
+              Be Early. Win Big.
+            </h2>
+            <p className="text-white/40 text-base max-w-lg mx-auto leading-relaxed">
+              Apply now for a chance to win cash, prizes, and a founding creator
+              spot. The first wave sets the culture.
+            </p>
+          </motion.div>
+
+          <div className="grid sm:grid-cols-3 gap-5 max-w-3xl mx-auto">
+            {rewards.map((r, i) => (
+              <motion.div
+                key={r.title}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.12, duration: 0.6 }}
+                whileHover={{ y: -4, transition: { duration: 0.25 } }}
+                className="relative rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-sm p-6 text-center group hover:border-[#00FF85]/20 transition-colors"
+              >
+                <span className="text-3xl mb-4 block">{r.emoji}</span>
+                <h3 className="font-bold text-white mb-2">{r.title}</h3>
+                <p className="text-sm text-white/40 leading-relaxed">{r.desc}</p>
+              </motion.div>
+            ))}
           </div>
+        </div>
+      </section>
+
+      {/* ─── FOOTER ─── */}
+      <footer className="border-t border-white/[0.06] py-10">
+        <div className="container flex flex-col items-center gap-5">
+          <img
+            src="/logo.png"
+            alt="Uply"
+            className="h-10 w-auto object-contain opacity-60"
+            width="1024"
+            height="1024"
+            loading="lazy"
+          />
+          <div className="flex items-center gap-5">
+            {[
+              { label: "Instagram", href: "#" },
+              { label: "X", href: "#" },
+              { label: "TikTok", href: "#" },
+            ].map((s) => (
+              <a
+                key={s.label}
+                href={s.href}
+                className="text-xs text-white/30 hover:text-white/60 transition-colors"
+              >
+                {s.label}
+              </a>
+            ))}
+          </div>
+          <p className="text-xs text-white/20">© 2025 Uply</p>
         </div>
       </footer>
     </div>
