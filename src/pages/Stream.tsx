@@ -60,8 +60,7 @@ export default function Stream() {
       if (!id) return;
 
       if (contentType === 'recording' || (isFromCreatorRoute && !contentType)) {
-        // Try stream_recordings first, then mux_assets, then mux_live_streams
-        // Fetch stream recording
+        // Try stream_recordings first
         const { data: rec } = await supabase
           .from('stream_recordings')
           .select('*')
@@ -75,14 +74,66 @@ export default function Stream() {
             user_id: rec.creator_id,
           });
           setIsRealStream(true);
-
           const { data: prof } = await supabase
             .from('profiles')
             .select('display_name, avatar_url, tier, tier_name')
             .eq('user_id', rec.creator_id)
             .single();
           setProfile(prof);
+          setLoading(false);
+          return;
         }
+
+        // If accessed via creator route, also try mux_assets (VOD)
+        if (isFromCreatorRoute) {
+          const { data: asset } = await supabase
+            .from('mux_assets')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+          if (asset) {
+            setDbStream(asset);
+            setIsRealStream(true);
+            const { data: prof } = await supabase
+              .from('profiles')
+              .select('display_name, avatar_url, tier, tier_name')
+              .eq('user_id', asset.user_id)
+              .single();
+            setProfile(prof);
+            setLoading(false);
+            return;
+          }
+
+          // Finally try mux_live_streams
+          const { data: muxStream } = await supabase
+            .from('mux_live_streams')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+          if (muxStream) {
+            setDbStream(muxStream);
+            setIsRealStream(true);
+            const { data: prof } = await supabase
+              .from('profiles')
+              .select('display_name, avatar_url, tier, tier_name')
+              .eq('user_id', muxStream.user_id)
+              .single();
+            setProfile(prof);
+            if ((muxStream as any).featured_product_id) {
+              const { data: prod } = await supabase
+                .from('products')
+                .select('*')
+                .eq('id', (muxStream as any).featured_product_id)
+                .single();
+              if (prod) setFeaturedProduct(prod);
+            }
+          }
+          setLoading(false);
+          return;
+        }
+
         setLoading(false);
         return;
       }
