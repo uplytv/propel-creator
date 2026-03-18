@@ -127,6 +127,9 @@ export default function Dashboard() {
             transition={{ duration: 0.25 }}
             className="px-4 md:px-8 pb-20 md:pb-8"
           >
+            <div className="mb-4">
+              <MyCommunities />
+            </div>
             <DashboardMarketplace />
           </motion.div>
         ) : (
