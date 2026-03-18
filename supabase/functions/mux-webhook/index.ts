@@ -112,6 +112,18 @@ serve(async (req) => {
               description: stream.description,
             })
 
+            // Also create a stream_recordings entry for the Content Library
+            await supabase.from('stream_recordings').insert({
+              creator_id: stream.user_id,
+              title: stream.title ? `${stream.title} (Recording)` : 'Live Stream Recording',
+              description: stream.description || '',
+              mux_asset_id: data.id,
+              playback_id: playbackId,
+              duration_seconds: Math.round(data.duration || 0),
+              is_published: true,
+              is_free: true,
+            })
+
             await supabase.from('live_stream_sessions').insert({
               stream_id: stream.id,
               user_id: stream.user_id,
@@ -119,7 +131,7 @@ serve(async (req) => {
               started_at: new Date().toISOString(),
             })
 
-            console.log(`Saved live stream recording for user ${stream.user_id}, asset ${data.id}`)
+            console.log(`Saved live stream recording + stream_recordings for user ${stream.user_id}, asset ${data.id}`)
           }
         } else if (data.upload_id) {
           const { data: updateResult, error: updateError } = await supabase.from('mux_assets')
