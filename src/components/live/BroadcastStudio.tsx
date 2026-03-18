@@ -663,7 +663,7 @@ export default function BroadcastStudio({
     setUploadFailed(false);
 
     try {
-      const blob = new Blob(chunksRef.current, { type: "video/webm" });
+      const blob = new Blob(persistedChunks, { type: "video/webm" });
       const { uploadToMuxWithRetry } = await import("@/lib/muxUpload");
       const uploadId = await uploadToMuxWithRetry({
         userId: user.id,
@@ -675,6 +675,8 @@ export default function BroadcastStudio({
       });
       setLastUploadId(uploadId || null);
       toast({ title: "Recording saved! 🎬", description: "Your video is processing." });
+      // Clear IndexedDB after successful upload
+      await clearChunks();
       chunksRef.current = [];
       setIsUploading(false);
       // Transition to EndOfStreamScreen via parent
