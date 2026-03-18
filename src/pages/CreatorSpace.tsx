@@ -240,6 +240,7 @@ export default function CreatorSpace() {
         {activeTab === "leaderboard" && <SpaceLeaderboardTab creatorId={creatorId!} />}
         {activeTab === "about" && <SpaceAboutTab creatorId={creatorId!} isOwner={isOwner} />}
         {activeTab === "pricing" && <PricingTab creatorId={creatorId!} />}
+        {activeTab === "blasts" && isOwner && <BlastHistory creatorId={creatorId!} />}
         {activeTab === "earn" && (
           isOwner ? (
             <div className="px-4 pt-4">
