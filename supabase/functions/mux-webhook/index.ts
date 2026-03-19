@@ -170,7 +170,7 @@ serve(async (req) => {
             }
 
             // Create stream_recordings entry (auto-save)
-            const { data: recording } = await supabase.from('stream_recordings').insert({
+            const { data: recording, error: recError } = await supabase.from('stream_recordings').insert({
               creator_id: stream.user_id,
               title: recordingTitle,
               description: stream.description || '',
@@ -181,6 +181,12 @@ serve(async (req) => {
               is_free: true,
               download_url: downloadUrl,
             }).select('id, slug').single()
+
+            if (recError) {
+              console.error('❌ Failed to insert stream_recording:', JSON.stringify(recError))
+            } else {
+              console.log(`✅ Stream recording inserted: ${recording?.id}, slug: ${recording?.slug}`)
+            }
 
             await supabase.from('live_stream_sessions').insert({
               stream_id: stream.id,
