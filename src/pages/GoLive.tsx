@@ -268,6 +268,9 @@ export default function GoLive() {
                 Your stream will be automatically recorded and saved to your content library.
               </p>
               </TabsContent>
+              <TabsContent value="schedule">
+                <ScheduleStreamTab />
+              </TabsContent>
               <TabsContent value="shop">
                 {streamData ? (
                   <LiveShopSetup streamId={streamData.streamId} products={[]} onProductsChange={() => {}} />
