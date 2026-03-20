@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Compass, Loader2, Radio, Zap, Flame, X, Eye, Users as UsersIcon } from "lucide-react";
+import { Search, Compass, Loader2, Radio, Zap, Flame, X, Eye, Users as UsersIcon, CalendarDays } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useDiscoveryFeed, type FilterCategory, type SortOption, type FeedTab } from "@/hooks/useDiscoveryFeed";
+import EventDiscoveryGrid from "@/components/events/EventDiscoveryGrid";
 import FeedCard from "@/components/discovery/FeedCard";
 import FeedFilters from "@/components/discovery/FeedFilters";
 import FeaturedCarousel from "@/components/discovery/FeaturedCarousel";
