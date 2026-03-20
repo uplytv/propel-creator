@@ -94,6 +94,7 @@ export default function Stream() {
   const [isRealStream, setIsRealStream] = useState(false);
   const [featuredProduct, setFeaturedProduct] = useState<any>(null);
   const [shareOpen, setShareOpen] = useState(false);
+  const [memberAccess, setMemberAccess] = useState<boolean | null>(null);
 
   const searchParams = new URLSearchParams(window.location.search);
   const contentType = searchParams.get('type'); // 'vod' | 'recording' | null
