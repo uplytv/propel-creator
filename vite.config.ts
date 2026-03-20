@@ -55,5 +55,6 @@ export default defineConfig(({ mode }) => ({
   },
   optimizeDeps: {
     include: ["react", "react-dom", "@tanstack/react-query", "@supabase/supabase-js"],
+    exclude: ["@capacitor/status-bar"],
   },
 }));
