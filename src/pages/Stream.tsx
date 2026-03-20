@@ -351,24 +351,7 @@ export default function Stream() {
 
     // Private stream: check membership
     if (isPrivateStream && user?.id !== dbStream.user_id) {
-      const [hasAccess, setHasAccess] = useState<boolean | null>(null);
-      useEffect(() => {
-        const checkAccess = async () => {
-          if (!user) { setHasAccess(false); return; }
-          const { data } = await supabase
-            .from('member_subscriptions')
-            .select('id')
-            .eq('member_id', user.id)
-            .eq('creator_id', dbStream.user_id)
-            .eq('status', 'active')
-            .limit(1)
-            .single();
-          setHasAccess(!!data);
-        };
-        checkAccess();
-      }, [user, dbStream.user_id]);
-
-      if (hasAccess === null) {
+      if (memberAccess === null) {
         return (
           <div className="min-h-screen bg-background flex items-center justify-center">
             <Loader2 className="w-8 h-8 text-primary animate-spin" />
@@ -376,7 +359,7 @@ export default function Stream() {
         );
       }
 
-      if (!hasAccess) {
+      if (!memberAccess) {
         return (
           <div className="min-h-screen bg-background flex items-center justify-center">
             <div className="text-center max-w-sm mx-4">
