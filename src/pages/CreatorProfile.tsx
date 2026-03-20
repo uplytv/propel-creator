@@ -466,8 +466,8 @@ export default function CreatorProfile() {
             </button>
           ) : !user ? (
             <>
-              <Link to="/auth" className="px-3 py-1.5 rounded-lg text-sm font-medium text-[#888] hover:text-white transition-colors">Log In</Link>
-              <Link to="/auth" className="px-3 py-1.5 rounded-lg text-sm font-semibold" style={{ background: "#00FF85", color: "#0A0A0A" }}>Start Free →</Link>
+              <Link to="/auth" className="px-3 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Log In</Link>
+              <Link to="/auth" className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-primary text-primary-foreground">Start Free →</Link>
             </>
           ) : null}
         </div>
