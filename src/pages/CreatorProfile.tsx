@@ -480,7 +480,7 @@ export default function CreatorProfile() {
           {profile.cover_image_url ? (
             <img src={profile.cover_image_url} alt="" className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full" style={{ background: "linear-gradient(180deg, #111 0%, #0A0A0A 100%)" }} />
+            <div className="w-full h-full bg-gradient-to-b from-card to-background" />
           )}
           {/* Green glow behind avatar */}
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full" style={{ background: "radial-gradient(circle, rgba(0,255,133,0.05) 0%, transparent 70%)" }} />
