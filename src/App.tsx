@@ -63,6 +63,10 @@ const Messages = lazy(() => import("./pages/Messages"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const VideoPlayer = lazy(() => import("./pages/VideoPlayer"));
+const Events = lazy(() => import("./pages/Events"));
+const CreateEvent = lazy(() => import("./pages/CreateEvent"));
+const EventPage = lazy(() => import("./pages/EventPage"));
+const TicketDetail = lazy(() => import("./pages/TicketDetail"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
