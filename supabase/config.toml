@@ -7,7 +7,27 @@ project_id = "dbjlhmbgskvhuzqvqfrl"
     verify_jwt = false
   [functions.auth-email-hook]
     verify_jwt = false
+  [functions.cancel-event]
+    verify_jwt = false
+  [functions.check-platform-subscription]
+    verify_jwt = false
+  [functions.create-clip]
+    verify_jwt = false
+  [functions.create-platform-checkout]
+    verify_jwt = false
+  [functions.download-asset]
+    verify_jwt = false
+  [functions.end-live-auction]
+    verify_jwt = false
+  [functions.end-live-giveaway]
+    verify_jwt = false
+  [functions.generate-affiliate-code]
+    verify_jwt = false
   [functions.generate-product-copy]
+    verify_jwt = false
+  [functions.generate-shorts]
+    verify_jwt = false
+  [functions.handle-email-unsubscribe]
     verify_jwt = false
   [functions.import-from-url]
     verify_jwt = false
@@ -21,29 +41,43 @@ project_id = "dbjlhmbgskvhuzqvqfrl"
     verify_jwt = false
   [functions.mux-webhook]
     verify_jwt = false
+  [functions.place-live-bid]
+    verify_jwt = false
   [functions.process-email-queue]
     verify_jwt = true
+  [functions.refresh-trending-scores]
+    verify_jwt = false
+  [functions.send-community-blast]
+    verify_jwt = false
   [functions.send-weekly-report-email]
     verify_jwt = false
-  [functions.handle-email-unsubscribe]
-    verify_jwt = false
-  [functions.stripe-webhook]
+  [functions.simulate-campaigns]
     verify_jwt = false
   [functions.stripe-connect-onboard]
     verify_jwt = false
-  [functions.stripe-create-tier]
-    verify_jwt = false
   [functions.stripe-create-checkout]
     verify_jwt = false
-  [functions.stripe-dashboard-link]
+  [functions.stripe-create-dm-payment]
+    verify_jwt = false
+  [functions.stripe-create-event-checkout]
+    verify_jwt = false
+  [functions.stripe-create-live-purchase]
     verify_jwt = false
   [functions.stripe-create-portal]
     verify_jwt = false
-  [functions.create-clip]
+  [functions.stripe-create-product-checkout]
     verify_jwt = false
-  [functions.generate-shorts]
+  [functions.stripe-create-tier]
     verify_jwt = false
-  [functions.download-asset]
+  [functions.stripe-create-tip]
     verify_jwt = false
-  [functions.send-community-blast]
+  [functions.stripe-dashboard-link]
+    verify_jwt = false
+  [functions.stripe-pay-affiliate]
+    verify_jwt = false
+  [functions.stripe-refund-ticket]
+    verify_jwt = false
+  [functions.stripe-webhook]
+    verify_jwt = false
+  [functions.track-affiliate-conversion]
     verify_jwt = false

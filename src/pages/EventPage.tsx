@@ -88,7 +88,7 @@ export default function EventPage() {
       const { data, error } = await supabase.functions.invoke("stripe-create-event-checkout", {
         body: {
           event_id: event.id,
-          success_url: `${window.location.origin}/creator/${username}/events/${slug}?ticket=success`,
+          success_url: `${window.location.origin}/${username}/events/${slug}?ticket=success`,
           cancel_url: window.location.href,
         },
       });

@@ -43,11 +43,11 @@ function EventCard({ event }: { event: EventRow }) {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       className="bg-card border border-border rounded-xl overflow-hidden cursor-pointer hover:border-primary/40 transition-colors"
-      onClick={() => navigate(`/creator/${creator?.username}/events/${event.slug}`)}
+      onClick={() => navigate(`/${creator?.username || event.creator_id}/events/${event.slug}`)}
     >
       <div className="aspect-video w-full overflow-hidden relative">
         {event.cover_image_url ? (
-          <img src={event.cover_image_url} alt="" className="w-full h-full object-cover" />
+          <img src={event.cover_image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
         ) : (
           <div className="w-full h-full bg-muted flex items-center justify-center">
             <CalendarDays className="w-10 h-10 text-muted-foreground" />
@@ -62,7 +62,7 @@ function EventCard({ event }: { event: EventRow }) {
       <div className="p-3 space-y-1.5">
         <h3 className="font-semibold text-foreground text-sm truncate">{event.title}</h3>
         <div className="flex items-center gap-2">
-          {creator?.avatar_url && <img src={creator.avatar_url} className="w-5 h-5 rounded-full" />}
+          {creator?.avatar_url && <img src={creator.avatar_url} className="w-5 h-5 rounded-full" loading="lazy" />}
           <span className="text-xs text-muted-foreground">{creator?.display_name || creator?.username}</span>
         </div>
         <p className="text-xs text-primary">{format(new Date(event.starts_at), "EEE MMM d · h:mm a")}</p>

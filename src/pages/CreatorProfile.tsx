@@ -14,6 +14,7 @@ import {
 import CreatorProfileEditDrawer from "@/components/creator-profile/CreatorProfileEditDrawer";
 import SEOHead from "@/components/SEOHead";
 import { useToast } from "@/hooks/use-toast";
+import { CalendarDays } from "lucide-react";
 
 // Social platform icons as simple SVG components
 const socialIcons: Record<string, React.FC<{ className?: string }>> = {
@@ -844,6 +845,9 @@ export default function CreatorProfile() {
         </section>
       )}
 
+      {/* EVENTS */}
+      <CreatorProfileEvents username={username} />
+
       {/* MOBILE STICKY BOTTOM BAR */}
       <AnimatePresence>
         {showStickyBar && !isOwner && (
@@ -888,6 +892,68 @@ export default function CreatorProfile() {
         />
       )}
     </div>
+  );
+}
+
+function CreatorProfileEvents({ username }: { username?: string }) {
+  const navigate = useNavigate();
+  const { data: events } = useQuery({
+    queryKey: ["creator-profile-events", username],
+    enabled: !!username,
+    queryFn: async () => {
+      const { data: prof } = await supabase.from("profiles").select("user_id").eq("username", username).maybeSingle();
+      if (!prof) return [];
+      const { data } = await (supabase as any).from("events").select("*").eq("creator_id", prof.user_id).eq("status", "published").order("starts_at", { ascending: true }).limit(6);
+      return data || [];
+    },
+  });
+
+  if (!events?.length) return null;
+
+  const now = new Date();
+  const upcoming = events.filter((e: any) => new Date(e.ends_at) >= now);
+  const past = events.filter((e: any) => new Date(e.ends_at) < now);
+
+  return (
+    <section className="max-w-[720px] mx-auto px-4 mb-8">
+      <h2 className="text-white text-xl font-bold mb-4">Events</h2>
+      <div className="space-y-3">
+        {upcoming.map((event: any) => (
+          <div
+            key={event.id}
+            onClick={() => navigate(`/${username}/events/${event.slug}`)}
+            className="rounded-lg p-4 cursor-pointer hover:border-[#00FF85]/40 transition-colors"
+            style={{ background: "#111", border: "1px solid #1E1E1E" }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-white text-[15px] font-semibold truncate">{event.title}</h3>
+                <p className="text-[#00FF85] text-xs mt-1">
+                  {new Date(event.starts_at).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })} · {new Date(event.starts_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                </p>
+              </div>
+              <span className="text-white text-sm font-semibold ml-3">
+                {event.is_free ? <span style={{ color: "#00FF85" }}>FREE</span> : `$${event.ticket_price}`}
+              </span>
+            </div>
+          </div>
+        ))}
+        {past.map((event: any) => (
+          <div
+            key={event.id}
+            className="rounded-lg p-4 opacity-50"
+            style={{ background: "#111", border: "1px solid #1E1E1E" }}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-white text-[15px] font-semibold truncate">{event.title}</h3>
+                <p className="text-[#888] text-xs mt-1">Ended</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
