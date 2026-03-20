@@ -450,7 +450,7 @@ export default function CreatorProfile() {
   const postCount = posts.length;
 
   return (
-    <div className="min-h-screen" style={{ background: "#0A0A0A" }}>
+    <div className="min-h-screen bg-background">
       <SEOHead
         title={profile.display_name || profile.username || "Creator"}
         description={profile.bio || `Check out ${profile.display_name || profile.username}'s community, courses, and live streams on Uply.`}
