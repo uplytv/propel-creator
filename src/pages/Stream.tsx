@@ -9,6 +9,7 @@ import TipButton from "@/components/live/TipButton";
 import TipOverlay from "@/components/live/TipOverlay";
 import MobileChatDrawer from "@/components/live/MobileChatDrawer";
 import ViewerEngagementOverlay from "@/components/live/ViewerEngagementOverlay";
+import ViewerShopOverlay from "@/components/live/ViewerShopOverlay";
 
 import { useState, useCallback, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -424,11 +425,17 @@ export default function Stream() {
 
               {/* Viewer Engagement Overlay — only on active live streams */}
               {isActive && id && (
-                <ViewerEngagementOverlay
-                  streamId={id}
-                  streamTitle={dbStream.title || 'Live Stream'}
-                  creatorUserId={dbStream.user_id}
-                />
+                <>
+                  <ViewerEngagementOverlay
+                    streamId={id}
+                    streamTitle={dbStream.title || 'Live Stream'}
+                    creatorUserId={dbStream.user_id}
+                  />
+                  <ViewerShopOverlay
+                    streamId={id}
+                    creatorUserId={dbStream.user_id}
+                  />
+                </>
               )}
             </div>
 

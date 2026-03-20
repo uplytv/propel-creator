@@ -15,6 +15,8 @@ import BroadcastStudio from "@/components/live/BroadcastStudio";
 import { useProducts } from "@/hooks/useProducts";
 import { useProfile } from "@/hooks/useProfile";
 import EndOfStreamScreen from "@/components/live/EndOfStreamScreen";
+import LiveShopSetup from "@/components/live/LiveShopSetup";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function GoLive() {
   const navigate = useNavigate();
@@ -125,7 +127,12 @@ export default function GoLive() {
           </div>
 
           {!streamData ? (
-            <div className="space-y-6">
+            <Tabs defaultValue="setup" className="space-y-6">
+              <TabsList className="w-full">
+                <TabsTrigger value="setup" className="flex-1">Stream Setup</TabsTrigger>
+                <TabsTrigger value="shop" className="flex-1">🛍️ Shop</TabsTrigger>
+              </TabsList>
+              <TabsContent value="setup" className="space-y-6">
               {/* Stream Mode */}
               <div>
                 <label className="text-sm font-medium text-foreground mb-3 block">Stream Mode</label>
@@ -258,7 +265,17 @@ export default function GoLive() {
               <p className="text-xs text-muted-foreground text-center">
                 Your stream will be automatically recorded and saved to your content library.
               </p>
-            </div>
+              </TabsContent>
+              <TabsContent value="shop">
+                {streamData ? (
+                  <LiveShopSetup streamId={streamData.streamId} products={[]} onProductsChange={() => {}} />
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-sm text-muted-foreground">Set up your stream first, then add products to sell live.</p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           ) : showEndScreen && streamData ? (
             <EndOfStreamScreen
               streamId={streamData.streamId}
