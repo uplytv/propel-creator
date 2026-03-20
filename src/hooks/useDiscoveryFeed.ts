@@ -185,12 +185,14 @@ export function useDiscoveryFeed(
       // Helper
       const getProfile = (userId: string) => profileMap.get(userId) || { display_name: null, username: null, avatar_url: null, creator_type: null };
 
-      // Map livestreams
+      // Map livestreams — only include truly active streams
       let activeLiveCount = 0;
       if (streamsRes.data) {
         for (const s of streamsRes.data as any[]) {
           const live = s.status === "active";
           if (live) activeLiveCount++;
+          // Skip non-active streams entirely — they should not appear in the live feed
+          if (!live) continue;
           if (liveOnly && !live) continue;
           if (isFollowingTab && !followingSet.has(s.user_id)) continue;
           const p = getProfile(s.user_id);
@@ -208,16 +210,16 @@ export function useDiscoveryFeed(
             creatorUsername: p.username || p.display_name,
             creatorAvatar: p.avatar_url,
             creatorType: p.creator_type,
-            isLive: live,
+            isLive: true,
             viewerCount: s.viewer_count || 0,
             memberCount: 0,
-            engagementScore: (s.viewer_count || 0) * 10 + (live ? 500 : 0),
+            engagementScore: (s.viewer_count || 0) * 10 + 500,
             trendingScore: s.trending_score || 0,
             createdAt: s.created_at,
             playbackId: s.mux_playback_id,
             spaceId: null,
             slug: s.slug,
-            tier: live ? "live" : isNew(s.created_at) ? "new" : "trending",
+            tier: "live",
           });
         }
       }
