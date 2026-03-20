@@ -59,6 +59,12 @@ export default function StreamCard({ stream, index = 0 }: { stream: MockStream; 
                 <span className="live-dot w-2 h-2 rounded-full" />
                 LIVE
               </span>
+              {(stream as any).hasShop && (
+                <span className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold"
+                  style={{ backgroundColor: "rgba(255,215,0,0.2)", color: "#FFD700", backdropFilter: "blur(8px)" }}>
+                  🛍️
+                </span>
+              )}
             </div>
           )}
 
