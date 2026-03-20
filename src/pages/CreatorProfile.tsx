@@ -844,6 +844,9 @@ export default function CreatorProfile() {
         </section>
       )}
 
+      {/* EVENTS */}
+      <CreatorProfileEvents username={username} />
+
       {/* MOBILE STICKY BOTTOM BAR */}
       <AnimatePresence>
         {showStickyBar && !isOwner && (
