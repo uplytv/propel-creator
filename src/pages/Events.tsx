@@ -9,7 +9,7 @@ import BackNav from "@/components/BackNav";
 import { useAuth } from "@/context/AuthContext";
 import { useCreatorEvents, EventRow } from "@/hooks/useEvents";
 import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/ui/EmptyState";
+import EmptyState from "@/components/ui/EmptyState";
 import { format } from "date-fns";
 
 const statusColors: Record<string, string> = {

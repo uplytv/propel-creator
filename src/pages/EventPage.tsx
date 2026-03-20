@@ -174,7 +174,7 @@ END:VCALENDAR`;
       <SEOHead
         title={`${event.title} by ${creatorProfile?.display_name || "Creator"} | UPLY`}
         description={event.description?.slice(0, 160) || `Join ${event.title} on UPLY`}
-        ogImage={event.cover_image_url || undefined}
+        image={event.cover_image_url || undefined}
       />
       <div className="max-w-3xl mx-auto pb-32">
         {/* Cover */}
