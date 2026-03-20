@@ -25,24 +25,28 @@ export default function StreamCardNew({ stream, index = 0 }: { stream: MockStrea
       onClick={() => navigate(`/stream/${stream.id}`)}
     >
       {/* Thumbnail 16:9 */}
-      <div className="relative aspect-video rounded-lg overflow-hidden bg-[#111111] border-2 border-transparent group-hover:border-[#00FF85] transition-all duration-200 group-hover:scale-[1.02]">
+      <div className="relative aspect-video rounded-lg overflow-hidden bg-card border-2 border-transparent group-hover:border-primary transition-all duration-200 group-hover:scale-[1.02]">
         {thumbnailUrl ? (
           <img
             src={thumbnailUrl}
             alt={stream.title}
             className="w-full h-full object-cover"
             loading="lazy"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+              (e.target as HTMLImageElement).parentElement!.classList.add('fallback-thumb');
+            }}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-[#111111]">
-            <img src="/logo.png" alt="UPLY" className="h-8 opacity-30" />
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-card to-secondary">
+            <img src="/logo.png" alt="UPLY" className="h-6 opacity-30" />
           </div>
         )}
 
         {/* LIVE badge top-left */}
         {stream.isLive && (
           <div className="absolute top-2 left-2">
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-bold text-white bg-[#FF3B3B]">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-bold text-white bg-destructive">
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
               LIVE
             </span>
@@ -51,7 +55,7 @@ export default function StreamCardNew({ stream, index = 0 }: { stream: MockStrea
 
         {/* Viewer count bottom-left */}
         <div className="absolute bottom-2 left-2">
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium text-white bg-black/60 backdrop-blur-sm">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium text-foreground bg-background/60 backdrop-blur-sm">
             <Eye className="w-3 h-3" />
             {formatViewers(stream.viewers)} watching
           </span>
@@ -61,7 +65,7 @@ export default function StreamCardNew({ stream, index = 0 }: { stream: MockStrea
       {/* Info below thumbnail */}
       <div className="mt-2.5 flex gap-2.5">
         {/* Creator avatar */}
-        <div className="flex-shrink-0 w-9 h-9 rounded-full bg-[#1a1a1a] flex items-center justify-center text-[11px] font-bold text-[#888888] overflow-hidden">
+        <div className="flex-shrink-0 w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-[11px] font-bold text-muted-foreground overflow-hidden">
           {stream.creatorAvatar && stream.creatorAvatar.startsWith('http') ? (
             <img src={stream.creatorAvatar} alt="" className="w-full h-full object-cover" />
           ) : (
@@ -71,16 +75,16 @@ export default function StreamCardNew({ stream, index = 0 }: { stream: MockStrea
 
         <div className="min-w-0 flex-1">
           {/* Creator name */}
-          <p className="text-sm font-semibold text-white truncate leading-tight">
+          <p className="text-sm font-semibold text-foreground truncate leading-tight">
             {stream.creatorName}
           </p>
           {/* Stream title */}
-          <p className="text-sm text-[#CCCCCC] truncate leading-snug mt-0.5">
+          <p className="text-sm text-muted-foreground truncate leading-snug mt-0.5">
             {stream.title}
           </p>
           {/* Category tag */}
           <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-            <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#1a1a1a] text-[#888888]">
+            <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-medium bg-secondary text-muted-foreground">
               {stream.category}
             </span>
           </div>
