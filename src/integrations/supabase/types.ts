@@ -1215,6 +1215,185 @@ export type Database = {
         }
         Relationships: []
       }
+      event_reminders: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_reminders_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_waitlist: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          notified: boolean
+          position: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          notified?: boolean
+          position?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          notified?: boolean
+          position?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_waitlist_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          cover_image_url: string | null
+          created_at: string
+          creator_id: string
+          description: string | null
+          ends_at: string
+          event_type: string
+          id: string
+          is_free: boolean
+          is_sold_out: boolean
+          location_address: string | null
+          location_city: string | null
+          location_name: string | null
+          location_state: string | null
+          mux_stream_id: string | null
+          refund_policy: string
+          slug: string | null
+          space_id: string | null
+          starts_at: string
+          status: string
+          stream_on_uply: boolean
+          stripe_price_id: string | null
+          ticket_price: number
+          ticket_quantity: number | null
+          tickets_sold: number
+          timezone: string
+          title: string
+          virtual_link: string | null
+          virtual_link_unlocked_at: string | null
+        }
+        Insert: {
+          cover_image_url?: string | null
+          created_at?: string
+          creator_id: string
+          description?: string | null
+          ends_at: string
+          event_type?: string
+          id?: string
+          is_free?: boolean
+          is_sold_out?: boolean
+          location_address?: string | null
+          location_city?: string | null
+          location_name?: string | null
+          location_state?: string | null
+          mux_stream_id?: string | null
+          refund_policy?: string
+          slug?: string | null
+          space_id?: string | null
+          starts_at: string
+          status?: string
+          stream_on_uply?: boolean
+          stripe_price_id?: string | null
+          ticket_price?: number
+          ticket_quantity?: number | null
+          tickets_sold?: number
+          timezone?: string
+          title: string
+          virtual_link?: string | null
+          virtual_link_unlocked_at?: string | null
+        }
+        Update: {
+          cover_image_url?: string | null
+          created_at?: string
+          creator_id?: string
+          description?: string | null
+          ends_at?: string
+          event_type?: string
+          id?: string
+          is_free?: boolean
+          is_sold_out?: boolean
+          location_address?: string | null
+          location_city?: string | null
+          location_name?: string | null
+          location_state?: string | null
+          mux_stream_id?: string | null
+          refund_policy?: string
+          slug?: string | null
+          space_id?: string | null
+          starts_at?: string
+          status?: string
+          stream_on_uply?: boolean
+          stripe_price_id?: string | null
+          ticket_price?: number
+          ticket_quantity?: number | null
+          tickets_sold?: number
+          timezone?: string
+          title?: string
+          virtual_link?: string | null
+          virtual_link_unlocked_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_mux_stream_id_fkey"
+            columns: ["mux_stream_id"]
+            isOneToOne: false
+            referencedRelation: "mux_live_streams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_mux_stream_id_fkey"
+            columns: ["mux_stream_id"]
+            isOneToOne: false
+            referencedRelation: "mux_live_streams_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_space_id_fkey"
+            columns: ["space_id"]
+            isOneToOne: false
+            referencedRelation: "creator_spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feature_audit_log: {
         Row: {
           action: string
@@ -3187,6 +3366,62 @@ export type Database = {
           verified_partner?: boolean
         }
         Relationships: []
+      }
+      tickets: {
+        Row: {
+          amount_paid: number
+          buyer_id: string
+          checked_in_at: string | null
+          created_at: string
+          creator_earnings: number
+          creator_id: string
+          event_id: string
+          id: string
+          platform_fee: number
+          qr_code_token: string
+          qr_code_url: string | null
+          status: string
+          stripe_payment_intent_id: string | null
+        }
+        Insert: {
+          amount_paid?: number
+          buyer_id: string
+          checked_in_at?: string | null
+          created_at?: string
+          creator_earnings?: number
+          creator_id: string
+          event_id: string
+          id?: string
+          platform_fee?: number
+          qr_code_token?: string
+          qr_code_url?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+        }
+        Update: {
+          amount_paid?: number
+          buyer_id?: string
+          checked_in_at?: string | null
+          created_at?: string
+          creator_earnings?: number
+          creator_id?: string
+          event_id?: string
+          id?: string
+          platform_fee?: number
+          qr_code_token?: string
+          qr_code_url?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tip_transactions: {
         Row: {
