@@ -461,7 +461,7 @@ export default function CreatorProfile() {
         <Link to="/" className="font-bold text-lg text-foreground tracking-tight">UPLY</Link>
         <div className="flex items-center gap-2">
           {isOwner ? (
-            <button onClick={() => setEditOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white" style={{ background: "#1a1a1a", border: "1px solid #1E1E1E" }}>
+            <button onClick={() => setEditOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-foreground bg-secondary border border-border">
               <Pencil className="w-3.5 h-3.5" /> Edit Profile
             </button>
           ) : !user ? (
