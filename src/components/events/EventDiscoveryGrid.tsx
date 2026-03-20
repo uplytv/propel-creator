@@ -43,7 +43,7 @@ function EventCard({ event }: { event: EventRow }) {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       className="bg-card border border-border rounded-xl overflow-hidden cursor-pointer hover:border-primary/40 transition-colors"
-      onClick={() => navigate(`/creator/${creator?.username}/events/${event.slug}`)}
+      onClick={() => navigate(`/${creator?.username || event.creator_id}/events/${event.slug}`)}
     >
       <div className="aspect-video w-full overflow-hidden relative">
         {event.cover_image_url ? (
