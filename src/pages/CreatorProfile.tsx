@@ -579,8 +579,7 @@ export default function CreatorProfile() {
               <div className="flex items-center gap-3">
                 <Link
                   to={`/community/${profile.user_id}/community`}
-                  className="px-8 py-3 rounded-xl text-sm font-semibold"
-                  style={{ background: "#1a1a1a", border: "1px solid #1E1E1E", color: "#888" }}
+                  className="px-8 py-3 rounded-lg text-sm font-semibold bg-secondary border border-border text-muted-foreground"
                 >
                   ✓ Member
                 </Link>
