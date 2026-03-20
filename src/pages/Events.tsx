@@ -229,6 +229,8 @@ function EventCard({ event, username }: { event: EventRow; username?: string }) 
 
 export default function Events() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { data: events, isLoading } = useCreatorEvents();
   const { data: dbProfile } = useQuery({
     queryKey: ["my-profile-username"],
     queryFn: async () => {
@@ -237,7 +239,6 @@ export default function Events() {
     },
     enabled: !!user,
   });
-  const { user } = useAuth();
 
   return (
     <AppLayout>
@@ -261,7 +262,7 @@ export default function Events() {
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {events.map(e => <EventCard key={e.id} event={e} username={profile?.username} />)}
+            {events.map(e => <EventCard key={e.id} event={e} username={dbProfile?.username || undefined} />)}
           </div>
         )}
       </div>
