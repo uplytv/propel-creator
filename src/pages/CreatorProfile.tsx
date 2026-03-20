@@ -457,8 +457,8 @@ export default function CreatorProfile() {
         image={profile.avatar_url || undefined}
       />
       {/* NAVBAR */}
-      <nav className="sticky top-0 z-50 flex items-center justify-between px-4 h-14 backdrop-blur-xl" style={{ background: "rgba(10,10,10,0.85)", borderBottom: "1px solid #1E1E1E" }}>
-        <Link to="/" className="font-bold text-lg text-white tracking-tight">UPLY</Link>
+      <nav className="sticky top-0 z-50 flex items-center justify-between px-4 h-14 backdrop-blur-xl bg-background/85 border-b border-border">
+        <Link to="/" className="font-bold text-lg text-foreground tracking-tight">UPLY</Link>
         <div className="flex items-center gap-2">
           {isOwner ? (
             <button onClick={() => setEditOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white" style={{ background: "#1a1a1a", border: "1px solid #1E1E1E" }}>
