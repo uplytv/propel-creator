@@ -1,80 +1,187 @@
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Search, Home, Radio, MessageCircle, User } from "lucide-react";
-import { motion } from "framer-motion";
+import { Camera, BarChart3, DollarSign, Users, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
-import { useApp } from "@/context/AppContext";
 
-const tabs = [
-  { label: "Discover", icon: Search, path: "/discover" },
-  { label: "Home", icon: Home, path: "/dashboard" },
-  { label: "Live", icon: Radio, path: "/live" },
-  { label: "Messages", icon: MessageCircle, path: "/messages" },
-  { label: "Profile", icon: User, path: "__profile__" },
+const cores = [
+  {
+    label: "Create",
+    icon: Camera,
+    color: "",
+    sub: [
+      { label: "Go Live", path: "/go-live" },
+      { label: "Content Library", path: "/content-library" },
+      { label: "Scheduled Streams", path: "/go-live?tab=schedule" },
+    ],
+  },
+  {
+    label: "Grow",
+    icon: BarChart3,
+    color: "",
+    sub: [
+      { label: "Discover", path: "/discover" },
+      { label: "Analytics", path: "/analytics" },
+      { label: "Leaderboard", path: "/leaderboard" },
+      { label: "Affiliates", path: "/affiliates" },
+      { label: "Grow Tasks", path: "/grow" },
+    ],
+  },
+  {
+    label: "Earn",
+    icon: DollarSign,
+    color: "",
+    sub: [
+      { label: "Wallet", path: "/wallet" },
+      { label: "Products", path: "/products" },
+      { label: "Buy Credits", path: "/buy-credits" },
+      { label: "Subscriptions", path: "/settings?tab=subscriptions" },
+    ],
+  },
+  {
+    label: "Community",
+    icon: Users,
+    color: "",
+    sub: [
+      { label: "Dashboard", path: "/dashboard" },
+      { label: "Notifications", path: "/notifications" },
+      { label: "Messages", path: "/messages" },
+      { label: "Jobs", path: "/jobs" },
+      { label: "Settings", path: "/settings" },
+    ],
+  },
+  {
+    label: "ARIA",
+    icon: Sparkles,
+    color: "text-primary",
+    sub: [
+      { label: "ARIA Chat", path: "/dashboard?mode=ai" },
+      { label: "Growth Reports", path: "/growth-reports" },
+      { label: "My Rep", path: "/my-rep" },
+    ],
+  },
 ];
 
 export default function MobileTabBar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { profile } = useApp();
+  const [openDrawer, setOpenDrawer] = useState<number | null>(null);
 
-  const resolvePath = (path: string) =>
-    path === "__profile__" ? (user ? `/community/${user.id}` : "/auth") : path;
+  const isInCore = (coreIdx: number) =>
+    cores[coreIdx].sub.some((s) => location.pathname === s.path || location.pathname.startsWith(s.path.split("?")[0]));
 
   return (
-    <nav aria-label="Mobile navigation" className="mobile-tab-bar md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-xl safe-area-bottom transition-transform duration-200">
-      <div className="flex items-center justify-around h-14 px-1" role="tablist">
-        {tabs.map((tab) => {
-          const resolved = resolvePath(tab.path);
-          const isActive = location.pathname === resolved || 
-            (tab.path === "/live" && location.pathname.startsWith("/live")) ||
-            (tab.path === "/discover" && location.pathname.startsWith("/discover"));
-
-          return (
-            <button
-              key={tab.label}
-              onClick={() => navigate(resolved)}
-              aria-label={tab.label}
-              aria-current={isActive ? "page" : undefined}
-              role="tab"
-              aria-selected={isActive}
-              className="relative flex flex-col items-center justify-center flex-1 py-1.5 tab-press group touch-target"
+    <>
+      {/* Sub-menu drawer */}
+      <AnimatePresence>
+        {openDrawer !== null && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm md:hidden"
+              onClick={() => setOpenDrawer(null)}
+            />
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="fixed bottom-14 left-0 right-0 z-50 md:hidden bg-card border-t border-border rounded-t-2xl max-h-[50vh] overflow-y-auto safe-area-bottom"
             >
-              <div className="relative">
-                {tab.path === "__profile__" && profile.avatarUrl ? (
-                  <img
-                    src={profile.avatarUrl}
-                    alt=""
-                    className={`w-6 h-6 rounded-full object-cover transition-all ${
-                      isActive ? "ring-2 ring-primary ring-offset-1 ring-offset-card" : "opacity-60 group-hover:opacity-100"
-                    }`}
-                  />
-                ) : (
-                  <tab.icon
-                    className={`w-5 h-5 transition-colors ${
-                      isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
-                    }`}
-                  />
-                )}
-                {isActive && (
-                  <motion.div
-                    layoutId="mobile-tab-indicator"
-                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  />
-                )}
+              <div className="p-4 space-y-1">
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
+                  {cores[openDrawer].label}
+                </p>
+                {cores[openDrawer].sub.map((item) => {
+                  const basePath = item.path.split("?")[0];
+                  const isActive = location.pathname === basePath;
+                  return (
+                    <button
+                      key={item.path}
+                      onClick={() => {
+                        navigate(item.path);
+                        setOpenDrawer(null);
+                      }}
+                      className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                        isActive
+                          ? "bg-primary/10 text-primary"
+                          : "text-foreground hover:bg-secondary/60"
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  );
+                })}
               </div>
-              <span
-                className={`text-[10px] mt-0.5 font-medium transition-colors ${
-                  isActive ? "text-primary" : "text-muted-foreground"
-                }`}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Tab bar */}
+      <nav
+        aria-label="Mobile navigation"
+        className="mobile-tab-bar md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-xl safe-area-bottom transition-transform duration-200"
+      >
+        <div className="flex items-center justify-around h-14 px-1" role="tablist">
+          {cores.map((core, idx) => {
+            const isActive = isInCore(idx);
+            const Icon = core.icon;
+            return (
+              <button
+                key={core.label}
+                onClick={() => {
+                  if (openDrawer === idx) {
+                    setOpenDrawer(null);
+                  } else {
+                    setOpenDrawer(idx);
+                  }
+                }}
+                aria-label={core.label}
+                aria-current={isActive ? "page" : undefined}
+                role="tab"
+                aria-selected={isActive}
+                className="relative flex flex-col items-center justify-center flex-1 py-1.5 tab-press group touch-target"
               >
-                {tab.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </nav>
+                <div className="relative">
+                  <Icon
+                    className={`w-5 h-5 transition-colors ${
+                      core.label === "ARIA"
+                        ? isActive
+                          ? "text-primary"
+                          : "text-primary/60 group-hover:text-primary"
+                        : isActive
+                        ? "text-primary"
+                        : "text-muted-foreground group-hover:text-foreground"
+                    }`}
+                  />
+                  {isActive && (
+                    <motion.div
+                      layoutId="mobile-tab-indicator"
+                      className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                </div>
+                <span
+                  className={`text-[10px] mt-0.5 font-medium transition-colors ${
+                    core.label === "ARIA"
+                      ? "text-primary"
+                      : isActive
+                      ? "text-primary"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  {core.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+    </>
   );
 }

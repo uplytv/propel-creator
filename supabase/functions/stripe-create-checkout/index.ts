@@ -113,9 +113,20 @@ serve(async (req) => {
       },
     };
 
+    // Free trial support
+    const trialDays = tier.trial_days || 0;
+    if (trialDays > 0) {
+      sessionConfig.subscription_data = {
+        ...(sessionConfig.subscription_data || {}),
+        trial_period_days: trialDays,
+      };
+      logStep("Adding free trial", { trialDays });
+    }
+
     if (hasConnect) {
       // Direct payout to creator via Stripe Connect
       sessionConfig.subscription_data = {
+        ...(sessionConfig.subscription_data || {}),
         application_fee_percent: 5,
         transfer_data: { destination: stripeAccount!.stripe_account_id },
       };

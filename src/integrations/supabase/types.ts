@@ -2391,6 +2391,77 @@ export type Database = {
         }
         Relationships: []
       }
+      paid_dm_replies: {
+        Row: {
+          created_at: string | null
+          creator_id: string
+          dm_id: string
+          id: string
+          message: string
+        }
+        Insert: {
+          created_at?: string | null
+          creator_id: string
+          dm_id: string
+          id?: string
+          message: string
+        }
+        Update: {
+          created_at?: string | null
+          creator_id?: string
+          dm_id?: string
+          id?: string
+          message?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "paid_dm_replies_dm_id_fkey"
+            columns: ["dm_id"]
+            isOneToOne: false
+            referencedRelation: "paid_dms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      paid_dms: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          creator_earnings: number | null
+          creator_id: string
+          id: string
+          is_read: boolean | null
+          message: string
+          platform_fee: number | null
+          sender_id: string
+          stripe_payment_intent_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string | null
+          creator_earnings?: number | null
+          creator_id: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          platform_fee?: number | null
+          sender_id: string
+          stripe_payment_intent_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string | null
+          creator_earnings?: number | null
+          creator_id?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          platform_fee?: number | null
+          sender_id?: string
+          stripe_payment_intent_id?: string | null
+        }
+        Relationships: []
+      }
       payout_requests: {
         Row: {
           amount: number
@@ -2594,6 +2665,8 @@ export type Database = {
           id: string
           members: number
           mrr: number
+          paid_dm_price: number | null
+          paid_dms_enabled: boolean | null
           tier: number
           tier_name: string
           total_revenue: number
@@ -2618,6 +2691,8 @@ export type Database = {
           id?: string
           members?: number
           mrr?: number
+          paid_dm_price?: number | null
+          paid_dms_enabled?: boolean | null
           tier?: number
           tier_name?: string
           total_revenue?: number
@@ -2642,6 +2717,8 @@ export type Database = {
           id?: string
           members?: number
           mrr?: number
+          paid_dm_price?: number | null
+          paid_dms_enabled?: boolean | null
           tier?: number
           tier_name?: string
           total_revenue?: number
@@ -2652,6 +2729,63 @@ export type Database = {
           website?: string | null
         }
         Relationships: []
+      }
+      scheduled_streams: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          creator_id: string
+          description: string | null
+          id: string
+          reminder_count: number | null
+          scheduled_at: string
+          status: string | null
+          stream_id: string | null
+          thumbnail_url: string | null
+          title: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          creator_id: string
+          description?: string | null
+          id?: string
+          reminder_count?: number | null
+          scheduled_at: string
+          status?: string | null
+          stream_id?: string | null
+          thumbnail_url?: string | null
+          title: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          creator_id?: string
+          description?: string | null
+          id?: string
+          reminder_count?: number | null
+          scheduled_at?: string
+          status?: string | null
+          stream_id?: string | null
+          thumbnail_url?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_streams_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "mux_live_streams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_streams_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "mux_live_streams_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       shorts: {
         Row: {
@@ -2686,6 +2820,39 @@ export type Database = {
           mux_asset_id?: string | null
           playback_id?: string | null
           view_count?: number
+        }
+        Relationships: []
+      }
+      shorts_queue: {
+        Row: {
+          created_at: string | null
+          creator_id: string
+          end_time: number
+          id: string
+          reason: string | null
+          start_time: number
+          status: string | null
+          stream_recording_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          creator_id: string
+          end_time: number
+          id?: string
+          reason?: string | null
+          start_time: number
+          status?: string | null
+          stream_recording_id: string
+        }
+        Update: {
+          created_at?: string | null
+          creator_id?: string
+          end_time?: number
+          id?: string
+          reason?: string | null
+          start_time?: number
+          status?: string | null
+          stream_recording_id?: string
         }
         Relationships: []
       }
@@ -2803,6 +2970,62 @@ export type Database = {
         }
         Relationships: []
       }
+      stream_reminders: {
+        Row: {
+          created_at: string | null
+          id: string
+          scheduled_stream_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          scheduled_stream_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          scheduled_stream_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stream_reminders_scheduled_stream_id_fkey"
+            columns: ["scheduled_stream_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_streams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stream_transcripts: {
+        Row: {
+          created_at: string | null
+          creator_id: string
+          id: string
+          stream_recording_id: string
+          transcript_json: Json | null
+          transcript_text: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          creator_id: string
+          id?: string
+          stream_recording_id: string
+          transcript_json?: Json | null
+          transcript_text?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          creator_id?: string
+          id?: string
+          stream_recording_id?: string
+          transcript_json?: Json | null
+          transcript_text?: string | null
+        }
+        Relationships: []
+      }
       stripe_webhook_log: {
         Row: {
           attempts: number
@@ -2850,6 +3073,7 @@ export type Database = {
           price_monthly: number
           stripe_price_id: string | null
           stripe_product_id: string | null
+          trial_days: number | null
         }
         Insert: {
           created_at?: string
@@ -2861,6 +3085,7 @@ export type Database = {
           price_monthly?: number
           stripe_price_id?: string | null
           stripe_product_id?: string | null
+          trial_days?: number | null
         }
         Update: {
           created_at?: string
@@ -2872,6 +3097,7 @@ export type Database = {
           price_monthly?: number
           stripe_price_id?: string | null
           stripe_product_id?: string | null
+          trial_days?: number | null
         }
         Relationships: []
       }
