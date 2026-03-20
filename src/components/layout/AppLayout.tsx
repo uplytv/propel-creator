@@ -519,6 +519,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       {/* Mobile Tab Bar */}
       <MobileTabBar />
 
+      {/* Mobile FAB */}
+      <CreateFAB onUploadVideo={() => setUploadSheetOpen(true)} />
+
+      {/* Video Upload Sheet */}
+      <VideoUploadSheet open={uploadSheetOpen} onClose={() => setUploadSheetOpen(false)} />
+
       {/* Mobile Navigation Drawer */}
       <AnimatePresence>
         {mobileMenuOpen && (
