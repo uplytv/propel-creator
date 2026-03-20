@@ -550,8 +550,7 @@ export default function CreatorProfile() {
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-9 h-9 rounded-full flex items-center justify-center text-[#666] hover:text-[#00FF85] transition-colors"
-                    style={{ background: "#1a1a1a" }}
+                    className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary transition-colors bg-secondary"
                   >
                     {Icon && <Icon className="w-4 h-4" />}
                   </a>
