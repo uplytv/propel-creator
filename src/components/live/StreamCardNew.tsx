@@ -2,13 +2,30 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import type { MockStream } from "@/data/mockStreams";
+
+export interface StreamCardData {
+  id: string;
+  creatorName: string;
+  creatorAvatar: string;
+  creatorTier: number;
+  creatorTierName: string;
+  title: string;
+  category: string;
+  viewers: number;
+  isLive: boolean;
+  isPublic: boolean;
+  thumbnailGradient: string;
+  communityPrice: number;
+  startedAt: string;
+  description: string;
+  muxPlaybackId?: string | null;
+}
 
 function formatViewers(n: number) {
   return n >= 1000 ? `${(n / 1000).toFixed(1)}K` : n.toString();
 }
 
-export default function StreamCardNew({ stream, index = 0 }: { stream: MockStream; index?: number }) {
+export default function StreamCardNew({ stream, index = 0 }: { stream: StreamCardData; index?: number }) {
   const navigate = useNavigate();
 
   const thumbnailUrl = stream.muxPlaybackId
@@ -34,7 +51,6 @@ export default function StreamCardNew({ stream, index = 0 }: { stream: MockStrea
             loading="lazy"
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';
-              (e.target as HTMLImageElement).parentElement!.classList.add('fallback-thumb');
             }}
           />
         ) : (
