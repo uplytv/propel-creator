@@ -147,7 +147,7 @@ export default function Discover() {
       <div className="container px-4 py-4 max-w-3xl space-y-4">
         {/* Feed tabs */}
         <div className="flex gap-1 bg-secondary/30 rounded-xl p-1">
-          {(["foryou", "following"] as FeedTab[]).map((tab) => (
+          {(["foryou", "following", "events"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setFeedTab(tab)}
@@ -157,7 +157,7 @@ export default function Discover() {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {tab === "foryou" ? "For You" : "Following"}
+              {tab === "foryou" ? "For You" : tab === "following" ? "Following" : "Events"}
             </button>
           ))}
         </div>
