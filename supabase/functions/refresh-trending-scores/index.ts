@@ -18,31 +18,16 @@ serve(async (req) => {
     )
 
     // Update clips trending scores
-    // Score = (like_count * 3) + (view_count * 1) / (1 + hours_since_created / 24)
-    const { error: clipsErr } = await supabase.rpc('exec_sql' as any, {
-      sql: `
-        UPDATE public.clips
-        SET trending_score = (
-          (COALESCE(like_count, 0) * 3) + (COALESCE(view_count, 0) * 1)
-        ) / (1.0 + EXTRACT(EPOCH FROM (now() - created_at)) / 86400.0)
-        WHERE created_at > now() - interval '30 days'
-      `
-    }).catch(() => null)
+    const { data: clips } = await supabase
+      .from('clips')
+      .select('id, like_count, view_count, created_at')
+      .gte('created_at', new Date(Date.now() - 30 * 86400000).toISOString())
 
-    // Fallback: direct update if RPC doesn't exist
-    if (clipsErr) {
-      // Update clips
-      const { data: clips } = await supabase
-        .from('clips')
-        .select('id, like_count, view_count, created_at')
-        .gte('created_at', new Date(Date.now() - 30 * 86400000).toISOString())
-
-      if (clips) {
-        for (const c of clips) {
-          const hoursSince = (Date.now() - new Date(c.created_at).getTime()) / 3600000
-          const score = ((c.like_count || 0) * 3 + (c.view_count || 0)) / (1 + hoursSince / 24)
-          await supabase.from('clips').update({ trending_score: Math.round(score * 100) / 100 }).eq('id', c.id)
-        }
+    if (clips) {
+      for (const c of clips) {
+        const hoursSince = (Date.now() - new Date(c.created_at).getTime()) / 3600000
+        const score = ((c.like_count || 0) * 3 + (c.view_count || 0)) / (1 + hoursSince / 24)
+        await supabase.from('clips').update({ trending_score: Math.round(score * 100) / 100 }).eq('id', c.id)
       }
     }
 
