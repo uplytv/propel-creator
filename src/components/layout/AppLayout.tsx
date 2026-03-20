@@ -497,7 +497,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                       <div className="border-t border-border mt-1 pt-1">
                         <button
                           onClick={async () => { await signOut(); navigate("/"); setProfileOpen(false); }}
-                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-destructive hover:bg-secondary transition-colors"
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                         >
                           <LogOut className="w-4 h-4" /> Sign out
                         </button>
