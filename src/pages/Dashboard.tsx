@@ -20,7 +20,7 @@ import { PayoutsTab } from "@/components/dashboard/PayoutsTab";
 import DashboardModeToggle, { type DashboardMode } from "@/components/dashboard/DashboardModeToggle";
 import AriaChat from "@/components/dashboard/AriaChat";
 import DiscoverMarketplace from "@/components/dashboard/DiscoverMarketplace";
-import VideoUploadModal from "@/components/videos/VideoUploadModal";
+import VideoUploadSheet from "@/components/videos/VideoUploadSheet";
 
 function PlatformUpgradeBanner() {
   const { user } = useAuth();
