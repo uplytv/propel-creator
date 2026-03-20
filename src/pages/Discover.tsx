@@ -30,7 +30,8 @@ export default function Discover() {
   const { followingIds } = useFollows();
   const navigate = useNavigate();
 
-  const { data: feedData, isLoading } = useDiscoveryFeed(filter, sort, search, liveOnly, feedTab);
+  const actualFeedTab = feedTab === "events" ? "foryou" : feedTab;
+  const { data: feedData, isLoading } = useDiscoveryFeed(filter, sort, search, liveOnly, actualFeedTab);
 
   const liveItems = feedData?.live ?? [];
   const newItems = feedData?.new ?? [];
