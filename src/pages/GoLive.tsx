@@ -131,6 +131,7 @@ export default function GoLive() {
             <Tabs defaultValue="setup" className="space-y-6">
               <TabsList className="w-full">
                 <TabsTrigger value="setup" className="flex-1">Stream Setup</TabsTrigger>
+                <TabsTrigger value="schedule" className="flex-1">📅 Schedule</TabsTrigger>
                 <TabsTrigger value="shop" className="flex-1">🛍️ Shop</TabsTrigger>
               </TabsList>
               <TabsContent value="setup" className="space-y-6">
