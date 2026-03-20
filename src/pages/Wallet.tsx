@@ -184,12 +184,14 @@ export default function Wallet() {
                       <span className="text-xs font-medium text-muted-foreground">{source.label}</span>
                     </div>
                     <p className="text-lg font-bold tracking-tight">${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                    <div className="flex items-center gap-1.5">
-                      <div className="flex-1 h-1 rounded-full bg-muted overflow-hidden">
-                        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: source.color }} />
+                    {Number(pct) > 0 && (
+                      <div className="flex items-center gap-1.5">
+                        <div className="flex-1 h-1 rounded-full bg-muted overflow-hidden">
+                          <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: source.color }} />
+                        </div>
+                        <span className="text-[10px] text-muted-foreground">{pct}%</span>
                       </div>
-                      <span className="text-[10px] text-muted-foreground">{pct}%</span>
-                    </div>
+                    )}
                   </div>
                 );
               })}

@@ -10,28 +10,28 @@
     --card-foreground: 260 10% 10%;
     --popover: 0 0% 100%;
     --popover-foreground: 260 10% 10%;
-    --primary: 265 85% 58%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 145 100% 50%;
+    --primary-foreground: 0 0% 0%;
     --secondary: 260 10% 94%;
     --secondary-foreground: 260 10% 15%;
     --muted: 260 8% 92%;
     --muted-foreground: 260 5% 45%;
-    --accent: 265 85% 58%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 145 100% 50%;
+    --accent-foreground: 0 0% 0%;
     --destructive: 0 84% 55%;
     --destructive-foreground: 0 0% 100%;
     --border: 260 8% 88%;
     --input: 260 8% 90%;
-    --ring: 265 85% 58%;
-    --radius: 0.75rem;
+    --ring: 145 100% 50%;
+    --radius: 0.5rem;
     --sidebar-background: 260 5% 97%;
     --sidebar-foreground: 260 10% 25%;
-    --sidebar-primary: 265 85% 58%;
-    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-primary: 145 100% 50%;
+    --sidebar-primary-foreground: 0 0% 0%;
     --sidebar-accent: 260 8% 93%;
     --sidebar-accent-foreground: 260 10% 10%;
     --sidebar-border: 260 8% 88%;
-    --sidebar-ring: 265 85% 58%;
+    --sidebar-ring: 145 100% 50%;
 
     --warning: 45 93% 47%;
     --warning-foreground: 0 0% 0%;
@@ -39,16 +39,16 @@
     --success-foreground: 0 0% 100%;
     --accent-green: 145 100% 50%;
     --accent-green-foreground: 0 0% 4%;
-    --surface: 0 0% 7%;
-    --surface-raised: 0 0% 10%;
-    --surface-border: 0 0% 12%;
+    --surface: 260 10% 7%;
+    --surface-raised: 260 8% 10%;
+    --surface-border: 260 8% 12%;
     --text-dim: 0 0% 53%;
-    --glow-green: 265 85% 58% / 0.08;
+    --glow-green: 145 100% 50% / 0.08;
     --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
     --card-shadow-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
-    --glow-shadow: 0 0 20px hsl(265 85% 58% / 0.12);
-    --glow-shadow-strong: 0 0 30px hsl(265 85% 58% / 0.18);
-    --gradient-mid: 280 75% 65%;
+    --glow-shadow: 0 0 20px hsl(145 100% 50% / 0.12);
+    --glow-shadow-strong: 0 0 30px hsl(145 100% 50% / 0.18);
+    --gradient-mid: 155 80% 55%;
     --surface-alt: 260 5% 95%;
     --section-divider: linear-gradient(to right, transparent, hsl(260 8% 88% / 0.5), transparent);
   }
@@ -60,27 +60,27 @@
     --card-foreground: 0 0% 100%;
     --popover: 260 12% 10%;
     --popover-foreground: 0 0% 100%;
-    --primary: 265 90% 65%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 145 100% 50%;
+    --primary-foreground: 0 0% 0%;
     --secondary: 260 12% 14%;
     --secondary-foreground: 0 0% 100%;
     --muted: 260 10% 17%;
     --muted-foreground: 260 5% 64%;
-    --accent: 265 90% 65%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 145 100% 50%;
+    --accent-foreground: 0 0% 0%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
     --border: 260 10% 15%;
     --input: 260 10% 17%;
-    --ring: 265 90% 65%;
+    --ring: 145 100% 50%;
     --sidebar-background: 260 15% 8%;
     --sidebar-foreground: 260 5% 85%;
-    --sidebar-primary: 265 90% 65%;
-    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-primary: 145 100% 50%;
+    --sidebar-primary-foreground: 0 0% 0%;
     --sidebar-accent: 260 12% 14%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 260 10% 15%;
-    --sidebar-ring: 265 90% 65%;
+    --sidebar-ring: 145 100% 50%;
 
     --warning: 45 93% 47%;
     --warning-foreground: 0 0% 0%;
@@ -88,16 +88,16 @@
     --success-foreground: 0 0% 0%;
     --accent-green: 145 100% 50%;
     --accent-green-foreground: 0 0% 4%;
-    --surface: 0 0% 6%;
-    --surface-raised: 0 0% 10%;
-    --surface-border: 0 0% 12%;
+    --surface: 260 10% 6%;
+    --surface-raised: 260 8% 10%;
+    --surface-border: 260 8% 12%;
     --text-dim: 0 0% 53%;
-    --glow-green: 265 90% 65% / 0.15;
+    --glow-green: 145 100% 50% / 0.15;
     --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
     --card-shadow-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
-    --glow-shadow: 0 0 20px hsl(265 90% 65% / 0.15);
-    --glow-shadow-strong: 0 0 30px hsl(265 90% 65% / 0.3);
-    --gradient-mid: 280 80% 72%;
+    --glow-shadow: 0 0 20px hsl(145 100% 50% / 0.15);
+    --glow-shadow-strong: 0 0 30px hsl(145 100% 50% / 0.3);
+    --gradient-mid: 155 80% 55%;
     --surface-alt: 260 12% 8%;
     --section-divider: linear-gradient(to right, transparent, hsl(260 10% 15% / 0.6), transparent);
   }
@@ -108,14 +108,11 @@
     @apply border-border;
   }
   html {
-    /* Edge-to-edge: allow content behind system bars */
     height: 100%;
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    /* Prevent root overscroll bounce (iOS) */
     overscroll-behavior: none;
-    /* Ensure font loads correctly on Android */
     font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
     min-height: 100%;
     min-height: -webkit-fill-available;
@@ -124,11 +121,17 @@
     font-family: "Space Grotesk", "Plus Jakarta Sans", system-ui, sans-serif;
     @apply tracking-tight;
   }
+  h1 {
+    @apply text-[28px] md:text-4xl font-bold;
+  }
+  h2 {
+    @apply text-xl font-semibold;
+  }
 }
 
 @layer utilities {
   .glass-card {
-    @apply bg-card/80 backdrop-blur-xl border border-border rounded-xl;
+    @apply bg-card/80 backdrop-blur-xl border border-border rounded-lg;
     box-shadow: var(--card-shadow);
     transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
                 box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
@@ -214,7 +217,7 @@
     transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .tab-press:active {
-    transform: scale(0.88);
+    transform: scale(0.96);
   }
 
   /* Live streaming badge */
@@ -250,7 +253,7 @@
     overscroll-behavior-y: contain;
   }
 
-  /* Minimum touch target — apply to small icon buttons */
+  /* Minimum touch target */
   .touch-target {
     min-width: 44px;
     min-height: 44px;
@@ -278,7 +281,7 @@
     transition: opacity 0s;
   }
 
-  /* Visual rhythm: alternating section backgrounds */
+  /* Visual rhythm */
   .section-alt {
     background-color: hsl(var(--surface-alt));
   }
@@ -349,4 +352,13 @@ body.keyboard-open .mobile-tab-bar {
 /* Prevent content jump on keyboard open */
 body.keyboard-open #main-content {
   padding-bottom: 0 !important;
+}
+
+/* Sonner toast position override for mobile */
+@media (max-width: 768px) {
+  [data-sonner-toaster] {
+    --offset: 80px !important;
+    bottom: 0 !important;
+    top: auto !important;
+  }
 }

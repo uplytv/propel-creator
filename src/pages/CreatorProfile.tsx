@@ -426,7 +426,7 @@ export default function CreatorProfile() {
   // Loading
   if (profileLoading) {
     return (
-      <div className="min-h-screen" style={{ background: "#0A0A0A" }}>
+      <div className="min-h-screen bg-background">
         <ProfileSkeleton />
       </div>
     );
@@ -435,11 +435,11 @@ export default function CreatorProfile() {
   // 404
   if (!profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#0A0A0A" }}>
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center px-6">
-          <h1 className="text-2xl font-bold text-white mb-2">This creator doesn't exist yet.</h1>
-          <p className="text-[#888] mb-6">The page you're looking for isn't available.</p>
-          <Link to="/auth" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm" style={{ background: "#00FF85", color: "#0A0A0A" }}>
+          <h1 className="text-2xl font-bold text-foreground mb-2">This creator doesn't exist yet.</h1>
+          <p className="text-muted-foreground mb-6">The page you're looking for isn't available.</p>
+          <Link to="/auth" className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm bg-primary text-primary-foreground">
             Start your own UPLY →
           </Link>
         </div>
@@ -450,24 +450,24 @@ export default function CreatorProfile() {
   const postCount = posts.length;
 
   return (
-    <div className="min-h-screen" style={{ background: "#0A0A0A" }}>
+    <div className="min-h-screen bg-background">
       <SEOHead
         title={profile.display_name || profile.username || "Creator"}
         description={profile.bio || `Check out ${profile.display_name || profile.username}'s community, courses, and live streams on Uply.`}
         image={profile.avatar_url || undefined}
       />
       {/* NAVBAR */}
-      <nav className="sticky top-0 z-50 flex items-center justify-between px-4 h-14 backdrop-blur-xl" style={{ background: "rgba(10,10,10,0.85)", borderBottom: "1px solid #1E1E1E" }}>
-        <Link to="/" className="font-bold text-lg text-white tracking-tight">UPLY</Link>
+      <nav className="sticky top-0 z-50 flex items-center justify-between px-4 h-14 backdrop-blur-xl bg-background/85 border-b border-border">
+        <Link to="/" className="font-bold text-lg text-foreground tracking-tight">UPLY</Link>
         <div className="flex items-center gap-2">
           {isOwner ? (
-            <button onClick={() => setEditOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white" style={{ background: "#1a1a1a", border: "1px solid #1E1E1E" }}>
+            <button onClick={() => setEditOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-foreground bg-secondary border border-border">
               <Pencil className="w-3.5 h-3.5" /> Edit Profile
             </button>
           ) : !user ? (
             <>
-              <Link to="/auth" className="px-3 py-1.5 rounded-lg text-sm font-medium text-[#888] hover:text-white transition-colors">Log In</Link>
-              <Link to="/auth" className="px-3 py-1.5 rounded-lg text-sm font-semibold" style={{ background: "#00FF85", color: "#0A0A0A" }}>Start Free →</Link>
+              <Link to="/auth" className="px-3 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Log In</Link>
+              <Link to="/auth" className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-primary text-primary-foreground">Start Free →</Link>
             </>
           ) : null}
         </div>
@@ -480,7 +480,7 @@ export default function CreatorProfile() {
           {profile.cover_image_url ? (
             <img src={profile.cover_image_url} alt="" className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full" style={{ background: "linear-gradient(180deg, #111 0%, #0A0A0A 100%)" }} />
+            <div className="w-full h-full bg-gradient-to-b from-card to-background" />
           )}
           {/* Green glow behind avatar */}
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full" style={{ background: "radial-gradient(circle, rgba(0,255,133,0.05) 0%, transparent 70%)" }} />
@@ -491,9 +491,9 @@ export default function CreatorProfile() {
           <div className="flex justify-center relative">
             <div className="relative">
               {profile.avatar_url ? (
-                <img src={profile.avatar_url} alt={creatorName} className="w-24 h-24 rounded-full object-cover" style={{ border: "3px solid #00FF85" }} />
+                <img src={profile.avatar_url} alt={creatorName} className="w-24 h-24 rounded-full object-cover border-[3px] border-primary" />
               ) : (
-                <div className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold" style={{ border: "3px solid #00FF85", background: "#1a1a1a", color: "#00FF85" }}>
+                <div className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold border-[3px] border-primary bg-secondary text-primary">
                   {creatorName.charAt(0).toUpperCase()}
                 </div>
               )}
@@ -512,14 +512,14 @@ export default function CreatorProfile() {
 
           {/* Name + username */}
           <div className="text-center mt-4">
-            <h1 className="text-[28px] font-extrabold text-white">{creatorName}</h1>
-            <p className="text-sm text-[#888] mt-0.5">@{profile.username || profile.display_name || username}</p>
+            <h1 className="text-[28px] font-extrabold text-foreground">{creatorName}</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">@{profile.username || profile.display_name || username}</p>
           </div>
 
           {/* Type pill */}
           {profile.creator_type && (
             <div className="flex justify-center mt-3">
-              <span className="px-3 py-1 rounded-full text-xs font-medium" style={{ background: "#1a1a1a", color: "#00FF85" }}>
+              <span className="px-3 py-1 rounded-full text-xs font-medium bg-secondary text-primary">
                 {profile.creator_type}{profile.business_category ? ` · ${profile.business_category}` : ""}
               </span>
             </div>
@@ -528,11 +528,11 @@ export default function CreatorProfile() {
           {/* Bio */}
           {profile.bio && (
             <div className="text-center mt-4 max-w-[560px] mx-auto">
-              <p className={`text-white text-base leading-relaxed ${!bioExpanded ? "line-clamp-3" : ""}`}>
+              <p className={`text-foreground text-base leading-relaxed ${!bioExpanded ? "line-clamp-3" : ""}`}>
                 {profile.bio}
               </p>
               {profile.bio.length > 180 && (
-                <button onClick={() => setBioExpanded(!bioExpanded)} className="text-[#00FF85] text-sm mt-1 font-medium">
+                <button onClick={() => setBioExpanded(!bioExpanded)} className="text-primary text-sm mt-1 font-medium">
                   {bioExpanded ? "Show less" : "Show more"}
                 </button>
               )}
@@ -550,8 +550,7 @@ export default function CreatorProfile() {
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-9 h-9 rounded-full flex items-center justify-center text-[#666] hover:text-[#00FF85] transition-colors"
-                    style={{ background: "#1a1a1a" }}
+                    className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary transition-colors bg-secondary"
                   >
                     {Icon && <Icon className="w-4 h-4" />}
                   </a>
@@ -568,8 +567,8 @@ export default function CreatorProfile() {
               { value: postCount, label: "Posts" },
             ].map(({ value, label }) => (
               <div key={label} className="text-center">
-                <div className="text-white font-bold text-lg">{value}</div>
-                <div className="text-[#888] text-xs">{label}</div>
+                <div className="text-foreground font-bold text-lg">{value}</div>
+                <div className="text-muted-foreground text-xs">{label}</div>
               </div>
             ))}
           </div>
@@ -580,8 +579,7 @@ export default function CreatorProfile() {
               <div className="flex items-center gap-3">
                 <Link
                   to={`/community/${profile.user_id}/community`}
-                  className="px-8 py-3 rounded-xl text-sm font-semibold"
-                  style={{ background: "#1a1a1a", border: "1px solid #1E1E1E", color: "#888" }}
+                  className="px-8 py-3 rounded-lg text-sm font-semibold bg-secondary border border-border text-muted-foreground"
                 >
                   ✓ Member
                 </Link>
