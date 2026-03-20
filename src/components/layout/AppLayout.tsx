@@ -1,6 +1,8 @@
 import { ReactNode, useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MobileTabBar from "./MobileTabBar";
+import CreateFAB from "@/components/videos/CreateFAB";
+import VideoUploadSheet from "@/components/videos/VideoUploadSheet";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Package, Lock,
@@ -112,6 +114,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedCores, setExpandedCores] = useState<string[]>([]);
+  const [uploadSheetOpen, setUploadSheetOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
   // Check admin
@@ -515,6 +518,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
       {/* Mobile Tab Bar */}
       <MobileTabBar />
+
+      {/* Mobile FAB */}
+      <CreateFAB onUploadVideo={() => setUploadSheetOpen(true)} />
+
+      {/* Video Upload Sheet */}
+      <VideoUploadSheet open={uploadSheetOpen} onClose={() => setUploadSheetOpen(false)} />
 
       {/* Mobile Navigation Drawer */}
       <AnimatePresence>
