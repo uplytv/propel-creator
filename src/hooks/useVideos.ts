@@ -175,9 +175,8 @@ export function useCreateVideo() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ["videos"] });
-      toast({ title: "Video published! 🎬" });
     },
     onError: (err: any) => {
       toast({ title: "Error", description: err.message, variant: "destructive" });
