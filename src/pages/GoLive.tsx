@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Radio, Globe, Lock, Loader2, ShoppingBag, X } from "lucide-react";
+import { Radio, Globe, Lock, Loader2, ShoppingBag, X, CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
 const categories = [
   "Business Strategy", "Fitness & Nutrition", "Music Production", "Photography",
@@ -16,6 +16,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { useProfile } from "@/hooks/useProfile";
 import EndOfStreamScreen from "@/components/live/EndOfStreamScreen";
 import LiveShopSetup from "@/components/live/LiveShopSetup";
+import ScheduleStreamTab from "@/components/scheduled/ScheduleStreamTab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function GoLive() {
