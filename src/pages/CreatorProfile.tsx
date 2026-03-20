@@ -435,11 +435,11 @@ export default function CreatorProfile() {
   // 404
   if (!profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#0A0A0A" }}>
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center px-6">
-          <h1 className="text-2xl font-bold text-white mb-2">This creator doesn't exist yet.</h1>
-          <p className="text-[#888] mb-6">The page you're looking for isn't available.</p>
-          <Link to="/auth" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm" style={{ background: "#00FF85", color: "#0A0A0A" }}>
+          <h1 className="text-2xl font-bold text-foreground mb-2">This creator doesn't exist yet.</h1>
+          <p className="text-muted-foreground mb-6">The page you're looking for isn't available.</p>
+          <Link to="/auth" className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm bg-primary text-primary-foreground">
             Start your own UPLY →
           </Link>
         </div>
