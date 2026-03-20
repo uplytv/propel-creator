@@ -15,6 +15,7 @@ import { useNotificationPreferences } from "@/hooks/useNotificationPreferences";
 import { useProfile, useUpdateProfile, useUploadAvatar } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { SubscriptionsTab } from "@/components/settings/SubscriptionsTab";
+import YouTubeImport from "@/components/classroom/YouTubeImport";
 
 type SettingsTab = "profile" | "notifications" | "subscriptions" | "account";
 

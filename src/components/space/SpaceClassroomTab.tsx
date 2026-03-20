@@ -84,6 +84,21 @@ function LessonPlayer({ lesson }: { lesson: any }) {
     },
   });
 
+  // YouTube embed
+  if (lesson.video_type === "youtube" && lesson.youtube_video_id) {
+    return (
+      <div className="w-full aspect-video bg-black">
+        <iframe
+          src={`https://www.youtube.com/embed/${lesson.youtube_video_id}?autoplay=1`}
+          className="w-full h-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          title={lesson.title}
+        />
+      </div>
+    );
+  }
+
   if (playbackId) return <UPLYMuxPlayer playbackId={playbackId} title={lesson.title} autoPlay />;
   if (lesson.video_url) {
     return (
