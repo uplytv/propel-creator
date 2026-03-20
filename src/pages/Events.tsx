@@ -89,7 +89,7 @@ export default function Events() {
           </div>
         ) : !events?.length ? (
           <EmptyState
-            icon={<CalendarDays className="w-12 h-12 text-primary" />}
+            icon={CalendarDays}
             title="No events yet"
             description="Create your first event to sell tickets and engage your community."
           />

@@ -122,7 +122,7 @@ export default function EventDiscoveryGrid() {
         </div>
       ) : !filtered?.length ? (
         <EmptyState
-          icon={<CalendarDays className="w-10 h-10 text-primary" />}
+          icon={CalendarDays}
           title="No upcoming events"
           description="Check back soon for new events from creators you follow."
         />
