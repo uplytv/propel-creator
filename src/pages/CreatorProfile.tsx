@@ -14,6 +14,7 @@ import {
 import CreatorProfileEditDrawer from "@/components/creator-profile/CreatorProfileEditDrawer";
 import SEOHead from "@/components/SEOHead";
 import { useToast } from "@/hooks/use-toast";
+import { CalendarDays } from "lucide-react";
 
 // Social platform icons as simple SVG components
 const socialIcons: Record<string, React.FC<{ className?: string }>> = {
