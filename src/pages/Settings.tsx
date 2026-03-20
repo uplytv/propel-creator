@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   User, Bell, Shield, CreditCard, Palette, Mail,
-  Camera, Save, Eye, EyeOff, Trash2, Download, Megaphone, Loader2, Users
+  Camera, Save, Eye, EyeOff, Trash2, Download, Megaphone, Loader2, Users, Ticket
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useApp } from "@/context/AppContext";
@@ -16,15 +16,79 @@ import { useProfile, useUpdateProfile, useUploadAvatar } from "@/hooks/useProfil
 import { supabase } from "@/integrations/supabase/client";
 import { SubscriptionsTab } from "@/components/settings/SubscriptionsTab";
 import YouTubeImport from "@/components/classroom/YouTubeImport";
+import { useMyTickets } from "@/hooks/useEvents";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useNavigate } from "react-router-dom";
+import { format, isBefore } from "date-fns";
 
-type SettingsTab = "profile" | "notifications" | "subscriptions" | "account";
+type SettingsTab = "profile" | "notifications" | "subscriptions" | "tickets" | "account";
 
 const tabs = [
   { id: "profile" as const, label: "Profile", icon: User },
   { id: "notifications" as const, label: "Notifications", icon: Bell },
   { id: "subscriptions" as const, label: "Subscriptions", icon: Users },
+  { id: "tickets" as const, label: "My Tickets", icon: Ticket },
   { id: "account" as const, label: "Account", icon: Shield },
 ];
+
+function MyTicketsTab() {
+  const { data: tickets, isLoading } = useMyTickets();
+  const navigate = useNavigate();
+
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 rounded-xl" />)}
+      </div>
+    );
+  }
+
+  if (!tickets?.length) {
+    return (
+      <div className="text-center py-12">
+        <Ticket className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+        <h3 className="font-semibold text-foreground mb-1">No tickets yet</h3>
+        <p className="text-sm text-muted-foreground">Tickets you purchase for events will appear here.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {tickets.map((t: any) => {
+        const event = t.events;
+        const isPast = event ? isBefore(new Date(event.ends_at), new Date()) : false;
+        return (
+          <div
+            key={t.id}
+            onClick={() => navigate(`/tickets/${t.qr_code_token}`)}
+            className="flex gap-3 p-3 rounded-xl bg-card border border-border cursor-pointer hover:border-primary/40 transition-colors"
+          >
+            {event?.cover_image_url && (
+              <img src={event.cover_image_url} className="w-20 h-14 rounded-lg object-cover flex-shrink-0" loading="lazy" />
+            )}
+            <div className="flex-1 min-w-0">
+              <h4 className="text-sm font-semibold text-foreground truncate">{event?.title || "Event"}</h4>
+              {event && (
+                <p className="text-xs text-primary mt-0.5">
+                  {format(new Date(event.starts_at), "EEE MMM d · h:mm a")}
+                </p>
+              )}
+              <div className="flex items-center gap-2 mt-1">
+                {t.status === "active" && <Badge variant="outline" className="bg-primary/20 text-primary text-[10px]">Active</Badge>}
+                {t.status === "used" && <Badge variant="outline" className="bg-muted text-muted-foreground text-[10px]">Checked In</Badge>}
+                {t.status === "refunded" && <Badge variant="outline" className="bg-destructive/20 text-destructive text-[10px]">Refunded</Badge>}
+                {t.status === "canceled" && <Badge variant="outline" className="bg-destructive/20 text-destructive text-[10px]">Canceled</Badge>}
+                {isPast && <Badge variant="outline" className="bg-muted text-muted-foreground text-[10px]">Ended</Badge>}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function Settings() {
   const { profile: appProfile, refreshProfile } = useApp();
@@ -50,36 +114,27 @@ export default function Settings() {
     if (dbProfile) {
       setName(dbProfile.display_name || "");
       setBio(dbProfile.bio || "");
-      setWebsite((dbProfile as any).website || "");
+      setWebsite(dbProfile.website || "");
     }
   }, [dbProfile]);
 
-  // Notification state
-  const [notifications, setNotifications] = useState({
-    pushNewMember: true,
-    pushRevenue: false,
-    pushMilestones: true,
-    pushTips: true,
-  });
-
-  // Account state
-  const [showPassword, setShowPassword] = useState(false);
-  const [newPassword, setNewPassword] = useState("");
   const [saving, setSaving] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [forgotLoading, setForgotLoading] = useState(false);
 
-  const handleSaveProfile = async () => {
+  const handleProfileSave = async () => {
+    if (!name.trim()) {
+      toast({ title: "Name is required", variant: "destructive" });
+      return;
+    }
     setSaving(true);
     try {
-      await updateProfile.mutateAsync({
-        display_name: name,
-        bio,
-        website,
-      } as any);
+      await updateProfile.mutateAsync({ display_name: name, bio, website });
       refreshProfile();
-      toast({ title: "Profile updated", description: "Your changes have been saved." });
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast({ title: "Profile saved ✓" });
+    } catch {
+      toast({ title: "Failed to save", variant: "destructive" });
     }
     setSaving(false);
   };
@@ -87,42 +142,28 @@ export default function Settings() {
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      toast({ title: "File too large", description: "Max 2MB.", variant: "destructive" });
-      return;
-    }
     try {
       await uploadAvatar.mutateAsync(file);
       refreshProfile();
-      toast({ title: "Avatar updated" });
-    } catch (err: any) {
-      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+      toast({ title: "Avatar updated ✓" });
+    } catch {
+      toast({ title: "Upload failed", variant: "destructive" });
     }
-  };
-
-  const handleNotifToggle = (key: keyof typeof notifications) => {
-    setNotifications((prev) => ({ ...prev, [key]: !prev[key] }));
-    toast({ title: "Preference saved" });
   };
 
   const handleChangePassword = async () => {
-    if (!newPassword) {
-      toast({ title: "Error", description: "Please enter a new password.", variant: "destructive" });
-      return;
-    }
     if (newPassword.length < 8) {
-      toast({ title: "Error", description: "Password must be at least 8 characters.", variant: "destructive" });
+      toast({ title: "Password must be at least 8 characters", variant: "destructive" });
       return;
     }
     setSaving(true);
     const { error } = await supabase.auth.updateUser({ password: newPassword });
-    setSaving(false);
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: "Password updated", description: "Your password has been changed." });
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else {
+      toast({ title: "Password updated ✓" });
       setNewPassword("");
     }
+    setSaving(false);
   };
 
   const handleForgotPassword = async () => {
@@ -131,265 +172,144 @@ export default function Settings() {
     const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else toast({ title: "Reset link sent to your email" });
     setForgotLoading(false);
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: "Reset email sent", description: "Check your email for the password reset link." });
-    }
   };
-
-  const avatarUrl = dbProfile?.avatar_url || appProfile.avatarUrl;
 
   return (
     <AppLayout>
-      <div className="max-w-4xl mx-auto px-4 md:px-8 py-8 space-y-8">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold">Settings</h1>
-          <p className="text-muted-foreground mt-1">Manage your profile, notifications, and account.</p>
-        </div>
+      <div className="max-w-2xl mx-auto px-4 py-6 pb-24">
+        <h1 className="text-2xl font-bold text-foreground mb-6">Settings</h1>
 
-        {/* Tab Navigation */}
-        <div className="flex gap-1 bg-secondary/30 rounded-xl p-1 w-fit overflow-x-auto">
-          {tabs.map((tab) => (
+        {/* Tab bar */}
+        <div className="flex gap-1 overflow-x-auto pb-1 mb-6">
+          {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
-                activeTab === tab.id ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
+                activeTab === tab.id ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
               }`}
             >
-              {activeTab === tab.id && (
-                <motion.div layoutId="settings-tab" className="absolute inset-0 bg-primary rounded-lg" transition={{ type: "spring", stiffness: 300, damping: 30 }} />
-              )}
-              <span className="relative z-10 flex items-center gap-2">
-                <tab.icon className="w-4 h-4" />
-                {tab.label}
-              </span>
+              <tab.icon className="w-4 h-4" />
+              {tab.label}
             </button>
           ))}
         </div>
 
-        {/* Profile Tab */}
+        {/* Profile tab */}
         {activeTab === "profile" && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            {/* Avatar Section */}
-            <div className="rounded-2xl border border-border bg-card/40 p-6">
-              <h2 className="text-lg font-semibold mb-4">Profile Photo</h2>
-              <div className="flex items-center gap-5">
-                <div className="relative group">
-                  {avatarUrl ? (
-                    <img src={avatarUrl} alt="Avatar" className="w-20 h-20 rounded-full object-cover" />
+            {/* Avatar */}
+            <div className="flex items-center gap-4">
+              <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                <div className="w-20 h-20 rounded-full bg-secondary border-2 border-border overflow-hidden">
+                  {dbProfile?.avatar_url ? (
+                    <img src={dbProfile.avatar_url} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center text-2xl font-bold text-primary">
-                      {name.charAt(0) || "C"}
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                      <User className="w-8 h-8" />
                     </div>
                   )}
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                  >
-                    {uploadAvatar.isPending ? (
-                      <Loader2 className="w-5 h-5 text-white animate-spin" />
-                    ) : (
-                      <Camera className="w-5 h-5 text-white" />
-                    )}
-                  </button>
-                  <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
                 </div>
-                <div>
-                  <p className="text-sm font-medium">{name || "Creator"}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">JPG, PNG or GIF. Max 2MB.</p>
-                  <button onClick={() => fileInputRef.current?.click()} className="text-xs text-primary hover:underline mt-1">
-                    Upload new photo
-                  </button>
+                <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                  <Camera className="w-5 h-5 text-white" />
                 </div>
+                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+              </div>
+              <div>
+                <p className="font-medium text-foreground">{name || "Your name"}</p>
+                <p className="text-xs text-muted-foreground">@{dbProfile?.username || "username"}</p>
               </div>
             </div>
 
-            {/* Info Fields */}
-            <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-5">
-              <h2 className="text-lg font-semibold">Personal Information</h2>
-
-              <div className="grid md:grid-cols-2 gap-5">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Display Name</label>
-                  <input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    maxLength={50}
-                    className="w-full rounded-lg bg-secondary/40 border border-border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Email</label>
-                  <input
-                    value={user?.email || ""}
-                    readOnly
-                    className="w-full rounded-lg bg-secondary/40 border border-border px-3 py-2.5 text-sm text-muted-foreground cursor-not-allowed"
-                  />
-                </div>
+            {/* Fields */}
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Display Name *</label>
+                <input
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  maxLength={50}
+                  className="w-full rounded-lg bg-secondary/40 border border-border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                />
               </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Bio</label>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Bio</label>
                 <textarea
                   value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  maxLength={300}
+                  onChange={e => setBio(e.target.value)}
+                  maxLength={500}
                   rows={3}
-                  className="w-full rounded-lg bg-secondary/40 border border-border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all resize-none"
+                  className="w-full rounded-lg bg-secondary/40 border border-border px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                 />
-                <p className="text-[10px] text-muted-foreground text-right">{bio.length}/300</p>
+                <p className="text-xs text-muted-foreground text-right mt-1">{bio.length}/500</p>
               </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Website</label>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Website</label>
                 <input
                   value={website}
-                  onChange={(e) => setWebsite(e.target.value)}
-                  maxLength={200}
+                  onChange={e => setWebsite(e.target.value)}
                   placeholder="https://"
                   className="w-full rounded-lg bg-secondary/40 border border-border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                 />
               </div>
+            </div>
 
-              <div className="flex justify-end">
-                <button
-                  onClick={handleSaveProfile}
-                  disabled={saving}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
-                >
-                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save Changes
-                </button>
-              </div>
+            <button
+              onClick={handleProfileSave}
+              disabled={saving}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              Save Profile
+            </button>
+
+            <Separator />
+
+            {/* YouTube Import */}
+            <div className="rounded-2xl border border-border bg-card/40 p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-4">YouTube Import</h2>
+              <YouTubeImport />
             </div>
           </motion.div>
         )}
 
-        {/* Notifications Tab */}
+        {/* Notifications tab */}
         {activeTab === "notifications" && (
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-5">
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+            <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-4">
               <div className="flex items-center gap-3">
-                <Mail className="w-5 h-5 text-primary" />
-                <h2 className="text-lg font-semibold">Email Notifications</h2>
+                <Bell className="w-5 h-5 text-primary" />
+                <h2 className="text-lg font-semibold">Notification Preferences</h2>
               </div>
               {[
-                { key: "new_follower_email" as const, label: "New follower", desc: "Get notified when someone follows you" },
-                { key: "tip_received_email" as const, label: "Tips received", desc: "Get notified when you receive a tip" },
-                { key: "member_joined_email" as const, label: "New member joins", desc: "Get notified when someone joins your community" },
-              ].map((item) => (
-                <div key={item.key} className="flex items-center justify-between py-2">
+                { key: "campaign_digest_email", label: "Campaign Digest Emails", desc: "Weekly summaries of your campaign performance" },
+                { key: "campaign_alert_email", label: "Campaign Alert Emails", desc: "Important alerts about your campaigns" },
+              ].map(pref => (
+                <div key={pref.key} className="flex items-center justify-between py-2">
                   <div>
-                    <p className="text-sm font-medium">{item.label}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
+                    <p className="text-sm font-medium">{pref.label}</p>
+                    <p className="text-xs text-muted-foreground">{pref.desc}</p>
                   </div>
                   <Switch
-                    checked={campaignPrefs[item.key]}
-                    onCheckedChange={async (checked) => {
-                      await updatePrefs({ [item.key]: checked });
-                      toast({ title: checked ? `${item.label} emails enabled` : `${item.label} emails disabled` });
-                    }}
+                    checked={(campaignPrefs as any)?.[pref.key] ?? true}
+                    onCheckedChange={(checked) => updatePrefs({ [pref.key]: checked })}
                   />
                 </div>
               ))}
-
-              <Separator />
-
-              <div className="flex items-center justify-between py-2">
-                <div>
-                  <p className="text-sm font-medium">ARIA Weekly Growth Report</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">AI-powered summary of your growth metrics delivered every Monday</p>
-                </div>
-                <Switch
-                  checked={campaignPrefs.weekly_report_email}
-                  onCheckedChange={async (checked) => {
-                    await updatePrefs({ weekly_report_email: checked });
-                    toast({ title: checked ? "Weekly report emails enabled" : "Weekly report emails disabled" });
-                  }}
-                />
-              </div>
             </div>
 
-            <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-5">
-              <div className="flex items-center gap-3">
-                <Bell className="w-5 h-5 text-primary" />
-                <h2 className="text-lg font-semibold">Push Notifications</h2>
-              </div>
-              {[
-                { key: "pushNewMember" as const, label: "New members", desc: "Real-time alerts for new signups" },
-                { key: "pushRevenue" as const, label: "Revenue events", desc: "Instant alerts for purchases" },
-                { key: "pushMilestones" as const, label: "Tier milestones", desc: "Celebrations when you level up" },
-                { key: "pushTips" as const, label: "Growth tips", desc: "AI-powered suggestions from ARIA" },
-              ].map((item) => (
-                <div key={item.key} className="flex items-center justify-between py-2">
-                  <div>
-                    <p className="text-sm font-medium">{item.label}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
-                  </div>
-                  <Switch checked={notifications[item.key]} onCheckedChange={() => handleNotifToggle(item.key)} />
-                </div>
-              ))}
-            </div>
-
-            {/* Sound */}
-            <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-5">
-              <div className="flex items-center gap-3">
-                <Bell className="w-5 h-5 text-primary" />
-                <div>
-                  <h2 className="text-lg font-semibold">Sound</h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">Control notification sound effects</p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <div>
-                  <p className="text-sm font-medium">Notification sound</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Play a sound when a new notification arrives</p>
-                </div>
+            <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-4">
+              <h3 className="font-semibold text-foreground">Sound</h3>
+              <div className="flex items-center justify-between">
+                <p className="text-sm">Notification sounds</p>
                 <Switch
                   checked={soundEnabled}
                   onCheckedChange={(checked) => {
                     setSoundEnabled(checked);
                     localStorage.setItem("notif_sound_enabled", String(checked));
-                    toast({ title: checked ? "Sound enabled" : "Sound disabled" });
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Campaign Alerts */}
-            <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-5">
-              <div className="flex items-center gap-3">
-                <Megaphone className="w-5 h-5 text-primary" />
-                <div>
-                  <h2 className="text-lg font-semibold">Campaign Alerts</h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">Control which campaign notifications appear in your inbox</p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <div>
-                  <p className="text-sm font-medium">Budget warnings</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Alert when a campaign reaches 75% of its budget</p>
-                </div>
-                <Switch
-                  checked={campaignPrefs.budget_warning}
-                  onCheckedChange={async (checked) => {
-                    await updatePrefs({ budget_warning: checked });
-                    toast({ title: "Preference saved" });
-                  }}
-                />
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <div>
-                  <p className="text-sm font-medium">Campaign completed</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Alert when a campaign finishes its full budget</p>
-                </div>
-                <Switch
-                  checked={campaignPrefs.campaign_completed}
-                  onCheckedChange={async (checked) => {
-                    await updatePrefs({ campaign_completed: checked });
-                    toast({ title: "Preference saved" });
                   }}
                 />
               </div>
@@ -397,56 +317,31 @@ export default function Settings() {
           </motion.div>
         )}
 
-        {/* Subscriptions Tab */}
+        {/* Subscriptions tab */}
         {activeTab === "subscriptions" && (
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <div className="rounded-2xl border border-border bg-card/40 p-6">
-              <h2 className="text-lg font-semibold mb-4">My Subscriptions</h2>
-              <SubscriptionsTab />
-            </div>
-
-            {/* YouTube Import */}
-            {user && (
-              <div className="rounded-2xl border border-border bg-card/40 p-6">
-                <YouTubeImport creatorId={user.id} />
-              </div>
-            )}
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+            <SubscriptionsTab />
           </motion.div>
         )}
 
-        {/* Account Tab */}
+        {/* My Tickets tab */}
+        {activeTab === "tickets" && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+            <MyTicketsTab />
+          </motion.div>
+        )}
+
+        {/* Account tab */}
         {activeTab === "account" && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            {/* Appearance */}
+            {/* Password */}
             <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-4">
               <div className="flex items-center gap-3">
-                <Palette className="w-5 h-5 text-primary" />
-                <h2 className="text-lg font-semibold">Appearance</h2>
-              </div>
-              <div className="flex gap-3">
-                {(["dark", "light", "system"] as const).map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => setTheme(t)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all border ${
-                      theme === t ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-                    }`}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Change Password */}
-            <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-5">
-              <div className="flex items-center gap-3">
                 <Shield className="w-5 h-5 text-primary" />
-                <h2 className="text-lg font-semibold">Security</h2>
+                <h2 className="text-lg font-semibold">Change Password</h2>
               </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">New Password</label>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">New Password</label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
