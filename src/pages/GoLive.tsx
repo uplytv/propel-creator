@@ -127,7 +127,12 @@ export default function GoLive() {
           </div>
 
           {!streamData ? (
-            <div className="space-y-6">
+            <Tabs defaultValue="setup" className="space-y-6">
+              <TabsList className="w-full">
+                <TabsTrigger value="setup" className="flex-1">Stream Setup</TabsTrigger>
+                <TabsTrigger value="shop" className="flex-1">🛍️ Shop</TabsTrigger>
+              </TabsList>
+              <TabsContent value="setup" className="space-y-6">
               {/* Stream Mode */}
               <div>
                 <label className="text-sm font-medium text-foreground mb-3 block">Stream Mode</label>
