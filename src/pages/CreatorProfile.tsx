@@ -512,8 +512,8 @@ export default function CreatorProfile() {
 
           {/* Name + username */}
           <div className="text-center mt-4">
-            <h1 className="text-[28px] font-extrabold text-white">{creatorName}</h1>
-            <p className="text-sm text-[#888] mt-0.5">@{profile.username || profile.display_name || username}</p>
+            <h1 className="text-[28px] font-extrabold text-foreground">{creatorName}</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">@{profile.username || profile.display_name || username}</p>
           </div>
 
           {/* Type pill */}
