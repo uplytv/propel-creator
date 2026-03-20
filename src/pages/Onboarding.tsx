@@ -124,7 +124,13 @@ export default function Onboarding() {
   };
 
   const startLoading = async () => {
-    trackOnboardingStep("profile_created");
+    trackOnboardingStep("onboarding_completed");
+    trackEvent("onboarding_completed", {
+      category: selectedCategory,
+      user_type: selectedUserType,
+      stage: selectedStage,
+      challenge: selectedChallenge,
+    });
     setStep(6);
     let i = 0;
     const interval = setInterval(() => {

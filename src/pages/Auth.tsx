@@ -85,6 +85,7 @@ export default function Auth() {
           console.error("Creator affiliate tracking failed:", err);
         }
       }
+      trackEvent("signup_completed", { method: "email", has_referral: !!(refCode || creatorRefCode) });
       setSignUpSuccess(true);
     }
   };

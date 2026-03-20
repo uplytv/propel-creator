@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Check, Sparkles, Zap, Crown, Loader2, ArrowLeft } from "lucide-react";
+import { Check, Sparkles, Zap, Crown, Loader2, ArrowLeft, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
 import { useAuth } from "@/context/AuthContext";
