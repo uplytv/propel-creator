@@ -163,26 +163,30 @@ export default function Discover() {
           ))}
         </div>
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search creators, courses, communities…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-secondary/50"
-          />
-        </div>
+        {feedTab !== "events" && (
+          <>
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search creators, courses, communities…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 bg-secondary/50"
+              />
+            </div>
 
-        {/* Filters */}
-        <FeedFilters
-          filter={filter}
-          sort={sort}
-          liveOnly={liveOnly}
-          onFilterChange={setFilter}
-          onSortChange={setSort}
-          onLiveOnlyChange={setLiveOnly}
-        />
+            {/* Filters */}
+            <FeedFilters
+              filter={filter}
+              sort={sort}
+              liveOnly={liveOnly}
+              onFilterChange={setFilter}
+              onSortChange={setSort}
+              onLiveOnlyChange={setLiveOnly}
+            />
+          </>
+        )}
 
         {feedTab === "events" ? (
           <EventDiscoveryGrid />
