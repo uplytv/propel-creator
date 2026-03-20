@@ -184,6 +184,10 @@ export default function Discover() {
           onLiveOnlyChange={setLiveOnly}
         />
 
+        {feedTab === "events" ? (
+          <EventDiscoveryGrid />
+        ) : (
+        <>
         {/* Staff Picks / Category Hero */}
         {filter === "all" && !search && feedTab === "foryou" && <FeaturedCarousel />}
         {filter !== "all" && <CategoryHeroBanner category={filter} />}
