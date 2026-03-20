@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { Mail, Lock, User, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { getAffiliateCookie, clearAffiliateCookie } from "@/lib/affiliateCookies";
+import { trackEvent } from "@/lib/posthog";
 
 export default function Auth() {
   const navigate = useNavigate();
