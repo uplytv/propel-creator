@@ -22,7 +22,7 @@ export default function Discover() {
   const [filter, setFilter] = useState<FilterCategory>("all");
   const [sort, setSort] = useState<SortOption>("trending");
   const [liveOnly, setLiveOnly] = useState(false);
-  const [feedTab, setFeedTab] = useState<FeedTab>("foryou");
+  const [feedTab, setFeedTab] = useState<FeedTab | "events">("foryou");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [dismissedLiveBanner, setDismissedLiveBanner] = useState<string | null>(null);
 
