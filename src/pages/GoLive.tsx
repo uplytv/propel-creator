@@ -15,6 +15,8 @@ import BroadcastStudio from "@/components/live/BroadcastStudio";
 import { useProducts } from "@/hooks/useProducts";
 import { useProfile } from "@/hooks/useProfile";
 import EndOfStreamScreen from "@/components/live/EndOfStreamScreen";
+import LiveShopSetup from "@/components/live/LiveShopSetup";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function GoLive() {
   const navigate = useNavigate();
