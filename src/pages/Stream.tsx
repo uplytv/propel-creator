@@ -332,6 +332,7 @@ export default function Stream() {
     const creatorTierName = profile?.tier_name || 'Starter';
     const TierIcon = tierIcons[creatorTier - 1] || Shield;
     const playbackId = dbStream.mux_playback_id;
+    const isPrivateStream = dbStream.is_public === false;
 
     // Guard: no playback ID available
     if (!playbackId) {
@@ -345,6 +346,51 @@ export default function Stream() {
           </div>
         </div>
       );
+    }
+
+    // Private stream: check membership
+    if (isPrivateStream && user?.id !== dbStream.user_id) {
+      const [hasAccess, setHasAccess] = useState<boolean | null>(null);
+      useEffect(() => {
+        const checkAccess = async () => {
+          if (!user) { setHasAccess(false); return; }
+          const { data } = await supabase
+            .from('member_subscriptions')
+            .select('id')
+            .eq('member_id', user.id)
+            .eq('creator_id', dbStream.user_id)
+            .eq('status', 'active')
+            .limit(1)
+            .single();
+          setHasAccess(!!data);
+        };
+        checkAccess();
+      }, [user, dbStream.user_id]);
+
+      if (hasAccess === null) {
+        return (
+          <div className="min-h-screen bg-background flex items-center justify-center">
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+          </div>
+        );
+      }
+
+      if (!hasAccess) {
+        return (
+          <div className="min-h-screen bg-background flex items-center justify-center">
+            <div className="text-center max-w-sm mx-4">
+              <Shield className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h1 className="text-xl font-bold text-foreground mb-2">Members Only</h1>
+              <p className="text-sm text-muted-foreground mb-6">
+                This is a private stream for {creatorName}'s community members. Subscribe to get access.
+              </p>
+              <Button variant="default" onClick={() => navigate(`/creator/${dbStream.user_id}`)}>
+                View Membership Options
+              </Button>
+            </div>
+          </div>
+        );
+      }
     }
 
     return (
