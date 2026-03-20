@@ -17,6 +17,7 @@ import { useProfile } from "@/hooks/useProfile";
 import EndOfStreamScreen from "@/components/live/EndOfStreamScreen";
 import LiveShopSetup from "@/components/live/LiveShopSetup";
 import ScheduleStreamTab from "@/components/scheduled/ScheduleStreamTab";
+import { trackEvent } from "@/lib/posthog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function GoLive() {
@@ -94,6 +95,7 @@ export default function GoLive() {
       setStreamData(data);
       setStreamStatus("idle");
       setStreamStartTime(Date.now());
+      trackEvent("stream_created", { mode, category, has_featured_product: !!featuredProductId });
       toast({ title: "Stream created!", description: "Your broadcast studio is ready." });
     } catch (e: any) {
       toast({ title: "Error", description: e.message || "Failed to create stream", variant: "destructive" });
