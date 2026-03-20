@@ -1,6 +1,6 @@
 import { motion, useMotionValue, useSpring, useInView } from "framer-motion";
 import { useRef, useMemo, useCallback, useEffect, useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Radio, BookOpen, Calendar, MessageSquare, ShoppingBag, Users, TrendingUp, Zap, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import SEOHead from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import dashboardPreview from "@/assets/dashboard-preview.png";
 
 const JSON_LD = {
   "@context": "https://schema.org",
@@ -24,6 +25,36 @@ const rewards = [
   { emoji: "🏆", title: "Cash Prize", desc: "Top early creators earn real money at launch." },
   { emoji: "🎙️", title: "Founding Creator Badge", desc: "Permanent recognition. First-mover perks." },
   { emoji: "🚀", title: "Platform Equity Access", desc: "Shape the platform before the public gets in." },
+];
+
+const features = [
+  { icon: Radio, title: "Go Live", desc: "Stream directly to your community. Tips, reactions, and live shopping built in.", color: "#FF3B3B" },
+  { icon: BookOpen, title: "Courses", desc: "Build and sell courses with modules, lessons, and progress tracking.", color: "#3B82F6" },
+  { icon: Calendar, title: "Events & Ticketing", desc: "Host paid virtual or in-person events with QR check-in.", color: "#F59E0B" },
+  { icon: MessageSquare, title: "Paid DMs", desc: "Monetize your inbox. Fans pay to message you directly.", color: "#8B5CF6" },
+  { icon: ShoppingBag, title: "Live Shopping", desc: "Sell products mid-stream. Auctions, giveaways, and instant checkout.", color: "#EC4899" },
+  { icon: Users, title: "Community", desc: "Posts, comments, leaderboards, and member tiers — all in your space.", color: "#00FF85" },
+  { icon: TrendingUp, title: "Analytics & ARIA", desc: "AI-powered growth insights and weekly performance reports.", color: "#06B6D4" },
+  { icon: Zap, title: "Affiliate System", desc: "Let your members earn by referring new subscribers.", color: "#EAB308" },
+];
+
+const steps = [
+  { num: "01", title: "Create your space", desc: "Sign up, pick your niche, and customize your creator profile in under 2 minutes." },
+  { num: "02", title: "Build your world", desc: "Add courses, schedule events, set up tiers, and invite your community." },
+  { num: "03", title: "Get paid directly", desc: "Members subscribe, buy tickets, tip during streams — money hits your account instantly." },
+];
+
+const comparisonRows = [
+  { feature: "Live streaming with tips", uply: true, youtube: false, patreon: false, skool: false },
+  { feature: "Courses & classroom", uply: true, youtube: false, patreon: false, skool: true },
+  { feature: "Events & ticketing", uply: true, youtube: false, patreon: false, skool: false },
+  { feature: "Paid DMs", uply: true, youtube: false, patreon: false, skool: false },
+  { feature: "Live shopping & auctions", uply: true, youtube: false, patreon: false, skool: false },
+  { feature: "Community & leaderboards", uply: true, youtube: false, patreon: true, skool: true },
+  { feature: "AI growth assistant", uply: true, youtube: false, patreon: false, skool: false },
+  { feature: "Affiliate system", uply: true, youtube: false, patreon: false, skool: false },
+  { feature: "Direct payouts (Stripe)", uply: true, youtube: false, patreon: true, skool: true },
+  { feature: "5% platform fee only", uply: true, youtube: false, patreon: false, skool: false },
 ];
 
 function formatCurrency(n: number) {
@@ -64,6 +95,8 @@ function AnimatedNumber({ value, prefix = "$", className }: { value: number; pre
     </span>
   );
 }
+
+const CTA_LABEL = "Apply for Early Access";
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -161,9 +194,9 @@ export default function Landing() {
             <Button
               size="sm"
               className="bg-[#00FF85] text-[#0A0A0A] font-bold hover:bg-[#00FF85]/90 border-0 active:scale-[0.96] transition-transform"
-              onClick={() => navigate("/auth")}
+              onClick={scrollToWaitlist}
             >
-              Start Free
+              {CTA_LABEL}
             </Button>
           </div>
         </div>
@@ -172,7 +205,7 @@ export default function Landing() {
       {/* ─── HERO ─── */}
       <section
         ref={heroRef}
-        className="relative overflow-hidden pt-28 pb-16 md:pt-40 md:pb-24 min-h-[85vh] flex items-center"
+        className="relative overflow-hidden pt-28 pb-8 md:pt-40 md:pb-12 min-h-[70vh] flex items-center"
         onMouseMove={handleMouseMove}
       >
         {/* Animated gradient blobs */}
@@ -298,7 +331,7 @@ export default function Landing() {
                 className="bg-[#00FF85] text-[#0A0A0A] font-bold text-base px-8 py-6 rounded hover:bg-[#00FF85]/90 hover:shadow-[0_0_30px_rgba(0,255,133,0.3)] transition-all duration-300 border-0 active:scale-[0.96]"
                 onClick={scrollToWaitlist}
               >
-                Apply for Early Access
+                {CTA_LABEL}
                 <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
             </motion.div>
@@ -311,6 +344,43 @@ export default function Landing() {
             >
               Waitlist &amp; invite only.
             </motion.p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ─── PRODUCT PREVIEW ─── */}
+      <section className="pb-16 md:pb-24 relative">
+        <div className="container relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 60, scale: 0.95 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.9, ease: "easeOut" }}
+            className="max-w-4xl mx-auto"
+          >
+            <div className="relative rounded-xl overflow-hidden border border-white/[0.08] shadow-[0_20px_80px_-20px_rgba(0,255,133,0.15)]">
+              {/* Browser chrome */}
+              <div className="flex items-center gap-2 px-4 py-3 bg-[#1A1A1A] border-b border-white/[0.06]">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-[#FF5F57]" />
+                  <div className="w-3 h-3 rounded-full bg-[#FEBC2E]" />
+                  <div className="w-3 h-3 rounded-full bg-[#28C840]" />
+                </div>
+                <div className="flex-1 flex justify-center">
+                  <div className="bg-white/[0.06] rounded-md px-4 py-1 text-xs text-white/30 max-w-[200px] md:max-w-none">
+                    uply.tv/dashboard
+                  </div>
+                </div>
+              </div>
+              <img
+                src={dashboardPreview}
+                alt="Uply creator dashboard showing revenue analytics, live streaming, community feed, and courses"
+                className="w-full h-auto block"
+                loading="lazy"
+              />
+              {/* Gradient fade at bottom */}
+              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#0A0A0A] to-transparent" />
+            </div>
           </motion.div>
         </div>
       </section>
@@ -340,6 +410,93 @@ export default function Landing() {
               You were either invited or you found us.
             </p>
           </motion.div>
+        </div>
+      </section>
+
+      {/* ─── FEATURE GRID ─── */}
+      <section className="py-16 md:py-24 relative">
+        <div className="container relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7 }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-2xl md:text-4xl font-bold mb-3 font-heading">
+              Everything you need. Nothing you don't.
+            </h2>
+            <p className="text-white/40 text-sm md:text-base max-w-lg mx-auto">
+              One platform. Every revenue stream. No duct-taping 6 different tools together.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-4xl mx-auto">
+            {features.map((f, i) => (
+              <motion.div
+                key={f.title}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.06, duration: 0.5 }}
+                whileHover={{ y: -4, transition: { duration: 0.25 } }}
+                className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4 md:p-5 group hover:border-white/[0.15] transition-colors"
+              >
+                <div
+                  className="w-9 h-9 rounded-lg flex items-center justify-center mb-3"
+                  style={{ backgroundColor: `${f.color}15` }}
+                >
+                  <f.icon className="w-4.5 h-4.5" style={{ color: f.color }} />
+                </div>
+                <h3 className="font-bold text-white text-sm mb-1.5">{f.title}</h3>
+                <p className="text-xs text-white/35 leading-relaxed">{f.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── HOW IT WORKS ─── */}
+      <section className="py-16 md:py-24 relative">
+        <div className="container relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7 }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-2xl md:text-4xl font-bold mb-3 font-heading">
+              Live in 3 steps.
+            </h2>
+            <p className="text-white/40 text-sm md:text-base">
+              From zero to earning in under 10 minutes.
+            </p>
+          </motion.div>
+
+          <div className="max-w-3xl mx-auto grid md:grid-cols-3 gap-6 md:gap-8">
+            {steps.map((s, i) => (
+              <motion.div
+                key={s.num}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.15, duration: 0.6 }}
+                className="relative text-center md:text-left"
+              >
+                <span className="text-5xl md:text-6xl font-extrabold text-[#00FF85]/10 block mb-2 font-heading">
+                  {s.num}
+                </span>
+                <h3 className="font-bold text-white text-lg mb-2">{s.title}</h3>
+                <p className="text-sm text-white/40 leading-relaxed">{s.desc}</p>
+                {i < steps.length - 1 && (
+                  <div className="hidden md:block absolute top-8 -right-4 w-8 text-white/10">
+                    <ArrowRight className="w-5 h-5" />
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -396,7 +553,6 @@ export default function Landing() {
 
             {/* Comparison columns */}
             <div className="grid grid-cols-2 gap-4 mb-6">
-              {/* YouTube */}
               <div className="rounded-lg bg-white/[0.03] border border-white/[0.06] p-4 text-center">
                 <span className="text-xs text-white/30 block mb-1">YouTube AdSense</span>
                 <AnimatedNumber
@@ -406,7 +562,6 @@ export default function Landing() {
                 <span className="text-[10px] text-white/20 block mt-1">/month est.</span>
               </div>
 
-              {/* UPLY */}
               <div className="rounded-lg bg-[#00FF85]/[0.05] border border-[#00FF85]/20 p-4 text-center">
                 <span className="text-xs text-[#00FF85]/60 block mb-1">Uply Memberships</span>
                 <AnimatedNumber
@@ -417,7 +572,6 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Multiplier */}
             {multiplier > 0 && (
               <p className="text-center text-lg md:text-xl font-bold mb-4">
                 That's{" "}
@@ -439,6 +593,74 @@ export default function Landing() {
                 <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
             </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ─── COMPARISON TABLE ─── */}
+      <section className="py-16 md:py-24 relative">
+        <div className="container relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7 }}
+            className="text-center mb-10"
+          >
+            <h2 className="text-2xl md:text-4xl font-bold mb-3 font-heading">
+              Why creators are switching.
+            </h2>
+            <p className="text-white/40 text-sm md:text-base max-w-md mx-auto">
+              Other platforms give you pieces. Uply gives you the whole thing.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="max-w-3xl mx-auto rounded-xl border border-white/[0.08] overflow-hidden"
+          >
+            {/* Header */}
+            <div className="grid grid-cols-5 bg-white/[0.03] border-b border-white/[0.06]">
+              <div className="col-span-1 p-3 md:p-4" />
+              <div className="p-3 md:p-4 text-center">
+                <span className="text-xs md:text-sm font-bold text-[#00FF85]">Uply</span>
+              </div>
+              <div className="p-3 md:p-4 text-center">
+                <span className="text-xs md:text-sm text-white/40">YouTube</span>
+              </div>
+              <div className="p-3 md:p-4 text-center">
+                <span className="text-xs md:text-sm text-white/40">Patreon</span>
+              </div>
+              <div className="p-3 md:p-4 text-center">
+                <span className="text-xs md:text-sm text-white/40">Skool</span>
+              </div>
+            </div>
+
+            {/* Rows */}
+            {comparisonRows.map((row, i) => (
+              <div
+                key={row.feature}
+                className={`grid grid-cols-5 ${i < comparisonRows.length - 1 ? "border-b border-white/[0.04]" : ""} ${i % 2 === 0 ? "bg-white/[0.01]" : ""}`}
+              >
+                <div className="col-span-1 p-3 md:p-4 flex items-center">
+                  <span className="text-xs md:text-sm text-white/60">{row.feature}</span>
+                </div>
+                {[row.uply, row.youtube, row.patreon, row.skool].map((val, j) => (
+                  <div key={j} className="p-3 md:p-4 flex items-center justify-center">
+                    {val ? (
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center ${j === 0 ? "bg-[#00FF85]/20" : "bg-white/10"}`}>
+                        <Check className={`w-3 h-3 ${j === 0 ? "text-[#00FF85]" : "text-white/50"}`} />
+                      </div>
+                    ) : (
+                      <X className="w-3.5 h-3.5 text-white/15" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            ))}
           </motion.div>
         </div>
       </section>
@@ -475,7 +697,7 @@ export default function Landing() {
                 onClick={handleApply}
                 disabled={submitting}
               >
-                {submitting ? "..." : "Apply Now"}
+                {submitting ? "..." : CTA_LABEL}
               </Button>
             </div>
 
