@@ -229,8 +229,15 @@ function EventCard({ event, username }: { event: EventRow; username?: string }) 
 
 export default function Events() {
   const navigate = useNavigate();
-  const { data: events, isLoading } = useCreatorEvents();
-  const { data: profile } = useProfile();
+  const { data: dbProfile } = useQuery({
+    queryKey: ["my-profile-username"],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("username").eq("user_id", user!.id).maybeSingle();
+      return data;
+    },
+    enabled: !!user,
+  });
+  const { user } = useAuth();
 
   return (
     <AppLayout>

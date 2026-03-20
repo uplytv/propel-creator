@@ -220,7 +220,7 @@ export default function Settings() {
               </div>
               <div>
                 <p className="font-medium text-foreground">{name || "Your name"}</p>
-                <p className="text-xs text-muted-foreground">@{dbProfile?.username || "username"}</p>
+              <p className="text-xs text-muted-foreground">@{(dbProfile as any)?.username || "username"}</p>
               </div>
             </div>
 
