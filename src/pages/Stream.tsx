@@ -301,6 +301,25 @@ export default function Stream() {
     };
   }, [id, isRealStream, isVod, user?.id]);
 
+  // Check membership for private streams
+  useEffect(() => {
+    if (!dbStream || dbStream.is_public !== false || !isRealStream) {
+      setMemberAccess(true);
+      return;
+    }
+    if (user?.id === dbStream.user_id) { setMemberAccess(true); return; }
+    if (!user) { setMemberAccess(false); return; }
+    supabase
+      .from('member_subscriptions')
+      .select('id')
+      .eq('member_id', user.id)
+      .eq('creator_id', dbStream.user_id)
+      .eq('status', 'active')
+      .limit(1)
+      .single()
+      .then(({ data }) => setMemberAccess(!!data));
+  }, [dbStream, user, isRealStream]);
+
   const handleTip = useCallback((amount: number, message: string) => {
     setCreditsBalance((prev) => Math.max(0, prev - amount));
     toast({
