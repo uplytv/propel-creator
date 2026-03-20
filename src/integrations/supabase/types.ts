@@ -1672,6 +1672,108 @@ export type Database = {
           },
         ]
       }
+      live_auctions: {
+        Row: {
+          bid_count: number
+          created_at: string
+          creator_id: string
+          current_bid: number
+          current_winner_id: string | null
+          current_winner_username: string | null
+          ends_at: string
+          id: string
+          live_product_id: string
+          starting_bid: number
+          status: string
+          stream_id: string
+        }
+        Insert: {
+          bid_count?: number
+          created_at?: string
+          creator_id: string
+          current_bid?: number
+          current_winner_id?: string | null
+          current_winner_username?: string | null
+          ends_at: string
+          id?: string
+          live_product_id: string
+          starting_bid?: number
+          status?: string
+          stream_id: string
+        }
+        Update: {
+          bid_count?: number
+          created_at?: string
+          creator_id?: string
+          current_bid?: number
+          current_winner_id?: string | null
+          current_winner_username?: string | null
+          ends_at?: string
+          id?: string
+          live_product_id?: string
+          starting_bid?: number
+          status?: string
+          stream_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_auctions_live_product_id_fkey"
+            columns: ["live_product_id"]
+            isOneToOne: false
+            referencedRelation: "live_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_auctions_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "mux_live_streams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_auctions_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "mux_live_streams_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_bids: {
+        Row: {
+          amount: number
+          bidder_id: string
+          created_at: string
+          id: string
+          is_winning: boolean
+          live_product_id: string
+        }
+        Insert: {
+          amount: number
+          bidder_id: string
+          created_at?: string
+          id?: string
+          is_winning?: boolean
+          live_product_id: string
+        }
+        Update: {
+          amount?: number
+          bidder_id?: string
+          created_at?: string
+          id?: string
+          is_winning?: boolean
+          live_product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_bids_live_product_id_fkey"
+            columns: ["live_product_id"]
+            isOneToOne: false
+            referencedRelation: "live_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       live_chat_messages: {
         Row: {
           avatar_url: string | null
@@ -1704,6 +1806,214 @@ export type Database = {
           username?: string
         }
         Relationships: []
+      }
+      live_giveaway_entries: {
+        Row: {
+          created_at: string
+          giveaway_id: string
+          id: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          giveaway_id: string
+          id?: string
+          user_id: string
+          username?: string
+        }
+        Update: {
+          created_at?: string
+          giveaway_id?: string
+          id?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_giveaway_entries_giveaway_id_fkey"
+            columns: ["giveaway_id"]
+            isOneToOne: false
+            referencedRelation: "live_giveaways"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_giveaways: {
+        Row: {
+          created_at: string
+          creator_id: string
+          ended_at: string | null
+          entry_count: number
+          id: string
+          status: string
+          stream_id: string
+          title: string
+          winner_id: string | null
+          winner_username: string | null
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          ended_at?: string | null
+          entry_count?: number
+          id?: string
+          status?: string
+          stream_id: string
+          title: string
+          winner_id?: string | null
+          winner_username?: string | null
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          ended_at?: string | null
+          entry_count?: number
+          id?: string
+          status?: string
+          stream_id?: string
+          title?: string
+          winner_id?: string | null
+          winner_username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_giveaways_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "mux_live_streams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_giveaways_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "mux_live_streams_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_products: {
+        Row: {
+          auction_duration_minutes: number | null
+          created_at: string
+          creator_id: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          is_sold_out: boolean
+          position: number
+          price: number
+          quantity_remaining: number
+          quantity_total: number
+          starting_bid: number | null
+          stream_id: string
+          stripe_price_id: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          auction_duration_minutes?: number | null
+          created_at?: string
+          creator_id: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          is_sold_out?: boolean
+          position?: number
+          price?: number
+          quantity_remaining?: number
+          quantity_total?: number
+          starting_bid?: number | null
+          stream_id: string
+          stripe_price_id?: string | null
+          title: string
+          type?: string
+        }
+        Update: {
+          auction_duration_minutes?: number | null
+          created_at?: string
+          creator_id?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          is_sold_out?: boolean
+          position?: number
+          price?: number
+          quantity_remaining?: number
+          quantity_total?: number
+          starting_bid?: number | null
+          stream_id?: string
+          stripe_price_id?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_products_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "mux_live_streams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_products_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "mux_live_streams_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_purchases: {
+        Row: {
+          amount: number
+          buyer_id: string
+          created_at: string
+          creator_earnings: number
+          creator_id: string
+          id: string
+          live_product_id: string
+          platform_fee: number
+          status: string
+          stripe_payment_intent_id: string | null
+        }
+        Insert: {
+          amount?: number
+          buyer_id: string
+          created_at?: string
+          creator_earnings?: number
+          creator_id: string
+          id?: string
+          live_product_id: string
+          platform_fee?: number
+          status?: string
+          stripe_payment_intent_id?: string | null
+        }
+        Update: {
+          amount?: number
+          buyer_id?: string
+          created_at?: string
+          creator_earnings?: number
+          creator_id?: string
+          id?: string
+          live_product_id?: string
+          platform_fee?: number
+          status?: string
+          stripe_payment_intent_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_purchases_live_product_id_fkey"
+            columns: ["live_product_id"]
+            isOneToOne: false
+            referencedRelation: "live_products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       live_reactions: {
         Row: {
