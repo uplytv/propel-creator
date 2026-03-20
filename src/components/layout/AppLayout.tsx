@@ -114,6 +114,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedCores, setExpandedCores] = useState<string[]>([]);
+  const [uploadSheetOpen, setUploadSheetOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
   // Check admin
