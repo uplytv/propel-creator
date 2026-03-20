@@ -17,6 +17,7 @@ import { useProfile } from "@/hooks/useProfile";
 import EndOfStreamScreen from "@/components/live/EndOfStreamScreen";
 import LiveShopSetup from "@/components/live/LiveShopSetup";
 import ScheduleStreamTab from "@/components/scheduled/ScheduleStreamTab";
+import { trackEvent } from "@/lib/posthog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function GoLive() {
