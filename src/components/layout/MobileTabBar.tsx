@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Camera, BarChart3, DollarSign, Users, Sparkles } from "lucide-react";
+import { Camera, BarChart3, DollarSign, Users, Sparkles, CalendarDays } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 
