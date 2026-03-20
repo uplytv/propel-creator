@@ -218,6 +218,56 @@ export default function Pricing() {
         <p className="text-xs text-center text-muted-foreground mt-8">
           All plans include unlimited community members, live streaming, and course creation. Cancel anytime.
         </p>
+
+        {/* Competitor Comparison */}
+        <div className="mt-16">
+          <h2 className="text-2xl font-bold text-foreground text-center mb-2">Why creators choose UPLY</h2>
+          <p className="text-sm text-muted-foreground text-center mb-8 max-w-md mx-auto">
+            One platform replaces 6 subscriptions. Here's what you get that others don't.
+          </p>
+
+          <div className="rounded-xl border border-border overflow-hidden">
+            <div className="grid grid-cols-5 bg-card border-b border-border">
+              <div className="col-span-1 p-3" />
+              <div className="p-3 text-center"><span className="text-xs font-bold text-primary">UPLY</span></div>
+              <div className="p-3 text-center"><span className="text-xs text-muted-foreground">YouTube</span></div>
+              <div className="p-3 text-center"><span className="text-xs text-muted-foreground">Patreon</span></div>
+              <div className="p-3 text-center"><span className="text-xs text-muted-foreground">Kajabi</span></div>
+            </div>
+            {[
+              { feature: "Live streaming + tips", uply: true, yt: true, pat: false, kaj: false },
+              { feature: "Courses & classroom", uply: true, yt: false, pat: false, kaj: true },
+              { feature: "Events & ticketing", uply: true, yt: false, pat: false, kaj: false },
+              { feature: "Live shopping", uply: true, yt: false, pat: false, kaj: false },
+              { feature: "Paid DMs", uply: true, yt: false, pat: false, kaj: false },
+              { feature: "Community + leaderboards", uply: true, yt: false, pat: true, kaj: true },
+              { feature: "AI growth assistant", uply: true, yt: false, pat: false, kaj: false },
+              { feature: "Affiliate system", uply: true, yt: false, pat: false, kaj: true },
+              { feature: "Jobs marketplace", uply: true, yt: false, pat: false, kaj: false },
+              { feature: "Starting price", uply: "Free", yt: "Free", pat: "$8/mo", kaj: "$149/mo" },
+              { feature: "Lowest transaction fee", uply: "0%", yt: "30%", pat: "8%+", kaj: "5%" },
+            ].map((row, i) => (
+              <div key={row.feature} className={`grid grid-cols-5 ${i % 2 === 0 ? "bg-card/50" : ""} border-b border-border/50 last:border-0`}>
+                <div className="col-span-1 p-3 flex items-center">
+                  <span className="text-xs text-muted-foreground">{row.feature}</span>
+                </div>
+                {[row.uply, row.yt, row.pat, row.kaj].map((val, j) => (
+                  <div key={j} className="p-3 flex items-center justify-center">
+                    {typeof val === "string" ? (
+                      <span className={`text-xs font-medium ${j === 0 ? "text-primary" : "text-muted-foreground"}`}>{val}</span>
+                    ) : val ? (
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center ${j === 0 ? "bg-primary/20" : "bg-muted"}`}>
+                        <Check className={`w-3 h-3 ${j === 0 ? "text-primary" : "text-muted-foreground"}`} />
+                      </div>
+                    ) : (
+                      <X className="w-3.5 h-3.5 text-muted-foreground/30" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </AppLayout>
   );
