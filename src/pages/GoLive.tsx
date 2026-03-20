@@ -265,7 +265,17 @@ export default function GoLive() {
               <p className="text-xs text-muted-foreground text-center">
                 Your stream will be automatically recorded and saved to your content library.
               </p>
-            </div>
+              </TabsContent>
+              <TabsContent value="shop">
+                {streamData ? (
+                  <LiveShopSetup streamId={streamData.streamId} products={[]} onProductsChange={() => {}} />
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-sm text-muted-foreground">Set up your stream first, then add products to sell live.</p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           ) : showEndScreen && streamData ? (
             <EndOfStreamScreen
               streamId={streamData.streamId}
