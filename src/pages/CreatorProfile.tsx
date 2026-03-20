@@ -519,7 +519,7 @@ export default function CreatorProfile() {
           {/* Type pill */}
           {profile.creator_type && (
             <div className="flex justify-center mt-3">
-              <span className="px-3 py-1 rounded-full text-xs font-medium" style={{ background: "#1a1a1a", color: "#00FF85" }}>
+              <span className="px-3 py-1 rounded-full text-xs font-medium bg-secondary text-primary">
                 {profile.creator_type}{profile.business_category ? ` · ${profile.business_category}` : ""}
               </span>
             </div>
