@@ -426,7 +426,7 @@ export default function CreatorProfile() {
   // Loading
   if (profileLoading) {
     return (
-      <div className="min-h-screen" style={{ background: "#0A0A0A" }}>
+      <div className="min-h-screen bg-background">
         <ProfileSkeleton />
       </div>
     );
