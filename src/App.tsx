@@ -63,6 +63,10 @@ const Messages = lazy(() => import("./pages/Messages"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const VideoPlayer = lazy(() => import("./pages/VideoPlayer"));
+const Events = lazy(() => import("./pages/Events"));
+const CreateEvent = lazy(() => import("./pages/CreateEvent"));
+const EventPage = lazy(() => import("./pages/EventPage"));
+const TicketDetail = lazy(() => import("./pages/TicketDetail"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -144,6 +148,9 @@ const App = () => (
                     <Route path="/discover" element={<Discover />} />
                     <Route path="/shorts" element={<Shorts />} />
                     <Route path="/pricing" element={<Pricing />} />
+                    <Route path="/:username/events/:slug" element={<EventPage />} />
+                    <Route path="/creator/:username/events/:slug" element={<EventPage />} />
+                    <Route path="/tickets/:token" element={<TicketDetail />} />
 
                     {/* Protected routes */}
                     <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
@@ -171,6 +178,8 @@ const App = () => (
                     <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
                     <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
                     <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+                    <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
+                    <Route path="/events/create" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
 
                     {/* Admin routes */}
                     <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />

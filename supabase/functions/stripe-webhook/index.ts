@@ -220,6 +220,75 @@ Deno.serve(async (req) => {
           }
           logStep("Product purchase processed with notifications", { buyer_id, product_id, amount });
 
+        } else if (purchaseType === "event_ticket") {
+          const { event_id, buyer_id, creator_id } = metadata;
+          const amount = (session.amount_total || 0) / 100;
+          const fee = Math.round(amount * 0.05 * 100) / 100;
+          const token = crypto.randomUUID();
+
+          await supabase.from("tickets").insert({
+            event_id,
+            buyer_id,
+            creator_id,
+            stripe_payment_intent_id: session.payment_intent as string,
+            amount_paid: amount,
+            platform_fee: fee,
+            creator_earnings: amount - fee,
+            qr_code_token: token,
+            status: "active",
+          });
+
+          // Increment tickets_sold
+          const { data: evt } = await supabase.from("events").select("tickets_sold, ticket_quantity, title").eq("id", event_id).single();
+          if (evt) {
+            const newSold = (evt.tickets_sold || 0) + 1;
+            const isSoldOut = evt.ticket_quantity ? newSold >= evt.ticket_quantity : false;
+            await supabase.from("events").update({ tickets_sold: newSold, is_sold_out: isSoldOut }).eq("id", event_id);
+          }
+
+          // Wallet update for creator
+          const { data: creatorWallet } = await supabase
+            .from("wallets").select("id, available_balance, lifetime_earned").eq("user_id", creator_id).maybeSingle();
+          if (creatorWallet) {
+            await supabase.from("transactions").insert({
+              wallet_id: creatorWallet.id,
+              amount,
+              net_amount: amount - fee,
+              platform_fee_amount: fee,
+              type: "earn",
+              status: "completed",
+              stripe_payment_intent_id: session.payment_intent as string,
+              description: `Event ticket: ${evt?.title || "Event"}`,
+              completed_at: new Date().toISOString(),
+            });
+            await supabase.from("wallets").update({
+              available_balance: (creatorWallet.available_balance || 0) + (amount - fee),
+              lifetime_earned: (creatorWallet.lifetime_earned || 0) + (amount - fee),
+            }).eq("id", creatorWallet.id);
+          }
+
+          // Notify buyer
+          const { data: buyerProfile } = await supabase.from("profiles").select("display_name").eq("user_id", buyer_id).maybeSingle();
+          await supabase.from("notifications").insert({
+            user_id: buyer_id,
+            type: "event_ticket",
+            title: "Ticket Confirmed! 🎟️",
+            message: `Your ticket for "${evt?.title}" is confirmed.`,
+            link: `/tickets/${token}`,
+          });
+
+          // Notify creator
+          await supabase.from("notifications").insert({
+            user_id: creator_id,
+            type: "event_ticket_sale",
+            title: "New Ticket Sale! 🎉",
+            message: `${buyerProfile?.display_name || "Someone"} bought a ticket to "${evt?.title}" — $${amount.toFixed(2)}`,
+            actor_id: buyer_id,
+            link: "/events",
+          });
+
+          logStep("Event ticket processed", { event_id, buyer_id, amount });
+
         } else if (purchaseType === "credits") {
           const { buyer_id } = metadata;
           const lineItems = await stripe.checkout.sessions.listLineItems(session.id);

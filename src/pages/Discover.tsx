@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Compass, Loader2, Radio, Zap, Flame, X, Eye, Users as UsersIcon } from "lucide-react";
+import { Search, Compass, Loader2, Radio, Zap, Flame, X, Eye, Users as UsersIcon, CalendarDays } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useDiscoveryFeed, type FilterCategory, type SortOption, type FeedTab } from "@/hooks/useDiscoveryFeed";
+import EventDiscoveryGrid from "@/components/events/EventDiscoveryGrid";
 import FeedCard from "@/components/discovery/FeedCard";
 import FeedFilters from "@/components/discovery/FeedFilters";
 import FeaturedCarousel from "@/components/discovery/FeaturedCarousel";
@@ -21,7 +22,7 @@ export default function Discover() {
   const [filter, setFilter] = useState<FilterCategory>("all");
   const [sort, setSort] = useState<SortOption>("trending");
   const [liveOnly, setLiveOnly] = useState(false);
-  const [feedTab, setFeedTab] = useState<FeedTab>("foryou");
+  const [feedTab, setFeedTab] = useState<FeedTab | "events">("foryou");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [dismissedLiveBanner, setDismissedLiveBanner] = useState<string | null>(null);
 
@@ -29,7 +30,8 @@ export default function Discover() {
   const { followingIds } = useFollows();
   const navigate = useNavigate();
 
-  const { data: feedData, isLoading } = useDiscoveryFeed(filter, sort, search, liveOnly, feedTab);
+  const actualFeedTab = feedTab === "events" ? "foryou" : feedTab;
+  const { data: feedData, isLoading } = useDiscoveryFeed(filter, sort, search, liveOnly, actualFeedTab);
 
   const liveItems = feedData?.live ?? [];
   const newItems = feedData?.new ?? [];
@@ -146,7 +148,7 @@ export default function Discover() {
       <div className="container px-4 py-4 max-w-3xl space-y-4">
         {/* Feed tabs */}
         <div className="flex gap-1 bg-secondary/30 rounded-xl p-1">
-          {(["foryou", "following"] as FeedTab[]).map((tab) => (
+          {(["foryou", "following", "events"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setFeedTab(tab)}
@@ -156,32 +158,40 @@ export default function Discover() {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {tab === "foryou" ? "For You" : "Following"}
+              {tab === "foryou" ? "For You" : tab === "following" ? "Following" : "Events"}
             </button>
           ))}
         </div>
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search creators, courses, communities…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-secondary/50"
-          />
-        </div>
+        {feedTab !== "events" && (
+          <>
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search creators, courses, communities…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 bg-secondary/50"
+              />
+            </div>
 
-        {/* Filters */}
-        <FeedFilters
-          filter={filter}
-          sort={sort}
-          liveOnly={liveOnly}
-          onFilterChange={setFilter}
-          onSortChange={setSort}
-          onLiveOnlyChange={setLiveOnly}
-        />
+            {/* Filters */}
+            <FeedFilters
+              filter={filter}
+              sort={sort}
+              liveOnly={liveOnly}
+              onFilterChange={setFilter}
+              onSortChange={setSort}
+              onLiveOnlyChange={setLiveOnly}
+            />
+          </>
+        )}
 
+        {feedTab === "events" ? (
+          <EventDiscoveryGrid />
+        ) : (
+        <>
         {/* Staff Picks / Category Hero */}
         {filter === "all" && !search && feedTab === "foryou" && <FeaturedCarousel />}
         {filter !== "all" && <CategoryHeroBanner category={filter} />}
@@ -276,6 +286,8 @@ export default function Discover() {
               </p>
             )}
           </div>
+        )}
+        </>
         )}
       </div>
     </div>
