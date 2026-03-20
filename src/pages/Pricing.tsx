@@ -112,6 +112,7 @@ export default function Pricing() {
       console.log("[Pricing] Checkout response:", { data, error });
       if (error) throw error;
       if (data?.url) {
+        trackEvent("platform_upgrade_started", { plan: planKey, price: plan.price });
         console.log("[Pricing] Redirecting to:", data.url);
         window.location.href = data.url;
         return; // Don't clear loading state — we're navigating away
