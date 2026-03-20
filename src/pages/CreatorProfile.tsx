@@ -491,9 +491,9 @@ export default function CreatorProfile() {
           <div className="flex justify-center relative">
             <div className="relative">
               {profile.avatar_url ? (
-                <img src={profile.avatar_url} alt={creatorName} className="w-24 h-24 rounded-full object-cover" style={{ border: "3px solid #00FF85" }} />
+                <img src={profile.avatar_url} alt={creatorName} className="w-24 h-24 rounded-full object-cover border-[3px] border-primary" />
               ) : (
-                <div className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold" style={{ border: "3px solid #00FF85", background: "#1a1a1a", color: "#00FF85" }}>
+                <div className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold border-[3px] border-primary bg-secondary text-primary">
                   {creatorName.charAt(0).toUpperCase()}
                 </div>
               )}
