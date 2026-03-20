@@ -9,6 +9,7 @@ import TipButton from "@/components/live/TipButton";
 import TipOverlay from "@/components/live/TipOverlay";
 import MobileChatDrawer from "@/components/live/MobileChatDrawer";
 import ViewerEngagementOverlay from "@/components/live/ViewerEngagementOverlay";
+import ViewerShopOverlay from "@/components/live/ViewerShopOverlay";
 
 import { useState, useCallback, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
