@@ -62,7 +62,7 @@ function EventCard({ event }: { event: EventRow }) {
       <div className="p-3 space-y-1.5">
         <h3 className="font-semibold text-foreground text-sm truncate">{event.title}</h3>
         <div className="flex items-center gap-2">
-          {creator?.avatar_url && <img src={creator.avatar_url} className="w-5 h-5 rounded-full" />}
+          {creator?.avatar_url && <img src={creator.avatar_url} className="w-5 h-5 rounded-full" loading="lazy" />}
           <span className="text-xs text-muted-foreground">{creator?.display_name || creator?.username}</span>
         </div>
         <p className="text-xs text-primary">{format(new Date(event.starts_at), "EEE MMM d · h:mm a")}</p>
