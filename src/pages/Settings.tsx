@@ -269,10 +269,12 @@ export default function Settings() {
             <Separator />
 
             {/* YouTube Import */}
-            <div className="rounded-2xl border border-border bg-card/40 p-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">YouTube Import</h2>
-              <YouTubeImport />
-            </div>
+            {user && (
+              <div className="rounded-2xl border border-border bg-card/40 p-6">
+                <h2 className="text-lg font-semibold text-foreground mb-4">YouTube Import</h2>
+                <YouTubeImport creatorId={user.id} />
+              </div>
+            )}
           </motion.div>
         )}
 
