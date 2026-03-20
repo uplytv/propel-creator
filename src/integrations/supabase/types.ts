@@ -1220,18 +1220,21 @@ export type Database = {
           created_at: string
           event_id: string
           id: string
+          reminded_at: string | null
           user_id: string
         }
         Insert: {
           created_at?: string
           event_id: string
           id?: string
+          reminded_at?: string | null
           user_id: string
         }
         Update: {
           created_at?: string
           event_id?: string
           id?: string
+          reminded_at?: string | null
           user_id?: string
         }
         Relationships: [
@@ -1250,6 +1253,7 @@ export type Database = {
           event_id: string
           id: string
           notified: boolean
+          notified_at: string | null
           position: number
           user_id: string
         }
@@ -1258,6 +1262,7 @@ export type Database = {
           event_id: string
           id?: string
           notified?: boolean
+          notified_at?: string | null
           position?: number
           user_id: string
         }
@@ -1266,6 +1271,7 @@ export type Database = {
           event_id?: string
           id?: string
           notified?: boolean
+          notified_at?: string | null
           position?: number
           user_id?: string
         }
@@ -3160,18 +3166,21 @@ export type Database = {
           created_at: string | null
           id: string
           scheduled_stream_id: string
+          sent_at: string | null
           user_id: string
         }
         Insert: {
           created_at?: string | null
           id?: string
           scheduled_stream_id: string
+          sent_at?: string | null
           user_id: string
         }
         Update: {
           created_at?: string | null
           id?: string
           scheduled_stream_id?: string
+          sent_at?: string | null
           user_id?: string
         }
         Relationships: [
