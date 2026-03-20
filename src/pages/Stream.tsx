@@ -22,6 +22,51 @@ import ClipCreator from "@/components/clips/ClipCreator";
 import SharePanel from "@/components/share/SharePanel";
 import SEOHead from "@/components/SEOHead";
 
+function StreamEndedState({ streamId, status, creatorId }: { streamId: string; status: string; creatorId: string }) {
+  const navigate = useNavigate();
+  const [vodId, setVodId] = useState<string | null>(null);
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    const checkVod = async () => {
+      const { data } = await supabase
+        .from('stream_recordings')
+        .select('id')
+        .eq('creator_id', creatorId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      if (data) setVodId(data.id);
+      setChecking(false);
+    };
+    checkVod();
+  }, [creatorId]);
+
+  return (
+    <div className="w-full aspect-video bg-muted/50 flex items-center justify-center border-b border-border">
+      <div className="text-center">
+        <Radio className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+        <h2 className="text-lg font-bold text-foreground mb-1">
+          {status === 'idle' ? "Stream hasn't started yet" : "Stream has ended"}
+        </h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          {status === 'idle' ? "Check back soon or browse other live streams." : "This stream is no longer live."}
+        </p>
+        <div className="flex items-center justify-center gap-3">
+          {vodId && (
+            <Button variant="default" size="sm" onClick={() => navigate(`/stream/${vodId}?type=recording`)}>
+              Watch Recording
+            </Button>
+          )}
+          <Button variant="outline" size="sm" onClick={() => navigate("/live")}>
+            Browse Streams
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const tierIcons = [Shield, TrendingUp, Zap, Crown];
 const tierColors: Record<number, string> = {
   1: "bg-muted text-muted-foreground",
@@ -49,6 +94,7 @@ export default function Stream() {
   const [isRealStream, setIsRealStream] = useState(false);
   const [featuredProduct, setFeaturedProduct] = useState<any>(null);
   const [shareOpen, setShareOpen] = useState(false);
+  const [memberAccess, setMemberAccess] = useState<boolean | null>(null);
 
   const searchParams = new URLSearchParams(window.location.search);
   const contentType = searchParams.get('type'); // 'vod' | 'recording' | null
@@ -255,6 +301,25 @@ export default function Stream() {
     };
   }, [id, isRealStream, isVod, user?.id]);
 
+  // Check membership for private streams
+  useEffect(() => {
+    if (!dbStream || dbStream.is_public !== false || !isRealStream) {
+      setMemberAccess(true);
+      return;
+    }
+    if (user?.id === dbStream.user_id) { setMemberAccess(true); return; }
+    if (!user) { setMemberAccess(false); return; }
+    supabase
+      .from('member_subscriptions')
+      .select('id')
+      .eq('member_id', user.id)
+      .eq('creator_id', dbStream.user_id)
+      .eq('status', 'active')
+      .limit(1)
+      .single()
+      .then(({ data }) => setMemberAccess(!!data));
+  }, [dbStream, user, isRealStream]);
+
   const handleTip = useCallback((amount: number, message: string) => {
     setCreditsBalance((prev) => Math.max(0, prev - amount));
     toast({
@@ -287,6 +352,7 @@ export default function Stream() {
     const creatorTierName = profile?.tier_name || 'Starter';
     const TierIcon = tierIcons[creatorTier - 1] || Shield;
     const playbackId = dbStream.mux_playback_id;
+    const isPrivateStream = dbStream.is_public === false;
 
     // Guard: no playback ID available
     if (!playbackId) {
@@ -300,6 +366,34 @@ export default function Stream() {
           </div>
         </div>
       );
+    }
+
+    // Private stream: check membership
+    if (isPrivateStream && user?.id !== dbStream.user_id) {
+      if (memberAccess === null) {
+        return (
+          <div className="min-h-screen bg-background flex items-center justify-center">
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+          </div>
+        );
+      }
+
+      if (!memberAccess) {
+        return (
+          <div className="min-h-screen bg-background flex items-center justify-center">
+            <div className="text-center max-w-sm mx-4">
+              <Shield className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h1 className="text-xl font-bold text-foreground mb-2">Members Only</h1>
+              <p className="text-sm text-muted-foreground mb-6">
+                This is a private stream for {creatorName}'s community members. Subscribe to get access.
+              </p>
+              <Button variant="default" onClick={() => navigate(`/creator/${dbStream.user_id}`)}>
+                View Membership Options
+              </Button>
+            </div>
+          </div>
+        );
+      }
     }
 
     return (
@@ -409,18 +503,11 @@ export default function Stream() {
                   streamType="ll-live"
                 />
               ) : (
-                <div className="w-full aspect-video bg-muted/50 flex items-center justify-center border-b border-border">
-                  <div className="text-center">
-                    <Radio className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-                    <h2 className="text-lg font-bold text-foreground mb-1">
-                      {dbStream.status === 'idle' ? "Stream hasn't started yet" : "Stream has ended"}
-                    </h2>
-                    <p className="text-sm text-muted-foreground">Check back soon or browse other live streams.</p>
-                    <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate("/live")}>
-                      Browse Streams
-                    </Button>
-                  </div>
-                </div>
+                <StreamEndedState 
+                  streamId={id || ''} 
+                  status={dbStream.status} 
+                  creatorId={dbStream.user_id}
+                />
               )}
 
               {/* Viewer Engagement Overlay — only on active live streams */}

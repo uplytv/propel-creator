@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Eye, Shield, TrendingUp, Zap, Crown, Rocket } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import type { MockStream } from "@/data/mockStreams";
+import type { StreamCardData } from "./StreamCardNew";
 import BoostCampaignBuilder from "@/components/ads/BoostCampaignBuilder";
 
 const tierIcons = [Shield, TrendingUp, Zap, Crown];
@@ -18,7 +18,7 @@ function formatViewers(n: number) {
   return n >= 1000 ? `${(n / 1000).toFixed(1)}K` : n.toString();
 }
 
-export default function StreamCard({ stream, index = 0 }: { stream: MockStream; index?: number }) {
+export default function StreamCard({ stream, index = 0 }: { stream: StreamCardData; index?: number }) {
   const navigate = useNavigate();
   const TierIcon = tierIcons[stream.creatorTier - 1] || Shield;
   const [boostOpen, setBoostOpen] = useState(false);
@@ -35,9 +35,8 @@ export default function StreamCard({ stream, index = 0 }: { stream: MockStream; 
         {/* Thumbnail */}
         <div
           onClick={() => navigate(`/stream/${stream.id}`)}
-          className={`relative aspect-video rounded-xl overflow-hidden bg-gradient-to-br ${stream.thumbnailGradient} border border-border/50 group-hover:border-primary/30 transition-all duration-300 cursor-pointer`}
+          className={`relative aspect-video rounded-xl overflow-hidden bg-gradient-to-br ${stream.thumbnailGradient || 'from-card to-secondary'} border border-border/50 group-hover:border-primary/30 transition-all duration-300 cursor-pointer`}
         >
-          {/* Real Mux thumbnail or mock */}
           {stream.muxPlaybackId ? (
             <img
               src={`https://image.mux.com/${stream.muxPlaybackId}/thumbnail.png?width=640&height=360&time=1`}
@@ -45,10 +44,8 @@ export default function StreamCard({ stream, index = 0 }: { stream: MockStream; 
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-20 h-20 rounded-full bg-foreground/5 backdrop-blur-sm flex items-center justify-center">
-                <div className="w-0 h-0 border-t-[12px] border-t-transparent border-b-[12px] border-b-transparent border-l-[20px] border-l-foreground/40 ml-1" />
-              </div>
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-card to-secondary">
+              <img src="/logo.png" alt="UPLY" className="h-6 opacity-30" />
             </div>
           )}
 
@@ -59,12 +56,6 @@ export default function StreamCard({ stream, index = 0 }: { stream: MockStream; 
                 <span className="live-dot w-2 h-2 rounded-full" />
                 LIVE
               </span>
-              {(stream as any).hasShop && (
-                <span className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold"
-                  style={{ backgroundColor: "rgba(255,215,0,0.2)", color: "#FFD700", backdropFilter: "blur(8px)" }}>
-                  🛍️
-                </span>
-              )}
             </div>
           )}
 
@@ -89,7 +80,6 @@ export default function StreamCard({ stream, index = 0 }: { stream: MockStream; 
               setBoostOpen(true);
             }}
             className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-primary/90 hover:bg-primary backdrop-blur-sm text-primary-foreground px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all opacity-0 group-hover:opacity-100 sm:opacity-100"
-            style={{ boxShadow: "var(--glow-shadow)" }}
           >
             <Rocket className="w-3 h-3" />
             Boost
@@ -101,12 +91,15 @@ export default function StreamCard({ stream, index = 0 }: { stream: MockStream; 
 
         {/* Info */}
         <div className="mt-3 flex gap-3">
-          {/* Avatar */}
           <div
             onClick={() => navigate(`/stream/${stream.id}`)}
-            className="flex-shrink-0 w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary cursor-pointer"
+            className="flex-shrink-0 w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary cursor-pointer overflow-hidden"
           >
-            {stream.creatorAvatar}
+            {stream.creatorAvatar && stream.creatorAvatar.startsWith('http') ? (
+              <img src={stream.creatorAvatar} alt="" className="w-full h-full object-cover" />
+            ) : (
+              stream.creatorAvatar || stream.creatorName.slice(0, 2).toUpperCase()
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <h3
@@ -127,7 +120,6 @@ export default function StreamCard({ stream, index = 0 }: { stream: MockStream; 
         </div>
       </motion.div>
 
-      {/* Boost Campaign Builder Modal */}
       <BoostCampaignBuilder
         isOpen={boostOpen}
         onClose={() => setBoostOpen(false)}
