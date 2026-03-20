@@ -47,7 +47,7 @@ function EventCard({ event }: { event: EventRow }) {
     >
       <div className="aspect-video w-full overflow-hidden relative">
         {event.cover_image_url ? (
-          <img src={event.cover_image_url} alt="" className="w-full h-full object-cover" />
+          <img src={event.cover_image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
         ) : (
           <div className="w-full h-full bg-muted flex items-center justify-center">
             <CalendarDays className="w-10 h-10 text-muted-foreground" />
