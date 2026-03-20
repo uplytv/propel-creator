@@ -84,6 +84,21 @@ function LessonPlayer({ lesson }: { lesson: any }) {
     },
   });
 
+  // YouTube embed
+  if (lesson.video_type === "youtube" && lesson.youtube_video_id) {
+    return (
+      <div className="w-full aspect-video bg-black">
+        <iframe
+          src={`https://www.youtube.com/embed/${lesson.youtube_video_id}?autoplay=1`}
+          className="w-full h-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          title={lesson.title}
+        />
+      </div>
+    );
+  }
+
   if (playbackId) return <UPLYMuxPlayer playbackId={playbackId} title={lesson.title} autoPlay />;
   if (lesson.video_url) {
     return (
@@ -347,8 +362,13 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                         onClick={() => setSelectedLesson(lesson)}
                         className="flex-1 text-left px-4 py-4 hover:bg-secondary/50 transition-colors"
                       >
-                        <span className={`text-[15px] font-medium ${isComplete ? "text-muted-foreground" : "text-foreground"}`}>
-                          {lesson.title}
+                        <span className="flex items-center gap-2">
+                          <span className={`text-[15px] font-medium ${isComplete ? "text-muted-foreground" : "text-foreground"}`}>
+                            {lesson.title}
+                          </span>
+                          {lesson.video_type === "youtube" && (
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-destructive/10 text-destructive">YouTube</span>
+                          )}
                         </span>
                       </button>
                       {isOwner && (

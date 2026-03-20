@@ -402,7 +402,9 @@ export type Database = {
           position: number
           slug: string | null
           title: string
+          video_type: string | null
           video_url: string | null
+          youtube_video_id: string | null
         }
         Insert: {
           created_at?: string
@@ -416,7 +418,9 @@ export type Database = {
           position?: number
           slug?: string | null
           title: string
+          video_type?: string | null
           video_url?: string | null
+          youtube_video_id?: string | null
         }
         Update: {
           created_at?: string
@@ -430,7 +434,9 @@ export type Database = {
           position?: number
           slug?: string | null
           title?: string
+          video_type?: string | null
           video_url?: string | null
+          youtube_video_id?: string | null
         }
         Relationships: [
           {

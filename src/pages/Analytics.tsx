@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { TrendingUp, TrendingDown, Users, Eye, DollarSign, UserPlus, Play, Loader2, BarChart3, Calendar, Activity, PieChart as PieChartIcon } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, Eye, DollarSign, UserPlus, Play, Calendar, Activity, PieChart as PieChartIcon } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import BackNav from "@/components/BackNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,42 +44,44 @@ export default function AnalyticsPage() {
   const { data, isLoading } = useCreatorAnalytics();
   const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d" | "all">("30d");
 
-  // Generate daily revenue chart data
+  // Build revenue chart from real daily data
   const revenueChartData = useMemo(() => {
     const days = timeRange === "7d" ? 7 : timeRange === "30d" ? 30 : timeRange === "90d" ? 90 : 60;
+    const dailyMap = data?.dailyRevenue || {};
     const result = [];
     for (let i = days - 1; i >= 0; i--) {
       const date = subDays(new Date(), i);
+      const key = format(date, "yyyy-MM-dd");
       result.push({
         date: format(date, days <= 7 ? "EEE" : "MMM d"),
-        revenue: Math.floor(Math.random() * 50), // Placeholder — real data from transactions
+        revenue: dailyMap[key] || 0,
       });
     }
     return result;
-  }, [timeRange, data]);
+  }, [timeRange, data?.dailyRevenue]);
 
-  // Member growth chart data
+  // Member growth chart — use real member count
   const memberChartData = useMemo(() => {
     const days = timeRange === "7d" ? 7 : timeRange === "30d" ? 30 : timeRange === "90d" ? 90 : 60;
     const result = [];
-    let cumulative = (data?.metrics?.newMembers || 0) > 0 ? Math.max(1, Math.floor(Math.random() * 20)) : 0;
+    const totalMembers = data?.metrics?.newMembers || 0;
     for (let i = days - 1; i >= 0; i--) {
       const date = subDays(new Date(), i);
-      cumulative += Math.floor(Math.random() * 3);
+      // Simple linear approximation — shows growth trend
+      const membersSoFar = Math.round(totalMembers * ((days - i) / days));
       result.push({
         date: format(date, days <= 7 ? "EEE" : "MMM d"),
-        members: cumulative,
+        members: membersSoFar,
       });
     }
     return result;
   }, [timeRange, data]);
 
-  // Subscriber breakdown for pie chart
   const subscriberBreakdown = useMemo(() => {
-    const free = (data?.metrics?.newMembers || 0);
-    const paid = Math.floor(free * 0.3);
+    const total = (data?.metrics?.newMembers || 0);
+    const paid = Math.floor(total * 0.3);
     return [
-      { name: "Free", value: Math.max(free - paid, 1) },
+      { name: "Free", value: Math.max(total - paid, 1) },
       { name: "Paid", value: Math.max(paid, 0) },
     ];
   }, [data]);
@@ -181,7 +183,6 @@ export default function AnalyticsPage() {
 
         {/* Engagement + Subscriber Breakdown */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-          {/* Engagement Summary */}
           {(data?.streamSessions ?? []).length > 0 && (
             <Card className="border-border">
               <CardHeader className="pb-2">
@@ -218,7 +219,6 @@ export default function AnalyticsPage() {
             </Card>
           )}
 
-          {/* Subscriber Breakdown Pie */}
           <Card className="border-border">
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
@@ -229,22 +229,12 @@ export default function AnalyticsPage() {
             <CardContent className="flex items-center justify-center">
               <ResponsiveContainer width="100%" height={160}>
                 <PieChart>
-                  <Pie
-                    data={subscriberBreakdown}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={40}
-                    outerRadius={60}
-                    paddingAngle={2}
-                    dataKey="value"
-                  >
+                  <Pie data={subscriberBreakdown} cx="50%" cy="50%" innerRadius={40} outerRadius={60} paddingAngle={2} dataKey="value">
                     {subscriberBreakdown.map((_, i) => (
                       <Cell key={i} fill={PIE_COLORS[i]} />
                     ))}
                   </Pie>
-                  <Tooltip
-                    contentStyle={{ backgroundColor: CHART_COLORS.bg, border: `1px solid ${CHART_COLORS.grid}`, borderRadius: 8, fontSize: 12 }}
-                  />
+                  <Tooltip contentStyle={{ backgroundColor: CHART_COLORS.bg, border: `1px solid ${CHART_COLORS.grid}`, borderRadius: 8, fontSize: 12 }} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="space-y-2 ml-2">
@@ -281,12 +271,14 @@ export default function AnalyticsPage() {
                       alt=""
                       loading="lazy"
                     />
+                  ) : item.thumbnail_url ? (
+                    <img src={item.thumbnail_url} className="w-16 h-9 rounded object-cover bg-muted" alt="" loading="lazy" />
                   ) : (
                     <div className="w-16 h-9 rounded bg-muted" />
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{item.title}</p>
-                    <p className="text-xs text-muted-foreground">{item.view_count} views</p>
+                    <p className="text-xs text-muted-foreground">{item.view_count || 0} views</p>
                   </div>
                 </div>
               ))
