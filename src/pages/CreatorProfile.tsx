@@ -528,11 +528,11 @@ export default function CreatorProfile() {
           {/* Bio */}
           {profile.bio && (
             <div className="text-center mt-4 max-w-[560px] mx-auto">
-              <p className={`text-white text-base leading-relaxed ${!bioExpanded ? "line-clamp-3" : ""}`}>
+              <p className={`text-foreground text-base leading-relaxed ${!bioExpanded ? "line-clamp-3" : ""}`}>
                 {profile.bio}
               </p>
               {profile.bio.length > 180 && (
-                <button onClick={() => setBioExpanded(!bioExpanded)} className="text-[#00FF85] text-sm mt-1 font-medium">
+                <button onClick={() => setBioExpanded(!bioExpanded)} className="text-primary text-sm mt-1 font-medium">
                   {bioExpanded ? "Show less" : "Show more"}
                 </button>
               )}
