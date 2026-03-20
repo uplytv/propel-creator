@@ -409,18 +409,11 @@ export default function Stream() {
                   streamType="ll-live"
                 />
               ) : (
-                <div className="w-full aspect-video bg-muted/50 flex items-center justify-center border-b border-border">
-                  <div className="text-center">
-                    <Radio className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-                    <h2 className="text-lg font-bold text-foreground mb-1">
-                      {dbStream.status === 'idle' ? "Stream hasn't started yet" : "Stream has ended"}
-                    </h2>
-                    <p className="text-sm text-muted-foreground">Check back soon or browse other live streams.</p>
-                    <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate("/live")}>
-                      Browse Streams
-                    </Button>
-                  </div>
-                </div>
+                <StreamEndedState 
+                  streamId={id || ''} 
+                  status={dbStream.status} 
+                  creatorId={dbStream.user_id}
+                />
               )}
 
               {/* Viewer Engagement Overlay — only on active live streams */}
