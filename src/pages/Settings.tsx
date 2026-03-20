@@ -404,6 +404,13 @@ export default function Settings() {
               <h2 className="text-lg font-semibold mb-4">My Subscriptions</h2>
               <SubscriptionsTab />
             </div>
+
+            {/* YouTube Import */}
+            {user && (
+              <div className="rounded-2xl border border-border bg-card/40 p-6">
+                <YouTubeImport creatorId={user.id} />
+              </div>
+            )}
           </motion.div>
         )}
 
