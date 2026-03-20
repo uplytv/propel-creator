@@ -13,6 +13,7 @@ const cores = [
       { label: "Go Live", path: "/go-live" },
       { label: "Content Library", path: "/content-library" },
       { label: "Scheduled Streams", path: "/go-live?tab=schedule" },
+      { label: "Events", path: "/events" },
     ],
   },
   {
