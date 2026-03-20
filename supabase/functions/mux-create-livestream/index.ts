@@ -65,6 +65,13 @@ serve(async (req) => {
 
     if (dbError) throw dbError
 
+    // Create live_stream_sessions row immediately
+    await supabase.from('live_stream_sessions').insert({
+      stream_id: stream.id,
+      user_id: userId,
+      started_at: new Date().toISOString(),
+    })
+
     return new Response(JSON.stringify({
       streamId: stream.id,
       streamKey: muxData.data.stream_key,
