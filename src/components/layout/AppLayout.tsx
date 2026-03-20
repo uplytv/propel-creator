@@ -1,6 +1,8 @@
 import { ReactNode, useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MobileTabBar from "./MobileTabBar";
+import CreateFAB from "@/components/videos/CreateFAB";
+import VideoUploadSheet from "@/components/videos/VideoUploadSheet";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Package, Lock,
