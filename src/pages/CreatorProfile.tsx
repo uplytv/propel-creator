@@ -567,8 +567,8 @@ export default function CreatorProfile() {
               { value: postCount, label: "Posts" },
             ].map(({ value, label }) => (
               <div key={label} className="text-center">
-                <div className="text-white font-bold text-lg">{value}</div>
-                <div className="text-[#888] text-xs">{label}</div>
+                <div className="text-foreground font-bold text-lg">{value}</div>
+                <div className="text-muted-foreground text-xs">{label}</div>
               </div>
             ))}
           </div>
