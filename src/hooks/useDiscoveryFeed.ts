@@ -79,6 +79,7 @@ export function useDiscoveryFeed(
               .from("mux_live_streams_public" as any)
               .select("*")
               .eq("is_public", true)
+              .eq("status", "active")
               .order("viewer_count", { ascending: false })
               .limit(50)
           : Promise.resolve({ data: [], error: null }),
