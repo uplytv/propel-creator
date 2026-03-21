@@ -1,87 +1,106 @@
-import { motion } from "framer-motion";
-import { Radio, Users, BookOpen, Briefcase, Star, Flame, Clock, TrendingUp, ArrowUpDown, Zap } from "lucide-react";
+import { memo, useState, useRef } from "react";
+import { ArrowUpDown, Check } from "lucide-react";
 import { type FilterCategory, type SortOption } from "@/hooks/useDiscoveryFeed";
-import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
 
-const categories: { value: FilterCategory; label: string; icon: React.ElementType }[] = [
-  { value: "all", label: "All", icon: Flame },
-  { value: "livestream", label: "Live", icon: Radio },
-  { value: "community", label: "Communities", icon: Users },
-  { value: "course", label: "Courses", icon: BookOpen },
-  { value: "service", label: "Services", icon: Briefcase },
-  { value: "creator", label: "Creators", icon: Star },
+export type DiscoverCategory = "all" | "live" | "videos" | "shorts" | "courses" | "communities" | "events";
+
+const categories: { value: DiscoverCategory; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "live", label: "Live" },
+  { value: "videos", label: "Videos" },
+  { value: "shorts", label: "Shorts" },
+  { value: "courses", label: "Courses" },
+  { value: "communities", label: "Communities" },
+  { value: "events", label: "Events" },
 ];
 
-const sorts: { value: SortOption; label: string; icon: React.ElementType }[] = [
-  { value: "trending", label: "Trending", icon: Flame },
-  { value: "newest", label: "New", icon: Clock },
-  { value: "popular", label: "Popular", icon: TrendingUp },
-  { value: "price_low", label: "Price ↑", icon: ArrowUpDown },
-  { value: "price_high", label: "Price ↓", icon: ArrowUpDown },
+const sorts: { value: SortOption; label: string }[] = [
+  { value: "trending", label: "Trending" },
+  { value: "newest", label: "New" },
+  { value: "popular", label: "Popular" },
 ];
 
 interface Props {
-  filter: FilterCategory;
+  activeCategory: DiscoverCategory;
   sort: SortOption;
-  liveOnly: boolean;
-  onFilterChange: (f: FilterCategory) => void;
+  onCategoryChange: (c: DiscoverCategory) => void;
   onSortChange: (s: SortOption) => void;
-  onLiveOnlyChange: (v: boolean) => void;
 }
 
-export default function FeedFilters({ filter, sort, liveOnly, onFilterChange, onSortChange, onLiveOnlyChange }: Props) {
+const FeedFilters = memo(function FeedFilters({ activeCategory, sort, onCategoryChange, onSortChange }: Props) {
+  const [sortOpen, setSortOpen] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   return (
-    <div className="space-y-3">
-      {/* Category pills */}
-      <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
+    <div className="flex items-center gap-2">
+      {/* Category pills - horizontally scrollable */}
+      <div
+        ref={scrollRef}
+        className="flex-1 flex gap-2 overflow-x-auto"
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" }}
+      >
+        <style>{`.no-sb::-webkit-scrollbar { display: none; }`}</style>
         {categories.map((cat) => {
-          const active = filter === cat.value;
-          const Icon = cat.icon;
+          const active = activeCategory === cat.value;
           return (
-            <motion.button
+            <button
               key={cat.value}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => onFilterChange(cat.value)}
-              className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+              onClick={() => onCategoryChange(cat.value)}
+              className={cn(
+                "shrink-0 px-3.5 py-1.5 text-xs font-semibold transition-colors duration-150",
+                "rounded-md",
                 active
-                  ? "bg-primary text-primary-foreground shadow-[var(--glow-shadow)]"
-                  : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-              }`}
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-card text-muted-foreground border border-border hover:text-foreground"
+              )}
             >
-              <Icon className="w-3.5 h-3.5" />
               {cat.label}
-            </motion.button>
+            </button>
           );
         })}
       </div>
 
-      {/* Sort + Live toggle */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex gap-1 overflow-x-auto no-scrollbar">
-          {sorts.map((s) => {
-            const active = sort === s.value;
-            return (
-              <button
-                key={s.value}
-                onClick={() => onSortChange(s.value)}
-                className={`shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors ${
-                  active
-                    ? "bg-accent/20 text-accent-foreground border border-accent/30"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                }`}
-              >
-                {s.label}
-              </button>
-            );
-          })}
-        </div>
+      {/* Sort dropdown button */}
+      <div className="relative shrink-0">
+        <button
+          onClick={() => setSortOpen(!sortOpen)}
+          className="w-8 h-8 flex items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowUpDown className="w-3.5 h-3.5" />
+        </button>
 
-        <label className="shrink-0 flex items-center gap-1.5 cursor-pointer">
-          <Zap className={`w-3.5 h-3.5 ${liveOnly ? "text-destructive" : "text-muted-foreground"}`} />
-          <span className="text-[11px] font-medium text-muted-foreground">Live</span>
-          <Switch checked={liveOnly} onCheckedChange={onLiveOnlyChange} className="scale-75" />
-        </label>
+        {sortOpen && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setSortOpen(false)} />
+            <div className="absolute top-10 right-0 w-36 rounded-lg border border-border bg-card shadow-xl z-50 overflow-hidden">
+              {sorts.map((s) => {
+                const active = sort === s.value;
+                return (
+                  <button
+                    key={s.value}
+                    onClick={() => { onSortChange(s.value); setSortOpen(false); }}
+                    className={cn(
+                      "flex items-center justify-between w-full px-3 py-2.5 text-sm transition-colors hover:bg-secondary/50",
+                      active ? "text-primary" : "text-foreground"
+                    )}
+                  >
+                    <span className="flex items-center gap-2">
+                      {active && <span className="w-0.5 h-4 bg-primary rounded-full" />}
+                      {s.label}
+                    </span>
+                    {active && <Check className="w-3.5 h-3.5 text-primary" />}
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
-}
+});
+
+FeedFilters.displayName = "FeedFilters";
+
+export default FeedFilters;
