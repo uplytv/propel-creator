@@ -1,239 +1,314 @@
-import { forwardRef } from "react";
-import { motion } from "framer-motion";
+import { memo, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Radio, Users, BookOpen, Briefcase, Star, Eye, Crown, Film, Scissors, Play } from "lucide-react";
-import FollowButton from "@/components/FollowButton";
+import { Eye, Users, BookOpen, MoreVertical, Flag, Bookmark, Share2, EyeOff, Heart } from "lucide-react";
 import { type FeedItem } from "@/hooks/useDiscoveryFeed";
 import { timeAgo } from "@/lib/slugs";
+import { cn } from "@/lib/utils";
 
-const typeConfig: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-  livestream: { label: "LIVE", icon: Radio, color: "bg-[#FF3B3B] text-white" },
-  recording: { label: "VIDEO", icon: Film, color: "bg-secondary text-secondary-foreground" },
-  clip: { label: "CLIP", icon: Scissors, color: "bg-secondary text-secondary-foreground" },
-  video: { label: "VIDEO", icon: Play, color: "bg-primary/80 text-primary-foreground" },
-  community: { label: "COMMUNITY", icon: Users, color: "bg-primary text-primary-foreground" },
-  course: { label: "COURSE", icon: BookOpen, color: "bg-accent-green text-background" },
-  service: { label: "Service", icon: Briefcase, color: "bg-secondary text-secondary-foreground" },
-  creator: { label: "CREATOR", icon: Star, color: "bg-primary/80 text-primary-foreground" },
-  post: { label: "POST", icon: Users, color: "bg-secondary text-secondary-foreground" },
-};
+function formatCount(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return n.toString();
+}
 
-const FeedCard = forwardRef<HTMLDivElement, { item: FeedItem; index: number; isLiveSection?: boolean }>(
-  ({ item, index, isLiveSection }, ref) => {
-    const navigate = useNavigate();
-    const config = typeConfig[item.type] || typeConfig.creator;
-    const TypeIcon = config.icon;
+function formatDuration(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+  if (h > 0) return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
 
-    const getDestination = () => {
-      switch (item.type) {
-        case "livestream":
-          return item.playbackId ? `/stream/${item.id}` : `/creator/${encodeURIComponent(item.creatorName)}`;
-        case "recording":
-          if (item.creatorUsername && item.slug) {
-            return `/${encodeURIComponent(item.creatorUsername)}/videos/${item.slug}`;
-          }
-          return `/creator/${encodeURIComponent(item.creatorName)}/videos/${item.id}`;
-        case "video":
-          if (item.creatorUsername && item.slug) {
-            return `/${encodeURIComponent(item.creatorUsername)}/videos/${item.slug}`;
-          }
-          return `/creator/${encodeURIComponent(item.creatorName)}/videos/${item.id}`;
-        case "clip":
-          return `/stream/${item.id}`;
-        case "course":
-          return `/community/${item.creatorId}/classroom`;
-        case "community":
-          return `/community/${item.creatorId}/community`;
-        case "creator":
-          return `/creator/${encodeURIComponent(item.creatorName)}`;
-        default:
-          return `/creator/${encodeURIComponent(item.creatorName)}`;
-      }
-    };
+const UPLY_LOGO_PLACEHOLDER = (
+  <div className="w-full h-full flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card)/0.7) 100%)" }}>
+    <span className="text-2xl font-bold text-muted-foreground/30 select-none" style={{ fontFamily: "Space Grotesk, sans-serif" }}>U</span>
+  </div>
+);
 
-    const handleClick = () => navigate(getDestination());
-    const handleJoin = (e: React.MouseEvent) => {
-      e.stopPropagation();
-      navigate(getDestination());
-    };
+interface FeedCardProps {
+  item: FeedItem;
+  index: number;
+  isLiveSection?: boolean;
+}
 
-    const isLive = item.isLive;
+const FeedCard = memo(function FeedCard({ item, index, isLiveSection }: FeedCardProps) {
+  const navigate = useNavigate();
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgError, setImgError] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [doubleTapHeart, setDoubleTapHeart] = useState(false);
+  const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTapRef = useRef<number>(0);
 
-    return (
-      <motion.div
-        ref={ref}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.04, duration: 0.35 }}
-        onClick={handleClick}
-        role="article"
-        aria-label={`${config.label}: ${item.title} by ${item.creatorName}`}
-        className={`group relative rounded-2xl border overflow-hidden cursor-pointer transition-all duration-300 ${
-          isLive
-            ? "border-primary/40 shadow-[0_0_20px_rgba(0,255,133,0.2)] sm:col-span-1"
-            : "border-border hover:border-primary/30"
-        } bg-card hover:shadow-[var(--card-shadow-hover)]`}
-        style={isLiveSection ? { minHeight: 0 } : undefined}
+  const isLive = item.isLive;
+  const hasPlaybackId = !!item.playbackId;
+
+  const getDestination = useCallback(() => {
+    switch (item.type) {
+      case "livestream":
+        return item.playbackId ? `/stream/${item.id}` : `/creator/${encodeURIComponent(item.creatorName)}`;
+      case "recording":
+      case "video":
+        if (item.creatorUsername && item.slug) return `/${encodeURIComponent(item.creatorUsername)}/videos/${item.slug}`;
+        return `/creator/${encodeURIComponent(item.creatorName)}/videos/${item.id}`;
+      case "clip":
+        return `/stream/${item.id}`;
+      case "course":
+        return `/community/${item.creatorId}/classroom`;
+      case "community":
+        return `/community/${item.creatorId}/community`;
+      case "creator":
+        return `/creator/${encodeURIComponent(item.creatorName)}`;
+      default:
+        return `/creator/${encodeURIComponent(item.creatorName)}`;
+    }
+  }, [item]);
+
+  const handleClick = useCallback(() => {
+    navigate(getDestination());
+  }, [navigate, getDestination]);
+
+  const handleDoubleTap = useCallback(() => {
+    const now = Date.now();
+    if (now - lastTapRef.current < 300) {
+      setDoubleTapHeart(true);
+      setTimeout(() => setDoubleTapHeart(false), 600);
+    }
+    lastTapRef.current = now;
+  }, []);
+
+  const handleMouseEnter = useCallback(() => {
+    if (hasPlaybackId && !isLive) {
+      hoverTimerRef.current = setTimeout(() => setShowPreview(true), 500);
+    }
+  }, [hasPlaybackId, isLive]);
+
+  const handleMouseLeave = useCallback(() => {
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    setShowPreview(false);
+  }, []);
+
+  const thumbnailUrl = item.imageUrl;
+  const animatedGifUrl = hasPlaybackId ? `https://image.mux.com/${item.playbackId}/animated.gif?width=320` : null;
+
+  // Stat text
+  const statText = (() => {
+    if (isLive) return `${formatCount(item.viewerCount)} watching`;
+    if (item.type === "community") return `${formatCount(item.memberCount)} members`;
+    if (item.type === "course") return `Course`;
+    if (item.type === "creator") return item.creatorType || "Creator";
+    return item.viewerCount > 0 ? `${formatCount(item.viewerCount)} views` : null;
+  })();
+
+  // Badge
+  const badge = (() => {
+    if (isLive) return null; // Live badge rendered separately
+    if (item.type === "clip") return "CLIP";
+    if (item.type === "community") return `${formatCount(item.memberCount)} members`;
+    if (item.type === "course") return "COURSE";
+    return null;
+  })();
+
+  const showDuration = !isLive && (item.type === "video" || item.type === "recording" || item.type === "clip");
+
+  return (
+    <div
+      className="group cursor-pointer"
+      onClick={handleClick}
+      onTouchStart={handleDoubleTap}
+      role="article"
+      aria-label={`${item.title} by ${item.creatorName}`}
+      style={{ animationDelay: `${index * 50}ms` }}
+    >
+      {/* Thumbnail */}
+      <div
+        className="relative overflow-hidden rounded-lg"
+        style={{ aspectRatio: item.type === "clip" ? "9/16" : "16/9" }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
-        {/* Image */}
-        <div className={`relative ${isLive && isLiveSection ? "aspect-[16/9]" : "aspect-[16/10]"} bg-secondary overflow-hidden`}>
-          {item.imageUrl ? (
+        {/* Skeleton shimmer */}
+        {!imgLoaded && !imgError && (
+          <div className="absolute inset-0 animate-pulse" style={{ background: "linear-gradient(90deg, hsl(var(--card)) 25%, hsl(var(--card)/0.5) 50%, hsl(var(--card)) 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.5s ease-in-out infinite" }} />
+        )}
+
+        {/* Main thumbnail */}
+        {thumbnailUrl && !imgError ? (
+          <img
+            src={thumbnailUrl}
+            srcSet={hasPlaybackId ? `
+              https://image.mux.com/${item.playbackId}/thumbnail.jpg?width=320 320w,
+              https://image.mux.com/${item.playbackId}/thumbnail.jpg?width=480 480w,
+              https://image.mux.com/${item.playbackId}/thumbnail.jpg?width=640 640w
+            ` : undefined}
+            sizes={hasPlaybackId ? "(max-width: 768px) 100vw, (max-width: 1024px) 33vw, 25vw" : undefined}
+            alt={item.title}
+            width={640}
+            height={360}
+            loading="lazy"
+            decoding="async"
+            className={cn(
+              "w-full h-full object-cover transition-transform duration-200 ease-out",
+              "group-hover:scale-[1.03]",
+              imgLoaded ? "opacity-100" : "opacity-0"
+            )}
+            onLoad={() => setImgLoaded(true)}
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          UPLY_LOGO_PLACEHOLDER
+        )}
+
+        {/* Animated GIF preview on hover */}
+        {showPreview && animatedGifUrl && (
+          <img
+            src={animatedGifUrl}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover z-10"
+            loading="eager"
+          />
+        )}
+
+        {/* LIVE badge top-left */}
+        {isLive && (
+          <div className="absolute top-2 left-2 z-20 flex items-center gap-1 px-2 py-0.5 rounded bg-[#FF3B3B] text-white text-[11px] font-bold" style={{ fontFamily: "Space Grotesk, sans-serif" }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            LIVE
+          </div>
+        )}
+
+        {/* Duration badge bottom-right */}
+        {showDuration && (
+          <div className="absolute bottom-2 right-2 z-20 px-1.5 py-0.5 rounded text-white text-xs font-bold" style={{ background: "rgba(0,0,0,0.8)", fontFamily: "Space Grotesk, sans-serif" }}>
+            {item.type === "clip" ? "#SHORTS" : "0:00"}
+          </div>
+        )}
+
+        {/* Badge for community/course */}
+        {badge && !isLive && (
+          <div className="absolute bottom-2 right-2 z-20 px-1.5 py-0.5 rounded text-white text-xs font-bold" style={{ background: "rgba(0,0,0,0.8)", fontFamily: "Space Grotesk, sans-serif" }}>
+            {badge}
+          </div>
+        )}
+
+        {/* Live viewer count bottom-left */}
+        {isLive && (
+          <div className="absolute bottom-2 left-2 z-20 flex items-center gap-1 px-1.5 py-0.5 rounded text-white text-[11px] font-semibold" style={{ background: "rgba(0,0,0,0.75)" }}>
+            <Eye className="w-3 h-3" />
+            {formatCount(item.viewerCount)}
+          </div>
+        )}
+
+        {/* Three-dot menu on hover */}
+        <div className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
+            className="w-8 h-8 flex items-center justify-center rounded-full"
+            style={{ background: "rgba(0,0,0,0.7)" }}
+          >
+            <MoreVertical className="w-4 h-4 text-white" />
+          </button>
+          {showMenu && (
+            <div
+              className="absolute top-10 right-0 w-40 rounded-lg border border-border bg-card shadow-xl z-50"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {[
+                { icon: EyeOff, label: "Not Interested" },
+                { icon: Bookmark, label: "Save" },
+                { icon: Share2, label: "Share" },
+                { icon: Flag, label: "Report" },
+              ].map(({ icon: Icon, label }) => (
+                <button key={label} className="flex items-center gap-2 w-full px-3 py-2.5 text-sm text-foreground hover:bg-secondary/50 first:rounded-t-lg last:rounded-b-lg">
+                  <Icon className="w-4 h-4 text-muted-foreground" />
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Double-tap heart burst */}
+        {doubleTapHeart && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
+            <Heart className="w-16 h-16 text-primary fill-primary animate-ping" />
+          </div>
+        )}
+
+        {/* Live border indicator */}
+        {isLive && isLiveSection && (
+          <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-[#FF3B3B] z-20" />
+        )}
+      </div>
+
+      {/* Metadata */}
+      <div className="flex gap-2.5 mt-2.5">
+        {/* Avatar */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/creator/${encodeURIComponent(item.creatorName)}`);
+          }}
+          className="shrink-0"
+        >
+          {item.creatorAvatar ? (
             <img
-              src={item.imageUrl}
-              alt={item.title}
-              width={400}
-              height={250}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              src={item.creatorAvatar}
+              alt=""
+              className={cn(
+                "w-8 h-8 md:w-9 md:h-9 rounded-full object-cover",
+                isLive && "ring-2 ring-[#FF3B3B] animate-pulse"
+              )}
               loading="lazy"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/10">
-              <TypeIcon className="w-10 h-10 text-primary/40" />
+            <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-muted-foreground">
+              {item.creatorName.charAt(0).toUpperCase()}
             </div>
           )}
+        </button>
 
-          {/* Type badge */}
-          <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${config.color}`}>
-              {isLive && (
-                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" aria-hidden="true" />
-              )}
-              <TypeIcon className="w-3 h-3" />
-              {isLive ? "LIVE" : config.label}
-            </span>
-          </div>
-
-          {/* Viewer count for live */}
-          {isLive && (
-            <div className="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-background/80 backdrop-blur-sm text-[10px] font-semibold text-foreground">
-              <Eye className="w-3 h-3" aria-hidden="true" />
-              <span>{item.viewerCount.toLocaleString()} watching</span>
-            </div>
-          )}
-
-          {/* Time ago for non-live */}
-          {!isLive && item.createdAt && (
-            <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md bg-background/80 backdrop-blur-sm text-[10px] font-medium text-muted-foreground">
-              {timeAgo(item.createdAt)}
-            </div>
-          )}
-
-          {/* Price tag */}
-          {item.price > 0 && (
-            <div className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded-md bg-background/90 backdrop-blur-sm text-xs font-bold text-foreground">
-              ${item.price}
-            </div>
-          )}
-          {item.price === 0 && item.type !== "creator" && item.type !== "livestream" && item.type !== "recording" && item.type !== "clip" && (
-            <div className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded-md bg-primary/90 text-primary-foreground text-[10px] font-bold">
-              FREE
-            </div>
-          )}
-
-          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-card/90 to-transparent" aria-hidden="true" />
+        {/* Title + meta */}
+        <div className="min-w-0 flex-1">
+          <h3
+            className="text-[13px] md:text-sm font-semibold text-foreground leading-snug"
+            style={{
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+              fontFamily: "Plus Jakarta Sans, sans-serif",
+            }}
+          >
+            {item.title}
+          </h3>
+          <p className="text-xs md:text-[13px] text-muted-foreground mt-0.5 truncate" style={{ fontFamily: "Plus Jakarta Sans, sans-serif" }}>
+            {item.creatorName}
+            {statText && (
+              <>
+                <span className="mx-1">·</span>
+                {statText}
+              </>
+            )}
+            {!isLive && item.createdAt && (
+              <>
+                <span className="mx-1">·</span>
+                {timeAgo(item.createdAt)}
+              </>
+            )}
+            {isLive && (
+              <>
+                <span className="mx-1">·</span>
+                <span className="text-[#FF3B3B]">Live now</span>
+              </>
+            )}
+          </p>
         </div>
-
-        {/* Content */}
-        <div className="p-3 space-y-2">
-          <div className="flex items-start gap-2.5">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/creator/${encodeURIComponent(item.creatorName)}`);
-              }}
-              className="shrink-0"
-              aria-label={`View ${item.creatorName}'s profile`}
-            >
-              {item.creatorAvatar ? (
-                <img
-                  src={item.creatorAvatar}
-                  alt=""
-                  width={36}
-                  height={36}
-                  className={`w-9 h-9 rounded-full object-cover ring-2 transition-all ${
-                    isLive ? "ring-primary/50" : "ring-border group-hover:ring-primary/30"
-                  }`}
-                  loading="lazy"
-                />
-              ) : (
-                <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary ring-2 ring-border">
-                  {item.creatorName.charAt(0)}
-                </div>
-              )}
-            </button>
-
-            <div className="min-w-0 flex-1">
-              <h3 className="text-sm font-semibold leading-tight line-clamp-2 text-foreground">
-                {item.title}
-              </h3>
-              <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1">
-                {item.creatorName}
-                {item.creatorType && (
-                  <>
-                    <span className="text-border">·</span>
-                    <span className="text-primary/70">{item.creatorType}</span>
-                  </>
-                )}
-              </p>
-            </div>
-          </div>
-
-          {/* Stats */}
-          {item.type === "community" && item.memberCount > 0 && (
-            <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-              <span className="flex items-center gap-0.5">
-                <Users className="w-3 h-3" aria-hidden="true" />
-                {item.memberCount.toLocaleString()} members
-              </span>
-            </div>
-          )}
-
-          {(item.type === "recording" || item.type === "clip" || item.type === "video") && item.viewerCount > 0 && (
-            <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-              <span className="flex items-center gap-0.5">
-                <Eye className="w-3 h-3" aria-hidden="true" />
-                {item.viewerCount.toLocaleString()} views
-              </span>
-            </div>
-          )}
-
-          {item.description && !["livestream", "course", "community", "recording", "clip", "video"].includes(item.type) && (
-            <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-              {item.description}
-            </p>
-          )}
-
-          {/* Actions */}
-          <div className="flex items-center justify-between pt-1">
-            <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-              {item.type === "creator" && (
-                <span className="flex items-center gap-0.5">
-                  <Crown className="w-3 h-3 text-primary" aria-hidden="true" />
-                  Creator
-                </span>
-              )}
-            </div>
-
-            <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-              <FollowButton targetUserId={item.creatorId} size="sm" />
-              <button
-                onClick={handleJoin}
-                className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-primary text-primary-foreground hover:brightness-110 transition-all active:scale-[0.96]"
-              >
-                {item.type === "livestream" ? "Watch" :
-                 item.type === "recording" ? "Play" :
-                 item.type === "clip" ? "Play" :
-                 item.type === "video" ? "Play" :
-                 item.type === "creator" ? "View" :
-                 item.type === "course" ? "Enroll" : "Join"}
-              </button>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-    );
-  }
-);
+      </div>
+    </div>
+  );
+});
 
 FeedCard.displayName = "FeedCard";
 
