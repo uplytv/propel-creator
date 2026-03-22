@@ -566,6 +566,12 @@ Deno.serve(async (req) => {
           });
         }
 
+        // Revoke all access_grants tied to this subscription
+        await supabase.from("access_grants")
+          .update({ revoked_at: new Date().toISOString(), revoke_reason: "subscription_cancelled" })
+          .eq("stripe_subscription_id", sub.id)
+          .is("revoked_at", null);
+
         logStep("Subscription canceled", { id: sub.id });
         break;
       }
