@@ -690,6 +690,21 @@ Deno.serve(async (req) => {
         break;
       }
 
+      case "charge.refunded": {
+        const charge = event.data.object as Stripe.Charge;
+        const paymentIntentId = charge.payment_intent as string;
+        if (paymentIntentId) {
+          // Revoke access grants tied to this payment intent
+          await supabase.from("access_grants")
+            .update({ revoked_at: new Date().toISOString(), revoke_reason: "refunded" })
+            .eq("stripe_payment_intent_id", paymentIntentId)
+            .is("revoked_at", null);
+
+          logStep("Charge refunded, access revoked", { paymentIntentId });
+        }
+        break;
+      }
+
       default:
         logStep("Unhandled event type", { type: event.type });
     }
