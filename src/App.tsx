@@ -113,12 +113,19 @@ function NativeShell({ children }: { children: React.ReactNode }) {
 }
 
 function AppWithSplash({ children }: { children: React.ReactNode }) {
-  const [showSplash, setShowSplash] = useState(true);
+  const splashKey = "uply_splash_shown";
+  const alreadyShown = sessionStorage.getItem(splashKey) === "1";
+  const [showSplash, setShowSplash] = useState(!alreadyShown);
+
+  const handleComplete = () => {
+    sessionStorage.setItem(splashKey, "1");
+    setShowSplash(false);
+  };
 
   if (showSplash) {
     return (
       <AnimatePresence>
-        <SplashScreen onComplete={() => setShowSplash(false)} />
+        <SplashScreen onComplete={handleComplete} />
       </AnimatePresence>
     );
   }
