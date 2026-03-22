@@ -222,6 +222,7 @@ export function useDiscoveryFeed(
             spaceId: null,
             slug: s.slug,
             tier: "live",
+            durationSeconds: 0,
           });
         }
       }
