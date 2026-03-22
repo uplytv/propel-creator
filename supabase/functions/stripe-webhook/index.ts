@@ -170,6 +170,24 @@ Deno.serve(async (req) => {
             status: "completed",
           }, { onConflict: "product_id,buyer_id", ignoreDuplicates: true });
 
+          // Write access_grants row
+          const resourceType = purchaseType === "course" ? "course" : "product";
+          await supabase.from("access_grants").insert({
+            user_id: buyer_id,
+            resource_type: resourceType,
+            resource_id: product_id,
+            access_level: "full",
+            source: metadata.source || "checkout",
+            stripe_payment_intent_id: session.payment_intent as string,
+            stripe_customer_id: session.customer as string,
+            stream_id: metadata.stream_id || null,
+            metadata: { purchase_type: purchaseType },
+          }).then(({ error: agErr }) => {
+            if (agErr && !agErr.message?.includes("duplicate") && !agErr.message?.includes("unique")) {
+              console.error("access_grants insert error:", agErr);
+            }
+          });
+
           await supabase.rpc("increment_product_sales" as any, { p_id: product_id, p_amount: amount }).catch(async () => {
             const { data: prod } = await supabase.from("products").select("sales, revenue").eq("id", product_id).maybeSingle();
             if (prod) {
