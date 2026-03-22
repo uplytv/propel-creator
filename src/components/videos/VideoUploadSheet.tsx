@@ -230,12 +230,19 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
     setPublishing(true);
     try {
       const thumbnailUrl = customThumb || (muxPlaybackId ? `https://image.mux.com/${muxPlaybackId}/thumbnail.jpg` : null);
+      const scheduledPublishAt = scheduledDate && scheduledTime
+        ? new Date(`${scheduledDate}T${scheduledTime}`).toISOString()
+        : undefined;
+      const effectiveVisibility = scheduledPublishAt ? "private" : (draft ? "private" : visibility);
+
       const result = await createVideo.mutateAsync({
         title: title.trim(),
         description,
         category,
         tags,
-        is_public: draft ? false : visibility !== "unlisted",
+        visibility: effectiveVisibility,
+        scheduled_publish_at: scheduledPublishAt,
+        is_public: effectiveVisibility === "public",
         mux_asset_id: muxAssetId || undefined,
         playback_id: muxPlaybackId || undefined,
         thumbnail_url: thumbnailUrl || undefined,
@@ -245,7 +252,9 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
       reset();
       onClose();
 
-      if (!draft && result?.slug) {
+      if (scheduledPublishAt) {
+        toast({ title: "Video scheduled ✓", description: `Will publish on ${new Date(scheduledPublishAt).toLocaleString()}` });
+      } else if (!draft && result?.slug) {
         const username = creatorProfile?.username || creatorProfile?.display_name || user.id;
         navigate(`/${encodeURIComponent(username)}/videos/${result.slug}`);
         toast({ title: "Video published ✓", description: "Your video is live!" });
