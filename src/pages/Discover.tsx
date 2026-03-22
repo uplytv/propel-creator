@@ -163,7 +163,7 @@ export default function Discover() {
   return (
     <AppLayout>
     <div className="min-h-screen bg-background">
-      <style>{shimmerStyle}</style>
+      {/* Shimmer keyframes in index.css */}
       <SEOHead
         title="Discover Creators"
         description="Explore top creators, communities, courses, and live streams on Uply."
