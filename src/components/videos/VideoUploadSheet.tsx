@@ -16,7 +16,7 @@ import { useQuery } from "@tanstack/react-query";
 
 const CATEGORIES = ["Fitness", "Finance", "Gaming", "Lifestyle", "Business", "Education", "Music", "IRL", "Other"];
 
-type Visibility = "public" | "members" | "unlisted";
+type Visibility = "public" | "members" | "unlisted" | "private";
 
 interface VideoUploadSheetProps {
   open: boolean;
