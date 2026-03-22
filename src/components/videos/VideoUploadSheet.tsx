@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, X, Loader2, Film, Check, CloudUpload, Image, Tag } from "lucide-react";
+import { Upload, X, Loader2, Film, Check, CloudUpload, Image, Tag, Calendar, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
