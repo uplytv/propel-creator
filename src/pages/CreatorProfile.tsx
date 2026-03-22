@@ -348,6 +348,9 @@ export default function CreatorProfile() {
   const isLive = !!liveStream;
   const creatorName = profile?.display_name || "Creator";
 
+  // Subscription status check for button states
+  const { data: memberSubStatus } = useMemberSubscriptionStatus(profile?.user_id);
+
   // Handle mobile return from Stripe
   usePaymentReturn(profile?.user_id);
 
