@@ -415,17 +415,10 @@ export default function CreatorProfile() {
       navigate(`/auth?ref=${username}`);
       return;
     }
-    setBuyingProductId(productId);
-    try {
-      const { data, error } = await supabase.functions.invoke("stripe-create-product-checkout", {
-        body: { product_id: productId, creator_id: profile?.user_id },
-      });
-      if (error) throw error;
-      if (data?.url) window.location.href = data.url;
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+    const product = products.find((p: any) => p.id === productId);
+    if (product) {
+      setEnrollProduct(product);
     }
-    setBuyingProductId(null);
   };
 
   // Loading
