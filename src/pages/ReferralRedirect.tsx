@@ -19,10 +19,9 @@ export default function ReferralRedirect() {
   const navigate = useNavigate();
   const [referrer, setReferrer] = useState<ReferrerInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
   const [totalApplicants, setTotalApplicants] = useState(0);
 
-  // Determine the actual referral code
-  // Route can be /join/:code or /join/:username/:code
   const actualCode = code;
 
   useEffect(() => {
@@ -32,53 +31,18 @@ export default function ReferralRedirect() {
     }
 
     const fetchReferrer = async () => {
-      // Try to find referrer by referral_code on profiles
-      let profile: ReferrerInfo | null = null;
+      // Use the security definer function to bypass RLS
+      const { data, error } = await supabase.rpc("lookup_referrer_by_code", {
+        ref_code: actualCode,
+      });
 
-      const { data: refProfile } = await supabase
-        .from("profiles")
-        .select("display_name, avatar_url, creator_type, username")
-        .eq("referral_code", actualCode)
-        .maybeSingle();
-
-      if (refProfile) {
-        profile = refProfile;
+      if (data && !error) {
+        setReferrer(data as ReferrerInfo);
       } else {
-        // Check invite_codes table
-        const { data: invite } = await supabase
-          .from("invite_codes" as any)
-          .select("owner_id")
-          .eq("code", actualCode)
-          .maybeSingle() as any;
-
-        if (invite?.owner_id) {
-          const { data: ownerProfile } = await supabase
-            .from("profiles")
-            .select("display_name, avatar_url, creator_type, username")
-            .eq("user_id", invite.owner_id)
-            .maybeSingle();
-          if (ownerProfile) profile = ownerProfile;
-        }
+        // No referrer found — set cookie and redirect
+        setAffiliateCookie("uply_waitlist_ref", actualCode, 30);
+        setNotFound(true);
       }
-
-      // Check waitlist referral codes
-      if (!profile) {
-        const { data: wlEntry } = await supabase
-          .from("waitlist" as any)
-          .select("full_name, referrer_avatar_url")
-          .eq("referral_code", actualCode)
-          .maybeSingle() as any;
-        if (wlEntry) {
-          profile = {
-            display_name: wlEntry.full_name,
-            avatar_url: wlEntry.referrer_avatar_url || null,
-            creator_type: null,
-            username: null,
-          };
-        }
-      }
-
-      setReferrer(profile);
 
       // Get total applicants
       const { count } = await supabase
@@ -90,14 +54,19 @@ export default function ReferralRedirect() {
     };
 
     fetchReferrer();
-  }, [actualCode]);
+  }, [actualCode, navigate]);
+
+  // Handle redirect for not-found in an effect, not during render
+  useEffect(() => {
+    if (!loading && notFound) {
+      navigate("/auth");
+    }
+  }, [loading, notFound, navigate]);
 
   const firstName = referrer?.display_name?.split(" ")[0] || "Someone";
 
   const handleAcceptInvite = () => {
-    // Store referral cookie
     setAffiliateCookie("uply_waitlist_ref", actualCode!, 30);
-    // Store referrer info in sessionStorage for the waitlist form
     if (referrer?.display_name) {
       sessionStorage.setItem("referrer_name", referrer.display_name);
     }
@@ -110,7 +79,7 @@ export default function ReferralRedirect() {
     navigate("/waitlist");
   };
 
-  if (loading) {
+  if (loading || notFound) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex items-center gap-3 text-muted-foreground">
@@ -119,13 +88,6 @@ export default function ReferralRedirect() {
         </div>
       </div>
     );
-  }
-
-  // If no referrer found, fall back to legacy redirect behavior
-  if (!referrer) {
-    setAffiliateCookie("uply_waitlist_ref", actualCode!, 30);
-    navigate("/auth");
-    return null;
   }
 
   return (
@@ -143,9 +105,8 @@ export default function ReferralRedirect() {
           transition={{ duration: 0.5 }}
           className="text-center mb-8"
         >
-          {/* Referrer avatar */}
           <div className="mx-auto mb-4 relative w-[72px] h-[72px]">
-            {referrer.avatar_url ? (
+            {referrer?.avatar_url ? (
               <img
                 src={referrer.avatar_url}
                 alt={referrer.display_name || "Referrer"}
@@ -166,17 +127,14 @@ export default function ReferralRedirect() {
             )}
           </div>
 
-          {/* Name */}
           <p className="text-xl font-bold text-foreground" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            {referrer.display_name}
+            {referrer?.display_name}
           </p>
 
-          {/* Creator type */}
-          {referrer.creator_type && (
+          {referrer?.creator_type && (
             <p className="text-sm text-muted-foreground mt-1 capitalize">{referrer.creator_type} Creator</p>
           )}
 
-          {/* Invite pill */}
           <div
             className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-full text-xs font-semibold"
             style={{
