@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useMemo } from "react";
-import { usePaymentReturn, useProductPurchaseCheck } from "@/hooks/usePaymentReturn";
+import { usePaymentReturn, useProductPurchaseCheck, useMemberSubscriptionStatus } from "@/hooks/usePaymentReturn";
 import CourseEnrollSheet from "@/components/payments/CourseEnrollSheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
