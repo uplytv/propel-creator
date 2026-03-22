@@ -176,6 +176,30 @@ export default function WaitlistPage() {
       </div>
 
       <div className="max-w-lg mx-auto px-6 pb-16">
+        {/* Referrer banner */}
+        {referrerInfo && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-lg p-3 mb-4 flex items-center gap-3"
+            style={{
+              background: "hsl(var(--primary) / 0.08)",
+              border: "1px solid hsl(var(--primary) / 0.3)",
+            }}
+          >
+            {referrerInfo.avatar ? (
+              <img src={referrerInfo.avatar} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold flex-shrink-0">
+                {referrerInfo.name[0]}
+              </div>
+            )}
+            <div>
+              <p className="text-sm font-semibold text-foreground">{referrerInfo.name} invited you</p>
+              <p className="text-xs text-muted-foreground">You'll both move up the waitlist when you apply</p>
+            </div>
+          </motion.div>
+        )}
         {/* Prize Hero */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
