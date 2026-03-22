@@ -321,6 +321,46 @@ Deno.serve(async (req) => {
               creator_id,
             }, { onConflict: "creator_id,user_id" });
 
+            // Write access_grants for community + tier
+            const subId = session.subscription as string;
+            const custId = session.customer as string;
+
+            // Community access grant
+            if (space_id) {
+              await supabase.from("access_grants").insert({
+                user_id: member_id,
+                resource_type: "community",
+                resource_id: space_id,
+                access_level: "full",
+                source: "checkout",
+                stripe_subscription_id: subId,
+                stripe_customer_id: custId,
+                metadata: { tier_id, creator_id },
+              }).then(({ error: agErr }) => {
+                if (agErr && !agErr.message?.includes("duplicate") && !agErr.message?.includes("unique")) {
+                  console.error("access_grants community insert error:", agErr);
+                }
+              });
+            }
+
+            // Membership tier access grant
+            if (tier_id) {
+              await supabase.from("access_grants").insert({
+                user_id: member_id,
+                resource_type: "membership_tier",
+                resource_id: tier_id,
+                access_level: "full",
+                source: "checkout",
+                stripe_subscription_id: subId,
+                stripe_customer_id: custId,
+                metadata: { space_id, creator_id },
+              }).then(({ error: agErr }) => {
+                if (agErr && !agErr.message?.includes("duplicate") && !agErr.message?.includes("unique")) {
+                  console.error("access_grants tier insert error:", agErr);
+                }
+              });
+            }
+
             const amount = (session.amount_total || 0) / 100;
             const fee = Math.round(amount * 0.05 * 100) / 100;
 
