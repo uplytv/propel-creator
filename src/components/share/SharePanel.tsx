@@ -424,6 +424,8 @@ export default function SharePanel({
                       <Loader2 className="w-6 h-6 animate-spin" />
                     ) : isCopy && copied ? (
                       <Check className="w-6 h-6 text-primary" />
+                    ) : isEmbed && embedCopied ? (
+                      <Check className="w-6 h-6 text-primary" />
                     ) : (
                       <Icon />
                     )}
