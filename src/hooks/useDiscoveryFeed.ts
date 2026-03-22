@@ -30,6 +30,7 @@ export interface FeedItem {
   spaceId: string | null;
   slug: string | null;
   tier: "live" | "new" | "trending";
+  durationSeconds: number;
 }
 
 const FORTY_EIGHT_HOURS = 48 * 60 * 60 * 1000;
