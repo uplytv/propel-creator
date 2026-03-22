@@ -286,5 +286,6 @@ export default function Discover() {
         )}
       </div>
     </div>
+    </AppLayout>
   );
 }

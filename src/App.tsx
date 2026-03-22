@@ -163,7 +163,7 @@ const App = () => (
                     <Route path="/community/:creatorId/:tab" element={<CreatorSpace />} />
                     <Route path="/space/:creatorId" element={<CreatorSpace />} />
                     <Route path="/space/:creatorId/:tab" element={<CreatorSpace />} />
-                    <Route path="/discover" element={<Discover />} />
+                    <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
                     <Route path="/shorts" element={<Shorts />} />
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/:username/events/:slug" element={<EventPage />} />
