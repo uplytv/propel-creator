@@ -1526,6 +1526,36 @@ export type Database = {
         }
         Relationships: []
       }
+      invite_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          is_used: boolean
+          owner_id: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          is_used?: boolean
+          owner_id: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_used?: boolean
+          owner_id?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: []
+      }
       job_applications: {
         Row: {
           applicant_id: string
@@ -2866,12 +2896,19 @@ export type Database = {
           creator_type: string | null
           credits_balance: number
           display_name: string | null
+          first_name: string | null
           health_score: number
           id: string
+          interests: string[] | null
+          is_approved: boolean
+          last_name: string | null
           members: number
           mrr: number
+          onboarding_complete: boolean
           paid_dm_price: number | null
           paid_dms_enabled: boolean | null
+          referral_code: string | null
+          role_type: string | null
           tier: number
           tier_name: string
           total_revenue: number
@@ -2892,12 +2929,19 @@ export type Database = {
           creator_type?: string | null
           credits_balance?: number
           display_name?: string | null
+          first_name?: string | null
           health_score?: number
           id?: string
+          interests?: string[] | null
+          is_approved?: boolean
+          last_name?: string | null
           members?: number
           mrr?: number
+          onboarding_complete?: boolean
           paid_dm_price?: number | null
           paid_dms_enabled?: boolean | null
+          referral_code?: string | null
+          role_type?: string | null
           tier?: number
           tier_name?: string
           total_revenue?: number
@@ -2918,12 +2962,19 @@ export type Database = {
           creator_type?: string | null
           credits_balance?: number
           display_name?: string | null
+          first_name?: string | null
           health_score?: number
           id?: string
+          interests?: string[] | null
+          is_approved?: boolean
+          last_name?: string | null
           members?: number
           mrr?: number
+          onboarding_complete?: boolean
           paid_dm_price?: number | null
           paid_dms_enabled?: boolean | null
+          referral_code?: string | null
+          role_type?: string | null
           tier?: number
           tier_name?: string
           total_revenue?: number
@@ -2932,6 +2983,27 @@ export type Database = {
           user_type?: string | null
           username?: string | null
           website?: string | null
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          created_at: string
+          id: string
+          referred_id: string
+          referrer_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          referred_id: string
+          referrer_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          referred_id?: string
+          referrer_id?: string
         }
         Relationships: []
       }

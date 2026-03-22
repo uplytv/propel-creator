@@ -1,340 +1,396 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
-import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
-import { Check, Loader2, ArrowRight, Search } from "lucide-react";
-import { trackEvent } from "@/lib/posthog";
+import { ArrowRight, Camera, Check, X, Upload } from "lucide-react";
+import { toast } from "sonner";
+import { getAffiliateCookie, clearAffiliateCookie } from "@/lib/affiliateCookies";
 
-const stages = [
-  { id: "just-starting" as const, label: "Just Starting Out", detail: "0 members, $0 MRR", desc: "You have the vision but haven't launched yet.", emoji: "🌱" },
-  { id: "early-traction" as const, label: "Early Traction", detail: "Up to 100 members or $1k MRR", desc: "You've got your first fans and a taste of revenue.", emoji: "🚀" },
-  { id: "growing" as const, label: "Growing", detail: "Up to 500 members or $5k MRR", desc: "Things are working. Now you need to systemize.", emoji: "📈" },
-  { id: "scaling" as const, label: "Scaling", detail: "500+ members or $5k+ MRR", desc: "You're ready to build a real team and operation.", emoji: "🏗️" },
-];
+const INTEREST_TAGS = ["Fitness", "Finance", "Music", "Gaming", "Tech", "Lifestyle", "Education", "Business", "Art", "Cooking", "Travel", "Health"];
 
-const challenges = [
-  { id: "first-members" as const, label: "Getting my first members", emoji: "👥" },
-  { id: "pricing" as const, label: "Pricing my offer", emoji: "💰" },
-  { id: "content" as const, label: "Creating content consistently", emoji: "✍️" },
-  { id: "converting" as const, label: "Converting free to paid", emoji: "🔄" },
-  { id: "churn" as const, label: "Reducing churn", emoji: "📉" },
-  { id: "scaling-ceiling" as const, label: "Scaling past my current ceiling", emoji: "🚧" },
-];
-
-const userTypes = [
-  { label: "Coach / Consultant", emoji: "🎯" },
-  { label: "Course Creator", emoji: "📚" },
-  { label: "Community Builder", emoji: "🤝" },
-  { label: "Content Creator", emoji: "📱" },
-  { label: "Streamer / Entertainer", emoji: "🎮" },
-  { label: "Artist / Designer", emoji: "🎨" },
-  { label: "Service Provider", emoji: "🔧" },
-  { label: "Other", emoji: "✨" },
-];
-
-const loadingSteps = [
-  "Analyzing your category",
-  "Setting up your feature defaults",
-  "Calculating your growth potential",
-  "Preparing your personalized dashboard",
-];
+const slideVariants = {
+  enter: { opacity: 0, x: 40 },
+  center: { opacity: 1, x: 0 },
+  exit: { opacity: 0, x: -40 },
+};
 
 export default function Onboarding() {
-  const [step, setStep] = useState(1);
-  const { setProfile, setIsOnboarded, isOnboarded, refreshProfile } = useApp();
   const { user } = useAuth();
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedUserType, setSelectedUserType] = useState<string | null>(null);
-  const [selectedStage, setSelectedStage] = useState<string | null>(null);
-  const [selectedChallenge, setSelectedChallenge] = useState<string | null>(null);
-  const [categorySearch, setCategorySearch] = useState("");
-  const [loadingStep, setLoadingStep] = useState(0);
   const navigate = useNavigate();
+  const [step, setStep] = useState(0); // 0=splash, 1=name, 2=role, 3=photo, 4=interests, 5=confirmation
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [roleType, setRoleType] = useState<"creator" | "member" | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [interests, setInterests] = useState<string[]>([]);
+  const [referralCode, setReferralCode] = useState("");
+  const [saving, setSaving] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  // Fetch business categories
-  const { data: categories = [] } = useQuery({
-    queryKey: ["business-categories"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("business_categories")
-        .select("*")
-        .order("position");
-      return data || [];
-    },
-  });
-
+  // Check if already onboarded
   useEffect(() => {
-    if (isOnboarded) navigate("/dashboard", { replace: true });
-  }, [isOnboarded, navigate]);
-
-  // Load partial progress
-  useEffect(() => {
-    const loadProgress = async () => {
-      if (!user) return;
+    if (!user) return;
+    const check = async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("creator_type, creator_stage, creator_challenge, business_category, user_type")
+        .select("onboarding_complete, referral_code")
         .eq("user_id", user.id)
         .single();
-      if (data) {
-        const d = data as any;
-        if (d.business_category) setSelectedCategory(d.business_category);
-        if (d.user_type) setSelectedUserType(d.user_type);
-        if (d.creator_stage) setSelectedStage(d.creator_stage);
-        if (d.creator_challenge) setSelectedChallenge(d.creator_challenge);
-        if (d.creator_challenge) setStep(5);
-        else if (d.creator_stage) setStep(5);
-        else if (d.user_type) setStep(4);
-        else if (d.business_category) setStep(3);
+      if ((data as any)?.onboarding_complete) {
+        navigate("/waitlist", { replace: true });
+      }
+      if ((data as any)?.referral_code) {
+        setReferralCode((data as any).referral_code);
       }
     };
-    loadProgress();
+    check();
   }, [user]);
 
-  // Track onboarding step completion
-  const trackOnboardingStep = async (stepName: string) => {
+  // Auto-advance splash
+  useEffect(() => {
+    if (step === 0) {
+      const t = setTimeout(() => setStep(1), 1500);
+      return () => clearTimeout(t);
+    }
+  }, [step]);
+
+  const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Photo must be under 5MB");
+      return;
+    }
+    setAvatarFile(file);
+    setAvatarUrl(URL.createObjectURL(file));
+  };
+
+  const uploadPhoto = async (): Promise<string | null> => {
+    if (!avatarFile || !user) return null;
+    const ext = avatarFile.name.split(".").pop();
+    const path = `${user.id}/avatar.${ext}`;
+    const { error } = await supabase.storage.from("avatars").upload(path, avatarFile, { upsert: true });
+    if (error) {
+      console.error("Avatar upload error:", error);
+      return null;
+    }
+    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+    return urlData.publicUrl;
+  };
+
+  const finishOnboarding = async () => {
     if (!user) return;
-    try {
-      await supabase.from("onboarding_events" as any).insert({
-        user_id: user.id,
-        step: stepName,
-      });
-      trackEvent("onboarding_step_completed", { step: stepName });
-    } catch (e) {
-      console.error("Failed to track onboarding step:", e);
-    }
-  };
+    setSaving(true);
 
-  const next = () => {
-    // Track the step that was just completed
-    const stepMap: Record<number, string> = {
-      2: "category_selected",
-      3: "creator_type_selected",
-      4: "stage_selected",
-    };
-    if (stepMap[step]) {
-      trackOnboardingStep(stepMap[step]);
+    let uploadedUrl = avatarUrl;
+    if (avatarFile) {
+      uploadedUrl = await uploadPhoto();
     }
-    setStep(s => s + 1);
-  };
 
-  const startLoading = async () => {
-    trackOnboardingStep("onboarding_completed");
-    trackEvent("onboarding_completed", {
-      category: selectedCategory,
-      user_type: selectedUserType,
-      stage: selectedStage,
-      challenge: selectedChallenge,
-    });
-    setStep(6);
-    let i = 0;
-    const interval = setInterval(() => {
-      i++;
-      setLoadingStep(i);
-      if (i >= loadingSteps.length) {
-        clearInterval(interval);
-        setTimeout(async () => {
-          if (user) {
-            await supabase
-              .from("profiles")
-              .update({
-                business_category: selectedCategory,
-                user_type: selectedUserType,
-                creator_stage: selectedStage,
-                creator_challenge: selectedChallenge,
-                creator_type: selectedUserType, // Map to existing field
-              } as any)
-              .eq("user_id", user.id);
-          }
-          setProfile({
-            type: selectedUserType as any,
-            stage: selectedStage as any,
-            challenge: selectedChallenge as any,
-          });
-          setIsOnboarded(true);
-          refreshProfile();
-          navigate("/dashboard");
-        }, 800);
+    // Process referral
+    const refCode = getAffiliateCookie("uply_waitlist_ref");
+    let referrerId: string | null = null;
+    if (refCode) {
+      const { data: referrer } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("referral_code", refCode)
+        .maybeSingle();
+      if (referrer && (referrer as any).user_id !== user.id) {
+        referrerId = (referrer as any).user_id;
+        // Log referral
+        await supabase.from("referrals" as any).insert({
+          referrer_id: referrerId,
+          referred_id: user.id,
+        });
       }
-    }, 750);
+      clearAffiliateCookie("uply_waitlist_ref");
+    }
+
+    // Check if they used an invite code
+    const inviteCode = getAffiliateCookie("uply_invite_code");
+    let isApproved = false;
+    if (inviteCode) {
+      const { data: invite } = await supabase
+        .from("invite_codes" as any)
+        .select("id, is_used, owner_id")
+        .eq("code", inviteCode)
+        .eq("is_used", false)
+        .maybeSingle() as any;
+      if (invite) {
+        await supabase
+          .from("invite_codes" as any)
+          .update({ is_used: true, used_by: user.id, used_at: new Date().toISOString() })
+          .eq("id", invite.id);
+        isApproved = true;
+        // Also log as referral from invite code owner
+        if (invite.owner_id !== user.id) {
+          await supabase.from("referrals" as any).insert({
+            referrer_id: invite.owner_id,
+            referred_id: user.id,
+          });
+        }
+      }
+      clearAffiliateCookie("uply_invite_code");
+    }
+
+    await supabase
+      .from("profiles")
+      .update({
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        display_name: `${firstName.trim()} ${lastName.trim()}`.trim(),
+        role_type: roleType,
+        interests: roleType === "creator" ? interests : [],
+        avatar_url: uploadedUrl,
+        onboarding_complete: true,
+        is_approved: isApproved,
+        creator_type: roleType === "creator" ? "Content Creator" : null,
+      } as any)
+      .eq("user_id", user.id);
+
+    setSaving(false);
+    setStep(5);
   };
 
-  const progress = (step / 6) * 100;
-
-  const filteredCategories = categories.filter((c: any) =>
-    !categorySearch || c.name.toLowerCase().includes(categorySearch.toLowerCase())
-  );
+  const canProceedFromInterests = roleType === "member" || interests.length >= 1;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <div className="h-1 bg-secondary w-full">
-        <motion.div className="h-full bg-primary" initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 0.4 }} />
-      </div>
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      {/* Progress bar */}
+      {step > 0 && step < 5 && (
+        <div className="absolute top-0 left-0 right-0 h-1 bg-secondary">
+          <motion.div
+            className="h-full bg-primary"
+            animate={{ width: `${(step / 5) * 100}%` }}
+            transition={{ duration: 0.4 }}
+          />
+        </div>
+      )}
 
-      <div className="flex-1 flex items-center justify-center p-6">
-        <AnimatePresence mode="wait">
-          {/* Step 1: Welcome */}
-          {step === 1 && (
-            <motion.div key="s1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="max-w-lg text-center">
-              <h1 className="text-3xl md:text-5xl font-extrabold mb-4">Let's personalize your experience.</h1>
-              <p className="text-muted-foreground text-lg mb-10">We'll set up the right tools for your business in 60 seconds.</p>
-              <Button variant="hero" size="xl" onClick={next}>Let's Go <ArrowRight className="ml-1" /></Button>
-            </motion.div>
-          )}
+      <AnimatePresence mode="wait">
+        {/* Step 0: Splash */}
+        {step === 0 && (
+          <motion.div
+            key="splash"
+            initial={{ scale: 0.6, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ opacity: 0, scale: 1.1 }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-col items-center gap-3"
+          >
+            <div className="w-24 h-24 rounded-2xl bg-primary flex items-center justify-center">
+              <span className="text-5xl font-black text-primary-foreground" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>U</span>
+            </div>
+            <span className="text-xl font-bold tracking-tight text-foreground" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>UPLY</span>
+          </motion.div>
+        )}
 
-          {/* Step 2: Business Category */}
-          {step === 2 && (
-            <motion.div key="s2" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="max-w-2xl w-full">
-              <h2 className="text-2xl md:text-3xl font-bold text-center mb-2">What's your business category?</h2>
-              <p className="text-muted-foreground text-center mb-6">This determines which features are enabled by default.</p>
+        {/* Step 1: Name */}
+        {step === 1 && (
+          <motion.div key="name" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md">
+            <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">What's your name?</h1>
+            <p className="text-muted-foreground text-center text-sm mb-8">So we know what to call you.</p>
+            <div className="space-y-4 mb-8">
+              <Input
+                placeholder="First name"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                autoFocus
+                className="text-center text-lg py-6"
+              />
+              <Input
+                placeholder="Last name"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className="text-center text-lg py-6"
+              />
+            </div>
+            <Button
+              variant="hero"
+              size="xl"
+              className="w-full"
+              disabled={!firstName.trim() || !lastName.trim()}
+              onClick={() => setStep(2)}
+            >
+              Continue <ArrowRight className="ml-1 w-4 h-4" />
+            </Button>
+          </motion.div>
+        )}
 
-              <div className="relative mb-4">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search categories..."
-                  value={categorySearch}
-                  onChange={e => setCategorySearch(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+        {/* Step 2: Role */}
+        {step === 2 && (
+          <motion.div key="role" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md">
+            <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">I'm joining as a...</h1>
+            <p className="text-muted-foreground text-center text-sm mb-8">You can always change this later.</p>
+            <div className="grid grid-cols-2 gap-4 mb-8">
+              {[
+                { key: "creator" as const, emoji: "🎙️", label: "Creator", desc: "I create content and build a community" },
+                { key: "member" as const, emoji: "👥", label: "Member", desc: "I follow creators and join communities" },
+              ].map((r) => (
+                <button
+                  key={r.key}
+                  onClick={() => setRoleType(r.key)}
+                  className={`rounded-xl p-6 text-center border-2 transition-all duration-200 ${
+                    roleType === r.key
+                      ? "border-primary bg-primary/5"
+                      : "border-border bg-card hover:border-primary/30"
+                  }`}
+                >
+                  <span className="text-4xl block mb-3">{r.emoji}</span>
+                  <span className="text-base font-semibold block text-foreground">{r.label}</span>
+                  <span className="text-xs text-muted-foreground block mt-1">{r.desc}</span>
+                </button>
+              ))}
+            </div>
+            <Button
+              variant="hero"
+              size="xl"
+              className="w-full"
+              disabled={!roleType}
+              onClick={() => setStep(3)}
+            >
+              Continue <ArrowRight className="ml-1 w-4 h-4" />
+            </Button>
+          </motion.div>
+        )}
 
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-[400px] overflow-y-auto">
-                {filteredCategories.map((cat: any) => (
+        {/* Step 3: Photo */}
+        {step === 3 && (
+          <motion.div key="photo" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md text-center">
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">Add a photo</h1>
+            <p className="text-muted-foreground text-sm mb-8">Help people recognize you.</p>
+
+            <div className="flex flex-col items-center gap-4 mb-8">
+              <button
+                onClick={() => fileRef.current?.click()}
+                className="w-28 h-28 rounded-full border-2 border-dashed border-border hover:border-primary transition-colors flex items-center justify-center overflow-hidden bg-card"
+              >
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <Camera className="w-8 h-8 text-muted-foreground" />
+                )}
+              </button>
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoSelect} />
+              {avatarUrl && (
+                <button onClick={() => { setAvatarUrl(null); setAvatarFile(null); }} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+                  <X className="w-3 h-3" /> Remove
+                </button>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              <Button
+                variant="hero"
+                size="xl"
+                className="w-full"
+                onClick={() => roleType === "creator" ? setStep(4) : finishOnboarding()}
+                disabled={saving}
+              >
+                {saving ? "Saving..." : "Continue"} <ArrowRight className="ml-1 w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full text-muted-foreground"
+                onClick={() => roleType === "creator" ? setStep(4) : finishOnboarding()}
+                disabled={saving}
+              >
+                Skip for now
+              </Button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Step 4: Interests (Creator only) */}
+        {step === 4 && (
+          <motion.div key="interests" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md">
+            <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">What do you create?</h1>
+            <p className="text-muted-foreground text-center text-sm mb-8">Select at least one topic.</p>
+            <div className="flex flex-wrap gap-2 justify-center mb-8">
+              {INTEREST_TAGS.map((tag) => {
+                const selected = interests.includes(tag);
+                return (
                   <button
-                    key={cat.slug}
-                    onClick={() => setSelectedCategory(cat.slug)}
-                    className={`glass-card p-4 text-center transition-all duration-200 hover:translate-y-[-2px] ${
-                      selectedCategory === cat.slug ? "border-primary bg-primary/5" : "hover:border-primary/30"
+                    key={tag}
+                    onClick={() =>
+                      setInterests((prev) =>
+                        selected ? prev.filter((t) => t !== tag) : [...prev, tag]
+                      )
+                    }
+                    className={`px-4 py-2 rounded-full text-sm font-medium border transition-all duration-200 ${
+                      selected
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-card text-foreground border-border hover:border-primary/50"
                     }`}
                   >
-                    <span className="text-2xl mb-2 block">{cat.icon}</span>
-                    <span className="text-sm font-semibold block">{cat.name}</span>
-                    <span className="text-[10px] text-muted-foreground block mt-1">{cat.description}</span>
+                    {selected && <Check className="w-3 h-3 inline mr-1" />}
+                    {tag}
                   </button>
-                ))}
-              </div>
+                );
+              })}
+            </div>
+            <Button
+              variant="hero"
+              size="xl"
+              className="w-full"
+              disabled={!canProceedFromInterests || saving}
+              onClick={finishOnboarding}
+            >
+              {saving ? "Setting up..." : "Continue"} <ArrowRight className="ml-1 w-4 h-4" />
+            </Button>
+          </motion.div>
+        )}
 
-              <div className="flex justify-center mt-6">
-                <Button variant="hero" size="lg" onClick={next} disabled={!selectedCategory}>
-                  Continue <ArrowRight className="ml-1" />
-                </Button>
-              </div>
+        {/* Step 5: Confirmation */}
+        {step === 5 && (
+          <motion.div key="done" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md text-center">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 200, damping: 15 }}
+              className="w-16 h-16 rounded-full bg-primary flex items-center justify-center mx-auto mb-6"
+            >
+              <Check className="w-8 h-8 text-primary-foreground" />
             </motion.div>
-          )}
+            <h1 className="text-2xl md:text-3xl font-bold mb-3">You're on the list 🎉</h1>
+            <p className="text-muted-foreground text-sm mb-2">We're reviewing applications and letting people in waves.</p>
+            <p className="text-primary text-sm font-semibold mb-8">Share your link to move up.</p>
 
-          {/* Step 3: User Type / Service */}
-          {step === 3 && (
-            <motion.div key="s3" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="max-w-2xl w-full">
-              <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">What best describes you?</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {userTypes.map(t => (
-                  <button
-                    key={t.label}
-                    onClick={() => setSelectedUserType(t.label)}
-                    className={`glass-card p-5 text-center transition-all duration-200 hover:translate-y-[-2px] ${
-                      selectedUserType === t.label ? "border-primary bg-primary/5" : "hover:border-primary/30"
-                    }`}
+            {referralCode && (
+              <div className="mb-6">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 rounded-lg px-4 py-3 text-sm text-foreground truncate bg-card border border-border">
+                    uply.tv/join/{referralCode}
+                  </div>
+                  <Button
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(`https://uply.tv/join/${referralCode}`);
+                      toast.success("Copied!");
+                    }}
+                    className="shrink-0 bg-primary text-primary-foreground"
                   >
-                    <span className="text-3xl mb-2 block">{t.emoji}</span>
-                    <span className="text-sm font-semibold">{t.label}</span>
-                  </button>
-                ))}
+                    Copy
+                  </Button>
+                </div>
               </div>
-              <div className="flex justify-center mt-8">
-                <Button variant="hero" size="lg" onClick={next} disabled={!selectedUserType}>
-                  Continue <ArrowRight className="ml-1" />
-                </Button>
-              </div>
-            </motion.div>
-          )}
+            )}
 
-          {/* Step 4: Stage */}
-          {step === 4 && (
-            <motion.div key="s4" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="max-w-lg w-full">
-              <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">Where are you right now?</h2>
-              <div className="space-y-3">
-                {stages.map(s => (
-                  <button
-                    key={s.id}
-                    onClick={() => setSelectedStage(s.id)}
-                    className={`glass-card p-5 w-full text-left transition-all duration-200 hover:translate-y-[-2px] ${
-                      selectedStage === s.id ? "border-primary bg-primary/5" : "hover:border-primary/30"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{s.emoji}</span>
-                      <div>
-                        <div className="font-bold">{s.label}</div>
-                        <div className="text-xs text-primary font-medium">{s.detail}</div>
-                        <div className="text-sm text-muted-foreground mt-1">{s.desc}</div>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-              <div className="flex justify-center mt-8">
-                <Button variant="hero" size="lg" onClick={next} disabled={!selectedStage}>
-                  Continue <ArrowRight className="ml-1" />
-                </Button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Step 5: Challenge */}
-          {step === 5 && (
-            <motion.div key="s5" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="max-w-2xl w-full">
-              <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">What's your biggest challenge?</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {challenges.map(c => (
-                  <button
-                    key={c.id}
-                    onClick={() => setSelectedChallenge(c.id)}
-                    className={`glass-card p-5 text-center transition-all duration-200 hover:translate-y-[-2px] ${
-                      selectedChallenge === c.id ? "border-primary bg-primary/5" : "hover:border-primary/30"
-                    }`}
-                  >
-                    <span className="text-2xl mb-2 block">{c.emoji}</span>
-                    <span className="text-sm font-semibold">{c.label}</span>
-                  </button>
-                ))}
-              </div>
-              <div className="flex justify-center mt-8">
-                <Button variant="hero" size="lg" onClick={startLoading} disabled={!selectedChallenge}>
-                  Build My Plan <ArrowRight className="ml-1" />
-                </Button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Step 6: Loading */}
-          {step === 6 && (
-            <motion.div key="s6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-md w-full">
-              <h2 className="text-2xl md:text-3xl font-bold text-center mb-10">Setting up your workspace...</h2>
-              <div className="space-y-4">
-                {loadingSteps.map((ls, i) => (
-                  <motion.div key={ls} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.2 }} className="flex items-center gap-3 glass-card p-4">
-                    {i < loadingStep ? (
-                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-                        <Check className="w-3.5 h-3.5 text-primary-foreground" />
-                      </motion.div>
-                    ) : i === loadingStep ? (
-                      <Loader2 className="w-6 h-6 text-primary animate-spin" />
-                    ) : (
-                      <div className="w-6 h-6 rounded-full border border-border" />
-                    )}
-                    <span className={`text-sm font-medium ${i < loadingStep ? "text-foreground" : "text-muted-foreground"}`}>{ls}</span>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+            <Button
+              variant="hero"
+              size="xl"
+              className="w-full"
+              onClick={() => navigate("/waitlist", { replace: true })}
+            >
+              View My Waitlist Status <ArrowRight className="ml-1 w-4 h-4" />
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

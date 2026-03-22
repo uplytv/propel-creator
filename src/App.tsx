@@ -10,18 +10,21 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { FeatureProvider } from "@/context/FeatureContext";
 import TierCelebration from "@/components/TierCelebration";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import LaunchGate from "@/components/LaunchGate";
 import AdminRoute from "./components/AdminRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import InstallPrompt from "@/components/InstallPrompt";
 import OfflineScreen from "@/components/OfflineScreen";
+import SplashScreen from "@/components/SplashScreen";
 import { useNativeInit, useKeyboardState } from "@/hooks/useNativePlatform";
+import { AnimatePresence } from "framer-motion";
 
 // Lazy-loaded pages
 const Landing = lazy(() => import("./pages/Landing"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
+const WaitlistPage = lazy(() => import("./pages/WaitlistPage"));
+const InviteCodes = lazy(() => import("./pages/InviteCodes"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Products = lazy(() => import("./pages/Products"));
 const MyRep = lazy(() => import("./pages/MyRep"));
@@ -109,6 +112,20 @@ function NativeShell({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function AppWithSplash({ children }: { children: React.ReactNode }) {
+  const [showSplash, setShowSplash] = useState(true);
+
+  if (showSplash) {
+    return (
+      <AnimatePresence>
+        <SplashScreen onComplete={() => setShowSplash(false)} />
+      </AnimatePresence>
+    );
+  }
+
+  return <>{children}</>;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
@@ -121,7 +138,7 @@ const App = () => (
               <Sonner />
               <TierCelebration />
               <InstallPrompt />
-              <LaunchGate>
+              <AppWithSplash>
               <BrowserRouter>
                 <ErrorBoundary>
                 <Suspense fallback={<PageLoader />}>
@@ -140,6 +157,7 @@ const App = () => (
                     <Route path="/leaderboard" element={<Leaderboard />} />
                     <Route path="/ref/:code" element={<ReferralRedirect />} />
                     <Route path="/join/:code" element={<ReferralRedirect />} />
+                    <Route path="/invite/:code" element={<ReferralRedirect />} />
                     <Route path="/creator/:username" element={<CreatorProfile />} />
                     <Route path="/community/:creatorId" element={<CreatorSpace />} />
                     <Route path="/community/:creatorId/:tab" element={<CreatorSpace />} />
@@ -152,8 +170,11 @@ const App = () => (
                     <Route path="/creator/:username/events/:slug" element={<EventPage />} />
                     <Route path="/tickets/:token" element={<TicketDetail />} />
 
+                    {/* Onboarding & Waitlist (auth required but no approval needed) */}
+                    <Route path="/onboarding" element={<Onboarding />} />
+                    <Route path="/waitlist" element={<WaitlistPage />} />
+
                     {/* Protected routes */}
-                    <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
                     <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                     <Route path="/grow" element={<ProtectedRoute><Grow /></ProtectedRoute>} />
                     <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
@@ -180,6 +201,7 @@ const App = () => (
                     <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
                     <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
                     <Route path="/events/create" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
+                    <Route path="/invite-codes" element={<ProtectedRoute><InviteCodes /></ProtectedRoute>} />
 
                     {/* Admin routes */}
                     <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
@@ -194,7 +216,7 @@ const App = () => (
                 </Suspense>
                 </ErrorBoundary>
               </BrowserRouter>
-              </LaunchGate>
+              </AppWithSplash>
               </NativeShell>
             </FeatureProvider>
           </AppProvider>
