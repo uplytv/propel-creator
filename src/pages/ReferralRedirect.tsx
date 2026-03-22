@@ -132,7 +132,9 @@ export default function ReferralRedirect() {
           </p>
 
           {referrer?.creator_type && (
-            <p className="text-sm text-muted-foreground mt-1 capitalize">{referrer.creator_type} Creator</p>
+            <p className="text-sm text-muted-foreground mt-1 capitalize">
+              {referrer.creator_type.toLowerCase().includes('creator') ? referrer.creator_type : `${referrer.creator_type} Creator`}
+            </p>
           )}
 
           <div
