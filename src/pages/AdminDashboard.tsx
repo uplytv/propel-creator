@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import {
-  ShieldCheck, Users, DollarSign, ToggleLeft, Link2,
+  ShieldCheck, Users, DollarSign, ToggleLeft, Link2, Share2,
   RefreshCw, BarChart3, Heart, Radio, Zap, Shield, TrendingUp, ListChecks
 } from "lucide-react";
 import { DateRange } from "@/hooks/useAdminHealthData";
@@ -74,6 +74,9 @@ export default function AdminDashboard() {
             </Button>
             <Button size="sm" variant="outline" onClick={() => navigate("/admin/affiliates")}>
               <Link2 className="w-4 h-4 mr-1" /> Affiliates
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => navigate("/admin/referrals")}>
+              <Share2 className="w-4 h-4 mr-1" /> Referrals
             </Button>
           </div>
         </div>

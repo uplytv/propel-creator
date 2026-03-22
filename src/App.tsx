@@ -58,6 +58,7 @@ const ContentLibrary = lazy(() => import("./pages/ContentLibrary"));
 const CreatorSpace = lazy(() => import("./pages/CreatorSpace"));
 const Launchpad = lazy(() => import("./pages/Launchpad"));
 const AdminAffiliates = lazy(() => import("./pages/AdminAffiliates"));
+const AdminReferrals = lazy(() => import("./pages/AdminReferrals"));
 const ReferralRedirect = lazy(() => import("./pages/ReferralRedirect"));
 const GrowthReports = lazy(() => import("./pages/GrowthReports"));
 const Shorts = lazy(() => import("./pages/Shorts"));
@@ -218,6 +219,7 @@ const App = () => (
                     <Route path="/admin/payouts" element={<AdminRoute><AdminPayouts /></AdminRoute>} />
                     <Route path="/admin/features" element={<AdminRoute><AdminFeatureToggles /></AdminRoute>} />
                     <Route path="/admin/affiliates" element={<AdminRoute><AdminAffiliates /></AdminRoute>} />
+                    <Route path="/admin/referrals" element={<AdminRoute><AdminReferrals /></AdminRoute>} />
 
                     <Route path="*" element={<NotFound />} />
                   </Routes>
