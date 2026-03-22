@@ -544,6 +544,42 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
                         ))}
                       </div>
                     </div>
+
+                    {/* Schedule Publish */}
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground mb-1.5 flex items-center gap-1.5">
+                        <Calendar className="w-3.5 h-3.5" /> Schedule Publish (optional)
+                      </label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="date"
+                          value={scheduledDate}
+                          onChange={(e) => setScheduledDate(e.target.value)}
+                          min={new Date().toISOString().split("T")[0]}
+                          className="bg-card border-border flex-1"
+                        />
+                        <Input
+                          type="time"
+                          value={scheduledTime}
+                          onChange={(e) => setScheduledTime(e.target.value)}
+                          className="bg-card border-border w-28"
+                        />
+                      </div>
+                      {hasSchedule && (
+                        <div className="flex items-center gap-2 mt-2">
+                          <Clock className="w-3.5 h-3.5 text-primary" />
+                          <span className="text-xs text-primary">
+                            Will publish on {new Date(`${scheduledDate}T${scheduledTime}`).toLocaleString()}
+                          </span>
+                          <button
+                            onClick={() => { setScheduledDate(""); setScheduledTime(""); }}
+                            className="text-xs text-muted-foreground hover:text-foreground ml-auto"
+                          >
+                            Clear
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </>
               )}
