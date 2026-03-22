@@ -30,6 +30,7 @@ export interface FeedItem {
   spaceId: string | null;
   slug: string | null;
   tier: "live" | "new" | "trending";
+  durationSeconds: number;
 }
 
 const FORTY_EIGHT_HOURS = 48 * 60 * 60 * 1000;
@@ -221,6 +222,7 @@ export function useDiscoveryFeed(
             spaceId: null,
             slug: s.slug,
             tier: "live",
+            durationSeconds: 0,
           });
         }
       }
@@ -254,6 +256,7 @@ export function useDiscoveryFeed(
             spaceId: null,
             slug: r.slug,
             tier: isNew(r.created_at) ? "new" : "trending",
+            durationSeconds: r.duration_seconds || 0,
           });
         }
       }
@@ -287,6 +290,7 @@ export function useDiscoveryFeed(
             spaceId: null,
             slug: c.slug,
             tier: isNew(c.created_at) ? "new" : "trending",
+            durationSeconds: c.duration_seconds || 0,
           });
         }
       }
@@ -320,6 +324,7 @@ export function useDiscoveryFeed(
             spaceId: null,
             slug: v.slug,
             tier: isNew(v.created_at) ? "new" : "trending",
+            durationSeconds: v.duration_seconds || 0,
           });
         }
       }
@@ -356,6 +361,7 @@ export function useDiscoveryFeed(
             spaceId: null,
             slug: null,
             tier: isNew(p.created_at) ? "new" : "trending",
+            durationSeconds: 0,
           });
         }
       }
@@ -392,6 +398,7 @@ export function useDiscoveryFeed(
             spaceId: sp.id,
             slug: sp.slug,
             tier: isNew(sp.created_at) ? "new" : "trending",
+            durationSeconds: 0,
           });
         }
       }
@@ -423,6 +430,7 @@ export function useDiscoveryFeed(
             spaceId: null,
             slug: null,
             tier: isNew(c.created_at) ? "new" : "trending",
+            durationSeconds: 0,
           });
         }
       }
