@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 import OriginBadge from "@/components/OriginBadge";
 import logoImg from "@/assets/logo.png";
+import { buildReferralUrl, buildReferralUrlDisplay, getFirstName, getShareMessages } from "@/lib/referralUrls";
+import { getAffiliateCookie } from "@/lib/affiliateCookies";
 
 interface LeaderboardEntry {
   user_id: string;
@@ -88,24 +90,36 @@ export default function WaitlistPage() {
   }, [user]);
 
   const referralCode = (profile as any)?.referral_code || "";
-  const fullUrl = `https://uply.tv/join/${referralCode}`;
+  const profileUsername = (profile as any)?.username || (profile as any)?.display_name;
+  const fullUrl = buildReferralUrl(referralCode, profileUsername);
+  const displayUrlStr = buildReferralUrlDisplay(referralCode, profileUsername);
+  const myFirstName = getFirstName((profile as any)?.display_name);
+  const shareMessages = getShareMessages(myFirstName, fullUrl);
 
   const copyLink = async () => {
     await navigator.clipboard.writeText(fullUrl);
     setLinkCopied(true);
-    toast.success("Referral link copied!");
+    toast.success("Invite link copied — share it with creators you know 🚀");
     setTimeout(() => setLinkCopied(false), 2500);
   };
 
   const shareTwitter = () => {
-    const text = `I just joined the @UplyTV waitlist. First platform that actually pays creators what they're worth. There's $10,000 going to whoever refers the most people. Join with my link → ${fullUrl}`;
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank");
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareMessages.twitter)}`, "_blank");
   };
 
   const shareSMS = () => {
-    const text = `You need to check out UPLY — it's like YouTube but you actually get paid. Join the waitlist with my link and we both move up: ${fullUrl}`;
-    window.open(`sms:?body=${encodeURIComponent(text)}`, "_self");
+    window.open(`sms:?body=${encodeURIComponent(shareMessages.sms)}`, "_self");
   };
+
+  // Referrer banner info
+  const [referrerInfo, setReferrerInfo] = useState<{ name: string; avatar: string | null } | null>(null);
+  useEffect(() => {
+    const storedName = sessionStorage.getItem("referrer_name");
+    const storedAvatar = sessionStorage.getItem("referrer_avatar");
+    if (storedName) {
+      setReferrerInfo({ name: storedName, avatar: storedAvatar });
+    }
+  }, []);
 
   const roleType = (profile as any)?.role_type;
   const isCreator = roleType === "creator";
@@ -162,6 +176,30 @@ export default function WaitlistPage() {
       </div>
 
       <div className="max-w-lg mx-auto px-6 pb-16">
+        {/* Referrer banner */}
+        {referrerInfo && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-lg p-3 mb-4 flex items-center gap-3"
+            style={{
+              background: "hsl(var(--primary) / 0.08)",
+              border: "1px solid hsl(var(--primary) / 0.3)",
+            }}
+          >
+            {referrerInfo.avatar ? (
+              <img src={referrerInfo.avatar} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold flex-shrink-0">
+                {referrerInfo.name[0]}
+              </div>
+            )}
+            <div>
+              <p className="text-sm font-semibold text-foreground">{referrerInfo.name} invited you</p>
+              <p className="text-xs text-muted-foreground">You'll both move up the waitlist when you apply</p>
+            </div>
+          </motion.div>
+        )}
         {/* Prize Hero */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -206,7 +244,7 @@ export default function WaitlistPage() {
           <h3 className="font-semibold text-sm mb-3">Your Referral Link</h3>
           <div className="flex items-center gap-2 mb-3">
             <div className="flex-1 rounded-lg px-4 py-3 text-sm text-foreground truncate bg-card border border-border">
-              uply.tv/join/{referralCode}
+              {displayUrlStr}
             </div>
             <Button onClick={copyLink} className="shrink-0 gap-2 bg-primary text-primary-foreground">
               {linkCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}

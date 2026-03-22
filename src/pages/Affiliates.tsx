@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { Copy, Check, Share2, Users, DollarSign, MousePointerClick, Clock, ExternalLink } from "lucide-react";
-import { SITE_URL } from "@/lib/siteUrl";
+import { buildReferralUrl } from "@/lib/referralUrls";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -16,7 +16,7 @@ export default function Affiliates() {
   const { data: stats, isLoading: statsLoading } = useAffiliateStats();
 
   const isLoading = linkLoading || statsLoading;
-  const referralLink = linkData?.code ? `${SITE_URL}/ref/${linkData.code}` : "";
+  const referralLink = linkData?.code ? buildReferralUrl(linkData.code) : "";
 
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink);

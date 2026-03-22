@@ -143,6 +143,7 @@ export type Database = {
           revenue_generated: number
           signups: number
           user_id: string
+          username_slug: string | null
         }
         Insert: {
           clicks?: number
@@ -152,6 +153,7 @@ export type Database = {
           revenue_generated?: number
           signups?: number
           user_id: string
+          username_slug?: string | null
         }
         Update: {
           clicks?: number
@@ -161,6 +163,7 @@ export type Database = {
           revenue_generated?: number
           signups?: number
           user_id?: string
+          username_slug?: string | null
         }
         Relationships: []
       }
@@ -3893,6 +3896,9 @@ export type Database = {
           referral_code: string | null
           referral_count: number
           referred_by: string | null
+          referrer_avatar_url: string | null
+          referrer_display_name: string | null
+          referrer_username: string | null
           social_handle: string | null
         }
         Insert: {
@@ -3910,6 +3916,9 @@ export type Database = {
           referral_code?: string | null
           referral_count?: number
           referred_by?: string | null
+          referrer_avatar_url?: string | null
+          referrer_display_name?: string | null
+          referrer_username?: string | null
           social_handle?: string | null
         }
         Update: {
@@ -3927,6 +3936,9 @@ export type Database = {
           referral_code?: string | null
           referral_count?: number
           referred_by?: string | null
+          referrer_avatar_url?: string | null
+          referrer_display_name?: string | null
+          referrer_username?: string | null
           social_handle?: string | null
         }
         Relationships: []
