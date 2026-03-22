@@ -404,7 +404,7 @@ export default function SharePanel({
       {/* Platform Grid */}
       {!showQR && (
         <TooltipProvider>
-          <div className="grid grid-cols-4 gap-2.5">
+          <div className="grid grid-cols-3 gap-2.5">
             {PLATFORMS.map((p) => {
               const Icon = p.icon;
               const isDownload = p.key === "download";
