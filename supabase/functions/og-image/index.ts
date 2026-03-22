@@ -80,6 +80,62 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // Match /r/:code (referral links)
+    const referralMatch = path.match(/^\/r\/([^/]+)$/);
+    if (referralMatch) {
+      const [, code] = referralMatch;
+
+      // Try referral_code on profiles first
+      let profile = null;
+      const { data: byRef } = await supabase
+        .from("profiles")
+        .select("display_name, avatar_url, username")
+        .eq("referral_code", code)
+        .maybeSingle();
+      if (byRef) profile = byRef;
+
+      // Try invite_codes table
+      if (!profile) {
+        const { data: invite } = await supabase
+          .from("invite_codes")
+          .select("owner_id")
+          .eq("code", code)
+          .maybeSingle();
+        if (invite) {
+          const { data: owner } = await supabase
+            .from("profiles")
+            .select("display_name, avatar_url, username")
+            .eq("user_id", invite.owner_id)
+            .maybeSingle();
+          if (owner) profile = owner;
+        }
+      }
+
+      if (profile) {
+        const name = profile.display_name || "Someone";
+        const avatarImg = profile.avatar_url || DEFAULT_IMAGE;
+
+        return new Response(
+          buildHtml({
+            title: `${name} invited you to join UPLY`,
+            description: `Join ${name}'s community on UPLY — where creators get paid.`,
+            image: avatarImg,
+            url: `${SITE_URL}/r/${code}`,
+            type: "website",
+            twitterCard: "summary_large_image",
+            siteName: "Uply",
+          }),
+          {
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "text/html; charset=utf-8",
+              "Cache-Control": "public, max-age=3600, s-maxage=86400",
+            },
+          }
+        );
+      }
+    }
+
     // Match /:username/videos/:slug
     const videoMatch = path.match(/^\/([^/]+)\/videos\/([^/]+)$/);
     if (videoMatch) {
