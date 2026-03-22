@@ -5,8 +5,15 @@ import { Button } from "@/components/ui/button";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
 const categories = [
-  "Business Strategy", "Fitness & Nutrition", "Music Production", "Photography",
-  "UX Design", "Web Development", "Marketing", "Writing", "Finance", "AI & Tech",
+  "Business Strategy", "Entrepreneurship", "Personal Finance", "Investing & Trading",
+  "Real Estate", "E-Commerce", "Dropshipping", "Amazon FBA", "Fitness & Nutrition",
+  "Weight Loss", "Bodybuilding", "Mental Health & Wellness", "Relationships & Dating",
+  "Parenting", "Spirituality & Mindset", "Music Production", "DJing", "Podcasting",
+  "Content Creation", "Photography", "Videography", "Graphic Design", "UX Design",
+  "Web Development", "AI & Tech", "Cybersecurity", "Gaming", "Marketing", "Copywriting",
+  "Sales", "Public Speaking", "Writing", "Education & Tutoring", "Language Learning",
+  "Career & Productivity", "Legal & Compliance", "Fashion & Style", "Food & Cooking",
+  "Travel", "NFTs & Crypto", "Faith & Community",
 ];
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
