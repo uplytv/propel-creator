@@ -290,6 +290,7 @@ export function useDiscoveryFeed(
             spaceId: null,
             slug: c.slug,
             tier: isNew(c.created_at) ? "new" : "trending",
+            durationSeconds: c.duration_seconds || 0,
           });
         }
       }
