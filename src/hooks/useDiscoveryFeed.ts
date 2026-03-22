@@ -256,6 +256,7 @@ export function useDiscoveryFeed(
             spaceId: null,
             slug: r.slug,
             tier: isNew(r.created_at) ? "new" : "trending",
+            durationSeconds: r.duration_seconds || 0,
           });
         }
       }
