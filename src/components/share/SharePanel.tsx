@@ -431,7 +431,7 @@ export default function SharePanel({
                     )}
                   </div>
                   <span className="text-foreground text-[11px] font-medium leading-tight text-center">
-                    {isCopy && copied ? "Copied!" : p.label}
+                    {isCopy && copied ? "Copied!" : isEmbed && embedCopied ? "Copied!" : p.label}
                   </span>
                 </button>
               );
