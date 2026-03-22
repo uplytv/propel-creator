@@ -110,8 +110,10 @@ export default function SharePanel({
 
   const [caption, setCaption] = useState("");
   const [copied, setCopied] = useState(false);
+  const [embedCopied, setEmbedCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [showQR, setShowQR] = useState<string | null>(null);
+  const [showEmbed, setShowEmbed] = useState(false);
 
   const slugifyText = (text: string) =>
     text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 60);
