@@ -3739,12 +3739,14 @@ export type Database = {
           like_count: number | null
           mux_asset_id: string | null
           playback_id: string | null
+          scheduled_publish_at: string | null
           slug: string | null
           tags: string[] | null
           thumbnail_url: string | null
           title: string
           trending_score: number | null
           view_count: number | null
+          visibility: string
         }
         Insert: {
           category?: string | null
@@ -3760,12 +3762,14 @@ export type Database = {
           like_count?: number | null
           mux_asset_id?: string | null
           playback_id?: string | null
+          scheduled_publish_at?: string | null
           slug?: string | null
           tags?: string[] | null
           thumbnail_url?: string | null
           title: string
           trending_score?: number | null
           view_count?: number | null
+          visibility?: string
         }
         Update: {
           category?: string | null
@@ -3781,12 +3785,14 @@ export type Database = {
           like_count?: number | null
           mux_asset_id?: string | null
           playback_id?: string | null
+          scheduled_publish_at?: string | null
           slug?: string | null
           tags?: string[] | null
           thumbnail_url?: string | null
           title?: string
           trending_score?: number | null
           view_count?: number | null
+          visibility?: string
         }
         Relationships: []
       }

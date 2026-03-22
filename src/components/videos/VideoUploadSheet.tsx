@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, X, Loader2, Film, Check, CloudUpload, Image, Tag } from "lucide-react";
+import { Upload, X, Loader2, Film, Check, CloudUpload, Image, Tag, Calendar, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,7 +16,7 @@ import { useQuery } from "@tanstack/react-query";
 
 const CATEGORIES = ["Fitness", "Finance", "Gaming", "Lifestyle", "Business", "Education", "Music", "IRL", "Other"];
 
-type Visibility = "public" | "members" | "unlisted";
+type Visibility = "public" | "members" | "unlisted" | "private";
 
 interface VideoUploadSheetProps {
   open: boolean;
@@ -54,6 +54,8 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
   const [tagInput, setTagInput] = useState("");
   const [visibility, setVisibility] = useState<Visibility>("public");
   const [customThumb, setCustomThumb] = useState<string | null>(null);
+  const [scheduledDate, setScheduledDate] = useState("");
+  const [scheduledTime, setScheduledTime] = useState("");
   const [uploading, setUploading] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [dragOver, setDragOver] = useState(false);
@@ -88,6 +90,8 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
     setTagInput("");
     setVisibility("public");
     setCustomThumb(null);
+    setScheduledDate("");
+    setScheduledTime("");
     setUploading(false);
     setPublishing(false);
     if (pollRef.current) clearInterval(pollRef.current);
@@ -226,12 +230,19 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
     setPublishing(true);
     try {
       const thumbnailUrl = customThumb || (muxPlaybackId ? `https://image.mux.com/${muxPlaybackId}/thumbnail.jpg` : null);
+      const scheduledPublishAt = scheduledDate && scheduledTime
+        ? new Date(`${scheduledDate}T${scheduledTime}`).toISOString()
+        : undefined;
+      const effectiveVisibility = scheduledPublishAt ? "private" : (draft ? "private" : visibility);
+
       const result = await createVideo.mutateAsync({
         title: title.trim(),
         description,
         category,
         tags,
-        is_public: draft ? false : visibility !== "unlisted",
+        visibility: effectiveVisibility,
+        scheduled_publish_at: scheduledPublishAt,
+        is_public: effectiveVisibility === "public",
         mux_asset_id: muxAssetId || undefined,
         playback_id: muxPlaybackId || undefined,
         thumbnail_url: thumbnailUrl || undefined,
@@ -241,7 +252,9 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
       reset();
       onClose();
 
-      if (!draft && result?.slug) {
+      if (scheduledPublishAt) {
+        toast({ title: "Video scheduled ✓", description: `Will publish on ${new Date(scheduledPublishAt).toLocaleString()}` });
+      } else if (!draft && result?.slug) {
         const username = creatorProfile?.username || creatorProfile?.display_name || user.id;
         navigate(`/${encodeURIComponent(username)}/videos/${result.slug}`);
         toast({ title: "Video published ✓", description: "Your video is live!" });
@@ -264,6 +277,7 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
     { key: "unlisted", icon: "📝", label: "Unlisted", desc: "Only people with the link" },
   ];
 
+  const hasSchedule = !!(scheduledDate && scheduledTime);
   const publishDisabled = !title.trim() || publishing || (uploadPhase !== "ready" && uploadPhase !== "idle");
   const publishLabel = publishing
     ? "Publishing…"
@@ -271,6 +285,8 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
     ? `Uploading ${uploadProgress}%…`
     : uploadPhase === "processing"
     ? "Processing…"
+    : hasSchedule
+    ? "Schedule Publish →"
     : "Publish Video →";
 
   if (!open) return null;
@@ -527,6 +543,42 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
                           </button>
                         ))}
                       </div>
+                    </div>
+
+                    {/* Schedule Publish */}
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground mb-1.5 flex items-center gap-1.5">
+                        <Calendar className="w-3.5 h-3.5" /> Schedule Publish (optional)
+                      </label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="date"
+                          value={scheduledDate}
+                          onChange={(e) => setScheduledDate(e.target.value)}
+                          min={new Date().toISOString().split("T")[0]}
+                          className="bg-card border-border flex-1"
+                        />
+                        <Input
+                          type="time"
+                          value={scheduledTime}
+                          onChange={(e) => setScheduledTime(e.target.value)}
+                          className="bg-card border-border w-28"
+                        />
+                      </div>
+                      {hasSchedule && (
+                        <div className="flex items-center gap-2 mt-2">
+                          <Clock className="w-3.5 h-3.5 text-primary" />
+                          <span className="text-xs text-primary">
+                            Will publish on {new Date(`${scheduledDate}T${scheduledTime}`).toLocaleString()}
+                          </span>
+                          <button
+                            onClick={() => { setScheduledDate(""); setScheduledTime(""); }}
+                            className="text-xs text-muted-foreground hover:text-foreground ml-auto"
+                          >
+                            Clear
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </>

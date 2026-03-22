@@ -22,6 +22,8 @@ export interface Video {
   is_featured: boolean;
   trending_score: number;
   slug: string | null;
+  visibility: string | null;
+  scheduled_publish_at: string | null;
   created_at: string;
 }
 
@@ -150,12 +152,16 @@ export function useCreateVideo() {
       category?: string;
       tags?: string[];
       is_public?: boolean;
+      visibility?: string;
+      scheduled_publish_at?: string;
       mux_asset_id?: string;
       playback_id?: string;
       thumbnail_url?: string;
       duration_seconds?: number;
     }) => {
       if (!user) throw new Error("Not authenticated");
+      const visibility = video.visibility || "public";
+      const isPublic = visibility === "public" && !video.scheduled_publish_at;
       const { data, error } = await (supabase as any)
         .from("videos")
         .insert({
@@ -164,7 +170,9 @@ export function useCreateVideo() {
           description: video.description || "",
           category: video.category || "Other",
           tags: video.tags || [],
-          is_public: video.is_public ?? true,
+          is_public: isPublic,
+          visibility,
+          scheduled_publish_at: video.scheduled_publish_at || null,
           mux_asset_id: video.mux_asset_id,
           playback_id: video.playback_id,
           thumbnail_url: video.thumbnail_url,
