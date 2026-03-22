@@ -22,6 +22,8 @@ export interface Video {
   is_featured: boolean;
   trending_score: number;
   slug: string | null;
+  visibility: string | null;
+  scheduled_publish_at: string | null;
   created_at: string;
 }
 
