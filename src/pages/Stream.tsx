@@ -523,6 +523,13 @@ export default function Stream() {
                     streamId={id}
                     creatorUserId={dbStream.user_id}
                   />
+                  {featuredProduct && (
+                    <FeaturedProductCTA
+                      product={featuredProduct}
+                      streamId={id}
+                      creatorId={dbStream.user_id}
+                    />
+                  )}
                 </>
               )}
             </div>
