@@ -493,6 +493,24 @@ Deno.serve(async (req) => {
           .select("member_id, creator_id")
           .maybeSingle();
 
+        // Update access_grants for subscription changes
+        if (newStatus === "past_due") {
+          // Downgrade to preview access
+          await supabase.from("access_grants")
+            .update({ access_level: "preview" })
+            .eq("stripe_subscription_id", sub.id)
+            .is("revoked_at", null);
+        } else if (newStatus === "active") {
+          // Restore full access and update expiry
+          await supabase.from("access_grants")
+            .update({
+              access_level: "full",
+              expires_at: new Date(sub.current_period_end * 1000).toISOString(),
+            })
+            .eq("stripe_subscription_id", sub.id)
+            .is("revoked_at", null);
+        }
+
         // Notify if recovered from past_due
         if (newStatus === "active" && updatedSub) {
           await supabase.from("notifications").insert({
