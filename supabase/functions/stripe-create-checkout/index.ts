@@ -34,11 +34,26 @@ serve(async (req) => {
 
     const user = userData.user;
     const body = await req.json();
-    const { tier_id, creator_id, creator_username } = body;
+    const { tier_id, creator_id, creator_username, space_id, success_url, cancel_url } = body;
 
     logStep("Request received", { tier_id, creator_id, userId: user.id });
 
     if (!tier_id || !creator_id) throw new Error("tier_id and creator_id required");
+
+    // Check if already subscribed
+    const { data: existingSub } = await supabase
+      .from("member_subscriptions")
+      .select("id, status")
+      .eq("member_id", user.id)
+      .eq("creator_id", creator_id)
+      .maybeSingle();
+
+    if (existingSub?.status === "active") {
+      return new Response(JSON.stringify({ already_subscribed: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
 
     // Get tier details
     const { data: tier } = await supabase
@@ -53,7 +68,7 @@ serve(async (req) => {
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     let stripePriceId = tier.stripe_price_id;
 
-    // Check if creator has Stripe Connect (optional in hybrid model)
+    // Check if creator has Stripe Connect
     const { data: stripeAccount } = await supabase
       .from("creator_stripe_accounts")
       .select("stripe_account_id, charges_enabled")
@@ -98,18 +113,20 @@ serve(async (req) => {
     const origin = req.headers.get("origin") || "https://uply.tv";
     const creatorPath = creator_username ? `/creator/${creator_username}` : `/community/${creator_id}`;
 
-    // Build session config — use Stripe Connect if creator has it, otherwise platform collects
+    // Build session config
     const sessionConfig: any = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email!,
       line_items: [{ price: stripePriceId, quantity: 1 }],
       mode: "subscription",
-      success_url: `${origin}${creatorPath}?joined=true`,
-      cancel_url: `${origin}${creatorPath}`,
+      success_url: success_url || `${origin}${creatorPath}/community?joined=true&creator_id=${creator_id}`,
+      cancel_url: cancel_url || `${origin}${creatorPath}`,
       metadata: {
+        purchase_type: "subscription",
         member_id: user.id,
         creator_id,
         tier_id,
+        space_id: space_id || "",
       },
     };
 
@@ -124,16 +141,12 @@ serve(async (req) => {
     }
 
     if (hasConnect) {
-      // Direct payout to creator via Stripe Connect
       sessionConfig.subscription_data = {
         ...(sessionConfig.subscription_data || {}),
         application_fee_percent: 5,
         transfer_data: { destination: stripeAccount!.stripe_account_id },
       };
       logStep("Using Stripe Connect flow", { destination: stripeAccount!.stripe_account_id });
-    } else {
-      // Platform collects — creator gets paid via manual payout later
-      logStep("Using platform-managed flow (no Connect)");
     }
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
