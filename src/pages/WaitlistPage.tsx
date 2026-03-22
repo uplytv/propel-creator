@@ -90,24 +90,36 @@ export default function WaitlistPage() {
   }, [user]);
 
   const referralCode = (profile as any)?.referral_code || "";
-  const fullUrl = `https://uply.tv/join/${referralCode}`;
+  const profileUsername = (profile as any)?.username || (profile as any)?.display_name;
+  const fullUrl = buildReferralUrl(referralCode, profileUsername);
+  const displayUrlStr = buildReferralUrlDisplay(referralCode, profileUsername);
+  const myFirstName = getFirstName((profile as any)?.display_name);
+  const shareMessages = getShareMessages(myFirstName, fullUrl);
 
   const copyLink = async () => {
     await navigator.clipboard.writeText(fullUrl);
     setLinkCopied(true);
-    toast.success("Referral link copied!");
+    toast.success("Invite link copied — share it with creators you know 🚀");
     setTimeout(() => setLinkCopied(false), 2500);
   };
 
   const shareTwitter = () => {
-    const text = `I just joined the @UplyTV waitlist. First platform that actually pays creators what they're worth. There's $10,000 going to whoever refers the most people. Join with my link → ${fullUrl}`;
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank");
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareMessages.twitter)}`, "_blank");
   };
 
   const shareSMS = () => {
-    const text = `You need to check out UPLY — it's like YouTube but you actually get paid. Join the waitlist with my link and we both move up: ${fullUrl}`;
-    window.open(`sms:?body=${encodeURIComponent(text)}`, "_self");
+    window.open(`sms:?body=${encodeURIComponent(shareMessages.sms)}`, "_self");
   };
+
+  // Referrer banner info
+  const [referrerInfo, setReferrerInfo] = useState<{ name: string; avatar: string | null } | null>(null);
+  useEffect(() => {
+    const storedName = sessionStorage.getItem("referrer_name");
+    const storedAvatar = sessionStorage.getItem("referrer_avatar");
+    if (storedName) {
+      setReferrerInfo({ name: storedName, avatar: storedAvatar });
+    }
+  }, []);
 
   const roleType = (profile as any)?.role_type;
   const isCreator = roleType === "creator";
