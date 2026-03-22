@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_grants: {
+        Row: {
+          access_level: string
+          expires_at: string | null
+          granted_at: string
+          id: string
+          metadata: Json | null
+          resource_id: string
+          resource_type: string
+          revoke_reason: string | null
+          revoked_at: string | null
+          source: string
+          stream_id: string | null
+          stripe_customer_id: string | null
+          stripe_payment_intent_id: string | null
+          stripe_subscription_id: string | null
+          user_id: string
+        }
+        Insert: {
+          access_level?: string
+          expires_at?: string | null
+          granted_at?: string
+          id?: string
+          metadata?: Json | null
+          resource_id: string
+          resource_type: string
+          revoke_reason?: string | null
+          revoked_at?: string | null
+          source: string
+          stream_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_subscription_id?: string | null
+          user_id: string
+        }
+        Update: {
+          access_level?: string
+          expires_at?: string | null
+          granted_at?: string
+          id?: string
+          metadata?: Json | null
+          resource_id?: string
+          resource_type?: string
+          revoke_reason?: string | null
+          revoked_at?: string | null
+          source?: string
+          stream_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_subscription_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       ad_integrations: {
         Row: {
           created_at: string
@@ -3937,6 +3991,33 @@ export type Database = {
           lifetime_withdrawn?: number | null
           pending_balance?: number | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      webhook_errors: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          event_type: string
+          id: string
+          raw_payload: Json | null
+          stripe_event_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          event_type: string
+          id?: string
+          raw_payload?: Json | null
+          stripe_event_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          event_type?: string
+          id?: string
+          raw_payload?: Json | null
+          stripe_event_id?: string | null
         }
         Relationships: []
       }
