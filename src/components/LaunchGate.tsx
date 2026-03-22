@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
-import WaitlistPage from "@/pages/WaitlistPage";
 
 interface LaunchGateProps {
   children: React.ReactNode;
@@ -9,50 +8,64 @@ interface LaunchGateProps {
 
 export default function LaunchGate({ children }: LaunchGateProps) {
   const { user, loading: authLoading } = useAuth();
-  const [isLaunched, setIsLaunched] = useState<boolean | null>(null);
-  const [isApproved, setIsApproved] = useState(false);
-  const [checking, setChecking] = useState(true);
+  const [status, setStatus] = useState<"loading" | "launched" | "approved" | "needs_onboarding" | "waitlist" | "unauthenticated">("loading");
 
   useEffect(() => {
     const check = async () => {
-      // Fetch launch status
+      // Check if platform is launched
       const { data: config } = await supabase
         .from("launch_config")
         .select("is_launched")
         .limit(1)
         .single();
 
-      setIsLaunched(config?.is_launched ?? false);
-
-      if (user) {
-        // Check admin role
-        const { data: roles } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", user.id)
-          .eq("role", "admin");
-
-        if (roles && roles.length > 0) {
-          setIsApproved(true);
-          setChecking(false);
-          return;
-        }
-
-        // Check if user's email has early_access on the waitlist
-        if (user.email) {
-          const { data: waitlistEntry } = await supabase
-            .from("waitlist" as any)
-            .select("early_access")
-            .eq("email", user.email.toLowerCase())
-            .maybeSingle() as any;
-
-          if (waitlistEntry?.early_access) {
-            setIsApproved(true);
-          }
-        }
+      if (config?.is_launched) {
+        setStatus("launched");
+        return;
       }
 
-      setChecking(false);
+      if (!user) {
+        setStatus("unauthenticated");
+        return;
+      }
+
+      // Check admin role
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin");
+
+      if (roles && roles.length > 0) {
+        setStatus("approved");
+        return;
+      }
+
+      // Check profile status
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("onboarding_complete, is_approved")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!profile) {
+        setStatus("needs_onboarding");
+        return;
+      }
+
+      const p = profile as any;
+
+      if (p.is_approved) {
+        setStatus("approved");
+        return;
+      }
+
+      if (!p.onboarding_complete) {
+        setStatus("needs_onboarding");
+        return;
+      }
+
+      setStatus("waitlist");
     };
 
     if (!authLoading) {
@@ -60,7 +73,7 @@ export default function LaunchGate({ children }: LaunchGateProps) {
     }
   }, [user, authLoading]);
 
-  if (checking || authLoading) {
+  if (status === "loading" || authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -68,11 +81,17 @@ export default function LaunchGate({ children }: LaunchGateProps) {
     );
   }
 
-  // If launched or user is approved/admin, show the app
-  if (isLaunched || isApproved) {
+  // Launched or approved: full access
+  if (status === "launched" || status === "approved") {
     return <>{children}</>;
   }
 
-  // Otherwise show waitlist
-  return <WaitlistPage />;
+  // Unauthenticated: show public app (landing, auth, etc.)
+  if (status === "unauthenticated") {
+    return <>{children}</>;
+  }
+
+  // The routing in App.tsx handles showing onboarding vs waitlist
+  // We just need to pass through but restrict access
+  return <>{children}</>;
 }
