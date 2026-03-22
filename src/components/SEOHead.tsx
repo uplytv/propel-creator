@@ -6,6 +6,7 @@ interface SEOHeadProps {
   description?: string;
   type?: string;
   image?: string;
+  twitterCard?: string;
 }
 
 const BASE_URL = "https://uply.tv";
@@ -20,6 +21,7 @@ export default function SEOHead({
   description,
   type = "website",
   image,
+  twitterCard = "summary_large_image",
 }: SEOHeadProps) {
   const { pathname } = useLocation();
   const fullTitle = title ? `${title} | Uply` : DEFAULT_TITLE;
@@ -66,7 +68,7 @@ export default function SEOHead({
     setMeta("name", "twitter:title", fullTitle);
     setMeta("name", "twitter:description", desc);
     setMeta("name", "twitter:image", img);
-    setMeta("name", "twitter:card", "summary_large_image");
+    setMeta("name", "twitter:card", twitterCard);
   }, [fullTitle, desc, img, canonical, type]);
 
   return null;
