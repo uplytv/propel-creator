@@ -167,6 +167,7 @@ export default function Discover() {
   const showSkeletons = isLoading || transitioning;
 
   return (
+    <AppLayout>
     <div className="min-h-screen bg-background">
       <style>{shimmerStyle}</style>
       <SEOHead
