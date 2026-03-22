@@ -21,6 +21,7 @@ export default function SEOHead({
   description,
   type = "website",
   image,
+  twitterCard = "summary_large_image",
 }: SEOHeadProps) {
   const { pathname } = useLocation();
   const fullTitle = title ? `${title} | Uply` : DEFAULT_TITLE;
