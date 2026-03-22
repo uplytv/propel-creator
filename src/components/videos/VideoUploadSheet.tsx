@@ -90,6 +90,8 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
     setTagInput("");
     setVisibility("public");
     setCustomThumb(null);
+    setScheduledDate("");
+    setScheduledTime("");
     setUploading(false);
     setPublishing(false);
     if (pollRef.current) clearInterval(pollRef.current);
