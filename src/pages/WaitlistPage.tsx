@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 import OriginBadge from "@/components/OriginBadge";
 import logoImg from "@/assets/logo.png";
+import { buildReferralUrl, buildReferralUrlDisplay, getFirstName, getShareMessages } from "@/lib/referralUrls";
+import { getAffiliateCookie } from "@/lib/affiliateCookies";
 
 interface LeaderboardEntry {
   user_id: string;
