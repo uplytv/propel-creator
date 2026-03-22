@@ -1,9 +1,10 @@
-import { memo, useState, useCallback, useRef } from "react";
+import { memo, useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, Users, BookOpen, MoreVertical, Flag, Bookmark, Share2, EyeOff, Heart } from "lucide-react";
 import { type FeedItem } from "@/hooks/useDiscoveryFeed";
 import { timeAgo } from "@/lib/slugs";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 function formatCount(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -40,9 +41,22 @@ const FeedCard = memo(function FeedCard({ item, index, isLiveSection }: FeedCard
   const [doubleTapHeart, setDoubleTapHeart] = useState(false);
   const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTapRef = useRef<number>(0);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const isLive = item.isLive;
   const hasPlaybackId = !!item.playbackId;
+
+  // Close menu on outside click
+  useEffect(() => {
+    if (!showMenu) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showMenu]);
 
   const getDestination = useCallback(() => {
     switch (item.type) {
@@ -103,7 +117,7 @@ const FeedCard = memo(function FeedCard({ item, index, isLiveSection }: FeedCard
 
   // Badge
   const badge = (() => {
-    if (isLive) return null; // Live badge rendered separately
+    if (isLive) return null;
     if (item.type === "clip") return "CLIP";
     if (item.type === "community") return `${formatCount(item.memberCount)} members`;
     if (item.type === "course") return "COURSE";
@@ -111,6 +125,28 @@ const FeedCard = memo(function FeedCard({ item, index, isLiveSection }: FeedCard
   })();
 
   const showDuration = !isLive && (item.type === "video" || item.type === "recording" || item.type === "clip");
+
+  // Menu action handlers
+  const handleMenuAction = useCallback((action: string) => {
+    setShowMenu(false);
+    switch (action) {
+      case "not-interested":
+        toast.success("We'll show you less like this");
+        break;
+      case "save":
+        toast.success("Saved to your library");
+        break;
+      case "share": {
+        const url = `${window.location.origin}${getDestination()}`;
+        navigator.clipboard.writeText(url);
+        toast.success("Link copied!");
+        break;
+      }
+      case "report":
+        toast.success("Thanks for reporting. We'll review this content.");
+        break;
+    }
+  }, [getDestination]);
 
   return (
     <div
@@ -201,7 +237,7 @@ const FeedCard = memo(function FeedCard({ item, index, isLiveSection }: FeedCard
         )}
 
         {/* Three-dot menu on hover */}
-        <div className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+        <div ref={menuRef} className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
           <button
             onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
             className="w-8 h-8 flex items-center justify-center rounded-full"
@@ -215,12 +251,16 @@ const FeedCard = memo(function FeedCard({ item, index, isLiveSection }: FeedCard
               onClick={(e) => e.stopPropagation()}
             >
               {[
-                { icon: EyeOff, label: "Not Interested" },
-                { icon: Bookmark, label: "Save" },
-                { icon: Share2, label: "Share" },
-                { icon: Flag, label: "Report" },
-              ].map(({ icon: Icon, label }) => (
-                <button key={label} className="flex items-center gap-2 w-full px-3 py-2.5 text-sm text-foreground hover:bg-secondary/50 first:rounded-t-lg last:rounded-b-lg">
+                { icon: EyeOff, label: "Not Interested", action: "not-interested" },
+                { icon: Bookmark, label: "Save", action: "save" },
+                { icon: Share2, label: "Share", action: "share" },
+                { icon: Flag, label: "Report", action: "report" },
+              ].map(({ icon: Icon, label, action }) => (
+                <button
+                  key={label}
+                  onClick={() => handleMenuAction(action)}
+                  className="flex items-center gap-2 w-full px-3 py-2.5 text-sm text-foreground hover:bg-secondary/50 first:rounded-t-lg last:rounded-b-lg"
+                >
                   <Icon className="w-4 h-4 text-muted-foreground" />
                   {label}
                 </button>

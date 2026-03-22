@@ -154,13 +154,7 @@ export default function Discover() {
     return () => observer.disconnect();
   }, [loadMore]);
 
-  // Shimmer animation keyframes
-  const shimmerStyle = `
-    @keyframes shimmer {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-  `;
+  // Shimmer keyframes now in index.css
 
   const showEvents = category === "events";
   const showContent = !showEvents;
