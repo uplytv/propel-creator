@@ -348,7 +348,9 @@ export default function CreatorProfile() {
   const isLive = !!liveStream;
   const creatorName = profile?.display_name || "Creator";
 
-  // Sticky bar scroll logic
+  // Handle mobile return from Stripe
+  usePaymentReturn(profile?.user_id);
+
   useEffect(() => {
     const handleScroll = () => setShowStickyBar(window.scrollY > 500);
     window.addEventListener("scroll", handleScroll);
