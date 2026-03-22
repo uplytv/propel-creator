@@ -69,15 +69,13 @@ function FreeJoinCTA({
   onGranted: () => void;
 }) {
   const [loading, setLoading] = useState(false);
-  const { supabase: _sb } = { supabase: undefined }; // not used
   const { user } = useAuth();
 
   const handleFreeJoin = async () => {
     if (!user) return;
     setLoading(true);
     try {
-      const { default: sb } = await import("@/integrations/supabase/client");
-      const { error } = await sb.supabase.functions.invoke("grant-free-access", {
+      const { error } = await supabase.functions.invoke("grant-free-access", {
         body: {
           resource_type: resourceType,
           resource_id: resourceId,
