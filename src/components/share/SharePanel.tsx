@@ -187,39 +187,51 @@ export default function SharePanel({
     trackShare(platform);
 
     switch (platform) {
-      case "tiktok":
-      case "instagram": {
+      case "tiktok": {
+        navigator.clipboard.writeText(caption);
+        toast({ title: "Caption copied! Opening TikTok…" });
         if (isMobile && navigator.share) {
           const blob = await fetchVideoBlob();
           await handleNativeShare(platform, blob || undefined);
         } else {
-          setShowQR(platform);
+          window.open("https://www.tiktok.com/upload", "_blank");
+        }
+        break;
+      }
+      case "instagram": {
+        navigator.clipboard.writeText(caption);
+        toast({ title: "Caption copied! Opening Instagram…" });
+        if (isMobile && navigator.share) {
+          const blob = await fetchVideoBlob();
+          await handleNativeShare(platform, blob || undefined);
+        } else {
+          window.open("https://www.instagram.com/create/select", "_blank");
         }
         break;
       }
       case "youtube": {
+        navigator.clipboard.writeText(caption);
+        toast({ title: "Caption copied! Opening YouTube Studio…" });
         if (isMobile && navigator.share) {
           const blob = await fetchVideoBlob();
           await handleNativeShare(platform, blob || undefined);
         } else {
-          window.open("https://www.youtube.com/upload", "_blank");
+          window.open("https://studio.youtube.com", "_blank");
         }
         break;
       }
       case "twitter": {
-        const tweetText = encodeURIComponent(caption + "\n" + contentUrl);
+        const tweetText = encodeURIComponent(caption);
         window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, "_blank");
+        toast({ title: "Opening X/Twitter…" });
         break;
       }
       case "linkedin": {
-        if (isMobile && navigator.share) {
-          await handleNativeShare("linkedin");
-        } else {
-          window.open(
-            `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(contentUrl)}`,
-            "_blank"
-          );
-        }
+        window.open(
+          `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(contentUrl)}&title=${encodeURIComponent(title)}`,
+          "_blank"
+        );
+        toast({ title: "Opening LinkedIn…" });
         break;
       }
       case "facebook": {
@@ -227,28 +239,48 @@ export default function SharePanel({
           `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(contentUrl)}`,
           "_blank"
         );
+        toast({ title: "Opening Facebook…" });
         break;
       }
       case "download": {
         setDownloading(true);
         try {
-          const { data, error } = await supabase.functions.invoke("download-asset", {
-            body: {
-              asset_id: contentId,
-              asset_type: contentType === "clip" ? "clip" : contentType === "recording" ? "recording" : "vod",
-            },
-          });
-          if (error || !data?.download_url) {
-            toast({ title: "Download failed", description: "Could not fetch video", variant: "destructive" });
+          if (playbackId) {
+            // Try Mux static MP4 first
+            const mp4Url = `https://stream.mux.com/${playbackId}/high.mp4`;
+            const res = await fetch(mp4Url);
+            if (res.ok) {
+              const blob = await res.blob();
+              const a = document.createElement("a");
+              a.href = URL.createObjectURL(blob);
+              a.download = `${title || "uply-video"}.mp4`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(a.href);
+              toast({ title: "Download started ✓" });
+            } else {
+              throw new Error("MP4 not available");
+            }
           } else {
-            const a = document.createElement("a");
-            a.href = data.download_url;
-            a.download = `uply-${contentType}-${contentId}.mp4`;
-            a.target = "_blank";
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            toast({ title: "Download started" });
+            const { data, error } = await supabase.functions.invoke("download-asset", {
+              body: {
+                asset_id: contentId,
+                asset_type: contentType === "clip" ? "clip" : contentType === "recording" ? "recording" : "vod",
+              },
+            });
+            if (error || !data?.download_url) {
+              toast({ title: "Download failed", description: "Could not fetch video", variant: "destructive" });
+            } else {
+              const a = document.createElement("a");
+              a.href = data.download_url;
+              a.download = `uply-${contentType}-${contentId}.mp4`;
+              a.target = "_blank";
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              toast({ title: "Download started ✓" });
+            }
           }
         } catch {
           toast({ title: "Download failed", variant: "destructive" });
@@ -261,6 +293,15 @@ export default function SharePanel({
         setCopied(true);
         toast({ title: "Link copied ✓" });
         setTimeout(() => setCopied(false), 2000);
+        break;
+      }
+      case "embed": {
+        const embedCode = `<iframe src="${contentUrl}?embed=true" width="560" height="315" frameborder="0" allowfullscreen style="border-radius:12px;"></iframe>`;
+        navigator.clipboard.writeText(embedCode);
+        setEmbedCopied(true);
+        setShowEmbed(true);
+        toast({ title: "Embed code copied ✓" });
+        setTimeout(() => setEmbedCopied(false), 2000);
         break;
       }
     }
