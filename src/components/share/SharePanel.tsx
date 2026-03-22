@@ -409,6 +409,7 @@ export default function SharePanel({
               const Icon = p.icon;
               const isDownload = p.key === "download";
               const isCopy = p.key === "copy";
+              const isEmbed = p.key === "embed";
 
               const button = (
                 <button
