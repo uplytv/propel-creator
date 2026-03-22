@@ -54,7 +54,10 @@ export default function WaitlistLeaderboard({ currentEmail }: { currentEmail: st
 
   return (
     <div className="rounded-2xl p-6 md:p-8" style={{ background: "#111111" }}>
-      <h3 className="font-bold text-lg text-center mb-6 text-white">Top Referrers 🏆</h3>
+      <h3 className="font-bold text-lg text-center mb-2 text-white">Top Referrers 🏆</h3>
+      <p className="text-center text-xs mb-6" style={{ color: "#FFD700" }}>
+        #1 referrer wins <span className="font-bold">$1,000 cash</span> 💰
+      </p>
       <div className="space-y-3">
         {top.length === 0 ? (
           <p className="text-sm text-center" style={{ color: "#888" }}>No referrals yet — be the first!</p>
@@ -72,9 +75,9 @@ export default function WaitlistLeaderboard({ currentEmail }: { currentEmail: st
             >
               <span className="font-bold text-sm w-8" style={{ color: "#00FF85" }}>#{i + 1}</span>
               <span className="text-sm text-white flex-1">{formatName(entry.full_name)}</span>
-              {entry.referral_count >= 25 && (
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: "#FFD70020", color: "#FFD700" }}>
-                  👑 Founding Creator
+              {entry.referral_count >= 3 && (
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: "#00FF8520", color: "#00FF85" }}>
+                  🚀 Early Access
                 </span>
               )}
               <span className="text-xs" style={{ color: "#888" }}>{entry.referral_count} referrals</span>

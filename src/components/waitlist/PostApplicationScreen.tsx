@@ -46,9 +46,9 @@ export default function PostApplicationScreen({ position, referralCode, referral
   };
 
   const tiers = [
-    { emoji: "🥉", label: "3 Referrals", reward: "Jump 30 spots", border: "#1E1E1E" },
-    { emoji: "🥈", label: "10 Referrals", reward: "Jump to top 100", border: "#1E1E1E" },
-    { emoji: "🥇", label: "25 Referrals", reward: "Founding Creator — 0% fees for 12 months", border: "#FFD700" },
+    { emoji: "✅", label: "1 Referral", reward: "Confirms your spot on the waitlist", border: "#1E1E1E" },
+    { emoji: "🚀", label: "3 Referrals", reward: "Guaranteed early access — skip the queue", border: "#00FF85" },
+    { emoji: "💰", label: "Most Referrals", reward: "Win $1,000 cash prize", border: "#FFD700" },
   ];
 
   return (
@@ -87,7 +87,7 @@ export default function PostApplicationScreen({ position, referralCode, referral
           #{position}
         </p>
         <p className="text-sm mb-4" style={{ color: "#888" }}>on the waitlist</p>
-        <p className="text-xs" style={{ color: "#888" }}>Move up 10 spots for every creator you refer.</p>
+        <p className="text-xs" style={{ color: "#888" }}>Refer 1 to confirm · Refer 3 for early access · Most referrals wins $1,000</p>
       </motion.div>
 
       {/* Referral section */}
