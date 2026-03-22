@@ -6,6 +6,7 @@ interface LeaderboardEntry {
   id: string;
   full_name: string;
   referral_count: number;
+  avatar_url?: string | null;
 }
 
 export default function WaitlistLeaderboard({ currentEmail }: { currentEmail: string }) {
@@ -53,34 +54,46 @@ export default function WaitlistLeaderboard({ currentEmail }: { currentEmail: st
   const isCurrentInTop = currentUser && top.some((t) => t.id === currentUser.id);
 
   return (
-    <div className="rounded-2xl p-6 md:p-8" style={{ background: "#111111" }}>
-      <h3 className="font-bold text-lg text-center mb-2 text-white">Top Referrers 🏆</h3>
-      <p className="text-center text-xs mb-6" style={{ color: "#FFD700" }}>
-        #1 referrer wins <span className="font-bold">$1,000 cash</span> 💰
+    <div className="rounded-2xl p-6 md:p-8 bg-card border border-border">
+      <h3 className="font-bold text-lg text-center mb-1 text-foreground">Top Inviters 🏆</h3>
+      <p className="text-center text-xs mb-6 text-muted-foreground">
+        These are the people bringing the most creators to UPLY
       </p>
       <div className="space-y-3">
         {top.length === 0 ? (
-          <p className="text-sm text-center" style={{ color: "#888" }}>No referrals yet — be the first!</p>
+          <p className="text-sm text-center text-muted-foreground">No referrals yet — be the first!</p>
         ) : (
           top.map((entry, i) => (
             <div
               key={entry.id}
-              className="flex items-center gap-3 py-2.5 border-b last:border-0"
+              className="flex items-center gap-3 py-2.5 border-b last:border-0 border-border"
               style={{
-                borderColor: "#1E1E1E",
                 borderLeftWidth: currentUser?.id === entry.id ? 3 : 0,
-                borderLeftColor: "#00FF85",
+                borderLeftColor: "hsl(var(--primary))",
                 paddingLeft: currentUser?.id === entry.id ? 12 : 0,
               }}
             >
-              <span className="font-bold text-sm w-8" style={{ color: "#00FF85" }}>#{i + 1}</span>
-              <span className="text-sm text-white flex-1">{formatName(entry.full_name)}</span>
-              {entry.referral_count >= 3 && (
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: "#00FF8520", color: "#00FF85" }}>
+              <span className="font-bold text-sm w-8 text-primary">#{i + 1}</span>
+              {/* Avatar */}
+              <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center text-xs font-bold text-primary flex-shrink-0 overflow-hidden">
+                {entry.avatar_url ? (
+                  <img src={entry.avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  formatName(entry.full_name)[0]?.toUpperCase()
+                )}
+              </div>
+              <span className="text-sm text-foreground flex-1 font-semibold">{formatName(entry.full_name)}</span>
+              {entry.referral_count >= 25 && (
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: "hsl(45, 93%, 47%, 0.15)", color: "hsl(45, 93%, 47%)" }}>
+                  👑 Founding Creator
+                </span>
+              )}
+              {entry.referral_count >= 3 && entry.referral_count < 25 && (
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
                   🚀 Early Access
                 </span>
               )}
-              <span className="text-xs" style={{ color: "#888" }}>{entry.referral_count} referrals</span>
+              <span className="text-xs text-primary font-semibold">{entry.referral_count} referrals</span>
             </div>
           ))
         )}
@@ -89,16 +102,19 @@ export default function WaitlistLeaderboard({ currentEmail }: { currentEmail: st
       {/* Pinned current user if not in top 10 */}
       {currentUser && !isCurrentInTop && (
         <>
-          <div className="my-3 border-t" style={{ borderColor: "#1E1E1E" }}>
-            <p className="text-center text-xs py-1" style={{ color: "#888" }}>•••</p>
+          <div className="my-3 border-t border-border">
+            <p className="text-center text-xs py-1 text-muted-foreground">•••</p>
           </div>
           <div
             className="flex items-center gap-3 py-2.5"
-            style={{ borderLeftWidth: 3, borderLeftColor: "#00FF85", paddingLeft: 12 }}
+            style={{ borderLeftWidth: 3, borderLeftColor: "hsl(var(--primary))", paddingLeft: 12 }}
           >
-            <span className="font-bold text-sm w-8" style={{ color: "#00FF85" }}>#{currentUser.rank}</span>
-            <span className="text-sm text-white flex-1">{formatName(currentUser.full_name)} (You)</span>
-            <span className="text-xs" style={{ color: "#888" }}>{currentUser.referral_count} referrals</span>
+            <span className="font-bold text-sm w-8 text-primary">#{currentUser.rank}</span>
+            <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center text-xs font-bold text-primary flex-shrink-0">
+              {formatName(currentUser.full_name)[0]?.toUpperCase()}
+            </div>
+            <span className="text-sm text-foreground flex-1 font-semibold">{formatName(currentUser.full_name)} (You)</span>
+            <span className="text-xs text-primary font-semibold">{currentUser.referral_count} referrals</span>
           </div>
         </>
       )}
