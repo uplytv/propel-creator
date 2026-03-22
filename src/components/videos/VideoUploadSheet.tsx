@@ -54,6 +54,8 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
   const [tagInput, setTagInput] = useState("");
   const [visibility, setVisibility] = useState<Visibility>("public");
   const [customThumb, setCustomThumb] = useState<string | null>(null);
+  const [scheduledDate, setScheduledDate] = useState("");
+  const [scheduledTime, setScheduledTime] = useState("");
   const [uploading, setUploading] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [dragOver, setDragOver] = useState(false);
