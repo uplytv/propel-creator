@@ -33,7 +33,13 @@ export default function TierSelectionModal({ open, onClose, tiers, creatorId }: 
         body: { tier_id: selectedTier, creator_id: creatorId },
       });
       if (error) throw error;
-      if (data?.url) window.location.href = data.url;
+      if (data?.url) {
+        sessionStorage.setItem("uply_pending_join", JSON.stringify({
+          creator_id: creatorId,
+          return_path: window.location.pathname,
+        }));
+        window.location.href = data.url;
+      }
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }

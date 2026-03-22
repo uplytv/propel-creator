@@ -885,6 +885,20 @@ export default function CreatorProfile() {
           onOpenChange={setEditOpen}
           profile={profile}
           socialLinks={socialLinks}
+      />
+      )}
+
+      {/* COURSE ENROLL SHEET */}
+      {enrollProduct && (
+        <CourseEnrollSheet
+          open={!!enrollProduct}
+          onClose={() => setEnrollProduct(null)}
+          product={enrollProduct}
+          creatorName={creatorName}
+          creatorAvatar={profile?.avatar_url}
+          creatorUsername={username}
+          lessonCount={totalLessons}
+          moduleCount={modules.length}
         />
       )}
     </div>
