@@ -335,6 +335,10 @@ export default function CreatorProfile() {
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [joinLoading, setJoinLoading] = useState(false);
   const [buyingProductId, setBuyingProductId] = useStateBuy<string | null>(null);
+  const [enrollProduct, setEnrollProduct] = useState<any>(null);
+
+  // Handle mobile return from Stripe
+  usePaymentReturn(profile?.user_id);
 
   const {
     profile, profileLoading, socialLinks, liveStream,
