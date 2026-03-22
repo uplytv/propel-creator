@@ -32,8 +32,23 @@ serve(async (req) => {
     const { data: userData, error: userError } = await supabase.auth.getUser(token);
     if (userError || !userData.user) throw new Error("Unauthorized");
 
-    const { product_id, creator_id, purchase_type } = await req.json();
+    const { product_id, creator_id, purchase_type, success_url, cancel_url } = await req.json();
     if (!product_id) throw new Error("product_id required");
+
+    // Check if already purchased
+    const { data: existingPurchase } = await supabase
+      .from("product_purchases")
+      .select("id")
+      .eq("product_id", product_id)
+      .eq("buyer_id", userData.user.id)
+      .maybeSingle();
+
+    if (existingPurchase) {
+      return new Response(JSON.stringify({ already_purchased: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
@@ -48,10 +63,18 @@ serve(async (req) => {
     logStep("Product found", { name: product.name, price: product.price, stripe_price_id: product.stripe_price_id });
 
     let stripePriceId = product.stripe_price_id;
+    const effectiveCreatorId = creator_id || product.user_id;
 
     // Auto-provision Stripe product/price if missing
     if (!stripePriceId) {
       logStep("No stripe_price_id, creating product and price on-the-fly");
+
+      // Check if creator has Connect
+      const { data: stripeAccount } = await supabase
+        .from("creator_stripe_accounts")
+        .select("stripe_account_id, charges_enabled")
+        .eq("creator_id", effectiveCreatorId)
+        .maybeSingle();
 
       const stripeProduct = await stripe.products.create({
         name: product.name,
@@ -75,8 +98,6 @@ serve(async (req) => {
       logStep("Created Stripe product/price", { productId: stripeProduct.id, priceId: stripePrice.id });
     }
 
-    const effectiveCreatorId = creator_id || product.user_id;
-
     const customers = await stripe.customers.list({ email: userData.user.email!, limit: 1 });
     let customerId: string | undefined;
     if (customers.data.length > 0) customerId = customers.data[0].id;
@@ -89,10 +110,10 @@ serve(async (req) => {
       customer_email: customerId ? undefined : userData.user.email!,
       line_items: [{ price: stripePriceId, quantity: 1 }],
       mode: "payment",
-      success_url: `${origin}/products?purchased=true`,
-      cancel_url: `${origin}/products`,
+      success_url: success_url || `${origin}/products?purchased=true&product_id=${product_id}`,
+      cancel_url: cancel_url || `${origin}/products`,
       metadata: {
-        purchase_type: purchase_type || "product",
+        purchase_type: purchase_type || "course",
         buyer_id: userData.user.id,
         product_id: product_id,
         creator_id: effectiveCreatorId,
@@ -100,24 +121,20 @@ serve(async (req) => {
     };
 
     // If there's a creator with Stripe Connect, add application fee
-    if (effectiveCreatorId) {
-      const { data: stripeAccount } = await supabase
-        .from("creator_stripe_accounts")
-        .select("stripe_account_id, charges_enabled")
-        .eq("creator_id", effectiveCreatorId)
-        .maybeSingle();
+    const { data: stripeAccount } = await supabase
+      .from("creator_stripe_accounts")
+      .select("stripe_account_id, charges_enabled")
+      .eq("creator_id", effectiveCreatorId)
+      .maybeSingle();
 
-      if (stripeAccount?.stripe_account_id && stripeAccount?.charges_enabled) {
-        const price = await stripe.prices.retrieve(stripePriceId);
-        const feeAmount = Math.round((price.unit_amount || 0) * 0.05);
-        sessionConfig.payment_intent_data = {
-          application_fee_amount: feeAmount,
-          transfer_data: { destination: stripeAccount.stripe_account_id },
-        };
-        logStep("Using Stripe Connect", { destination: stripeAccount.stripe_account_id, fee: feeAmount });
-      } else {
-        logStep("Platform-managed flow (no Connect)");
-      }
+    if (stripeAccount?.stripe_account_id && stripeAccount?.charges_enabled) {
+      const price = await stripe.prices.retrieve(stripePriceId);
+      const feeAmount = Math.round((price.unit_amount || 0) * 0.05);
+      sessionConfig.payment_intent_data = {
+        application_fee_amount: feeAmount,
+        transfer_data: { destination: stripeAccount.stripe_account_id },
+      };
+      logStep("Using Stripe Connect", { destination: stripeAccount.stripe_account_id, fee: feeAmount });
     }
 
     // For credit purchases, redirect to buy-credits

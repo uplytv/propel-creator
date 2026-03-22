@@ -49,6 +49,28 @@ function buildNewSubscriberEmailHtml(subscriberName: string, tierName: string, a
 </html>`;
 }
 
+async function updateWallet(supabase: any, creatorId: string, amount: number, fee: number, description: string, paymentIntentId: string | null) {
+  const { data: creatorWallet } = await supabase
+    .from("wallets").select("id, available_balance, lifetime_earned").eq("user_id", creatorId).maybeSingle();
+  if (creatorWallet) {
+    await supabase.from("transactions").insert({
+      wallet_id: creatorWallet.id,
+      amount,
+      net_amount: amount - fee,
+      platform_fee_amount: fee,
+      type: "earn",
+      status: "completed",
+      stripe_payment_intent_id: paymentIntentId,
+      description,
+      completed_at: new Date().toISOString(),
+    });
+    await supabase.from("wallets").update({
+      available_balance: (creatorWallet.available_balance || 0) + (amount - fee),
+      lifetime_earned: (creatorWallet.lifetime_earned || 0) + (amount - fee),
+    }).eq("id", creatorWallet.id);
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -130,35 +152,23 @@ Deno.serve(async (req) => {
             message: message || null,
           });
 
-          const { data: creatorWallet } = await supabase
-            .from("wallets").select("id").eq("user_id", creator_id).maybeSingle();
-          if (creatorWallet) {
-            await supabase.from("transactions").insert({
-              wallet_id: creatorWallet.id,
-              amount: tipAmount,
-              net_amount: tipAmount - fee,
-              platform_fee_amount: fee,
-              type: "tip",
-              status: "completed",
-              stripe_payment_intent_id: session.payment_intent as string,
-              description: `Tip from viewer`,
-              completed_at: new Date().toISOString(),
-            });
-          }
+          await updateWallet(supabase, creator_id, tipAmount, fee, "Tip from viewer", session.payment_intent as string);
           logStep("Tip processed", { sender_id, creator_id, amount: tipAmount });
 
-        } else if (purchaseType === "product") {
+        } else if (purchaseType === "product" || purchaseType === "course") {
           const { buyer_id, product_id, creator_id } = metadata;
           const amount = (session.amount_total || 0) / 100;
           const fee = Math.round(amount * 0.05 * 100) / 100;
 
-          await supabase.from("product_purchases").insert({
+          // ON CONFLICT DO NOTHING for duplicate safety
+          await supabase.from("product_purchases").upsert({
             product_id,
             buyer_id,
             creator_id,
             stripe_payment_intent_id: session.payment_intent as string,
             amount,
-          });
+            status: "completed",
+          }, { onConflict: "product_id,buyer_id", ignoreDuplicates: true });
 
           await supabase.rpc("increment_product_sales" as any, { p_id: product_id, p_amount: amount }).catch(async () => {
             const { data: prod } = await supabase.from("products").select("sales, revenue").eq("id", product_id).maybeSingle();
@@ -198,27 +208,8 @@ Deno.serve(async (req) => {
             link: "/products",
           });
 
-          const { data: creatorWallet } = await supabase
-            .from("wallets").select("id, available_balance, lifetime_earned").eq("user_id", creator_id).maybeSingle();
-          if (creatorWallet) {
-            await supabase.from("transactions").insert({
-              wallet_id: creatorWallet.id,
-              amount,
-              net_amount: amount - fee,
-              platform_fee_amount: fee,
-              type: "earn",
-              status: "completed",
-              stripe_payment_intent_id: session.payment_intent as string,
-              description: `Product sale: ${productName}`,
-              completed_at: new Date().toISOString(),
-            });
-
-            await supabase.from("wallets").update({
-              available_balance: (creatorWallet.available_balance || 0) + (amount - fee),
-              lifetime_earned: (creatorWallet.lifetime_earned || 0) + (amount - fee),
-            }).eq("id", creatorWallet.id);
-          }
-          logStep("Product purchase processed with notifications", { buyer_id, product_id, amount });
+          await updateWallet(supabase, creator_id, amount, fee, `Product sale: ${productName}`, session.payment_intent as string);
+          logStep("Product/course purchase processed", { buyer_id, product_id, amount });
 
         } else if (purchaseType === "event_ticket") {
           const { event_id, buyer_id, creator_id } = metadata;
@@ -238,7 +229,6 @@ Deno.serve(async (req) => {
             status: "active",
           });
 
-          // Increment tickets_sold
           const { data: evt } = await supabase.from("events").select("tickets_sold, ticket_quantity, title").eq("id", event_id).single();
           if (evt) {
             const newSold = (evt.tickets_sold || 0) + 1;
@@ -246,29 +236,8 @@ Deno.serve(async (req) => {
             await supabase.from("events").update({ tickets_sold: newSold, is_sold_out: isSoldOut }).eq("id", event_id);
           }
 
-          // Wallet update for creator
-          const { data: creatorWallet } = await supabase
-            .from("wallets").select("id, available_balance, lifetime_earned").eq("user_id", creator_id).maybeSingle();
-          if (creatorWallet) {
-            await supabase.from("transactions").insert({
-              wallet_id: creatorWallet.id,
-              amount,
-              net_amount: amount - fee,
-              platform_fee_amount: fee,
-              type: "earn",
-              status: "completed",
-              stripe_payment_intent_id: session.payment_intent as string,
-              description: `Event ticket: ${evt?.title || "Event"}`,
-              completed_at: new Date().toISOString(),
-            });
-            await supabase.from("wallets").update({
-              available_balance: (creatorWallet.available_balance || 0) + (amount - fee),
-              lifetime_earned: (creatorWallet.lifetime_earned || 0) + (amount - fee),
-            }).eq("id", creatorWallet.id);
-          }
+          await updateWallet(supabase, creator_id, amount, fee, `Event ticket: ${evt?.title || "Event"}`, session.payment_intent as string);
 
-          // Notify buyer
-          const { data: buyerProfile } = await supabase.from("profiles").select("display_name").eq("user_id", buyer_id).maybeSingle();
           await supabase.from("notifications").insert({
             user_id: buyer_id,
             type: "event_ticket",
@@ -277,7 +246,7 @@ Deno.serve(async (req) => {
             link: `/tickets/${token}`,
           });
 
-          // Notify creator
+          const { data: buyerProfile } = await supabase.from("profiles").select("display_name").eq("user_id", buyer_id).maybeSingle();
           await supabase.from("notifications").insert({
             user_id: creator_id,
             type: "event_ticket_sale",
@@ -313,10 +282,11 @@ Deno.serve(async (req) => {
             }
           }
 
-        } else {
-          // Default: subscription checkout
-          const { member_id, creator_id, tier_id } = metadata;
+        } else if (purchaseType === "subscription") {
+          // Subscription checkout
+          const { member_id, creator_id, tier_id, space_id } = metadata;
           if (member_id && creator_id) {
+            // ON CONFLICT DO UPDATE for subscriptions
             await supabase.from("member_subscriptions").upsert({
               member_id,
               creator_id,
@@ -327,29 +297,16 @@ Deno.serve(async (req) => {
               current_period_start: new Date().toISOString(),
             }, { onConflict: "member_id,creator_id" });
 
+            // ON CONFLICT DO NOTHING for community_members
             await supabase.from("community_members").upsert({
               user_id: member_id,
               creator_id,
-            }, { onConflict: "user_id,creator_id" });
+            }, { onConflict: "creator_id,user_id" });
 
             const amount = (session.amount_total || 0) / 100;
             const fee = Math.round(amount * 0.05 * 100) / 100;
 
-            const { data: creatorWallet } = await supabase
-              .from("wallets").select("id").eq("user_id", creator_id).maybeSingle();
-            if (creatorWallet) {
-              await supabase.from("transactions").insert({
-                wallet_id: creatorWallet.id,
-                amount,
-                net_amount: amount - fee,
-                platform_fee_amount: fee,
-                type: "subscription",
-                status: "completed",
-                stripe_payment_intent_id: session.payment_intent as string,
-                description: "Subscription payment from member",
-                completed_at: new Date().toISOString(),
-              });
-            }
+            await updateWallet(supabase, creator_id, amount, fee, "Subscription payment", session.payment_intent as string);
 
             // Get subscriber info for notification email
             const { data: subscriberProfile } = await supabase
@@ -358,6 +315,25 @@ Deno.serve(async (req) => {
               .eq("user_id", member_id)
               .maybeSingle();
             const subscriberName = subscriberProfile?.display_name || subscriberProfile?.username || "Someone";
+
+            // Notify member
+            await supabase.from("notifications").insert({
+              user_id: member_id,
+              type: "subscription_confirmed",
+              title: "Welcome! 🎉",
+              message: "Your subscription is active. Enjoy full access!",
+              link: `/community/${creator_id}/community`,
+            });
+
+            // Notify creator
+            await supabase.from("notifications").insert({
+              user_id: creator_id,
+              type: "new_subscriber",
+              title: "New Subscriber! 🎉",
+              message: `${subscriberName} just subscribed to your community`,
+              actor_id: member_id,
+              link: "/dashboard",
+            });
 
             // Get tier name if available
             let tierName = "";
@@ -370,11 +346,10 @@ Deno.serve(async (req) => {
               tierName = tier?.name || "";
             }
 
-            // Send email notification to creator about new subscriber
+            // Send email notification to creator
             try {
               const { data: { user: creatorAuth } } = await supabase.auth.admin.getUserById(creator_id);
               if (creatorAuth?.email) {
-                // Check if creator wants member_joined emails
                 const { data: emailPref } = await supabase
                   .from("notification_preferences")
                   .select("member_joined_email")
@@ -421,30 +396,100 @@ Deno.serve(async (req) => {
 
             logStep("Subscription checkout completed", { member_id, creator_id });
           }
+        } else {
+          // Fallback: treat as subscription for backwards compat
+          const { member_id, creator_id, tier_id } = metadata;
+          if (member_id && creator_id) {
+            await supabase.from("member_subscriptions").upsert({
+              member_id,
+              creator_id,
+              tier_id: tier_id || null,
+              stripe_subscription_id: session.subscription as string,
+              stripe_customer_id: session.customer as string,
+              status: "active",
+              current_period_start: new Date().toISOString(),
+            }, { onConflict: "member_id,creator_id" });
+
+            await supabase.from("community_members").upsert({
+              user_id: member_id,
+              creator_id,
+            }, { onConflict: "creator_id,user_id" });
+          }
+          logStep("Fallback subscription processed", { member_id, creator_id });
         }
         break;
       }
 
       case "customer.subscription.updated": {
         const sub = event.data.object as Stripe.Subscription;
-        await supabase
+        const newStatus = sub.status === "active" ? "active" : sub.status === "past_due" ? "past_due" : sub.status;
+        
+        const { data: updatedSub } = await supabase
           .from("member_subscriptions")
           .update({
-            status: sub.status === "active" ? "active" : sub.status,
+            status: newStatus,
             current_period_start: new Date(sub.current_period_start * 1000).toISOString(),
             current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
           })
-          .eq("stripe_subscription_id", sub.id);
-        logStep("Subscription updated", { id: sub.id, status: sub.status });
+          .eq("stripe_subscription_id", sub.id)
+          .select("member_id, creator_id")
+          .maybeSingle();
+
+        // Notify if recovered from past_due
+        if (newStatus === "active" && updatedSub) {
+          await supabase.from("notifications").insert({
+            user_id: updatedSub.member_id,
+            type: "subscription_recovered",
+            title: "Payment Successful ✅",
+            message: "Your payment was successful — welcome back!",
+          });
+        }
+
+        logStep("Subscription updated", { id: sub.id, status: newStatus });
         break;
       }
 
       case "customer.subscription.deleted": {
         const sub = event.data.object as Stripe.Subscription;
-        await supabase
+        const { data: canceledSub } = await supabase
           .from("member_subscriptions")
           .update({ status: "canceled" })
-          .eq("stripe_subscription_id", sub.id);
+          .eq("stripe_subscription_id", sub.id)
+          .select("member_id, creator_id")
+          .maybeSingle();
+
+        if (canceledSub) {
+          // Get creator name for notification
+          const { data: creatorProfile } = await supabase
+            .from("profiles")
+            .select("display_name")
+            .eq("user_id", canceledSub.creator_id)
+            .maybeSingle();
+          const creatorName = creatorProfile?.display_name || "a creator";
+
+          const { data: memberProfile } = await supabase
+            .from("profiles")
+            .select("display_name, username")
+            .eq("user_id", canceledSub.member_id)
+            .maybeSingle();
+          const memberName = memberProfile?.display_name || memberProfile?.username || "A member";
+
+          await supabase.from("notifications").insert({
+            user_id: canceledSub.member_id,
+            type: "subscription_canceled",
+            title: "Subscription Canceled",
+            message: `Your subscription to ${creatorName}'s community has been canceled.`,
+          });
+
+          await supabase.from("notifications").insert({
+            user_id: canceledSub.creator_id,
+            type: "member_canceled",
+            title: "Member Canceled",
+            message: `${memberName} canceled their subscription.`,
+            actor_id: canceledSub.member_id,
+          });
+        }
+
         logStep("Subscription canceled", { id: sub.id });
         break;
       }
@@ -456,28 +501,38 @@ Deno.serve(async (req) => {
           const fee = Math.round(amount * 0.05 * 100) / 100;
           const { data: memberSub } = await supabase
             .from("member_subscriptions")
-            .select("creator_id")
+            .select("creator_id, member_id")
             .eq("stripe_subscription_id", invoice.subscription as string)
             .maybeSingle();
           
-          let walletId: string | undefined;
           if (memberSub?.creator_id) {
-            const { data: w } = await supabase.from("wallets").select("id").eq("user_id", memberSub.creator_id).maybeSingle();
-            walletId = w?.id;
+            // Update period end
+            const sub = await stripe.subscriptions.retrieve(invoice.subscription as string);
+            await supabase.from("member_subscriptions").update({
+              current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
+              status: "active",
+            }).eq("stripe_subscription_id", invoice.subscription as string);
+
+            await updateWallet(supabase, memberSub.creator_id, amount, fee, "Subscription renewal", invoice.payment_intent as string);
+
+            // Notify creator
+            const { data: memberProfile } = await supabase
+              .from("profiles")
+              .select("display_name, username")
+              .eq("user_id", memberSub.member_id)
+              .maybeSingle();
+            const memberName = memberProfile?.display_name || memberProfile?.username || "A member";
+
+            await supabase.from("notifications").insert({
+              user_id: memberSub.creator_id,
+              type: "renewal",
+              title: "💰 Renewal",
+              message: `${memberName} renewed — you earned $${(amount - fee).toFixed(2)}`,
+              actor_id: memberSub.member_id,
+            });
           }
 
-          await supabase.from("transactions").insert({
-            wallet_id: walletId || null,
-            amount,
-            net_amount: amount - fee,
-            platform_fee_amount: fee,
-            type: "subscription_renewal",
-            status: "completed",
-            stripe_payment_intent_id: invoice.payment_intent as string,
-            description: "Subscription renewal",
-            completed_at: new Date().toISOString(),
-          });
-          logStep("Invoice paid", { id: invoice.id, amount });
+          logStep("Invoice paid (renewal)", { id: invoice.id, amount });
         }
         break;
       }
@@ -486,10 +541,48 @@ Deno.serve(async (req) => {
         const invoice = event.data.object as Stripe.Invoice;
         const subId = invoice.subscription as string;
         if (subId) {
-          await supabase
+          const { data: failedSub } = await supabase
             .from("member_subscriptions")
             .update({ status: "past_due" })
-            .eq("stripe_subscription_id", subId);
+            .eq("stripe_subscription_id", subId)
+            .select("member_id, creator_id")
+            .maybeSingle();
+
+          if (failedSub) {
+            await supabase.from("notifications").insert({
+              user_id: failedSub.member_id,
+              type: "payment_failed",
+              title: "⚠️ Payment Failed",
+              message: "Your payment failed — update your payment method to keep access.",
+              link: "/settings",
+            });
+
+            // Enqueue email
+            try {
+              const { data: { user: memberAuth } } = await supabase.auth.admin.getUserById(failedSub.member_id);
+              if (memberAuth?.email) {
+                await supabase.rpc("enqueue_email", {
+                  queue_name: "transactional_emails",
+                  payload: {
+                    run_id: crypto.randomUUID(),
+                    to: memberAuth.email,
+                    from: "UPLY <noreply@notify.uply.tv>",
+                    sender_domain: "notify.uply.tv",
+                    subject: "Action required: Update your payment method",
+                    html: `<p>Your subscription payment failed. Please update your payment method to keep access to your communities.</p><a href="https://uply.tv/settings">Update Payment →</a>`,
+                    text: "Your subscription payment failed. Update your payment method at https://uply.tv/settings",
+                    purpose: "transactional",
+                    label: "payment_failed",
+                    message_id: `pf-${failedSub.member_id}-${crypto.randomUUID().slice(0, 8)}`,
+                    queued_at: new Date().toISOString(),
+                  },
+                });
+              }
+            } catch (e) {
+              console.error("Failed to send payment failed email:", e);
+            }
+          }
+
           logStep("Payment failed, marked past_due", { subId });
         }
         break;

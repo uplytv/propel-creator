@@ -23,6 +23,7 @@ import TierSelectionModal from "@/components/TierSelectionModal";
 import { Button } from "@/components/ui/button";
 import { Users, Loader2, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { usePaymentReturn, useMemberSubscriptionStatus } from "@/hooks/usePaymentReturn";
 
 const VALID_TABS = ["community", "classroom", "calendar", "members", "leaderboard", "pricing", "earn", "blasts", "about"] as const;
 type TabSlug = typeof VALID_TABS[number];
@@ -60,6 +61,9 @@ export default function CreatorSpace() {
 
   const [showTierModal, setShowTierModal] = useState(false);
   const [freeJoining, setFreeJoining] = useState(false);
+
+  // Handle mobile return from Stripe checkout
+  usePaymentReturn(creatorId);
 
   useEffect(() => {
     if (tabParam) return;

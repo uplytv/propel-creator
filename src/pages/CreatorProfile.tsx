@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useMemo } from "react";
+import { usePaymentReturn, useProductPurchaseCheck } from "@/hooks/usePaymentReturn";
+import CourseEnrollSheet from "@/components/payments/CourseEnrollSheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
@@ -333,6 +335,7 @@ export default function CreatorProfile() {
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [joinLoading, setJoinLoading] = useState(false);
   const [buyingProductId, setBuyingProductId] = useStateBuy<string | null>(null);
+  const [enrollProduct, setEnrollProduct] = useState<any>(null);
 
   const {
     profile, profileLoading, socialLinks, liveStream,
@@ -345,7 +348,9 @@ export default function CreatorProfile() {
   const isLive = !!liveStream;
   const creatorName = profile?.display_name || "Creator";
 
-  // Sticky bar scroll logic
+  // Handle mobile return from Stripe
+  usePaymentReturn(profile?.user_id);
+
   useEffect(() => {
     const handleScroll = () => setShowStickyBar(window.scrollY > 500);
     window.addEventListener("scroll", handleScroll);
@@ -410,17 +415,10 @@ export default function CreatorProfile() {
       navigate(`/auth?ref=${username}`);
       return;
     }
-    setBuyingProductId(productId);
-    try {
-      const { data, error } = await supabase.functions.invoke("stripe-create-product-checkout", {
-        body: { product_id: productId, creator_id: profile?.user_id },
-      });
-      if (error) throw error;
-      if (data?.url) window.location.href = data.url;
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+    const product = products.find((p: any) => p.id === productId);
+    if (product) {
+      setEnrollProduct(product);
     }
-    setBuyingProductId(null);
   };
 
   // Loading
