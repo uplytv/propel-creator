@@ -26,11 +26,28 @@ export default function Auth() {
 
   useEffect(() => {
     if (signUpSuccess) return;
+    const checkAndRedirect = async (session: any) => {
+      if (!session) return;
+      // Check if user needs onboarding
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("onboarding_complete, is_approved")
+        .eq("user_id", session.user.id)
+        .single();
+      const p = profile as any;
+      if (!p?.onboarding_complete) {
+        navigate("/onboarding", { replace: true });
+      } else if (p?.is_approved) {
+        navigate("/discover", { replace: true });
+      } else {
+        navigate("/waitlist", { replace: true });
+      }
+    };
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session && !signUpSuccess) navigate("/dashboard", { replace: true });
+      if (session && !signUpSuccess) checkAndRedirect(session);
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session && !signUpSuccess) navigate("/dashboard", { replace: true });
+      if (session && !signUpSuccess) checkAndRedirect(session);
     });
     return () => subscription.unsubscribe();
   }, [navigate, signUpSuccess]);
