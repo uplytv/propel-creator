@@ -2,14 +2,7 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Search, Users, DollarSign, Sparkles, Plus, Radio, Upload, Calendar, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-const tabs = [
-  { label: "Discover", icon: Search, path: "/discover" },
-  { label: "Community", icon: Users, path: "/dashboard" },
-  { label: "create", icon: Plus, path: "" }, // center create button
-  { label: "Earn", icon: DollarSign, path: "/wallet" },
-  { label: "ARIA", icon: Sparkles, path: "/dashboard?mode=ai" },
-];
+import { useAuth } from "@/context/AuthContext";
 
 interface MobileTabBarProps {
   onUploadVideo?: () => void;
@@ -18,12 +11,23 @@ interface MobileTabBarProps {
 export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [createOpen, setCreateOpen] = useState(false);
+
+  const communityPath = user ? `/community/${user.id}` : "/dashboard";
+
+  const tabs = [
+    { label: "Discover", icon: Search, path: "/discover" },
+    { label: "Community", icon: Users, path: communityPath },
+    { label: "create", icon: Plus, path: "" },
+    { label: "Earn", icon: DollarSign, path: "/wallet" },
+    { label: "ARIA", icon: Sparkles, path: "/grow" },
+  ];
 
   const isActive = (path: string) => {
     if (!path) return false;
     const basePath = path.split("?")[0];
-    return location.pathname === basePath;
+    return location.pathname === basePath || location.pathname.startsWith(basePath + "/");
   };
 
   const createActions = [

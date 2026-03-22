@@ -145,6 +145,7 @@ const App = () => (
                   <Routes>
                     {/* Public routes */}
                     <Route path="/" element={<Landing />} />
+                    <Route path="/index" element={<Landing />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/p/:slug" element={<JointProduct isPublic />} />
