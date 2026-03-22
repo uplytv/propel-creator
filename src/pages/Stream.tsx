@@ -10,6 +10,7 @@ import TipOverlay from "@/components/live/TipOverlay";
 import MobileChatDrawer from "@/components/live/MobileChatDrawer";
 import ViewerEngagementOverlay from "@/components/live/ViewerEngagementOverlay";
 import ViewerShopOverlay from "@/components/live/ViewerShopOverlay";
+import FeaturedProductCTA from "@/components/live/FeaturedProductCTA";
 
 import { useState, useCallback, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -522,6 +523,13 @@ export default function Stream() {
                     streamId={id}
                     creatorUserId={dbStream.user_id}
                   />
+                  {featuredProduct && (
+                    <FeaturedProductCTA
+                      product={featuredProduct}
+                      streamId={id}
+                      creatorId={dbStream.user_id}
+                    />
+                  )}
                 </>
               )}
             </div>
@@ -551,8 +559,17 @@ export default function Stream() {
                 <p className="text-sm text-muted-foreground mt-3 hidden sm:block">{dbStream.description}</p>
               )}
 
-              {/* Featured Product */}
-              {featuredProduct && (
+              {/* Featured Product CTA — interactive */}
+              {featuredProduct && !isVod && isActive && (
+                <div className="mt-4">
+                  <FeaturedProductCTA
+                    product={featuredProduct}
+                    streamId={id || ""}
+                    creatorId={dbStream.user_id}
+                  />
+                </div>
+              )}
+              {featuredProduct && (isVod || !isActive) && (
                 <button
                   onClick={() => navigate(`/community/${dbStream.user_id}`, { state: { tab: featuredProduct.type === 'course' ? 'classroom' : 'community' } })}
                   className="mt-4 w-full flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/20 hover:bg-primary/10 hover:border-primary/30 transition-all text-left group"
@@ -572,11 +589,8 @@ export default function Stream() {
                     <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">{featuredProduct.name}</p>
                     <p className="text-xs text-muted-foreground capitalize">{featuredProduct.type} · <span className="text-primary font-semibold">${featuredProduct.price}</span></p>
                   </div>
-                  <div className="flex flex-col items-center gap-1 flex-shrink-0">
-                    <div className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold shadow-sm">
-                      {featuredProduct.type === 'course' ? 'Enroll' : featuredProduct.type === 'coaching' ? 'Book' : 'Buy Now'}
-                    </div>
-                    <span className="text-[10px] text-muted-foreground font-medium">${featuredProduct.price}</span>
+                  <div className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold shadow-sm">
+                    View
                   </div>
                 </button>
               )}
