@@ -52,6 +52,8 @@ export function usePaymentReturn(creatorId?: string) {
     const productId = params.get("product_id");
     const joined = params.get("joined");
     const joinCreatorId = params.get("creator_id") || creatorId;
+    const accessGranted = params.get("access_granted");
+    const resourceId = params.get("resource_id");
 
     // Also check sessionStorage
     const pendingPurchase = sessionStorage.getItem("uply_pending_purchase");
