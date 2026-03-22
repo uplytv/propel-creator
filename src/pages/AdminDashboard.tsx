@@ -75,6 +75,9 @@ export default function AdminDashboard() {
             <Button size="sm" variant="outline" onClick={() => navigate("/admin/affiliates")}>
               <Link2 className="w-4 h-4 mr-1" /> Affiliates
             </Button>
+            <Button size="sm" variant="outline" onClick={() => navigate("/admin/referrals")}>
+              <Share2 className="w-4 h-4 mr-1" /> Referrals
+            </Button>
           </div>
         </div>
 
