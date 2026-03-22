@@ -62,6 +62,9 @@ export default function CreatorSpace() {
   const [showTierModal, setShowTierModal] = useState(false);
   const [freeJoining, setFreeJoining] = useState(false);
 
+  // Handle mobile return from Stripe checkout
+  usePaymentReturn(creatorId);
+
   useEffect(() => {
     if (tabParam) return;
     const legacyTab = searchParams.get("tab") || (location.state as any)?.tab;
