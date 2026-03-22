@@ -87,7 +87,7 @@ export default function PostApplicationScreen({ position, referralCode, referral
           #{position}
         </p>
         <p className="text-sm mb-4" style={{ color: "#888" }}>on the waitlist</p>
-        <p className="text-xs" style={{ color: "#888" }}>Move up 10 spots for every creator you refer.</p>
+        <p className="text-xs" style={{ color: "#888" }}>Refer 1 to confirm · Refer 3 for early access · Most referrals wins $1,000</p>
       </motion.div>
 
       {/* Referral section */}
