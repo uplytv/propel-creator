@@ -37,7 +37,7 @@ export default function ReferralRedirect() {
       });
 
       if (data && !error) {
-        setReferrer(data as ReferrerInfo);
+        setReferrer(data as unknown as ReferrerInfo);
       } else {
         // No referrer found — set cookie and redirect
         setAffiliateCookie("uply_waitlist_ref", actualCode, 30);
