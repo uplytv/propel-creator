@@ -8,7 +8,7 @@ const tabs = [
   { label: "Community", icon: Users, path: "/dashboard" },
   { label: "create", icon: Plus, path: "" }, // center create button
   { label: "Earn", icon: DollarSign, path: "/wallet" },
-  { label: "ARIA", icon: Sparkles, path: "/dashboard?mode=ai" },
+  { label: "ARIA", icon: Sparkles, path: "/grow" },
 ];
 
 interface MobileTabBarProps {
