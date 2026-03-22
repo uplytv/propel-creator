@@ -120,10 +120,10 @@ export default function VideoPlayer() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title={`${video.title} by ${creatorName} on UPLY`}
-        description={video.description || `Watch ${video.title} on UPLY`}
+        title={`${video.title} — ${creatorName} on UPLY`}
+        description={video.description || `Watch ${video.title} by ${creatorName} on UPLY`}
         type="video.other"
-        image={video.playback_id ? `https://image.mux.com/${video.playback_id}/thumbnail.jpg?width=1200&height=630` : undefined}
+        image={video.playback_id ? `https://image.mux.com/${video.playback_id}/thumbnail.jpg?width=1200&height=630&fit_mode=smartcrop` : undefined}
       />
 
       {/* Player */}
