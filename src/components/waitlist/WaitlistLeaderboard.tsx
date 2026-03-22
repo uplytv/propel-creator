@@ -54,7 +54,10 @@ export default function WaitlistLeaderboard({ currentEmail }: { currentEmail: st
 
   return (
     <div className="rounded-2xl p-6 md:p-8" style={{ background: "#111111" }}>
-      <h3 className="font-bold text-lg text-center mb-6 text-white">Top Referrers 🏆</h3>
+      <h3 className="font-bold text-lg text-center mb-2 text-white">Top Referrers 🏆</h3>
+      <p className="text-center text-xs mb-6" style={{ color: "#FFD700" }}>
+        #1 referrer wins <span className="font-bold">$1,000 cash</span> 💰
+      </p>
       <div className="space-y-3">
         {top.length === 0 ? (
           <p className="text-sm text-center" style={{ color: "#888" }}>No referrals yet — be the first!</p>
