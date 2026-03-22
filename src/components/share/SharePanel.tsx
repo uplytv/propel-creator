@@ -77,6 +77,7 @@ interface SharePanelProps {
 
 function DownloadIcon() { return <Download className="w-6 h-6" />; }
 function CopyIcon() { return <Copy className="w-6 h-6" />; }
+function EmbedIcon() { return <ExternalLink className="w-6 h-6" />; }
 
 const PLATFORMS = [
   { key: "tiktok", label: "TikTok", icon: TikTokIcon },
@@ -87,6 +88,7 @@ const PLATFORMS = [
   { key: "facebook", label: "Facebook", icon: FacebookIcon },
   { key: "download", label: "Download MP4", icon: DownloadIcon },
   { key: "copy", label: "Copy Link", icon: CopyIcon },
+  { key: "embed", label: "Embed", icon: EmbedIcon },
 ];
 
 export default function SharePanel({
