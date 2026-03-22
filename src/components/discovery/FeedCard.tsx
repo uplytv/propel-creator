@@ -179,9 +179,9 @@ const FeedCard = memo(function FeedCard({ item, index, isLiveSection }: FeedCard
         )}
 
         {/* Duration badge bottom-right */}
-        {showDuration && (
+        {showDuration && item.durationSeconds > 0 && (
           <div className="absolute bottom-2 right-2 z-20 px-1.5 py-0.5 rounded text-white text-xs font-bold" style={{ background: "rgba(0,0,0,0.8)", fontFamily: "Space Grotesk, sans-serif" }}>
-            {item.type === "clip" ? "#SHORTS" : "0:00"}
+            {item.type === "clip" ? "#SHORTS" : formatDuration(item.durationSeconds)}
           </div>
         )}
 

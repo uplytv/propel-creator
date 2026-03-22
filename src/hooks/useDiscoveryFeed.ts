@@ -321,6 +321,7 @@ export function useDiscoveryFeed(
             spaceId: null,
             slug: v.slug,
             tier: isNew(v.created_at) ? "new" : "trending",
+            durationSeconds: v.duration_seconds || 0,
           });
         }
       }

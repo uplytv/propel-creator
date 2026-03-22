@@ -21,11 +21,11 @@ serve(async (req) => {
       throw new Error('Mux API credentials not configured')
     }
 
+    const authHeader = `Basic ${btoa(`${muxTokenId}:${muxTokenSecret}`)}`
+
     // Check the upload status
     const uploadRes = await fetch(`https://api.mux.com/video/v1/uploads/${uploadId}`, {
-      headers: {
-        'Authorization': `Basic ${btoa(`${muxTokenId}:${muxTokenSecret}`)}`
-      }
+      headers: { 'Authorization': authHeader }
     })
 
     if (!uploadRes.ok) {
@@ -35,15 +35,13 @@ serve(async (req) => {
 
     const uploadData = await uploadRes.json()
     const upload = uploadData.data
-    
+
     console.log(`Upload ${uploadId} status: ${upload.status}, asset_id: ${upload.asset_id}`)
 
     // If the upload has an asset_id, check the asset
     if (upload.asset_id) {
       const assetRes = await fetch(`https://api.mux.com/video/v1/assets/${upload.asset_id}`, {
-        headers: {
-          'Authorization': `Basic ${btoa(`${muxTokenId}:${muxTokenSecret}`)}`
-        }
+        headers: { 'Authorization': authHeader }
       })
 
       if (assetRes.ok) {
@@ -51,16 +49,16 @@ serve(async (req) => {
         const asset = assetData.data
         const playbackId = asset.playback_ids?.[0]?.id
 
-        console.log(`Asset ${asset.id} status: ${asset.status}, playback: ${playbackId}`)
+        console.log(`Asset ${asset.id} status: ${asset.status}, playback: ${playbackId}, duration: ${asset.duration}`)
 
-        // Update the DB record
+        // Update the DB record when ready
         if (asset.status === 'ready' && playbackId) {
           const supabase = createClient(
             Deno.env.get('SUPABASE_URL')!,
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
           )
 
-          const { data: updated, error } = await supabase.from('mux_assets')
+          await supabase.from('mux_assets')
             .update({
               status: 'ready',
               mux_asset_id: asset.id,
@@ -70,34 +68,33 @@ serve(async (req) => {
               updated_at: new Date().toISOString()
             })
             .eq('upload_id', uploadId)
-            .select()
 
-          if (error) throw error
-
-          return new Response(JSON.stringify({ 
-            fixed: true, 
-            asset: updated?.[0],
-            muxStatus: asset.status 
+          return new Response(JSON.stringify({
+            status: 'ready',
+            assetId: asset.id,
+            playbackId: playbackId,
+            duration: asset.duration || 0,
           }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
         }
 
-        return new Response(JSON.stringify({ 
-          fixed: false, 
-          uploadStatus: upload.status,
-          assetStatus: asset.status,
-          assetId: asset.id
+        return new Response(JSON.stringify({
+          status: asset.status,
+          assetId: asset.id,
+          playbackId: playbackId || null,
+          duration: asset.duration || 0,
         }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         })
       }
     }
 
-    return new Response(JSON.stringify({ 
-      fixed: false, 
-      uploadStatus: upload.status,
-      assetId: upload.asset_id || null
+    return new Response(JSON.stringify({
+      status: upload.status === 'asset_created' ? 'preparing' : upload.status,
+      assetId: upload.asset_id || null,
+      playbackId: null,
+      duration: 0,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
