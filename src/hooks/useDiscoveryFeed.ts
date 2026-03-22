@@ -430,6 +430,7 @@ export function useDiscoveryFeed(
             spaceId: null,
             slug: null,
             tier: isNew(c.created_at) ? "new" : "trending",
+            durationSeconds: 0,
           });
         }
       }
