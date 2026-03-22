@@ -39,11 +39,9 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
   },
   {
     core: "live",
-    label: "LIVE",
-    icon: Radio,
+    label: "CONTENT",
+    icon: Film,
     items: [
-      { label: "Live", icon: Radio, path: "/live", desc: "Watch & stream" },
-      { label: "Go Live", icon: Video, path: "/go-live", desc: "Start streaming" },
       { label: "Content Library", icon: Film, path: "/content-library", desc: "Videos & uploads", featureKey: "content_library" },
       { label: "Ad Campaigns", icon: Plug, path: "/ad-integrations", desc: "Boost streams", featureKey: "stream_boost" },
     ],
