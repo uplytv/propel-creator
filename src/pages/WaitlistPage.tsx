@@ -244,7 +244,7 @@ export default function WaitlistPage() {
           <h3 className="font-semibold text-sm mb-3">Your Referral Link</h3>
           <div className="flex items-center gap-2 mb-3">
             <div className="flex-1 rounded-lg px-4 py-3 text-sm text-foreground truncate bg-card border border-border">
-              uply.tv/join/{referralCode}
+              {displayUrlStr}
             </div>
             <Button onClick={copyLink} className="shrink-0 gap-2 bg-primary text-primary-foreground">
               {linkCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
