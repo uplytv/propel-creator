@@ -85,13 +85,12 @@ function FreeJoinCTA({
       if (error) throw error;
       onGranted();
     } catch {
-      // Fallback: direct insert to product_purchases for backwards compat
+      // Fallback: direct insert for backwards compat
       try {
-        const { supabase } = await import("@/integrations/supabase/client");
         await supabase.from("product_purchases").insert({
           product_id: resourceId,
           buyer_id: user.id,
-          creator_id: "", // Will be filled by trigger
+          creator_id: "",
           amount: 0,
           status: "completed",
         } as any);
