@@ -52,6 +52,8 @@ export function usePaymentReturn(creatorId?: string) {
     const productId = params.get("product_id");
     const joined = params.get("joined");
     const joinCreatorId = params.get("creator_id") || creatorId;
+    const accessGranted = params.get("access_granted");
+    const resourceId = params.get("resource_id");
 
     // Also check sessionStorage
     const pendingPurchase = sessionStorage.getItem("uply_pending_purchase");
@@ -60,16 +62,44 @@ export function usePaymentReturn(creatorId?: string) {
     const handleReturn = async () => {
       setChecking(true);
 
+      // Generic access_granted handler (from PaywallModal)
+      if (accessGranted === "true" && resourceId) {
+        sessionStorage.removeItem("uply_pending_access");
+        // Poll access_grants for up to 45 seconds
+        let found = false;
+        for (let i = 0; i < 15; i++) {
+          const { data } = await supabase
+            .from("access_grants")
+            .select("id")
+            .eq("user_id", user!.id)
+            .eq("resource_id", resourceId)
+            .is("revoked_at", null)
+            .maybeSingle();
+          if (data) { found = true; break; }
+          await new Promise(r => setTimeout(r, 3000));
+        }
+        if (found) {
+          toast({ title: "Access granted! 🎉" });
+          queryClient.invalidateQueries({ queryKey: ["access"] });
+        } else {
+          toast({ title: "Payment received", description: "Access is being activated. Refresh in a moment." });
+        }
+        const url = new URL(window.location.href);
+        url.searchParams.delete("access_granted");
+        url.searchParams.delete("resource_id");
+        window.history.replaceState({}, "", url.toString());
+      }
+
       if (enrolled === "true" && productId) {
         sessionStorage.removeItem("uply_pending_purchase");
         const found = await pollForPurchase(productId);
         if (found) {
           toast({ title: "You're enrolled! 🎉", description: "Start learning →" });
           queryClient.invalidateQueries({ queryKey: ["product-purchase"] });
+          queryClient.invalidateQueries({ queryKey: ["access"] });
         } else {
           toast({ title: "Your payment was received", description: "Access is being activated. Refresh in a moment." });
         }
-        // Clean URL
         const url = new URL(window.location.href);
         url.searchParams.delete("enrolled");
         url.searchParams.delete("product_id");
@@ -83,6 +113,7 @@ export function usePaymentReturn(creatorId?: string) {
           toast({ title: "Welcome! 🎉", description: "You now have full access." });
           queryClient.invalidateQueries({ queryKey: ["is-member"] });
           queryClient.invalidateQueries({ queryKey: ["member-subscription"] });
+          queryClient.invalidateQueries({ queryKey: ["access"] });
         } else {
           toast({ title: "Your payment was received", description: "Access is being activated. Refresh in a moment." });
         }
@@ -93,7 +124,7 @@ export function usePaymentReturn(creatorId?: string) {
       }
 
       // Handle sessionStorage fallback (if URL params were lost)
-      if (!enrolled && !joined && pendingPurchase) {
+      if (!enrolled && !joined && !accessGranted && pendingPurchase) {
         try {
           const { product_id } = JSON.parse(pendingPurchase);
           sessionStorage.removeItem("uply_pending_purchase");
@@ -101,11 +132,12 @@ export function usePaymentReturn(creatorId?: string) {
           if (found) {
             toast({ title: "You're enrolled! 🎉" });
             queryClient.invalidateQueries({ queryKey: ["product-purchase"] });
+            queryClient.invalidateQueries({ queryKey: ["access"] });
           }
         } catch {}
       }
 
-      if (!enrolled && !joined && pendingJoin) {
+      if (!enrolled && !joined && !accessGranted && pendingJoin) {
         try {
           const { creator_id } = JSON.parse(pendingJoin);
           sessionStorage.removeItem("uply_pending_join");
@@ -114,6 +146,32 @@ export function usePaymentReturn(creatorId?: string) {
             toast({ title: "Welcome! 🎉" });
             queryClient.invalidateQueries({ queryKey: ["is-member"] });
             queryClient.invalidateQueries({ queryKey: ["member-subscription"] });
+            queryClient.invalidateQueries({ queryKey: ["access"] });
+          }
+        } catch {}
+      }
+
+      // Handle pending access from PaywallModal
+      const pendingAccess = sessionStorage.getItem("uply_pending_access");
+      if (!accessGranted && !enrolled && !joined && pendingAccess) {
+        try {
+          const { resource_id } = JSON.parse(pendingAccess);
+          sessionStorage.removeItem("uply_pending_access");
+          let found = false;
+          for (let i = 0; i < 15; i++) {
+            const { data } = await supabase
+              .from("access_grants")
+              .select("id")
+              .eq("user_id", user!.id)
+              .eq("resource_id", resource_id)
+              .is("revoked_at", null)
+              .maybeSingle();
+            if (data) { found = true; break; }
+            await new Promise(r => setTimeout(r, 3000));
+          }
+          if (found) {
+            toast({ title: "Access granted! 🎉" });
+            queryClient.invalidateQueries({ queryKey: ["access"] });
           }
         } catch {}
       }

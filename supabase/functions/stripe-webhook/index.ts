@@ -170,6 +170,24 @@ Deno.serve(async (req) => {
             status: "completed",
           }, { onConflict: "product_id,buyer_id", ignoreDuplicates: true });
 
+          // Write access_grants row
+          const resourceType = purchaseType === "course" ? "course" : "product";
+          await supabase.from("access_grants").insert({
+            user_id: buyer_id,
+            resource_type: resourceType,
+            resource_id: product_id,
+            access_level: "full",
+            source: metadata.source || "checkout",
+            stripe_payment_intent_id: session.payment_intent as string,
+            stripe_customer_id: session.customer as string,
+            stream_id: metadata.stream_id || null,
+            metadata: { purchase_type: purchaseType },
+          }).then(({ error: agErr }) => {
+            if (agErr && !agErr.message?.includes("duplicate") && !agErr.message?.includes("unique")) {
+              console.error("access_grants insert error:", agErr);
+            }
+          });
+
           await supabase.rpc("increment_product_sales" as any, { p_id: product_id, p_amount: amount }).catch(async () => {
             const { data: prod } = await supabase.from("products").select("sales, revenue").eq("id", product_id).maybeSingle();
             if (prod) {
@@ -303,6 +321,46 @@ Deno.serve(async (req) => {
               creator_id,
             }, { onConflict: "creator_id,user_id" });
 
+            // Write access_grants for community + tier
+            const subId = session.subscription as string;
+            const custId = session.customer as string;
+
+            // Community access grant
+            if (space_id) {
+              await supabase.from("access_grants").insert({
+                user_id: member_id,
+                resource_type: "community",
+                resource_id: space_id,
+                access_level: "full",
+                source: "checkout",
+                stripe_subscription_id: subId,
+                stripe_customer_id: custId,
+                metadata: { tier_id, creator_id },
+              }).then(({ error: agErr }) => {
+                if (agErr && !agErr.message?.includes("duplicate") && !agErr.message?.includes("unique")) {
+                  console.error("access_grants community insert error:", agErr);
+                }
+              });
+            }
+
+            // Membership tier access grant
+            if (tier_id) {
+              await supabase.from("access_grants").insert({
+                user_id: member_id,
+                resource_type: "membership_tier",
+                resource_id: tier_id,
+                access_level: "full",
+                source: "checkout",
+                stripe_subscription_id: subId,
+                stripe_customer_id: custId,
+                metadata: { space_id, creator_id },
+              }).then(({ error: agErr }) => {
+                if (agErr && !agErr.message?.includes("duplicate") && !agErr.message?.includes("unique")) {
+                  console.error("access_grants tier insert error:", agErr);
+                }
+              });
+            }
+
             const amount = (session.amount_total || 0) / 100;
             const fee = Math.round(amount * 0.05 * 100) / 100;
 
@@ -435,6 +493,24 @@ Deno.serve(async (req) => {
           .select("member_id, creator_id")
           .maybeSingle();
 
+        // Update access_grants for subscription changes
+        if (newStatus === "past_due") {
+          // Downgrade to preview access
+          await supabase.from("access_grants")
+            .update({ access_level: "preview" })
+            .eq("stripe_subscription_id", sub.id)
+            .is("revoked_at", null);
+        } else if (newStatus === "active") {
+          // Restore full access and update expiry
+          await supabase.from("access_grants")
+            .update({
+              access_level: "full",
+              expires_at: new Date(sub.current_period_end * 1000).toISOString(),
+            })
+            .eq("stripe_subscription_id", sub.id)
+            .is("revoked_at", null);
+        }
+
         // Notify if recovered from past_due
         if (newStatus === "active" && updatedSub) {
           await supabase.from("notifications").insert({
@@ -489,6 +565,12 @@ Deno.serve(async (req) => {
             actor_id: canceledSub.member_id,
           });
         }
+
+        // Revoke all access_grants tied to this subscription
+        await supabase.from("access_grants")
+          .update({ revoked_at: new Date().toISOString(), revoke_reason: "subscription_cancelled" })
+          .eq("stripe_subscription_id", sub.id)
+          .is("revoked_at", null);
 
         logStep("Subscription canceled", { id: sub.id });
         break;
@@ -605,6 +687,21 @@ Deno.serve(async (req) => {
       case "transfer.created": {
         const transfer = event.data.object as any;
         logStep("Transfer created", { id: transfer.id, amount: transfer.amount });
+        break;
+      }
+
+      case "charge.refunded": {
+        const charge = event.data.object as Stripe.Charge;
+        const paymentIntentId = charge.payment_intent as string;
+        if (paymentIntentId) {
+          // Revoke access grants tied to this payment intent
+          await supabase.from("access_grants")
+            .update({ revoked_at: new Date().toISOString(), revoke_reason: "refunded" })
+            .eq("stripe_payment_intent_id", paymentIntentId)
+            .is("revoked_at", null);
+
+          logStep("Charge refunded, access revoked", { paymentIntentId });
+        }
         break;
       }
 
