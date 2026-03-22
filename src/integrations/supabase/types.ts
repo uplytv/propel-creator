@@ -2799,6 +2799,7 @@ export type Database = {
           creator_id: string
           id: string
           product_id: string
+          status: string
           stripe_payment_intent_id: string | null
         }
         Insert: {
@@ -2808,6 +2809,7 @@ export type Database = {
           creator_id: string
           id?: string
           product_id: string
+          status?: string
           stripe_payment_intent_id?: string | null
         }
         Update: {
@@ -2817,6 +2819,7 @@ export type Database = {
           creator_id?: string
           id?: string
           product_id?: string
+          status?: string
           stripe_payment_intent_id?: string | null
         }
         Relationships: [
