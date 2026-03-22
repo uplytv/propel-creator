@@ -374,6 +374,33 @@ export default function SharePanel({
         )}
       </AnimatePresence>
 
+      {/* Embed Code Display */}
+      <AnimatePresence>
+        {showEmbed && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="rounded-xl p-4 space-y-2 overflow-hidden"
+            style={{ background: "#111111", border: "1px solid #1E1E1E" }}
+          >
+            <p className="text-xs font-medium text-foreground">Embed Code</p>
+            <code className="block text-[11px] text-muted-foreground bg-black/50 rounded-lg p-3 break-all font-mono">
+              {`<iframe src="${contentUrl}?embed=true" width="560" height="315" frameborder="0" allowfullscreen style="border-radius:12px;"></iframe>`}
+            </code>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(`<iframe src="${contentUrl}?embed=true" width="560" height="315" frameborder="0" allowfullscreen style="border-radius:12px;"></iframe>`);
+                toast({ title: "Embed code copied ✓" });
+              }}
+              className="text-xs text-primary hover:underline"
+            >
+              Copy Again
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Platform Grid */}
       {!showQR && (
         <TooltipProvider>
