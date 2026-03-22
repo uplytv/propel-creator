@@ -6,6 +6,7 @@ interface SEOHeadProps {
   description?: string;
   type?: string;
   image?: string;
+  twitterCard?: string;
 }
 
 const BASE_URL = "https://uply.tv";
