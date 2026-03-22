@@ -2887,6 +2887,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          beta_user: boolean
           bio: string | null
           business_category: string | null
           cover_image_url: string | null
@@ -2905,6 +2906,7 @@ export type Database = {
           members: number
           mrr: number
           onboarding_complete: boolean
+          origin_member: boolean
           paid_dm_price: number | null
           paid_dms_enabled: boolean | null
           referral_code: string | null
@@ -2920,6 +2922,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          beta_user?: boolean
           bio?: string | null
           business_category?: string | null
           cover_image_url?: string | null
@@ -2938,6 +2941,7 @@ export type Database = {
           members?: number
           mrr?: number
           onboarding_complete?: boolean
+          origin_member?: boolean
           paid_dm_price?: number | null
           paid_dms_enabled?: boolean | null
           referral_code?: string | null
@@ -2953,6 +2957,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          beta_user?: boolean
           bio?: string | null
           business_category?: string | null
           cover_image_url?: string | null
@@ -2971,6 +2976,7 @@ export type Database = {
           members?: number
           mrr?: number
           onboarding_complete?: boolean
+          origin_member?: boolean
           paid_dm_price?: number | null
           paid_dms_enabled?: boolean | null
           referral_code?: string | null
@@ -3859,6 +3865,33 @@ export type Database = {
           referral_count?: number
           referred_by?: string | null
           social_handle?: string | null
+        }
+        Relationships: []
+      }
+      waitlist_config: {
+        Row: {
+          contest_ended: boolean
+          created_at: string
+          end_date: string
+          id: string
+          prize_amount: number
+          spots_jump_per_3_referrals: number
+        }
+        Insert: {
+          contest_ended?: boolean
+          created_at?: string
+          end_date?: string
+          id?: string
+          prize_amount?: number
+          spots_jump_per_3_referrals?: number
+        }
+        Update: {
+          contest_ended?: boolean
+          created_at?: string
+          end_date?: string
+          id?: string
+          prize_amount?: number
+          spots_jump_per_3_referrals?: number
         }
         Relationships: []
       }

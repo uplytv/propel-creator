@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import logoImg from "@/assets/logo.png";
 
 export default function SplashScreen({ onComplete }: { onComplete: () => void }) {
   return (
@@ -18,20 +19,7 @@ export default function SplashScreen({ onComplete }: { onComplete: () => void })
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         className="flex flex-col items-center gap-3"
       >
-        <div className="w-20 h-20 rounded-2xl bg-primary flex items-center justify-center">
-          <span className="text-4xl font-black text-primary-foreground" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            U
-          </span>
-        </div>
-        <motion.span
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          className="text-lg font-bold tracking-tight text-foreground"
-          style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-        >
-          UPLY
-        </motion.span>
+        <img src={logoImg} alt="UPLY" className="w-20 h-20 object-contain" />
       </motion.div>
     </motion.div>
   );
