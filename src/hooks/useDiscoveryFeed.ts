@@ -361,6 +361,7 @@ export function useDiscoveryFeed(
             spaceId: null,
             slug: null,
             tier: isNew(p.created_at) ? "new" : "trending",
+            durationSeconds: 0,
           });
         }
       }
