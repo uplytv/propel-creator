@@ -1,7 +1,6 @@
 import { ReactNode, useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MobileTabBar from "./MobileTabBar";
-import CreateFAB from "@/components/videos/CreateFAB";
 import VideoUploadSheet from "@/components/videos/VideoUploadSheet";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -39,11 +38,9 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
   },
   {
     core: "live",
-    label: "LIVE",
-    icon: Radio,
+    label: "CONTENT",
+    icon: Film,
     items: [
-      { label: "Live", icon: Radio, path: "/live", desc: "Watch & stream" },
-      { label: "Go Live", icon: Video, path: "/go-live", desc: "Start streaming" },
       { label: "Content Library", icon: Film, path: "/content-library", desc: "Videos & uploads", featureKey: "content_library" },
       { label: "Ad Campaigns", icon: Plug, path: "/ad-integrations", desc: "Boost streams", featureKey: "stream_boost" },
     ],
@@ -517,10 +514,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       </div>
 
       {/* Mobile Tab Bar */}
-      <MobileTabBar />
-
-      {/* Mobile FAB */}
-      <CreateFAB onUploadVideo={() => setUploadSheetOpen(true)} />
+      <MobileTabBar onUploadVideo={() => setUploadSheetOpen(true)} />
 
       {/* Video Upload Sheet */}
       <VideoUploadSheet open={uploadSheetOpen} onClose={() => setUploadSheetOpen(false)} />

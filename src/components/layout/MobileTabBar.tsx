@@ -1,119 +1,83 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Camera, BarChart3, DollarSign, Users, Sparkles } from "lucide-react";
+import { Search, Users, DollarSign, Sparkles, Plus, Radio, Upload, Calendar, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "@/context/AuthContext";
 
-const cores = [
-  {
-    label: "Create",
-    icon: Camera,
-    sub: [
-      { label: "Go Live", path: "/go-live" },
-      { label: "Content Library", path: "/content-library" },
-      { label: "Scheduled Streams", path: "/go-live?tab=schedule" },
-      { label: "Events", path: "/events" },
-    ],
-  },
-  {
-    label: "Grow",
-    icon: BarChart3,
-    sub: [
-      { label: "Discover", path: "/discover" },
-      { label: "Analytics", path: "/analytics" },
-      { label: "Leaderboard", path: "/leaderboard" },
-      { label: "Affiliates", path: "/affiliates" },
-      { label: "Grow Tasks", path: "/grow" },
-    ],
-  },
-  {
-    label: "Earn",
-    icon: DollarSign,
-    sub: [
-      { label: "Wallet", path: "/wallet" },
-      { label: "Products", path: "/products" },
-      { label: "Buy Credits", path: "/buy-credits" },
-      { label: "Subscriptions", path: "/settings?tab=subscriptions" },
-    ],
-  },
-  {
-    label: "Community",
-    icon: Users,
-    sub: [
-      { label: "Dashboard", path: "/dashboard" },
-      { label: "Notifications", path: "/notifications" },
-      { label: "Messages", path: "/messages" },
-      { label: "Jobs", path: "/jobs" },
-      { label: "Settings", path: "/settings" },
-    ],
-  },
-  {
-    label: "ARIA",
-    icon: Sparkles,
-    sub: [
-      { label: "ARIA Chat", path: "/dashboard?mode=ai" },
-      { label: "Growth Reports", path: "/growth-reports" },
-      { label: "My Rep", path: "/my-rep" },
-    ],
-  },
+const tabs = [
+  { label: "Discover", icon: Search, path: "/discover" },
+  { label: "Community", icon: Users, path: "/dashboard" },
+  { label: "create", icon: Plus, path: "" }, // center create button
+  { label: "Earn", icon: DollarSign, path: "/wallet" },
+  { label: "ARIA", icon: Sparkles, path: "/dashboard?mode=ai" },
 ];
 
-export default function MobileTabBar() {
+interface MobileTabBarProps {
+  onUploadVideo?: () => void;
+}
+
+export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const [openDrawer, setOpenDrawer] = useState<number | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
-  const isInCore = (coreIdx: number) =>
-    cores[coreIdx].sub.some((s) => location.pathname === s.path || location.pathname.startsWith(s.path.split("?")[0]));
+  const isActive = (path: string) => {
+    if (!path) return false;
+    const basePath = path.split("?")[0];
+    return location.pathname === basePath;
+  };
+
+  const createActions = [
+    { label: "Go Live", icon: Radio, onClick: () => { setCreateOpen(false); navigate("/go-live"); } },
+    { label: "Upload Video", icon: Upload, onClick: () => { setCreateOpen(false); onUploadVideo?.(); } },
+    { label: "Schedule Stream", icon: Calendar, onClick: () => { setCreateOpen(false); navigate("/go-live?tab=schedule"); } },
+  ];
 
   return (
     <>
-      {/* Sub-menu drawer */}
+      {/* Create action sheet backdrop */}
       <AnimatePresence>
-        {openDrawer !== null && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm md:hidden"
-              onClick={() => setOpenDrawer(null)}
-            />
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed bottom-16 left-0 right-0 z-50 md:hidden bg-card border-t border-border rounded-t-2xl max-h-[50vh] overflow-y-auto safe-area-bottom"
-            >
-              <div className="p-4 space-y-1">
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
-                  {cores[openDrawer].label}
-                </p>
-                {cores[openDrawer].sub.map((item) => {
-                  const basePath = item.path.split("?")[0];
-                  const isActive = location.pathname === basePath;
-                  return (
-                    <button
-                      key={item.path}
-                      onClick={() => {
-                        navigate(item.path);
-                        setOpenDrawer(null);
-                      }}
-                      className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-                        isActive
-                          ? "bg-primary/10 text-primary"
-                          : "text-foreground hover:bg-secondary/60"
-                      }`}
-                    >
-                      {item.label}
-                    </button>
-                  );
-                })}
+        {createOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm md:hidden"
+            onClick={() => setCreateOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Create action sheet */}
+      <AnimatePresence>
+        {createOpen && (
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            className="fixed bottom-16 left-0 right-0 z-[61] md:hidden bg-card border-t border-border rounded-t-2xl safe-area-bottom"
+          >
+            <div className="p-4 space-y-1">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Create</p>
+                <button onClick={() => setCreateOpen(false)} className="p-1 rounded-lg text-muted-foreground hover:text-foreground">
+                  <X className="w-4 h-4" />
+                </button>
               </div>
-            </motion.div>
-          </>
+              {createActions.map((action) => (
+                <button
+                  key={action.label}
+                  onClick={action.onClick}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-foreground hover:bg-secondary/60 transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <action.icon className="w-5 h-5 text-primary" />
+                  </div>
+                  {action.label}
+                </button>
+              ))}
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -123,28 +87,44 @@ export default function MobileTabBar() {
         className="mobile-tab-bar md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-xl safe-area-bottom transition-transform duration-200"
       >
         <div className="flex items-center justify-around h-16 px-1" role="tablist">
-          {cores.map((core, idx) => {
-            const isActive = isInCore(idx);
-            const Icon = core.icon;
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+
+            // Center "+" create button
+            if (tab.label === "create") {
+              return (
+                <button
+                  key="create"
+                  onClick={() => setCreateOpen(!createOpen)}
+                  aria-label="Create"
+                  className="relative flex items-center justify-center -mt-4"
+                >
+                  <motion.div
+                    className="w-14 h-14 rounded-full bg-primary flex items-center justify-center shadow-lg"
+                    style={{ boxShadow: "0 4px 20px hsl(var(--primary) / 0.3)" }}
+                    whileTap={{ scale: 0.92 }}
+                    animate={{ rotate: createOpen ? 45 : 0 }}
+                    transition={{ type: "spring", damping: 20, stiffness: 300 }}
+                  >
+                    <Plus className="w-6 h-6 text-primary-foreground" />
+                  </motion.div>
+                </button>
+              );
+            }
+
+            const active = isActive(tab.path);
             return (
               <button
-                key={core.label}
-                onClick={() => {
-                  if (openDrawer === idx) {
-                    setOpenDrawer(null);
-                  } else {
-                    setOpenDrawer(idx);
-                  }
-                }}
-                aria-label={core.label}
-                aria-current={isActive ? "page" : undefined}
+                key={tab.label}
+                onClick={() => navigate(tab.path)}
+                aria-label={tab.label}
+                aria-current={active ? "page" : undefined}
                 role="tab"
-                aria-selected={isActive}
+                aria-selected={active}
                 className="relative flex flex-col items-center justify-center flex-1 py-1.5 tab-press group touch-target"
               >
                 <div className="relative">
-                  {/* Active indicator dot above icon */}
-                  {isActive && (
+                  {active && (
                     <motion.div
                       layoutId="mobile-tab-indicator"
                       className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"
@@ -153,9 +133,9 @@ export default function MobileTabBar() {
                   )}
                   <Icon
                     className={`w-6 h-6 transition-colors ${
-                      core.label === "ARIA"
+                      tab.label === "ARIA"
                         ? "text-primary"
-                        : isActive
+                        : active
                         ? "text-foreground"
                         : "text-muted-foreground group-hover:text-foreground"
                     }`}
@@ -163,14 +143,14 @@ export default function MobileTabBar() {
                 </div>
                 <span
                   className={`text-[10px] mt-0.5 transition-colors ${
-                    core.label === "ARIA"
+                    tab.label === "ARIA"
                       ? "text-primary font-semibold"
-                      : isActive
+                      : active
                       ? "text-foreground font-semibold"
                       : "text-muted-foreground font-medium"
                   }`}
                 >
-                  {core.label}
+                  {tab.label}
                 </span>
               </button>
             );
