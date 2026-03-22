@@ -582,35 +582,48 @@ export default function CreatorProfile() {
 
           {/* CTA */}
           <div className="flex flex-col items-center mt-6 mb-8">
-            {isMember ? (
+            {isMember || memberSubStatus?.status === "active" ? (
               <div className="flex items-center gap-3">
                 <Link
                   to={`/community/${profile.user_id}/community`}
-                  className="px-8 py-3 rounded-lg text-sm font-semibold bg-secondary border border-border text-muted-foreground"
+                  className="px-8 py-3 rounded-lg text-sm font-semibold text-primary"
                 >
                   ✓ Member
                 </Link>
                 {!isOwner && user && (
                   <button
-                    onClick={async () => {
-                      try {
-                        const { getOrCreateConversation } = await import("@/hooks/useDirectMessages").then(m => ({ getOrCreateConversation: null }));
-                        // Navigate to messages with recipient param
-                        navigate(`/messages?to=${profile.user_id}`);
-                      } catch {}
-                    }}
-                    className="px-4 py-3 rounded-xl text-sm font-semibold"
-                    style={{ background: "#1a1a1a", border: "1px solid #1E1E1E", color: "#ccc" }}
+                    onClick={() => navigate(`/messages?to=${profile.user_id}`)}
+                    className="px-4 py-3 rounded-xl text-sm font-semibold bg-secondary border border-border text-muted-foreground"
                   >
                     <MessageCircle className="w-4 h-4" />
                   </button>
                 )}
               </div>
+            ) : memberSubStatus?.status === "past_due" ? (
+              <button
+                onClick={async () => {
+                  if (!memberSubStatus.stripe_customer_id) return;
+                  setJoinLoading(true);
+                  try {
+                    const { data, error } = await supabase.functions.invoke("stripe-create-portal", {
+                      body: { customer_id: memberSubStatus.stripe_customer_id },
+                    });
+                    if (error) throw error;
+                    if (data?.url) window.open(data.url, "_blank");
+                  } catch {}
+                  setJoinLoading(false);
+                }}
+                disabled={joinLoading}
+                className="px-8 py-3 rounded-xl text-sm font-bold border-2 border-yellow-500 text-yellow-500"
+              >
+                {joinLoading ? <BuyLoader className="w-4 h-4 animate-spin" /> : "⚠️ Update Payment →"}
+              </button>
             ) : (
               <div className="flex items-center gap-3">
                 <button
                   onClick={handleJoin}
-                  className="px-8 py-3 rounded-xl text-sm font-bold transition-shadow"
+                  disabled={joinLoading}
+                  className="px-8 py-3 rounded-xl text-sm font-bold transition-shadow disabled:opacity-50"
                   style={{
                     background: "#00FF85",
                     color: "#0A0A0A",
@@ -618,21 +631,28 @@ export default function CreatorProfile() {
                     height: 48,
                   }}
                 >
-                  Join {creatorName}'s Community →
+                  {joinLoading ? (
+                    <BuyLoader className="w-4 h-4 animate-spin" />
+                  ) : memberSubStatus?.status === "canceled" ? (
+                    `Rejoin — $${(memberSubStatus as any)?.subscription_tiers?.price_monthly || tiers[0]?.price_monthly || ""}/mo`
+                  ) : tiers.length > 0 ? (
+                    `Join — $${tiers[0].price_monthly}/mo`
+                  ) : (
+                    `Join ${creatorName}'s Community →`
+                  )}
                 </button>
                 {!isOwner && user && (
                   <button
                     onClick={() => navigate(`/messages?to=${profile.user_id}`)}
-                    className="px-4 py-3 rounded-xl text-sm font-semibold"
-                    style={{ background: "#1a1a1a", border: "1px solid #1E1E1E", color: "#ccc" }}
+                    className="px-4 py-3 rounded-xl text-sm font-semibold bg-secondary border border-border text-muted-foreground"
                   >
                     <MessageCircle className="w-4 h-4" />
                   </button>
                 )}
               </div>
             )}
-            {space && !space.is_free && (
-              <p className="text-[#888] text-xs mt-2">From ${Number(space.price).toFixed(0)}/month</p>
+            {space && !space.is_free && !isMember && !memberSubStatus?.status && (
+              <p className="text-muted-foreground text-xs mt-2">From ${Number(space.price).toFixed(0)}/month</p>
             )}
           </div>
         </div>
