@@ -277,6 +277,7 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
     { key: "unlisted", icon: "📝", label: "Unlisted", desc: "Only people with the link" },
   ];
 
+  const hasSchedule = !!(scheduledDate && scheduledTime);
   const publishDisabled = !title.trim() || publishing || (uploadPhase !== "ready" && uploadPhase !== "idle");
   const publishLabel = publishing
     ? "Publishing…"
@@ -284,6 +285,8 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
     ? `Uploading ${uploadProgress}%…`
     : uploadPhase === "processing"
     ? "Processing…"
+    : hasSchedule
+    ? "Schedule Publish →"
     : "Publish Video →";
 
   if (!open) return null;
