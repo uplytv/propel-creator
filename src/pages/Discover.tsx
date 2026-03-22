@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Compass, Radio, Upload, Film, BookOpen, Users, CalendarDays, X } from "lucide-react";
+import AppLayout from "@/components/layout/AppLayout";
 import { useDiscoveryFeed, type SortOption, type FeedTab } from "@/hooks/useDiscoveryFeed";
 import FeedCard from "@/components/discovery/FeedCard";
 import FeedFilters, { type DiscoverCategory } from "@/components/discovery/FeedFilters";
@@ -166,6 +167,7 @@ export default function Discover() {
   const showSkeletons = isLoading || transitioning;
 
   return (
+    <AppLayout>
     <div className="min-h-screen bg-background">
       <style>{shimmerStyle}</style>
       <SEOHead
@@ -285,5 +287,6 @@ export default function Discover() {
         )}
       </div>
     </div>
+    </AppLayout>
   );
 }
