@@ -1,11 +1,11 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { useAccess } from "@/hooks/useAccess";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Lock, LogIn, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 import PaywallModal from "@/components/PaywallModal";
-import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface GatedContentProps {
