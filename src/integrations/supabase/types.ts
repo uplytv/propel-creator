@@ -4294,6 +4294,7 @@ export type Database = {
         Args: { p_amount?: number; p_id: string }
         Returns: undefined
       }
+      lookup_referrer_by_code: { Args: { ref_code: string }; Returns: Json }
       move_to_dlq: {
         Args: {
           dlq_name: string
