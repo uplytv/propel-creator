@@ -337,9 +337,6 @@ export default function CreatorProfile() {
   const [buyingProductId, setBuyingProductId] = useStateBuy<string | null>(null);
   const [enrollProduct, setEnrollProduct] = useState<any>(null);
 
-  // Handle mobile return from Stripe
-  usePaymentReturn(profile?.user_id);
-
   const {
     profile, profileLoading, socialLinks, liveStream,
     memberCount, posts, modules, totalLessons, isMember, space, tiers, products,
