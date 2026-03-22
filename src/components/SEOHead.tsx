@@ -68,7 +68,7 @@ export default function SEOHead({
     setMeta("name", "twitter:title", fullTitle);
     setMeta("name", "twitter:description", desc);
     setMeta("name", "twitter:image", img);
-    setMeta("name", "twitter:card", "summary_large_image");
+    setMeta("name", "twitter:card", twitterCard);
   }, [fullTitle, desc, img, canonical, type]);
 
   return null;
