@@ -68,7 +68,7 @@ export default function ReferralRedirect() {
   const firstName = referrer?.display_name?.split(" ")[0] || "Someone";
 
   const getPostInviteRoute = async () => {
-    if (!user) return "/auth";
+    if (!user) return "/auth?mode=signup";
 
     const { data: profile } = await supabase
       .from("profiles")

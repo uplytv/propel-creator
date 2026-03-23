@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { trackEvent } from "@/lib/posthog";
 
 export default function Auth() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
@@ -23,6 +24,12 @@ export default function Auth() {
   const [signUpSuccess, setSignUpSuccess] = useState(false);
   const [forgotMode, setForgotMode] = useState(false);
   const [forgotLoading, setForgotLoading] = useState(false);
+
+  const defaultTab = (() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("mode") === "signup") return "signup";
+    return getAffiliateCookie("uply_waitlist_ref") || getAffiliateCookie("uply_invite_code") ? "signup" : "signin";
+  })();
 
   useEffect(() => {
     if (signUpSuccess) return;
@@ -221,7 +228,7 @@ export default function Auth() {
                   </div>
                 </div>
 
-                <Tabs defaultValue="signin">
+                <Tabs defaultValue={defaultTab}>
                   <TabsList className="grid w-full grid-cols-2 mb-4">
                     <TabsTrigger value="signin">Sign In</TabsTrigger>
                     <TabsTrigger value="signup">Sign Up</TabsTrigger>
