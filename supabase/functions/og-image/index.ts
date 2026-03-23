@@ -80,60 +80,47 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Match /r/:code (referral links)
-    const referralMatch = path.match(/^\/r\/([^/]+)$/);
-    if (referralMatch) {
-      const [, code] = referralMatch;
+    // Match referral/invite links: /r/:code, /join/:code, /join/:username/:code, /invite/:code
+    const refMatch =
+      path.match(/^\/r\/([^/]+)$/) ||
+      path.match(/^\/join\/[^/]+\/([^/]+)$/) ||
+      path.match(/^\/join\/([^/]+)$/) ||
+      path.match(/^\/invite\/([^/]+)$/);
 
-      // Try referral_code on profiles first
-      let profile = null;
-      const { data: byRef } = await supabase
-        .from("profiles")
-        .select("display_name, avatar_url, username")
-        .eq("referral_code", code)
-        .maybeSingle();
-      if (byRef) profile = byRef;
+    if (refMatch) {
+      const code = refMatch[1];
 
-      // Try invite_codes table
-      if (!profile) {
-        const { data: invite } = await supabase
-          .from("invite_codes")
-          .select("owner_id")
-          .eq("code", code)
-          .maybeSingle();
-        if (invite) {
-          const { data: owner } = await supabase
-            .from("profiles")
-            .select("display_name, avatar_url, username")
-            .eq("user_id", invite.owner_id)
-            .maybeSingle();
-          if (owner) profile = owner;
+      // Use the security-definer RPC to look up referrer info
+      const { data: referrer } = await supabase.rpc("lookup_referrer_by_code", {
+        ref_code: code,
+      });
+
+      const name = referrer?.display_name || null;
+      const ogTitle = name
+        ? `${name} invited you to UPLY`
+        : "You've been invited to UPLY";
+      const ogDesc = name
+        ? `You have exclusive early access. Join ${name} on the platform where creators turn audiences into income. Your spot won't last long.`
+        : "Exclusive early access to the creator monetization platform. Your invite is waiting.";
+
+      return new Response(
+        buildHtml({
+          title: ogTitle,
+          description: ogDesc,
+          image: DEFAULT_IMAGE,
+          url: `${SITE_URL}${path}`,
+          type: "website",
+          twitterCard: "summary_large_image",
+          siteName: "Uply",
+        }),
+        {
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "text/html; charset=utf-8",
+            "Cache-Control": "public, max-age=3600, s-maxage=86400",
+          },
         }
-      }
-
-      if (profile) {
-        const name = profile.display_name || "Someone";
-        const avatarImg = profile.avatar_url || DEFAULT_IMAGE;
-
-        return new Response(
-          buildHtml({
-            title: `${name} invited you to join UPLY`,
-            description: `Join ${name}'s community on UPLY — where creators get paid.`,
-            image: avatarImg,
-            url: `${SITE_URL}/r/${code}`,
-            type: "website",
-            twitterCard: "summary_large_image",
-            siteName: "Uply",
-          }),
-          {
-            headers: {
-              ...corsHeaders,
-              "Content-Type": "text/html; charset=utf-8",
-              "Cache-Control": "public, max-age=3600, s-maxage=86400",
-            },
-          }
-        );
-      }
+      );
     }
 
     // Match /:username/videos/:slug
