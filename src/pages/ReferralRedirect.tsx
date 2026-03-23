@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { setAffiliateCookie } from "@/lib/affiliateCookies";
+import { useAuth } from "@/context/AuthContext";
 import { Loader2, Video, DollarSign, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SEOHead from "@/components/SEOHead";
@@ -17,6 +18,7 @@ interface ReferrerInfo {
 export default function ReferralRedirect() {
   const { code, username } = useParams<{ code: string; username?: string }>();
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [referrer, setReferrer] = useState<ReferrerInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -65,7 +67,25 @@ export default function ReferralRedirect() {
 
   const firstName = referrer?.display_name?.split(" ")[0] || "Someone";
 
-  const handleAcceptInvite = () => {
+  const getPostInviteRoute = async () => {
+    if (!user) return "/auth?mode=signup";
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("onboarding_complete, is_approved")
+      .eq("user_id", user.id)
+      .single();
+
+    const onboardingComplete = (profile as any)?.onboarding_complete;
+    const isApproved = (profile as any)?.is_approved;
+
+    if (!onboardingComplete) return "/onboarding";
+    return isApproved ? "/discover" : "/waitlist";
+  };
+
+  const handleAcceptInvite = async () => {
+    if (authLoading) return;
+
     setAffiliateCookie("uply_waitlist_ref", actualCode!, 30);
     if (referrer?.display_name) {
       sessionStorage.setItem("referrer_name", referrer.display_name);
@@ -76,7 +96,9 @@ export default function ReferralRedirect() {
     if (referrer?.username) {
       sessionStorage.setItem("referrer_username", referrer.username);
     }
-    navigate("/waitlist");
+
+    const destination = await getPostInviteRoute();
+    navigate(destination, { replace: true });
   };
 
   if (loading || notFound) {

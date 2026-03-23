@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { Copy, Check, Trophy, Crown, Shield, MessageCircle, Twitter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -22,7 +23,8 @@ interface LeaderboardEntry {
 }
 
 export default function WaitlistPage() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
   const [referralCount, setReferralCount] = useState(0);
   const [rank, setRank] = useState(0);
@@ -81,13 +83,19 @@ export default function WaitlistPage() {
   };
 
   useEffect(() => {
+    if (loading) return;
+    if (!user) {
+      navigate("/auth?mode=signup", { replace: true });
+      return;
+    }
+
     fetchData();
     const channel = supabase
       .channel("waitlist-referrals-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "referrals" }, () => fetchData())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [user]);
+  }, [loading, user, navigate]);
 
   const referralCode = (profile as any)?.referral_code || "";
   const profileUsername = (profile as any)?.username || (profile as any)?.display_name;
@@ -166,6 +174,17 @@ export default function WaitlistPage() {
   };
 
   const leader = leaderboard[0];
+
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex items-center gap-3 text-muted-foreground">
+          <span className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <span>Loading…</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[100dvh] bg-background text-foreground">
