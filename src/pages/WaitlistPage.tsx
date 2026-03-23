@@ -97,17 +97,6 @@ export default function WaitlistPage() {
     return () => { supabase.removeChannel(channel); };
   }, [loading, user, navigate]);
 
-  if (loading || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex items-center gap-3 text-muted-foreground">
-          <span className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          <span>Loading…</span>
-        </div>
-      </div>
-    );
-  }
-
   const referralCode = (profile as any)?.referral_code || "";
   const profileUsername = (profile as any)?.username || (profile as any)?.display_name;
   const fullUrl = buildReferralUrl(referralCode, profileUsername);
@@ -185,6 +174,17 @@ export default function WaitlistPage() {
   };
 
   const leader = leaderboard[0];
+
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex items-center gap-3 text-muted-foreground">
+          <span className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <span>Loading…</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[100dvh] bg-background text-foreground">
