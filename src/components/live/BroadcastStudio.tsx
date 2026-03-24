@@ -41,6 +41,18 @@ import SharePanel from "@/components/share/SharePanel";
 import { getSiteUrl } from "@/lib/siteUrl";
 import { clearChunks, appendChunk, getAllChunks } from "@/lib/recordingStore";
 import { ICE_SERVERS, getRecorderOptions, getCameraConstraints } from "@/lib/webrtcConfig";
+import { useAdaptiveBitrate } from "@/hooks/useAdaptiveBitrate";
+import { useBroadcasterHealth } from "@/hooks/useBroadcasterHealth";
+import { useStreamAutoRecovery } from "@/hooks/useStreamAutoRecovery";
+import {
+  Activity,
+  ArrowUpCircle,
+  ArrowDownCircle,
+  Signal,
+  SignalHigh,
+  SignalLow,
+  SignalMedium,
+} from "lucide-react";
 
 interface Product {
   id: string;
