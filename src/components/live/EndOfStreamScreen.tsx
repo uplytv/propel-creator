@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import SharePanel from "@/components/share/SharePanel";
 import StreamToCourseDialog from "./StreamToCourseDialog";
+import AIStreamSummary from "./AIStreamSummary";
 
 interface EndOfStreamScreenProps {
   streamId: string;
@@ -158,6 +159,16 @@ export default function EndOfStreamScreen({
             <pre className="text-[10px] text-muted-foreground font-mono whitespace-pre-wrap">{chaptersDescription}</pre>
           </div>
         )}
+
+        {/* AI-Powered Stream Summary */}
+        <AIStreamSummary
+          streamId={streamId}
+          streamTitle={streamTitle}
+          durationSeconds={durationSeconds}
+          highlights={highlights}
+          chaptersDescription={chaptersDescription}
+          creatorId={creatorId}
+        />
 
         {/* Action Buttons */}
         <div className="space-y-3">

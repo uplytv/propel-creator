@@ -15,6 +15,7 @@ import ViewerRewardsBadge from "@/components/live/ViewerRewardsBadge";
 import StreamAlerts from "@/components/live/StreamAlerts";
 import LiveCaptionsOverlay from "@/components/live/LiveCaptionsOverlay";
 import RaidOverlay from "@/components/live/RaidOverlay";
+import DonationGoalOverlay from "@/components/live/DonationGoalOverlay";
 import { useViewerRewards } from "@/hooks/useViewerRewards";
 import { useLiveCaptions } from "@/hooks/useLiveCaptions";
 import { useRaidSystem } from "@/hooks/useRaidSystem";
@@ -562,6 +563,12 @@ export default function Stream() {
                     isRaiding={false}
                     raidCountdown={null}
                     incomingRaid={raidSystem.incomingRaid}
+                  />
+                  {/* Donation Goal (viewer view) */}
+                  <DonationGoalOverlay
+                    streamId={id!}
+                    isHost={false}
+                    creatorId={dbStream.user_id}
                   />
                 </>
               )}

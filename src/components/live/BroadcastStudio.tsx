@@ -67,7 +67,8 @@ import StreamAlerts, { pushStreamAlert } from "./StreamAlerts";
 import LiveCaptionsOverlay from "./LiveCaptionsOverlay";
 import RaidOverlay from "./RaidOverlay";
 import HighlightsReel from "./HighlightsReel";
-import { BarChart3, MessageCircleQuestion, UserPlus, Sparkles, Subtitles, Swords } from "lucide-react";
+import DonationGoalOverlay from "./DonationGoalOverlay";
+import { BarChart3, MessageCircleQuestion, UserPlus, Sparkles, Subtitles, Swords, Target } from "lucide-react";
 
 interface Product {
   id: string;
@@ -1106,6 +1107,7 @@ export default function BroadcastStudio({
                     >
                       <Swords className="w-4.5 h-4.5 text-white" />
                     </button>
+                    {/* Donation Goal button is handled inline by the overlay */}
                     <button
                       onClick={() => virtualBg.toggleEffect(virtualBg.effect === 'blur' ? 'none' : 'blur')}
                       className="w-10 h-10 rounded-full flex items-center justify-center"
@@ -1163,11 +1165,18 @@ export default function BroadcastStudio({
                     isActive={captions.isActive}
                   />
 
-                  {/* Raid Overlay */}
+                    {/* Raid Overlay */}
                   <RaidOverlay
                     isRaiding={raidSystem.isRaiding}
                     raidCountdown={raidSystem.raidCountdown}
                     incomingRaid={raidSystem.incomingRaid}
+                  />
+
+                  {/* Donation Goal */}
+                  <DonationGoalOverlay
+                    streamId={streamData.streamId}
+                    isHost={true}
+                    creatorId={user?.id}
                   />
 
                   {/* Raid Picker */}
