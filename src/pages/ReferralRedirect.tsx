@@ -140,24 +140,36 @@ export default function ReferralRedirect() {
         description={`Join ${firstName}'s community on UPLY — where creators get paid.`}
       />
 
-      <div className="min-h-screen flex flex-col items-center justify-start px-4 pt-12 pb-20">
+      <div className="min-h-screen flex flex-col items-center justify-start px-4 pt-10 pb-20">
+        {/* Urgency bar */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-2 mb-6 px-4 py-2 rounded-full text-xs"
+          style={{ background: "hsl(var(--primary) / 0.08)", border: "1px solid hsl(var(--primary) / 0.2)" }}
+        >
+          <Clock className="w-3 h-3 text-primary" />
+          <span className="text-muted-foreground">Invite-only access · <span className="text-primary font-semibold">Limited spots</span></span>
+        </motion.div>
+
+        {/* Avatar + name */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-8"
+          className="text-center mb-6"
         >
-          <div className="mx-auto mb-4 relative w-[72px] h-[72px]">
+          <div className="mx-auto mb-4 relative w-[80px] h-[80px]">
             {referrer?.avatar_url ? (
               <img
                 src={referrer.avatar_url}
                 alt={referrer.display_name || "Referrer"}
-                className="w-[72px] h-[72px] rounded-full object-cover"
+                className="w-[80px] h-[80px] rounded-full object-cover"
                 style={{ border: "3px solid hsl(var(--primary))" }}
               />
             ) : (
               <div
-                className="w-[72px] h-[72px] rounded-full flex items-center justify-center text-2xl font-bold"
+                className="w-[80px] h-[80px] rounded-full flex items-center justify-center text-2xl font-bold"
                 style={{
                   border: "3px solid hsl(var(--primary))",
                   background: "hsl(var(--primary) / 0.15)",
@@ -167,6 +179,8 @@ export default function ReferralRedirect() {
                 {firstName[0]?.toUpperCase()}
               </div>
             )}
+            {/* Online indicator */}
+            <div className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-primary border-2 border-background" />
           </div>
 
           <p className="text-xl font-bold text-foreground" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -191,37 +205,52 @@ export default function ReferralRedirect() {
           </div>
         </motion.div>
 
+        {/* Main card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, duration: 0.5 }}
-          className="w-full max-w-[400px] rounded-xl p-6 mb-6 bg-card border border-border"
+          className="w-full max-w-[400px] rounded-xl p-6 mb-4 bg-card border border-border"
         >
           <h1
-            className="text-[22px] sm:text-[26px] font-bold text-foreground leading-tight mb-4"
+            className="text-[22px] sm:text-[26px] font-bold text-foreground leading-tight mb-3"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           >
             {firstName} thinks you belong on UPLY.
           </h1>
-          <p className="text-[15px] text-muted-foreground leading-relaxed" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <p className="text-[15px] text-muted-foreground leading-relaxed mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             UPLY is the creator platform where you go live, build your community, host courses, and get paid directly — all in one place.
-            You keep 95% of everything you earn. {firstName} is already here and wanted you to have early access.
+            You keep <span className="text-primary font-semibold">95%</span> of everything you earn.
           </p>
+          
+          {/* Social proof stats */}
+          <div className="grid grid-cols-3 gap-2 pt-3 border-t border-border">
+            <div className="text-center">
+              <p className="text-lg font-bold text-foreground">{totalApplicants.toLocaleString()}+</p>
+              <p className="text-[10px] text-muted-foreground">Creators waiting</p>
+            </div>
+            <div className="text-center">
+              <p className="text-lg font-bold text-primary">95%</p>
+              <p className="text-[10px] text-muted-foreground">Creator earnings</p>
+            </div>
+            <div className="text-center">
+              <p className="text-lg font-bold text-foreground">5%</p>
+              <p className="text-[10px] text-muted-foreground">Platform fee</p>
+            </div>
+          </div>
         </motion.div>
 
+        {/* Live signup ticker */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.25 }}
-          className="flex items-center gap-2 text-xs text-muted-foreground mb-6 flex-wrap justify-center"
+          transition={{ delay: 0.2 }}
+          className="mb-5"
         >
-          <span>{totalApplicants.toLocaleString()} creators on the waitlist</span>
-          <span>·</span>
-          <span>95% creator earnings</span>
-          <span>·</span>
-          <span>Free to start</span>
+          <LiveSignupTicker />
         </motion.div>
 
+        {/* Primary CTA */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -230,30 +259,38 @@ export default function ReferralRedirect() {
         >
           <Button
             onClick={handleAcceptInvite}
-            className="w-full h-12 text-base font-bold bg-primary text-primary-foreground hover:bg-primary/90"
+            className="w-full h-14 text-base font-bold bg-primary text-primary-foreground hover:bg-primary/90 relative overflow-hidden group"
           >
-            Accept {firstName}'s Invite →
+            <span className="relative z-10">Accept {firstName}'s Invite →</span>
+            <motion.div
+              className="absolute inset-0 bg-white/10"
+              animate={{ x: ["-100%", "100%"] }}
+              transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+            />
           </Button>
           <p className="text-[11px] text-muted-foreground text-center">
-            Waitlist & invite only · No credit card required
+            ✓ Free to apply · ✓ No credit card · ✓ {firstName}'s invite skips the line
           </p>
         </motion.div>
 
+        {/* Exclusive perks */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="w-full max-w-[400px] mt-10 space-y-4"
+          className="w-full max-w-[400px] mt-8"
         >
           <p className="text-xs text-muted-foreground text-center uppercase tracking-wider font-semibold mb-4">
-            Why creators choose UPLY
+            What you're getting early access to
           </p>
+          
           {[
-            { icon: <Video className="w-5 h-5 text-primary flex-shrink-0" />, label: "Go Live & Get Discovered", desc: "Public streams with a built-in discovery feed" },
-            { icon: <DollarSign className="w-5 h-5 text-primary flex-shrink-0" />, label: "Get Paid Directly", desc: "Subscriptions, tips, courses, and live commerce" },
-            { icon: <Bot className="w-5 h-5 text-primary flex-shrink-0" />, label: "ARIA AI Growth Partner", desc: "Your personal AI advisor powered by Claude" },
+            { icon: <Video className="w-5 h-5 text-primary flex-shrink-0" />, label: "Go Live & Get Discovered", desc: "Stream to a built-in audience. Tips, reactions, and live shopping." },
+            { icon: <DollarSign className="w-5 h-5 text-primary flex-shrink-0" />, label: "7 Revenue Streams", desc: "Subscriptions, tips, courses, events, DMs, products, affiliates." },
+            { icon: <Bot className="w-5 h-5 text-primary flex-shrink-0" />, label: "ARIA AI Growth Partner", desc: "Your personal AI advisor that helps you grow and earn more." },
+            { icon: <Shield className="w-5 h-5 text-primary flex-shrink-0" />, label: "Founding Creator Perks", desc: "Early members get permanent benefits and 0% fee opportunities." },
           ].map((f) => (
-            <div key={f.label} className="flex items-start gap-3 p-3 rounded-lg bg-card border border-border">
+            <div key={f.label} className="flex items-start gap-3 p-3 rounded-lg bg-card border border-border mb-2">
               {f.icon}
               <div>
                 <p className="text-sm font-semibold text-foreground">{f.label}</p>
@@ -263,10 +300,24 @@ export default function ReferralRedirect() {
           ))}
         </motion.div>
 
+        {/* Testimonial-style social proof */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="w-full max-w-[400px] mt-8 rounded-xl p-5 bg-card border border-border text-center"
+        >
+          <p className="text-sm text-foreground italic leading-relaxed mb-3">
+            "I was late to YouTube, late to Twitch. When {firstName} sent me this link, I knew this was different. The waitlist is real — apply before it closes."
+          </p>
+          <p className="text-xs text-muted-foreground">— What early creators are saying</p>
+        </motion.div>
+
+        {/* Bottom CTA */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.55 }}
           className="w-full max-w-[400px] mt-8"
         >
           <Button
@@ -275,6 +326,9 @@ export default function ReferralRedirect() {
           >
             Accept Your Invite →
           </Button>
+          <p className="text-[10px] text-muted-foreground text-center mt-2">
+            🔒 Your spot is reserved for 48 hours
+          </p>
         </motion.div>
       </div>
     </div>
