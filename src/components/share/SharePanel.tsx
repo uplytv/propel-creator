@@ -414,8 +414,8 @@ export default function SharePanel({
               {`<iframe src="${contentUrl}?embed=true" width="560" height="315" frameborder="0" allowfullscreen style="border-radius:12px;"></iframe>`}
             </code>
             <button
-              onClick={() => {
-                navigator.clipboard.writeText(`<iframe src="${contentUrl}?embed=true" width="560" height="315" frameborder="0" allowfullscreen style="border-radius:12px;"></iframe>`);
+              onClick={async () => {
+                await safeClipboard(`<iframe src="${contentUrl}?embed=true" width="560" height="315" frameborder="0" allowfullscreen style="border-radius:12px;"></iframe>`);
                 toast({ title: "Embed code copied ✓" });
               }}
               className="text-xs text-primary hover:underline"
