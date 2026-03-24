@@ -196,7 +196,12 @@ function InsightCard({ insight, onDismiss }: { insight: AriaInsight; onDismiss: 
           <X className="w-3 h-3" />
         </button>
       </div>
-      {insight.action_label && (
+      {insight.action_label && insight.action_url && (
+        <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => window.location.href = insight.action_url!}>
+          {insight.action_label} <ChevronRight className="w-3 h-3 ml-1" />
+        </Button>
+      )}
+      {insight.action_label && !insight.action_url && (
         <Button size="sm" variant="outline" className="text-xs h-7">
           {insight.action_label} <ChevronRight className="w-3 h-3 ml-1" />
         </Button>

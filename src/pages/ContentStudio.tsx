@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sparkles, Film, MessageSquare, FileText, Mail, BookOpen, ShoppingBag,
@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useAriaJobs, useAriaGeneratedContent, useUpdateContentStatus, useBulkUpdateContentStatus, useStartAriaJob } from "@/hooks/useAriaContentEngine";
+import UPLYMuxPlayer from "@/components/MuxPlayer";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -86,11 +87,13 @@ function ContentCard({
   selected,
   onToggleSelect,
   onUpdateStatus,
+  onPlayClip,
 }: {
   item: any;
   selected: boolean;
   onToggleSelect: () => void;
   onUpdateStatus: (status: string) => void;
+  onPlayClip?: (playbackId: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const { toast } = useToast();
@@ -137,7 +140,10 @@ function ContentCard({
               {duration}
             </span>
           )}
-          <button className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/40 transition-colors">
+          <button
+            onClick={() => item.mux_clip_playback_id && onPlayClip?.(item.mux_clip_playback_id)}
+            className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/40 transition-colors"
+          >
             <Play className="w-8 h-8 text-white" />
           </button>
         </div>
@@ -224,6 +230,7 @@ export default function ContentStudio() {
 
   const [activeTab, setActiveTab] = useState("all");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [playingClipId, setPlayingClipId] = useState<string | null>(null);
 
   const activeJobs = useMemo(
     () => (jobs || []).filter((j: any) => !["completed", "failed"].includes(j.status)),
@@ -390,6 +397,7 @@ export default function ContentStudio() {
                 selected={selectedIds.has(item.id)}
                 onToggleSelect={() => toggleSelect(item.id)}
                 onUpdateStatus={(status) => updateStatus.mutate({ contentId: item.id, status })}
+                onPlayClip={(playbackId) => setPlayingClipId(playbackId)}
               />
             ))}
           </div>
@@ -406,6 +414,38 @@ export default function ContentStudio() {
             </div>
           </div>
         )}
+        {/* Clip Player Modal */}
+        <AnimatePresence>
+          {playingClipId && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+              onClick={() => setPlayingClipId(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.9 }}
+                className="w-full max-w-2xl rounded-xl overflow-hidden bg-card border border-border"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="relative aspect-video bg-black">
+                  <UPLYMuxPlayer playbackId={playingClipId} autoPlay title="Clip Preview" />
+                </div>
+                <div className="p-3 flex justify-end">
+                  <button
+                    onClick={() => setPlayingClipId(null)}
+                    className="px-3 py-1.5 rounded-lg bg-secondary text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </AppLayout>
   );

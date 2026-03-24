@@ -282,7 +282,7 @@ export function CreatorDashboardPanel({
                 <Users className="w-2.5 h-2.5" /> {totalSubs} new
               </span>
               <div className="flex-1" />
-              <span className="text-[10px] text-white/20">📎 Clip — coming soon</span>
+              <span className="text-[10px] text-white/40">📎 Clips auto-generated after stream ends</span>
             </div>
           </motion.div>
         )}
