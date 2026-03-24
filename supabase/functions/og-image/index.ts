@@ -257,23 +257,26 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Match /:username (creator profile)
-    const profileMatch = path.match(/^\/([^/]+)$/);
+    // Match /creator/:username or /:username (creator profile)
+    const profileMatch = path.match(/^\/creator\/([^/]+)$/) || path.match(/^\/([^/]+)$/);
     if (profileMatch) {
       const [, username] = profileMatch;
       const { data: profile } = await supabase
         .from("profiles")
-        .select("display_name, avatar_url, bio, username")
-        .eq("username", username)
+        .select("display_name, avatar_url, bio, username, creator_type")
+        .eq("username", decodeURIComponent(username))
         .maybeSingle();
 
       if (profile) {
+        const spaceBio = profile.bio || `Check out ${profile.display_name || username} on UPLY`;
+        const creatorType = profile.creator_type ? ` · ${profile.creator_type}` : "";
+
         return new Response(
           buildHtml({
-            title: `${profile.display_name || username} on UPLY`,
-            description: profile.bio || `Check out ${profile.display_name || username} on UPLY`,
+            title: `${profile.display_name || username}${creatorType} — UPLY`,
+            description: spaceBio.length > 160 ? spaceBio.slice(0, 157) + "…" : spaceBio,
             image: profile.avatar_url || DEFAULT_IMAGE,
-            url: `${SITE_URL}${path}`,
+            url: `${SITE_URL}/creator/${encodeURIComponent(profile.username || username)}`,
             type: "profile",
             twitterCard: "summary_large_image",
             siteName: "Uply",
