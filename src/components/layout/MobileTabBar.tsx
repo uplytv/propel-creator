@@ -13,6 +13,7 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [createOpen, setCreateOpen] = useState(false);
+  const [ariaOpen, setAriaOpen] = useState(false);
 
   const communityPath = user ? `/community/${user.id}` : "/dashboard";
 
