@@ -1,11 +1,12 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, WifiOff, RefreshCw, PictureInPicture2, Maximize, Minimize, Wifi, Radio } from 'lucide-react';
+import { Loader2, WifiOff, RefreshCw, PictureInPicture2, Maximize, Minimize, Wifi, Radio, Scissors } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAutoPip } from '@/hooks/useAutoPip';
 import { ICE_SERVERS, preferLowLatencyCodecs } from '@/lib/webrtcConfig';
 import { useConnectionQuality } from '@/hooks/useConnectionQuality';
 import Hls from 'hls.js';
+import ViewerClipButton from './ViewerClipButton';
 
 interface WebRTCPlayerProps {
   streamId: string;
@@ -386,6 +387,8 @@ export default function WebRTCPlayer({ streamId, playbackId, title, className }:
               <PictureInPicture2 className={`w-4 h-4 ${isPip ? 'text-primary' : ''}`} />
             </button>
           )}
+          {/* Viewer clip button */}
+          <ViewerClipButton videoRef={videoRef} isPlaying={status === 'playing'} />
           <button
             onClick={toggleFullscreen}
             className="p-2 rounded-lg bg-black/40 backdrop-blur-sm text-white hover:bg-black/60 transition-colors"

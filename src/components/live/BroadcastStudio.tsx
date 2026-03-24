@@ -53,6 +53,13 @@ import {
   SignalLow,
   SignalMedium,
 } from "lucide-react";
+import { enableSimulcast } from "@/lib/simulcast";
+import { useStreamAnalytics } from "@/hooks/useStreamAnalytics";
+import { useVirtualBackground } from "@/hooks/useVirtualBackground";
+import { LivePollOverlay } from "./LivePollOverlay";
+import GuestCoStreamPanel from "./GuestCoStreamPanel";
+import StreamAnalyticsPanel from "./StreamAnalyticsPanel";
+import { BarChart3, MessageCircleQuestion, UserPlus, Sparkles } from "lucide-react";
 
 interface Product {
   id: string;
@@ -237,6 +244,14 @@ export default function BroadcastStudio({
   const lastTapRef = useRef<number>(0);
   const [liveChatInput, setLiveChatInput] = useState("");
   const [liveChatProfile, setLiveChatProfile] = useState<{ display_name: string; avatar_url: string | null } | null>(null);
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showPollCreator, setShowPollCreator] = useState(false);
+
+  // Stream analytics (real-time dashboard)
+  const streamAnalytics = useStreamAnalytics(streamData.streamId, isRecording);
+
+  // Virtual background
+  const virtualBg = useVirtualBackground(streamRef, videoRef);
 
   // Load profile for live chat
   useEffect(() => {
@@ -531,6 +546,9 @@ export default function BroadcastStudio({
         streamRef.current.getTracks().forEach(track => {
           pc.addTrack(track, streamRef.current!);
         });
+
+        // Enable simulcast for per-viewer adaptive quality
+        enableSimulcast(pc);
 
         pc.onicecandidate = (event) => {
           if (event.candidate) {
@@ -1013,7 +1031,7 @@ export default function BroadcastStudio({
                     </div>
                   </div>
 
-                  {/* Right-side action buttons — Copy Link, Share, Flip, Mute */}
+                  {/* Right-side action buttons */}
                   <div className="absolute right-3 bottom-28 z-20 flex flex-col gap-3 items-center">
                     <button
                       onClick={async () => {
@@ -1038,6 +1056,27 @@ export default function BroadcastStudio({
                       <Share2 className="w-4.5 h-4.5 text-white" />
                     </button>
                     <button
+                      onClick={() => setShowAnalytics(!showAnalytics)}
+                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: showAnalytics ? "rgba(0,255,133,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
+                    >
+                      <BarChart3 className="w-4.5 h-4.5 text-white" />
+                    </button>
+                    <button
+                      onClick={() => setShowPollCreator(true)}
+                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
+                    >
+                      <MessageCircleQuestion className="w-4.5 h-4.5 text-white" />
+                    </button>
+                    <button
+                      onClick={() => virtualBg.toggleEffect(virtualBg.effect === 'blur' ? 'none' : 'blur')}
+                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: virtualBg.effect !== 'none' ? "rgba(168,85,247,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
+                    >
+                      <Sparkles className="w-4.5 h-4.5 text-white" />
+                    </button>
+                    <button
                       onClick={flipCamera}
                       className="w-10 h-10 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
@@ -1052,6 +1091,30 @@ export default function BroadcastStudio({
                       {micOn ? <Mic className="w-4.5 h-4.5 text-white" /> : <MicOff className="w-4.5 h-4.5 text-white" />}
                     </button>
                   </div>
+
+                  {/* Live Analytics Panel */}
+                  <AnimatePresence>
+                    {showAnalytics && (
+                      <div className="absolute bottom-32 left-3 right-16 z-20">
+                        <StreamAnalyticsPanel
+                          analytics={streamAnalytics.analytics}
+                          isLive={isRecording}
+                          onClose={() => setShowAnalytics(false)}
+                        />
+                      </div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Guest Co-Stream Panel */}
+                  <GuestCoStreamPanel streamId={streamData.streamId} isHost={true} />
+
+                  {/* Live Polls & Q&A */}
+                  <LivePollOverlay
+                    streamId={streamData.streamId}
+                    isHost={true}
+                    userId={user?.id}
+                    username={liveChatProfile?.display_name}
+                  />
 
                   {/* End Stream Confirmation Overlay */}
                   <AnimatePresence>
