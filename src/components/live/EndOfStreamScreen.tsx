@@ -57,6 +57,7 @@ export default function EndOfStreamScreen({
   const [courseOpen, setCourseOpen] = useState(false);
   const { downloadRecording, downloading, progress: downloadProgress } = useStreamDownload();
   const autoClips = useAutoClipAI(streamId, creatorId);
+  const streamAchievements = useStreamAchievements();
 
   useEffect(() => {
     const fetchStats = async () => {
