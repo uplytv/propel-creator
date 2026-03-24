@@ -104,16 +104,15 @@ export default function Stream() {
   const [shareOpen, setShareOpen] = useState(false);
   const [memberAccess, setMemberAccess] = useState<boolean | null>(null);
 
+  const searchParams = new URLSearchParams(window.location.search);
+  const contentType = searchParams.get('type');
+  const isFromCreatorRoute = !!routeUsername;
+  const isVod = contentType === 'vod' || contentType === 'recording' || isFromCreatorRoute;
+
   // Viewer features
   const viewerRewards = useViewerRewards(!!dbStream && dbStream.status === 'active' && !isVod);
   const viewerCaptions = useLiveCaptions();
   const raidSystem = useRaidSystem(id, false);
-
-  const searchParams = new URLSearchParams(window.location.search);
-  const contentType = searchParams.get('type'); // 'vod' | 'recording' | null
-  // Auto-detect: if accessed via /creator/:username/videos/:id, it's a video
-  const isFromCreatorRoute = !!routeUsername;
-  const isVod = contentType === 'vod' || contentType === 'recording' || isFromCreatorRoute;
 
   useEffect(() => {
     const fetchStream = async () => {
