@@ -1194,7 +1194,71 @@ export default function BroadcastStudio({
                     incomingRaid={raidSystem.incomingRaid}
                   />
 
-                  {/* Donation Goal */}
+                  {/* Stream Predictions Overlay */}
+                  <StreamPredictionOverlay
+                    predictions={predictions.predictions}
+                    isCreator={true}
+                    onPlaceBet={predictions.placeBet}
+                    onResolve={predictions.resolvePrediction}
+                    userBets={predictions.userBets}
+                  />
+
+                  {/* Prediction Creator Modal */}
+                  <AnimatePresence>
+                    {showPredictionCreator && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        className="absolute bottom-32 left-3 right-16 z-25"
+                      >
+                        <div className="rounded-xl p-3 space-y-2 bg-background/95 backdrop-blur-md border border-border">
+                          <p className="text-xs font-bold text-foreground">🎰 Create Prediction</p>
+                          <input
+                            className="w-full text-xs bg-secondary/50 border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground"
+                            placeholder="Will I beat this boss?"
+                            value={predQuestion}
+                            onChange={e => setPredQuestion(e.target.value)}
+                          />
+                          {predOptions.map((opt, i) => (
+                            <input
+                              key={i}
+                              className="w-full text-xs bg-secondary/50 border border-border rounded-lg px-3 py-1.5 text-foreground placeholder:text-muted-foreground"
+                              placeholder={`Option ${i + 1}`}
+                              value={opt}
+                              onChange={e => {
+                                const updated = [...predOptions];
+                                updated[i] = e.target.value;
+                                setPredOptions(updated);
+                              }}
+                            />
+                          ))}
+                          <div className="flex gap-2">
+                            {predOptions.length < 4 && (
+                              <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={() => setPredOptions(prev => [...prev, ""])}>
+                                + Option
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="default"
+                              className="h-7 text-[10px] ml-auto"
+                              disabled={!predQuestion || predOptions.filter(Boolean).length < 2}
+                              onClick={() => {
+                                predictions.createPrediction(predQuestion, predOptions.filter(Boolean));
+                                setPredQuestion("");
+                                setPredOptions(["", ""]);
+                                setShowPredictionCreator(false);
+                              }}
+                            >
+                              Start Prediction
+                            </Button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   <DonationGoalOverlay
                     streamId={streamData.streamId}
                     isHost={true}
