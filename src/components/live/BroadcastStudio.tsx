@@ -62,6 +62,10 @@ import { useRaidSystem } from "@/hooks/useRaidSystem";
 import { useVODChapters } from "@/hooks/useVODChapters";
 import { useStreamPredictions } from "@/hooks/useStreamPredictions";
 import { useCreatorSoundboard } from "@/hooks/useCreatorSoundboard";
+import { useLiveAuction } from "@/hooks/useLiveAuction";
+import { useCollaborativeWhiteboard } from "@/hooks/useCollaborativeWhiteboard";
+import { useStreamOverlayThemes } from "@/hooks/useStreamOverlayThemes";
+import { useViewerHeatmap } from "@/hooks/useViewerHeatmap";
 import { LivePollOverlay } from "./LivePollOverlay";
 import GuestCoStreamPanel from "./GuestCoStreamPanel";
 import StreamAnalyticsPanel from "./StreamAnalyticsPanel";
@@ -72,7 +76,11 @@ import HighlightsReel from "./HighlightsReel";
 import DonationGoalOverlay from "./DonationGoalOverlay";
 import StreamPredictionOverlay from "./StreamPredictionOverlay";
 import CreatorSoundboard from "./CreatorSoundboard";
-import { BarChart3, MessageCircleQuestion, UserPlus, Sparkles, Subtitles, Swords, Target, Gamepad2, Music } from "lucide-react";
+import LiveAuctionOverlay from "./LiveAuctionOverlay";
+import WhiteboardOverlay from "./WhiteboardOverlay";
+import OverlayThemePicker from "./OverlayThemePicker";
+import ViewerHeatmapPanel from "./ViewerHeatmapPanel";
+import { BarChart3, MessageCircleQuestion, UserPlus, Sparkles, Subtitles, Swords, Target, Gamepad2, Music, Gavel, PenTool, Palette } from "lucide-react";
 
 interface Product {
   id: string;
