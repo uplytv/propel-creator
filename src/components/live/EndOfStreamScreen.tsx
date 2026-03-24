@@ -37,6 +37,8 @@ export default function EndOfStreamScreen({
   durationSeconds,
   onClose,
   username,
+  highlights = [],
+  chaptersDescription,
 }: EndOfStreamScreenProps) {
   const [stats, setStats] = useState<StreamStats>({
     peakViewers: 0,
