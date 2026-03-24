@@ -942,10 +942,14 @@ export default function BroadcastStudio({
                   {/* Right-side action buttons — Copy Link, Share, Flip, Mute */}
                   <div className="absolute right-3 bottom-28 z-20 flex flex-col gap-3 items-center">
                     <button
-                      onClick={() => {
-                        const liveUrl = `https://uply.tv/stream/${streamData.streamId}`;
-                        navigator.clipboard.writeText(liveUrl);
-                        toast({ title: "Live link copied ✓", description: liveUrl });
+                      onClick={async () => {
+                        const liveUrl = `${getSiteUrl()}/stream/${streamData.streamId}`;
+                        const ok = await safeClipboardWrite(liveUrl);
+                        if (ok) {
+                          toast({ title: "Live link copied ✓", description: liveUrl });
+                        } else {
+                          toast({ title: "Could not copy link", variant: "destructive" });
+                        }
                       }}
                       className="w-10 h-10 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
