@@ -698,10 +698,14 @@ export default function BroadcastStudio({
     return `${m}:${s}`;
   };
 
-  const copyToClipboard = (text: string, field: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedField(field);
-    setTimeout(() => setCopiedField(null), 2000);
+  const copyToClipboard = async (text: string, field: string) => {
+    const ok = await safeClipboardWrite(text);
+    if (ok) {
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+    } else {
+      toast({ title: "Could not copy", description: "Please copy manually", variant: "destructive" });
+    }
   };
 
   // Cleanup on unmount
