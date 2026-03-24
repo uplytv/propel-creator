@@ -71,6 +71,7 @@ const Events = lazy(() => import("./pages/Events"));
 const CreateEvent = lazy(() => import("./pages/CreateEvent"));
 const EventPage = lazy(() => import("./pages/EventPage"));
 const TicketDetail = lazy(() => import("./pages/TicketDetail"));
+const ContentStudio = lazy(() => import("./pages/ContentStudio"));
 
 const queryClient = new QueryClient({
   defaultOptions: {

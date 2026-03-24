@@ -22,13 +22,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 import { format, isBefore } from "date-fns";
 
-type SettingsTab = "profile" | "notifications" | "subscriptions" | "tickets" | "account";
+type SettingsTab = "profile" | "notifications" | "subscriptions" | "tickets" | "aria" | "account";
+
+const AriaSettingsSection = lazy(() => import("@/components/aria/AriaSettingsSection"));
 
 const tabs = [
   { id: "profile" as const, label: "Profile", icon: User },
   { id: "notifications" as const, label: "Notifications", icon: Bell },
   { id: "subscriptions" as const, label: "Subscriptions", icon: Users },
   { id: "tickets" as const, label: "My Tickets", icon: Ticket },
+  { id: "aria" as const, label: "ARIA Agent", icon: Bot },
   { id: "account" as const, label: "Account", icon: Shield },
 ];
 
