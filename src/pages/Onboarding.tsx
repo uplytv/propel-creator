@@ -249,21 +249,24 @@ export default function Onboarding() {
     if (refCode) {
       const { data: referrerProfile } = await supabase
         .from("profiles")
-        .select("user_id, display_name")
+        .select("user_id, display_name, username")
         .eq("referral_code", refCode)
         .maybeSingle();
 
       if (referrerProfile && (referrerProfile as any).user_id !== user.id) {
         const referrerId = (referrerProfile as any).user_id;
-        // Get updated referral count
+        const referrerDisplayName = (referrerProfile as any).display_name || "Creator";
+        // Get updated referral count & position
         const { data: referrerWaitlist } = await supabase
           .from("waitlist" as any)
-          .select("referral_count")
+          .select("referral_count, position")
           .eq("referral_code", refCode)
           .maybeSingle() as any;
         const newCount = referrerWaitlist?.referral_count || 0;
+        const referrerPosition = referrerWaitlist?.position || 0;
         const remaining = Math.max(0, 25 - newCount);
 
+        // In-platform notification
         await supabase.from("notifications").insert({
           user_id: referrerId,
           type: "referral_signup",
@@ -271,8 +274,43 @@ export default function Onboarding() {
           message: `Your referral count is now ${newCount}. ${remaining > 0 ? `${remaining} more to reach Founding Creator status.` : "You've reached Founding Creator! 👑"}`,
           actor_id: user.id,
         });
+
+        // Email notification to referrer (fire and forget)
+        const { data: referrerAuth } = await supabase.rpc("lookup_referrer_by_code", { ref_code: refCode });
+        const referrerEmail = await supabase.from("waitlist" as any).select("email").eq("referral_code", refCode).maybeSingle() as any;
+        const rEmail = referrerEmail?.data?.email;
+        if (rEmail) {
+          const { buildReferralUrl: buildUrl } = await import("@/lib/referralUrls");
+          supabase.functions.invoke("send-referral-email", {
+            body: {
+              type: "referrer_notification",
+              referrerEmail: rEmail,
+              referrerName: referrerDisplayName,
+              applicantName: `${firstName.trim()} ${lastName.trim()}`.trim(),
+              newCount,
+              position: referrerPosition,
+              referralLink: buildUrl(refCode, (referrerProfile as any).username),
+            },
+          }).catch(() => {});
+        }
       }
     }
+
+    // Send welcome email to the new applicant (fire and forget)
+    const applicantFullName = `${firstName.trim()} ${lastName.trim()}`.trim();
+    const { count: totalCount } = await supabase.from("waitlist" as any).select("*", { count: "exact", head: true }) as any;
+    const applicantPosition = waitlistRow?.position || 0;
+    const { buildReferralUrl: buildRefUrl } = await import("@/lib/referralUrls");
+    supabase.functions.invoke("send-referral-email", {
+      body: {
+        type: "welcome_applicant",
+        applicantEmail: user.email,
+        applicantName: applicantFullName,
+        position: applicantPosition,
+        referralLink: buildRefUrl(updatedRefCode, updatedUsername),
+        total: totalCount || applicantPosition,
+      },
+    }).catch(() => {});
 
     // Clear referral cookies
     clearAffiliateCookie("uply_waitlist_ref");

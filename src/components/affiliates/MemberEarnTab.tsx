@@ -1,10 +1,11 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Copy, Check, DollarSign, MousePointerClick, Users, ExternalLink, TrendingUp } from "lucide-react";
-import { SITE_URL } from "@/lib/siteUrl";
+import { buildReferralUrl } from "@/lib/referralUrls";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMemberAffiliateCode, useMemberAffiliateStats } from "@/hooks/useAffiliates";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MemberEarnTabProps {
   programId: string;
@@ -42,11 +43,23 @@ export function MemberEarnTab({ programId, creatorId }: MemberEarnTabProps) {
   const [copied, setCopied] = useState(false);
   const { data: codeData, isLoading: codeLoading } = useMemberAffiliateCode(programId);
   const { data: stats, isLoading: statsLoading } = useMemberAffiliateStats(programId);
+  const [profileUsername, setProfileUsername] = useState<string | null>(null);
 
   const isLoading = codeLoading || statsLoading;
 
+  useEffect(() => {
+    const fetchUsername = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: prof } = await supabase.from("profiles").select("username, display_name").eq("user_id", user.id).maybeSingle();
+        if (prof) setProfileUsername((prof as any).username || (prof as any).display_name);
+      }
+    };
+    fetchUsername();
+  }, []);
+
   const affiliateLink = codeData?.code
-    ? `${SITE_URL}/community/${creatorId}?ref=${codeData.code}`
+    ? buildReferralUrl(codeData.code, profileUsername)
     : "";
 
   const handleCopy = () => {
