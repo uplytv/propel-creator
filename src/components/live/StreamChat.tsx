@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Crown, Coins, Pin, PinOff, Star } from "lucide-react";
+import { Send, Crown, Coins, Pin, PinOff, Star, Smile } from "lucide-react";
+import ChatEmotePicker from "./ChatEmoteSystem";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useStreamEngagement, type LiveChatMessage } from "@/hooks/useStreamEngagement";
