@@ -293,7 +293,21 @@ export default function BroadcastStudio({
   // Creator soundboard
   const soundboard = useCreatorSoundboard();
 
+  // Live auction
+  const liveAuction = useLiveAuction(streamData.streamId, true);
+
+  // Collaborative whiteboard
+  const whiteboard = useCollaborativeWhiteboard();
+
+  // Overlay themes
+  const overlayThemes = useStreamOverlayThemes();
+
+  // Viewer heatmap
+  const viewerHeatmap = useViewerHeatmap(streamData.streamId);
+
   const [showPredictionCreator, setShowPredictionCreator] = useState(false);
+  const [showThemePicker, setShowThemePicker] = useState(false);
+  const [showHeatmap, setShowHeatmap] = useState(false);
   const [predQuestion, setPredQuestion] = useState("");
   const [predOptions, setPredOptions] = useState(["", ""]);
 
