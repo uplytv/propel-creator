@@ -262,6 +262,18 @@ export default function BroadcastStudio({
   // Virtual background
   const virtualBg = useVirtualBackground(streamRef, videoRef);
 
+  // Stream highlights tracking
+  const highlights = useStreamHighlights();
+
+  // Live captions (speech-to-text)
+  const captions = useLiveCaptions();
+
+  // Raid system
+  const raidSystem = useRaidSystem(streamData.streamId, true);
+
+  // VOD chapters
+  const vodChapters = useVODChapters();
+
   // Load profile for live chat
   useEffect(() => {
     if (!user) return;
