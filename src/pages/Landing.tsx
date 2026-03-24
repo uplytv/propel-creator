@@ -299,12 +299,15 @@ export default function Landing() {
               transition={{ delay: 0.1, duration: 0.6 }}
             />
 
-            <h1 className="text-[2.5rem] md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.05] mb-6 font-heading">
-              Run Your Entire Creator Business With AI
+            <h1 className="text-[2.5rem] md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.05] mb-2 font-heading">
+              Don't be late again.
             </h1>
+            <p className="text-lg md:text-2xl font-semibold text-[#00FF85] mb-6 font-heading tracking-tight">
+              Run your entire creator business with AI.
+            </p>
 
             <p className="text-base md:text-lg text-white/40 mb-10 max-w-lg mx-auto leading-relaxed italic">
-              Every creator on UPLY gets 5 AI employees — Content, Growth, Community, Sales, and Operations — working around the clock so you can focus on creating.
+              5 AI employees — Content, Growth, Community, Sales &amp; Operations — working 24/7 so you can focus on creating.
             </p>
 
             {/* Stat pills */}
