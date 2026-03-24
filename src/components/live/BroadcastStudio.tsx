@@ -40,6 +40,7 @@ import { useStreamEngagement } from "@/hooks/useStreamEngagement";
 import SharePanel from "@/components/share/SharePanel";
 import { getSiteUrl } from "@/lib/siteUrl";
 import { clearChunks, appendChunk, getAllChunks } from "@/lib/recordingStore";
+import { ICE_SERVERS, getRecorderOptions, getCameraConstraints } from "@/lib/webrtcConfig";
 
 interface Product {
   id: string;
