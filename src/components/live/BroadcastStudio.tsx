@@ -66,6 +66,8 @@ import { useLiveAuction } from "@/hooks/useLiveAuction";
 import { useCollaborativeWhiteboard } from "@/hooks/useCollaborativeWhiteboard";
 import { useStreamOverlayThemes } from "@/hooks/useStreamOverlayThemes";
 import { useViewerHeatmap } from "@/hooks/useViewerHeatmap";
+import { useLiveQuiz } from "@/hooks/useLiveQuiz";
+import { useViewerSentiment } from "@/hooks/useViewerSentiment";
 import { LivePollOverlay } from "./LivePollOverlay";
 import GuestCoStreamPanel from "./GuestCoStreamPanel";
 import StreamAnalyticsPanel from "./StreamAnalyticsPanel";
@@ -80,7 +82,9 @@ import LiveAuctionOverlay from "./LiveAuctionOverlay";
 import WhiteboardOverlay from "./WhiteboardOverlay";
 import OverlayThemePicker from "./OverlayThemePicker";
 import ViewerHeatmapPanel from "./ViewerHeatmapPanel";
-import { BarChart3, MessageCircleQuestion, UserPlus, Sparkles, Subtitles, Swords, Target, Gamepad2, Music, Gavel, PenTool, Palette } from "lucide-react";
+import ViewerSentimentOverlay from "./ViewerSentimentOverlay";
+import { LiveQuizOverlay, QuizCreatorPanel } from "./LiveQuizOverlay";
+import { BarChart3, MessageCircleQuestion, UserPlus, Sparkles, Subtitles, Swords, Target, Gamepad2, Music, Gavel, PenTool, Palette, Brain, SmilePlus } from "lucide-react";
 
 interface Product {
   id: string;
@@ -305,9 +309,16 @@ export default function BroadcastStudio({
   // Viewer heatmap
   const viewerHeatmap = useViewerHeatmap(streamData.streamId);
 
+  // Live quiz
+  const liveQuiz = useLiveQuiz(streamData.streamId, true);
+
+  // Viewer sentiment
+  const sentiment = useViewerSentiment(streamData.streamId);
+
   const [showPredictionCreator, setShowPredictionCreator] = useState(false);
   const [showThemePicker, setShowThemePicker] = useState(false);
   const [showHeatmap, setShowHeatmap] = useState(false);
+  const [showQuizCreator, setShowQuizCreator] = useState(false);
   const [predQuestion, setPredQuestion] = useState("");
   const [predOptions, setPredOptions] = useState(["", ""]);
 
@@ -1335,6 +1346,33 @@ export default function BroadcastStudio({
                       </div>
                     )}
                   </AnimatePresence>
+
+                  {/* Viewer Sentiment Overlay */}
+                  <div className="absolute top-20 left-3 z-20 w-48">
+                    <ViewerSentimentOverlay sentiment={sentiment} />
+                  </div>
+
+                  {/* Live Quiz */}
+                  <AnimatePresence>
+                    {showQuizCreator && (
+                      <div className="absolute bottom-32 left-3 right-16 z-25">
+                        <div className="glass-card p-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-bold text-foreground">🧠 Create Quiz</span>
+                            <button onClick={() => setShowQuizCreator(false)} className="text-muted-foreground hover:text-foreground">
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <QuizCreatorPanel onStartQuiz={(qs) => { liveQuiz.startQuiz(qs); setShowQuizCreator(false); }} />
+                        </div>
+                      </div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Live Quiz Overlay (creator view) */}
+                  <div className="absolute bottom-32 right-3 z-20 w-64">
+                    <LiveQuizOverlay quiz={liveQuiz.quiz} isCreator={true} onSubmitAnswer={() => {}} />
+                  </div>
 
                   <DonationGoalOverlay
                     streamId={streamData.streamId}

@@ -12,6 +12,8 @@ import AIStreamSummary from "./AIStreamSummary";
 import AutoClipSuggestions from "./AutoClipSuggestions";
 import { useStreamDownload } from "@/hooks/useStreamDownload";
 import { useAutoClipAI } from "@/hooks/useAutoClipAI";
+import { useStreamAchievements } from "@/hooks/useStreamAchievements";
+import StreamAchievements from "./StreamAchievements";
 
 interface EndOfStreamScreenProps {
   streamId: string;
@@ -55,6 +57,7 @@ export default function EndOfStreamScreen({
   const [courseOpen, setCourseOpen] = useState(false);
   const { downloadRecording, downloading, progress: downloadProgress } = useStreamDownload();
   const autoClips = useAutoClipAI(streamId, creatorId);
+  const streamAchievements = useStreamAchievements();
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -184,6 +187,15 @@ export default function EndOfStreamScreen({
           onCreateClip={(s) => muxAssetId ? autoClips.createClip(s, muxAssetId) : undefined}
           onSkip={autoClips.skipClip}
           hasHighlights={highlights.length > 0}
+        />
+
+        {/* Stream Achievements */}
+        <StreamAchievements
+          achievements={streamAchievements.achievements}
+          unlockedCount={streamAchievements.unlockedCount}
+          totalCount={streamAchievements.totalCount}
+          progressPercent={streamAchievements.progressPercent}
+          loading={streamAchievements.loading}
         />
 
         {/* Action Buttons */}
