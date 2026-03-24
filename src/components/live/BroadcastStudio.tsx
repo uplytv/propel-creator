@@ -40,6 +40,7 @@ import { useStreamEngagement } from "@/hooks/useStreamEngagement";
 import SharePanel from "@/components/share/SharePanel";
 import { getSiteUrl } from "@/lib/siteUrl";
 import { clearChunks, appendChunk, getAllChunks } from "@/lib/recordingStore";
+import { ICE_SERVERS, getRecorderOptions, getCameraConstraints } from "@/lib/webrtcConfig";
 
 interface Product {
   id: string;
@@ -330,10 +331,8 @@ export default function BroadcastStudio({
     stopCurrentStream();
     setMediaError(null);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: facing },
-        audio: true,
-      });
+      const constraints = getCameraConstraints(facing);
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
@@ -476,30 +475,7 @@ export default function BroadcastStudio({
     }
   };
 
-  // WebRTC host
-  const ICE_SERVERS: RTCConfiguration = {
-    iceServers: [
-      { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' },
-      { urls: 'stun:stun2.l.google.com:19302' },
-      { urls: 'stun:stun3.l.google.com:19302' },
-      {
-        urls: 'turn:openrelay.metered.ca:80',
-        username: 'openrelayproject',
-        credential: 'openrelayproject',
-      },
-      {
-        urls: 'turn:openrelay.metered.ca:443',
-        username: 'openrelayproject',
-        credential: 'openrelayproject',
-      },
-      {
-        urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-        username: 'openrelayproject',
-        credential: 'openrelayproject',
-      },
-    ],
-  };
+  // WebRTC host — uses shared optimized config
 
   const startWebRTCHost = useCallback(() => {
     const channel = supabase.channel(`webrtc-${streamData.streamId}`, {
@@ -585,19 +561,15 @@ export default function BroadcastStudio({
     }
   }, []);
 
-  // Recording
+  // Recording — uses optimized codec/bitrate settings
   const startRecording = async () => {
     if (!streamRef.current) return;
-    // Clear any previous recording chunks from IndexedDB
     await clearChunks();
     chunksRef.current = [];
-    const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9,opus")
-      ? "video/webm;codecs=vp9,opus"
-      : "video/webm";
-    const recorder = new MediaRecorder(streamRef.current, { mimeType });
+    const { mimeType, videoBitsPerSecond } = getRecorderOptions();
+    const recorder = new MediaRecorder(streamRef.current, { mimeType, videoBitsPerSecond });
     recorder.ondataavailable = (e) => {
       if (e.data.size > 0) {
-        // Store chunk in IndexedDB to avoid memory exhaustion on long recordings
         appendChunk(e.data).catch((err) =>
           console.error("[Recording] Failed to persist chunk:", err)
         );

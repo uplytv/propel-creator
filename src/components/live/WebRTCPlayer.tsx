@@ -1,39 +1,16 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, WifiOff, RefreshCw, PictureInPicture2, Maximize, Minimize } from 'lucide-react';
+import { Loader2, WifiOff, RefreshCw, PictureInPicture2, Maximize, Minimize, Wifi } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAutoPip } from '@/hooks/useAutoPip';
+import { ICE_SERVERS, preferLowLatencyCodecs } from '@/lib/webrtcConfig';
+import { useConnectionQuality } from '@/hooks/useConnectionQuality';
 
 interface WebRTCPlayerProps {
   streamId: string;
   title?: string;
   className?: string;
 }
-
-const ICE_SERVERS: RTCConfiguration = {
-  iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' },
-    { urls: 'stun:stun2.l.google.com:19302' },
-    { urls: 'stun:stun3.l.google.com:19302' },
-    // TURN servers for cross-network NAT traversal
-    {
-      urls: 'turn:openrelay.metered.ca:80',
-      username: 'openrelayproject',
-      credential: 'openrelayproject',
-    },
-    {
-      urls: 'turn:openrelay.metered.ca:443',
-      username: 'openrelayproject',
-      credential: 'openrelayproject',
-    },
-    {
-      urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-      username: 'openrelayproject',
-      credential: 'openrelayproject',
-    },
-  ],
-};
 
 export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -43,12 +20,17 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
   const viewerIdRef = useRef(crypto.randomUUID());
   const [isFullscreen, setIsFullscreen] = useState(false);
   const lastTapRef = useRef<number>(0);
-  const [status, setStatus] = useState<'connecting' | 'playing' | 'failed'>('connecting');
+  const [status, setStatus] = useState<'connecting' | 'playing' | 'reconnecting' | 'failed'>('connecting');
   const [retryCount, setRetryCount] = useState(0);
-  const maxRetries = 8;
+  const maxRetries = 12;
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const offerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const connectedRef = useRef(false);
+  const iceCandidateQueueRef = useRef<RTCIceCandidateInit[]>([]);
+  const statsIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [latencyMs, setLatencyMs] = useState<number | null>(null);
+
+  const connectionQuality = useConnectionQuality(status === 'playing');
 
   const cleanup = useCallback(() => {
     connectedRef.current = false;
@@ -60,6 +42,10 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
       clearInterval(offerIntervalRef.current);
       offerIntervalRef.current = null;
     }
+    if (statsIntervalRef.current) {
+      clearInterval(statsIntervalRef.current);
+      statsIntervalRef.current = null;
+    }
     if (pcRef.current) {
       pcRef.current.close();
       pcRef.current = null;
@@ -68,6 +54,21 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
       supabase.removeChannel(channelRef.current);
       channelRef.current = null;
     }
+    iceCandidateQueueRef.current = [];
+  }, []);
+
+  // Monitor WebRTC stats for latency display
+  const startStatsMonitor = useCallback((pc: RTCPeerConnection) => {
+    statsIntervalRef.current = setInterval(async () => {
+      try {
+        const stats = await pc.getStats();
+        stats.forEach((report) => {
+          if (report.type === 'candidate-pair' && report.state === 'succeeded') {
+            setLatencyMs(Math.round(report.currentRoundTripTime * 1000));
+          }
+        });
+      } catch { /* pc closed */ }
+    }, 3000);
   }, []);
 
   const connect = useCallback(() => {
@@ -79,15 +80,19 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
     const pc = new RTCPeerConnection(ICE_SERVERS);
     pcRef.current = pc;
 
+    // Add receive-only transceivers
     pc.addTransceiver('video', { direction: 'recvonly' });
     pc.addTransceiver('audio', { direction: 'recvonly' });
+
+    // Prefer low-latency codecs
+    preferLowLatencyCodecs(pc);
 
     pc.ontrack = (event) => {
       if (videoRef.current && event.streams[0]) {
         videoRef.current.srcObject = event.streams[0];
         connectedRef.current = true;
         setStatus('playing');
-        // Stop resending offers once connected
+        startStatsMonitor(pc);
         if (offerIntervalRef.current) {
           clearInterval(offerIntervalRef.current);
           offerIntervalRef.current = null;
@@ -104,22 +109,33 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
           clearInterval(offerIntervalRef.current);
           offerIntervalRef.current = null;
         }
-      } else if (state === 'failed' || state === 'disconnected') {
-        if (connectedRef.current) {
-          // Was connected, lost connection — retry
-          connectedRef.current = false;
-          setRetryCount(prev => {
-            const next = prev + 1;
-            if (next <= maxRetries) {
-              setStatus('connecting');
-              retryTimerRef.current = setTimeout(connect, 2000);
-            } else {
-              setStatus('failed');
-            }
-            return next;
-          });
-        }
+      } else if (state === 'disconnected') {
+        // Brief disconnection — wait before retrying (could be network blip)
+        setStatus('reconnecting');
+        retryTimerRef.current = setTimeout(() => {
+          if (pc.iceConnectionState === 'disconnected' || pc.iceConnectionState === 'failed') {
+            reconnect();
+          }
+        }, 3000);
+      } else if (state === 'failed') {
+        reconnect();
       }
+    };
+
+    const reconnect = () => {
+      connectedRef.current = false;
+      setRetryCount(prev => {
+        const next = prev + 1;
+        if (next <= maxRetries) {
+          // Exponential backoff: 1s, 2s, 4s, 8s, capped at 10s
+          const delay = Math.min(1000 * Math.pow(2, next - 1), 10000);
+          setStatus('reconnecting');
+          retryTimerRef.current = setTimeout(connect, delay);
+        } else {
+          setStatus('failed');
+        }
+        return next;
+      });
     };
 
     const channel = supabase.channel(`webrtc-${streamId}`, {
@@ -138,7 +154,13 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
         try {
           if (pc.signalingState === 'have-local-offer') {
             await pc.setRemoteDescription(new RTCSessionDescription(msg.answer));
-            // Stop resending offers — host responded
+            // Flush queued ICE candidates
+            for (const candidate of iceCandidateQueueRef.current) {
+              try {
+                await pc.addIceCandidate(new RTCIceCandidate(candidate));
+              } catch { /* ignore stale candidates */ }
+            }
+            iceCandidateQueueRef.current = [];
             if (offerIntervalRef.current) {
               clearInterval(offerIntervalRef.current);
               offerIntervalRef.current = null;
@@ -152,8 +174,14 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
         const msg = payload.payload;
         if (msg.viewerId !== viewerId || msg.from !== 'host') return;
 
+        // Queue candidates if remote description not yet set
+        if (!pc.remoteDescription) {
+          iceCandidateQueueRef.current.push(msg.candidate);
+          return;
+        }
+
         try {
-          if (pc.remoteDescription && pc.signalingState !== 'closed') {
+          if (pc.signalingState !== 'closed') {
             await pc.addIceCandidate(new RTCIceCandidate(msg.candidate));
           }
         } catch (err) {
@@ -176,13 +204,11 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
             }
           };
 
-          // Create offer once
           try {
             const offer = await pc.createOffer();
             await pc.setLocalDescription(offer);
             localOffer = pc.localDescription?.toJSON() || null;
 
-            // Send offer immediately
             const sendOffer = () => {
               if (connectedRef.current || !localOffer) return;
               channel.send({
@@ -193,11 +219,10 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
             };
 
             sendOffer();
+            // Re-send offer every 2s (faster than before)
+            offerIntervalRef.current = setInterval(sendOffer, 2000);
 
-            // Re-send offer every 3s until host responds (fixes race condition)
-            offerIntervalRef.current = setInterval(sendOffer, 3000);
-
-            // Full timeout: if not connected within 30s, do a full retry
+            // Full timeout: 20s then retry
             retryTimerRef.current = setTimeout(() => {
               if (!connectedRef.current) {
                 setRetryCount(prev => {
@@ -210,14 +235,14 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
                   return next;
                 });
               }
-            }, 30000);
+            }, 20000);
           } catch (err) {
             console.error('Failed to create offer:', err);
             setStatus('failed');
           }
         }
       });
-  }, [streamId, cleanup]);
+  }, [streamId, cleanup, startStatsMonitor]);
 
   useEffect(() => {
     connect();
@@ -268,11 +293,15 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
     connect();
   };
 
-  // Merge refs for container
   const setContainerRefs = useCallback((node: HTMLDivElement | null) => {
     (fullscreenContainerRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
     (containerRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
   }, [containerRef]);
+
+  // Connection quality indicator color
+  const qualityColor = connectionQuality.quality === 'excellent' ? 'text-green-400' :
+    connectionQuality.quality === 'good' ? 'text-green-400' :
+    connectionQuality.quality === 'fair' ? 'text-yellow-400' : 'text-red-400';
 
   return (
     <div
@@ -309,6 +338,14 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
         </div>
       )}
 
+      {status === 'reconnecting' && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/60 backdrop-blur-sm">
+          <Loader2 className="w-8 h-8 text-yellow-400 animate-spin" />
+          <p className="text-sm text-white font-medium">Reconnecting...</p>
+          <p className="text-xs text-white/50">Don't worry, we'll get you back in seconds</p>
+        </div>
+      )}
+
       {status === 'failed' && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
           <WifiOff className="w-10 h-10 text-muted-foreground" />
@@ -325,6 +362,15 @@ export default function WebRTCPlayer({ streamId, title, className }: WebRTCPlaye
       {/* Player controls overlay */}
       {status === 'playing' && (
         <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+          {/* Latency + quality badge */}
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-black/40 backdrop-blur-sm">
+            <Wifi className={`w-3 h-3 ${qualityColor}`} />
+            {latencyMs !== null && (
+              <span className={`text-[10px] font-mono font-semibold ${qualityColor}`}>
+                {latencyMs}ms
+              </span>
+            )}
+          </div>
           {document.pictureInPictureEnabled && (
             <button
               onClick={togglePip}
