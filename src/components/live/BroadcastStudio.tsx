@@ -734,6 +734,36 @@ export default function BroadcastStudio({
 
   const isLive = streamStatus === "active";
 
+  // Re-attach stream to video element after state-driven re-renders (e.g. isRecording toggling)
+  useEffect(() => {
+    if (videoRef.current && streamRef.current && videoRef.current.srcObject !== streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+    }
+  });
+
+  // Safe clipboard helper
+  const safeClipboardWrite = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Fallback for non-secure contexts or unfocused windows
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+  };
+
   // Mode selection screen
   if (studioMode === "select") {
     return (
