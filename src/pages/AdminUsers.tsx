@@ -145,6 +145,14 @@ export default function AdminUsers() {
     }
   };
 
+  const sendApprovalEmail = async (userIds: string[]) => {
+    try {
+      await supabase.functions.invoke("notify-user-approved", { body: { userIds } });
+    } catch (e) {
+      console.error("Failed to send approval emails:", e);
+    }
+  };
+
   const executeAction = async (type: string, ids: string[]) => {
     setActing(true);
     try {
@@ -152,7 +160,8 @@ export default function AdminUsers() {
         for (const id of ids) {
           await supabase.from("profiles").update({ is_approved: true } as any).eq("user_id", id);
         }
-        toast.success(`Approved ${ids.length} user(s)`);
+        await sendApprovalEmail(ids);
+        toast.success(`Approved ${ids.length} user(s) — notification email sent`);
       } else if (type === "revoke") {
         for (const id of ids) {
           await supabase.from("profiles").update({ is_approved: false } as any).eq("user_id", id);
@@ -160,10 +169,12 @@ export default function AdminUsers() {
         toast.success(`Revoked access for ${ids.length} user(s)`);
       } else if (type === "approve-all") {
         const pending = users.filter(u => !u.is_approved);
+        const pendingIds = pending.map(u => u.user_id);
         for (const u of pending) {
           await supabase.from("profiles").update({ is_approved: true } as any).eq("user_id", u.user_id);
         }
-        toast.success(`Approved all ${pending.length} pending users`);
+        if (pendingIds.length > 0) await sendApprovalEmail(pendingIds);
+        toast.success(`Approved all ${pending.length} pending users — emails sent`);
       } else if (type === "revoke-all") {
         const approved = users.filter(u => u.is_approved && !u.roles.includes("admin"));
         for (const u of approved) {
