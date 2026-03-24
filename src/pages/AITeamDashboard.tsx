@@ -31,6 +31,24 @@ const AGENT_META: Record<string, { emoji: string; label: string; color: string }
   operations: { emoji: "⚙️", label: "Operations AI", color: "text-orange-400" },
 };
 
+const PLACEHOLDER_AGENTS: AriaAgent[] = [
+  "content", "growth", "community", "sales", "operations"
+].map((t, i) => ({
+  id: `placeholder-${t}`,
+  creator_id: "",
+  agent_type: t,
+  status: "inactive",
+  tasks_completed: 0,
+  tasks_approved: 0,
+  tasks_rejected: 0,
+  confidence_score: 0,
+  last_active_at: null,
+  config: null,
+  memory: null,
+  performance_data: null,
+  created_at: new Date().toISOString(),
+}));
+
 const INSIGHT_ICONS: Record<string, typeof Lightbulb> = {
   suggestion: Lightbulb,
   warning: AlertTriangle,
