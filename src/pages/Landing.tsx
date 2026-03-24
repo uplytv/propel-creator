@@ -9,6 +9,9 @@ import SEOHead from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import dashboardPreview from "@/assets/dashboard-preview.png";
+import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
+import ExitIntentModal from "@/components/landing/ExitIntentModal";
+import LiveSignupTicker from "@/components/waitlist/LiveSignupTicker";
 
 const JSON_LD = {
   "@context": "https://schema.org",
@@ -167,6 +170,8 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white font-sans selection:bg-[#00FF85]/30">
       <SEOHead />
+      <StickyMobileCTA />
+      <ExitIntentModal />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
@@ -344,6 +349,16 @@ export default function Landing() {
             >
               Waitlist &amp; invite only.
             </motion.p>
+
+            {/* Live signup ticker */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1 }}
+              className="mt-6"
+            >
+              <LiveSignupTicker />
+            </motion.div>
           </motion.div>
         </div>
       </section>

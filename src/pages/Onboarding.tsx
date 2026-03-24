@@ -389,7 +389,8 @@ export default function Onboarding() {
           <motion.div key="basics" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md">
             <p className="text-xs text-muted-foreground text-center mb-1 uppercase tracking-wider">Step 1 of 3</p>
             <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">The Basics</h1>
-            <p className="text-muted-foreground text-center text-sm mb-8">Tell us a little about yourself.</p>
+            <p className="text-muted-foreground text-center text-sm mb-2">Tell us a little about yourself.</p>
+            <p className="text-xs text-primary text-center mb-6 font-medium">⚡ Takes less than 2 minutes</p>
             <div className="space-y-4 mb-4">
               <Input placeholder="Full name *" value={firstName} onChange={(e) => setFirstName(e.target.value)} autoFocus className="text-center text-lg py-6" />
               <Input placeholder="Email" value={user?.email || ""} disabled className="text-center text-sm py-4 opacity-60" />
@@ -413,6 +414,7 @@ export default function Onboarding() {
             <Button variant="hero" size="xl" className="w-full" disabled={!firstName.trim()} onClick={() => setStep(2)}>
               Continue <ArrowRight className="ml-1 w-4 h-4" />
             </Button>
+            <p className="text-[10px] text-muted-foreground text-center mt-3">🔒 Your info is private and never shared</p>
           </motion.div>
         )}
 
@@ -421,7 +423,8 @@ export default function Onboarding() {
           <motion.div key="profile" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md">
             <p className="text-xs text-muted-foreground text-center mb-1 uppercase tracking-wider">Step 2 of 3</p>
             <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">Your Creator Profile</h1>
-            <p className="text-muted-foreground text-center text-sm mb-6">Help us understand your audience.</p>
+            <p className="text-muted-foreground text-center text-sm mb-1">Help us understand your audience.</p>
+            <p className="text-xs text-primary text-center mb-6 font-medium">🎯 This helps us prioritize your application</p>
 
             <div className="space-y-4 mb-6">
               <div>
@@ -503,9 +506,10 @@ export default function Onboarding() {
         {/* STEP 3: Qualifying Questions */}
         {step === 3 && (
           <motion.div key="qualifying" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md">
-            <p className="text-xs text-muted-foreground text-center mb-1 uppercase tracking-wider">Step 3 of 3</p>
+            <p className="text-xs text-muted-foreground text-center mb-1 uppercase tracking-wider">Step 3 of 3 — Almost there! 🏁</p>
             <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">One Last Thing</h1>
-            <p className="text-muted-foreground text-center text-sm mb-6">These help us match you with the right tools.</p>
+            <p className="text-muted-foreground text-center text-sm mb-1">These help us match you with the right tools.</p>
+            <p className="text-xs text-primary text-center mb-6 font-medium">✨ Detailed answers = faster approval</p>
 
             <div className="space-y-4 mb-6">
               <div>

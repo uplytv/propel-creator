@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Check, Copy, Twitter, Linkedin, LogOut, ExternalLink, MessageCircle } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Check, Copy, Twitter, Linkedin, LogOut, ExternalLink, MessageCircle, Trophy, Flame, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import WaitlistLiveCounter from "./WaitlistLiveCounter";
 import WaitlistLeaderboard from "./WaitlistLeaderboard";
+import LiveSignupTicker from "./LiveSignupTicker";
 import { buildReferralUrl, buildReferralUrlDisplay, getFirstName, getShareMessages } from "@/lib/referralUrls";
 import { clearAffiliateCookie } from "@/lib/affiliateCookies";
 import {
@@ -99,9 +100,36 @@ export default function PostApplicationScreen({ position, referralCode, referral
 
   return (
     <div className="max-w-2xl mx-auto px-4 pb-16">
-      {/* Live counter */}
-      <div className="text-center mb-8">
+      {/* Confetti burst on mount */}
+      <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+        {Array.from({ length: 24 }).map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-2 h-2 rounded-full"
+            style={{
+              left: `${40 + Math.random() * 20}%`,
+              top: "40%",
+              background: ["#00FF85", "#FFD700", "#FF6B6B", "#8B5CF6", "#00D4FF"][i % 5],
+            }}
+            initial={{ opacity: 1, scale: 1 }}
+            animate={{
+              x: (Math.random() - 0.5) * 300,
+              y: Math.random() * -400 + 100,
+              opacity: 0,
+              scale: 0,
+              rotate: Math.random() * 720,
+            }}
+            transition={{ duration: 1.5, delay: 0.2 + i * 0.03, ease: "easeOut" }}
+          />
+        ))}
+      </div>
+
+      {/* Live counter + ticker */}
+      <div className="text-center mb-6 space-y-3">
         <WaitlistLiveCounter />
+        <div className="flex justify-center">
+          <LiveSignupTicker />
+        </div>
       </div>
 
       {/* Checkmark + headline */}
@@ -111,12 +139,17 @@ export default function PostApplicationScreen({ position, referralCode, referral
         transition={{ duration: 0.4, ease: "easeOut" }}
         className="text-center mb-6"
       >
-        <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 bg-primary">
+        <motion.div 
+          className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 bg-primary"
+          animate={{ scale: [1, 1.1, 1] }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+        >
           <Check className="w-8 h-8 text-primary-foreground" />
-        </div>
-        <h2 className="text-[28px] font-extrabold text-foreground mb-3" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-          You're on the list.
+        </motion.div>
+        <h2 className="text-[28px] font-extrabold text-foreground mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          You're on the list. 🎉
         </h2>
+        <p className="text-sm text-muted-foreground">Your application has been submitted successfully</p>
       </motion.div>
 
       {/* Referrer card */}
@@ -203,6 +236,21 @@ export default function PostApplicationScreen({ position, referralCode, referral
             <p className="text-[10px] text-muted-foreground mt-1">{Math.min(referralCount, item.refs)}/{item.refs} referred</p>
           </div>
         ))}
+      </motion.div>
+
+      {/* Urgency timer */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.37 }}
+        className="mb-6 text-center"
+      >
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-border">
+          <Flame className="w-4 h-4 text-orange-400" />
+          <span className="text-xs text-muted-foreground">
+            <span className="text-foreground font-semibold">Pro tip:</span> Creators who share within 1 hour move up 2x faster
+          </span>
+        </div>
       </motion.div>
 
       {/* Referral link section */}
