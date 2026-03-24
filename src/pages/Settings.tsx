@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   User, Bell, Shield, CreditCard, Palette, Mail,
-  Camera, Save, Eye, EyeOff, Trash2, Download, Megaphone, Loader2, Users, Ticket
+  Camera, Save, Eye, EyeOff, Trash2, Download, Megaphone, Loader2, Users, Ticket, Bot
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useApp } from "@/context/AppContext";
