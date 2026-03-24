@@ -309,9 +309,16 @@ export default function BroadcastStudio({
   // Viewer heatmap
   const viewerHeatmap = useViewerHeatmap(streamData.streamId);
 
+  // Live quiz
+  const liveQuiz = useLiveQuiz(streamData.streamId, true);
+
+  // Viewer sentiment
+  const sentiment = useViewerSentiment(streamData.streamId);
+
   const [showPredictionCreator, setShowPredictionCreator] = useState(false);
   const [showThemePicker, setShowThemePicker] = useState(false);
   const [showHeatmap, setShowHeatmap] = useState(false);
+  const [showQuizCreator, setShowQuizCreator] = useState(false);
   const [predQuestion, setPredQuestion] = useState("");
   const [predOptions, setPredOptions] = useState(["", ""]);
 
