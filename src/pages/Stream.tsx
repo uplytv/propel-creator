@@ -591,19 +591,29 @@ export default function Stream() {
                     userBets={predictions.userBets}
                   />
 
-                  {/* Gift Subscription Button */}
-                  {user && user.id !== dbStream.user_id && (
-                    <div className="absolute bottom-16 left-3 z-20">
-                      <button
-                        onClick={() => giftSub.giftRandomSubscription(1)}
-                        disabled={giftSub.gifting}
-                        className="px-3 py-1.5 rounded-full text-[10px] font-semibold text-white backdrop-blur-md"
-                        style={{ backgroundColor: 'rgba(168,85,247,0.6)' }}
-                      >
-                        🎁 Gift Sub
-                      </button>
-                    </div>
-                  )}
+                   {/* Gift Subscription Button */}
+                   {user && user.id !== dbStream.user_id && (
+                     <div className="absolute bottom-16 left-3 z-20">
+                       <button
+                         onClick={() => giftSub.giftRandomSubscription(1)}
+                         disabled={giftSub.gifting}
+                         className="px-3 py-1.5 rounded-full text-[10px] font-semibold text-white backdrop-blur-md"
+                         style={{ backgroundColor: 'rgba(168,85,247,0.6)' }}
+                       >
+                         🎁 Gift Sub
+                       </button>
+                     </div>
+                   )}
+
+                   {/* Live Quiz (viewer view) */}
+                   <div className="absolute bottom-32 right-3 z-20 w-64">
+                     <LiveQuizOverlay quiz={liveQuiz.quiz} isCreator={false} onSubmitAnswer={liveQuiz.submitAnswer} />
+                   </div>
+
+                   {/* Viewer Sentiment */}
+                   <div className="absolute top-20 left-3 z-20 w-44">
+                     <ViewerSentimentOverlay sentiment={sentiment} />
+                   </div>
                 </>
               )}
             </div>
