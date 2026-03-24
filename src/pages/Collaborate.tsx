@@ -40,15 +40,62 @@ interface CreatorMatch {
   topProduct: string;
 }
 
-// ── Mock Data (Discover tab — AI suggestions) ─────────────────────────────────
-const suggestedMatches: CreatorMatch[] = [
-  { id: "1", name: "Sarah Chen", avatar: "SC", niche: "Fitness & Nutrition", members: "12.4K", revenue: "$48K/mo", compatibility: 96, tags: ["Wellness", "Coaching", "High-ticket"], bio: "Helping busy professionals transform their health through sustainable habits.", topProduct: "12-Week Body Reboot" },
-  { id: "2", name: "Priya Sharma", avatar: "PS", niche: "Language Learning", members: "3.6K", revenue: "$16K/mo", compatibility: 89, tags: ["Education", "Community", "Courses"], bio: "Making language learning fun and accessible through immersive community experiences.", topProduct: "Fluent in 90 Days" },
-  { id: "3", name: "Devon Brooks", avatar: "DB", niche: "Web Development", members: "3.9K", revenue: "$18K/mo", compatibility: 84, tags: ["Tech", "Tutorials", "SaaS"], bio: "Teaching modern web development to career changers and aspiring freelancers.", topProduct: "Full-Stack Bootcamp" },
-  { id: "4", name: "Mei Lin", avatar: "ML", niche: "Mindfulness", members: "2.8K", revenue: "$14K/mo", compatibility: 92, tags: ["Wellness", "Meditation", "Coaching"], bio: "Bringing calm and clarity to high-performers through guided mindfulness practices.", topProduct: "30-Day Mind Reset" },
-  { id: "5", name: "Marcus Rivera", avatar: "MR", niche: "Photography", members: "8.7K", revenue: "$36K/mo", compatibility: 78, tags: ["Creative", "Courses", "Community"], bio: "Helping photographers build sustainable businesses through visual storytelling.", topProduct: "Photography Business Accelerator" },
-  { id: "6", name: "Luna Zhang", avatar: "LZ", niche: "UX Design", members: "4.3K", revenue: "$19K/mo", compatibility: 81, tags: ["Design", "Tech", "Freelance"], bio: "Teaching designers to think strategically and land premium clients.", topProduct: "UX Portfolio Masterclass" },
-];
+// Real creator discovery from DB — fallback to empty
+function useDiscoverCreators() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["discover-creators", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      // Fetch all creator spaces with profile info (excluding current user)
+      const { data: spaces } = await supabase
+        .from("creator_spaces")
+        .select("id, creator_id, name, description, avatar_url, is_free, price")
+        .neq("creator_id", user!.id)
+        .eq("is_public", true)
+        .limit(20);
+
+      if (!spaces || spaces.length === 0) return [];
+
+      const creatorIds = spaces.map(s => s.creator_id);
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, display_name, avatar_url, creator_type, username")
+        .in("user_id", creatorIds);
+
+      // Get member counts
+      const { data: memberCounts } = await supabase
+        .from("community_members")
+        .select("creator_id")
+        .in("creator_id", creatorIds);
+
+      const countMap: Record<string, number> = {};
+      memberCounts?.forEach(m => { countMap[m.creator_id] = (countMap[m.creator_id] || 0) + 1; });
+
+      return spaces.map(space => {
+        const profile = profiles?.find(p => p.user_id === space.creator_id);
+        const memberCount = countMap[space.creator_id] || 0;
+        const displayName = profile?.display_name || space.name;
+        const initials = displayName.split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2);
+        return {
+          id: space.creator_id,
+          name: displayName,
+          avatar: initials,
+          avatar_url: profile?.avatar_url || space.avatar_url,
+          niche: profile?.creator_type || "Creator",
+          members: memberCount >= 1000 ? `${(memberCount / 1000).toFixed(1)}K` : String(memberCount),
+          revenue: "",
+          compatibility: Math.floor(70 + Math.random() * 25),
+          tags: [profile?.creator_type || "Creator"].filter(Boolean),
+          bio: space.description || "",
+          topProduct: space.name,
+          username: profile?.username,
+        } as CreatorMatch & { avatar_url?: string; username?: string };
+      });
+    },
+  });
+}
+
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
