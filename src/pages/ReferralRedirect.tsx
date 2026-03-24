@@ -330,6 +330,14 @@ export default function ReferralRedirect() {
             🔒 Your spot is reserved for 48 hours
           </p>
         </motion.div>
+
+        {/* Already have an account */}
+        <div className="w-full max-w-[400px] mt-6 text-center border-t border-border pt-4">
+          <p className="text-xs text-muted-foreground">
+            Already have a UPLY account?{" "}
+            <button onClick={() => navigate("/auth")} className="text-primary font-medium hover:underline">Log in →</button>
+          </p>
+        </div>
       </div>
     </div>
   );
