@@ -66,6 +66,8 @@ import { useLiveAuction } from "@/hooks/useLiveAuction";
 import { useCollaborativeWhiteboard } from "@/hooks/useCollaborativeWhiteboard";
 import { useStreamOverlayThemes } from "@/hooks/useStreamOverlayThemes";
 import { useViewerHeatmap } from "@/hooks/useViewerHeatmap";
+import { useLiveQuiz } from "@/hooks/useLiveQuiz";
+import { useViewerSentiment } from "@/hooks/useViewerSentiment";
 import { LivePollOverlay } from "./LivePollOverlay";
 import GuestCoStreamPanel from "./GuestCoStreamPanel";
 import StreamAnalyticsPanel from "./StreamAnalyticsPanel";
@@ -80,7 +82,9 @@ import LiveAuctionOverlay from "./LiveAuctionOverlay";
 import WhiteboardOverlay from "./WhiteboardOverlay";
 import OverlayThemePicker from "./OverlayThemePicker";
 import ViewerHeatmapPanel from "./ViewerHeatmapPanel";
-import { BarChart3, MessageCircleQuestion, UserPlus, Sparkles, Subtitles, Swords, Target, Gamepad2, Music, Gavel, PenTool, Palette } from "lucide-react";
+import ViewerSentimentOverlay from "./ViewerSentimentOverlay";
+import { LiveQuizOverlay, QuizCreatorPanel } from "./LiveQuizOverlay";
+import { BarChart3, MessageCircleQuestion, UserPlus, Sparkles, Subtitles, Swords, Target, Gamepad2, Music, Gavel, PenTool, Palette, Brain, SmilePlus } from "lucide-react";
 
 interface Product {
   id: string;
