@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Copy, Check, Trophy, Crown, Shield, MessageCircle, Twitter } from "lucide-react";
+import { Copy, Check, Trophy, Crown, Shield, MessageCircle, Twitter, LogOut, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
