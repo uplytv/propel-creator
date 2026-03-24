@@ -299,13 +299,11 @@ export default function Landing() {
             />
 
             <h1 className="text-[2.5rem] md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.05] mb-6 font-heading">
-              Don't be late again.
+              Run Your Entire Creator Business With AI
             </h1>
 
             <p className="text-base md:text-lg text-white/40 mb-10 max-w-lg mx-auto leading-relaxed italic">
-              You were late to YouTube. Late to Instagram. Late to TikTok.
-              <br className="hidden md:block" />
-              Uply is your last chance to be early.
+              Every creator on UPLY gets 5 AI employees — Content, Growth, Community, Sales, and Operations — working around the clock so you can focus on creating.
             </p>
 
             {/* Stat pills */}
