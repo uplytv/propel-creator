@@ -139,7 +139,10 @@ function ContentCard({
               {duration}
             </span>
           )}
-          <button className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/40 transition-colors">
+          <button
+            onClick={() => item.mux_clip_playback_id && onPlayClip?.(item.mux_clip_playback_id)}
+            className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/40 transition-colors"
+          >
             <Play className="w-8 h-8 text-white" />
           </button>
         </div>
