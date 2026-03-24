@@ -229,6 +229,7 @@ export default function ContentStudio() {
 
   const [activeTab, setActiveTab] = useState("all");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [playingClipId, setPlayingClipId] = useState<string | null>(null);
 
   const activeJobs = useMemo(
     () => (jobs || []).filter((j: any) => !["completed", "failed"].includes(j.status)),
