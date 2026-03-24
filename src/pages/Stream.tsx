@@ -117,6 +117,8 @@ export default function Stream() {
   const viewerRewards = useViewerRewards(!!dbStream && dbStream.status === 'active' && !isVod);
   const viewerCaptions = useLiveCaptions();
   const raidSystem = useRaidSystem(id, false);
+  const predictions = useStreamPredictions(id || '');
+  const giftSub = useGiftSubscription(id || '', dbStream?.user_id || '');
 
   useEffect(() => {
     const fetchStream = async () => {
