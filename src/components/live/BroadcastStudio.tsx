@@ -656,6 +656,8 @@ export default function BroadcastStudio({
     mediaRecorderRef.current = recorder;
     setIsRecording(true);
     setRecordingDuration(0);
+    highlights.start();
+    vodChapters.start();
     recordingTimerRef.current = setInterval(() => {
       setRecordingDuration((d) => d + 1);
     }, 1000);
