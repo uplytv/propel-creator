@@ -412,7 +412,7 @@ export default function Collaborate() {
                   </div>
                 ))}
               </div>
-              <Button variant="hero" className="gap-2" onClick={() => toast({ title: "Coming soon!", description: "The Joint Product Builder will be available once you have an active collaboration." })}>
+              <Button variant="hero" className="gap-2" onClick={() => navigate("/collaborate/product")}>
                 <Package className="w-4 h-4" /> Create Joint Product
               </Button>
             </motion.div>
