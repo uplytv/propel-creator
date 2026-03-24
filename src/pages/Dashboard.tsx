@@ -21,6 +21,7 @@ import DashboardModeToggle, { type DashboardMode } from "@/components/dashboard/
 import AriaChat from "@/components/dashboard/AriaChat";
 import DiscoverMarketplace from "@/components/dashboard/DiscoverMarketplace";
 import VideoUploadSheet from "@/components/videos/VideoUploadSheet";
+import { RevenueGoalTracker } from "@/components/dashboard/RevenueGoalTracker";
 
 function PlatformUpgradeBanner() {
   const { user } = useAuth();
