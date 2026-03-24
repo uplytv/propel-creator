@@ -3,7 +3,6 @@ import { Crown } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useMemberPoints } from "@/hooks/useCommunityMembers";
 import MemberXPBadge from "@/components/space/MemberXPBadge";
-import { useMemberPoints } from "@/hooks/useCommunityMembers";
 
 interface Props {
   creatorId: string;
