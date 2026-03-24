@@ -341,7 +341,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
           <div className="mb-1">
             <div className="h-2.5 rounded-full overflow-hidden bg-secondary">
               <div
-                className="h-full rounded-full transition-all duration-500 bg-muted-foreground/30"
+                className="h-full rounded-full transition-all duration-500 bg-primary"
                 style={{ width: `${modProgressPct}%` }}
               />
             </div>
@@ -536,7 +536,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                           <div>
                             <div className="h-2 rounded-full overflow-hidden bg-secondary">
                               <div
-                                className="h-full rounded-full transition-all duration-500 bg-muted-foreground/30"
+                                className="h-full rounded-full transition-all duration-500 bg-primary"
                                 style={{ width: `${modProgressPct}%` }}
                               />
                             </div>

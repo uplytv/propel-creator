@@ -5,11 +5,12 @@ import { useAuth } from "@/context/AuthContext";
 import { motion } from "framer-motion";
 import {
   DollarSign, ExternalLink, Loader2, CheckCircle2, AlertCircle,
-  TrendingUp, Users, CreditCard, Plus, Trash2
+  TrendingUp, Users, CreditCard, Plus, Trash2, Calendar, Clock, Wallet
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { useWallet } from "@/hooks/useWallet";
 
 export function PayoutsTab() {
   const { user } = useAuth();
@@ -142,6 +143,20 @@ export function PayoutsTab() {
   }
 
   // Fully connected
+  const { data: walletData } = useWallet();
+  const pendingBalance = Number(walletData?.pending_balance ?? 0);
+  const availableBalance = Number(walletData?.available_balance ?? 0);
+
+  // Estimate next payout: Stripe does rolling payouts on a schedule (typically weekly, next Friday)
+  const getNextPayoutDate = () => {
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    const daysUntilFriday = (5 - dayOfWeek + 7) % 7 || 7;
+    const nextFri = new Date(now);
+    nextFri.setDate(now.getDate() + daysUntilFriday);
+    return nextFri.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  };
+
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       {/* Status banner */}
@@ -153,19 +168,43 @@ export function PayoutsTab() {
         </Button>
       </div>
 
+      {/* Balance cards */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="glass-card p-4 border-primary/20">
+          <div className="flex items-center gap-1.5 mb-1">
+            <Wallet className="w-3.5 h-3.5 text-primary" />
+            <p className="text-xs text-muted-foreground">Available Balance</p>
+          </div>
+          <p className="text-2xl font-bold text-foreground">${availableBalance.toFixed(2)}</p>
+        </div>
+        <div className="glass-card p-4">
+          <div className="flex items-center gap-1.5 mb-1">
+            <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+            <p className="text-xs text-muted-foreground">Pending</p>
+          </div>
+          <p className="text-2xl font-bold text-foreground">${pendingBalance.toFixed(2)}</p>
+          {pendingBalance > 0 && (
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              <Calendar className="w-2.5 h-2.5 inline mr-0.5" />
+              Est. payout: {getNextPayoutDate()}
+            </p>
+          )}
+        </div>
+      </div>
+
       {/* Revenue cards */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: "Total Revenue", value: `$${(revenueStats?.total ?? 0).toFixed(2)}`, icon: DollarSign, color: "text-emerald-400" },
-          { label: "This Month", value: `$${(revenueStats?.thisMonth ?? 0).toFixed(2)}`, icon: TrendingUp, color: "text-blue-400" },
-          { label: "Active Subscribers", value: revenueStats?.activeSubs ?? 0, icon: Users, color: "text-violet-400" },
+          { label: "Total Revenue", value: `$${(revenueStats?.total ?? 0).toFixed(2)}`, icon: DollarSign, color: "text-primary" },
+          { label: "This Month", value: `$${(revenueStats?.thisMonth ?? 0).toFixed(2)}`, icon: TrendingUp, color: "text-primary" },
+          { label: "Active Subscribers", value: revenueStats?.activeSubs ?? 0, icon: Users, color: "text-primary" },
         ].map((stat) => (
           <div key={stat.label} className="glass-card p-4">
             <div className="flex items-center gap-1.5 mb-1">
               <stat.icon className={`w-3.5 h-3.5 ${stat.color}`} />
               <p className="text-xs text-muted-foreground">{stat.label}</p>
             </div>
-            <p className="text-xl font-bold">{stat.value}</p>
+            <p className="text-xl font-bold text-foreground">{stat.value}</p>
           </div>
         ))}
       </div>
