@@ -63,6 +63,7 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
     label: "ARIA",
     icon: Bot,
     items: [
+      { label: "AI Team", icon: Bot, path: "/dashboard/ai-team", desc: "Your 5 AI agents" },
       { label: "Grow", icon: Sparkles, path: "/grow", desc: "Growth tasks", featureKey: "growth_tasks" },
       { label: "Launchpad", icon: Rocket, path: "/launchpad", desc: "Launch something new" },
     ],

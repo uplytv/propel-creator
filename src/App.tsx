@@ -72,6 +72,7 @@ const CreateEvent = lazy(() => import("./pages/CreateEvent"));
 const EventPage = lazy(() => import("./pages/EventPage"));
 const TicketDetail = lazy(() => import("./pages/TicketDetail"));
 const ContentStudio = lazy(() => import("./pages/ContentStudio"));
+const AITeamDashboard = lazy(() => import("./pages/AITeamDashboard"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -214,6 +215,7 @@ const App = () => (
                     <Route path="/events/create" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
                     <Route path="/invite-codes" element={<ProtectedRoute><InviteCodes /></ProtectedRoute>} />
                     <Route path="/dashboard/content-studio" element={<ProtectedRoute><ContentStudio /></ProtectedRoute>} />
+                    <Route path="/dashboard/ai-team" element={<ProtectedRoute><AITeamDashboard /></ProtectedRoute>} />
 
                     {/* Admin routes */}
                     <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />

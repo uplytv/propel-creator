@@ -22,7 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 import { format, isBefore } from "date-fns";
 
-type SettingsTab = "profile" | "notifications" | "subscriptions" | "tickets" | "aria" | "account";
+type SettingsTab = "profile" | "notifications" | "subscriptions" | "tickets" | "aria" | "ai-team" | "account";
 
 const AriaSettingsSection = lazy(() => import("@/components/aria/AriaSettingsSection"));
 
@@ -32,6 +32,7 @@ const tabs = [
   { id: "subscriptions" as const, label: "Subscriptions", icon: Users },
   { id: "tickets" as const, label: "My Tickets", icon: Ticket },
   { id: "aria" as const, label: "ARIA Agent", icon: Bot },
+  { id: "ai-team" as const, label: "AI Team", icon: Bot },
   { id: "account" as const, label: "Account", icon: Shield },
 ];
 
@@ -341,6 +342,20 @@ export default function Settings() {
           <Suspense fallback={<div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>}>
             <AriaSettingsSection />
           </Suspense>
+        )}
+
+        {/* AI Team tab */}
+        {activeTab === "ai-team" && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+            <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-4">
+              <h2 className="text-lg font-semibold text-foreground">AI Team Settings</h2>
+              <p className="text-sm text-muted-foreground">Manage your 5 AI agents from the <a href="/dashboard/ai-team" className="text-primary hover:underline">AI Team Dashboard</a>. Toggle agents on/off, review pending tasks, and monitor usage there.</p>
+              <div className="rounded-xl bg-secondary/30 p-4">
+                <h3 className="text-sm font-medium text-foreground mb-2">Member Opt-Out</h3>
+                <p className="text-xs text-muted-foreground">Community members can opt out of automated AI messages from their notification settings. Sales AI and Community AI always respect opt-out preferences.</p>
+              </div>
+            </div>
+          </motion.div>
         )}
 
         {/* Account tab */}

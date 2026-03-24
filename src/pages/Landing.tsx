@@ -39,6 +39,7 @@ const features = [
   { icon: Users, title: "Community", desc: "Posts, comments, leaderboards, and member tiers — all in your space.", color: "#00FF85" },
   { icon: TrendingUp, title: "Analytics & ARIA", desc: "AI-powered growth insights and weekly performance reports.", color: "#06B6D4" },
   { icon: Zap, title: "Affiliate System", desc: "Let your members earn by referring new subscribers.", color: "#EAB308" },
+  { icon: Users, title: "AI Creator Team", desc: "🤖 5 autonomous agents running your business 24/7.", color: "#8B5CF6" },
 ];
 
 const steps = [
@@ -299,13 +300,11 @@ export default function Landing() {
             />
 
             <h1 className="text-[2.5rem] md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.05] mb-6 font-heading">
-              Don't be late again.
+              Run Your Entire Creator Business With AI
             </h1>
 
             <p className="text-base md:text-lg text-white/40 mb-10 max-w-lg mx-auto leading-relaxed italic">
-              You were late to YouTube. Late to Instagram. Late to TikTok.
-              <br className="hidden md:block" />
-              Uply is your last chance to be early.
+              Every creator on UPLY gets 5 AI employees — Content, Growth, Community, Sales, and Operations — working around the clock so you can focus on creating.
             </p>
 
             {/* Stat pills */}
