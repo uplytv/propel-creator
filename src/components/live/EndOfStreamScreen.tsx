@@ -146,6 +146,19 @@ export default function EndOfStreamScreen({
           ))}
         </div>
 
+        {/* Highlights Reel */}
+        {highlights.length > 0 && (
+          <HighlightsReel highlights={highlights} durationSeconds={durationSeconds} />
+        )}
+
+        {/* VOD Chapters */}
+        {chaptersDescription && (
+          <div className="glass-card p-4">
+            <p className="text-xs font-bold text-foreground mb-2">📑 VOD Chapters</p>
+            <pre className="text-[10px] text-muted-foreground font-mono whitespace-pre-wrap">{chaptersDescription}</pre>
+          </div>
+        )}
+
         {/* Action Buttons */}
         <div className="space-y-3">
           <Button
