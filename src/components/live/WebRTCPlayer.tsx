@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, WifiOff, RefreshCw, PictureInPicture2, Maximize, Minimize, Wifi, Radio } from 'lucide-react';
+import { Loader2, WifiOff, RefreshCw, PictureInPicture2, Maximize, Minimize, Wifi, Radio, Scissors } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAutoPip } from '@/hooks/useAutoPip';
 import { ICE_SERVERS, preferLowLatencyCodecs } from '@/lib/webrtcConfig';
