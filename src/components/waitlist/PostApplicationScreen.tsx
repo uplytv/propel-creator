@@ -100,9 +100,36 @@ export default function PostApplicationScreen({ position, referralCode, referral
 
   return (
     <div className="max-w-2xl mx-auto px-4 pb-16">
-      {/* Live counter */}
-      <div className="text-center mb-8">
+      {/* Confetti burst on mount */}
+      <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+        {Array.from({ length: 24 }).map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-2 h-2 rounded-full"
+            style={{
+              left: `${40 + Math.random() * 20}%`,
+              top: "40%",
+              background: ["#00FF85", "#FFD700", "#FF6B6B", "#8B5CF6", "#00D4FF"][i % 5],
+            }}
+            initial={{ opacity: 1, scale: 1 }}
+            animate={{
+              x: (Math.random() - 0.5) * 300,
+              y: Math.random() * -400 + 100,
+              opacity: 0,
+              scale: 0,
+              rotate: Math.random() * 720,
+            }}
+            transition={{ duration: 1.5, delay: 0.2 + i * 0.03, ease: "easeOut" }}
+          />
+        ))}
+      </div>
+
+      {/* Live counter + ticker */}
+      <div className="text-center mb-6 space-y-3">
         <WaitlistLiveCounter />
+        <div className="flex justify-center">
+          <LiveSignupTicker />
+        </div>
       </div>
 
       {/* Checkmark + headline */}
@@ -112,12 +139,17 @@ export default function PostApplicationScreen({ position, referralCode, referral
         transition={{ duration: 0.4, ease: "easeOut" }}
         className="text-center mb-6"
       >
-        <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 bg-primary">
+        <motion.div 
+          className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 bg-primary"
+          animate={{ scale: [1, 1.1, 1] }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+        >
           <Check className="w-8 h-8 text-primary-foreground" />
-        </div>
-        <h2 className="text-[28px] font-extrabold text-foreground mb-3" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-          You're on the list.
+        </motion.div>
+        <h2 className="text-[28px] font-extrabold text-foreground mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          You're on the list. 🎉
         </h2>
+        <p className="text-sm text-muted-foreground">Your application has been submitted successfully</p>
       </motion.div>
 
       {/* Referrer card */}
