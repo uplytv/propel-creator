@@ -233,6 +233,223 @@ export type Database = {
         }
         Relationships: []
       }
+      aria_content_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          creator_id: string
+          error_message: string | null
+          id: string
+          outputs: Json | null
+          progress: number | null
+          source_duration_seconds: number | null
+          source_id: string
+          source_title: string | null
+          source_type: string
+          started_at: string | null
+          status: string | null
+          transcript_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          creator_id: string
+          error_message?: string | null
+          id?: string
+          outputs?: Json | null
+          progress?: number | null
+          source_duration_seconds?: number | null
+          source_id: string
+          source_title?: string | null
+          source_type: string
+          started_at?: string | null
+          status?: string | null
+          transcript_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          creator_id?: string
+          error_message?: string | null
+          id?: string
+          outputs?: Json | null
+          progress?: number | null
+          source_duration_seconds?: number | null
+          source_id?: string
+          source_title?: string | null
+          source_type?: string
+          started_at?: string | null
+          status?: string | null
+          transcript_id?: string | null
+        }
+        Relationships: []
+      }
+      aria_distribution_queue: {
+        Row: {
+          content_id: string | null
+          created_at: string | null
+          creator_id: string
+          id: string
+          platform: string
+          result: Json | null
+          scheduled_at: string
+          status: string | null
+        }
+        Insert: {
+          content_id?: string | null
+          created_at?: string | null
+          creator_id: string
+          id?: string
+          platform: string
+          result?: Json | null
+          scheduled_at: string
+          status?: string | null
+        }
+        Update: {
+          content_id?: string | null
+          created_at?: string | null
+          creator_id?: string
+          id?: string
+          platform?: string
+          result?: Json | null
+          scheduled_at?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aria_distribution_queue_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "aria_generated_content"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aria_distribution_settings: {
+        Row: {
+          auto_post_community: boolean | null
+          auto_post_instagram: boolean | null
+          auto_post_linkedin: boolean | null
+          auto_post_tiktok: boolean | null
+          auto_post_twitter: boolean | null
+          auto_post_youtube_shorts: boolean | null
+          auto_process_new_content: boolean | null
+          auto_send_email_blast: boolean | null
+          content_tone: string | null
+          created_at: string | null
+          creator_id: string
+          id: string
+          max_clip_seconds: number | null
+          max_clips_per_job: number | null
+          min_clip_seconds: number | null
+          posting_schedule: string | null
+          primary_platform: string | null
+          require_approval: boolean | null
+        }
+        Insert: {
+          auto_post_community?: boolean | null
+          auto_post_instagram?: boolean | null
+          auto_post_linkedin?: boolean | null
+          auto_post_tiktok?: boolean | null
+          auto_post_twitter?: boolean | null
+          auto_post_youtube_shorts?: boolean | null
+          auto_process_new_content?: boolean | null
+          auto_send_email_blast?: boolean | null
+          content_tone?: string | null
+          created_at?: string | null
+          creator_id: string
+          id?: string
+          max_clip_seconds?: number | null
+          max_clips_per_job?: number | null
+          min_clip_seconds?: number | null
+          posting_schedule?: string | null
+          primary_platform?: string | null
+          require_approval?: boolean | null
+        }
+        Update: {
+          auto_post_community?: boolean | null
+          auto_post_instagram?: boolean | null
+          auto_post_linkedin?: boolean | null
+          auto_post_tiktok?: boolean | null
+          auto_post_twitter?: boolean | null
+          auto_post_youtube_shorts?: boolean | null
+          auto_process_new_content?: boolean | null
+          auto_send_email_blast?: boolean | null
+          content_tone?: string | null
+          created_at?: string | null
+          creator_id?: string
+          id?: string
+          max_clip_seconds?: number | null
+          max_clips_per_job?: number | null
+          min_clip_seconds?: number | null
+          posting_schedule?: string | null
+          primary_platform?: string | null
+          require_approval?: boolean | null
+        }
+        Relationships: []
+      }
+      aria_generated_content: {
+        Row: {
+          body: string | null
+          content_type: string
+          created_at: string | null
+          creator_id: string
+          id: string
+          job_id: string | null
+          metadata: Json | null
+          mux_clip_asset_id: string | null
+          mux_clip_playback_id: string | null
+          performance_data: Json | null
+          platform: string | null
+          published_at: string | null
+          scheduled_at: string | null
+          status: string | null
+          title: string | null
+        }
+        Insert: {
+          body?: string | null
+          content_type: string
+          created_at?: string | null
+          creator_id: string
+          id?: string
+          job_id?: string | null
+          metadata?: Json | null
+          mux_clip_asset_id?: string | null
+          mux_clip_playback_id?: string | null
+          performance_data?: Json | null
+          platform?: string | null
+          published_at?: string | null
+          scheduled_at?: string | null
+          status?: string | null
+          title?: string | null
+        }
+        Update: {
+          body?: string | null
+          content_type?: string
+          created_at?: string | null
+          creator_id?: string
+          id?: string
+          job_id?: string | null
+          metadata?: Json | null
+          mux_clip_asset_id?: string | null
+          mux_clip_playback_id?: string | null
+          performance_data?: Json | null
+          platform?: string | null
+          published_at?: string | null
+          scheduled_at?: string | null
+          status?: string | null
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aria_generated_content_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "aria_content_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       aria_rate_limits: {
         Row: {
           id: string
