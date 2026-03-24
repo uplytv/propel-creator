@@ -301,12 +301,36 @@ export default function BroadcastStudio({
   const [coachingNudge, setCoachingNudge] = useState<string | null>(null);
   const prevEnergyRef = useRef(0);
 
+  // Adaptive bitrate (adjusts quality based on network)
+  const adaptiveBitrate = useAdaptiveBitrate(peerConnectionsRef, streamRef, isRecording);
+
+  // Broadcaster health monitoring (upload speed, dropped frames)
+  const broadcasterHealth = useBroadcasterHealth(peerConnectionsRef, isRecording);
+
+  // Stream auto-recovery (reconnects camera/mic if they drop)
+  const autoRecovery = useStreamAutoRecovery(streamRef, videoRef, () => {
+    // When track is restored, re-push to all peer connections
+    peerConnectionsRef.current.forEach((pc) => {
+      if (!streamRef.current) return;
+      streamRef.current.getTracks().forEach(track => {
+        const sender = pc.getSenders().find(s => s.track?.kind === track.kind);
+        if (sender) {
+          sender.replaceTrack(track);
+        }
+      });
+    });
+  });
+
   useEffect(() => {
     if (isRecording) {
       const cleanup = engagement.startEnergyBroadcast();
-      return cleanup;
+      autoRecovery.startMonitoring(facingMode);
+      return () => {
+        cleanup();
+        autoRecovery.stopMonitoring();
+      };
     }
-  }, [isRecording, engagement.startEnergyBroadcast]);
+  }, [isRecording, engagement.startEnergyBroadcast, autoRecovery.startMonitoring, autoRecovery.stopMonitoring, facingMode]);
 
   useEffect(() => {
     const score = engagement.energyScore;
