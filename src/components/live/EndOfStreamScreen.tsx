@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Clock, Eye, Zap, Coins, Users, Share2, GraduationCap, PartyPopper } from "lucide-react";
+import HighlightsReel from "./HighlightsReel";
+import type { HighlightMoment } from "@/hooks/useStreamHighlights";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import SharePanel from "@/components/share/SharePanel";
