@@ -30,7 +30,7 @@ const REVENUE_SOURCES = [
 
 const typeBadge = (type: string) => {
   const map: Record<string, { color: string; label: string; icon: React.ElementType }> = {
-    earn: { color: "bg-[#00FF85]/15 text-[#00FF85] border-[#00FF85]/20", label: "Earned", icon: ArrowDownRight },
+    earn: { color: "bg-primary/15 text-primary border-primary/20", label: "Earned", icon: ArrowDownRight },
     withdrawal: { color: "bg-destructive/15 text-destructive border-destructive/20", label: "Withdrawal", icon: ArrowUpRight },
     fee: { color: "bg-muted/50 text-muted-foreground border-border", label: "Fee", icon: Receipt },
     refund: { color: "bg-blue-500/15 text-blue-400 border-blue-500/20", label: "Refund", icon: ArrowDownCircle },
