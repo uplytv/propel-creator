@@ -285,32 +285,66 @@ export default function Settings() {
         {/* Notifications tab */}
         {activeTab === "notifications" && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+            {/* Email Notifications */}
             <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-4">
               <div className="flex items-center gap-3">
-                <Bell className="w-5 h-5 text-primary" />
-                <h2 className="text-lg font-semibold">Notification Preferences</h2>
+                <Mail className="w-5 h-5 text-primary" />
+                <h2 className="text-lg font-semibold">Email Notifications</h2>
               </div>
+              <p className="text-xs text-muted-foreground">Choose which emails you receive. These do not affect in-app notifications.</p>
               {[
-                { key: "campaign_digest_email", label: "Campaign Digest Emails", desc: "Weekly summaries of your campaign performance" },
-                { key: "campaign_alert_email", label: "Campaign Alert Emails", desc: "Important alerts about your campaigns" },
+                { key: "weekly_report_email" as const, label: "Weekly Growth Report", desc: "Summary of views, members & revenue every Monday" },
+                { key: "new_follower_email" as const, label: "New Follower", desc: "Get notified when someone follows you" },
+                { key: "tip_received_email" as const, label: "Tip Received", desc: "Get notified when a viewer sends you a tip" },
+                { key: "member_joined_email" as const, label: "Member Joined", desc: "Get notified when someone joins your community" },
               ].map(pref => (
                 <div key={pref.key} className="flex items-center justify-between py-2">
                   <div>
-                    <p className="text-sm font-medium">{pref.label}</p>
+                    <p className="text-sm font-medium text-foreground">{pref.label}</p>
                     <p className="text-xs text-muted-foreground">{pref.desc}</p>
                   </div>
                   <Switch
-                    checked={(campaignPrefs as any)?.[pref.key] ?? true}
+                    checked={campaignPrefs[pref.key] ?? true}
                     onCheckedChange={(checked) => updatePrefs({ [pref.key]: checked })}
                   />
                 </div>
               ))}
             </div>
 
+            {/* Campaign Notifications */}
             <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-4">
-              <h3 className="font-semibold text-foreground">Sound</h3>
+              <div className="flex items-center gap-3">
+                <Megaphone className="w-5 h-5 text-primary" />
+                <h2 className="text-lg font-semibold">Campaign Alerts</h2>
+              </div>
+              {[
+                { key: "budget_warning" as const, label: "Budget Warnings", desc: "Alert when a campaign nears its budget limit" },
+                { key: "campaign_completed" as const, label: "Campaign Completed", desc: "Get notified when a campaign finishes running" },
+              ].map(pref => (
+                <div key={pref.key} className="flex items-center justify-between py-2">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{pref.label}</p>
+                    <p className="text-xs text-muted-foreground">{pref.desc}</p>
+                  </div>
+                  <Switch
+                    checked={campaignPrefs[pref.key] ?? true}
+                    onCheckedChange={(checked) => updatePrefs({ [pref.key]: checked })}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* In-App Notifications */}
+            <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-4">
+              <div className="flex items-center gap-3">
+                <Bell className="w-5 h-5 text-primary" />
+                <h2 className="text-lg font-semibold">In-App</h2>
+              </div>
               <div className="flex items-center justify-between">
-                <p className="text-sm">Notification sounds</p>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Notification sounds</p>
+                  <p className="text-xs text-muted-foreground">Play a sound when you receive notifications</p>
+                </div>
                 <Switch
                   checked={soundEnabled}
                   onCheckedChange={(checked) => {

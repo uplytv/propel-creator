@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart, Share2, ChevronDown, ChevronUp, MessageCircle, Eye, Clock, Send } from "lucide-react";
+import { Heart, Share2, ChevronDown, ChevronUp, MessageCircle, Eye, Clock, Send, BarChart3, TrendingUp } from "lucide-react";
 import { UPLYMuxPlayer } from "@/components/MuxPlayer";
 import SEOHead from "@/components/SEOHead";
 import FollowButton from "@/components/FollowButton";
@@ -262,6 +262,10 @@ export default function VideoPlayer() {
               )}
             </div>
           </div>
+          {/* Creator Analytics Card (visible only to video owner) */}
+          {user && video.creator_id === user.id && (
+            <VideoAnalyticsCard videoId={video.id} viewCount={video.view_count} likeCount={video.like_count} commentCount={video.comment_count} createdAt={video.created_at} durationSeconds={video.duration_seconds} />
+          )}
         </div>
 
         {/* Related videos sidebar */}
@@ -287,6 +291,49 @@ export default function VideoPlayer() {
         playbackId={video.playback_id}
         creatorUsername={creatorUsername}
       />
+    </div>
+  );
+}
+
+function VideoAnalyticsCard({ videoId, viewCount, likeCount, commentCount, createdAt, durationSeconds }: {
+  videoId: string; viewCount: number; likeCount: number; commentCount: number; createdAt: string; durationSeconds: number;
+}) {
+  const daysSincePublish = Math.max(1, Math.floor((Date.now() - new Date(createdAt).getTime()) / 86400000));
+  const viewsPerDay = (viewCount / daysSincePublish).toFixed(1);
+  const engagementRate = viewCount > 0 ? (((likeCount + commentCount) / viewCount) * 100).toFixed(1) : "0.0";
+  const estWatchTimeHrs = durationSeconds > 0 ? ((viewCount * durationSeconds * 0.45) / 3600).toFixed(1) : "0";
+
+  const stats = [
+    { label: "Total Views", value: viewCount.toLocaleString(), icon: Eye },
+    { label: "Views/Day", value: viewsPerDay, icon: TrendingUp },
+    { label: "Engagement", value: `${engagementRate}%`, icon: BarChart3 },
+    { label: "Est. Watch Time", value: `${estWatchTimeHrs}h`, icon: Clock },
+  ];
+
+  return (
+    <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
+      <div className="flex items-center gap-2">
+        <BarChart3 className="w-4 h-4 text-primary" />
+        <h3 className="text-sm font-bold text-foreground">Video Analytics</h3>
+        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-medium">Creator Only</span>
+      </div>
+      <div className="grid grid-cols-2 gap-2.5">
+        {stats.map((s) => {
+          const Icon = s.icon;
+          return (
+            <div key={s.label} className="rounded-lg bg-background/60 border border-border p-2.5 flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Icon className="w-3.5 h-3.5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-foreground leading-tight">{s.value}</p>
+                <p className="text-[10px] text-muted-foreground">{s.label}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <p className="text-[10px] text-muted-foreground">Published {daysSincePublish}d ago · Engagement = (likes + comments) / views</p>
     </div>
   );
 }
