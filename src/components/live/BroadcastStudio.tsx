@@ -244,6 +244,14 @@ export default function BroadcastStudio({
   const lastTapRef = useRef<number>(0);
   const [liveChatInput, setLiveChatInput] = useState("");
   const [liveChatProfile, setLiveChatProfile] = useState<{ display_name: string; avatar_url: string | null } | null>(null);
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showPollCreator, setShowPollCreator] = useState(false);
+
+  // Stream analytics (real-time dashboard)
+  const streamAnalytics = useStreamAnalytics(streamData.streamId, isRecording);
+
+  // Virtual background
+  const virtualBg = useVirtualBackground(streamRef, videoRef);
 
   // Load profile for live chat
   useEffect(() => {
