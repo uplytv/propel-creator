@@ -387,6 +387,8 @@ export default function WebRTCPlayer({ streamId, playbackId, title, className }:
               <PictureInPicture2 className={`w-4 h-4 ${isPip ? 'text-primary' : ''}`} />
             </button>
           )}
+          {/* Viewer clip button */}
+          <ViewerClipButton videoRef={videoRef} isPlaying={status === 'playing'} />
           <button
             onClick={toggleFullscreen}
             className="p-2 rounded-lg bg-black/40 backdrop-blur-sm text-white hover:bg-black/60 transition-colors"
