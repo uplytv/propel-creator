@@ -220,7 +220,7 @@ export default function SharePanel({
         break;
       }
       case "instagram": {
-        navigator.clipboard.writeText(caption);
+        await safeClipboard(caption);
         toast({ title: "Caption copied! Opening Instagram…" });
         if (isMobile && navigator.share) {
           const blob = await fetchVideoBlob();
