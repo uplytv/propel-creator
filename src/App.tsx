@@ -162,6 +162,7 @@ const App = () => (
                     <Route path="/p/:slug" element={<JointProduct isPublic />} />
                     <Route path="/live" element={<Live />} />
                     <Route path="/stream/:id" element={<Stream />} />
+                    <Route path="/stream/:id/countdown" element={<StreamCountdown />} />
                     <Route path="/creator/:username/videos/:id" element={<VideoPlayer />} />
                     <Route path="/:username/live/:slug" element={<Stream />} />
                     <Route path="/:username/videos/:slug" element={<VideoPlayer />} />
