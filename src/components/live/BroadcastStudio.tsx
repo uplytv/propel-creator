@@ -1107,6 +1107,7 @@ export default function BroadcastStudio({
                     >
                       <Swords className="w-4.5 h-4.5 text-white" />
                     </button>
+                    {/* Donation Goal button is handled inline by the overlay */}
                     <button
                       onClick={() => virtualBg.toggleEffect(virtualBg.effect === 'blur' ? 'none' : 'blur')}
                       className="w-10 h-10 rounded-full flex items-center justify-center"
