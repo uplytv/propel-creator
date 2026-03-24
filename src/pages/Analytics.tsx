@@ -9,6 +9,8 @@ import { formatDistanceToNow, format, subDays } from "date-fns";
 import SEOHead from "@/components/SEOHead";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MemberAnalyticsCard } from "@/components/dashboard/MemberAnalyticsCard";
+import { ContentScheduler } from "@/components/dashboard/ContentScheduler";
 
 function MetricCard({ label, value, growth, icon: Icon }: { label: string; value: string; growth: number; icon: typeof Users }) {
   const isPositive = growth >= 0;
@@ -317,6 +319,12 @@ export default function AnalyticsPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Member Analytics */}
+        <MemberAnalyticsCard />
+
+        {/* Content Schedule */}
+        <ContentScheduler />
 
         {/* Stream Sessions */}
         <Card className="mt-4 border-border">

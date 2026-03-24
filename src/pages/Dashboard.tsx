@@ -21,6 +21,7 @@ import DashboardModeToggle, { type DashboardMode } from "@/components/dashboard/
 import AriaChat from "@/components/dashboard/AriaChat";
 import DiscoverMarketplace from "@/components/dashboard/DiscoverMarketplace";
 import VideoUploadSheet from "@/components/videos/VideoUploadSheet";
+import { RevenueGoalTracker } from "@/components/dashboard/RevenueGoalTracker";
 
 function PlatformUpgradeBanner() {
   const { user } = useAuth();
@@ -137,6 +138,11 @@ export default function Dashboard() {
             );
           })}
         </motion.div>
+
+        {/* Revenue Goal */}
+        <div className="px-4 md:px-8 mb-4">
+          <RevenueGoalTracker />
+        </div>
 
         <PlatformUpgradeBanner />
 

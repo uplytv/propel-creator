@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Crown } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useMemberPoints } from "@/hooks/useCommunityMembers";
+import MemberXPBadge from "@/components/space/MemberXPBadge";
 
 interface Props {
   creatorId: string;
@@ -79,9 +80,10 @@ export default function SpaceLeaderboardTab({ creatorId }: Props) {
                     {(entry.display_name || "M").charAt(0)}
                   </div>
                 )}
-                <span className="flex-1 text-sm font-semibold text-white truncate">
+                <span className="flex-1 text-sm font-semibold text-white truncate flex items-center gap-1.5">
                   {entry.display_name}
-                  {isCurrentUser && <span className="text-xs ml-1" style={{ color: "#00FF85" }}>(you)</span>}
+                  <MemberXPBadge xp={entry.total_points} showLabel />
+                  {isCurrentUser && <span className="text-xs" style={{ color: "#00FF85" }}>(you)</span>}
                 </span>
                 <span className="text-sm font-bold" style={{ color: "#00FF85" }}>{entry.total_points} pts</span>
               </div>
@@ -108,8 +110,10 @@ export default function SpaceLeaderboardTab({ creatorId }: Props) {
                     {(currentUserEntry.display_name || "M").charAt(0)}
                   </div>
                 )}
-                <span className="flex-1 text-sm font-semibold text-white truncate">
-                  {currentUserEntry.display_name} <span className="text-xs" style={{ color: "#00FF85" }}>(you)</span>
+                <span className="flex-1 text-sm font-semibold text-white truncate flex items-center gap-1.5">
+                  {currentUserEntry.display_name}
+                  <MemberXPBadge xp={currentUserEntry.total_points} showLabel />
+                  <span className="text-xs" style={{ color: "#00FF85" }}>(you)</span>
                 </span>
                 <span className="text-sm font-bold" style={{ color: "#00FF85" }}>{currentUserEntry.total_points} pts</span>
               </div>
