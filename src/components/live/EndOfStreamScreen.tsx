@@ -17,6 +17,8 @@ interface EndOfStreamScreenProps {
   durationSeconds: number;
   onClose: () => void;
   username?: string | null;
+  highlights?: HighlightMoment[];
+  chaptersDescription?: string;
 }
 
 interface StreamStats {
