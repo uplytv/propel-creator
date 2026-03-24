@@ -38,13 +38,27 @@ export function useStreamEngagement(streamId: string | undefined, creatorUserId?
   const decayTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const broadcastTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Debounced chat message batching for high-volume streams
+  const pendingMessagesRef = useRef<LiveChatMessage[]>([]);
+  const flushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const flushMessages = useCallback(() => {
+    if (pendingMessagesRef.current.length === 0) return;
+    setChatMessages((prev) => {
+      const combined = [...prev, ...pendingMessagesRef.current];
+      // Keep last 300 messages for smooth scrolling
+      return combined.slice(-300);
+    });
+    pendingMessagesRef.current = [];
+  }, []);
+
   // Fetch initial messages
   useEffect(() => {
     if (!streamId) return;
     const fetchInitial = async () => {
       const { data } = await supabase
         .from("live_chat_messages")
-        .select("*")
+        .select("id, stream_id, user_id, username, avatar_url, message, is_pinned, created_at")
         .eq("stream_id", streamId)
         .order("created_at", { ascending: true })
         .limit(100);
@@ -53,7 +67,7 @@ export function useStreamEngagement(streamId: string | undefined, creatorUserId?
     fetchInitial();
   }, [streamId]);
 
-  // Realtime chat subscription
+  // Realtime chat subscription — batched for performance
   useEffect(() => {
     if (!streamId) return;
     const channel = supabase
@@ -66,7 +80,16 @@ export function useStreamEngagement(streamId: string | undefined, creatorUserId?
       }, (payload: any) => {
         const msg = payload.new as LiveChatMessage;
         msg.message = filterProfanity(msg.message);
-        setChatMessages((prev) => [...prev.slice(-200), msg]);
+        
+        // Batch messages to avoid excessive re-renders during chat spam
+        pendingMessagesRef.current.push(msg);
+        if (!flushTimerRef.current) {
+          flushTimerRef.current = setTimeout(() => {
+            flushMessages();
+            flushTimerRef.current = null;
+          }, 100); // Flush every 100ms max
+        }
+        
         addActivity("chat", `💬 ${msg.username}: ${msg.message.slice(0, 40)}`, "hsl(0 0% 100%)");
         bumpEnergy(5);
       })
@@ -80,12 +103,22 @@ export function useStreamEngagement(streamId: string | undefined, creatorUserId?
         setChatMessages((prev) => prev.map((m) => m.id === updated.id ? { ...m, ...updated } : m));
       })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [streamId]);
+    return () => {
+      supabase.removeChannel(channel);
+      if (flushTimerRef.current) {
+        clearTimeout(flushTimerRef.current);
+        flushTimerRef.current = null;
+      }
+      // Flush remaining
+      flushMessages();
+    };
+  }, [streamId, flushMessages]);
 
-  // Realtime reactions subscription
+  // Realtime reactions subscription — throttled for performance
   useEffect(() => {
     if (!streamId) return;
+    let reactionThrottleActive = false;
+    
     const channel = supabase
       .channel(`live-reactions-${streamId}`)
       .on("postgres_changes", {
@@ -95,14 +128,22 @@ export function useStreamEngagement(streamId: string | undefined, creatorUserId?
         filter: `stream_id=eq.${streamId}`,
       }, (payload: any) => {
         const r = payload.new;
-        setFloatingReactions((prev) => [...prev.slice(-30), { id: r.id, emoji: r.emoji, created_at: r.created_at }]);
+        
+        // Throttle floating reactions to max 10/sec to prevent DOM thrashing
+        if (!reactionThrottleActive) {
+          setFloatingReactions((prev) => [...prev.slice(-20), { id: r.id, emoji: r.emoji, created_at: r.created_at }]);
+          reactionThrottleActive = true;
+          setTimeout(() => { reactionThrottleActive = false; }, 100);
+        }
+        
         setReactionCount((c) => c + 1);
         addActivity("reaction", `${r.emoji} reacted`, "#00FF85");
         bumpEnergy(3);
-        // Auto-remove after 2.5s
+        
+        // Auto-remove after 2s
         setTimeout(() => {
           setFloatingReactions((prev) => prev.filter((fr) => fr.id !== r.id));
-        }, 2500);
+        }, 2000);
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -125,8 +166,9 @@ export function useStreamEngagement(streamId: string | undefined, creatorUserId?
   // Presence for viewer count
   useEffect(() => {
     if (!streamId) return;
+    const presenceKey = crypto.randomUUID();
     const channel = supabase.channel(`engage-viewers-${streamId}`, {
-      config: { presence: { key: crypto.randomUUID() } },
+      config: { presence: { key: presenceKey } },
     });
     channel
       .on("presence", { event: "sync" }, () => {
@@ -146,18 +188,18 @@ export function useStreamEngagement(streamId: string | undefined, creatorUserId?
   // Energy decay (creator-side broadcasts this)
   const startEnergyBroadcast = useCallback(() => {
     if (!streamId) return;
-    // Decay every 30s
+    // Decay every 20s (more responsive)
     decayTimerRef.current = setInterval(() => {
-      energyRef.current = Math.max(0, energyRef.current - 10);
-    }, 30000);
-    // Broadcast every 15s
+      energyRef.current = Math.max(0, energyRef.current - 8);
+    }, 20000);
+    // Broadcast every 10s (faster updates)
     broadcastTimerRef.current = setInterval(() => {
       supabase.channel(`energy-${streamId}`).send({
         type: "broadcast",
         event: "energy-update",
         payload: { score: energyRef.current },
       });
-    }, 15000);
+    }, 10000);
     return () => {
       if (decayTimerRef.current) clearInterval(decayTimerRef.current);
       if (broadcastTimerRef.current) clearInterval(broadcastTimerRef.current);
@@ -173,15 +215,23 @@ export function useStreamEngagement(streamId: string | undefined, creatorUserId?
     setActivityFeed((prev) => [...prev.slice(-50), { id: crypto.randomUUID(), type, text, color, ts: Date.now() }]);
   }, []);
 
-  // Send reaction
+  // Send reaction — debounced to prevent spam
+  const lastReactionRef = useRef(0);
   const sendReaction = useCallback(async (emoji: string, userId: string) => {
     if (!streamId) return;
+    const now = Date.now();
+    if (now - lastReactionRef.current < 500) return; // 2 reactions/sec max
+    lastReactionRef.current = now;
     await supabase.from("live_reactions").insert({ stream_id: streamId, user_id: userId, emoji });
   }, [streamId]);
 
-  // Send chat message
+  // Send chat message — rate limited
+  const lastChatRef = useRef(0);
   const sendChatMessage = useCallback(async (userId: string, username: string, avatarUrl: string | null, message: string) => {
     if (!streamId || !message.trim()) return;
+    const now = Date.now();
+    if (now - lastChatRef.current < 300) return; // ~3 msgs/sec max
+    lastChatRef.current = now;
     await supabase.from("live_chat_messages").insert({
       stream_id: streamId,
       user_id: userId,
