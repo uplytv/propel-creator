@@ -1153,6 +1153,56 @@ export default function BroadcastStudio({
                     username={liveChatProfile?.display_name}
                   />
 
+                  {/* Stream Alerts (animated tips/subs/milestones) */}
+                  <StreamAlerts />
+
+                  {/* Live Captions Overlay */}
+                  <LiveCaptionsOverlay
+                    captions={captions.captions}
+                    interimText={captions.interimText}
+                    isActive={captions.isActive}
+                  />
+
+                  {/* Raid Overlay */}
+                  <RaidOverlay
+                    isRaiding={raidSystem.isRaiding}
+                    raidCountdown={raidSystem.raidCountdown}
+                    incomingRaid={raidSystem.incomingRaid}
+                  />
+
+                  {/* Raid Picker */}
+                  <AnimatePresence>
+                    {showRaidPicker && !raidSystem.isRaiding && (
+                      <motion.div
+                        initial={{ opacity: 0, x: 50 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 50 }}
+                        className="absolute top-20 right-14 z-25 w-56"
+                      >
+                        <div
+                          className="rounded-xl p-3 space-y-2"
+                          style={{ backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(16px)' }}
+                        >
+                          <p className="text-xs font-bold text-white">🚀 Raid a Creator</p>
+                          {raidSystem.availableTargets.length === 0 ? (
+                            <p className="text-[10px] text-white/50">No other streams live right now</p>
+                          ) : (
+                            raidSystem.availableTargets.slice(0, 5).map(target => (
+                              <button
+                                key={target.streamId}
+                                onClick={() => { raidSystem.initiateRaid(target); setShowRaidPicker(false); }}
+                                className="w-full text-left p-2 rounded-lg hover:bg-white/10 transition-colors"
+                              >
+                                <p className="text-xs font-semibold text-white truncate">{target.displayName}</p>
+                                <p className="text-[10px] text-white/50 truncate">{target.title} · {target.viewerCount} viewers</p>
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   {/* End Stream Confirmation Overlay */}
                   <AnimatePresence>
                     {showEndConfirm && (
