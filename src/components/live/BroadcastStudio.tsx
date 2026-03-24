@@ -1121,6 +1121,14 @@ export default function BroadcastStudio({
                     >
                       <Swords className="w-4.5 h-4.5 text-white" />
                     </button>
+                    {/* Predictions button */}
+                    <button
+                      onClick={() => setShowPredictionCreator(!showPredictionCreator)}
+                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: showPredictionCreator ? "rgba(245,158,11,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
+                    >
+                      <Gamepad2 className="w-4.5 h-4.5 text-white" />
+                    </button>
                     {/* Donation Goal button is handled inline by the overlay */}
                     <button
                       onClick={() => virtualBg.toggleEffect(virtualBg.effect === 'blur' ? 'none' : 'blur')}
