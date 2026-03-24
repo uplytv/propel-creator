@@ -1,0 +1,1 @@
+UPDATE affiliate_links SET username_slug = 'arianshahbazi' WHERE code = 'UPLY-ARISHAH-QTE8' AND (username_slug IS NULL OR username_slug = '')
