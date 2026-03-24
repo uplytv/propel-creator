@@ -9,6 +9,9 @@ import SEOHead from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import dashboardPreview from "@/assets/dashboard-preview.png";
+import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
+import ExitIntentModal from "@/components/landing/ExitIntentModal";
+import LiveSignupTicker from "@/components/waitlist/LiveSignupTicker";
 
 const JSON_LD = {
   "@context": "https://schema.org",
