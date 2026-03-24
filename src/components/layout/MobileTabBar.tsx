@@ -22,7 +22,7 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
     { label: "Community", icon: Users, path: communityPath },
     { label: "create", icon: Plus, path: "" },
     { label: "Earn", icon: DollarSign, path: "/wallet" },
-    { label: "ARIA", icon: Sparkles, path: "/grow" },
+    { label: "ARIA", icon: Sparkles, path: "" },
   ];
 
   const isActive = (path: string) => {
