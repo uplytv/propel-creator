@@ -140,6 +140,33 @@ export default function Dashboard() {
 
         <PlatformUpgradeBanner />
 
+        {/* Quick Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="flex gap-2 px-4 md:px-8 mb-4 overflow-x-auto pb-1"
+        >
+          {[
+            { label: "Go Live", icon: Radio, path: "/go-live", color: "text-destructive" },
+            { label: "New Post", icon: MessageCircle, path: "/community", color: "text-primary" },
+            { label: "Upload Video", action: () => setUploadOpen(true), icon: Upload, color: "text-primary" },
+            { label: "Share Link", icon: Eye, path: `/creator/${(profile as any)?.username || "me"}`, color: "text-primary" },
+          ].map((action) => {
+            const Icon = action.icon;
+            return (
+              <button
+                key={action.label}
+                onClick={action.action || (() => navigate(action.path!))}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-border bg-card/60 hover:bg-primary/10 hover:border-primary/40 transition-all text-sm font-medium whitespace-nowrap flex-shrink-0"
+              >
+                <Icon className={`w-3.5 h-3.5 ${action.color}`} />
+                <span className="text-foreground">{action.label}</span>
+              </button>
+            );
+          })}
+        </motion.div>
+
         {/* Live Stream Banner */}
         {activeStream && (
           <motion.div
