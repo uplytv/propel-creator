@@ -564,6 +564,12 @@ export default function Stream() {
                     raidCountdown={null}
                     incomingRaid={raidSystem.incomingRaid}
                   />
+                  {/* Donation Goal (viewer view) */}
+                  <DonationGoalOverlay
+                    streamId={id!}
+                    isHost={false}
+                    creatorId={dbStream.user_id}
+                  />
                 </>
               )}
             </div>

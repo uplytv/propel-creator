@@ -160,6 +160,16 @@ export default function EndOfStreamScreen({
           </div>
         )}
 
+        {/* AI-Powered Stream Summary */}
+        <AIStreamSummary
+          streamId={streamId}
+          streamTitle={streamTitle}
+          durationSeconds={durationSeconds}
+          highlights={highlights}
+          chaptersDescription={chaptersDescription}
+          creatorId={creatorId}
+        />
+
         {/* Action Buttons */}
         <div className="space-y-3">
           <Button
