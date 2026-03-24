@@ -12,6 +12,8 @@ import AIStreamSummary from "./AIStreamSummary";
 import AutoClipSuggestions from "./AutoClipSuggestions";
 import { useStreamDownload } from "@/hooks/useStreamDownload";
 import { useAutoClipAI } from "@/hooks/useAutoClipAI";
+import { useStreamAchievements } from "@/hooks/useStreamAchievements";
+import StreamAchievements from "./StreamAchievements";
 
 interface EndOfStreamScreenProps {
   streamId: string;
