@@ -11,6 +11,13 @@ import MobileChatDrawer from "@/components/live/MobileChatDrawer";
 import ViewerEngagementOverlay from "@/components/live/ViewerEngagementOverlay";
 import ViewerShopOverlay from "@/components/live/ViewerShopOverlay";
 import FeaturedProductCTA from "@/components/live/FeaturedProductCTA";
+import ViewerRewardsBadge from "@/components/live/ViewerRewardsBadge";
+import StreamAlerts from "@/components/live/StreamAlerts";
+import LiveCaptionsOverlay from "@/components/live/LiveCaptionsOverlay";
+import RaidOverlay from "@/components/live/RaidOverlay";
+import { useViewerRewards } from "@/hooks/useViewerRewards";
+import { useLiveCaptions } from "@/hooks/useLiveCaptions";
+import { useRaidSystem } from "@/hooks/useRaidSystem";
 
 import { useState, useCallback, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
