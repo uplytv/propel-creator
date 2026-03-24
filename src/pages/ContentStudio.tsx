@@ -432,13 +432,7 @@ export default function ContentStudio() {
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="relative aspect-video bg-black">
-                  <video
-                    src={`https://stream.mux.com/${playingClipId}.m3u8`}
-                    controls
-                    autoPlay
-                    className="w-full h-full"
-                    poster={`https://image.mux.com/${playingClipId}/thumbnail.jpg?time=2`}
-                  />
+                  <UPLYMuxPlayer playbackId={playingClipId} autoPlay title="Clip Preview" />
                 </div>
                 <div className="p-3 flex justify-end">
                   <button
