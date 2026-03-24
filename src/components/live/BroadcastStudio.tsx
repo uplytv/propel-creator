@@ -53,6 +53,13 @@ import {
   SignalLow,
   SignalMedium,
 } from "lucide-react";
+import { enableSimulcast } from "@/lib/simulcast";
+import { useStreamAnalytics } from "@/hooks/useStreamAnalytics";
+import { useVirtualBackground } from "@/hooks/useVirtualBackground";
+import { LivePollOverlay } from "./LivePollOverlay";
+import GuestCoStreamPanel from "./GuestCoStreamPanel";
+import StreamAnalyticsPanel from "./StreamAnalyticsPanel";
+import { BarChart3, MessageCircleQuestion, UserPlus, Sparkles } from "lucide-react";
 
 interface Product {
   id: string;
