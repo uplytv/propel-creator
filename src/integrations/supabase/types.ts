@@ -98,6 +98,72 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_notification_batch: {
+        Row: {
+          dispatched: boolean | null
+          event_count: number | null
+          event_type: string
+          first_event_at: string | null
+          id: string
+          last_event_at: string | null
+          metadata: Json | null
+        }
+        Insert: {
+          dispatched?: boolean | null
+          event_count?: number | null
+          event_type: string
+          first_event_at?: string | null
+          id?: string
+          last_event_at?: string | null
+          metadata?: Json | null
+        }
+        Update: {
+          dispatched?: boolean | null
+          event_count?: number | null
+          event_type?: string
+          first_event_at?: string | null
+          id?: string
+          last_event_at?: string | null
+          metadata?: Json | null
+        }
+        Relationships: []
+      }
+      admin_notification_config: {
+        Row: {
+          admin_id: string
+          batch_window_seconds: number | null
+          created_at: string | null
+          email_enabled: boolean | null
+          event_type: string
+          id: string
+          in_app_enabled: boolean | null
+          min_amount: number | null
+          push_enabled: boolean | null
+        }
+        Insert: {
+          admin_id: string
+          batch_window_seconds?: number | null
+          created_at?: string | null
+          email_enabled?: boolean | null
+          event_type: string
+          id?: string
+          in_app_enabled?: boolean | null
+          min_amount?: number | null
+          push_enabled?: boolean | null
+        }
+        Update: {
+          admin_id?: string
+          batch_window_seconds?: number | null
+          created_at?: string | null
+          email_enabled?: boolean | null
+          event_type?: string
+          id?: string
+          in_app_enabled?: boolean | null
+          min_amount?: number | null
+          push_enabled?: boolean | null
+        }
+        Relationships: []
+      }
       affiliate_conversions: {
         Row: {
           affiliate_code: string
@@ -4305,6 +4371,7 @@ export type Database = {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
       }
+      dispatch_batched_admin_notifications: { Args: never; Returns: undefined }
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
@@ -4321,6 +4388,17 @@ export type Database = {
         Args: { p_amount?: number; p_id: string }
         Returns: undefined
       }
+      insert_admin_notification: {
+        Args: {
+          p_link?: string
+          p_message: string
+          p_reference_id?: string
+          p_title: string
+          p_type: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       lookup_referrer_by_code: { Args: { ref_code: string }; Returns: Json }
       move_to_dlq: {
         Args: {
@@ -4330,6 +4408,18 @@ export type Database = {
           source_queue: string
         }
         Returns: number
+      }
+      notify_admin: {
+        Args: {
+          p_amount?: number
+          p_body: string
+          p_dedup_key?: string
+          p_link?: string
+          p_metadata?: Json
+          p_title: string
+          p_type: string
+        }
+        Returns: undefined
       }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }

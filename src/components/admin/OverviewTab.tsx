@@ -3,8 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAdminOverview, DateRange } from "@/hooks/useAdminHealthData";
 import { DollarSign, Users, BarChart3, TrendingUp, Zap, Activity, Target, Heart } from "lucide-react";
-import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import LiveActivityFeed from "./LiveActivityFeed";
+import DecisionsPanel from "./DecisionsPanel";
+import AdminQuickActions from "./AdminQuickActions";
 
 export default function OverviewTab({ range }: { range: DateRange }) {
   const { data, isLoading } = useAdminOverview(range);
@@ -34,6 +36,9 @@ export default function OverviewTab({ range }: { range: DateRange }) {
     <div className="space-y-6">
       <AdminAlerts alerts={alerts} />
 
+      {/* Quick Actions */}
+      <AdminQuickActions />
+
       {/* Top KPI Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <AdminStatCard icon={DollarSign} label="Total Revenue" value={fmt(data.totalRevenue)} change={revChange} changePeriod="MoM" size="lg" />
@@ -50,7 +55,7 @@ export default function OverviewTab({ range }: { range: DateRange }) {
         <AdminStatCard icon={Activity} label="Net Revenue Retention" value={pct(data.retention)} />
       </div>
 
-      {/* Health Score + Activity Feed */}
+      {/* Health Score + Live Activity Feed */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-card border-border md:col-span-1">
           <CardContent className="p-6 flex flex-col items-center justify-center text-center">
@@ -62,56 +67,11 @@ export default function OverviewTab({ range }: { range: DateRange }) {
           </CardContent>
         </Card>
 
-        <Card className="bg-card border-border md:col-span-2">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Activity Feed</CardTitle>
-          </CardHeader>
-          <CardContent className="max-h-[360px] overflow-y-auto space-y-2">
-            {[
-              ...(data.recentSubs || []).map((s: any) => ({
-                icon: "💰",
-                text: `New subscription created`,
-                time: s.created_at,
-              })),
-              ...(data.recentStreams || []).map((s: any) => ({
-                icon: "🔴",
-                text: `Stream: ${s.title || "Untitled"} (${s.status})`,
-                time: s.created_at,
-              })),
-              ...(data.recentTips || []).map((t: any) => ({
-                icon: "💸",
-                text: `Tip sent: $${Number(t.amount || 0).toFixed(2)}`,
-                time: t.created_at,
-              })),
-              ...(data.recentBlasts || []).map((b: any) => ({
-                icon: "📧",
-                text: `Blast: "${b.subject}" to ${b.recipient_count} members`,
-                time: b.sent_at || b.created_at,
-              })),
-              ...(data.recentWaitlist || []).map((w: any) => ({
-                icon: "⭐",
-                text: `${w.full_name || "Someone"} applied to waitlist${w.referred_by ? ` (ref: ${w.referred_by})` : ""}`,
-                time: w.created_at,
-              })),
-            ]
-              .filter(e => e.time)
-              .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
-              .slice(0, 50)
-              .map((event, i) => (
-                <div key={i} className="flex items-start gap-2 py-1.5 border-b border-border/50 last:border-0">
-                  <span className="text-sm shrink-0">{event.icon}</span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm truncate">{event.text}</p>
-                    <p className="text-xs text-muted-foreground">{format(new Date(event.time), "MMM d, h:mm a")}</p>
-                  </div>
-                </div>
-              ))}
-            {(!data.recentSubs?.length && !data.recentStreams?.length && !data.recentTips?.length) && (
-              <p className="text-sm text-muted-foreground text-center py-8">No recent activity</p>
-            )}
-          </CardContent>
-        </Card>
+        <LiveActivityFeed className="md:col-span-2" />
       </div>
+
+      {/* Decisions Panel */}
+      <DecisionsPanel range={range} />
     </div>
   );
 }
