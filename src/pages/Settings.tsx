@@ -336,6 +336,13 @@ export default function Settings() {
           </motion.div>
         )}
 
+        {/* ARIA Agent tab */}
+        {activeTab === "aria" && (
+          <Suspense fallback={<div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>}>
+            <AriaSettingsSection />
+          </Suspense>
+        )}
+
         {/* Account tab */}
         {activeTab === "account" && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
