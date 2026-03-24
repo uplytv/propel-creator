@@ -412,8 +412,22 @@ export default function AITeamDashboard() {
               <Bot className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
               <h3 className="font-semibold text-foreground mb-1">No tasks yet</h3>
               <p className="text-sm text-muted-foreground mb-4">Your AI team will start working automatically</p>
-              <Button size="sm" onClick={() => triggerAgent.mutate({ agentType: "content", taskType: "content_calendar" })}>
-                <Sparkles className="w-3 h-3 mr-1" /> Generate Content Calendar
+              <Button
+                size="sm"
+                disabled={triggerAgent.isPending}
+                onClick={() => {
+                  toast.loading("ARIA is generating your content calendar...", { id: "gen-calendar" });
+                  triggerAgent.mutate(
+                    { agentType: "content", taskType: "content_calendar" },
+                    {
+                      onSuccess: () => toast.success("Content calendar generated! Check Pending Approvals.", { id: "gen-calendar" }),
+                      onError: (err) => toast.error(`Failed: ${err instanceof Error ? err.message : "Unknown error"}`, { id: "gen-calendar" }),
+                    }
+                  );
+                }}
+              >
+                {triggerAgent.isPending ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Sparkles className="w-3 h-3 mr-1" />}
+                {triggerAgent.isPending ? "Generating..." : "Generate Content Calendar"}
               </Button>
             </div>
           ) : (
