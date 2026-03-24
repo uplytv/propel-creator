@@ -373,8 +373,8 @@ export default function AITeamDashboard() {
         </div>
 
         {/* Agent Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          {(agents || []).map(agent => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+          {(agents && agents.length > 0 ? agents : PLACEHOLDER_AGENTS).map(agent => (
             <AgentCard
               key={agent.id}
               agent={agent}
