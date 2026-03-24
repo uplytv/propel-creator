@@ -65,6 +65,28 @@ export function useAriaAgents() {
         .select("*")
         .eq("creator_id", user!.id);
       if (error) throw error;
+
+      // Auto-initialize all 5 agents if none exist
+      if (!data || data.length === 0) {
+        const agentTypes = ["content", "growth", "community", "sales", "operations"];
+        const inserts = agentTypes.map(t => ({ creator_id: user!.id, agent_type: t }));
+        const { data: newAgents, error: insertError } = await supabase
+          .from("aria_agents" as any)
+          .upsert(inserts, { onConflict: "creator_id,agent_type" })
+          .select("*");
+        if (insertError) throw insertError;
+
+        // Also ensure usage tracking row exists
+        const currentMonth = new Date().toISOString().slice(0, 7) + "-01";
+        await supabase.from("aria_usage_tracking" as any).upsert({
+          creator_id: user!.id,
+          month: currentMonth,
+          budget_limit: 500,
+        }, { onConflict: "creator_id,month" });
+
+        return (newAgents || []) as unknown as AriaAgent[];
+      }
+
       return (data || []) as unknown as AriaAgent[];
     },
     enabled: !!user,
