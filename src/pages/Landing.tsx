@@ -170,6 +170,8 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white font-sans selection:bg-[#00FF85]/30">
       <SEOHead />
+      <StickyMobileCTA />
+      <ExitIntentModal />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
