@@ -17,11 +17,11 @@ export function useGiftSubscription(streamId: string, creatorId: string) {
       // Get active viewers who are NOT already members
       const { data: viewers } = await supabase
         .from('live_stream_sessions')
-        .select('viewer_id')
+        .select('user_id')
         .eq('stream_id', streamId)
-        .not('viewer_id', 'is', null)
-        .neq('viewer_id', user.id)
-        .neq('viewer_id', creatorId)
+        .not('user_id', 'is', null)
+        .neq('user_id', user.id)
+        .neq('user_id', creatorId)
         .limit(50);
 
       if (!viewers?.length) {
@@ -31,7 +31,7 @@ export function useGiftSubscription(streamId: string, creatorId: string) {
       }
 
       // Check who is already a member
-      const viewerIds = viewers.map(v => v.viewer_id).filter(Boolean) as string[];
+      const viewerIds = viewers.map(v => v.user_id).filter(Boolean) as string[];
       const { data: existingMembers } = await supabase
         .from('community_members')
         .select('user_id')

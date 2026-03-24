@@ -26,7 +26,7 @@ export function useStreamDownload() {
 
       const reader = response.body?.getReader();
       const contentLength = Number(response.headers.get('content-length')) || 0;
-      const chunks: Uint8Array[] = [];
+      const chunks: BlobPart[] = [];
       let received = 0;
 
       if (reader) {

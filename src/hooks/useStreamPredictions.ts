@@ -101,11 +101,11 @@ export function useStreamPredictions(streamId: string) {
     // Check wallet balance
     const { data: wallet } = await supabase
       .from('wallets')
-      .select('balance')
+      .select('credits')
       .eq('user_id', user.id)
       .single();
 
-    if (!wallet || wallet.balance < amount) {
+    if (!wallet || wallet.credits < amount) {
       toast({ title: 'Insufficient credits', variant: 'destructive' });
       return;
     }
@@ -113,7 +113,7 @@ export function useStreamPredictions(streamId: string) {
     // Deduct from wallet
     await supabase
       .from('wallets')
-      .update({ balance: wallet.balance - amount })
+      .update({ credits: wallet.credits - amount })
       .eq('user_id', user.id);
 
     setUserBets(prev => [...prev, { predictionId, optionIndex, amount }]);
