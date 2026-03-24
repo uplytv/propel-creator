@@ -308,9 +308,9 @@ export default function ReferralRedirect() {
           className="w-full max-w-[400px] mt-8 rounded-xl p-5 bg-card border border-border text-center"
         >
           <p className="text-sm text-foreground italic leading-relaxed mb-3">
-            "I was late to YouTube, late to Twitch. When {firstName} sent me this link, I knew this was different. The waitlist is real — apply before it closes."
+            "I missed the early days of YouTube and Twitch. When a friend sent me UPLY, I knew I couldn't miss another wave. The waitlist is real — get in now."
           </p>
-          <p className="text-xs text-muted-foreground">— What early creators are saying</p>
+          <p className="text-xs text-muted-foreground">— Early UPLY creator</p>
         </motion.div>
 
         {/* Bottom CTA */}
