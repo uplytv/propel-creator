@@ -86,11 +86,13 @@ function ContentCard({
   selected,
   onToggleSelect,
   onUpdateStatus,
+  onPlayClip,
 }: {
   item: any;
   selected: boolean;
   onToggleSelect: () => void;
   onUpdateStatus: (status: string) => void;
+  onPlayClip?: (playbackId: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const { toast } = useToast();
