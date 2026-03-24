@@ -36,8 +36,8 @@ const typeBadge = (type: string) => {
     refund: { color: "bg-blue-500/15 text-blue-400 border-blue-500/20", label: "Refund", icon: ArrowDownCircle },
     tip: { color: "bg-purple-500/15 text-purple-400 border-purple-500/20", label: "Tip", icon: Zap },
     transfer: { color: "bg-amber-500/15 text-amber-400 border-amber-500/20", label: "Transfer", icon: SendHorizontal },
-    subscription: { color: "bg-[#00FF85]/15 text-[#00FF85] border-[#00FF85]/20", label: "Subscription", icon: Users },
-    subscription_renewal: { color: "bg-[#00FF85]/15 text-[#00FF85] border-[#00FF85]/20", label: "Renewal", icon: Users },
+    subscription: { color: "bg-primary/15 text-primary border-primary/20", label: "Subscription", icon: Users },
+    subscription_renewal: { color: "bg-primary/15 text-primary border-primary/20", label: "Renewal", icon: Users },
   };
   const m = map[type] || { color: "bg-muted/50 text-muted-foreground border-border", label: type, icon: DollarSign };
   return (

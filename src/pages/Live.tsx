@@ -417,7 +417,7 @@ export default function Live() {
                   {/* Play button */}
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                     <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-                      <Play className="w-7 h-7 text-primary-foreground ml-1" fill="#0A0A0A" />
+                      <Play className="w-7 h-7 text-primary-foreground ml-1" fill="currentColor" />
                     </div>
                   </div>
                 </div>
