@@ -205,25 +205,27 @@ export function useRejectTask() {
       if (error) throw error;
 
       // Update agent confidence and store boundary memory
-      const { data: task } = await supabase.from("aria_agent_tasks" as any).select("agent_id, agent_type, task_type, output_data, creator_id").eq("id", taskId).single();
-      if (task?.agent_id) {
-        const { data: agent } = await supabase.from("aria_agents" as any).select("*").eq("id", task.agent_id).single();
-        if (agent) {
-          const newConf = 0.9 * (agent.confidence_score || 0.5) + 0.1 * 0.0;
+      const { data: taskData2 } = await supabase.from("aria_agent_tasks" as any).select("agent_id, agent_type, task_type, output_data, creator_id").eq("id", taskId).single();
+      const taskRow2 = taskData2 as any;
+      if (taskRow2?.agent_id) {
+        const { data: agentData2 } = await supabase.from("aria_agents" as any).select("*").eq("id", taskRow2.agent_id).single();
+        const agentRow2 = agentData2 as any;
+        if (agentRow2) {
+          const newConf = 0.9 * (agentRow2.confidence_score || 0.5) + 0.1 * 0.0;
           await supabase.from("aria_agents" as any).update({
             confidence_score: newConf,
-            tasks_rejected: (agent.tasks_rejected || 0) + 1,
-          }).eq("id", agent.id);
+            tasks_rejected: (agentRow2.tasks_rejected || 0) + 1,
+          }).eq("id", agentRow2.id);
         }
 
         // Store boundary memory
         if (feedback) {
           await supabase.from("aria_agent_memory" as any).upsert({
-            creator_id: task.creator_id,
-            agent_type: task.agent_type,
+            creator_id: taskRow2.creator_id,
+            agent_type: taskRow2.agent_type,
             memory_type: "boundary",
-            key: `rejected_${task.task_type}_${Date.now()}`,
-            value: { feedback, task_type: task.task_type },
+            key: `rejected_${taskRow2.task_type}_${Date.now()}`,
+            value: { feedback, task_type: taskRow2.task_type },
             confidence: 1.0,
           }, { onConflict: "creator_id,agent_type,key" });
         }
