@@ -238,6 +238,21 @@ export default function PostApplicationScreen({ position, referralCode, referral
         ))}
       </motion.div>
 
+      {/* Urgency timer */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.37 }}
+        className="mb-6 text-center"
+      >
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-border">
+          <Flame className="w-4 h-4 text-orange-400" />
+          <span className="text-xs text-muted-foreground">
+            <span className="text-foreground font-semibold">Pro tip:</span> Creators who share within 1 hour move up 2x faster
+          </span>
+        </div>
+      </motion.div>
+
       {/* Referral link section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
