@@ -254,6 +254,7 @@ export default function BroadcastStudio({
   const [liveChatProfile, setLiveChatProfile] = useState<{ display_name: string; avatar_url: string | null } | null>(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showPollCreator, setShowPollCreator] = useState(false);
+  const [showRaidPicker, setShowRaidPicker] = useState(false);
 
   // Stream analytics (real-time dashboard)
   const streamAnalytics = useStreamAnalytics(streamData.streamId, isRecording);
