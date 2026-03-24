@@ -233,6 +233,279 @@ export type Database = {
         }
         Relationships: []
       }
+      aria_agent_handoffs: {
+        Row: {
+          created_at: string | null
+          creator_id: string
+          from_agent: string | null
+          handoff_type: string | null
+          id: string
+          payload: Json | null
+          processed_at: string | null
+          status: string | null
+          to_agent: string | null
+          trigger_task_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          creator_id: string
+          from_agent?: string | null
+          handoff_type?: string | null
+          id?: string
+          payload?: Json | null
+          processed_at?: string | null
+          status?: string | null
+          to_agent?: string | null
+          trigger_task_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          creator_id?: string
+          from_agent?: string | null
+          handoff_type?: string | null
+          id?: string
+          payload?: Json | null
+          processed_at?: string | null
+          status?: string | null
+          to_agent?: string | null
+          trigger_task_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aria_agent_handoffs_trigger_task_id_fkey"
+            columns: ["trigger_task_id"]
+            isOneToOne: false
+            referencedRelation: "aria_agent_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aria_agent_insights: {
+        Row: {
+          action_label: string | null
+          action_url: string | null
+          agent_type: string | null
+          body: string | null
+          confidence: number | null
+          created_at: string | null
+          creator_id: string
+          expires_at: string | null
+          id: string
+          insight_type: string | null
+          is_read: boolean | null
+          priority: number | null
+          source_task_id: string | null
+          title: string | null
+        }
+        Insert: {
+          action_label?: string | null
+          action_url?: string | null
+          agent_type?: string | null
+          body?: string | null
+          confidence?: number | null
+          created_at?: string | null
+          creator_id: string
+          expires_at?: string | null
+          id?: string
+          insight_type?: string | null
+          is_read?: boolean | null
+          priority?: number | null
+          source_task_id?: string | null
+          title?: string | null
+        }
+        Update: {
+          action_label?: string | null
+          action_url?: string | null
+          agent_type?: string | null
+          body?: string | null
+          confidence?: number | null
+          created_at?: string | null
+          creator_id?: string
+          expires_at?: string | null
+          id?: string
+          insight_type?: string | null
+          is_read?: boolean | null
+          priority?: number | null
+          source_task_id?: string | null
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aria_agent_insights_source_task_id_fkey"
+            columns: ["source_task_id"]
+            isOneToOne: false
+            referencedRelation: "aria_agent_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aria_agent_memory: {
+        Row: {
+          agent_type: string | null
+          confidence: number | null
+          created_at: string | null
+          creator_id: string
+          id: string
+          key: string | null
+          last_observed_at: string | null
+          memory_type: string | null
+          observation_count: number | null
+          value: Json | null
+        }
+        Insert: {
+          agent_type?: string | null
+          confidence?: number | null
+          created_at?: string | null
+          creator_id: string
+          id?: string
+          key?: string | null
+          last_observed_at?: string | null
+          memory_type?: string | null
+          observation_count?: number | null
+          value?: Json | null
+        }
+        Update: {
+          agent_type?: string | null
+          confidence?: number | null
+          created_at?: string | null
+          creator_id?: string
+          id?: string
+          key?: string | null
+          last_observed_at?: string | null
+          memory_type?: string | null
+          observation_count?: number | null
+          value?: Json | null
+        }
+        Relationships: []
+      }
+      aria_agent_tasks: {
+        Row: {
+          agent_id: string | null
+          agent_type: string | null
+          completed_at: string | null
+          confidence: number | null
+          created_at: string | null
+          creator_feedback: string | null
+          creator_id: string
+          error_message: string | null
+          handoff_data: Json | null
+          handoff_to_agent: string | null
+          id: string
+          input_data: Json | null
+          output_data: Json | null
+          requires_approval: boolean | null
+          started_at: string | null
+          status: string | null
+          task_title: string | null
+          task_type: string | null
+          triggered_by: string | null
+          triggered_by_agent: string | null
+          was_approved: boolean | null
+        }
+        Insert: {
+          agent_id?: string | null
+          agent_type?: string | null
+          completed_at?: string | null
+          confidence?: number | null
+          created_at?: string | null
+          creator_feedback?: string | null
+          creator_id: string
+          error_message?: string | null
+          handoff_data?: Json | null
+          handoff_to_agent?: string | null
+          id?: string
+          input_data?: Json | null
+          output_data?: Json | null
+          requires_approval?: boolean | null
+          started_at?: string | null
+          status?: string | null
+          task_title?: string | null
+          task_type?: string | null
+          triggered_by?: string | null
+          triggered_by_agent?: string | null
+          was_approved?: boolean | null
+        }
+        Update: {
+          agent_id?: string | null
+          agent_type?: string | null
+          completed_at?: string | null
+          confidence?: number | null
+          created_at?: string | null
+          creator_feedback?: string | null
+          creator_id?: string
+          error_message?: string | null
+          handoff_data?: Json | null
+          handoff_to_agent?: string | null
+          id?: string
+          input_data?: Json | null
+          output_data?: Json | null
+          requires_approval?: boolean | null
+          started_at?: string | null
+          status?: string | null
+          task_title?: string | null
+          task_type?: string | null
+          triggered_by?: string | null
+          triggered_by_agent?: string | null
+          was_approved?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aria_agent_tasks_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "aria_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aria_agents: {
+        Row: {
+          agent_type: string
+          confidence_score: number | null
+          config: Json | null
+          created_at: string | null
+          creator_id: string
+          id: string
+          last_active_at: string | null
+          memory: Json | null
+          performance_data: Json | null
+          status: string | null
+          tasks_approved: number | null
+          tasks_completed: number | null
+          tasks_rejected: number | null
+        }
+        Insert: {
+          agent_type: string
+          confidence_score?: number | null
+          config?: Json | null
+          created_at?: string | null
+          creator_id: string
+          id?: string
+          last_active_at?: string | null
+          memory?: Json | null
+          performance_data?: Json | null
+          status?: string | null
+          tasks_approved?: number | null
+          tasks_completed?: number | null
+          tasks_rejected?: number | null
+        }
+        Update: {
+          agent_type?: string
+          confidence_score?: number | null
+          config?: Json | null
+          created_at?: string | null
+          creator_id?: string
+          id?: string
+          last_active_at?: string | null
+          memory?: Json | null
+          performance_data?: Json | null
+          status?: string | null
+          tasks_approved?: number | null
+          tasks_completed?: number | null
+          tasks_rejected?: number | null
+        }
+        Relationships: []
+      }
       aria_content_jobs: {
         Row: {
           completed_at: string | null
@@ -281,6 +554,60 @@ export type Database = {
           started_at?: string | null
           status?: string | null
           transcript_id?: string | null
+        }
+        Relationships: []
+      }
+      aria_daily_reports: {
+        Row: {
+          community_agent_summary: Json | null
+          content_agent_summary: Json | null
+          content_pieces_created: number | null
+          created_at: string | null
+          creator_id: string
+          growth_agent_summary: Json | null
+          hours_saved: number | null
+          id: string
+          members_gained: number | null
+          narrative: string | null
+          operations_agent_summary: Json | null
+          report_date: string | null
+          revenue_generated: number | null
+          sales_agent_summary: Json | null
+          total_tasks_completed: number | null
+        }
+        Insert: {
+          community_agent_summary?: Json | null
+          content_agent_summary?: Json | null
+          content_pieces_created?: number | null
+          created_at?: string | null
+          creator_id: string
+          growth_agent_summary?: Json | null
+          hours_saved?: number | null
+          id?: string
+          members_gained?: number | null
+          narrative?: string | null
+          operations_agent_summary?: Json | null
+          report_date?: string | null
+          revenue_generated?: number | null
+          sales_agent_summary?: Json | null
+          total_tasks_completed?: number | null
+        }
+        Update: {
+          community_agent_summary?: Json | null
+          content_agent_summary?: Json | null
+          content_pieces_created?: number | null
+          created_at?: string | null
+          creator_id?: string
+          growth_agent_summary?: Json | null
+          hours_saved?: number | null
+          id?: string
+          members_gained?: number | null
+          narrative?: string | null
+          operations_agent_summary?: Json | null
+          report_date?: string | null
+          revenue_generated?: number | null
+          sales_agent_summary?: Json | null
+          total_tasks_completed?: number | null
         }
         Relationships: []
       }
@@ -388,6 +715,54 @@ export type Database = {
         }
         Relationships: []
       }
+      aria_funnels: {
+        Row: {
+          ad_copy: Json | null
+          conversions: number | null
+          created_at: string | null
+          created_by: string | null
+          creator_id: string
+          email_sequence: Json | null
+          id: string
+          landing_page_copy: Json | null
+          name: string | null
+          product_id: string | null
+          revenue: number | null
+          status: string | null
+          visitors: number | null
+        }
+        Insert: {
+          ad_copy?: Json | null
+          conversions?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          creator_id: string
+          email_sequence?: Json | null
+          id?: string
+          landing_page_copy?: Json | null
+          name?: string | null
+          product_id?: string | null
+          revenue?: number | null
+          status?: string | null
+          visitors?: number | null
+        }
+        Update: {
+          ad_copy?: Json | null
+          conversions?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          creator_id?: string
+          email_sequence?: Json | null
+          id?: string
+          landing_page_copy?: Json | null
+          name?: string | null
+          product_id?: string | null
+          revenue?: number | null
+          status?: string | null
+          visitors?: number | null
+        }
+        Relationships: []
+      }
       aria_generated_content: {
         Row: {
           body: string | null
@@ -450,6 +825,45 @@ export type Database = {
           },
         ]
       }
+      aria_platform_learnings: {
+        Row: {
+          agent_type: string | null
+          confidence: number | null
+          created_at: string | null
+          creator_type: string | null
+          id: string
+          key: string | null
+          last_updated_at: string | null
+          learning_type: string | null
+          sample_size: number | null
+          value: Json | null
+        }
+        Insert: {
+          agent_type?: string | null
+          confidence?: number | null
+          created_at?: string | null
+          creator_type?: string | null
+          id?: string
+          key?: string | null
+          last_updated_at?: string | null
+          learning_type?: string | null
+          sample_size?: number | null
+          value?: Json | null
+        }
+        Update: {
+          agent_type?: string | null
+          confidence?: number | null
+          created_at?: string | null
+          creator_type?: string | null
+          id?: string
+          key?: string | null
+          last_updated_at?: string | null
+          learning_type?: string | null
+          sample_size?: number | null
+          value?: Json | null
+        }
+        Relationships: []
+      }
       aria_rate_limits: {
         Row: {
           id: string
@@ -468,6 +882,84 @@ export type Database = {
           request_count?: number
           user_id?: string
           window_start?: string
+        }
+        Relationships: []
+      }
+      aria_sales_conversations: {
+        Row: {
+          conversation_log: Json | null
+          created_at: string | null
+          creator_id: string
+          discount_code: string | null
+          discount_offered: number | null
+          id: string
+          outcome: string | null
+          product_recommended: string | null
+          revenue_generated: number | null
+          trigger_event: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          conversation_log?: Json | null
+          created_at?: string | null
+          creator_id: string
+          discount_code?: string | null
+          discount_offered?: number | null
+          id?: string
+          outcome?: string | null
+          product_recommended?: string | null
+          revenue_generated?: number | null
+          trigger_event?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          conversation_log?: Json | null
+          created_at?: string | null
+          creator_id?: string
+          discount_code?: string | null
+          discount_offered?: number | null
+          id?: string
+          outcome?: string | null
+          product_recommended?: string | null
+          revenue_generated?: number | null
+          trigger_event?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: []
+      }
+      aria_usage_tracking: {
+        Row: {
+          api_calls: number | null
+          budget_limit: number | null
+          clips_generated: number | null
+          created_at: string | null
+          creator_id: string
+          emails_sent: number | null
+          id: string
+          month: string | null
+          tokens_used: number | null
+        }
+        Insert: {
+          api_calls?: number | null
+          budget_limit?: number | null
+          clips_generated?: number | null
+          created_at?: string | null
+          creator_id: string
+          emails_sent?: number | null
+          id?: string
+          month?: string | null
+          tokens_used?: number | null
+        }
+        Update: {
+          api_calls?: number | null
+          budget_limit?: number | null
+          clips_generated?: number | null
+          created_at?: string | null
+          creator_id?: string
+          emails_sent?: number | null
+          id?: string
+          month?: string | null
+          tokens_used?: number | null
         }
         Relationships: []
       }
