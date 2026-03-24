@@ -2,15 +2,54 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowRight, Camera, Check, X } from "lucide-react";
+import { ArrowRight, ArrowLeft, Camera, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { getAffiliateCookie, clearAffiliateCookie } from "@/lib/affiliateCookies";
 import logoImg from "@/assets/logo.png";
 
-const INTEREST_TAGS = ["Fitness", "Finance", "Music", "Gaming", "Tech", "Lifestyle", "Other"];
+const CREATOR_TYPES = [
+  "Fitness", "Finance", "Gaming", "Lifestyle", "Business", "Education",
+  "Music", "Cooking", "Sports", "Beauty", "Travel", "Tech", "Real Estate", "IRL", "Other"
+];
+
+const FOLLOWER_RANGES = [
+  "Under 1K", "1K–10K", "10K–50K", "50K–100K", "100K–500K", "500K+"
+];
+
+const PLATFORMS = [
+  "YouTube", "Instagram", "TikTok", "Twitch", "Kick", "Podcast", "Newsletter", "LinkedIn", "Twitter/X", "Other"
+];
+
+const EARNING_RANGES = ["$0–$500", "$500–$2K", "$2K–$10K", "$10K–$50K", "$50K+"];
+
+const CHALLENGES = [
+  "Platform takes too much",
+  "Can't reach monetization thresholds",
+  "No good tools for communities",
+  "Hard to sell courses",
+  "No way to go live and get paid",
+  "Audience too small",
+  "Don't know where to start",
+  "Other"
+];
+
+const USE_CASES = [
+  "Go live and earn tips",
+  "Build a paid community",
+  "Sell a course",
+  "Host paid events",
+  "All of the above"
+];
+
+const HEAR_ABOUT = [
+  "Referred by a friend", "Twitter/X", "Instagram", "TikTok", "YouTube",
+  "Google Search", "Podcast", "Newsletter", "Other"
+];
 
 const slideVariants = {
   enter: { opacity: 0, x: 40 },
@@ -22,15 +61,35 @@ export default function Onboarding() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
+
+  // Step 1: Basics
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [roleType, setRoleType] = useState<"creator" | "member" | null>(null);
+  const [socialHandle, setSocialHandle] = useState("");
+
+  // Step 2: Creator Profile
+  const [creatorType, setCreatorType] = useState("");
+  const [followerCount, setFollowerCount] = useState("");
+  const [primaryPlatform, setPrimaryPlatform] = useState("");
+  const [isMonetizing, setIsMonetizing] = useState<string | null>(null);
+  const [monthlyEarnings, setMonthlyEarnings] = useState("");
+
+  // Step 3: Qualifying
+  const [oneSentence, setOneSentence] = useState("");
+  const [challenges, setChallenges] = useState<string[]>([]);
+  const [firstUseCase, setFirstUseCase] = useState("");
+  const [hearAbout, setHearAbout] = useState("");
+
+  // Photo & state
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [interests, setInterests] = useState<string[]>([]);
-  const [referralCode, setReferralCode] = useState("");
   const [saving, setSaving] = useState(false);
+  const [referralCode, setReferralCode] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Referrer info from cookies
+  const [referrerName, setReferrerName] = useState<string | null>(null);
+  const [referrerAvatar, setReferrerAvatar] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -49,6 +108,12 @@ export default function Onboarding() {
       if (p?.referral_code) setReferralCode(p.referral_code);
     };
     check();
+
+    // Load referrer info
+    const name = getAffiliateCookie("uply_referrer_name") || sessionStorage.getItem("referrer_name");
+    const avatar = localStorage.getItem("uply_referrer_avatar") || sessionStorage.getItem("referrer_avatar");
+    if (name) setReferrerName(name);
+    if (avatar) setReferrerAvatar(avatar);
   }, [user]);
 
   useEffect(() => {
@@ -84,21 +149,8 @@ export default function Onboarding() {
     if (avatarFile) uploadedUrl = await uploadPhoto();
 
     const refCode = getAffiliateCookie("uply_waitlist_ref");
-    if (refCode) {
-      const { data: referrer } = await supabase
-        .from("profiles")
-        .select("user_id")
-        .eq("referral_code", refCode)
-        .maybeSingle();
-      if (referrer && (referrer as any).user_id !== user.id) {
-        await supabase.from("referrals" as any).insert({
-          referrer_id: (referrer as any).user_id,
-          referred_id: user.id,
-        });
-      }
-      clearAffiliateCookie("uply_waitlist_ref");
-    }
 
+    // Handle invite codes
     const inviteCode = getAffiliateCookie("uply_invite_code");
     let isApproved = false;
     if (inviteCode) {
@@ -124,43 +176,160 @@ export default function Onboarding() {
       clearAffiliateCookie("uply_invite_code");
     }
 
+    // Handle referral codes (non-invite)
+    if (refCode && !inviteCode) {
+      const { data: referrer } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("referral_code", refCode)
+        .maybeSingle();
+      if (referrer && (referrer as any).user_id !== user.id) {
+        await supabase.from("referrals" as any).insert({
+          referrer_id: (referrer as any).user_id,
+          referred_id: user.id,
+        });
+      }
+    }
+
+    // Update profile
     await supabase
       .from("profiles")
       .update({
         first_name: firstName.trim(),
         last_name: lastName.trim(),
         display_name: `${firstName.trim()} ${lastName.trim()}`.trim(),
-        role_type: roleType,
-        interests: roleType === "creator" ? interests : [],
+        role_type: "creator",
         avatar_url: uploadedUrl,
         onboarding_complete: true,
         is_approved: isApproved,
-        creator_type: roleType === "creator" ? "Content Creator" : null,
+        creator_type: creatorType || "Content Creator",
       } as any)
       .eq("user_id", user.id);
 
-    // Re-fetch referral code
+    // Get updated referral code
     const { data: updatedProfile } = await supabase
       .from("profiles")
-      .select("referral_code")
+      .select("referral_code, username")
       .eq("user_id", user.id)
       .single();
-    if ((updatedProfile as any)?.referral_code) {
-      setReferralCode((updatedProfile as any).referral_code);
+    const updatedRefCode = (updatedProfile as any)?.referral_code || "";
+    const updatedUsername = (updatedProfile as any)?.username;
+
+    // Insert into waitlist table
+    const referrerUsername = getAffiliateCookie("uply_referrer_username");
+    const referrerDisplayName = getAffiliateCookie("uply_referrer_name");
+    const referrerAvatarUrl = localStorage.getItem("uply_referrer_avatar");
+
+    const { data: waitlistRow } = await supabase
+      .from("waitlist" as any)
+      .insert({
+        full_name: `${firstName.trim()} ${lastName.trim()}`.trim(),
+        email: user.email || "",
+        social_handle: socialHandle || null,
+        creator_type: creatorType || null,
+        follower_count: followerCount || null,
+        primary_platform: primaryPlatform || null,
+        one_sentence: oneSentence || null,
+        referred_by: refCode || null,
+        referral_code: updatedRefCode,
+        is_monetizing: isMonetizing || null,
+        monthly_earnings: isMonetizing === "yes" ? monthlyEarnings : null,
+        monetization_challenges: challenges.length > 0 ? challenges : null,
+        first_use_case: firstUseCase || null,
+        hear_about: hearAbout || null,
+        user_id: user.id,
+        referrer_display_name: referrerDisplayName || null,
+        referrer_avatar_url: referrerAvatarUrl || null,
+        referrer_username: referrerUsername || null,
+      } as any)
+      .select("position, id")
+      .single() as any;
+
+    // Send referrer notification if referred
+    if (refCode) {
+      const { data: referrerProfile } = await supabase
+        .from("profiles")
+        .select("user_id, display_name")
+        .eq("referral_code", refCode)
+        .maybeSingle();
+
+      if (referrerProfile && (referrerProfile as any).user_id !== user.id) {
+        const referrerId = (referrerProfile as any).user_id;
+        // Get updated referral count
+        const { data: referrerWaitlist } = await supabase
+          .from("waitlist" as any)
+          .select("referral_count")
+          .eq("referral_code", refCode)
+          .maybeSingle() as any;
+        const newCount = referrerWaitlist?.referral_count || 0;
+        const remaining = Math.max(0, 25 - newCount);
+
+        await supabase.from("notifications").insert({
+          user_id: referrerId,
+          type: "referral_signup",
+          title: `🎉 ${firstName.trim()} used your invite link!`,
+          message: `Your referral count is now ${newCount}. ${remaining > 0 ? `${remaining} more to reach Founding Creator status.` : "You've reached Founding Creator! 👑"}`,
+          actor_id: user.id,
+        });
+      }
     }
 
+    // Clear referral cookies
+    clearAffiliateCookie("uply_waitlist_ref");
+    clearAffiliateCookie("uply_referrer_username");
+    clearAffiliateCookie("uply_referrer_name");
+    try {
+      localStorage.removeItem("uply_referrer_avatar");
+      localStorage.removeItem("uply_waitlist_ref");
+      localStorage.removeItem("uply_referrer_username");
+      localStorage.removeItem("uply_referrer_name");
+    } catch {}
+
+    // Store position for post-application screen
+    const position = waitlistRow?.position || 0;
+    sessionStorage.setItem("waitlist_position", String(position));
+    sessionStorage.setItem("waitlist_referral_code", updatedRefCode);
+    sessionStorage.setItem("waitlist_username", updatedUsername || "");
+    sessionStorage.setItem("waitlist_display_name", `${firstName.trim()} ${lastName.trim()}`.trim());
+    sessionStorage.setItem("waitlist_email", user.email || "");
+
     setSaving(false);
-    setStep(5);
+
+    if (isApproved) {
+      navigate("/discover", { replace: true });
+    } else {
+      navigate("/waitlist?applied=true", { replace: true });
+    }
   };
 
-  const canProceedFromInterests = roleType === "member" || interests.length >= 1;
+  const totalSteps = 4; // splash, basics, profile, qualifying
+  const progressStep = step > 0 ? step : 0;
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative overflow-hidden">
       {step > 0 && step < 5 && (
         <div className="absolute top-0 left-0 right-0 h-1 bg-secondary">
-          <motion.div className="h-full bg-primary" animate={{ width: `${(step / 5) * 100}%` }} transition={{ duration: 0.4 }} />
+          <motion.div className="h-full bg-primary" animate={{ width: `${(progressStep / totalSteps) * 100}%` }} transition={{ duration: 0.4 }} />
         </div>
+      )}
+
+      {/* Referrer banner */}
+      {step > 0 && step < 5 && referrerName && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2 rounded-full text-xs"
+          style={{ background: "hsl(var(--primary) / 0.1)", border: "1px solid hsl(var(--primary) / 0.3)" }}
+        >
+          {referrerAvatar ? (
+            <img src={referrerAvatar} alt="" className="w-5 h-5 rounded-full object-cover" />
+          ) : (
+            <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-primary text-[10px] font-bold">
+              {referrerName[0]}
+            </div>
+          )}
+          <span className="text-foreground font-medium">{referrerName} invited you</span>
+        </motion.div>
       )}
 
       <AnimatePresence mode="wait">
@@ -177,132 +346,201 @@ export default function Onboarding() {
           </motion.div>
         )}
 
+        {/* STEP 1: The Basics */}
         {step === 1 && (
-          <motion.div key="name" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md">
-            <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">What's your name?</h1>
-            <p className="text-muted-foreground text-center text-sm mb-8">So we know what to call you.</p>
-            <div className="space-y-4 mb-8">
-              <Input placeholder="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} autoFocus className="text-center text-lg py-6" />
-              <Input placeholder="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} className="text-center text-lg py-6" />
+          <motion.div key="basics" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md">
+            <p className="text-xs text-muted-foreground text-center mb-1 uppercase tracking-wider">Step 1 of 3</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">The Basics</h1>
+            <p className="text-muted-foreground text-center text-sm mb-8">Tell us a little about yourself.</p>
+            <div className="space-y-4 mb-4">
+              <Input placeholder="Full name *" value={firstName} onChange={(e) => setFirstName(e.target.value)} autoFocus className="text-center text-lg py-6" />
+              <Input placeholder="Email" value={user?.email || ""} disabled className="text-center text-sm py-4 opacity-60" />
+              <Input placeholder="@yourhandle or youtube.com/c/yourchannel" value={socialHandle} onChange={(e) => setSocialHandle(e.target.value)} className="text-center text-sm py-4" />
             </div>
-            <Button variant="hero" size="xl" className="w-full" disabled={!firstName.trim() || !lastName.trim()} onClick={() => setStep(2)}>
-              Continue <ArrowRight className="ml-1 w-4 h-4" />
-            </Button>
-          </motion.div>
-        )}
 
-        {step === 2 && (
-          <motion.div key="role" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md">
-            <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">I'm joining as a...</h1>
-            <p className="text-muted-foreground text-center text-sm mb-8">You can always change this later.</p>
-            <div className="grid grid-cols-2 gap-4 mb-8">
-              {[
-                { key: "creator" as const, emoji: "🎙️", label: "Creator", desc: "I create content and build a community" },
-                { key: "member" as const, emoji: "👥", label: "Member", desc: "I follow creators and join communities" },
-              ].map((r) => (
-                <button
-                  key={r.key}
-                  onClick={() => setRoleType(r.key)}
-                  className={`rounded-xl p-6 text-center border-2 transition-all duration-200 ${
-                    roleType === r.key ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary/30"
-                  }`}
-                >
-                  <span className="text-4xl block mb-3">{r.emoji}</span>
-                  <span className="text-base font-semibold block text-foreground">{r.label}</span>
-                  <span className="text-xs text-muted-foreground block mt-1">{r.desc}</span>
-                </button>
-              ))}
-            </div>
-            <Button variant="hero" size="xl" className="w-full" disabled={!roleType} onClick={() => setStep(3)}>
-              Continue <ArrowRight className="ml-1 w-4 h-4" />
-            </Button>
-          </motion.div>
-        )}
-
-        {step === 3 && (
-          <motion.div key="photo" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md text-center">
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">Add a photo</h1>
-            <p className="text-muted-foreground text-sm mb-8">Help people recognize you.</p>
-            <div className="flex flex-col items-center gap-4 mb-8">
-              <button onClick={() => fileRef.current?.click()} className="w-28 h-28 rounded-full border-2 border-dashed border-border hover:border-primary transition-colors flex items-center justify-center overflow-hidden bg-card">
-                {avatarUrl ? <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" /> : <Camera className="w-8 h-8 text-muted-foreground" />}
+            {/* Photo upload */}
+            <div className="flex flex-col items-center gap-3 mb-6">
+              <button onClick={() => fileRef.current?.click()} className="w-20 h-20 rounded-full border-2 border-dashed border-border hover:border-primary transition-colors flex items-center justify-center overflow-hidden bg-card">
+                {avatarUrl ? <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" /> : <Camera className="w-6 h-6 text-muted-foreground" />}
               </button>
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoSelect} />
+              <p className="text-xs text-muted-foreground">Add a profile photo (optional)</p>
               {avatarUrl && (
                 <button onClick={() => { setAvatarUrl(null); setAvatarFile(null); }} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
                   <X className="w-3 h-3" /> Remove
                 </button>
               )}
             </div>
-            <div className="space-y-3">
-              <Button variant="hero" size="xl" className="w-full" onClick={() => roleType === "creator" ? setStep(4) : finishOnboarding()} disabled={saving}>
-                {saving ? "Saving..." : "Continue"} <ArrowRight className="ml-1 w-4 h-4" />
-              </Button>
-              <Button variant="ghost" className="w-full text-muted-foreground" onClick={() => roleType === "creator" ? setStep(4) : finishOnboarding()} disabled={saving}>
-                Skip for now
-              </Button>
-            </div>
-          </motion.div>
-        )}
 
-        {step === 4 && (
-          <motion.div key="interests" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md">
-            <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">What do you create?</h1>
-            <p className="text-muted-foreground text-center text-sm mb-8">Select at least one topic.</p>
-            <div className="flex flex-wrap gap-2 justify-center mb-8">
-              {INTEREST_TAGS.map((tag) => {
-                const selected = interests.includes(tag);
-                return (
-                  <button
-                    key={tag}
-                    onClick={() => setInterests((prev) => selected ? prev.filter((t) => t !== tag) : [...prev, tag])}
-                    className={`px-4 py-2 rounded-full text-sm font-medium border transition-all duration-200 ${
-                      selected ? "bg-primary text-primary-foreground border-primary" : "bg-card text-foreground border-border hover:border-primary/50"
-                    }`}
-                  >
-                    {selected && <Check className="w-3 h-3 inline mr-1" />}
-                    {tag}
-                  </button>
-                );
-              })}
-            </div>
-            <Button variant="hero" size="xl" className="w-full" disabled={!canProceedFromInterests || saving} onClick={finishOnboarding}>
-              {saving ? "Setting up..." : "Continue"} <ArrowRight className="ml-1 w-4 h-4" />
+            <Button variant="hero" size="xl" className="w-full" disabled={!firstName.trim()} onClick={() => setStep(2)}>
+              Continue <ArrowRight className="ml-1 w-4 h-4" />
             </Button>
           </motion.div>
         )}
 
-        {step === 5 && (
-          <motion.div key="done" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md text-center">
-            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 200, damping: 15 }} className="w-16 h-16 rounded-full bg-primary flex items-center justify-center mx-auto mb-6">
-              <Check className="w-8 h-8 text-primary-foreground" />
-            </motion.div>
-            <h1 className="text-2xl md:text-3xl font-bold mb-3">You're on the list 🎉</h1>
-            <p className="text-muted-foreground text-sm mb-2">We're reviewing applications and letting people in waves.</p>
-            <p className="text-primary text-sm font-semibold mb-8">Share your link to move up.</p>
+        {/* STEP 2: Creator Profile */}
+        {step === 2 && (
+          <motion.div key="profile" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md">
+            <p className="text-xs text-muted-foreground text-center mb-1 uppercase tracking-wider">Step 2 of 3</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">Your Creator Profile</h1>
+            <p className="text-muted-foreground text-center text-sm mb-6">Help us understand your audience.</p>
 
-            {referralCode && (
-              <div className="mb-6">
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 rounded-lg px-4 py-3 text-sm text-foreground truncate bg-card border border-border">
-                    uply.tv/join/{referralCode}
-                  </div>
-                  <Button
-                    onClick={async () => {
-                      await navigator.clipboard.writeText(`https://uply.tv/join/${referralCode}`);
-                      toast.success("Copied!");
-                    }}
-                    className="shrink-0 bg-primary text-primary-foreground"
-                  >
-                    Copy
-                  </Button>
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">What type of creator are you?</label>
+                <Select value={creatorType} onValueChange={setCreatorType}>
+                  <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                  <SelectContent>
+                    {CREATOR_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Total followers across all platforms?</label>
+                <Select value={followerCount} onValueChange={setFollowerCount}>
+                  <SelectTrigger><SelectValue placeholder="Select range" /></SelectTrigger>
+                  <SelectContent>
+                    {FOLLOWER_RANGES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Where is your primary audience?</label>
+                <Select value={primaryPlatform} onValueChange={setPrimaryPlatform}>
+                  <SelectTrigger><SelectValue placeholder="Select platform" /></SelectTrigger>
+                  <SelectContent>
+                    {PLATFORMS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Are you currently monetizing your content?</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { value: "yes", emoji: "✅", label: "Yes — I'm earning" },
+                    { value: "no", emoji: "🚀", label: "No — but ready" },
+                    { value: "starting", emoji: "🌱", label: "Just starting" },
+                  ].map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => { setIsMonetizing(opt.value); if (opt.value !== "yes") setMonthlyEarnings(""); }}
+                      className={`rounded-xl p-3 text-center border-2 transition-all ${
+                        isMonetizing === opt.value ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary/30"
+                      }`}
+                    >
+                      <span className="text-xl block mb-1">{opt.emoji}</span>
+                      <span className="text-xs font-medium text-foreground">{opt.label}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
-            )}
 
-            <Button variant="hero" size="xl" className="w-full" onClick={() => navigate("/waitlist", { replace: true })}>
-              View My Waitlist Status <ArrowRight className="ml-1 w-4 h-4" />
-            </Button>
+              {isMonetizing === "yes" && (
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">Monthly content earnings?</label>
+                  <Select value={monthlyEarnings} onValueChange={setMonthlyEarnings}>
+                    <SelectTrigger><SelectValue placeholder="Select range" /></SelectTrigger>
+                    <SelectContent>
+                      {EARNING_RANGES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => setStep(1)} className="gap-1">
+                <ArrowLeft className="w-4 h-4" /> Back
+              </Button>
+              <Button variant="hero" size="xl" className="flex-1" disabled={!creatorType} onClick={() => setStep(3)}>
+                Continue <ArrowRight className="ml-1 w-4 h-4" />
+              </Button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* STEP 3: Qualifying Questions */}
+        {step === 3 && (
+          <motion.div key="qualifying" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md">
+            <p className="text-xs text-muted-foreground text-center mb-1 uppercase tracking-wider">Step 3 of 3</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">One Last Thing</h1>
+            <p className="text-muted-foreground text-center text-sm mb-6">These help us match you with the right tools.</p>
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">In one sentence, what do you create? *</label>
+                <Textarea
+                  value={oneSentence}
+                  onChange={(e) => setOneSentence(e.target.value.slice(0, 120))}
+                  placeholder='e.g. "I teach first-generation investors how to build wealth from zero."'
+                  rows={2}
+                  className="text-sm resize-none"
+                  maxLength={120}
+                />
+                <p className="text-xs text-muted-foreground text-right mt-1">{oneSentence.length}/120</p>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Biggest monetization challenges? (select all)</label>
+                <div className="flex flex-wrap gap-2">
+                  {CHALLENGES.map(c => {
+                    const selected = challenges.includes(c);
+                    return (
+                      <button
+                        key={c}
+                        onClick={() => setChallenges(prev => selected ? prev.filter(x => x !== c) : [...prev, c])}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                          selected ? "bg-primary text-primary-foreground border-primary" : "bg-card text-foreground border-border hover:border-primary/50"
+                        }`}
+                      >
+                        {selected && <Check className="w-3 h-3 inline mr-1" />}
+                        {c}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">What would you use UPLY for first?</label>
+                <div className="flex flex-wrap gap-2">
+                  {USE_CASES.map(uc => (
+                    <button
+                      key={uc}
+                      onClick={() => setFirstUseCase(uc)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                        firstUseCase === uc ? "bg-primary text-primary-foreground border-primary" : "bg-card text-foreground border-border hover:border-primary/50"
+                      }`}
+                    >
+                      {firstUseCase === uc && <Check className="w-3 h-3 inline mr-1" />}
+                      {uc}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">How did you hear about UPLY?</label>
+                <Select value={hearAbout} onValueChange={setHearAbout}>
+                  <SelectTrigger><SelectValue placeholder="Select one" /></SelectTrigger>
+                  <SelectContent>
+                    {HEAR_ABOUT.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => setStep(2)} className="gap-1">
+                <ArrowLeft className="w-4 h-4" /> Back
+              </Button>
+              <Button variant="hero" size="xl" className="flex-1" disabled={!oneSentence.trim() || saving} onClick={finishOnboarding}>
+                {saving ? "Submitting..." : "Submit Application"} <ArrowRight className="ml-1 w-4 h-4" />
+              </Button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
