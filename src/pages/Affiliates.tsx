@@ -16,7 +16,22 @@ export default function Affiliates() {
   const { data: stats, isLoading: statsLoading } = useAffiliateStats();
 
   const isLoading = linkLoading || statsLoading;
-  const referralLink = linkData?.code ? buildReferralUrl(linkData.code) : "";
+  // Fetch profile for username-based referral URLs
+  const [profileUsername, setProfileUsername] = useState<string | null>(null);
+  useEffect(() => {
+    const fetchUsername = async () => {
+      if (!linkData?.code) return;
+      const { data } = await supabase.from("profiles").select("username, display_name").eq("user_id", linkData.id?.split?.("-")?.[0] || "").maybeSingle();
+      // Fallback: get from auth
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: prof } = await supabase.from("profiles").select("username, display_name").eq("user_id", user.id).maybeSingle();
+        if (prof) setProfileUsername((prof as any).username || (prof as any).display_name);
+      }
+    };
+    fetchUsername();
+  }, [linkData]);
+  const referralLink = linkData?.code ? buildReferralUrl(linkData.code, profileUsername) : "";
 
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink);

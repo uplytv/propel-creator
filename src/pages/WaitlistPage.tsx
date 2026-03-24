@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Copy, Check, Trophy, Crown, Shield, MessageCircle, Twitter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ import OriginBadge from "@/components/OriginBadge";
 import logoImg from "@/assets/logo.png";
 import { buildReferralUrl, buildReferralUrlDisplay, getFirstName, getShareMessages } from "@/lib/referralUrls";
 import { getAffiliateCookie } from "@/lib/affiliateCookies";
+import PostApplicationScreen from "@/components/waitlist/PostApplicationScreen";
 
 interface LeaderboardEntry {
   user_id: string;
@@ -25,6 +26,9 @@ interface LeaderboardEntry {
 export default function WaitlistPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const justApplied = searchParams.get("applied") === "true";
+
   const [profile, setProfile] = useState<any>(null);
   const [referralCount, setReferralCount] = useState(0);
   const [rank, setRank] = useState(0);
@@ -32,53 +36,74 @@ export default function WaitlistPage() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [linkCopied, setLinkCopied] = useState(false);
   const [config, setConfig] = useState<any>(null);
+  const [waitlistPosition, setWaitlistPosition] = useState(0);
+  const [showPostApp, setShowPostApp] = useState(false);
 
   const fetchData = async () => {
     if (!user) return;
 
     const [profRes, configRes] = await Promise.all([
-      supabase.from("profiles").select("referral_code, first_name, last_name, display_name, is_approved, avatar_url, role_type, origin_member").eq("user_id", user.id).single(),
+      supabase.from("profiles").select("referral_code, first_name, last_name, display_name, is_approved, avatar_url, role_type, origin_member, username").eq("user_id", user.id).single(),
       supabase.from("waitlist_config" as any).select("*").limit(1).single(),
     ]);
     setProfile(profRes.data);
     setConfig(configRes.data);
 
-    const { count: refCount } = await supabase
-      .from("referrals" as any)
-      .select("*", { count: "exact", head: true })
-      .eq("referrer_id", user.id) as any;
-    setReferralCount(refCount || 0);
+    // Get waitlist position
+    const { data: wlEntry } = await supabase
+      .from("waitlist" as any)
+      .select("position, referral_count")
+      .eq("email", user.email)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle() as any;
 
+    if (wlEntry) {
+      setWaitlistPosition(wlEntry.position || 0);
+      setReferralCount(wlEntry.referral_count || 0);
+    } else {
+      // Fallback to referrals table
+      const { count: refCount } = await supabase
+        .from("referrals" as any)
+        .select("*", { count: "exact", head: true })
+        .eq("referrer_id", user.id) as any;
+      setReferralCount(refCount || 0);
+    }
+
+    // Get total waitlist
     const { count: wlCount } = await supabase
-      .from("profiles")
-      .select("*", { count: "exact", head: true })
-      .eq("onboarding_complete", true)
-      .eq("is_approved", false) as any;
+      .from("waitlist" as any)
+      .select("*", { count: "exact", head: true }) as any;
     setTotalWaitlist(wlCount || 0);
 
-    // Leaderboard
-    const { data: allProfiles } = await supabase
-      .from("profiles")
-      .select("user_id, first_name, last_name, display_name, role_type, origin_member")
-      .eq("onboarding_complete", true) as any;
-
-    if (allProfiles) {
-      const entries: LeaderboardEntry[] = [];
-      for (const p of allProfiles.slice(0, 100)) {
-        const { count } = await supabase
-          .from("referrals" as any)
-          .select("*", { count: "exact", head: true })
-          .eq("referrer_id", p.user_id) as any;
-        if ((count || 0) > 0) {
-          entries.push({ ...p, referral_count: count || 0 });
-        }
+    // Check if this is a fresh application
+    if (justApplied) {
+      const storedPos = sessionStorage.getItem("waitlist_position");
+      if (storedPos && parseInt(storedPos) > 0) {
+        setWaitlistPosition(parseInt(storedPos));
       }
-      entries.sort((a, b) => b.referral_count - a.referral_count);
-      setLeaderboard(entries.slice(0, 20));
+      setShowPostApp(true);
+    }
 
-      // Calculate rank
-      const myIdx = entries.findIndex(e => e.user_id === user.id);
-      setRank(myIdx >= 0 ? myIdx + 1 : entries.length + 1);
+    // Leaderboard from waitlist table
+    const { data: topReferrers } = await supabase
+      .from("waitlist" as any)
+      .select("id, full_name, referral_count")
+      .gt("referral_count", 0)
+      .order("referral_count", { ascending: false })
+      .limit(20) as any;
+
+    if (topReferrers) {
+      const entries: LeaderboardEntry[] = topReferrers.map((r: any) => ({
+        user_id: r.id,
+        first_name: r.full_name?.split(" ")[0] || null,
+        last_name: r.full_name?.split(" ")[1] || null,
+        display_name: r.full_name,
+        referral_count: r.referral_count,
+        role_type: null,
+        origin_member: false,
+      }));
+      setLeaderboard(entries);
     }
   };
 
@@ -91,8 +116,8 @@ export default function WaitlistPage() {
 
     fetchData();
     const channel = supabase
-      .channel("waitlist-referrals-live")
-      .on("postgres_changes", { event: "*", schema: "public", table: "referrals" }, () => fetchData())
+      .channel("waitlist-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "waitlist" }, () => fetchData())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [loading, user, navigate]);
@@ -119,35 +144,25 @@ export default function WaitlistPage() {
     window.open(`sms:?body=${encodeURIComponent(shareMessages.sms)}`, "_self");
   };
 
-  // Referrer banner info
-  const [referrerInfo, setReferrerInfo] = useState<{ name: string; avatar: string | null } | null>(null);
-  useEffect(() => {
-    const storedName = sessionStorage.getItem("referrer_name");
-    const storedAvatar = sessionStorage.getItem("referrer_avatar");
-    if (storedName) {
-      setReferrerInfo({ name: storedName, avatar: storedAvatar });
-    }
-  }, []);
-
-  const roleType = (profile as any)?.role_type;
-  const isCreator = roleType === "creator";
+  const formatName = (entry: LeaderboardEntry) => {
+    const first = entry.first_name || entry.display_name?.split(" ")[0] || "User";
+    const lastInitial = entry.last_name?.[0] || entry.display_name?.split(" ")[1]?.[0] || "";
+    return lastInitial ? `${first} ${lastInitial}.` : first;
+  };
 
   const nextMilestone = referralCount < 1 ? { count: 1, label: "Confirm your spot" } :
     referralCount < 3 ? { count: 3, label: "Jump 500 spots + Sneak Peek" } :
     referralCount < 10 ? { count: 10, label: "Immediate Access + UPLY Origin" } :
     null;
 
-  const tiers = isCreator ? [
-    { emoji: "✅", label: "1 Referral", desc: "Spot Confirmed", done: referralCount >= 1 },
-    { emoji: "🚀", label: "3 Referrals", desc: "Jump 500 Spots + Sneak Peek Access", done: referralCount >= 3 },
-    { emoji: "⚡", label: "10 Referrals", desc: "Immediate Access + Lifetime UPLY Origin Status", done: referralCount >= 10 },
-    { emoji: "💰", label: "#1 Overall", desc: "$10,000 Cash Prize", done: false },
-  ] : [
+  const tiers = [
     { emoji: "✅", label: "1 Referral", desc: "Spot Confirmed", done: referralCount >= 1 },
     { emoji: "🚀", label: "3 Referrals", desc: "Jump 500 Spots + Sneak Peek Access", done: referralCount >= 3 },
     { emoji: "⚡", label: "10 Referrals", desc: "Immediate Access + Lifetime UPLY Origin Status", done: referralCount >= 10 },
     { emoji: "💰", label: "#1 Overall", desc: "$10,000 Cash Prize", done: false },
   ];
+
+  const leader = leaderboard[0];
 
   // Countdown
   const endDate = config?.end_date ? new Date(config.end_date) : null;
@@ -167,14 +182,6 @@ export default function WaitlistPage() {
     return () => clearInterval(interval);
   }, [endDate]);
 
-  const formatName = (entry: LeaderboardEntry) => {
-    const first = entry.first_name || entry.display_name?.split(" ")[0] || "User";
-    const lastInitial = entry.last_name?.[0] || entry.display_name?.split(" ")[1]?.[0] || "";
-    return lastInitial ? `${first} ${lastInitial}.` : first;
-  };
-
-  const leader = leaderboard[0];
-
   if (loading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -182,6 +189,27 @@ export default function WaitlistPage() {
           <span className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           <span>Loading…</span>
         </div>
+      </div>
+    );
+  }
+
+  // Show post-application screen
+  if (showPostApp) {
+    return (
+      <div className="min-h-[100dvh] bg-background text-foreground">
+        <div className="px-6 pt-6 pb-2 flex items-center justify-between">
+          <img src={logoImg} alt="UPLY" className="w-8 h-8 object-contain" />
+          <span className="text-xs text-muted-foreground">{totalWaitlist} on waitlist</span>
+        </div>
+        <PostApplicationScreen
+          position={waitlistPosition}
+          referralCode={referralCode}
+          referralCount={referralCount}
+          email={user.email || ""}
+          displayName={(profile as any)?.display_name}
+          username={profileUsername}
+          totalApplicants={totalWaitlist}
+        />
       </div>
     );
   }
@@ -195,30 +223,22 @@ export default function WaitlistPage() {
       </div>
 
       <div className="max-w-lg mx-auto px-6 pb-16">
-        {/* Referrer banner */}
-        {referrerInfo && (
+        {/* Position card (if has position) */}
+        {waitlistPosition > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-lg p-3 mb-4 flex items-center gap-3"
-            style={{
-              background: "hsl(var(--primary) / 0.08)",
-              border: "1px solid hsl(var(--primary) / 0.3)",
-            }}
+            className="rounded-xl p-6 mb-6 text-center"
+            style={{ background: "#111111", border: "2px solid hsl(var(--primary))" }}
           >
-            {referrerInfo.avatar ? (
-              <img src={referrerInfo.avatar} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
-            ) : (
-              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold flex-shrink-0">
-                {referrerInfo.name[0]}
-              </div>
-            )}
-            <div>
-              <p className="text-sm font-semibold text-foreground">{referrerInfo.name} invited you</p>
-              <p className="text-xs text-muted-foreground">You'll both move up the waitlist when you apply</p>
-            </div>
+            <p className="text-[10px] font-semibold tracking-widest uppercase mb-1 text-muted-foreground">YOUR POSITION</p>
+            <p className="text-5xl font-extrabold text-primary mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              #{waitlistPosition}
+            </p>
+            <p className="text-xs text-muted-foreground">out of {totalWaitlist.toLocaleString()} creators</p>
           </motion.div>
         )}
+
         {/* Prize Hero */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -244,8 +264,8 @@ export default function WaitlistPage() {
               <p className="text-xs text-muted-foreground mt-1">Referrals</p>
             </div>
             <div>
-              <p className="text-3xl font-black text-foreground" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>#{rank || "–"}</p>
-              <p className="text-xs text-muted-foreground mt-1">Your Rank</p>
+              <p className="text-3xl font-black text-foreground" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>#{waitlistPosition || "–"}</p>
+              <p className="text-xs text-muted-foreground mt-1">Your Position</p>
             </div>
           </div>
           {nextMilestone && (
@@ -310,7 +330,7 @@ export default function WaitlistPage() {
               <h3 className="font-semibold text-sm">UPLY Origin Status</h3>
             </div>
             <p className="text-xs text-muted-foreground mb-4">
-              UPLY Origin members are the founding class of UPLY. This badge never goes away. It marks you as someone who believed before everyone else.
+              UPLY Origin members are the founding class of UPLY. This badge never goes away.
             </p>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -346,9 +366,6 @@ export default function WaitlistPage() {
                 $10,000 Prize
               </span>
             </div>
-            <p className="text-xs text-muted-foreground mb-3">
-              {endDate && `Contest ends ${endDate.toLocaleDateString()}. Winner gets $10,000.`}
-            </p>
             <div className="space-y-1">
               {leaderboard.length === 0 ? (
                 <p className="text-sm text-center text-muted-foreground py-4">No referrals yet — be the first!</p>
@@ -357,7 +374,7 @@ export default function WaitlistPage() {
                   <div
                     key={entry.user_id}
                     className={`flex items-center gap-3 py-2.5 px-2 rounded-lg ${
-                      entry.user_id === user?.id ? "bg-primary/5 border border-primary/20" : ""
+                      entry.display_name === (profile as any)?.display_name ? "bg-primary/5 border border-primary/20" : ""
                     }`}
                   >
                     <span className="font-bold text-xs w-6" style={{
@@ -368,10 +385,7 @@ export default function WaitlistPage() {
                     </span>
                     <span className="text-sm text-foreground flex-1 flex items-center gap-1.5">
                       {formatName(entry)}
-                      {entry.origin_member && <OriginBadge size="sm" />}
-                      {entry.user_id === user?.id && <span className="text-primary text-xs">(You)</span>}
                     </span>
-                    <span className="text-xs text-muted-foreground capitalize">{entry.role_type || ""}</span>
                     <span className="text-xs font-semibold text-foreground w-8 text-right">{entry.referral_count}</span>
                   </div>
                 ))
