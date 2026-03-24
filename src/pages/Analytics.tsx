@@ -320,6 +320,12 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
 
+        {/* Member Analytics */}
+        <MemberAnalyticsCard />
+
+        {/* Content Schedule */}
+        <ContentScheduler />
+
         {/* Stream Sessions */}
         <Card className="mt-4 border-border">
           <CardHeader className="pb-2">

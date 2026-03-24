@@ -139,6 +139,11 @@ export default function Dashboard() {
           })}
         </motion.div>
 
+        {/* Revenue Goal */}
+        <div className="px-4 md:px-8 mb-4">
+          <RevenueGoalTracker />
+        </div>
+
         <PlatformUpgradeBanner />
 
         {/* Quick Actions */}
