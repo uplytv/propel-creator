@@ -123,6 +123,8 @@ export default function Stream() {
   const raidSystem = useRaidSystem(id, false);
   const predictions = useStreamPredictions(id || '');
   const giftSub = useGiftSubscription(id || '', dbStream?.user_id || '');
+  const liveQuiz = useLiveQuiz(id, false);
+  const sentiment = useViewerSentiment(id);
 
   useEffect(() => {
     const fetchStream = async () => {
