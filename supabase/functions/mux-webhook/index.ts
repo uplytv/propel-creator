@@ -186,6 +186,18 @@ serve(async (req) => {
               console.error('❌ Failed to insert stream_recording:', JSON.stringify(recError))
             } else {
               console.log(`✅ Stream recording inserted: ${recording?.id}, slug: ${recording?.slug}`)
+
+              // Auto-trigger ARIA Content Engine
+              try {
+                const ariaUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/aria-process-content`
+                await fetch(ariaUrl, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}` },
+                  body: JSON.stringify({ source_type: 'stream_recording', source_id: recording?.id, creator_id: stream.user_id }),
+                })
+                console.log('✅ ARIA Content Engine triggered for recording:', recording?.id)
+              } catch (ariaErr) { console.error('ARIA trigger failed (non-blocking):', ariaErr) }
+            }
             }
 
             await supabase.from('live_stream_sessions').insert({
