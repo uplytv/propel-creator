@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Copy, Check, Trophy, Crown, Shield, MessageCircle, Twitter } from "lucide-react";
+import { Copy, Check, Trophy, Crown, Shield, MessageCircle, Twitter, LogOut, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
@@ -198,8 +198,18 @@ export default function WaitlistPage() {
     return (
       <div className="min-h-[100dvh] bg-background text-foreground">
         <div className="px-6 pt-6 pb-2 flex items-center justify-between">
-          <img src={logoImg} alt="UPLY" className="w-8 h-8 object-contain" />
-          <span className="text-xs text-muted-foreground">{totalWaitlist} on waitlist</span>
+          <button onClick={() => navigate("/")} className="flex items-center gap-2">
+            <img src={logoImg} alt="UPLY" className="w-8 h-8 object-contain" />
+          </button>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground">{totalWaitlist} on waitlist</span>
+            <button
+              onClick={async () => { await supabase.auth.signOut(); navigate("/", { replace: true }); }}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <LogOut className="w-3 h-3" /> Sign out
+            </button>
+          </div>
         </div>
         <PostApplicationScreen
           position={waitlistPosition}
@@ -218,8 +228,18 @@ export default function WaitlistPage() {
     <div className="min-h-[100dvh] bg-background text-foreground">
       {/* Header */}
       <div className="px-6 pt-6 pb-2 flex items-center justify-between">
-        <img src={logoImg} alt="UPLY" className="w-8 h-8 object-contain" />
-        <span className="text-xs text-muted-foreground">{totalWaitlist} on waitlist</span>
+        <button onClick={() => navigate("/")} className="flex items-center gap-2">
+          <img src={logoImg} alt="UPLY" className="w-8 h-8 object-contain" />
+        </button>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-muted-foreground">{totalWaitlist} on waitlist</span>
+          <button
+            onClick={async () => { await supabase.auth.signOut(); navigate("/", { replace: true }); }}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <LogOut className="w-3 h-3" /> Sign out
+          </button>
+        </div>
       </div>
 
       <div className="max-w-lg mx-auto px-6 pb-16">
