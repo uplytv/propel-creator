@@ -1,12 +1,19 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Check, Copy, Twitter, Linkedin } from "lucide-react";
+import { Check, Copy, Twitter, Linkedin, LogOut, ExternalLink, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 import WaitlistLiveCounter from "./WaitlistLiveCounter";
 import WaitlistLeaderboard from "./WaitlistLeaderboard";
 import { buildReferralUrl, buildReferralUrlDisplay, getFirstName, getShareMessages } from "@/lib/referralUrls";
+import { clearAffiliateCookie } from "@/lib/affiliateCookies";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
+} from "@/components/ui/alert-dialog";
 
 interface Props {
   position: number;
@@ -22,11 +29,16 @@ export default function PostApplicationScreen({ position, referralCode, referral
   const [linkCopied, setLinkCopied] = useState(false);
   const [referrerName, setReferrerName] = useState<string | null>(null);
   const [referrerAvatar, setReferrerAvatar] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const fullUrl = buildReferralUrl(referralCode, username);
   const displayUrl = buildReferralUrlDisplay(referralCode, username);
   const firstName = getFirstName(displayName);
   const messages = getShareMessages(firstName, fullUrl);
+  const total = totalApplicants || position;
+  const topPercent = total > 0 ? Math.max(1, Math.round((position / total) * 100)) : 100;
+  const progressFill = total > 0 ? Math.max(5, 100 - ((position / total) * 100)) : 50;
 
   useEffect(() => {
     const storedName = sessionStorage.getItem("referrer_name");
@@ -40,7 +52,7 @@ export default function PostApplicationScreen({ position, referralCode, referral
   const copyLink = async () => {
     await navigator.clipboard.writeText(fullUrl);
     setLinkCopied(true);
-    toast.success("Invite link copied — share it with creators you know 🚀", { style: { color: "#00FF85" } });
+    toast.success("Invite link copied ✓");
     setTimeout(() => setLinkCopied(false), 2500);
   };
 
@@ -53,21 +65,40 @@ export default function PostApplicationScreen({ position, referralCode, referral
   };
 
   const shareInstagram = async () => {
-    await navigator.clipboard.writeText(messages.instagram);
-    toast.success("Caption copied — paste it in your Instagram bio or story", { style: { color: "#00FF85" } });
+    await navigator.clipboard.writeText(fullUrl);
+    toast.success("Link copied — paste in your Instagram bio or story");
   };
 
   const shareTikTok = async () => {
-    await navigator.clipboard.writeText(messages.instagram);
-    toast.success("Caption copied — drop it in your TikTok bio", { style: { color: "#00FF85" } });
+    await navigator.clipboard.writeText(fullUrl);
+    toast.success("Link copied — drop it in your TikTok bio");
   };
 
   const shareSMS = () => {
     window.open(`sms:?body=${encodeURIComponent(messages.sms)}`, "_self");
   };
 
+  const handleStartOver = () => {
+    clearAffiliateCookie("uply_waitlist_ref");
+    clearAffiliateCookie("uply_referrer_username");
+    clearAffiliateCookie("uply_referrer_name");
+    try {
+      localStorage.removeItem("uply_referrer_avatar");
+      localStorage.removeItem("uply_waitlist_ref");
+      localStorage.removeItem("uply_referrer_username");
+      localStorage.removeItem("uply_referrer_name");
+    } catch {}
+    sessionStorage.clear();
+    navigate("/auth?mode=signup", { replace: true });
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate("/", { replace: true });
+  };
+
   return (
-    <div className="max-w-2xl mx-auto px-4">
+    <div className="max-w-2xl mx-auto px-4 pb-16">
       {/* Live counter */}
       <div className="text-center mb-8">
         <WaitlistLiveCounter />
@@ -75,43 +106,44 @@ export default function PostApplicationScreen({ position, referralCode, referral
 
       {/* Checkmark + headline */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
+        initial={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
         className="text-center mb-6"
       >
         <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 bg-primary">
           <Check className="w-8 h-8 text-primary-foreground" />
         </div>
-        <h2 className="text-[24px] font-bold text-foreground mb-3" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-          Application Received ✓
+        <h2 className="text-[28px] font-extrabold text-foreground mb-3" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          You're on the list.
         </h2>
-        <p className="text-sm leading-relaxed max-w-md mx-auto text-muted-foreground">
-          We review applications every Monday. If you're a fit for the Founding Creator class you'll hear from us directly.
-        </p>
       </motion.div>
 
-      {/* Referrer thank you card */}
+      {/* Referrer card */}
       {referrerName && (
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="rounded-xl p-4 mb-6 bg-card"
-          style={{ border: "1px solid hsl(var(--primary))" }}
+          className="rounded-[10px] p-4 mb-5"
+          style={{ background: "#111111", border: "1px solid hsl(var(--primary))" }}
         >
           <div className="flex items-center gap-3 mb-2">
             {referrerAvatar ? (
-              <img src={referrerAvatar} alt={referrerName} className="w-10 h-10 rounded-full object-cover" />
+              <img src={referrerAvatar} alt={referrerName} className="w-9 h-9 rounded-full object-cover" />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
+              <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
                 {referrerName[0]}
               </div>
             )}
-            <p className="text-sm font-semibold text-foreground">{referrerName} referred you</p>
+            <p className="text-sm font-semibold text-foreground">{referrerName} personally invited you</p>
           </div>
-          <p className="text-xs text-muted-foreground">You and {referrerFirstName} both moved up the waitlist</p>
-          <p className="text-xs text-primary mt-1">{referrerFirstName} is now notified that you applied</p>
+          {total > position && (
+            <p className="text-xs text-muted-foreground">You were added ahead of {total - position} people who applied organically</p>
+          )}
+          <p className="text-xs text-primary mt-1 flex items-center gap-1">
+            <Check className="w-3 h-3" /> {referrerFirstName} has been notified you applied
+          </p>
         </motion.div>
       )}
 
@@ -120,32 +152,55 @@ export default function PostApplicationScreen({ position, referralCode, referral
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.5 }}
-        className="rounded-2xl p-8 text-center mb-6 bg-card"
-        style={{ border: "2px solid hsl(var(--primary))" }}
+        className="rounded-[14px] p-8 text-center mb-4"
+        style={{ background: "#111111", border: "2px solid hsl(var(--primary))" }}
       >
-        <p className="text-xs font-semibold tracking-widest uppercase mb-2 text-muted-foreground">YOUR CURRENT POSITION</p>
-        <p className="text-[72px] font-extrabold leading-none mb-2 text-primary" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-          #{position}
+        <p className="text-[11px] font-semibold tracking-[0.1em] uppercase mb-2 text-muted-foreground">YOUR WAITLIST POSITION</p>
+        <p className="text-[80px] font-extrabold leading-none mb-2 text-primary" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          #{position || "—"}
         </p>
-        <p className="text-sm text-muted-foreground mb-1">out of {(totalApplicants || position).toLocaleString()} creators on the waitlist</p>
-        <p className="text-sm text-foreground mt-3 font-medium">Refer creators to move up faster</p>
+        <p className="text-sm text-muted-foreground mb-1">out of {total.toLocaleString()} creators who have applied</p>
+        <p className="text-[13px] text-foreground mt-3 font-medium">Every creator you refer moves you up 10 spots</p>
       </motion.div>
 
-      {/* Movement explanation */}
+      {/* Progress bar */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+        className="mb-6"
+      >
+        <div className="w-full h-2 rounded-full bg-secondary overflow-hidden">
+          <motion.div
+            className="h-full bg-primary rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: `${progressFill}%` }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+          />
+        </div>
+        <p className="text-xs text-primary mt-1 text-right font-medium">Top {topPercent}%</p>
+      </motion.div>
+
+      {/* Milestone cards */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
+        transition={{ delay: 0.35 }}
         className="grid grid-cols-3 gap-2 mb-6"
       >
         {[
-          { refs: "+3 referrals", reward: "Jump 30 spots" },
-          { refs: "+10 referrals", reward: "Jump to top 100" },
-          { refs: "+25 referrals", reward: "Founding Creator 👑" },
+          { emoji: "🥉", refs: 3, reward: "Move up 30 spots", border: "border-border" },
+          { emoji: "🥈", refs: 10, reward: "Top 100 guaranteed", border: "border-border" },
+          { emoji: "🥇", refs: 25, reward: "Founding Creator 👑\n0% fees forever", border: "border-yellow-500/50" },
         ].map((item) => (
-          <div key={item.refs} className="rounded-xl p-3 text-center bg-card border border-border">
-            <p className="text-xs font-semibold text-primary">{item.refs}</p>
-            <p className="text-[10px] text-muted-foreground mt-1">{item.reward}</p>
+          <div
+            key={item.refs}
+            className={`rounded-xl p-3 text-center bg-card border ${item.border}`}
+          >
+            <span className="text-lg">{item.emoji}</span>
+            <p className="text-xs font-semibold text-primary mt-1">{item.refs} Referrals</p>
+            <p className="text-[10px] text-muted-foreground mt-1 whitespace-pre-line">{item.reward}</p>
+            <p className="text-[10px] text-muted-foreground mt-1">{Math.min(referralCount, item.refs)}/{item.refs} referred</p>
           </div>
         ))}
       </motion.div>
@@ -154,40 +209,40 @@ export default function PostApplicationScreen({ position, referralCode, referral
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.35, duration: 0.5 }}
-        className="mb-8"
+        transition={{ delay: 0.4 }}
+        className="mb-6"
       >
-        {/* Referral link input */}
+        <p className="text-sm font-semibold text-foreground mb-3">Share your personal invite link:</p>
         <div className="flex items-center gap-2 mb-4">
           <div className="flex-1 rounded-lg px-4 py-3 text-sm text-foreground truncate bg-card border border-border">
             {displayUrl}
           </div>
-          <Button
-            onClick={copyLink}
-            className="shrink-0 gap-2 bg-primary text-primary-foreground"
-          >
+          <Button onClick={copyLink} className="shrink-0 gap-2 bg-primary text-primary-foreground">
             <Copy className="w-4 h-4" />
             {linkCopied ? "Copied!" : "Copy"}
           </Button>
         </div>
+        <p className="text-xs text-muted-foreground mb-4">When someone applies using your link you both move up the waitlist.</p>
 
-        {/* Share buttons */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          <Button variant="outline" className="gap-2 text-xs" onClick={shareSMS}>
-            💬 iMessage
-          </Button>
-          <Button variant="outline" className="gap-2 text-xs" onClick={shareTwitter}>
-            <Twitter className="w-4 h-4" /> Twitter/X
-          </Button>
-          <Button variant="outline" className="gap-2 text-xs" onClick={shareLinkedIn}>
-            <Linkedin className="w-4 h-4" /> LinkedIn
-          </Button>
-          <Button variant="outline" className="gap-2 text-xs" onClick={shareInstagram}>
-            📷 Instagram
-          </Button>
-          <Button variant="outline" className="gap-2 text-xs" onClick={shareTikTok}>
-            🎵 TikTok
-          </Button>
+        {/* Share buttons grid */}
+        <div className="grid grid-cols-3 sm:grid-cols-3 gap-2">
+          {[
+            { label: "iMessage", emoji: "📱", action: shareSMS },
+            { label: "Twitter/X", emoji: "🐦", action: shareTwitter },
+            { label: "LinkedIn", emoji: "💼", action: shareLinkedIn },
+            { label: "Instagram", emoji: "📸", action: shareInstagram },
+            { label: "TikTok", emoji: "🎵", action: shareTikTok },
+            { label: "Copy Link", emoji: "🔗", action: copyLink },
+          ].map(btn => (
+            <button
+              key={btn.label}
+              onClick={btn.action}
+              className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors"
+            >
+              <span className="text-lg">{btn.emoji}</span>
+              <span className="text-[11px] text-muted-foreground">{btn.label}</span>
+            </button>
+          ))}
         </div>
       </motion.div>
 
@@ -195,10 +250,72 @@ export default function PostApplicationScreen({ position, referralCode, referral
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5, duration: 0.5 }}
+        transition={{ delay: 0.5 }}
+        className="mb-8"
       >
         <WaitlistLeaderboard currentEmail={email} />
       </motion.div>
+
+      {/* ── NAVIGATION FOOTER ── */}
+      <div className="border-t border-border pt-6 space-y-4">
+        {/* Log in */}
+        <div className="flex items-center justify-between">
+          <p className="text-[13px] text-muted-foreground">Already have a UPLY account?</p>
+          <button onClick={() => navigate("/auth")} className="text-[13px] text-primary font-medium hover:underline">
+            Log In →
+          </button>
+        </div>
+
+        {/* Start over */}
+        <div className="flex items-center justify-between">
+          <p className="text-[13px] text-muted-foreground">Applied with the wrong email?</p>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button className="text-[13px] text-muted-foreground hover:text-foreground hover:underline">
+                Start over
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Start a new application?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Your current application will remain — you can apply with a different email.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleStartOver}>Confirm</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+
+        {/* Explore UPLY */}
+        <div
+          className="rounded-lg p-4"
+          style={{ background: "#111111", border: "1px solid hsl(var(--border))" }}
+        >
+          <p className="text-sm font-semibold text-foreground mb-1">Explore what's waiting for you</p>
+          <p className="text-xs text-muted-foreground mb-3">See the platform, watch live streams, and browse communities</p>
+          <Button
+            variant="outline"
+            className="w-full border-primary text-primary hover:bg-primary/10"
+            onClick={() => navigate("/discover")}
+          >
+            Explore UPLY →
+          </Button>
+        </div>
+
+        {/* Sign out */}
+        {user && (
+          <button
+            onClick={handleSignOut}
+            className="w-full text-center text-xs text-muted-foreground hover:text-foreground flex items-center justify-center gap-1 pt-2"
+          >
+            <LogOut className="w-3 h-3" /> Sign out
+          </button>
+        )}
+      </div>
     </div>
   );
 }

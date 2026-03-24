@@ -33,20 +33,35 @@ export default function ReferralRedirect() {
     }
 
     const fetchReferrer = async () => {
-      // Use the security definer function to bypass RLS
       const { data, error } = await supabase.rpc("lookup_referrer_by_code", {
         ref_code: actualCode,
       });
 
       if (data && !error) {
-        setReferrer(data as unknown as ReferrerInfo);
+        const referrerData = data as unknown as ReferrerInfo;
+        setReferrer(referrerData);
+
+        // Set cookies AND localStorage immediately
+        setAffiliateCookie("uply_waitlist_ref", actualCode, 30);
+        if (referrerData.username) {
+          setAffiliateCookie("uply_referrer_username", referrerData.username, 30);
+        }
+        if (referrerData.display_name) {
+          setAffiliateCookie("uply_referrer_name", referrerData.display_name, 30);
+        }
+        if (referrerData.avatar_url) {
+          try { localStorage.setItem("uply_referrer_avatar", referrerData.avatar_url); } catch {}
+        }
+
+        // Track click via edge function (fire and forget)
+        supabase.functions.invoke("track-referral-click", {
+          body: { code: actualCode },
+        }).catch(() => {});
       } else {
-        // No referrer found — set cookie and redirect
         setAffiliateCookie("uply_waitlist_ref", actualCode, 30);
         setNotFound(true);
       }
 
-      // Get total applicants
       const { count } = await supabase
         .from("waitlist" as any)
         .select("*", { count: "exact", head: true }) as any;
@@ -58,17 +73,37 @@ export default function ReferralRedirect() {
     fetchReferrer();
   }, [actualCode, navigate]);
 
-  // Handle redirect for not-found in an effect, not during render
   useEffect(() => {
     if (!loading && notFound) {
-      navigate("/auth");
+      navigate("/auth?mode=signup");
     }
   }, [loading, notFound, navigate]);
 
   const firstName = referrer?.display_name?.split(" ")[0] || "Someone";
 
-  const getPostInviteRoute = async () => {
-    if (!user) return "/auth?mode=signup";
+  const handleAcceptInvite = async () => {
+    if (authLoading) return;
+
+    // Cookies already set on page load, but reinforce them
+    setAffiliateCookie("uply_waitlist_ref", actualCode!, 30);
+    if (referrer?.display_name) {
+      setAffiliateCookie("uply_referrer_name", referrer.display_name, 30);
+      sessionStorage.setItem("referrer_name", referrer.display_name);
+    }
+    if (referrer?.avatar_url) {
+      sessionStorage.setItem("referrer_avatar", referrer.avatar_url);
+      try { localStorage.setItem("uply_referrer_avatar", referrer.avatar_url); } catch {}
+    }
+    if (referrer?.username) {
+      setAffiliateCookie("uply_referrer_username", referrer.username, 30);
+      sessionStorage.setItem("referrer_username", referrer.username);
+    }
+
+    // Route based on auth state
+    if (!user) {
+      navigate("/auth?mode=signup", { replace: true });
+      return;
+    }
 
     const { data: profile } = await supabase
       .from("profiles")
@@ -76,29 +111,14 @@ export default function ReferralRedirect() {
       .eq("user_id", user.id)
       .single();
 
-    const onboardingComplete = (profile as any)?.onboarding_complete;
-    const isApproved = (profile as any)?.is_approved;
-
-    if (!onboardingComplete) return "/onboarding";
-    return isApproved ? "/discover" : "/waitlist";
-  };
-
-  const handleAcceptInvite = async () => {
-    if (authLoading) return;
-
-    setAffiliateCookie("uply_waitlist_ref", actualCode!, 30);
-    if (referrer?.display_name) {
-      sessionStorage.setItem("referrer_name", referrer.display_name);
+    const p = profile as any;
+    if (!p?.onboarding_complete) {
+      navigate("/onboarding", { replace: true });
+    } else if (p?.is_approved) {
+      navigate("/discover", { replace: true });
+    } else {
+      navigate("/waitlist", { replace: true });
     }
-    if (referrer?.avatar_url) {
-      sessionStorage.setItem("referrer_avatar", referrer.avatar_url);
-    }
-    if (referrer?.username) {
-      sessionStorage.setItem("referrer_username", referrer.username);
-    }
-
-    const destination = await getPostInviteRoute();
-    navigate(destination, { replace: true });
   };
 
   if (loading || notFound) {
@@ -120,7 +140,6 @@ export default function ReferralRedirect() {
       />
 
       <div className="min-h-screen flex flex-col items-center justify-start px-4 pt-12 pb-20">
-        {/* Personal invitation card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -171,7 +190,6 @@ export default function ReferralRedirect() {
           </div>
         </motion.div>
 
-        {/* Main invitation card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -190,7 +208,6 @@ export default function ReferralRedirect() {
           </p>
         </motion.div>
 
-        {/* Social proof stats */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -204,7 +221,6 @@ export default function ReferralRedirect() {
           <span>Free to start</span>
         </motion.div>
 
-        {/* Primary CTA */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -222,7 +238,6 @@ export default function ReferralRedirect() {
           </p>
         </motion.div>
 
-        {/* Feature section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -247,7 +262,6 @@ export default function ReferralRedirect() {
           ))}
         </motion.div>
 
-        {/* Bottom CTA */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
