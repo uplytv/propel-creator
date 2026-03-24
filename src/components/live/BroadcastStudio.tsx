@@ -1164,11 +1164,18 @@ export default function BroadcastStudio({
                     isActive={captions.isActive}
                   />
 
-                  {/* Raid Overlay */}
+                    {/* Raid Overlay */}
                   <RaidOverlay
                     isRaiding={raidSystem.isRaiding}
                     raidCountdown={raidSystem.raidCountdown}
                     incomingRaid={raidSystem.incomingRaid}
+                  />
+
+                  {/* Donation Goal */}
+                  <DonationGoalOverlay
+                    streamId={streamData.streamId}
+                    isHost={true}
+                    creatorId={user?.id}
                   />
 
                   {/* Raid Picker */}
