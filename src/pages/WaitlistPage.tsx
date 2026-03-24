@@ -218,8 +218,18 @@ export default function WaitlistPage() {
     <div className="min-h-[100dvh] bg-background text-foreground">
       {/* Header */}
       <div className="px-6 pt-6 pb-2 flex items-center justify-between">
-        <img src={logoImg} alt="UPLY" className="w-8 h-8 object-contain" />
-        <span className="text-xs text-muted-foreground">{totalWaitlist} on waitlist</span>
+        <button onClick={() => navigate("/")} className="flex items-center gap-2">
+          <img src={logoImg} alt="UPLY" className="w-8 h-8 object-contain" />
+        </button>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-muted-foreground">{totalWaitlist} on waitlist</span>
+          <button
+            onClick={async () => { await supabase.auth.signOut(); navigate("/", { replace: true }); }}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <LogOut className="w-3 h-3" /> Sign out
+          </button>
+        </div>
       </div>
 
       <div className="max-w-lg mx-auto px-6 pb-16">
