@@ -262,6 +262,10 @@ export default function VideoPlayer() {
               )}
             </div>
           </div>
+          {/* Creator Analytics Card (visible only to video owner) */}
+          {user && video.creator_id === user.id && (
+            <VideoAnalyticsCard videoId={video.id} viewCount={video.view_count} likeCount={video.like_count} commentCount={video.comment_count} createdAt={video.created_at} durationSeconds={video.duration_seconds} />
+          )}
         </div>
 
         {/* Related videos sidebar */}
