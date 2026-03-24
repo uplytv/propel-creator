@@ -396,6 +396,7 @@ export default function ContentStudio() {
                 selected={selectedIds.has(item.id)}
                 onToggleSelect={() => toggleSelect(item.id)}
                 onUpdateStatus={(status) => updateStatus.mutate({ contentId: item.id, status })}
+                onPlayClip={(playbackId) => setPlayingClipId(playbackId)}
               />
             ))}
           </div>
