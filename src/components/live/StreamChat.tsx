@@ -155,7 +155,6 @@ export default function StreamChat({
             <div className="flex gap-2 items-end">
               <ChatEmotePicker onSelectEmote={(emote) => setInput((prev) => prev + emote)} />
               <input
-              <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
