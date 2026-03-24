@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useAriaJobs, useAriaGeneratedContent, useUpdateContentStatus, useBulkUpdateContentStatus, useStartAriaJob } from "@/hooks/useAriaContentEngine";
+import UPLYMuxPlayer from "@/components/MuxPlayer";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
