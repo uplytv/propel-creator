@@ -22,7 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 import { format, isBefore } from "date-fns";
 
-type SettingsTab = "profile" | "notifications" | "subscriptions" | "tickets" | "aria" | "account";
+type SettingsTab = "profile" | "notifications" | "subscriptions" | "tickets" | "aria" | "ai-team" | "account";
 
 const AriaSettingsSection = lazy(() => import("@/components/aria/AriaSettingsSection"));
 
