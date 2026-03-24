@@ -19,6 +19,9 @@ import DonationGoalOverlay from "@/components/live/DonationGoalOverlay";
 import { useViewerRewards } from "@/hooks/useViewerRewards";
 import { useLiveCaptions } from "@/hooks/useLiveCaptions";
 import { useRaidSystem } from "@/hooks/useRaidSystem";
+import { useStreamPredictions } from "@/hooks/useStreamPredictions";
+import { useGiftSubscription } from "@/hooks/useGiftSubscription";
+import StreamPredictionOverlay from "@/components/live/StreamPredictionOverlay";
 
 import { useState, useCallback, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
