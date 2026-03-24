@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import SharePanel from "@/components/share/SharePanel";
 import StreamToCourseDialog from "./StreamToCourseDialog";
+import AIStreamSummary from "./AIStreamSummary";
 
 interface EndOfStreamScreenProps {
   streamId: string;
