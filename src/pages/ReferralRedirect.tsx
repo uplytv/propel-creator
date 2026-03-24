@@ -3,10 +3,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { setAffiliateCookie } from "@/lib/affiliateCookies";
 import { useAuth } from "@/context/AuthContext";
-import { Loader2, Video, DollarSign, Bot } from "lucide-react";
+import { Loader2, Video, DollarSign, Bot, Shield, Clock, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SEOHead from "@/components/SEOHead";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import LiveSignupTicker from "@/components/waitlist/LiveSignupTicker";
 
 interface ReferrerInfo {
   display_name: string | null;
