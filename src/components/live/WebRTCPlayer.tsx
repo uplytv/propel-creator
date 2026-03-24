@@ -6,6 +6,7 @@ import { useAutoPip } from '@/hooks/useAutoPip';
 import { ICE_SERVERS, preferLowLatencyCodecs } from '@/lib/webrtcConfig';
 import { useConnectionQuality } from '@/hooks/useConnectionQuality';
 import Hls from 'hls.js';
+import ViewerClipButton from './ViewerClipButton';
 
 interface WebRTCPlayerProps {
   streamId: string;
