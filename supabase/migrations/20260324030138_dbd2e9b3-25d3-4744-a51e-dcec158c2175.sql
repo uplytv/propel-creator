@@ -1,0 +1,1 @@
+UPDATE profiles SET username = 'arianshahbazi' WHERE user_id = '524f0aaa-1c49-4078-b078-414e30cf4076' AND (username IS NULL OR username = '')
