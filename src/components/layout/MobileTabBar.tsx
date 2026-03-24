@@ -31,10 +31,21 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
     return location.pathname === basePath || location.pathname.startsWith(basePath + "/");
   };
 
+  const isAriaActive = ["/dashboard/ai-team", "/grow", "/launchpad", "/dashboard/content-studio"].some(
+    p => location.pathname === p || location.pathname.startsWith(p + "/")
+  );
+
   const createActions = [
     { label: "Go Live", icon: Radio, onClick: () => { setCreateOpen(false); navigate("/go-live"); } },
     { label: "Upload Video", icon: Upload, onClick: () => { setCreateOpen(false); onUploadVideo?.(); } },
     { label: "Schedule Stream", icon: Calendar, onClick: () => { setCreateOpen(false); navigate("/go-live?tab=schedule"); } },
+  ];
+
+  const ariaActions = [
+    { label: "AI Team", icon: Bot, path: "/dashboard/ai-team", desc: "Your 5 AI agents" },
+    { label: "Grow", icon: TrendingUp, path: "/grow", desc: "Growth protocol tasks" },
+    { label: "Content Studio", icon: Sparkles, path: "/dashboard/content-studio", desc: "AI-generated content" },
+    { label: "Launchpad", icon: Rocket, path: "/launchpad", desc: "Launch something new" },
   ];
 
   return (
