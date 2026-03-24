@@ -108,6 +108,38 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
+        {/* Stats Cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="grid grid-cols-2 md:grid-cols-4 gap-3 px-4 md:px-8 mb-4"
+        >
+          {[
+            { label: "Members", value: dashStats?.totalMembers ?? 0, icon: Users, prefix: "" },
+            { label: "Subscribers", value: dashStats?.activeSubscribers ?? 0, icon: CreditCard, prefix: "" },
+            { label: "Revenue", value: dashStats?.totalRevenue ?? 0, icon: DollarSign, prefix: "$" },
+            { label: "This Month", value: dashStats?.revenueThisMonth ?? 0, icon: TrendingUp, prefix: "$" },
+          ].map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <div key={stat.label} className="rounded-xl border border-border bg-card/60 p-3.5 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Icon className="w-4 h-4 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-lg font-bold tabular-nums text-foreground leading-tight">
+                    {stat.prefix}{typeof stat.value === "number" ? stat.value.toLocaleString(undefined, { maximumFractionDigits: 0 }) : stat.value}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">{stat.label}</p>
+                </div>
+              </div>
+            );
+          })}
+        </motion.div>
+
+        <PlatformUpgradeBanner />
+
         {/* Live Stream Banner */}
         {activeStream && (
           <motion.div

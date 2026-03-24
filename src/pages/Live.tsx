@@ -296,39 +296,39 @@ export default function Live() {
   const totalViewers = allStreams.reduce((sum, s) => sum + s.viewers, 0);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#0A0A0A' }}>
+    <div className="min-h-screen bg-background">
       <SEOHead title="Live Hub" description="Watch live streams, clips, replays, and connect with the creator community on Uply." />
 
       {/* ─── Top Nav ────────────────────────────────────────── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5" style={{ backgroundColor: 'rgba(10,10,10,0.9)', backdropFilter: 'blur(20px)' }}>
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/90 backdrop-blur-xl">
         <div className="container flex h-14 items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/logo.png" alt="Uply" className="h-[60px] cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate("/")} />
-            <span className="text-white/10">|</span>
-            <div className="flex items-center gap-1.5 text-[#00FF85]">
+            <span className="text-foreground/10">|</span>
+            <div className="flex items-center gap-1.5 text-primary">
               <Radio className="w-4 h-4" />
               <span className="text-sm font-semibold">Live Hub</span>
             </div>
           </div>
           <div className="hidden md:flex items-center gap-3 flex-1 max-w-md mx-8">
             <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#888]" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search streams, creators, clips..."
-                className="w-full rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder:text-[#888] focus:outline-none focus:ring-1 focus:ring-[#00FF85]/50 border border-white/10" style={{ backgroundColor: '#111' }} />
+                className="w-full rounded-lg pl-9 pr-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 border border-border"  />
             </div>
           </div>
           <div className="flex items-center gap-2">
             {user ? (
               <>
-                <Button size="sm" onClick={() => navigate("/go-live")} className="bg-[#00FF85] text-[#0A0A0A] font-bold hover:brightness-110 border-0">
+                <Button size="sm" onClick={() => navigate("/go-live")} className="bg-primary text-primary-foreground font-bold hover:brightness-110 border-0">
                   <Radio className="w-3.5 h-3.5 mr-1.5" />Go Live
                 </Button>
-                <Button variant="ghost" size="sm" className="text-[#888] hover:text-white" onClick={() => navigate("/dashboard")}>Dashboard</Button>
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" onClick={() => navigate("/dashboard")}>Dashboard</Button>
               </>
             ) : (
               <>
-                <Button variant="ghost" size="sm" className="text-[#888] hover:text-white" onClick={() => navigate("/auth")}>Log in</Button>
-                <Button size="sm" className="bg-[#00FF85] text-[#0A0A0A] font-bold hover:brightness-110 border-0" onClick={() => navigate("/auth")}>Start Free</Button>
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" onClick={() => navigate("/auth")}>Log in</Button>
+                <Button size="sm" className="bg-primary text-primary-foreground font-bold hover:brightness-110 border-0" onClick={() => navigate("/auth")}>Start Free</Button>
               </>
             )}
           </div>
@@ -336,11 +336,11 @@ export default function Live() {
       </nav>
 
       {/* ─── Mobile Search ──────────────────────────────────── */}
-      <div className="md:hidden pt-16 px-4 pb-2" style={{ backgroundColor: '#0A0A0A' }}>
+      <div className="md:hidden pt-16 px-4 pb-2 bg-background">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#888]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search..."
-            className="w-full rounded-lg pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-[#888] focus:outline-none focus:ring-1 focus:ring-[#00FF85]/50 border border-white/10" style={{ backgroundColor: '#111' }} />
+            className="w-full rounded-lg pl-9 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 border border-border"  />
         </div>
       </div>
 
@@ -349,21 +349,21 @@ export default function Live() {
 
           {/* ─── Stats Bar ─────────────────────────────────── */}
           <div className="flex items-center gap-4 mb-6 overflow-x-auto scrollbar-hide">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/5 bg-[#111] flex-shrink-0">
-              <span className="w-2 h-2 rounded-full bg-[#FF3B3B] animate-pulse" />
-              <span className="text-xs font-semibold text-white">{liveCount} Live</span>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card flex-shrink-0">
+              <span className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+              <span className="text-xs font-semibold text-foreground">{liveCount} Live</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/5 bg-[#111] flex-shrink-0">
-              <Eye className="w-3 h-3 text-[#888]" />
-              <span className="text-xs text-[#888]">{formatViewers(totalViewers)} watching</span>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card flex-shrink-0">
+              <Eye className="w-3 h-3 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">{formatViewers(totalViewers)} watching</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/5 bg-[#111] flex-shrink-0">
-              <Scissors className="w-3 h-3 text-[#888]" />
-              <span className="text-xs text-[#888]">{clips.length} clips</span>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card flex-shrink-0">
+              <Scissors className="w-3 h-3 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">{clips.length} clips</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/5 bg-[#111] flex-shrink-0">
-              <Film className="w-3 h-3 text-[#888]" />
-              <span className="text-xs text-[#888]">{recordings.length + vodAssets.length} replays</span>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card flex-shrink-0">
+              <Film className="w-3 h-3 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">{recordings.length + vodAssets.length} replays</span>
             </div>
           </div>
 
@@ -375,49 +375,49 @@ export default function Live() {
               className="mb-8 cursor-pointer group"
               onClick={() => navigate(`/stream/${heroStream.id}`)}
             >
-              <div className="relative rounded-xl overflow-hidden border border-white/5 group-hover:border-[#00FF85]/40 transition-all">
-                <div className="aspect-[21/9] sm:aspect-[21/9] bg-[#111] relative">
+              <div className="relative rounded-xl overflow-hidden border border-border group-hover:border-primary/40 transition-all">
+                <div className="aspect-[21/9] sm:aspect-[21/9] bg-card relative">
                   {heroStream.muxPlaybackId ? (
                     <img src={`https://image.mux.com/${heroStream.muxPlaybackId}/thumbnail.jpg?time=0&width=1280`} alt={heroStream.title} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-[#00FF85]/10 via-[#111] to-[#0A0A0A] flex items-center justify-center">
+                    <div className="w-full h-full bg-gradient-to-br from-primary/10 via-card to-background flex items-center justify-center">
                       <img src="/logo.png" alt="UPLY" className="h-12 opacity-20" />
                     </div>
                   )}
                   {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/40 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
                   {/* Content overlay */}
                   <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-bold text-white bg-[#FF3B3B]">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-bold text-foreground bg-destructive">
                         <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />LIVE
                       </span>
-                      <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-[#00FF85]/15 text-[#00FF85]">
+                      <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-primary/15 text-primary">
                         {formatViewers(heroStream.viewers)} watching
                       </span>
-                      <span className="hidden sm:inline-block px-2 py-0.5 rounded text-[11px] font-medium bg-white/5 text-[#888]">
+                      <span className="hidden sm:inline-block px-2 py-0.5 rounded text-[11px] font-medium bg-secondary text-muted-foreground">
                         {heroStream.category}
                       </span>
                     </div>
-                    <h2 className="text-lg sm:text-2xl font-bold text-white leading-tight line-clamp-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                    <h2 className="text-lg sm:text-2xl font-bold text-foreground leading-tight line-clamp-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                       {heroStream.title}
                     </h2>
                     <div className="flex items-center gap-2.5 mt-2">
-                      <div className="w-8 h-8 rounded-full bg-[#1a1a1a] flex items-center justify-center text-[10px] font-bold text-[#888] overflow-hidden">
+                      <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold text-muted-foreground overflow-hidden">
                         {heroStream.creatorAvatar && String(heroStream.creatorAvatar).startsWith('http') ? (
                           <img src={String(heroStream.creatorAvatar)} alt="" className="w-full h-full object-cover" />
                         ) : (
                           String(heroStream.creatorAvatar || heroStream.creatorName.slice(0, 2)).toUpperCase()
                         )}
                       </div>
-                      <span className="text-sm font-medium text-white/80">{heroStream.creatorName}</span>
-                      <span className="text-xs text-[#888]">· {heroStream.startedAt}</span>
+                      <span className="text-sm font-medium text-foreground/80">{heroStream.creatorName}</span>
+                      <span className="text-xs text-muted-foreground">· {heroStream.startedAt}</span>
                     </div>
                   </div>
                   {/* Play button */}
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="w-16 h-16 rounded-full bg-[#00FF85] flex items-center justify-center shadow-lg shadow-[#00FF85]/20">
-                      <Play className="w-7 h-7 text-[#0A0A0A] ml-1" fill="#0A0A0A" />
+                    <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                      <Play className="w-7 h-7 text-primary-foreground ml-1" fill="#0A0A0A" />
                     </div>
                   </div>
                 </div>
@@ -436,13 +436,13 @@ export default function Live() {
                   onClick={() => setActiveSection(tab.id)}
                   className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all flex-shrink-0 ${
                     isActive
-                      ? "bg-[#00FF85]/10 text-[#00FF85] border border-[#00FF85]/30"
-                      : "text-[#888] hover:text-white border border-transparent hover:border-white/10"
+                      ? "bg-primary/10 text-primary border border-primary/30"
+                      : "text-muted-foreground hover:text-foreground border border-transparent hover:border-border"
                   }`}
                 >
                   <Icon className="w-3.5 h-3.5" />
                   {tab.label}
-                  {tab.id === 'live' && <span className={`ml-1 text-[10px] px-1.5 py-0.5 rounded-full ${isActive ? 'bg-[#FF3B3B] text-white' : 'bg-white/5 text-[#888]'}`}>{liveCount}</span>}
+                  {tab.id === 'live' && <span className={`ml-1 text-[10px] px-1.5 py-0.5 rounded-full ${isActive ? 'bg-destructive text-foreground' : 'bg-secondary text-muted-foreground'}`}>{liveCount}</span>}
                 </button>
               );
             })}
@@ -453,12 +453,12 @@ export default function Live() {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {[0, 1, 2, 3, 4, 5].map(i => (
                 <div key={i}>
-                  <div className="aspect-video rounded-lg bg-[#1a1a1a] animate-pulse" />
+                  <div className="aspect-video rounded-lg bg-secondary animate-pulse" />
                   <div className="mt-2.5 flex gap-2.5">
-                    <div className="w-9 h-9 rounded-full bg-[#1a1a1a] animate-pulse flex-shrink-0" />
+                    <div className="w-9 h-9 rounded-full bg-secondary animate-pulse flex-shrink-0" />
                     <div className="flex-1 space-y-1.5">
-                      <div className="h-3.5 w-3/4 rounded bg-[#1a1a1a] animate-pulse" />
-                      <div className="h-3 w-full rounded bg-[#1a1a1a] animate-pulse" />
+                      <div className="h-3.5 w-3/4 rounded bg-secondary animate-pulse" />
+                      <div className="h-3 w-full rounded bg-secondary animate-pulse" />
                     </div>
                   </div>
                 </div>
@@ -472,14 +472,14 @@ export default function Live() {
           {!loading && activeSection === 'live' && (
             <div>
               {/* Stream sub-tabs */}
-              <div className="flex gap-6 mb-5 border-b border-white/5">
+              <div className="flex gap-6 mb-5 border-b border-border">
                 {STREAM_TABS.map(tab => (
                   <button key={tab.id} onClick={() => {
                     setActiveStreamTab(tab.id);
                     if (tab.id === "categories") categoriesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-                  }} className={`pb-2.5 text-sm font-medium transition-colors relative ${activeStreamTab === tab.id ? "text-white" : "text-[#888] hover:text-white"}`}>
+                  }} className={`pb-2.5 text-sm font-medium transition-colors relative ${activeStreamTab === tab.id ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
                     {tab.label}
-                    {activeStreamTab === tab.id && <motion.div layoutId="live-tab-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#00FF85] rounded-full" />}
+                    {activeStreamTab === tab.id && <motion.div layoutId="live-tab-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
                   </button>
                 ))}
               </div>
@@ -487,21 +487,21 @@ export default function Live() {
               {/* Empty states */}
               {activeStreamTab === "following" && filtered.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <Users className="w-10 h-10 text-[#888] mb-3" />
-                  <p className="text-white font-semibold mb-1">{!user ? "Log in to see who you follow" : followingIds.length === 0 ? "You're not following anyone yet." : "None of your followed creators are live."}</p>
+                  <Users className="w-10 h-10 text-muted-foreground mb-3" />
+                  <p className="text-foreground font-semibold mb-1">{!user ? "Log in to see who you follow" : followingIds.length === 0 ? "You're not following anyone yet." : "None of your followed creators are live."}</p>
                   <button onClick={() => !user ? navigate('/auth') : followingIds.length === 0 ? navigate('/discover') : setActiveStreamTab('foryou')}
-                    className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#00FF85] text-[#0A0A0A] text-sm font-bold hover:brightness-110 transition-all">
+                    className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:brightness-110 transition-all">
                     {!user ? "Log in" : followingIds.length === 0 ? "Discover creators" : "Browse all streams"}
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
               ) : filtered.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <Tv className="w-10 h-10 text-[#888] mb-3" />
-                  <p className="text-white font-semibold mb-1">No one is live right now.</p>
-                  <p className="text-sm text-[#888]">Be the first to start streaming!</p>
+                  <Tv className="w-10 h-10 text-muted-foreground mb-3" />
+                  <p className="text-foreground font-semibold mb-1">No one is live right now.</p>
+                  <p className="text-sm text-muted-foreground">Be the first to start streaming!</p>
                   <button onClick={() => navigate('/go-live')}
-                    className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#00FF85] text-[#0A0A0A] text-sm font-bold hover:brightness-110 transition-all">
+                    className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:brightness-110 transition-all">
                     Go Live <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
@@ -518,15 +518,15 @@ export default function Live() {
 
               {/* Categories */}
               <div ref={categoriesRef} className="mt-10">
-                <h3 className="text-lg font-bold text-white mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Top Categories</h3>
+                <h3 className="text-lg font-bold text-foreground mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Top Categories</h3>
                 <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide sm:grid sm:grid-cols-4 lg:grid-cols-7 sm:overflow-visible">
                   {HARDCODED_CATEGORIES.map(cat => (
                     <div key={cat.name} className="flex-shrink-0 w-24 sm:w-auto cursor-pointer group">
-                      <div className={`aspect-square rounded-lg bg-gradient-to-br ${cat.gradient} border border-white/5 flex items-center justify-center text-3xl group-hover:border-[#00FF85]/40 transition-colors`}>
+                      <div className={`aspect-square rounded-lg bg-gradient-to-br ${cat.gradient} border border-border flex items-center justify-center text-3xl group-hover:border-primary/40 transition-colors`}>
                         {cat.emoji}
                       </div>
-                      <p className="text-xs font-medium text-white mt-1.5 text-center truncate">{cat.name}</p>
-                      <p className="text-[10px] text-[#888] text-center">{categoryCounts[cat.name] || 0} live</p>
+                      <p className="text-xs font-medium text-foreground mt-1.5 text-center truncate">{cat.name}</p>
+                      <p className="text-[10px] text-muted-foreground text-center">{categoryCounts[cat.name] || 0} live</p>
                     </div>
                   ))}
                 </div>
@@ -535,8 +535,8 @@ export default function Live() {
               {/* VOD Assets */}
               {vodAssets.length > 0 && (
                 <div className="mt-10">
-                  <h3 className="flex items-center gap-2 text-lg font-bold text-white mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                    <Film className="w-5 h-5 text-[#888]" />Recent Uploads
+                  <h3 className="flex items-center gap-2 text-lg font-bold text-foreground mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                    <Film className="w-5 h-5 text-muted-foreground" />Recent Uploads
                   </h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                     {vodAssets.slice(0, 8).map((asset: any, i: number) => {
@@ -545,17 +545,17 @@ export default function Live() {
                       return (
                         <motion.div key={asset.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
                           onClick={() => navigate(`/stream/${asset.id}?type=vod`)} className="group cursor-pointer">
-                          <div className="relative aspect-video rounded-lg overflow-hidden bg-[#111] border-2 border-transparent group-hover:border-[#00FF85] transition-all duration-200 group-hover:scale-[1.02]">
-                            {thumb ? <img src={thumb} alt={asset.title || 'Recording'} className="w-full h-full object-cover" loading="lazy" /> : <div className="w-full h-full flex items-center justify-center"><Film className="w-8 h-8 text-[#888]/40" /></div>}
-                            {duration && <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-mono text-white bg-black/70">{duration}</span>}
+                          <div className="relative aspect-video rounded-lg overflow-hidden bg-card border-2 border-transparent group-hover:border-primary transition-all duration-200 group-hover:scale-[1.02]">
+                            {thumb ? <img src={thumb} alt={asset.title || 'Recording'} className="w-full h-full object-cover" loading="lazy" /> : <div className="w-full h-full flex items-center justify-center"><Film className="w-8 h-8 text-muted-foreground/40" /></div>}
+                            {duration && <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-mono text-foreground bg-black/70">{duration}</span>}
                           </div>
                           <div className="mt-2 flex gap-2">
-                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#1a1a1a] flex items-center justify-center text-[10px] font-bold text-[#888] overflow-hidden">
+                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold text-muted-foreground overflow-hidden">
                               {asset.creator_avatar ? <img src={asset.creator_avatar} alt="" className="w-full h-full object-cover" /> : (asset.creator_name || 'C').slice(0, 2).toUpperCase()}
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm font-semibold text-white truncate">{asset.title || 'Untitled'}</p>
-                              <p className="text-xs text-[#888]">{asset.creator_name}</p>
+                              <p className="text-sm font-semibold text-foreground truncate">{asset.title || 'Untitled'}</p>
+                              <p className="text-xs text-muted-foreground">{asset.creator_name}</p>
                             </div>
                           </div>
                         </motion.div>
@@ -574,9 +574,9 @@ export default function Live() {
             <div>
               {clips.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
-                  <Scissors className="w-12 h-12 text-[#888] mb-4" />
-                  <p className="text-white font-semibold mb-1">No clips yet</p>
-                  <p className="text-[#888] text-sm">Clips from live streams will appear here.</p>
+                  <Scissors className="w-12 h-12 text-muted-foreground mb-4" />
+                  <p className="text-foreground font-semibold mb-1">No clips yet</p>
+                  <p className="text-muted-foreground text-sm">Clips from live streams will appear here.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -585,21 +585,21 @@ export default function Live() {
                     const dur = clip.duration_seconds ? `${Math.floor(clip.duration_seconds / 60)}:${(clip.duration_seconds % 60).toString().padStart(2, '0')}` : null;
                     return (
                       <motion.div key={clip.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }} className="group cursor-pointer">
-                        <div className="relative aspect-video rounded-lg overflow-hidden bg-[#111] border-2 border-transparent group-hover:border-[#00FF85] transition-all group-hover:scale-[1.02]">
-                          {thumb ? <img src={thumb} alt={clip.caption} className="w-full h-full object-cover" loading="lazy" /> : <div className="w-full h-full flex items-center justify-center"><Scissors className="w-8 h-8 text-[#888]/40" /></div>}
-                          {dur && <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-mono text-white bg-black/70">{dur}</span>}
-                          <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded text-[10px] font-bold text-[#00FF85] bg-[#00FF85]/10 border border-[#00FF85]/30">CLIP</div>
-                          <div className="absolute bottom-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] text-white bg-black/60">
+                        <div className="relative aspect-video rounded-lg overflow-hidden bg-card border-2 border-transparent group-hover:border-primary transition-all group-hover:scale-[1.02]">
+                          {thumb ? <img src={thumb} alt={clip.caption} className="w-full h-full object-cover" loading="lazy" /> : <div className="w-full h-full flex items-center justify-center"><Scissors className="w-8 h-8 text-muted-foreground/40" /></div>}
+                          {dur && <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-mono text-foreground bg-black/70">{dur}</span>}
+                          <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded text-[10px] font-bold text-primary bg-primary/10 border border-primary/30">CLIP</div>
+                          <div className="absolute bottom-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] text-foreground bg-black/60">
                             <Eye className="w-3 h-3" />{clip.view_count || 0}
                           </div>
                         </div>
                         <div className="mt-2 flex gap-2">
-                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#1a1a1a] flex items-center justify-center text-[10px] font-bold text-[#888] overflow-hidden">
+                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold text-muted-foreground overflow-hidden">
                             {clip.creator_avatar ? <img src={clip.creator_avatar} alt="" className="w-full h-full object-cover" /> : (clip.creator_name || 'C').slice(0, 2).toUpperCase()}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm font-semibold text-white truncate">{clip.caption || 'Untitled clip'}</p>
-                            <p className="text-xs text-[#888]">{clip.creator_name}</p>
+                            <p className="text-sm font-semibold text-foreground truncate">{clip.caption || 'Untitled clip'}</p>
+                            <p className="text-xs text-muted-foreground">{clip.creator_name}</p>
                           </div>
                         </div>
                       </motion.div>
@@ -617,18 +617,18 @@ export default function Live() {
             <div>
               {shorts.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
-                  <Smartphone className="w-12 h-12 text-[#888] mb-4" />
-                  <p className="text-white font-semibold mb-1">No shorts yet</p>
-                  <p className="text-[#888] text-sm">Short-form vertical videos will appear here.</p>
-                  <button onClick={() => navigate('/shorts')} className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#00FF85] text-[#0A0A0A] text-sm font-bold hover:brightness-110 transition-all">
+                  <Smartphone className="w-12 h-12 text-muted-foreground mb-4" />
+                  <p className="text-foreground font-semibold mb-1">No shorts yet</p>
+                  <p className="text-muted-foreground text-sm">Short-form vertical videos will appear here.</p>
+                  <button onClick={() => navigate('/shorts')} className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:brightness-110 transition-all">
                     Go to Shorts feed <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
               ) : (
                 <>
                   <div className="flex items-center justify-between mb-4">
-                    <p className="text-sm text-[#888]">{shorts.length} shorts</p>
-                    <button onClick={() => navigate('/shorts')} className="text-sm text-[#00FF85] font-medium hover:underline flex items-center gap-1">
+                    <p className="text-sm text-muted-foreground">{shorts.length} shorts</p>
+                    <button onClick={() => navigate('/shorts')} className="text-sm text-primary font-medium hover:underline flex items-center gap-1">
                       Full-screen feed <ChevronRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -638,39 +638,39 @@ export default function Live() {
                       return (
                         <motion.div key={short.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
                           onClick={() => navigate('/shorts')} className="group cursor-pointer">
-                          <div className="relative aspect-[9/16] rounded-xl overflow-hidden bg-[#111] border-2 border-transparent group-hover:border-[#00FF85] transition-all group-hover:scale-[1.02]">
+                          <div className="relative aspect-[9/16] rounded-xl overflow-hidden bg-card border-2 border-transparent group-hover:border-primary transition-all group-hover:scale-[1.02]">
                             {thumb ? (
                               <img src={thumb} alt={short.caption} className="w-full h-full object-cover" loading="lazy" />
                             ) : (
-                              <div className="w-full h-full bg-gradient-to-b from-[#1a1a1a] to-[#111] flex items-center justify-center">
-                                <Smartphone className="w-6 h-6 text-[#888]/40" />
+                              <div className="w-full h-full bg-gradient-to-b from-secondary to-[#111] flex items-center justify-center">
+                                <Smartphone className="w-6 h-6 text-muted-foreground/40" />
                               </div>
                             )}
                             {/* Gradient overlay */}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                             {/* Play icon */}
                             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                              <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                                <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
+                              <div className="w-10 h-10 rounded-full bg-secondary backdrop-blur-sm flex items-center justify-center">
+                                <Play className="w-5 h-5 text-foreground ml-0.5" fill="white" />
                               </div>
                             </div>
                             {/* Stats */}
                             <div className="absolute bottom-2 left-2 right-2">
-                              <div className="flex items-center gap-2 text-[10px] text-white/80">
+                              <div className="flex items-center gap-2 text-[10px] text-foreground/80">
                                 <span className="flex items-center gap-0.5"><Eye className="w-3 h-3" />{short.view_count || 0}</span>
                                 <span className="flex items-center gap-0.5"><Flame className="w-3 h-3" />{short.like_count || 0}</span>
                               </div>
                             </div>
                             {/* Creator type tag */}
                             {short.creator_type_tag && (
-                              <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded text-[9px] font-bold text-[#00FF85] bg-black/50 backdrop-blur-sm">
+                              <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded text-[9px] font-bold text-primary bg-black/50 backdrop-blur-sm">
                                 {short.creator_type_tag}
                               </div>
                             )}
                           </div>
                           <div className="mt-1.5">
-                            <p className="text-xs font-medium text-white truncate">{short.caption || 'Untitled'}</p>
-                            <p className="text-[10px] text-[#888] truncate">{short.creator_name}</p>
+                            <p className="text-xs font-medium text-foreground truncate">{short.caption || 'Untitled'}</p>
+                            <p className="text-[10px] text-muted-foreground truncate">{short.creator_name}</p>
                           </div>
                         </motion.div>
                       );
@@ -688,9 +688,9 @@ export default function Live() {
             <div>
               {recordings.length === 0 && vodAssets.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
-                  <Film className="w-12 h-12 text-[#888] mb-4" />
-                  <p className="text-white font-semibold mb-1">No replays yet</p>
-                  <p className="text-[#888] text-sm">Recorded streams and uploads will appear here.</p>
+                  <Film className="w-12 h-12 text-muted-foreground mb-4" />
+                  <p className="text-foreground font-semibold mb-1">No replays yet</p>
+                  <p className="text-muted-foreground text-sm">Recorded streams and uploads will appear here.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -702,20 +702,20 @@ export default function Live() {
                     return (
                       <motion.div key={item.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
                         onClick={() => navigate(item.playback_id ? `/stream/${item.id}?type=recording` : `/stream/${item.id}?type=vod`)} className="group cursor-pointer">
-                        <div className="relative aspect-video rounded-lg overflow-hidden bg-[#111] border-2 border-transparent group-hover:border-[#00FF85] transition-all group-hover:scale-[1.02]">
-                          {thumb ? <img src={thumb} alt={item.title || 'Replay'} className="w-full h-full object-cover" loading="lazy" /> : <div className="w-full h-full flex items-center justify-center"><Film className="w-8 h-8 text-[#888]/40" /></div>}
-                          {dur && <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-mono text-white bg-black/70">{dur}</span>}
-                          <div className="absolute bottom-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] text-white bg-black/60">
+                        <div className="relative aspect-video rounded-lg overflow-hidden bg-card border-2 border-transparent group-hover:border-primary transition-all group-hover:scale-[1.02]">
+                          {thumb ? <img src={thumb} alt={item.title || 'Replay'} className="w-full h-full object-cover" loading="lazy" /> : <div className="w-full h-full flex items-center justify-center"><Film className="w-8 h-8 text-muted-foreground/40" /></div>}
+                          {dur && <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-mono text-foreground bg-black/70">{dur}</span>}
+                          <div className="absolute bottom-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] text-foreground bg-black/60">
                             <Eye className="w-3 h-3" />{item.view_count || 0}
                           </div>
                         </div>
                         <div className="mt-2 flex gap-2">
-                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#1a1a1a] flex items-center justify-center text-[10px] font-bold text-[#888] overflow-hidden">
+                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold text-muted-foreground overflow-hidden">
                             {item.creator_avatar ? <img src={item.creator_avatar} alt="" className="w-full h-full object-cover" /> : (item.creator_name || 'C').slice(0, 2).toUpperCase()}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm font-semibold text-white truncate">{item.title || 'Untitled replay'}</p>
-                            <p className="text-xs text-[#888]">{item.creator_name || 'Creator'}</p>
+                            <p className="text-sm font-semibold text-foreground truncate">{item.title || 'Untitled replay'}</p>
+                            <p className="text-xs text-muted-foreground">{item.creator_name || 'Creator'}</p>
                           </div>
                         </div>
                       </motion.div>
@@ -733,33 +733,33 @@ export default function Live() {
             <div>
               {communityPosts.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
-                  <MessageCircle className="w-12 h-12 text-[#888] mb-4" />
-                  <p className="text-white font-semibold mb-1">No community posts yet</p>
-                  <p className="text-[#888] text-sm">Join a creator's community to see posts here.</p>
+                  <MessageCircle className="w-12 h-12 text-muted-foreground mb-4" />
+                  <p className="text-foreground font-semibold mb-1">No community posts yet</p>
+                  <p className="text-muted-foreground text-sm">Join a creator's community to see posts here.</p>
                 </div>
               ) : (
                 <div className="max-w-2xl mx-auto space-y-4">
                   {communityPosts.map((post: any, i: number) => (
                     <motion.div key={post.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
-                      className={`p-4 rounded-xl bg-[#111] border ${post.is_pinned ? 'border-l-[3px] border-l-[#00FF85] border-white/5' : 'border-white/5'} hover:border-white/10 transition-colors`}>
+                      className={`p-4 rounded-xl bg-card border ${post.is_pinned ? 'border-l-[3px] border-l-[#00FF85] border-border' : 'border-border'} hover:border-border transition-colors`}>
                       <div className="flex items-center gap-3 mb-3">
-                        <div className="w-10 h-10 rounded-full bg-[#1a1a1a] flex items-center justify-center text-xs font-bold text-[#888] overflow-hidden">
+                        <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-muted-foreground overflow-hidden">
                           {post.author_avatar ? <img src={post.author_avatar} alt="" className="w-full h-full object-cover" /> : (post.author_name || 'M').slice(0, 2).toUpperCase()}
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-white">{post.author_name}</p>
-                          <p className="text-[11px] text-[#888]">{getTimeAgo(post.created_at)}</p>
+                          <p className="text-sm font-semibold text-foreground">{post.author_name}</p>
+                          <p className="text-[11px] text-muted-foreground">{getTimeAgo(post.created_at)}</p>
                         </div>
                         {post.category && post.category !== 'General' && (
-                          <span className="ml-auto px-2 py-0.5 rounded-full text-[10px] font-medium bg-white/5 text-[#888]">{post.category}</span>
+                          <span className="ml-auto px-2 py-0.5 rounded-full text-[10px] font-medium bg-secondary text-muted-foreground">{post.category}</span>
                         )}
                       </div>
-                      {post.title && <h4 className="text-sm font-bold text-white mb-1">{post.title}</h4>}
-                      <p className="text-sm text-[#ccc] leading-relaxed line-clamp-3">{post.body}</p>
+                      {post.title && <h4 className="text-sm font-bold text-foreground mb-1">{post.title}</h4>}
+                      <p className="text-sm text-foreground/80 leading-relaxed line-clamp-3">{post.body}</p>
                       {post.image_url && <img src={post.image_url} alt="" className="mt-3 rounded-lg w-full max-h-60 object-cover" />}
-                      <div className="flex items-center gap-4 mt-3 pt-3 border-t border-white/5">
-                        <span className="flex items-center gap-1 text-xs text-[#888]"><Flame className="w-3.5 h-3.5" />{post.like_count || 0}</span>
-                        <span className="flex items-center gap-1 text-xs text-[#888]"><MessageCircle className="w-3.5 h-3.5" />{post.comment_count || 0}</span>
+                      <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border">
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground"><Flame className="w-3.5 h-3.5" />{post.like_count || 0}</span>
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground"><MessageCircle className="w-3.5 h-3.5" />{post.comment_count || 0}</span>
                       </div>
                     </motion.div>
                   ))}
