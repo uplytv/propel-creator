@@ -296,7 +296,7 @@ export default function Live() {
   const totalViewers = allStreams.reduce((sum, s) => sum + s.viewers, 0);
 
   return (
-    <div className="min-h-screen" className="bg-background">
+    <div className="min-h-screen bg-background">
       <SEOHead title="Live Hub" description="Watch live streams, clips, replays, and connect with the creator community on Uply." />
 
       {/* ─── Top Nav ────────────────────────────────────────── */}
