@@ -39,6 +39,7 @@ const features = [
   { icon: Users, title: "Community", desc: "Posts, comments, leaderboards, and member tiers — all in your space.", color: "#00FF85" },
   { icon: TrendingUp, title: "Analytics & ARIA", desc: "AI-powered growth insights and weekly performance reports.", color: "#06B6D4" },
   { icon: Zap, title: "Affiliate System", desc: "Let your members earn by referring new subscribers.", color: "#EAB308" },
+  { icon: Users, title: "AI Creator Team", desc: "🤖 5 autonomous agents running your business 24/7.", color: "#8B5CF6" },
 ];
 
 const steps = [

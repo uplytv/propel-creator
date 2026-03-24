@@ -32,6 +32,7 @@ const tabs = [
   { id: "subscriptions" as const, label: "Subscriptions", icon: Users },
   { id: "tickets" as const, label: "My Tickets", icon: Ticket },
   { id: "aria" as const, label: "ARIA Agent", icon: Bot },
+  { id: "ai-team" as const, label: "AI Team", icon: Bot },
   { id: "account" as const, label: "Account", icon: Shield },
 ];
 
