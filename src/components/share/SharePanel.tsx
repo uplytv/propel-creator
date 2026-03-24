@@ -231,7 +231,7 @@ export default function SharePanel({
         break;
       }
       case "youtube": {
-        navigator.clipboard.writeText(caption);
+        await safeClipboard(caption);
         toast({ title: "Caption copied! Opening YouTube Studio…" });
         if (isMobile && navigator.share) {
           const blob = await fetchVideoBlob();
