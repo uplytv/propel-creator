@@ -97,6 +97,63 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
         )}
       </AnimatePresence>
 
+      {/* ARIA action sheet backdrop */}
+      <AnimatePresence>
+        {ariaOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm md:hidden"
+            onClick={() => setAriaOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ARIA action sheet */}
+      <AnimatePresence>
+        {ariaOpen && (
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            className="fixed bottom-16 left-0 right-0 z-[61] md:hidden bg-card border-t border-border rounded-t-2xl safe-area-bottom"
+          >
+            <div className="p-4 space-y-1">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-bold text-primary uppercase tracking-widest">ARIA</p>
+                <button onClick={() => setAriaOpen(false)} className="p-1 rounded-lg text-muted-foreground hover:text-foreground">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              {ariaActions.map((action) => {
+                const isCurrentPage = location.pathname === action.path;
+                return (
+                  <button
+                    key={action.label}
+                    onClick={() => { setAriaOpen(false); navigate(action.path); }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                      isCurrentPage ? "bg-primary/10 text-primary" : "text-foreground hover:bg-secondary/60"
+                    }`}
+                  >
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      isCurrentPage ? "bg-primary/20" : "bg-primary/10"
+                    }`}>
+                      <action.icon className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="text-left">
+                      <p>{action.label}</p>
+                      <p className="text-[10px] text-muted-foreground">{action.desc}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Tab bar */}
       <nav
         aria-label="Mobile navigation"
@@ -111,7 +168,7 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
               return (
                 <button
                   key="create"
-                  onClick={() => setCreateOpen(!createOpen)}
+                  onClick={() => { setAriaOpen(false); setCreateOpen(!createOpen); }}
                   aria-label="Create"
                   className="relative flex items-center justify-center -mt-4"
                 >
@@ -128,11 +185,37 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
               );
             }
 
+            // ARIA tab opens submenu
+            if (tab.label === "ARIA") {
+              return (
+                <button
+                  key="ARIA"
+                  onClick={() => { setCreateOpen(false); setAriaOpen(!ariaOpen); }}
+                  aria-label="ARIA"
+                  role="tab"
+                  aria-selected={isAriaActive}
+                  className="relative flex flex-col items-center justify-center flex-1 py-1.5 tab-press group touch-target"
+                >
+                  <div className="relative">
+                    {isAriaActive && (
+                      <motion.div
+                        layoutId="mobile-tab-indicator"
+                        className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      />
+                    )}
+                    <Icon className="w-6 h-6 text-primary" />
+                  </div>
+                  <span className="text-[10px] mt-0.5 text-primary font-semibold">ARIA</span>
+                </button>
+              );
+            }
+
             const active = isActive(tab.path);
             return (
               <button
                 key={tab.label}
-                onClick={() => navigate(tab.path)}
+                onClick={() => { setCreateOpen(false); setAriaOpen(false); navigate(tab.path); }}
                 aria-label={tab.label}
                 aria-current={active ? "page" : undefined}
                 role="tab"
@@ -149,9 +232,7 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
                   )}
                   <Icon
                     className={`w-6 h-6 transition-colors ${
-                      tab.label === "ARIA"
-                        ? "text-primary"
-                        : active
+                      active
                         ? "text-foreground"
                         : "text-muted-foreground group-hover:text-foreground"
                     }`}
@@ -159,9 +240,7 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
                 </div>
                 <span
                   className={`text-[10px] mt-0.5 transition-colors ${
-                    tab.label === "ARIA"
-                      ? "text-primary font-semibold"
-                      : active
+                    active
                       ? "text-foreground font-semibold"
                       : "text-muted-foreground font-medium"
                   }`}
