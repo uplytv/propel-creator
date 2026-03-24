@@ -21,23 +21,23 @@ import SEOHead from "@/components/SEOHead";
 import StripeGate from "@/components/StripeGate";
 
 const REVENUE_SOURCES = [
-  { key: "subscription", label: "Subscriptions", icon: Users, color: "#00FF85" },
-  { key: "course", label: "Courses", icon: BookOpen, color: "#38BDF8" },
-  { key: "tip", label: "Tips", icon: Zap, color: "#A78BFA" },
-  { key: "job", label: "Services", icon: Briefcase, color: "#F59E0B" },
-  { key: "livestream", label: "Livestreams", icon: Video, color: "#F472B6" },
+  { key: "subscription", label: "Subscriptions", icon: Users, color: "hsl(var(--primary))" },
+  { key: "course", label: "Courses", icon: BookOpen, color: "hsl(210 100% 60%)" },
+  { key: "tip", label: "Tips", icon: Zap, color: "hsl(260 70% 70%)" },
+  { key: "job", label: "Services", icon: Briefcase, color: "hsl(38 92% 50%)" },
+  { key: "livestream", label: "Livestreams", icon: Video, color: "hsl(330 80% 65%)" },
 ];
 
 const typeBadge = (type: string) => {
   const map: Record<string, { color: string; label: string; icon: React.ElementType }> = {
-    earn: { color: "bg-[#00FF85]/15 text-[#00FF85] border-[#00FF85]/20", label: "Earned", icon: ArrowDownRight },
+    earn: { color: "bg-primary/15 text-primary border-primary/20", label: "Earned", icon: ArrowDownRight },
     withdrawal: { color: "bg-destructive/15 text-destructive border-destructive/20", label: "Withdrawal", icon: ArrowUpRight },
     fee: { color: "bg-muted/50 text-muted-foreground border-border", label: "Fee", icon: Receipt },
     refund: { color: "bg-blue-500/15 text-blue-400 border-blue-500/20", label: "Refund", icon: ArrowDownCircle },
     tip: { color: "bg-purple-500/15 text-purple-400 border-purple-500/20", label: "Tip", icon: Zap },
     transfer: { color: "bg-amber-500/15 text-amber-400 border-amber-500/20", label: "Transfer", icon: SendHorizontal },
-    subscription: { color: "bg-[#00FF85]/15 text-[#00FF85] border-[#00FF85]/20", label: "Subscription", icon: Users },
-    subscription_renewal: { color: "bg-[#00FF85]/15 text-[#00FF85] border-[#00FF85]/20", label: "Renewal", icon: Users },
+    subscription: { color: "bg-primary/15 text-primary border-primary/20", label: "Subscription", icon: Users },
+    subscription_renewal: { color: "bg-primary/15 text-primary border-primary/20", label: "Renewal", icon: Users },
   };
   const m = map[type] || { color: "bg-muted/50 text-muted-foreground border-border", label: type, icon: DollarSign };
   return (

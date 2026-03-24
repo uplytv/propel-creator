@@ -29,9 +29,9 @@ const typeIcons: Record<string, React.ReactNode> = {
 };
 
 const typeBadgeColors: Record<string, string> = {
-  virtual: "bg-[#3B82F6]/20 text-[#3B82F6]",
-  in_person: "bg-[#F59E0B]/20 text-[#F59E0B]",
-  hybrid: "bg-[#8B5CF6]/20 text-[#8B5CF6]",
+  virtual: "bg-blue-500/20 text-blue-500",
+  in_person: "bg-amber-500/20 text-amber-500",
+  hybrid: "bg-violet-500/20 text-violet-500",
 };
 
 function EventAnalyticsPanel({ event }: { event: EventRow }) {
