@@ -547,6 +547,9 @@ export default function BroadcastStudio({
           pc.addTrack(track, streamRef.current!);
         });
 
+        // Enable simulcast for per-viewer adaptive quality
+        enableSimulcast(pc);
+
         pc.onicecandidate = (event) => {
           if (event.candidate) {
             channel.send({
