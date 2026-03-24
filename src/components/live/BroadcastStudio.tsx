@@ -1151,7 +1151,22 @@ export default function BroadcastStudio({
                     >
                       <Gamepad2 className="w-4.5 h-4.5 text-white" />
                     </button>
-                    {/* Donation Goal button is handled inline by the overlay */}
+                    {/* Whiteboard */}
+                    <button
+                      onClick={() => whiteboard.toggle()}
+                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: whiteboard.state.isActive ? "rgba(59,130,246,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
+                    >
+                      <PenTool className="w-4.5 h-4.5 text-white" />
+                    </button>
+                    {/* Theme picker */}
+                    <button
+                      onClick={() => setShowThemePicker(!showThemePicker)}
+                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: showThemePicker ? "rgba(168,85,247,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
+                    >
+                      <Palette className="w-4.5 h-4.5 text-white" />
+                    </button>
                     <button
                       onClick={() => virtualBg.toggleEffect(virtualBg.effect === 'blur' ? 'none' : 'blur')}
                       className="w-10 h-10 rounded-full flex items-center justify-center"
