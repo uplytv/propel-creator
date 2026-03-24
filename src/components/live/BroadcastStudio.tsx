@@ -331,10 +331,8 @@ export default function BroadcastStudio({
     stopCurrentStream();
     setMediaError(null);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: facing },
-        audio: true,
-      });
+      const constraints = getCameraConstraints(facing);
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
