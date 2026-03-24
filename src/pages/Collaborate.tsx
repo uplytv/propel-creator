@@ -123,6 +123,7 @@ export default function Collaborate() {
 
   // DB hooks
   const { data: collaborations = [], isLoading: collabsLoading } = useCollaborations();
+  const { data: discoverCreators = [], isLoading: creatorsLoading } = useDiscoverCreators();
   const createCollab = useCreateCollaboration();
   const sendMessage = useSendMessage();
   const markRead = useMarkMessagesRead();
@@ -160,8 +161,8 @@ export default function Collaborate() {
     setChatInput("");
   };
 
-  const filteredMatches = suggestedMatches.filter((c) => {
-    if (nicheFilter !== "all" && !c.tags.map(t => t.toLowerCase()).includes(nicheFilter)) return false;
+  const filteredMatches = discoverCreators.filter((c: any) => {
+    if (nicheFilter !== "all" && !c.tags.map((t: string) => t.toLowerCase()).includes(nicheFilter)) return false;
     if (search && !c.name.toLowerCase().includes(search.toLowerCase()) && !c.niche.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
