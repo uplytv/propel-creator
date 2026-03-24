@@ -189,6 +189,15 @@ export default function EndOfStreamScreen({
           hasHighlights={highlights.length > 0}
         />
 
+        {/* Stream Achievements */}
+        <StreamAchievements
+          achievements={streamAchievements.achievements}
+          unlockedCount={streamAchievements.unlockedCount}
+          totalCount={streamAchievements.totalCount}
+          progressPercent={streamAchievements.progressPercent}
+          loading={streamAchievements.loading}
+        />
+
         {/* Action Buttons */}
         <div className="space-y-3">
           <Button
