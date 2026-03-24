@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart, Share2, ChevronDown, ChevronUp, MessageCircle, Eye, Clock, Send } from "lucide-react";
+import { Heart, Share2, ChevronDown, ChevronUp, MessageCircle, Eye, Clock, Send, BarChart3, TrendingUp } from "lucide-react";
 import { UPLYMuxPlayer } from "@/components/MuxPlayer";
 import SEOHead from "@/components/SEOHead";
 import FollowButton from "@/components/FollowButton";
