@@ -5,11 +5,12 @@ import { useAuth } from "@/context/AuthContext";
 import { motion } from "framer-motion";
 import {
   DollarSign, ExternalLink, Loader2, CheckCircle2, AlertCircle,
-  TrendingUp, Users, CreditCard, Plus, Trash2
+  TrendingUp, Users, CreditCard, Plus, Trash2, Calendar, Clock, Wallet
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { useWallet } from "@/hooks/useWallet";
 
 export function PayoutsTab() {
   const { user } = useAuth();

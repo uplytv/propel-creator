@@ -63,15 +63,15 @@
     --primary: 145 100% 50%;
     --primary-foreground: 0 0% 0%;
     --secondary: 260 12% 14%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary-foreground: 0 0% 95%;
     --muted: 260 10% 17%;
     --muted-foreground: 260 5% 64%;
     --accent: 145 100% 50%;
     --accent-foreground: 0 0% 0%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 260 10% 15%;
-    --input: 260 10% 17%;
+    --border: 260 10% 18%;
+    --input: 260 10% 20%;
     --ring: 145 100% 50%;
     --sidebar-background: 260 15% 8%;
     --sidebar-foreground: 260 5% 85%;
