@@ -1347,6 +1347,33 @@ export default function BroadcastStudio({
                     )}
                   </AnimatePresence>
 
+                  {/* Viewer Sentiment Overlay */}
+                  <div className="absolute top-20 left-3 z-20 w-48">
+                    <ViewerSentimentOverlay sentiment={sentiment} />
+                  </div>
+
+                  {/* Live Quiz */}
+                  <AnimatePresence>
+                    {showQuizCreator && (
+                      <div className="absolute bottom-32 left-3 right-16 z-25">
+                        <div className="glass-card p-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-bold text-foreground">🧠 Create Quiz</span>
+                            <button onClick={() => setShowQuizCreator(false)} className="text-muted-foreground hover:text-foreground">
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <QuizCreatorPanel onStartQuiz={(qs) => { liveQuiz.startQuiz(qs); setShowQuizCreator(false); }} />
+                        </div>
+                      </div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Live Quiz Overlay (creator view) */}
+                  <div className="absolute bottom-32 right-3 z-20 w-64">
+                    <LiveQuizOverlay quiz={liveQuiz.quiz} isCreator={true} onSubmitAnswer={() => {}} />
+                  </div>
+
                   <DonationGoalOverlay
                     streamId={streamData.streamId}
                     isHost={true}
