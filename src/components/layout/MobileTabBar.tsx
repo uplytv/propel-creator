@@ -28,10 +28,19 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
   const isActive = (path: string) => {
     if (!path) return false;
     const basePath = path.split("?")[0];
-    return location.pathname === basePath || location.pathname.startsWith(basePath + "/");
+    const pathname = location.pathname;
+    // Exact match or nested path
+    if (pathname === basePath || pathname.startsWith(basePath + "/")) return true;
+    // Community tab should also highlight for /space/* routes
+    if (basePath.startsWith("/community/") && pathname.startsWith("/space/")) return true;
+    // Earn tab should also highlight for nested wallet/earn routes
+    if (basePath === "/wallet" && (pathname.startsWith("/wallet") || pathname === "/buy-credits" || pathname === "/affiliates")) return true;
+    // Discover tab for nested discovery routes
+    if (basePath === "/discover" && (pathname.startsWith("/discover") || pathname.startsWith("/creator/") || pathname.startsWith("/search"))) return true;
+    return false;
   };
 
-  const isAriaActive = ["/dashboard/ai-team", "/grow", "/launchpad", "/dashboard/content-studio"].some(
+  const isAriaActive = ["/dashboard/ai-team", "/grow", "/launchpad", "/dashboard/content-studio", "/analytics", "/growth-reports"].some(
     p => location.pathname === p || location.pathname.startsWith(p + "/")
   );
 

@@ -163,6 +163,11 @@ export default function Dashboard() {
           </motion.div>
         )}
 
+        {/* Onboarding Checklist */}
+        <div className="px-4 md:px-8">
+          <OnboardingChecklist />
+        </div>
+
         {/* Discover Mode */}
         {dashMode === "discover" ? (
           <motion.div

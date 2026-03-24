@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Play, Clock, Eye, Trash2, Globe, Lock, Film, Share2 } from "lucide-react";
+import { Play, Clock, Eye, Trash2, Globe, Lock, Film, Share2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import SharePanel from "@/components/share/SharePanel";
+import { toast } from "sonner";
 import type { StreamRecording } from "@/hooks/useStreamRecordings";
 
 interface Props {
@@ -91,22 +92,35 @@ export default function RecordingsGrid({ recordings, isOwner, onTogglePublish, o
               </Button>
 
               {isOwner && (
-                <div className="flex gap-2">
+                <div className="space-y-1.5">
                   <Button
-                    variant="outline"
+                    variant={rec.is_published ? "outline" : "default"}
                     size="sm"
-                    className="flex-1 text-xs gap-1"
-                    onClick={() => onTogglePublish?.(rec.id, rec.is_published)}
+                    className="w-full text-xs gap-1.5"
+                    onClick={() => {
+                      onTogglePublish?.(rec.id, rec.is_published);
+                      toast.success(rec.is_published ? "Recording unpublished" : "Recording published! Now visible in your library.");
+                    }}
                   >
-                    {rec.is_published ? <><Lock className="w-3 h-3" /> Unpublish</> : <><Globe className="w-3 h-3" /> Publish</>}
+                    {rec.is_published ? (
+                      <><Lock className="w-3 h-3" /> Unpublish</>
+                    ) : (
+                      <><Globe className="w-3 h-3" /> Publish to Library</>
+                    )}
                   </Button>
+                  {rec.is_published && (
+                    <div className="flex items-center gap-1 text-[10px] text-primary">
+                      <CheckCircle className="w-3 h-3" />
+                      <span>Published — visible to your audience</span>
+                    </div>
+                  )}
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    className="w-full text-xs text-destructive hover:text-destructive hover:bg-destructive/10 gap-1"
                     onClick={() => onDelete?.(rec.id)}
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-3.5 h-3.5" /> Delete
                   </Button>
                 </div>
               )}
