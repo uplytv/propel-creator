@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Search, Users, DollarSign, Sparkles, Plus, Radio, Upload, Calendar, X } from "lucide-react";
+import { Search, Users, DollarSign, Sparkles, Plus, Radio, Upload, Calendar, X, Bot, Rocket, TrendingUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 
