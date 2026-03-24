@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Trophy, Crown, Medal, Users, TrendingUp, ArrowLeft, Search, Flame } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Trophy, Crown, Medal, Users, TrendingUp, ArrowLeft, Search, Flame, Star, Sparkles, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
@@ -13,6 +13,12 @@ function formatScore(n: number) {
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.04 } } };
 const row = { hidden: { opacity: 0, x: -20 }, show: { opacity: 1, x: 0, transition: { duration: 0.4, ease: "easeOut" as const } } };
 
+const PODIUM_STYLES = [
+  { gradient: "from-yellow-400/20 to-amber-500/5", ring: "ring-yellow-400/40", text: "text-yellow-400", bg: "bg-yellow-400", icon: Crown },
+  { gradient: "from-slate-300/15 to-slate-400/5", ring: "ring-slate-300/30", text: "text-slate-300", bg: "bg-slate-300", icon: Trophy },
+  { gradient: "from-amber-600/15 to-orange-500/5", ring: "ring-amber-600/30", text: "text-amber-500", bg: "bg-amber-600", icon: Medal },
+];
+
 export default function Leaderboard() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
@@ -24,13 +30,6 @@ export default function Leaderboard() {
 
   const topThree = filtered.slice(0, 3);
   const rest = filtered.slice(3);
-
-  const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Crown className="w-5 h-5 text-primary" />;
-    if (rank === 2) return <Trophy className="w-5 h-5 text-muted-foreground" />;
-    if (rank === 3) return <Medal className="w-5 h-5 text-muted-foreground" />;
-    return null;
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -50,12 +49,17 @@ export default function Leaderboard() {
         </div>
       </header>
 
-      <div className="container py-8 md:py-12">
+      <div className="container py-8 md:py-12 max-w-3xl">
+        {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold mb-4">
+            <Sparkles className="w-3 h-3" /> Updated in real-time
+          </div>
           <h2 className="text-3xl md:text-4xl font-bold mb-3">Top Creators</h2>
           <p className="text-muted-foreground text-lg max-w-lg mx-auto">Real creators building real businesses.</p>
         </motion.div>
 
+        {/* Search */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex justify-center mb-8">
           <div className="relative w-full max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -66,7 +70,7 @@ export default function Leaderboard() {
         {isLoading ? (
           <div className="space-y-3">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="glass-card p-4 animate-pulse flex items-center gap-4">
+              <div key={i} className="rounded-xl border border-border bg-card/60 p-4 animate-pulse flex items-center gap-4">
                 <div className="w-8 h-8 rounded-full bg-secondary" />
                 <div className="w-10 h-10 rounded-full bg-secondary" />
                 <div className="flex-1 h-4 bg-secondary rounded" />
@@ -84,30 +88,62 @@ export default function Leaderboard() {
           <>
             {/* Podium - Top 3 */}
             {topThree.length >= 3 && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="flex flex-col sm:grid sm:grid-cols-3 gap-3 md:gap-6 max-w-2xl mx-auto mb-12">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="flex items-end justify-center gap-4 md:gap-6 max-w-xl mx-auto mb-12"
+              >
                 {[topThree[1], topThree[0], topThree[2]].map((c: any, i: number) => {
                   const podiumOrder = [2, 1, 3];
-                  const isFirst = podiumOrder[i] === 1;
+                  const rank = podiumOrder[i];
+                  const isFirst = rank === 1;
+                  const style = PODIUM_STYLES[rank - 1];
+                  const PodiumIcon = style.icon;
+
                   return (
-                    <motion.div key={c.id} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.1 }}
-                      className={`flex flex-col items-center text-center ${isFirst ? "sm:-mt-4 order-first sm:order-none" : "sm:mt-4"}`}
+                    <motion.div
+                      key={c.id}
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 + i * 0.1 }}
+                      className={`flex flex-col items-center text-center ${isFirst ? "-mt-6" : "mt-4"}`}
+                      style={{ width: isFirst ? "40%" : "30%" }}
                     >
-                      <div className="mb-2">{getRankIcon(podiumOrder[i])}</div>
-                      {c.avatar_url ? (
-                        <img src={c.avatar_url} alt="" className={`rounded-full object-cover mb-2 ${isFirst ? "w-16 h-16 md:w-20 md:h-20 ring-4 ring-primary/20" : "w-12 h-12 md:w-16 md:h-16"}`} />
-                      ) : (
-                        <div className={`rounded-full flex items-center justify-center font-bold mb-2 ${
-                          isFirst ? "w-16 h-16 md:w-20 md:h-20 bg-primary text-primary-foreground text-lg md:text-xl ring-4 ring-primary/20" : "w-12 h-12 md:w-16 md:h-16 bg-muted text-muted-foreground text-sm md:text-base"
-                        }`}>
-                          {(c.display_name || "C").charAt(0)}
+                      {/* Icon */}
+                      <PodiumIcon className={`w-5 h-5 ${style.text} mb-2`} />
+
+                      {/* Avatar with rank badge */}
+                      <div className="relative mb-2">
+                        <div className={`rounded-full bg-gradient-to-br ${style.gradient} p-0.5 ring-2 ${style.ring}`}>
+                          {c.avatar_url ? (
+                            <img src={c.avatar_url} alt="" className={`rounded-full object-cover ${isFirst ? "w-20 h-20" : "w-14 h-14"}`} />
+                          ) : (
+                            <div className={`rounded-full flex items-center justify-center font-bold ${style.text} ${
+                              isFirst ? "w-20 h-20 text-xl" : "w-14 h-14 text-base"
+                            }`}>
+                              {(c.display_name || "C").charAt(0)}
+                            </div>
+                          )}
                         </div>
-                      )}
-                      <p className="font-semibold text-sm md:text-base truncate max-w-full">{c.display_name}</p>
-                      <span className={`font-bold tabular-nums ${isFirst ? "text-primary text-lg" : "text-foreground"}`}>{formatScore(c.score)} pts</span>
+                        <div className={`absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full ${style.bg} flex items-center justify-center shadow-lg`}>
+                          <span className="text-[11px] font-extrabold text-black">{rank}</span>
+                        </div>
+                      </div>
+
+                      {/* Name */}
+                      <p className="font-semibold text-sm truncate max-w-full text-foreground">{c.display_name}</p>
+
+                      {/* Score */}
+                      <span className={`font-bold tabular-nums ${isFirst ? "text-primary text-lg" : "text-foreground text-base"}`}>
+                        {formatScore(c.score)} pts
+                      </span>
+
+                      {/* Streak */}
                       {c.streak_days >= 3 && (
                         <div className="flex items-center gap-1 text-xs mt-1">
                           <Flame className="w-3 h-3 text-warning" />
-                          <span className="text-warning font-medium">{c.streak_days}d streak</span>
+                          <span className="text-warning font-medium">{c.streak_days}d</span>
                         </div>
                       )}
                     </motion.div>
@@ -120,15 +156,23 @@ export default function Leaderboard() {
             <motion.div variants={container} initial="hidden" animate="show" className="space-y-2">
               {(topThree.length < 3 ? filtered : rest).map((creator: any) => (
                 <motion.div key={creator.id} variants={row}
-                  className="flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-xl glass-card hover:shadow-md transition-all duration-200 hover:scale-[1.01] group"
+                  className="flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-xl border border-border bg-card/60 hover:bg-card hover:border-primary/20 transition-all duration-200 group"
                 >
                   <div className="flex-shrink-0 w-8 text-center">
-                    {getRankIcon(creator.rank) || <span className="text-sm font-bold text-muted-foreground">#{creator.rank}</span>}
+                    {creator.rank <= 3 ? (
+                      <div className={`w-6 h-6 rounded-full mx-auto flex items-center justify-center ${
+                        creator.rank === 1 ? "bg-yellow-400" : creator.rank === 2 ? "bg-slate-300" : "bg-amber-600"
+                      }`}>
+                        <span className="text-[10px] font-bold text-black">{creator.rank}</span>
+                      </div>
+                    ) : (
+                      <span className="text-sm font-bold text-muted-foreground tabular-nums">#{creator.rank}</span>
+                    )}
                   </div>
                   {creator.avatar_url ? (
                     <img src={creator.avatar_url} alt="" className="flex-shrink-0 w-10 h-10 rounded-full object-cover" />
                   ) : (
-                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-muted flex items-center justify-center text-sm font-bold text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-sm font-bold text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
                       {(creator.display_name || "C").charAt(0)}
                     </div>
                   )}
@@ -136,14 +180,15 @@ export default function Leaderboard() {
                     <div className="flex items-center gap-2">
                       <p className="font-semibold text-foreground truncate">{creator.display_name}</p>
                       {creator.streak_days >= 3 && (
-                        <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold bg-destructive/10 text-destructive px-1.5 py-0.5 rounded-full">
+                        <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold bg-warning/10 text-warning px-1.5 py-0.5 rounded-full border border-warning/20">
                           <Flame className="w-3 h-3" />{creator.streak_days}d
                         </span>
                       )}
                     </div>
                   </div>
-                  <div className="text-right flex-shrink-0">
-                    <span className="font-bold tabular-nums text-foreground">{formatScore(creator.score)} pts</span>
+                  <div className="text-right flex-shrink-0 flex items-center gap-2">
+                    <span className="font-bold tabular-nums text-foreground">{formatScore(creator.score)}</span>
+                    <span className="text-xs text-muted-foreground">pts</span>
                   </div>
                 </motion.div>
               ))}
@@ -152,10 +197,15 @@ export default function Leaderboard() {
         )}
 
         {/* CTA */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="text-center mt-16 py-12 rounded-2xl bg-muted/30">
-          <h3 className="text-xl md:text-2xl font-bold mb-2">Ready to see your name here?</h3>
-          <p className="text-muted-foreground mb-6 max-w-md mx-auto">Join thousands of creators turning their expertise into thriving businesses.</p>
-          <Button variant="hero" size="lg" onClick={() => navigate("/onboarding")}>Start Creating Today</Button>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="text-center mt-16">
+          <div className="relative py-12 rounded-2xl border border-border bg-card overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-yellow-500/5 pointer-events-none" />
+            <div className="relative">
+              <h3 className="text-xl md:text-2xl font-bold mb-2">Ready to see your name here?</h3>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">Join thousands of creators turning their expertise into thriving businesses.</p>
+              <Button variant="hero" size="lg" onClick={() => navigate("/onboarding")}>Start Creating Today</Button>
+            </div>
+          </div>
         </motion.div>
       </div>
     </div>
