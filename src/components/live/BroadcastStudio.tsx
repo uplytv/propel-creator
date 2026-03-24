@@ -38,6 +38,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CreatorVideoOverlay, CreatorDashboardPanel } from "./CreatorStreamOverlay";
 import { useStreamEngagement } from "@/hooks/useStreamEngagement";
 import SharePanel from "@/components/share/SharePanel";
+import { getSiteUrl } from "@/lib/siteUrl";
 import { clearChunks, appendChunk, getAllChunks } from "@/lib/recordingStore";
 
 interface Product {
@@ -698,10 +699,14 @@ export default function BroadcastStudio({
     return `${m}:${s}`;
   };
 
-  const copyToClipboard = (text: string, field: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedField(field);
-    setTimeout(() => setCopiedField(null), 2000);
+  const copyToClipboard = async (text: string, field: string) => {
+    const ok = await safeClipboardWrite(text);
+    if (ok) {
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+    } else {
+      toast({ title: "Could not copy", description: "Please copy manually", variant: "destructive" });
+    }
   };
 
   // Cleanup on unmount
@@ -733,6 +738,36 @@ export default function BroadcastStudio({
   }, [streamData.streamId]);
 
   const isLive = streamStatus === "active";
+
+  // Re-attach stream to video element after state-driven re-renders (e.g. isRecording toggling)
+  useEffect(() => {
+    if (videoRef.current && streamRef.current && videoRef.current.srcObject !== streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+    }
+  });
+
+  // Safe clipboard helper
+  const safeClipboardWrite = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Fallback for non-secure contexts or unfocused windows
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+  };
 
   // Mode selection screen
   if (studioMode === "select") {
@@ -908,10 +943,14 @@ export default function BroadcastStudio({
                   {/* Right-side action buttons — Copy Link, Share, Flip, Mute */}
                   <div className="absolute right-3 bottom-28 z-20 flex flex-col gap-3 items-center">
                     <button
-                      onClick={() => {
-                        const liveUrl = `https://uply.tv/stream/${streamData.streamId}`;
-                        navigator.clipboard.writeText(liveUrl);
-                        toast({ title: "Live link copied ✓", description: liveUrl });
+                      onClick={async () => {
+                        const liveUrl = `${getSiteUrl()}/stream/${streamData.streamId}`;
+                        const ok = await safeClipboardWrite(liveUrl);
+                        if (ok) {
+                          toast({ title: "Live link copied ✓", description: liveUrl });
+                        } else {
+                          toast({ title: "Could not copy link", variant: "destructive" });
+                        }
                       }}
                       className="w-10 h-10 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}

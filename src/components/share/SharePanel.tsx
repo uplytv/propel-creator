@@ -183,12 +183,33 @@ export default function SharePanel({
     }
   };
 
+  const safeClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+  };
+
   const handlePlatformClick = async (platform: string) => {
     trackShare(platform);
 
     switch (platform) {
       case "tiktok": {
-        navigator.clipboard.writeText(caption);
+        await safeClipboard(caption);
         toast({ title: "Caption copied! Opening TikTok…" });
         if (isMobile && navigator.share) {
           const blob = await fetchVideoBlob();
@@ -199,7 +220,7 @@ export default function SharePanel({
         break;
       }
       case "instagram": {
-        navigator.clipboard.writeText(caption);
+        await safeClipboard(caption);
         toast({ title: "Caption copied! Opening Instagram…" });
         if (isMobile && navigator.share) {
           const blob = await fetchVideoBlob();
@@ -210,7 +231,7 @@ export default function SharePanel({
         break;
       }
       case "youtube": {
-        navigator.clipboard.writeText(caption);
+        await safeClipboard(caption);
         toast({ title: "Caption copied! Opening YouTube Studio…" });
         if (isMobile && navigator.share) {
           const blob = await fetchVideoBlob();
@@ -289,15 +310,19 @@ export default function SharePanel({
         break;
       }
       case "copy": {
-        navigator.clipboard.writeText(contentUrl);
-        setCopied(true);
-        toast({ title: "Link copied ✓" });
-        setTimeout(() => setCopied(false), 2000);
+        const ok = await safeClipboard(contentUrl);
+        if (ok) {
+          setCopied(true);
+          toast({ title: "Link copied ✓" });
+          setTimeout(() => setCopied(false), 2000);
+        } else {
+          toast({ title: "Could not copy link", variant: "destructive" });
+        }
         break;
       }
       case "embed": {
         const embedCode = `<iframe src="${contentUrl}?embed=true" width="560" height="315" frameborder="0" allowfullscreen style="border-radius:12px;"></iframe>`;
-        navigator.clipboard.writeText(embedCode);
+        const embedOk = await safeClipboard(embedCode);
         setEmbedCopied(true);
         setShowEmbed(true);
         toast({ title: "Embed code copied ✓" });
@@ -389,8 +414,8 @@ export default function SharePanel({
               {`<iframe src="${contentUrl}?embed=true" width="560" height="315" frameborder="0" allowfullscreen style="border-radius:12px;"></iframe>`}
             </code>
             <button
-              onClick={() => {
-                navigator.clipboard.writeText(`<iframe src="${contentUrl}?embed=true" width="560" height="315" frameborder="0" allowfullscreen style="border-radius:12px;"></iframe>`);
+              onClick={async () => {
+                await safeClipboard(`<iframe src="${contentUrl}?embed=true" width="560" height="315" frameborder="0" allowfullscreen style="border-radius:12px;"></iframe>`);
                 toast({ title: "Embed code copied ✓" });
               }}
               className="text-xs text-primary hover:underline"
