@@ -21,7 +21,11 @@ import { useLiveCaptions } from "@/hooks/useLiveCaptions";
 import { useRaidSystem } from "@/hooks/useRaidSystem";
 import { useStreamPredictions } from "@/hooks/useStreamPredictions";
 import { useGiftSubscription } from "@/hooks/useGiftSubscription";
+import { useLiveQuiz } from "@/hooks/useLiveQuiz";
+import { useViewerSentiment } from "@/hooks/useViewerSentiment";
 import StreamPredictionOverlay from "@/components/live/StreamPredictionOverlay";
+import { LiveQuizOverlay } from "@/components/live/LiveQuizOverlay";
+import ViewerSentimentOverlay from "@/components/live/ViewerSentimentOverlay";
 
 import { useState, useCallback, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
