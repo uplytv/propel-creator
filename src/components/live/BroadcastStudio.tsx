@@ -906,6 +906,71 @@ export default function BroadcastStudio({
                     </div>
                   </div>
 
+                  {/* Broadcaster Health Indicator */}
+                  <div className="absolute top-16 right-3 z-20 pointer-events-none">
+                    <div
+                      className="pointer-events-auto flex items-center gap-2 px-2.5 py-1.5 rounded-xl"
+                      style={{ backgroundColor: "rgba(0,0,0,0.5)", backdropFilter: "blur(12px)" }}
+                    >
+                      {/* Upload speed */}
+                      <div className="flex items-center gap-1">
+                        <ArrowUpCircle className="w-3 h-3 text-white/60" />
+                        <span className="text-[10px] font-mono text-white/80">
+                          {broadcasterHealth.uploadSpeedMbps.toFixed(1)} Mbps
+                        </span>
+                      </div>
+                      <div className="w-px h-3 bg-white/20" />
+                      {/* Quality indicator */}
+                      <div className="flex items-center gap-1">
+                        {broadcasterHealth.quality === 'excellent' ? (
+                          <Signal className="w-3 h-3 text-green-400" />
+                        ) : broadcasterHealth.quality === 'good' ? (
+                          <SignalHigh className="w-3 h-3 text-green-400" />
+                        ) : broadcasterHealth.quality === 'fair' ? (
+                          <SignalMedium className="w-3 h-3 text-yellow-400" />
+                        ) : (
+                          <SignalLow className="w-3 h-3 text-red-400" />
+                        )}
+                        <span className={`text-[10px] font-mono font-semibold ${
+                          broadcasterHealth.quality === 'excellent' || broadcasterHealth.quality === 'good' ? 'text-green-400' :
+                          broadcasterHealth.quality === 'fair' ? 'text-yellow-400' : 'text-red-400'
+                        }`}>
+                          {broadcasterHealth.quality.toUpperCase()}
+                        </span>
+                      </div>
+                      {/* Dropped frames warning */}
+                      {broadcasterHealth.dropRate > 0.03 && (
+                        <>
+                          <div className="w-px h-3 bg-white/20" />
+                          <span className="text-[10px] font-mono text-red-400">
+                            {broadcasterHealth.droppedFrames} drops
+                          </span>
+                        </>
+                      )}
+                      {/* ABR level */}
+                      {adaptiveBitrate.currentLevel !== 'high' && (
+                        <>
+                          <div className="w-px h-3 bg-white/20" />
+                          <span className="text-[10px] font-mono text-yellow-400">
+                            {adaptiveBitrate.currentLevel === 'medium' ? '480p' : '360p'}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    {/* Auto-recovery banner */}
+                    {autoRecovery.isRecovering && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mt-1.5 flex items-center gap-1.5 px-2.5 py-1 rounded-lg"
+                        style={{ backgroundColor: "rgba(234,179,8,0.2)", backdropFilter: "blur(8px)" }}
+                      >
+                        <Activity className="w-3 h-3 text-yellow-400 animate-pulse" />
+                        <span className="text-[10px] font-semibold text-yellow-400">Reconnecting stream...</span>
+                      </motion.div>
+                    )}
+                  </div>
+
                   {/* Coaching nudge */}
                   <AnimatePresence>
                     {coachingNudge && (
