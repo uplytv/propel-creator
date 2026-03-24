@@ -67,7 +67,8 @@ import StreamAlerts, { pushStreamAlert } from "./StreamAlerts";
 import LiveCaptionsOverlay from "./LiveCaptionsOverlay";
 import RaidOverlay from "./RaidOverlay";
 import HighlightsReel from "./HighlightsReel";
-import { BarChart3, MessageCircleQuestion, UserPlus, Sparkles, Subtitles, Swords } from "lucide-react";
+import DonationGoalOverlay from "./DonationGoalOverlay";
+import { BarChart3, MessageCircleQuestion, UserPlus, Sparkles, Subtitles, Swords, Target } from "lucide-react";
 
 interface Product {
   id: string;
