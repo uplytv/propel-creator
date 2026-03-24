@@ -300,7 +300,7 @@ export default function Live() {
       <SEOHead title="Live Hub" description="Watch live streams, clips, replays, and connect with the creator community on Uply." />
 
       {/* ─── Top Nav ────────────────────────────────────────── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border" className="bg-background/90 backdrop-blur-xl">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/90 backdrop-blur-xl">
         <div className="container flex h-14 items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/logo.png" alt="Uply" className="h-[60px] cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate("/")} />
