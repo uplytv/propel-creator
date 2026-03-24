@@ -542,6 +542,27 @@ export default function Stream() {
                       creatorId={dbStream.user_id}
                     />
                   )}
+                  {/* Stream Alerts */}
+                  <StreamAlerts />
+                  {/* Viewer Rewards */}
+                  <ViewerRewardsBadge
+                    xp={viewerRewards.xp}
+                    badges={viewerRewards.badges}
+                    newBadge={viewerRewards.newBadge}
+                    onDismiss={viewerRewards.dismissBadge}
+                  />
+                  {/* Live Captions */}
+                  <LiveCaptionsOverlay
+                    captions={viewerCaptions.captions}
+                    interimText={viewerCaptions.interimText}
+                    isActive={viewerCaptions.isActive}
+                  />
+                  {/* Raid Overlay */}
+                  <RaidOverlay
+                    isRaiding={false}
+                    raidCountdown={null}
+                    incomingRaid={raidSystem.incomingRaid}
+                  />
                 </>
               )}
             </div>
