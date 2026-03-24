@@ -413,6 +413,44 @@ export default function ContentStudio() {
             </div>
           </div>
         )}
+        {/* Clip Player Modal */}
+        <AnimatePresence>
+          {playingClipId && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+              onClick={() => setPlayingClipId(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.9 }}
+                className="w-full max-w-2xl rounded-xl overflow-hidden bg-card border border-border"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="relative aspect-video bg-black">
+                  <video
+                    src={`https://stream.mux.com/${playingClipId}.m3u8`}
+                    controls
+                    autoPlay
+                    className="w-full h-full"
+                    poster={`https://image.mux.com/${playingClipId}/thumbnail.jpg?time=2`}
+                  />
+                </div>
+                <div className="p-3 flex justify-end">
+                  <button
+                    onClick={() => setPlayingClipId(null)}
+                    className="px-3 py-1.5 rounded-lg bg-secondary text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </AppLayout>
   );
