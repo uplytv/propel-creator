@@ -198,7 +198,6 @@ serve(async (req) => {
                 console.log('✅ ARIA Content Engine triggered for recording:', recording?.id)
               } catch (ariaErr) { console.error('ARIA trigger failed (non-blocking):', ariaErr) }
             }
-            }
 
             await supabase.from('live_stream_sessions').insert({
               stream_id: stream.id,
