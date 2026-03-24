@@ -1296,6 +1296,46 @@ export default function BroadcastStudio({
                     )}
                   </AnimatePresence>
 
+                  {/* Live Auction Overlay */}
+                  <LiveAuctionOverlay
+                    auction={liveAuction.auction}
+                    isHost={true}
+                    onBid={liveAuction.placeBid}
+                    onEnd={liveAuction.endAuction}
+                    onCancel={liveAuction.cancelAuction}
+                    bidHistory={liveAuction.bidHistory}
+                  />
+
+                  {/* Whiteboard Overlay */}
+                  <WhiteboardOverlay whiteboard={whiteboard} />
+
+                  {/* Overlay Theme Picker */}
+                  <AnimatePresence>
+                    {showThemePicker && (
+                      <div className="absolute bottom-32 left-3 right-16 z-25">
+                        <OverlayThemePicker
+                          themes={overlayThemes.themes}
+                          activeTheme={overlayThemes.activeTheme}
+                          onSelect={overlayThemes.selectTheme}
+                          onClose={() => setShowThemePicker(false)}
+                        />
+                      </div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Viewer Heatmap (post-stream) */}
+                  <AnimatePresence>
+                    {showHeatmap && viewerHeatmap.data && (
+                      <div className="absolute bottom-32 left-3 right-16 z-25">
+                        <ViewerHeatmapPanel
+                          data={viewerHeatmap.data}
+                          durationSeconds={recordingDuration}
+                          onClose={() => setShowHeatmap(false)}
+                        />
+                      </div>
+                    )}
+                  </AnimatePresence>
+
                   <DonationGoalOverlay
                     streamId={streamData.streamId}
                     isHost={true}
