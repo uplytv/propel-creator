@@ -3882,14 +3882,22 @@ export type Database = {
       }
       waitlist: {
         Row: {
+          business_category: string | null
+          content_type: string | null
           created_at: string
           creator_type: string | null
           early_access: boolean
           email: string
+          first_use_case: string | null
           follower_count: string | null
           full_name: string
+          hear_about: string | null
           id: string
           invite_code: string | null
+          is_monetizing: string | null
+          monetization_challenges: string[] | null
+          monetization_goal: string | null
+          monthly_earnings: string | null
           one_sentence: string | null
           position: number | null
           primary_platform: string | null
@@ -3900,16 +3908,25 @@ export type Database = {
           referrer_display_name: string | null
           referrer_username: string | null
           social_handle: string | null
+          user_id: string | null
         }
         Insert: {
+          business_category?: string | null
+          content_type?: string | null
           created_at?: string
           creator_type?: string | null
           early_access?: boolean
           email: string
+          first_use_case?: string | null
           follower_count?: string | null
           full_name: string
+          hear_about?: string | null
           id?: string
           invite_code?: string | null
+          is_monetizing?: string | null
+          monetization_challenges?: string[] | null
+          monetization_goal?: string | null
+          monthly_earnings?: string | null
           one_sentence?: string | null
           position?: number | null
           primary_platform?: string | null
@@ -3920,16 +3937,25 @@ export type Database = {
           referrer_display_name?: string | null
           referrer_username?: string | null
           social_handle?: string | null
+          user_id?: string | null
         }
         Update: {
+          business_category?: string | null
+          content_type?: string | null
           created_at?: string
           creator_type?: string | null
           early_access?: boolean
           email?: string
+          first_use_case?: string | null
           follower_count?: string | null
           full_name?: string
+          hear_about?: string | null
           id?: string
           invite_code?: string | null
+          is_monetizing?: string | null
+          monetization_challenges?: string[] | null
+          monetization_goal?: string | null
+          monthly_earnings?: string | null
           one_sentence?: string | null
           position?: number | null
           primary_platform?: string | null
@@ -3940,6 +3966,7 @@ export type Database = {
           referrer_display_name?: string | null
           referrer_username?: string | null
           social_handle?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
