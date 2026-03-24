@@ -1,13 +1,17 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Clock, Eye, Zap, Coins, Users, Share2, GraduationCap, PartyPopper } from "lucide-react";
+import { Clock, Eye, Zap, Coins, Users, Share2, GraduationCap, PartyPopper, Download } from "lucide-react";
 import HighlightsReel from "./HighlightsReel";
 import type { HighlightMoment } from "@/hooks/useStreamHighlights";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import SharePanel from "@/components/share/SharePanel";
 import StreamToCourseDialog from "./StreamToCourseDialog";
 import AIStreamSummary from "./AIStreamSummary";
+import AutoClipSuggestions from "./AutoClipSuggestions";
+import { useStreamDownload } from "@/hooks/useStreamDownload";
+import { useAutoClipAI } from "@/hooks/useAutoClipAI";
 
 interface EndOfStreamScreenProps {
   streamId: string;
