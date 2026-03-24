@@ -344,6 +344,20 @@ export default function Settings() {
           </Suspense>
         )}
 
+        {/* AI Team tab */}
+        {activeTab === "ai-team" && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+            <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-4">
+              <h2 className="text-lg font-semibold text-foreground">AI Team Settings</h2>
+              <p className="text-sm text-muted-foreground">Manage your 5 AI agents from the <a href="/dashboard/ai-team" className="text-primary hover:underline">AI Team Dashboard</a>. Toggle agents on/off, review pending tasks, and monitor usage there.</p>
+              <div className="rounded-xl bg-secondary/30 p-4">
+                <h3 className="text-sm font-medium text-foreground mb-2">Member Opt-Out</h3>
+                <p className="text-xs text-muted-foreground">Community members can opt out of automated AI messages from their notification settings. Sales AI and Community AI always respect opt-out preferences.</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Account tab */}
         {activeTab === "account" && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
