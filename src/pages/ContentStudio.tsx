@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sparkles, Film, MessageSquare, FileText, Mail, BookOpen, ShoppingBag,
