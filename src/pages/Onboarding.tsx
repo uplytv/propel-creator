@@ -423,7 +423,8 @@ export default function Onboarding() {
           <motion.div key="profile" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md">
             <p className="text-xs text-muted-foreground text-center mb-1 uppercase tracking-wider">Step 2 of 3</p>
             <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">Your Creator Profile</h1>
-            <p className="text-muted-foreground text-center text-sm mb-6">Help us understand your audience.</p>
+            <p className="text-muted-foreground text-center text-sm mb-1">Help us understand your audience.</p>
+            <p className="text-xs text-primary text-center mb-6 font-medium">🎯 This helps us prioritize your application</p>
 
             <div className="space-y-4 mb-6">
               <div>
