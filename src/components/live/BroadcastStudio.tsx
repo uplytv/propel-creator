@@ -60,6 +60,8 @@ import { useStreamHighlights } from "@/hooks/useStreamHighlights";
 import { useLiveCaptions } from "@/hooks/useLiveCaptions";
 import { useRaidSystem } from "@/hooks/useRaidSystem";
 import { useVODChapters } from "@/hooks/useVODChapters";
+import { useStreamPredictions } from "@/hooks/useStreamPredictions";
+import { useCreatorSoundboard } from "@/hooks/useCreatorSoundboard";
 import { LivePollOverlay } from "./LivePollOverlay";
 import GuestCoStreamPanel from "./GuestCoStreamPanel";
 import StreamAnalyticsPanel from "./StreamAnalyticsPanel";
@@ -68,7 +70,9 @@ import LiveCaptionsOverlay from "./LiveCaptionsOverlay";
 import RaidOverlay from "./RaidOverlay";
 import HighlightsReel from "./HighlightsReel";
 import DonationGoalOverlay from "./DonationGoalOverlay";
-import { BarChart3, MessageCircleQuestion, UserPlus, Sparkles, Subtitles, Swords, Target } from "lucide-react";
+import StreamPredictionOverlay from "./StreamPredictionOverlay";
+import CreatorSoundboard from "./CreatorSoundboard";
+import { BarChart3, MessageCircleQuestion, UserPlus, Sparkles, Subtitles, Swords, Target, Gamepad2, Music } from "lucide-react";
 
 interface Product {
   id: string;
@@ -274,6 +278,16 @@ export default function BroadcastStudio({
 
   // VOD chapters
   const vodChapters = useVODChapters();
+
+  // Stream predictions
+  const predictions = useStreamPredictions(streamData.streamId);
+
+  // Creator soundboard
+  const soundboard = useCreatorSoundboard();
+
+  const [showPredictionCreator, setShowPredictionCreator] = useState(false);
+  const [predQuestion, setPredQuestion] = useState("");
+  const [predOptions, setPredOptions] = useState(["", ""]);
 
   // Load profile for live chat
   useEffect(() => {
@@ -1107,6 +1121,14 @@ export default function BroadcastStudio({
                     >
                       <Swords className="w-4.5 h-4.5 text-white" />
                     </button>
+                    {/* Predictions button */}
+                    <button
+                      onClick={() => setShowPredictionCreator(!showPredictionCreator)}
+                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: showPredictionCreator ? "rgba(245,158,11,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
+                    >
+                      <Gamepad2 className="w-4.5 h-4.5 text-white" />
+                    </button>
                     {/* Donation Goal button is handled inline by the overlay */}
                     <button
                       onClick={() => virtualBg.toggleEffect(virtualBg.effect === 'blur' ? 'none' : 'blur')}
@@ -1172,7 +1194,71 @@ export default function BroadcastStudio({
                     incomingRaid={raidSystem.incomingRaid}
                   />
 
-                  {/* Donation Goal */}
+                  {/* Stream Predictions Overlay */}
+                  <StreamPredictionOverlay
+                    predictions={predictions.predictions}
+                    isCreator={true}
+                    onPlaceBet={predictions.placeBet}
+                    onResolve={predictions.resolvePrediction}
+                    userBets={predictions.userBets}
+                  />
+
+                  {/* Prediction Creator Modal */}
+                  <AnimatePresence>
+                    {showPredictionCreator && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        className="absolute bottom-32 left-3 right-16 z-25"
+                      >
+                        <div className="rounded-xl p-3 space-y-2 bg-background/95 backdrop-blur-md border border-border">
+                          <p className="text-xs font-bold text-foreground">🎰 Create Prediction</p>
+                          <input
+                            className="w-full text-xs bg-secondary/50 border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground"
+                            placeholder="Will I beat this boss?"
+                            value={predQuestion}
+                            onChange={e => setPredQuestion(e.target.value)}
+                          />
+                          {predOptions.map((opt, i) => (
+                            <input
+                              key={i}
+                              className="w-full text-xs bg-secondary/50 border border-border rounded-lg px-3 py-1.5 text-foreground placeholder:text-muted-foreground"
+                              placeholder={`Option ${i + 1}`}
+                              value={opt}
+                              onChange={e => {
+                                const updated = [...predOptions];
+                                updated[i] = e.target.value;
+                                setPredOptions(updated);
+                              }}
+                            />
+                          ))}
+                          <div className="flex gap-2">
+                            {predOptions.length < 4 && (
+                              <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={() => setPredOptions(prev => [...prev, ""])}>
+                                + Option
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="default"
+                              className="h-7 text-[10px] ml-auto"
+                              disabled={!predQuestion || predOptions.filter(Boolean).length < 2}
+                              onClick={() => {
+                                predictions.createPrediction(predQuestion, predOptions.filter(Boolean));
+                                setPredQuestion("");
+                                setPredOptions(["", ""]);
+                                setShowPredictionCreator(false);
+                              }}
+                            >
+                              Start Prediction
+                            </Button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   <DonationGoalOverlay
                     streamId={streamData.streamId}
                     isHost={true}
@@ -1548,6 +1634,17 @@ export default function BroadcastStudio({
             <li className="flex gap-2"><span className="text-primary font-bold">4.</span> Your stream is auto-recorded and saved to your library</li>
           </ol>
         </div>
+      )}
+
+      {/* Creator Soundboard */}
+      {isLive && (
+        <CreatorSoundboard
+          sounds={soundboard.sounds}
+          playing={soundboard.playing}
+          onPlay={soundboard.playSound}
+          volume={soundboard.volume}
+          onVolumeChange={soundboard.setVolume}
+        />
       )}
 
       {products.length > 0 && (

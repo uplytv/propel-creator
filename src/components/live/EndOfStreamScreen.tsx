@@ -1,13 +1,17 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Clock, Eye, Zap, Coins, Users, Share2, GraduationCap, PartyPopper } from "lucide-react";
+import { Clock, Eye, Zap, Coins, Users, Share2, GraduationCap, PartyPopper, Download } from "lucide-react";
 import HighlightsReel from "./HighlightsReel";
 import type { HighlightMoment } from "@/hooks/useStreamHighlights";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import SharePanel from "@/components/share/SharePanel";
 import StreamToCourseDialog from "./StreamToCourseDialog";
 import AIStreamSummary from "./AIStreamSummary";
+import AutoClipSuggestions from "./AutoClipSuggestions";
+import { useStreamDownload } from "@/hooks/useStreamDownload";
+import { useAutoClipAI } from "@/hooks/useAutoClipAI";
 
 interface EndOfStreamScreenProps {
   streamId: string;
@@ -49,6 +53,8 @@ export default function EndOfStreamScreen({
   });
   const [shareOpen, setShareOpen] = useState(false);
   const [courseOpen, setCourseOpen] = useState(false);
+  const { downloadRecording, downloading, progress: downloadProgress } = useStreamDownload();
+  const autoClips = useAutoClipAI(streamId, creatorId);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -170,6 +176,16 @@ export default function EndOfStreamScreen({
           creatorId={creatorId}
         />
 
+        {/* AI Auto-Clip Suggestions */}
+        <AutoClipSuggestions
+          suggestions={autoClips.suggestions}
+          analyzing={autoClips.analyzing}
+          onAnalyze={() => autoClips.analyzeStream(highlights, chaptersDescription, durationSeconds)}
+          onCreateClip={(s) => muxAssetId ? autoClips.createClip(s, muxAssetId) : undefined}
+          onSkip={autoClips.skipClip}
+          hasHighlights={highlights.length > 0}
+        />
+
         {/* Action Buttons */}
         <div className="space-y-3">
           <Button
@@ -181,6 +197,22 @@ export default function EndOfStreamScreen({
             <Share2 className="w-5 h-5 mr-2" />
             Share Your Stream
           </Button>
+
+          {muxAssetId && (
+            <div>
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full"
+                onClick={() => downloadRecording(muxAssetId, streamTitle)}
+                disabled={downloading}
+              >
+                <Download className="w-5 h-5 mr-2" />
+                {downloading ? 'Downloading...' : 'Download Recording (MP4)'}
+              </Button>
+              {downloading && <Progress value={downloadProgress} className="mt-2 h-1.5" />}
+            </div>
+          )}
 
           <Button
             variant="outline"

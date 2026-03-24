@@ -19,6 +19,9 @@ import DonationGoalOverlay from "@/components/live/DonationGoalOverlay";
 import { useViewerRewards } from "@/hooks/useViewerRewards";
 import { useLiveCaptions } from "@/hooks/useLiveCaptions";
 import { useRaidSystem } from "@/hooks/useRaidSystem";
+import { useStreamPredictions } from "@/hooks/useStreamPredictions";
+import { useGiftSubscription } from "@/hooks/useGiftSubscription";
+import StreamPredictionOverlay from "@/components/live/StreamPredictionOverlay";
 
 import { useState, useCallback, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -114,6 +117,8 @@ export default function Stream() {
   const viewerRewards = useViewerRewards(!!dbStream && dbStream.status === 'active' && !isVod);
   const viewerCaptions = useLiveCaptions();
   const raidSystem = useRaidSystem(id, false);
+  const predictions = useStreamPredictions(id || '');
+  const giftSub = useGiftSubscription(id || '', dbStream?.user_id || '');
 
   useEffect(() => {
     const fetchStream = async () => {
@@ -570,6 +575,29 @@ export default function Stream() {
                     isHost={false}
                     creatorId={dbStream.user_id}
                   />
+
+                  {/* Stream Predictions (viewer view) */}
+                  <StreamPredictionOverlay
+                    predictions={predictions.predictions}
+                    isCreator={false}
+                    onPlaceBet={predictions.placeBet}
+                    onResolve={predictions.resolvePrediction}
+                    userBets={predictions.userBets}
+                  />
+
+                  {/* Gift Subscription Button */}
+                  {user && user.id !== dbStream.user_id && (
+                    <div className="absolute bottom-16 left-3 z-20">
+                      <button
+                        onClick={() => giftSub.giftRandomSubscription(1)}
+                        disabled={giftSub.gifting}
+                        className="px-3 py-1.5 rounded-full text-[10px] font-semibold text-white backdrop-blur-md"
+                        style={{ backgroundColor: 'rgba(168,85,247,0.6)' }}
+                      >
+                        🎁 Gift Sub
+                      </button>
+                    </div>
+                  )}
                 </>
               )}
             </div>
