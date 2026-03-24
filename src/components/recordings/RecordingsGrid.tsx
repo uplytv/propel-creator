@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Play, Clock, Eye, Trash2, Globe, Lock, Film, Share2 } from "lucide-react";
+import { Play, Clock, Eye, Trash2, Globe, Lock, Film, Share2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import SharePanel from "@/components/share/SharePanel";
+import { toast } from "sonner";
 import type { StreamRecording } from "@/hooks/useStreamRecordings";
 
 interface Props {
