@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Clock, Eye, Zap, Coins, Users, Share2, GraduationCap, PartyPopper } from "lucide-react";
+import HighlightsReel from "./HighlightsReel";
+import type { HighlightMoment } from "@/hooks/useStreamHighlights";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import SharePanel from "@/components/share/SharePanel";
@@ -15,6 +17,8 @@ interface EndOfStreamScreenProps {
   durationSeconds: number;
   onClose: () => void;
   username?: string | null;
+  highlights?: HighlightMoment[];
+  chaptersDescription?: string;
 }
 
 interface StreamStats {
@@ -33,6 +37,8 @@ export default function EndOfStreamScreen({
   durationSeconds,
   onClose,
   username,
+  highlights = [],
+  chaptersDescription,
 }: EndOfStreamScreenProps) {
   const [stats, setStats] = useState<StreamStats>({
     peakViewers: 0,
@@ -139,6 +145,19 @@ export default function EndOfStreamScreen({
             </motion.div>
           ))}
         </div>
+
+        {/* Highlights Reel */}
+        {highlights.length > 0 && (
+          <HighlightsReel highlights={highlights} durationSeconds={durationSeconds} />
+        )}
+
+        {/* VOD Chapters */}
+        {chaptersDescription && (
+          <div className="glass-card p-4">
+            <p className="text-xs font-bold text-foreground mb-2">📑 VOD Chapters</p>
+            <pre className="text-[10px] text-muted-foreground font-mono whitespace-pre-wrap">{chaptersDescription}</pre>
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="space-y-3">

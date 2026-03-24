@@ -11,6 +11,13 @@ import MobileChatDrawer from "@/components/live/MobileChatDrawer";
 import ViewerEngagementOverlay from "@/components/live/ViewerEngagementOverlay";
 import ViewerShopOverlay from "@/components/live/ViewerShopOverlay";
 import FeaturedProductCTA from "@/components/live/FeaturedProductCTA";
+import ViewerRewardsBadge from "@/components/live/ViewerRewardsBadge";
+import StreamAlerts from "@/components/live/StreamAlerts";
+import LiveCaptionsOverlay from "@/components/live/LiveCaptionsOverlay";
+import RaidOverlay from "@/components/live/RaidOverlay";
+import { useViewerRewards } from "@/hooks/useViewerRewards";
+import { useLiveCaptions } from "@/hooks/useLiveCaptions";
+import { useRaidSystem } from "@/hooks/useRaidSystem";
 
 import { useState, useCallback, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -98,10 +105,14 @@ export default function Stream() {
   const [memberAccess, setMemberAccess] = useState<boolean | null>(null);
 
   const searchParams = new URLSearchParams(window.location.search);
-  const contentType = searchParams.get('type'); // 'vod' | 'recording' | null
-  // Auto-detect: if accessed via /creator/:username/videos/:id, it's a video
+  const contentType = searchParams.get('type');
   const isFromCreatorRoute = !!routeUsername;
   const isVod = contentType === 'vod' || contentType === 'recording' || isFromCreatorRoute;
+
+  // Viewer features
+  const viewerRewards = useViewerRewards(!!dbStream && dbStream.status === 'active' && !isVod);
+  const viewerCaptions = useLiveCaptions();
+  const raidSystem = useRaidSystem(id, false);
 
   useEffect(() => {
     const fetchStream = async () => {
@@ -531,6 +542,27 @@ export default function Stream() {
                       creatorId={dbStream.user_id}
                     />
                   )}
+                  {/* Stream Alerts */}
+                  <StreamAlerts />
+                  {/* Viewer Rewards */}
+                  <ViewerRewardsBadge
+                    xp={viewerRewards.xp}
+                    badges={viewerRewards.badges}
+                    newBadge={viewerRewards.newBadge}
+                    onDismiss={viewerRewards.dismissBadge}
+                  />
+                  {/* Live Captions */}
+                  <LiveCaptionsOverlay
+                    captions={viewerCaptions.captions}
+                    interimText={viewerCaptions.interimText}
+                    isActive={viewerCaptions.isActive}
+                  />
+                  {/* Raid Overlay */}
+                  <RaidOverlay
+                    isRaiding={false}
+                    raidCountdown={null}
+                    incomingRaid={raidSystem.incomingRaid}
+                  />
                 </>
               )}
             </div>

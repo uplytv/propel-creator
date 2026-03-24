@@ -56,10 +56,18 @@ import {
 import { enableSimulcast } from "@/lib/simulcast";
 import { useStreamAnalytics } from "@/hooks/useStreamAnalytics";
 import { useVirtualBackground } from "@/hooks/useVirtualBackground";
+import { useStreamHighlights } from "@/hooks/useStreamHighlights";
+import { useLiveCaptions } from "@/hooks/useLiveCaptions";
+import { useRaidSystem } from "@/hooks/useRaidSystem";
+import { useVODChapters } from "@/hooks/useVODChapters";
 import { LivePollOverlay } from "./LivePollOverlay";
 import GuestCoStreamPanel from "./GuestCoStreamPanel";
 import StreamAnalyticsPanel from "./StreamAnalyticsPanel";
-import { BarChart3, MessageCircleQuestion, UserPlus, Sparkles } from "lucide-react";
+import StreamAlerts, { pushStreamAlert } from "./StreamAlerts";
+import LiveCaptionsOverlay from "./LiveCaptionsOverlay";
+import RaidOverlay from "./RaidOverlay";
+import HighlightsReel from "./HighlightsReel";
+import { BarChart3, MessageCircleQuestion, UserPlus, Sparkles, Subtitles, Swords } from "lucide-react";
 
 interface Product {
   id: string;
@@ -246,12 +254,25 @@ export default function BroadcastStudio({
   const [liveChatProfile, setLiveChatProfile] = useState<{ display_name: string; avatar_url: string | null } | null>(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showPollCreator, setShowPollCreator] = useState(false);
+  const [showRaidPicker, setShowRaidPicker] = useState(false);
 
   // Stream analytics (real-time dashboard)
   const streamAnalytics = useStreamAnalytics(streamData.streamId, isRecording);
 
   // Virtual background
   const virtualBg = useVirtualBackground(streamRef, videoRef);
+
+  // Stream highlights tracking
+  const highlights = useStreamHighlights();
+
+  // Live captions (speech-to-text)
+  const captions = useLiveCaptions();
+
+  // Raid system
+  const raidSystem = useRaidSystem(streamData.streamId, true);
+
+  // VOD chapters
+  const vodChapters = useVODChapters();
 
   // Load profile for live chat
   useEffect(() => {
@@ -635,6 +656,8 @@ export default function BroadcastStudio({
     mediaRecorderRef.current = recorder;
     setIsRecording(true);
     setRecordingDuration(0);
+    highlights.start();
+    vodChapters.start();
     recordingTimerRef.current = setInterval(() => {
       setRecordingDuration((d) => d + 1);
     }, 1000);
@@ -1070,6 +1093,20 @@ export default function BroadcastStudio({
                       <MessageCircleQuestion className="w-4.5 h-4.5 text-white" />
                     </button>
                     <button
+                      onClick={() => captions.toggle()}
+                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: captions.isActive ? "rgba(0,255,133,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
+                    >
+                      <Subtitles className="w-4.5 h-4.5 text-white" />
+                    </button>
+                    <button
+                      onClick={() => { raidSystem.fetchTargets(); setShowRaidPicker(!showRaidPicker); }}
+                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: showRaidPicker ? "rgba(239,68,68,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
+                    >
+                      <Swords className="w-4.5 h-4.5 text-white" />
+                    </button>
+                    <button
                       onClick={() => virtualBg.toggleEffect(virtualBg.effect === 'blur' ? 'none' : 'blur')}
                       className="w-10 h-10 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: virtualBg.effect !== 'none' ? "rgba(168,85,247,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
@@ -1115,6 +1152,56 @@ export default function BroadcastStudio({
                     userId={user?.id}
                     username={liveChatProfile?.display_name}
                   />
+
+                  {/* Stream Alerts (animated tips/subs/milestones) */}
+                  <StreamAlerts />
+
+                  {/* Live Captions Overlay */}
+                  <LiveCaptionsOverlay
+                    captions={captions.captions}
+                    interimText={captions.interimText}
+                    isActive={captions.isActive}
+                  />
+
+                  {/* Raid Overlay */}
+                  <RaidOverlay
+                    isRaiding={raidSystem.isRaiding}
+                    raidCountdown={raidSystem.raidCountdown}
+                    incomingRaid={raidSystem.incomingRaid}
+                  />
+
+                  {/* Raid Picker */}
+                  <AnimatePresence>
+                    {showRaidPicker && !raidSystem.isRaiding && (
+                      <motion.div
+                        initial={{ opacity: 0, x: 50 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 50 }}
+                        className="absolute top-20 right-14 z-25 w-56"
+                      >
+                        <div
+                          className="rounded-xl p-3 space-y-2"
+                          style={{ backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(16px)' }}
+                        >
+                          <p className="text-xs font-bold text-white">🚀 Raid a Creator</p>
+                          {raidSystem.availableTargets.length === 0 ? (
+                            <p className="text-[10px] text-white/50">No other streams live right now</p>
+                          ) : (
+                            raidSystem.availableTargets.slice(0, 5).map(target => (
+                              <button
+                                key={target.streamId}
+                                onClick={() => { raidSystem.initiateRaid(target); setShowRaidPicker(false); }}
+                                className="w-full text-left p-2 rounded-lg hover:bg-white/10 transition-colors"
+                              >
+                                <p className="text-xs font-semibold text-white truncate">{target.displayName}</p>
+                                <p className="text-[10px] text-white/50 truncate">{target.title} · {target.viewerCount} viewers</p>
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
                   {/* End Stream Confirmation Overlay */}
                   <AnimatePresence>
