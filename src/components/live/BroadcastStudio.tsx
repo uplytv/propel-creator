@@ -1093,6 +1093,20 @@ export default function BroadcastStudio({
                       <MessageCircleQuestion className="w-4.5 h-4.5 text-white" />
                     </button>
                     <button
+                      onClick={() => captions.toggle()}
+                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: captions.isActive ? "rgba(0,255,133,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
+                    >
+                      <Subtitles className="w-4.5 h-4.5 text-white" />
+                    </button>
+                    <button
+                      onClick={() => { raidSystem.fetchTargets(); setShowRaidPicker(!showRaidPicker); }}
+                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: showRaidPicker ? "rgba(239,68,68,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
+                    >
+                      <Swords className="w-4.5 h-4.5 text-white" />
+                    </button>
+                    <button
                       onClick={() => virtualBg.toggleEffect(virtualBg.effect === 'blur' ? 'none' : 'blur')}
                       className="w-10 h-10 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: virtualBg.effect !== 'none' ? "rgba(168,85,247,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
