@@ -336,7 +336,7 @@ export default function Live() {
       </nav>
 
       {/* ─── Mobile Search ──────────────────────────────────── */}
-      <div className="md:hidden pt-16 px-4 pb-2" className="bg-background">
+      <div className="md:hidden pt-16 px-4 pb-2 bg-background">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search..."
