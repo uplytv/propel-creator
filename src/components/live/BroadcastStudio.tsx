@@ -62,6 +62,10 @@ import { useRaidSystem } from "@/hooks/useRaidSystem";
 import { useVODChapters } from "@/hooks/useVODChapters";
 import { useStreamPredictions } from "@/hooks/useStreamPredictions";
 import { useCreatorSoundboard } from "@/hooks/useCreatorSoundboard";
+import { useLiveAuction } from "@/hooks/useLiveAuction";
+import { useCollaborativeWhiteboard } from "@/hooks/useCollaborativeWhiteboard";
+import { useStreamOverlayThemes } from "@/hooks/useStreamOverlayThemes";
+import { useViewerHeatmap } from "@/hooks/useViewerHeatmap";
 import { LivePollOverlay } from "./LivePollOverlay";
 import GuestCoStreamPanel from "./GuestCoStreamPanel";
 import StreamAnalyticsPanel from "./StreamAnalyticsPanel";
@@ -72,7 +76,11 @@ import HighlightsReel from "./HighlightsReel";
 import DonationGoalOverlay from "./DonationGoalOverlay";
 import StreamPredictionOverlay from "./StreamPredictionOverlay";
 import CreatorSoundboard from "./CreatorSoundboard";
-import { BarChart3, MessageCircleQuestion, UserPlus, Sparkles, Subtitles, Swords, Target, Gamepad2, Music } from "lucide-react";
+import LiveAuctionOverlay from "./LiveAuctionOverlay";
+import WhiteboardOverlay from "./WhiteboardOverlay";
+import OverlayThemePicker from "./OverlayThemePicker";
+import ViewerHeatmapPanel from "./ViewerHeatmapPanel";
+import { BarChart3, MessageCircleQuestion, UserPlus, Sparkles, Subtitles, Swords, Target, Gamepad2, Music, Gavel, PenTool, Palette } from "lucide-react";
 
 interface Product {
   id: string;
@@ -285,7 +293,21 @@ export default function BroadcastStudio({
   // Creator soundboard
   const soundboard = useCreatorSoundboard();
 
+  // Live auction
+  const liveAuction = useLiveAuction(streamData.streamId, true);
+
+  // Collaborative whiteboard
+  const whiteboard = useCollaborativeWhiteboard();
+
+  // Overlay themes
+  const overlayThemes = useStreamOverlayThemes();
+
+  // Viewer heatmap
+  const viewerHeatmap = useViewerHeatmap(streamData.streamId);
+
   const [showPredictionCreator, setShowPredictionCreator] = useState(false);
+  const [showThemePicker, setShowThemePicker] = useState(false);
+  const [showHeatmap, setShowHeatmap] = useState(false);
   const [predQuestion, setPredQuestion] = useState("");
   const [predOptions, setPredOptions] = useState(["", ""]);
 
@@ -1129,7 +1151,22 @@ export default function BroadcastStudio({
                     >
                       <Gamepad2 className="w-4.5 h-4.5 text-white" />
                     </button>
-                    {/* Donation Goal button is handled inline by the overlay */}
+                    {/* Whiteboard */}
+                    <button
+                      onClick={() => whiteboard.toggle()}
+                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: whiteboard.state.isActive ? "rgba(59,130,246,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
+                    >
+                      <PenTool className="w-4.5 h-4.5 text-white" />
+                    </button>
+                    {/* Theme picker */}
+                    <button
+                      onClick={() => setShowThemePicker(!showThemePicker)}
+                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: showThemePicker ? "rgba(168,85,247,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
+                    >
+                      <Palette className="w-4.5 h-4.5 text-white" />
+                    </button>
                     <button
                       onClick={() => virtualBg.toggleEffect(virtualBg.effect === 'blur' ? 'none' : 'blur')}
                       className="w-10 h-10 rounded-full flex items-center justify-center"
@@ -1256,6 +1293,46 @@ export default function BroadcastStudio({
                           </div>
                         </div>
                       </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Live Auction Overlay */}
+                  <LiveAuctionOverlay
+                    auction={liveAuction.auction}
+                    isHost={true}
+                    onBid={liveAuction.placeBid}
+                    onEnd={liveAuction.endAuction}
+                    onCancel={liveAuction.cancelAuction}
+                    bidHistory={liveAuction.bidHistory}
+                  />
+
+                  {/* Whiteboard Overlay */}
+                  <WhiteboardOverlay whiteboard={whiteboard} />
+
+                  {/* Overlay Theme Picker */}
+                  <AnimatePresence>
+                    {showThemePicker && (
+                      <div className="absolute bottom-32 left-3 right-16 z-25">
+                        <OverlayThemePicker
+                          themes={overlayThemes.themes}
+                          activeTheme={overlayThemes.activeTheme}
+                          onSelect={overlayThemes.selectTheme}
+                          onClose={() => setShowThemePicker(false)}
+                        />
+                      </div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Viewer Heatmap (post-stream) */}
+                  <AnimatePresence>
+                    {showHeatmap && viewerHeatmap.data && (
+                      <div className="absolute bottom-32 left-3 right-16 z-25">
+                        <ViewerHeatmapPanel
+                          data={viewerHeatmap.data}
+                          durationSeconds={recordingDuration}
+                          onClose={() => setShowHeatmap(false)}
+                        />
+                      </div>
                     )}
                   </AnimatePresence>
 

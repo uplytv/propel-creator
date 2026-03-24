@@ -38,6 +38,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const Live = lazy(() => import("./pages/Live"));
 const Stream = lazy(() => import("./pages/Stream"));
 const GoLive = lazy(() => import("./pages/GoLive"));
+const StreamCountdown = lazy(() => import("./pages/StreamCountdown"));
 const BuyCredits = lazy(() => import("./pages/BuyCredits"));
 const AdIntegrations = lazy(() => import("./pages/AdIntegrations"));
 const Jobs = lazy(() => import("./pages/Jobs"));
@@ -161,6 +162,7 @@ const App = () => (
                     <Route path="/p/:slug" element={<JointProduct isPublic />} />
                     <Route path="/live" element={<Live />} />
                     <Route path="/stream/:id" element={<Stream />} />
+                    <Route path="/stream/:id/countdown" element={<StreamCountdown />} />
                     <Route path="/creator/:username/videos/:id" element={<VideoPlayer />} />
                     <Route path="/:username/live/:slug" element={<Stream />} />
                     <Route path="/:username/videos/:slug" element={<VideoPlayer />} />
