@@ -493,6 +493,7 @@ export default function Stream() {
               ) : isActive && dbStream.stream_type === 'browser' ? (
                 <WebRTCPlayer
                   streamId={dbStream.id}
+                  playbackId={playbackId || undefined}
                   title={dbStream.title || 'Live Stream'}
                 />
               ) : isActive && playbackId ? (
