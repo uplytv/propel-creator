@@ -349,6 +349,16 @@ export default function Landing() {
             >
               Waitlist &amp; invite only.
             </motion.p>
+
+            {/* Live signup ticker */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1 }}
+              className="mt-6"
+            >
+              <LiveSignupTicker />
+            </motion.div>
           </motion.div>
         </div>
       </section>
