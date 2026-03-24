@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Copy, Check, Share2, Users, DollarSign, MousePointerClick, Clock, ExternalLink } from "lucide-react";
 import { buildReferralUrl } from "@/lib/referralUrls";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import AppLayout from "@/components/layout/AppLayout";
 import { useAffiliateLink, useAffiliateStats } from "@/hooks/useAffiliates";
 import { format } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Affiliates() {
   const [copied, setCopied] = useState(false);
