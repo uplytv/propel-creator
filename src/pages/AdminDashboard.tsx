@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import {
   ShieldCheck, Users, DollarSign, ToggleLeft, Link2, Share2,
-  RefreshCw, BarChart3, Heart, Radio, Zap, Shield, TrendingUp, ListChecks
+  RefreshCw, BarChart3, Heart, Radio, Zap, Shield, TrendingUp, ListChecks, Settings
 } from "lucide-react";
 import { DateRange } from "@/hooks/useAdminHealthData";
 import OverviewTab from "@/components/admin/OverviewTab";
@@ -18,6 +18,8 @@ import ContentTab from "@/components/admin/ContentTab";
 import EngagementTab from "@/components/admin/EngagementTab";
 import TechnicalTab from "@/components/admin/TechnicalTab";
 import AdminWaitlistTab from "@/components/waitlist/AdminWaitlistTab";
+import AdminNotificationBell from "@/components/admin/AdminNotificationBell";
+import CriticalAlertBanner from "@/components/admin/CriticalAlertBanner";
 
 const DATE_RANGES: { label: string; value: DateRange }[] = [
   { label: "Today", value: "today" },
@@ -56,6 +58,9 @@ export default function AdminDashboard() {
   return (
     <AppLayout>
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 space-y-4">
+        {/* Critical Alert Banner */}
+        <CriticalAlertBanner />
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -63,6 +68,7 @@ export default function AdminDashboard() {
             <h1 className="text-2xl font-heading font-bold">Platform Health</h1>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
+            <AdminNotificationBell />
             <Button size="sm" variant="outline" onClick={() => navigate("/admin/users")}>
               <Users className="w-4 h-4 mr-1" /> Users
             </Button>
@@ -77,6 +83,9 @@ export default function AdminDashboard() {
             </Button>
             <Button size="sm" variant="outline" onClick={() => navigate("/admin/referrals")}>
               <Share2 className="w-4 h-4 mr-1" /> Referrals
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => navigate("/admin/settings")}>
+              <Settings className="w-4 h-4 mr-1" /> Settings
             </Button>
           </div>
         </div>
