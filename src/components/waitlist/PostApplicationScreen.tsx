@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Check, Copy, Twitter, Linkedin, LogOut, ExternalLink, MessageCircle } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Check, Copy, Twitter, Linkedin, LogOut, ExternalLink, MessageCircle, Trophy, Flame, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import WaitlistLiveCounter from "./WaitlistLiveCounter";
 import WaitlistLeaderboard from "./WaitlistLeaderboard";
+import LiveSignupTicker from "./LiveSignupTicker";
 import { buildReferralUrl, buildReferralUrlDisplay, getFirstName, getShareMessages } from "@/lib/referralUrls";
 import { clearAffiliateCookie } from "@/lib/affiliateCookies";
 import {
