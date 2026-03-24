@@ -176,6 +176,16 @@ export default function EndOfStreamScreen({
           creatorId={creatorId}
         />
 
+        {/* AI Auto-Clip Suggestions */}
+        <AutoClipSuggestions
+          suggestions={autoClips.suggestions}
+          analyzing={autoClips.analyzing}
+          onAnalyze={() => autoClips.analyzeStream(highlights, chaptersDescription, durationSeconds)}
+          onCreateClip={(s) => muxAssetId ? autoClips.createClip(s, muxAssetId) : undefined}
+          onSkip={autoClips.skipClip}
+          hasHighlights={highlights.length > 0}
+        />
+
         {/* Action Buttons */}
         <div className="space-y-3">
           <Button
@@ -187,6 +197,22 @@ export default function EndOfStreamScreen({
             <Share2 className="w-5 h-5 mr-2" />
             Share Your Stream
           </Button>
+
+          {muxAssetId && (
+            <div>
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full"
+                onClick={() => downloadRecording(muxAssetId, streamTitle)}
+                disabled={downloading}
+              >
+                <Download className="w-5 h-5 mr-2" />
+                {downloading ? 'Downloading...' : 'Download Recording (MP4)'}
+              </Button>
+              {downloading && <Progress value={downloadProgress} className="mt-2 h-1.5" />}
+            </div>
+          )}
 
           <Button
             variant="outline"
