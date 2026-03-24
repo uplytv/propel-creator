@@ -1636,6 +1636,17 @@ export default function BroadcastStudio({
         </div>
       )}
 
+      {/* Creator Soundboard */}
+      {isLive && (
+        <CreatorSoundboard
+          sounds={soundboard.sounds}
+          playing={soundboard.playing}
+          onPlay={soundboard.playSound}
+          volume={soundboard.volume}
+          onVolumeChange={soundboard.setVolume}
+        />
+      )}
+
       {products.length > 0 && (
         <FeaturedProductPicker
           products={products}
