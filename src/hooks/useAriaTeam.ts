@@ -168,15 +168,17 @@ export function useApproveTask() {
       if (error) throw error;
 
       // Get task to update agent confidence
-      const { data: task } = await supabase.from("aria_agent_tasks" as any).select("agent_id").eq("id", taskId).single();
-      if (task?.agent_id) {
-        const { data: agent } = await supabase.from("aria_agents" as any).select("*").eq("id", task.agent_id).single();
-        if (agent) {
-          const newConf = 0.9 * (agent.confidence_score || 0.5) + 0.1 * 1.0;
+      const { data: taskData } = await supabase.from("aria_agent_tasks" as any).select("agent_id").eq("id", taskId).single();
+      const taskRow = taskData as any;
+      if (taskRow?.agent_id) {
+        const { data: agentData } = await supabase.from("aria_agents" as any).select("*").eq("id", taskRow.agent_id).single();
+        const agentRow = agentData as any;
+        if (agentRow) {
+          const newConf = 0.9 * (agentRow.confidence_score || 0.5) + 0.1 * 1.0;
           await supabase.from("aria_agents" as any).update({
             confidence_score: newConf,
-            tasks_approved: (agent.tasks_approved || 0) + 1,
-          }).eq("id", agent.id);
+            tasks_approved: (agentRow.tasks_approved || 0) + 1,
+          }).eq("id", agentRow.id);
         }
       }
     },
