@@ -21,11 +21,11 @@ import SEOHead from "@/components/SEOHead";
 import StripeGate from "@/components/StripeGate";
 
 const REVENUE_SOURCES = [
-  { key: "subscription", label: "Subscriptions", icon: Users, color: "#00FF85" },
-  { key: "course", label: "Courses", icon: BookOpen, color: "#38BDF8" },
-  { key: "tip", label: "Tips", icon: Zap, color: "#A78BFA" },
-  { key: "job", label: "Services", icon: Briefcase, color: "#F59E0B" },
-  { key: "livestream", label: "Livestreams", icon: Video, color: "#F472B6" },
+  { key: "subscription", label: "Subscriptions", icon: Users, color: "hsl(var(--primary))" },
+  { key: "course", label: "Courses", icon: BookOpen, color: "hsl(210 100% 60%)" },
+  { key: "tip", label: "Tips", icon: Zap, color: "hsl(260 70% 70%)" },
+  { key: "job", label: "Services", icon: Briefcase, color: "hsl(38 92% 50%)" },
+  { key: "livestream", label: "Livestreams", icon: Video, color: "hsl(330 80% 65%)" },
 ];
 
 const typeBadge = (type: string) => {
