@@ -279,6 +279,16 @@ export default function BroadcastStudio({
   // VOD chapters
   const vodChapters = useVODChapters();
 
+  // Stream predictions
+  const predictions = useStreamPredictions(streamData.streamId);
+
+  // Creator soundboard
+  const soundboard = useCreatorSoundboard();
+
+  const [showPredictionCreator, setShowPredictionCreator] = useState(false);
+  const [predQuestion, setPredQuestion] = useState("");
+  const [predOptions, setPredOptions] = useState(["", ""]);
+
   // Load profile for live chat
   useEffect(() => {
     if (!user) return;
