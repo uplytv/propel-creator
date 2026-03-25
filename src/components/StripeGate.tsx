@@ -76,6 +76,7 @@ export default function StripeGate({ children }: StripeGateProps) {
           </button>
         </div>
       )}
+      <ReauthDialog open={showReauth} loading={reauthLoading} onConfirm={confirmReauth} onCancel={cancelReauth} />
       {children}
     </>
   );
