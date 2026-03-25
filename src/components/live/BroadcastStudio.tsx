@@ -1127,35 +1127,35 @@ export default function BroadcastStudio({
                     </button>
                     <button
                       onClick={() => setShowSharePanel(true)}
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: "rgba(0,255,133,0.25)", backdropFilter: "blur(8px)" }}
                     >
                       <Share2 className="w-4.5 h-4.5 text-white" />
                     </button>
                     <button
                       onClick={() => setShowAnalytics(!showAnalytics)}
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: showAnalytics ? "rgba(0,255,133,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
                     >
                       <BarChart3 className="w-4.5 h-4.5 text-white" />
                     </button>
                     <button
                       onClick={() => setShowPollCreator(true)}
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
                     >
                       <MessageCircleQuestion className="w-4.5 h-4.5 text-white" />
                     </button>
                     <button
                       onClick={() => captions.toggle()}
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: captions.isActive ? "rgba(0,255,133,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
                     >
                       <Subtitles className="w-4.5 h-4.5 text-white" />
                     </button>
                     <button
                       onClick={() => { raidSystem.fetchTargets(); setShowRaidPicker(!showRaidPicker); }}
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: showRaidPicker ? "rgba(239,68,68,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
                     >
                       <Swords className="w-4.5 h-4.5 text-white" />
@@ -1163,7 +1163,7 @@ export default function BroadcastStudio({
                     {/* Predictions button */}
                     <button
                       onClick={() => setShowPredictionCreator(!showPredictionCreator)}
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: showPredictionCreator ? "rgba(245,158,11,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
                     >
                       <Gamepad2 className="w-4.5 h-4.5 text-white" />
@@ -1171,7 +1171,7 @@ export default function BroadcastStudio({
                     {/* Whiteboard */}
                     <button
                       onClick={() => whiteboard.toggle()}
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: whiteboard.state.isActive ? "rgba(59,130,246,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
                     >
                       <PenTool className="w-4.5 h-4.5 text-white" />
@@ -1179,28 +1179,28 @@ export default function BroadcastStudio({
                     {/* Theme picker */}
                     <button
                       onClick={() => setShowThemePicker(!showThemePicker)}
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: showThemePicker ? "rgba(168,85,247,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
                     >
                       <Palette className="w-4.5 h-4.5 text-white" />
                     </button>
                     <button
                       onClick={() => virtualBg.toggleEffect(virtualBg.effect === 'blur' ? 'none' : 'blur')}
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: virtualBg.effect !== 'none' ? "rgba(168,85,247,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
                     >
                       <Sparkles className="w-4.5 h-4.5 text-white" />
                     </button>
                     <button
                       onClick={flipCamera}
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
                     >
                       <RotateCcw className="w-4.5 h-4.5 text-white" />
                     </button>
                     <button
                       onClick={toggleMic}
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: micOn ? "rgba(255,255,255,0.15)" : "rgba(239,68,68,0.4)", backdropFilter: "blur(8px)" }}
                     >
                       {micOn ? <Mic className="w-4.5 h-4.5 text-white" /> : <MicOff className="w-4.5 h-4.5 text-white" />}
