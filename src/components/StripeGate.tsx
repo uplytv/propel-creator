@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useStripeAccount } from "@/hooks/useStripeAccount";
 import { useToast } from "@/hooks/use-toast";
+import { useReauthGuard } from "@/hooks/useReauthGuard";
+import ReauthDialog from "@/components/ReauthDialog";
 
 interface StripeGateProps {
   children: React.ReactNode;
@@ -19,8 +21,9 @@ export default function StripeGate({ children }: StripeGateProps) {
   const { toast } = useToast();
   const [connecting, setConnecting] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const { showReauth, reauthLoading, requireReauth, confirmReauth, cancelReauth } = useReauthGuard();
 
-  const handleConnect = async () => {
+  const doConnect = async () => {
     setConnecting(true);
     try {
       const { data, error } = await supabase.functions.invoke("stripe-connect-onboard");
@@ -31,6 +34,8 @@ export default function StripeGate({ children }: StripeGateProps) {
     }
     setConnecting(false);
   };
+
+  const handleConnect = () => requireReauth(doConnect);
 
   const showBanner = !isLoading && !dismissed && (!stripeAccount || !stripeAccount.charges_enabled);
 
