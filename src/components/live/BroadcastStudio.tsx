@@ -1120,7 +1120,7 @@ export default function BroadcastStudio({
                           toast({ title: "Could not copy link", variant: "destructive" });
                         }
                       }}
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
                     >
                       <Copy className="w-4.5 h-4.5 text-white" />
