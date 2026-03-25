@@ -11,12 +11,15 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useWallet } from "@/hooks/useWallet";
+import { useReauthGuard } from "@/hooks/useReauthGuard";
+import ReauthDialog from "@/components/ReauthDialog";
 
 export function PayoutsTab() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [connecting, setConnecting] = useState(false);
+  const { showReauth, reauthLoading, requireReauth, confirmReauth, cancelReauth } = useReauthGuard();
 
   const { data: stripeAccount, isLoading: accountLoading } = useQuery({
     queryKey: ["stripe-account", user?.id],
@@ -73,7 +76,7 @@ export function PayoutsTab() {
     },
   });
 
-  const handleConnect = async () => {
+  const doConnect = async () => {
     setConnecting(true);
     try {
       const { data, error } = await supabase.functions.invoke("stripe-connect-onboard");
@@ -84,6 +87,8 @@ export function PayoutsTab() {
     }
     setConnecting(false);
   };
+
+  const handleConnect = () => requireReauth(doConnect);
 
   const handleDashboard = async () => {
     try {
@@ -239,6 +244,7 @@ export function PayoutsTab() {
           </div>
         )}
       </div>
-    </motion.div>
+    <ReauthDialog open={showReauth} loading={reauthLoading} onConfirm={confirmReauth} onCancel={cancelReauth} />
+  </motion.div>
   );
 }
