@@ -74,6 +74,8 @@ export default function Auth() {
       return;
     }
     setLoading(true);
+    const allowed = await checkServerRateLimit("signup");
+    if (!allowed) { setLoading(false); return; }
 
     // Check for platform referral cookie and creator affiliate cookie
     const refCode = getAffiliateCookie("uply_ref");
