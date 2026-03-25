@@ -76,7 +76,7 @@ export function PayoutsTab() {
     },
   });
 
-  const handleConnect = async () => {
+  const doConnect = async () => {
     setConnecting(true);
     try {
       const { data, error } = await supabase.functions.invoke("stripe-connect-onboard");
@@ -87,6 +87,8 @@ export function PayoutsTab() {
     }
     setConnecting(false);
   };
+
+  const handleConnect = () => requireReauth(doConnect);
 
   const handleDashboard = async () => {
     try {
