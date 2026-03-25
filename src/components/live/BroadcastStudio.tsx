@@ -272,6 +272,7 @@ export default function BroadcastStudio({
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showPollCreator, setShowPollCreator] = useState(false);
   const [showRaidPicker, setShowRaidPicker] = useState(false);
+  const endStreamDebounceRef = useRef(false);
 
   // Stream analytics (real-time dashboard)
   const streamAnalytics = useStreamAnalytics(streamData.streamId, isRecording);
@@ -380,8 +381,8 @@ export default function BroadcastStudio({
     };
   }, [isFullscreen]);
 
-  // Stream engagement
-  const engagement = useStreamEngagement(streamData.streamId, user?.id || "");
+  // Stream engagement — wire chat messages to analytics counter
+  const engagement = useStreamEngagement(streamData.streamId, user?.id || "", streamAnalytics.incrementChat);
   const [coachingNudge, setCoachingNudge] = useState<string | null>(null);
   const prevEnergyRef = useRef(0);
 
@@ -716,6 +717,10 @@ export default function BroadcastStudio({
 
   // The main "end stream" handler — called from the End Stream button or screen share ending
   const handleEndStream = useCallback(async () => {
+    // Debounce: prevent double-tap
+    if (endStreamDebounceRef.current) return;
+    endStreamDebounceRef.current = true;
+    setTimeout(() => { endStreamDebounceRef.current = false; }, 500);
     const duration = recordingDuration;
     
     if (recordingTimerRef.current) {
@@ -1104,6 +1109,7 @@ export default function BroadcastStudio({
 
                   {/* Right-side action buttons */}
                   <div className="absolute right-3 bottom-28 z-20 flex flex-col gap-3 items-center">
+                    {/* All buttons use min-w-[44px] min-h-[44px] for accessible tap targets */}
                     <button
                       onClick={async () => {
                         const liveUrl = `${getSiteUrl()}/stream/${streamData.streamId}`;
@@ -1114,42 +1120,42 @@ export default function BroadcastStudio({
                           toast({ title: "Could not copy link", variant: "destructive" });
                         }
                       }}
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
                     >
                       <Copy className="w-4.5 h-4.5 text-white" />
                     </button>
                     <button
                       onClick={() => setShowSharePanel(true)}
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: "rgba(0,255,133,0.25)", backdropFilter: "blur(8px)" }}
                     >
                       <Share2 className="w-4.5 h-4.5 text-white" />
                     </button>
                     <button
                       onClick={() => setShowAnalytics(!showAnalytics)}
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: showAnalytics ? "rgba(0,255,133,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
                     >
                       <BarChart3 className="w-4.5 h-4.5 text-white" />
                     </button>
                     <button
                       onClick={() => setShowPollCreator(true)}
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
                     >
                       <MessageCircleQuestion className="w-4.5 h-4.5 text-white" />
                     </button>
                     <button
                       onClick={() => captions.toggle()}
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: captions.isActive ? "rgba(0,255,133,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
                     >
                       <Subtitles className="w-4.5 h-4.5 text-white" />
                     </button>
                     <button
                       onClick={() => { raidSystem.fetchTargets(); setShowRaidPicker(!showRaidPicker); }}
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: showRaidPicker ? "rgba(239,68,68,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
                     >
                       <Swords className="w-4.5 h-4.5 text-white" />
@@ -1157,7 +1163,7 @@ export default function BroadcastStudio({
                     {/* Predictions button */}
                     <button
                       onClick={() => setShowPredictionCreator(!showPredictionCreator)}
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: showPredictionCreator ? "rgba(245,158,11,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
                     >
                       <Gamepad2 className="w-4.5 h-4.5 text-white" />
@@ -1165,7 +1171,7 @@ export default function BroadcastStudio({
                     {/* Whiteboard */}
                     <button
                       onClick={() => whiteboard.toggle()}
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: whiteboard.state.isActive ? "rgba(59,130,246,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
                     >
                       <PenTool className="w-4.5 h-4.5 text-white" />
@@ -1173,28 +1179,28 @@ export default function BroadcastStudio({
                     {/* Theme picker */}
                     <button
                       onClick={() => setShowThemePicker(!showThemePicker)}
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: showThemePicker ? "rgba(168,85,247,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
                     >
                       <Palette className="w-4.5 h-4.5 text-white" />
                     </button>
                     <button
                       onClick={() => virtualBg.toggleEffect(virtualBg.effect === 'blur' ? 'none' : 'blur')}
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: virtualBg.effect !== 'none' ? "rgba(168,85,247,0.3)" : "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
                     >
                       <Sparkles className="w-4.5 h-4.5 text-white" />
                     </button>
                     <button
                       onClick={flipCamera}
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
                     >
                       <RotateCcw className="w-4.5 h-4.5 text-white" />
                     </button>
                     <button
                       onClick={toggleMic}
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center"
                       style={{ backgroundColor: micOn ? "rgba(255,255,255,0.15)" : "rgba(239,68,68,0.4)", backdropFilter: "blur(8px)" }}
                     >
                       {micOn ? <Mic className="w-4.5 h-4.5 text-white" /> : <MicOff className="w-4.5 h-4.5 text-white" />}
@@ -1258,7 +1264,7 @@ export default function BroadcastStudio({
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 20 }}
-                        className="absolute bottom-32 left-3 right-16 z-25"
+                        className="absolute bottom-32 left-3 right-16 z-[15]"
                       >
                         <div className="rounded-xl p-3 space-y-2 bg-background/95 backdrop-blur-md border border-border">
                           <p className="text-xs font-bold text-foreground">🎰 Create Prediction</p>
@@ -1323,7 +1329,7 @@ export default function BroadcastStudio({
                   {/* Overlay Theme Picker */}
                   <AnimatePresence>
                     {showThemePicker && (
-                      <div className="absolute bottom-32 left-3 right-16 z-25">
+                      <div className="absolute bottom-32 left-3 right-16 z-[15]">
                         <OverlayThemePicker
                           themes={overlayThemes.themes}
                           activeTheme={overlayThemes.activeTheme}
@@ -1337,7 +1343,7 @@ export default function BroadcastStudio({
                   {/* Viewer Heatmap (post-stream) */}
                   <AnimatePresence>
                     {showHeatmap && viewerHeatmap.data && (
-                      <div className="absolute bottom-32 left-3 right-16 z-25">
+                      <div className="absolute bottom-32 left-3 right-16 z-[15]">
                         <ViewerHeatmapPanel
                           data={viewerHeatmap.data}
                           durationSeconds={recordingDuration}
@@ -1355,7 +1361,7 @@ export default function BroadcastStudio({
                   {/* Live Quiz */}
                   <AnimatePresence>
                     {showQuizCreator && (
-                      <div className="absolute bottom-32 left-3 right-16 z-25">
+                      <div className="absolute bottom-32 left-3 right-16 z-[15]">
                         <div className="glass-card p-3">
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-xs font-bold text-foreground">🧠 Create Quiz</span>
@@ -1387,7 +1393,7 @@ export default function BroadcastStudio({
                         initial={{ opacity: 0, x: 50 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 50 }}
-                        className="absolute top-20 right-14 z-25 w-56"
+                        className="absolute top-20 right-14 z-[15] w-56"
                       >
                         <div
                           className="rounded-xl p-3 space-y-2"
@@ -1420,7 +1426,7 @@ export default function BroadcastStudio({
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 z-40 bg-black/70 backdrop-blur-sm flex items-center justify-center"
+                        className="absolute inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex items-center justify-center"
                         onClick={() => setShowEndConfirm(false)}
                       >
                         <motion.div
@@ -1472,7 +1478,7 @@ export default function BroadcastStudio({
 
             {/* Bottom bar: chat input + End Stream button */}
             {!isUploading && (
-              <div className="relative z-20 px-3 py-3 flex items-center gap-2" style={{ backgroundColor: "rgba(0,0,0,0.7)", backdropFilter: "blur(16px)" }}>
+              <div className="relative z-[100] px-3 py-3 flex items-center gap-2" style={{ backgroundColor: "rgba(0,0,0,0.7)", backdropFilter: "blur(16px)" }}>
                 <input
                   value={liveChatInput}
                   onChange={(e) => setLiveChatInput(e.target.value)}

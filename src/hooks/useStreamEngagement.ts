@@ -27,7 +27,9 @@ export interface LiveReaction {
   created_at: string;
 }
 
-export function useStreamEngagement(streamId: string | undefined, creatorUserId?: string) {
+export function useStreamEngagement(streamId: string | undefined, creatorUserId?: string, onChatMessageCallback?: () => void) {
+  const onChatCbRef = useRef<(() => void) | undefined>(onChatMessageCallback);
+  useEffect(() => { onChatCbRef.current = onChatMessageCallback; }, [onChatMessageCallback]);
   const [chatMessages, setChatMessages] = useState<LiveChatMessage[]>([]);
   const [floatingReactions, setFloatingReactions] = useState<LiveReaction[]>([]);
   const [reactionCount, setReactionCount] = useState(0);
@@ -92,6 +94,8 @@ export function useStreamEngagement(streamId: string | undefined, creatorUserId?
         
         addActivity("chat", `💬 ${msg.username}: ${msg.message.slice(0, 40)}`, "hsl(0 0% 100%)");
         bumpEnergy(5);
+        // Notify external listeners (e.g. analytics chat counter)
+        onChatCbRef.current?.();
       })
       .on("postgres_changes", {
         event: "UPDATE",

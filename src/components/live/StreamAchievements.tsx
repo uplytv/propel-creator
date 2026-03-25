@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Lock, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/hooks/use-toast";
 import type { Achievement } from "@/hooks/useStreamAchievements";
 
 interface StreamAchievementsProps {
@@ -10,6 +11,7 @@ interface StreamAchievementsProps {
   totalCount: number;
   progressPercent: number;
   loading: boolean;
+  creatorUsername?: string | null;
 }
 
 export default function StreamAchievements({
@@ -18,7 +20,10 @@ export default function StreamAchievements({
   totalCount,
   progressPercent,
   loading,
+  creatorUsername,
 }: StreamAchievementsProps) {
+  const { toast } = useToast();
+
   if (loading) {
     return (
       <div className="glass-card p-4 animate-pulse">
@@ -30,6 +35,43 @@ export default function StreamAchievements({
 
   const unlocked = achievements.filter((a) => a.unlockedAt);
   const locked = achievements.filter((a) => !a.unlockedAt);
+
+  const handleShare = async (achievement: Achievement) => {
+    const profileUrl = creatorUsername ? `https://uply.tv/${creatorUsername}` : 'https://uply.tv';
+    const shareText = `🏆 I just unlocked "${achievement.title}" on UPLY! ${achievement.description}`;
+    const shareData = {
+      title: `Achievement: ${achievement.title}`,
+      text: shareText,
+      url: profileUrl,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch {
+        // User cancelled or not supported, fall through to clipboard
+      }
+    }
+
+    // Fallback: copy to clipboard
+    const copyText = `${shareText}\n${profileUrl}`;
+    try {
+      await navigator.clipboard.writeText(copyText);
+      toast({ title: "Copied to clipboard!" });
+    } catch {
+      // Textarea fallback
+      const ta = document.createElement("textarea");
+      ta.value = copyText;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      toast({ title: "Copied to clipboard!" });
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -62,7 +104,7 @@ export default function StreamAchievements({
                 <span className="text-2xl mb-1 block">{a.icon}</span>
                 <p className="text-xs font-bold text-foreground">{a.title}</p>
                 <p className="text-[9px] text-muted-foreground mt-0.5">{a.description}</p>
-                <Button variant="ghost" size="sm" className="mt-2 h-6 text-[10px] px-2">
+                <Button variant="ghost" size="sm" className="mt-2 h-6 text-[10px] px-2" onClick={() => handleShare(a)}>
                   <Share2 className="w-3 h-3 mr-1" /> Share
                 </Button>
               </motion.div>

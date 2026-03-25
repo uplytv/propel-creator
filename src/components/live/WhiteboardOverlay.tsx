@@ -131,7 +131,7 @@ export default function WhiteboardOverlay({ whiteboard }: WhiteboardOverlayProps
           <button onClick={undo} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-secondary">
             <Undo2 className="w-3.5 h-3.5 text-muted-foreground" />
           </button>
-          <button onClick={clearBoard} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-secondary">
+          <button onClick={() => { clearBoard(); toggle(); }} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-secondary">
             <Trash2 className="w-3.5 h-3.5 text-muted-foreground" />
           </button>
           <button onClick={toggle} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-destructive/20">
