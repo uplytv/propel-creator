@@ -244,6 +244,7 @@ export function PayoutsTab() {
           </div>
         )}
       </div>
-    </motion.div>
+    <ReauthDialog open={showReauth} loading={reauthLoading} onConfirm={confirmReauth} onCancel={cancelReauth} />
+  </motion.div>
   );
 }
