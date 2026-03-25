@@ -153,40 +153,23 @@ export default function EndOfStreamScreen({
     if (muxAssetId) {
       downloadRecording(muxAssetId, streamTitle);
     } else {
-      // Try to find recording from DB
-      const { data: recording } = await supabase
-        .from("stream_recordings")
+      // Try to find asset from mux_assets table
+      const { data: asset } = await supabase
+        .from("mux_assets")
         .select("mux_asset_id, status")
         .eq("stream_id", streamId)
         .order("created_at", { ascending: false })
         .limit(1)
         .single();
 
-      if (recording?.mux_asset_id) {
-        if (recording.status === 'processing') {
+      if (asset?.mux_asset_id) {
+        if (asset.status === 'preparing') {
           toast({ title: "Recording is still processing", description: "Try again in a few minutes" });
         } else {
-          downloadRecording(recording.mux_asset_id, streamTitle);
+          downloadRecording(asset.mux_asset_id, streamTitle);
         }
       } else {
-        // Check mux_assets table
-        const { data: asset } = await supabase
-          .from("mux_assets")
-          .select("mux_asset_id, status")
-          .eq("stream_id", streamId)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .single();
-
-        if (asset?.mux_asset_id) {
-          if (asset.status === 'preparing') {
-            toast({ title: "Recording is still processing", description: "Try again in a few minutes" });
-          } else {
-            downloadRecording(asset.mux_asset_id, streamTitle);
-          }
-        } else {
-          toast({ title: "No recording found for this stream" });
-        }
+        toast({ title: "No recording found for this stream" });
       }
     }
   };
