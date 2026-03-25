@@ -94,6 +94,8 @@ export function useStreamEngagement(streamId: string | undefined, creatorUserId?
         
         addActivity("chat", `💬 ${msg.username}: ${msg.message.slice(0, 40)}`, "hsl(0 0% 100%)");
         bumpEnergy(5);
+        // Notify external listeners (e.g. analytics chat counter)
+        onChatCbRef.current?.();
       })
       .on("postgres_changes", {
         event: "UPDATE",
