@@ -272,6 +272,7 @@ export default function BroadcastStudio({
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showPollCreator, setShowPollCreator] = useState(false);
   const [showRaidPicker, setShowRaidPicker] = useState(false);
+  const endStreamDebounceRef = useRef(false);
 
   // Stream analytics (real-time dashboard)
   const streamAnalytics = useStreamAnalytics(streamData.streamId, isRecording);
