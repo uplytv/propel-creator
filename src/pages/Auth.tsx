@@ -129,6 +129,27 @@ export default function Auth() {
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
 
+  const checkServerRateLimit = async (actionType: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.functions.invoke("auth-rate-check", {
+        body: { identifier: email.toLowerCase().trim(), action_type: actionType },
+      });
+      if (error || !data) return true; // fail open
+      if (!data.allowed) {
+        const retryAfter = data.retry_after || 60;
+        toast({
+          title: "Too many attempts",
+          description: `Please wait ${Math.ceil(retryAfter / 60)} minute(s) before trying again.`,
+          variant: "destructive",
+        });
+        return false;
+      }
+      return true;
+    } catch {
+      return true; // fail open
+    }
+  };
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (lockoutUntil && Date.now() < lockoutUntil) {
@@ -137,6 +158,8 @@ export default function Auth() {
       return;
     }
     setLoading(true);
+    const allowed = await checkServerRateLimit("login");
+    if (!allowed) { setLoading(false); return; }
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) {
