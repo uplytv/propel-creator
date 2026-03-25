@@ -27,7 +27,9 @@ export interface LiveReaction {
   created_at: string;
 }
 
-export function useStreamEngagement(streamId: string | undefined, creatorUserId?: string) {
+export function useStreamEngagement(streamId: string | undefined, creatorUserId?: string, onChatMessageCallback?: () => void) {
+  const onChatCbRef = useRef<(() => void) | undefined>(onChatMessageCallback);
+  useEffect(() => { onChatCbRef.current = onChatMessageCallback; }, [onChatMessageCallback]);
   const [chatMessages, setChatMessages] = useState<LiveChatMessage[]>([]);
   const [floatingReactions, setFloatingReactions] = useState<LiveReaction[]>([]);
   const [reactionCount, setReactionCount] = useState(0);
