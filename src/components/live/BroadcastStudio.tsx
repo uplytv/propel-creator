@@ -1109,6 +1109,7 @@ export default function BroadcastStudio({
 
                   {/* Right-side action buttons */}
                   <div className="absolute right-3 bottom-28 z-20 flex flex-col gap-3 items-center">
+                    {/* All buttons use min-w-[44px] min-h-[44px] for accessible tap targets */}
                     <button
                       onClick={async () => {
                         const liveUrl = `${getSiteUrl()}/stream/${streamData.streamId}`;
