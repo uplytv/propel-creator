@@ -198,6 +198,8 @@ export default function Auth() {
       return;
     }
     setForgotLoading(true);
+    const allowed = await checkServerRateLimit("password_reset");
+    if (!allowed) { setForgotLoading(false); return; }
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
