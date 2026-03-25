@@ -1478,7 +1478,7 @@ export default function BroadcastStudio({
 
             {/* Bottom bar: chat input + End Stream button */}
             {!isUploading && (
-              <div className="relative z-20 px-3 py-3 flex items-center gap-2" style={{ backgroundColor: "rgba(0,0,0,0.7)", backdropFilter: "blur(16px)" }}>
+              <div className="relative z-[100] px-3 py-3 flex items-center gap-2" style={{ backgroundColor: "rgba(0,0,0,0.7)", backdropFilter: "blur(16px)" }}>
                 <input
                   value={liveChatInput}
                   onChange={(e) => setLiveChatInput(e.target.value)}
