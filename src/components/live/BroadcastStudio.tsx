@@ -381,8 +381,8 @@ export default function BroadcastStudio({
     };
   }, [isFullscreen]);
 
-  // Stream engagement
-  const engagement = useStreamEngagement(streamData.streamId, user?.id || "");
+  // Stream engagement — wire chat messages to analytics counter
+  const engagement = useStreamEngagement(streamData.streamId, user?.id || "", streamAnalytics.incrementChat);
   const [coachingNudge, setCoachingNudge] = useState<string | null>(null);
   const prevEnergyRef = useRef(0);
 
