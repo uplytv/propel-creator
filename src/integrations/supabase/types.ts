@@ -963,6 +963,36 @@ export type Database = {
         }
         Relationships: []
       }
+      auth_rate_limits: {
+        Row: {
+          action_type: string
+          attempt_count: number
+          blocked_until: string | null
+          created_at: string
+          id: string
+          identifier: string
+          window_start: string
+        }
+        Insert: {
+          action_type?: string
+          attempt_count?: number
+          blocked_until?: string | null
+          created_at?: string
+          id?: string
+          identifier: string
+          window_start?: string
+        }
+        Update: {
+          action_type?: string
+          attempt_count?: number
+          blocked_until?: string | null
+          created_at?: string
+          id?: string
+          identifier?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       business_categories: {
         Row: {
           created_at: string
@@ -5076,6 +5106,16 @@ export type Database = {
       }
     }
     Functions: {
+      check_auth_rate_limit: {
+        Args: {
+          p_action_type?: string
+          p_block_seconds?: number
+          p_identifier: string
+          p_max_attempts?: number
+          p_window_seconds?: number
+        }
+        Returns: Json
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
