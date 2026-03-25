@@ -1264,7 +1264,7 @@ export default function BroadcastStudio({
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 20 }}
-                        className="absolute bottom-32 left-3 right-16 z-25"
+                        className="absolute bottom-32 left-3 right-16 z-[15]"
                       >
                         <div className="rounded-xl p-3 space-y-2 bg-background/95 backdrop-blur-md border border-border">
                           <p className="text-xs font-bold text-foreground">🎰 Create Prediction</p>
@@ -1329,7 +1329,7 @@ export default function BroadcastStudio({
                   {/* Overlay Theme Picker */}
                   <AnimatePresence>
                     {showThemePicker && (
-                      <div className="absolute bottom-32 left-3 right-16 z-25">
+                      <div className="absolute bottom-32 left-3 right-16 z-[15]">
                         <OverlayThemePicker
                           themes={overlayThemes.themes}
                           activeTheme={overlayThemes.activeTheme}
@@ -1343,7 +1343,7 @@ export default function BroadcastStudio({
                   {/* Viewer Heatmap (post-stream) */}
                   <AnimatePresence>
                     {showHeatmap && viewerHeatmap.data && (
-                      <div className="absolute bottom-32 left-3 right-16 z-25">
+                      <div className="absolute bottom-32 left-3 right-16 z-[15]">
                         <ViewerHeatmapPanel
                           data={viewerHeatmap.data}
                           durationSeconds={recordingDuration}
@@ -1361,7 +1361,7 @@ export default function BroadcastStudio({
                   {/* Live Quiz */}
                   <AnimatePresence>
                     {showQuizCreator && (
-                      <div className="absolute bottom-32 left-3 right-16 z-25">
+                      <div className="absolute bottom-32 left-3 right-16 z-[15]">
                         <div className="glass-card p-3">
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-xs font-bold text-foreground">🧠 Create Quiz</span>
@@ -1393,7 +1393,7 @@ export default function BroadcastStudio({
                         initial={{ opacity: 0, x: 50 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 50 }}
-                        className="absolute top-20 right-14 z-25 w-56"
+                        className="absolute top-20 right-14 z-[15] w-56"
                       >
                         <div
                           className="rounded-xl p-3 space-y-2"
@@ -1426,7 +1426,7 @@ export default function BroadcastStudio({
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 z-40 bg-black/70 backdrop-blur-sm flex items-center justify-center"
+                        className="absolute inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex items-center justify-center"
                         onClick={() => setShowEndConfirm(false)}
                       >
                         <motion.div
