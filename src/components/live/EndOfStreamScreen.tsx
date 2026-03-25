@@ -14,6 +14,8 @@ import { useStreamDownload } from "@/hooks/useStreamDownload";
 import { useAutoClipAI } from "@/hooks/useAutoClipAI";
 import { useStreamAchievements } from "@/hooks/useStreamAchievements";
 import StreamAchievements from "./StreamAchievements";
+import { useToast } from "@/hooks/use-toast";
+import { getSiteUrl } from "@/lib/siteUrl";
 
 interface EndOfStreamScreenProps {
   streamId: string;
@@ -47,6 +49,7 @@ export default function EndOfStreamScreen({
   highlights = [],
   chaptersDescription,
 }: EndOfStreamScreenProps) {
+  const { toast } = useToast();
   const [stats, setStats] = useState<StreamStats>({
     peakViewers: 0,
     totalReactions: 0,
@@ -108,6 +111,84 @@ export default function EndOfStreamScreen({
     return h > 0
       ? `${h}h ${m}m ${sec}s`
       : `${m}m ${sec}s`;
+  };
+
+  const handleShareStream = async () => {
+    const streamUrl = `${getSiteUrl()}/stream/${streamId}`;
+    const shareText = `Check out my stream "${streamTitle}" on UPLY!`;
+    const shareData = {
+      title: streamTitle,
+      text: shareText,
+      url: streamUrl,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch {
+        // User cancelled, fall through
+      }
+    }
+
+    // Fallback: copy to clipboard
+    const copyText = `${shareText}\n${streamUrl}`;
+    try {
+      await navigator.clipboard.writeText(copyText);
+      toast({ title: "Copied to clipboard!" });
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = copyText;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      toast({ title: "Copied to clipboard!" });
+    }
+  };
+
+  const handleDownload = async () => {
+    if (muxAssetId) {
+      downloadRecording(muxAssetId, streamTitle);
+    } else {
+      // Try to find recording from DB
+      const { data: recording } = await supabase
+        .from("stream_recordings")
+        .select("mux_asset_id, status")
+        .eq("stream_id", streamId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (recording?.mux_asset_id) {
+        if (recording.status === 'processing') {
+          toast({ title: "Recording is still processing", description: "Try again in a few minutes" });
+        } else {
+          downloadRecording(recording.mux_asset_id, streamTitle);
+        }
+      } else {
+        // Check mux_assets table
+        const { data: asset } = await supabase
+          .from("mux_assets")
+          .select("mux_asset_id, status")
+          .eq("stream_id", streamId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
+
+        if (asset?.mux_asset_id) {
+          if (asset.status === 'preparing') {
+            toast({ title: "Recording is still processing", description: "Try again in a few minutes" });
+          } else {
+            downloadRecording(asset.mux_asset_id, streamTitle);
+          }
+        } else {
+          toast({ title: "No recording found for this stream" });
+        }
+      }
+    }
   };
 
   const statCards = [
@@ -196,6 +277,7 @@ export default function EndOfStreamScreen({
           totalCount={streamAchievements.totalCount}
           progressPercent={streamAchievements.progressPercent}
           loading={streamAchievements.loading}
+          creatorUsername={username}
         />
 
         {/* Action Buttons */}
@@ -204,27 +286,25 @@ export default function EndOfStreamScreen({
             variant="hero"
             size="lg"
             className="w-full"
-            onClick={() => setShareOpen(true)}
+            onClick={handleShareStream}
           >
             <Share2 className="w-5 h-5 mr-2" />
             Share Your Stream
           </Button>
 
-          {muxAssetId && (
-            <div>
-              <Button
-                variant="outline"
-                size="lg"
-                className="w-full"
-                onClick={() => downloadRecording(muxAssetId, streamTitle)}
-                disabled={downloading}
-              >
-                <Download className="w-5 h-5 mr-2" />
-                {downloading ? 'Downloading...' : 'Download Recording (MP4)'}
-              </Button>
-              {downloading && <Progress value={downloadProgress} className="mt-2 h-1.5" />}
-            </div>
-          )}
+          <div>
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full"
+              onClick={handleDownload}
+              disabled={downloading}
+            >
+              <Download className="w-5 h-5 mr-2" />
+              {downloading ? 'Downloading...' : 'Download Recording (MP4)'}
+            </Button>
+            {downloading && <Progress value={downloadProgress} className="mt-2 h-1.5" />}
+          </div>
 
           <Button
             variant="outline"
