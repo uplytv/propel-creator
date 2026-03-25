@@ -154,13 +154,12 @@ export default function EndOfStreamScreen({
       downloadRecording(muxAssetId, streamTitle);
     } else {
       // Try to find asset from mux_assets table
-      const { data: asset } = await supabase
+      const { data: assets } = await supabase
         .from("mux_assets")
         .select("mux_asset_id, status")
         .eq("stream_id", streamId)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
+        .limit(1);
+      const asset = assets?.[0] ?? null;
 
       if (asset?.mux_asset_id) {
         if (asset.status === 'preparing') {
