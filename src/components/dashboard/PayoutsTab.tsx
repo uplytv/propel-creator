@@ -11,12 +11,15 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useWallet } from "@/hooks/useWallet";
+import { useReauthGuard } from "@/hooks/useReauthGuard";
+import ReauthDialog from "@/components/ReauthDialog";
 
 export function PayoutsTab() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [connecting, setConnecting] = useState(false);
+  const { showReauth, reauthLoading, requireReauth, confirmReauth, cancelReauth } = useReauthGuard();
 
   const { data: stripeAccount, isLoading: accountLoading } = useQuery({
     queryKey: ["stripe-account", user?.id],
