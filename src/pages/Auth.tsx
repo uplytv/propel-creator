@@ -59,8 +59,20 @@ export default function Auth() {
     return () => subscription.unsubscribe();
   }, [navigate, signUpSuccess]);
 
+  const validatePassword = (pw: string): string | null => {
+    if (pw.length < 8) return "Password must be at least 8 characters.";
+    if (!/[A-Z]/.test(pw)) return "Password must contain at least one uppercase letter.";
+    if (!/[0-9]/.test(pw)) return "Password must contain at least one number.";
+    return null;
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    const pwError = validatePassword(password);
+    if (pwError) {
+      toast({ title: "Weak password", description: pwError, variant: "destructive" });
+      return;
+    }
     setLoading(true);
 
     // Check for platform referral cookie and creator affiliate cookie
@@ -114,13 +126,32 @@ export default function Auth() {
     }
   };
 
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (lockoutUntil && Date.now() < lockoutUntil) {
+      const secsLeft = Math.ceil((lockoutUntil - Date.now()) / 1000);
+      toast({ title: "Too many attempts", description: `Please wait ${secsLeft}s before trying again.`, variant: "destructive" });
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) {
-      toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
+      const newAttempts = loginAttempts + 1;
+      setLoginAttempts(newAttempts);
+      if (newAttempts >= 5) {
+        const lockDuration = Math.min(30 * Math.pow(2, Math.floor((newAttempts - 5) / 3)), 300) * 1000;
+        setLockoutUntil(Date.now() + lockDuration);
+        toast({ title: "Account locked", description: `Too many failed attempts. Try again in ${lockDuration / 1000}s.`, variant: "destructive" });
+      } else {
+        toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
+      }
+    } else {
+      setLoginAttempts(0);
+      setLockoutUntil(null);
     }
   };
 
@@ -279,8 +310,15 @@ export default function Auth() {
                         <Label htmlFor="signup-password">Password</Label>
                         <div className="relative">
                           <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                          <Input id="signup-password" type="password" placeholder="••••••••" className="pl-9" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
+                          <Input id="signup-password" type="password" placeholder="Min 8 chars, 1 uppercase, 1 number" className="pl-9" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
                         </div>
+                        {password && (
+                          <div className="text-xs space-y-0.5 mt-1">
+                            <p className={password.length >= 8 ? "text-green-600" : "text-muted-foreground"}>✓ At least 8 characters</p>
+                            <p className={/[A-Z]/.test(password) ? "text-green-600" : "text-muted-foreground"}>✓ One uppercase letter</p>
+                            <p className={/[0-9]/.test(password) ? "text-green-600" : "text-muted-foreground"}>✓ One number</p>
+                          </div>
+                        )}
                       </div>
                       <Button type="submit" className="w-full" disabled={loading}>
                         {loading ? "Creating account..." : "Create Account"}
