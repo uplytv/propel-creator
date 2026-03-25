@@ -717,6 +717,10 @@ export default function BroadcastStudio({
 
   // The main "end stream" handler — called from the End Stream button or screen share ending
   const handleEndStream = useCallback(async () => {
+    // Debounce: prevent double-tap
+    if (endStreamDebounceRef.current) return;
+    endStreamDebounceRef.current = true;
+    setTimeout(() => { endStreamDebounceRef.current = false; }, 500);
     const duration = recordingDuration;
     
     if (recordingTimerRef.current) {
