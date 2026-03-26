@@ -19,12 +19,12 @@ export interface WhiteboardState {
 
 const COLORS = [
   'hsl(var(--primary))',
-  '#ef4444',
-  '#f59e0b',
-  '#22c55e',
-  '#3b82f6',
+  'hsl(var(--destructive))',
+  'hsl(var(--warning))',
+  'hsl(var(--success))',
+  'hsl(220 90% 56%)',
   '#a855f7',
-  '#ffffff',
+  'hsl(var(--foreground))',
   '#000000',
 ];
 

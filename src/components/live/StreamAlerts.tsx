@@ -128,7 +128,7 @@ export default function StreamAlerts({ className }: StreamAlertsProps) {
                 className="mt-2 inline-block px-4 py-1.5 rounded-full font-bold text-sm"
                 style={{
                   backgroundColor: 'rgba(255,255,255,0.15)',
-                  color: '#FFD700',
+                  color: 'hsl(var(--warning))',
                 }}
               >
                 {currentAlert.amount} credits

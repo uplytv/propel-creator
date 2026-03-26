@@ -43,7 +43,7 @@ function EnergyBar({ score }: { score: number }) {
     <div className="absolute top-0 left-0 right-0 z-40 h-1">
       <motion.div
         className="h-full"
-        style={{ backgroundColor: "#00FF85" }}
+        style={{ backgroundColor: "hsl(var(--primary))" }}
         animate={{
           width: `${score}%`,
           opacity: score >= 50 ? [1, 0.6, 1] : 1,
@@ -83,7 +83,7 @@ function EnergyMilestones({ score }: { score: number }) {
             className="absolute top-2 left-0 right-0 z-50 flex justify-center"
           >
             <div className="px-4 py-2 rounded-full text-sm font-bold"
-              style={{ backgroundColor: "rgba(0,255,133,0.15)", color: "#00FF85", backdropFilter: "blur(12px)" }}>
+              style={{ backgroundColor: "rgba(0,255,133,0.15)", color: "hsl(var(--primary))", backdropFilter: "blur(12px)" }}>
               🔥 This stream is heating up
             </div>
           </motion.div>
@@ -100,7 +100,7 @@ function EnergyMilestones({ score }: { score: number }) {
             <div className="text-center">
               <motion.div
                 className="text-4xl font-black mb-2"
-                style={{ color: "#00FF85" }}
+                style={{ color: "hsl(var(--primary))" }}
                 animate={{ scale: [1, 1.1, 1] }}
                 transition={{ duration: 0.5, repeat: 3 }}
               >
@@ -112,7 +112,7 @@ function EnergyMilestones({ score }: { score: number }) {
                   key={i}
                   className="absolute w-2 h-2 rounded-full"
                   style={{
-                    backgroundColor: i % 2 === 0 ? "#00FF85" : "#ffffff",
+                    backgroundColor: i % 2 === 0 ? "hsl(var(--primary))" : "hsl(var(--foreground))",
                     left: "50%",
                     top: "50%",
                   }}
@@ -151,9 +151,9 @@ function EnergyFlash({ score, onDismiss }: { score: number; onDismiss: () => voi
     >
       <div className="text-center">
         <div className="w-48 h-3 rounded-full overflow-hidden mx-auto mb-3" style={{ backgroundColor: "rgba(255,255,255,0.1)" }}>
-          <div className="h-full rounded-full" style={{ width: `${score}%`, backgroundColor: "#00FF85" }} />
+          <div className="h-full rounded-full" style={{ width: `${score}%`, backgroundColor: "hsl(var(--primary))" }} />
         </div>
-        <p className="text-3xl font-black" style={{ color: "#00FF85" }}>{score}%</p>
+        <p className="text-3xl font-black" style={{ color: "hsl(var(--primary))" }}>{score}%</p>
         <p className="text-sm text-white/60 mt-1">Stream Energy</p>
       </div>
     </motion.div>
@@ -190,7 +190,7 @@ function ShareCard({ title, streamId, onClose }: { title: string; streamId: stri
       <p className="text-sm font-bold text-white mb-3 line-clamp-2">{title}</p>
       <div className="space-y-2">
         <button onClick={copyLink} className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-semibold"
-          style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}>
+          style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--background))" }}>
           {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
           {copied ? "Copied!" : "Copy Link"}
         </button>
@@ -212,7 +212,7 @@ function ChatMsg({ msg, creatorUserId, onPin }: { msg: LiveChatMessage; creatorU
     <div className="text-sm px-1 py-0.5">
       <span className="inline-flex items-center gap-1">
         {isCreator && <span className="text-xs">⭐</span>}
-        <span className="font-semibold" style={{ color: isCreator ? "#FFD700" : isMember ? "#00FF85" : "white" }}>
+        <span className="font-semibold" style={{ color: isCreator ? "hsl(var(--warning))" : isMember ? "hsl(var(--primary))" : "white" }}>
           {msg.username}
         </span>
       </span>
@@ -282,7 +282,7 @@ export default function ViewerEngagementOverlay({ streamId, streamTitle, creator
             className="w-11 h-11 rounded-full flex items-center justify-center"
             style={{ backgroundColor: "rgba(10,10,10,0.85)", backdropFilter: "blur(12px)" }}
           >
-            <Flame className="w-5 h-5" style={{ color: "#00FF85" }} />
+            <Flame className="w-5 h-5" style={{ color: "hsl(var(--primary))" }} />
           </button>
           <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[10px] text-white/60 font-semibold tabular-nums">
             {reactionCount}
@@ -341,7 +341,7 @@ export default function ViewerEngagementOverlay({ streamId, streamTitle, creator
                   {pinnedMessages.map((pm) => (
                     <div key={pm.id} className="rounded-lg px-3 py-2 text-xs mb-1"
                       style={{ border: "1px solid #00FF85", backgroundColor: "rgba(0,255,133,0.05)" }}>
-                      <span className="font-bold" style={{ color: "#00FF85" }}>📌 {pm.username}:</span>{" "}
+                      <span className="font-bold" style={{ color: "hsl(var(--primary))" }}>📌 {pm.username}:</span>{" "}
                       <span className="text-white/80">{pm.message}</span>
                     </div>
                   ))}
@@ -365,7 +365,7 @@ export default function ViewerEngagementOverlay({ streamId, streamTitle, creator
                       className="flex-1 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none"
                       style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
                     />
-                    <button onClick={handleSendChat} className="px-3 py-2 rounded-lg" style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}>
+                    <button onClick={handleSendChat} className="px-3 py-2 rounded-lg" style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--background))" }}>
                       <Send className="w-4 h-4" />
                     </button>
                   </div>
@@ -392,7 +392,7 @@ export default function ViewerEngagementOverlay({ streamId, streamTitle, creator
           className="w-11 h-11 rounded-full flex items-center justify-center"
           style={{ backgroundColor: "rgba(10,10,10,0.85)", backdropFilter: "blur(12px)" }}
         >
-          <Zap className="w-5 h-5" style={{ color: "#00FF85" }} />
+          <Zap className="w-5 h-5" style={{ color: "hsl(var(--primary))" }} />
         </button>
       </div>
 

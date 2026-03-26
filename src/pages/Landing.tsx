@@ -31,15 +31,15 @@ const rewards = [
 ];
 
 const features = [
-  { icon: Radio, title: "Go Live", desc: "Stream directly to your community. Tips, reactions, and live shopping built in.", color: "#FF3B3B" },
-  { icon: BookOpen, title: "Courses", desc: "Build and sell courses with modules, lessons, and progress tracking.", color: "#3B82F6" },
-  { icon: Calendar, title: "Events & Ticketing", desc: "Host paid virtual or in-person events with QR check-in.", color: "#F59E0B" },
-  { icon: MessageSquare, title: "Paid DMs", desc: "Monetize your inbox. Fans pay to message you directly.", color: "#8B5CF6" },
+  { icon: Radio, title: "Go Live", desc: "Stream directly to your community. Tips, reactions, and live shopping built in.", color: "hsl(var(--destructive))" },
+  { icon: BookOpen, title: "Courses", desc: "Build and sell courses with modules, lessons, and progress tracking.", color: "hsl(220 90% 56%)" },
+  { icon: Calendar, title: "Events & Ticketing", desc: "Host paid virtual or in-person events with QR check-in.", color: "hsl(var(--warning))" },
+  { icon: MessageSquare, title: "Paid DMs", desc: "Monetize your inbox. Fans pay to message you directly.", color: "hsl(258 90% 66%)" },
   { icon: ShoppingBag, title: "Live Shopping", desc: "Sell products mid-stream. Auctions, giveaways, and instant checkout.", color: "#EC4899" },
-  { icon: Users, title: "Community", desc: "Posts, comments, leaderboards, and member tiers — all in your space.", color: "#00FF85" },
+  { icon: Users, title: "Community", desc: "Posts, comments, leaderboards, and member tiers — all in your space.", color: "hsl(var(--primary))" },
   { icon: TrendingUp, title: "Analytics & ARIA", desc: "AI-powered growth insights and weekly performance reports.", color: "#06B6D4" },
   { icon: Zap, title: "Affiliate System", desc: "Let your members earn by referring new subscribers.", color: "#EAB308" },
-  { icon: Users, title: "AI Creator Team", desc: "🤖 5 autonomous agents running your business 24/7.", color: "#8B5CF6" },
+  { icon: Users, title: "AI Creator Team", desc: "🤖 5 autonomous agents running your business 24/7.", color: "hsl(258 90% 66%)" },
 ];
 
 const steps = [
@@ -242,7 +242,7 @@ export default function Landing() {
         <motion.div
           className="absolute z-[1] pointer-events-none w-[350px] h-[350px] rounded-full opacity-[0.06] blur-[100px] hidden md:block"
           style={{
-            background: "#00FF85",
+            background: "hsl(var(--primary))",
             left: springX,
             top: springY,
             translateX: "-50%",

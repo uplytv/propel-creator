@@ -53,7 +53,7 @@ function ProductCard({ product, auction, onBuy, onBid }: {
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: 100, opacity: 0 }}
       className="rounded-t-2xl border-t border-x overflow-hidden"
-      style={{ backgroundColor: "#0D0D0D", borderColor: "#1E1E1E" }}
+      style={{ backgroundColor: "hsl(var(--background))", borderColor: "hsl(var(--card))" }}
     >
       <div className="p-3">
         <div className="flex gap-3">
@@ -61,7 +61,7 @@ function ProductCard({ product, auction, onBuy, onBid }: {
           {product.image_url ? (
             <img src={product.image_url} alt="" className="w-20 h-20 rounded-xl object-cover flex-shrink-0" />
           ) : (
-            <div className="w-20 h-20 rounded-xl flex items-center justify-center text-2xl flex-shrink-0" style={{ backgroundColor: "#1E1E1E" }}>🛍️</div>
+            <div className="w-20 h-20 rounded-xl flex items-center justify-center text-2xl flex-shrink-0" style={{ backgroundColor: "hsl(var(--card))" }}>🛍️</div>
           )}
 
           {/* Product info */}
@@ -75,7 +75,7 @@ function ProductCard({ product, auction, onBuy, onBid }: {
               <div className="mt-1.5">
                 {auction!.current_winner_username ? (
                   <p className="text-xs">
-                    <span className="font-bold" style={{ color: "#00FF85" }}>{auction!.current_winner_username}</span>
+                    <span className="font-bold" style={{ color: "hsl(var(--primary))" }}>{auction!.current_winner_username}</span>
                     <span className="text-amber-400 ml-1 font-semibold">is winning!</span>
                   </p>
                 ) : (
@@ -110,7 +110,7 @@ function ProductCard({ product, auction, onBuy, onBid }: {
             <>
               {customBidOpen ? (
                 <div className="flex gap-2">
-                  <div className="flex-1 flex items-center gap-1 rounded-xl px-3" style={{ backgroundColor: "#1E1E1E" }}>
+                  <div className="flex-1 flex items-center gap-1 rounded-xl px-3" style={{ backgroundColor: "hsl(var(--card))" }}>
                     <span className="text-sm text-white/50">$</span>
                     <input
                       type="number"
@@ -122,23 +122,23 @@ function ProductCard({ product, auction, onBuy, onBid }: {
                     />
                   </div>
                   <button onClick={() => { onBid(parseFloat(customAmount) || nextBid); setCustomBidOpen(false); setCustomAmount(""); }}
-                    className="px-4 py-2.5 rounded-xl text-sm font-bold" style={{ backgroundColor: "#FFD700", color: "#0A0A0A" }}>
+                    className="px-4 py-2.5 rounded-xl text-sm font-bold" style={{ backgroundColor: "hsl(var(--warning))", color: "hsl(var(--background))" }}>
                     Bid
                   </button>
                   <button onClick={() => setCustomBidOpen(false)}
-                    className="px-3 py-2.5 rounded-xl text-sm text-white/50 border" style={{ borderColor: "#1E1E1E" }}>
+                    className="px-3 py-2.5 rounded-xl text-sm text-white/50 border" style={{ borderColor: "hsl(var(--card))" }}>
                     <X className="w-4 h-4" />
                   </button>
                 </div>
               ) : (
                 <div className="flex gap-2">
                   <button onClick={() => setCustomBidOpen(true)}
-                    className="px-4 py-2.5 rounded-xl text-sm font-semibold text-white border" style={{ borderColor: "#333" }}>
+                    className="px-4 py-2.5 rounded-xl text-sm font-semibold text-white border" style={{ borderColor: "hsl(var(--secondary))" }}>
                     Custom
                   </button>
                   <button onClick={() => onBid(nextBid)}
                     className="flex-1 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-1"
-                    style={{ backgroundColor: "#FFD700", color: "#0A0A0A" }}>
+                    style={{ backgroundColor: "hsl(var(--warning))", color: "hsl(var(--background))" }}>
                     Bid: ${nextBid} <span className="text-xs">»</span>
                   </button>
                 </div>
@@ -151,7 +151,7 @@ function ProductCard({ product, auction, onBuy, onBid }: {
           ) : (
             <button onClick={onBuy}
               className="w-full py-2.5 rounded-xl text-sm font-bold"
-              style={{ backgroundColor: "#FFD700", color: "#0A0A0A" }}>
+              style={{ backgroundColor: "hsl(var(--warning))", color: "hsl(var(--background))" }}>
               Buy Now · ${product.price}
             </button>
           )}
@@ -178,7 +178,7 @@ function GiveawayWidget({ giveaway, onEnter, entered }: {
     >
       <span className="text-base">🎁</span>
       <div className="text-left">
-        <p className="text-[10px] font-bold" style={{ color: entered ? "#00FF85" : "#FFD700" }}>
+        <p className="text-[10px] font-bold" style={{ color: entered ? "hsl(var(--primary))" : "hsl(var(--warning))" }}>
           {entered ? "Entered ✓" : "Giveaway"}
         </p>
         <p className="text-[10px] text-white/60">{giveaway.entry_count} Entries</p>
@@ -213,13 +213,13 @@ function WinnerOverlay({ username, title, onDismiss }: { username: string; title
           🎉
         </motion.div>
         <p className="text-2xl font-black text-white mb-2">{username}</p>
-        <p className="text-sm" style={{ color: "#FFD700" }}>won the giveaway!</p>
+        <p className="text-sm" style={{ color: "hsl(var(--warning))" }}>won the giveaway!</p>
         <p className="text-xs text-white/50 mt-1">{title}</p>
         {/* Confetti */}
         {Array.from({ length: 20 }).map((_, i) => (
           <motion.div key={i}
             className="absolute w-2 h-2 rounded-full"
-            style={{ backgroundColor: i % 3 === 0 ? "#00FF85" : i % 3 === 1 ? "#FFD700" : "#fff", left: "50%", top: "50%" }}
+            style={{ backgroundColor: i % 3 === 0 ? "hsl(var(--primary))" : i % 3 === 1 ? "hsl(var(--warning))" : "hsl(var(--foreground))", left: "50%", top: "50%" }}
             initial={{ x: 0, y: 0, opacity: 1 }}
             animate={{ x: (Math.random() - 0.5) * 400, y: (Math.random() - 0.5) * 400, opacity: 0 }}
             transition={{ duration: 2, delay: Math.random() * 0.3 }}
@@ -276,7 +276,7 @@ export default function ViewerShopOverlay({ streamId, creatorUserId }: Props) {
             <ShoppingBag className="w-5 h-5 text-white" />
             {activeProducts.length > 0 && (
               <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center"
-                style={{ backgroundColor: "#FF3B3B", color: "white" }}>
+                style={{ backgroundColor: "hsl(var(--destructive))", color: "white" }}>
                 {activeProducts.length}
               </span>
             )}
@@ -304,11 +304,11 @@ export default function ViewerShopOverlay({ streamId, creatorUserId }: Props) {
         <Drawer.Portal>
           <Drawer.Overlay className="fixed inset-0 z-[90]" style={{ backgroundColor: "rgba(0,0,0,0.5)" }} />
           <Drawer.Content className="fixed bottom-0 left-0 right-0 z-[91] flex flex-col rounded-t-2xl outline-none"
-            style={{ backgroundColor: "#0D0D0D", maxHeight: "70vh" }}>
+            style={{ backgroundColor: "hsl(var(--background))", maxHeight: "70vh" }}>
             <div className="flex justify-center pt-3 pb-1">
               <div className="w-10 h-1 rounded-full" style={{ backgroundColor: "rgba(255,255,255,0.2)" }} />
             </div>
-            <div className="px-4 py-2 border-b flex items-center justify-between" style={{ borderColor: "#1E1E1E" }}>
+            <div className="px-4 py-2 border-b flex items-center justify-between" style={{ borderColor: "hsl(var(--card))" }}>
               <span className="text-sm font-bold text-white">🛍️ Shop</span>
               <span className="text-[10px] text-white/40">{products.length} products</span>
             </div>
@@ -317,11 +317,11 @@ export default function ViewerShopOverlay({ streamId, creatorUserId }: Props) {
                 const auction = auctions.find(a => a.live_product_id === p.id && a.status === "active");
                 return (
                   <div key={p.id} className="rounded-xl p-3 flex items-center gap-3"
-                    style={{ backgroundColor: p.is_active ? "rgba(0,255,133,0.05)" : "#111", border: p.is_active ? "1px solid #00FF85" : "1px solid #1E1E1E" }}>
+                    style={{ backgroundColor: p.is_active ? "rgba(0,255,133,0.05)" : "hsl(var(--background))", border: p.is_active ? "1px solid #00FF85" : "1px solid #1E1E1E" }}>
                     {p.image_url ? (
                       <img src={p.image_url} alt="" className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
                     ) : (
-                      <div className="w-14 h-14 rounded-lg flex items-center justify-center text-xl flex-shrink-0" style={{ backgroundColor: "#1E1E1E" }}>🛍️</div>
+                      <div className="w-14 h-14 rounded-lg flex items-center justify-center text-xl flex-shrink-0" style={{ backgroundColor: "hsl(var(--card))" }}>🛍️</div>
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">

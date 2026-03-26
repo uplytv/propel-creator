@@ -109,7 +109,7 @@ export default function PostApplicationScreen({ position, referralCode, referral
             style={{
               left: `${40 + Math.random() * 20}%`,
               top: "40%",
-              background: ["#00FF85", "#FFD700", "#FF6B6B", "#8B5CF6", "#00D4FF"][i % 5],
+              background: ["hsl(var(--primary))", "hsl(var(--warning))", "#FF6B6B", "hsl(258 90% 66%)", "#00D4FF"][i % 5],
             }}
             initial={{ opacity: 1, scale: 1 }}
             animate={{
@@ -159,7 +159,7 @@ export default function PostApplicationScreen({ position, referralCode, referral
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
           className="rounded-[10px] p-4 mb-5"
-          style={{ background: "#111111", border: "1px solid hsl(var(--primary))" }}
+          style={{ background: "hsl(var(--background))", border: "1px solid hsl(var(--primary))" }}
         >
           <div className="flex items-center gap-3 mb-2">
             {referrerAvatar ? (
@@ -186,7 +186,7 @@ export default function PostApplicationScreen({ position, referralCode, referral
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.5 }}
         className="rounded-[14px] p-8 text-center mb-4"
-        style={{ background: "#111111", border: "2px solid hsl(var(--primary))" }}
+        style={{ background: "hsl(var(--background))", border: "2px solid hsl(var(--primary))" }}
       >
         <p className="text-[11px] font-semibold tracking-[0.1em] uppercase mb-2 text-muted-foreground">YOUR WAITLIST POSITION</p>
         <p className="text-[80px] font-extrabold leading-none mb-2 text-primary" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -341,7 +341,7 @@ export default function PostApplicationScreen({ position, referralCode, referral
         {/* Explore UPLY */}
         <div
           className="rounded-lg p-4"
-          style={{ background: "#111111", border: "1px solid hsl(var(--border))" }}
+          style={{ background: "hsl(var(--background))", border: "1px solid hsl(var(--border))" }}
         >
           <p className="text-sm font-semibold text-foreground mb-1">Explore what's waiting for you</p>
           <p className="text-xs text-muted-foreground mb-3">See the platform, watch live streams, and browse communities</p>

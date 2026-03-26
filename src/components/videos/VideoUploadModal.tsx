@@ -132,7 +132,7 @@ export default function VideoUploadModal({ open, onClose }: VideoUploadModalProp
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
-      <DialogContent className="max-w-lg bg-card border-border" style={{ background: "#0A0A0A" }}>
+      <DialogContent className="max-w-lg bg-card border-border" style={{ background: "hsl(var(--background))" }}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-foreground">
             <Upload className="w-5 h-5 text-primary" /> Upload Video
@@ -160,7 +160,7 @@ export default function VideoUploadModal({ open, onClose }: VideoUploadModalProp
               />
             </div>
           ) : (
-            <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "#111111", border: "1px solid #1E1E1E" }}>
+            <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}>
               <Film className="w-8 h-8 text-primary shrink-0" />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-foreground truncate">{file.name}</p>

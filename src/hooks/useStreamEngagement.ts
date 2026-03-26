@@ -141,7 +141,7 @@ export function useStreamEngagement(streamId: string | undefined, creatorUserId?
         }
         
         setReactionCount((c) => c + 1);
-        addActivity("reaction", `${r.emoji} reacted`, "#00FF85");
+        addActivity("reaction", `${r.emoji} reacted`, "hsl(var(--primary))");
         bumpEnergy(3);
         
         // Auto-remove after 2s
@@ -182,7 +182,7 @@ export function useStreamEngagement(streamId: string | undefined, creatorUserId?
       .subscribe(async (status) => {
         if (status === "SUBSCRIBED") {
           await channel.track({ joined_at: new Date().toISOString() });
-          addActivity("join", "👤 Someone joined", "#888888");
+          addActivity("join", "👤 Someone joined", "hsl(var(--muted-foreground))");
           bumpEnergy(2);
         }
       });

@@ -30,8 +30,8 @@ function StarRating({ rating, onChange, interactive = false }: { rating: number;
         >
           <Star
             className="w-4 h-4"
-            fill={i <= rating ? "#FFD700" : "transparent"}
-            stroke={i <= rating ? "#FFD700" : "#444"}
+            fill={i <= rating ? "hsl(var(--warning))" : "transparent"}
+            stroke={i <= rating ? "hsl(var(--warning))" : "#444"}
           />
         </button>
       ))}
@@ -106,7 +106,7 @@ export default function CreatorTestimonials({ creatorId, isOwner }: { creatorId:
     <section className="max-w-[720px] mx-auto px-4 mb-8">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-white text-xl font-bold flex items-center gap-2">
-          <MessageSquareQuote className="w-5 h-5" style={{ color: "#00FF85" }} />
+          <MessageSquareQuote className="w-5 h-5" style={{ color: "hsl(var(--primary))" }} />
           Reviews
           {reviews.length > 0 && (
             <span className="text-sm font-normal text-[#888] ml-1">
@@ -118,7 +118,7 @@ export default function CreatorTestimonials({ creatorId, isOwner }: { creatorId:
           <button
             onClick={() => setShowForm(!showForm)}
             className="text-xs font-semibold px-3 py-1.5 rounded-lg"
-            style={{ background: "#1a1a1a", color: "#00FF85", border: "1px solid #1E1E1E" }}
+            style={{ background: "hsl(var(--card))", color: "hsl(var(--primary))", border: "1px solid #1E1E1E" }}
           >
             Write a Review
           </button>
@@ -127,7 +127,7 @@ export default function CreatorTestimonials({ creatorId, isOwner }: { creatorId:
 
       {/* Submit form */}
       {showForm && (
-        <div className="rounded-xl p-4 mb-4" style={{ background: "#111", border: "1px solid #1E1E1E" }}>
+        <div className="rounded-xl p-4 mb-4" style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}>
           <div className="flex items-center gap-3 mb-3">
             <span className="text-white text-sm font-medium">Your rating:</span>
             <StarRating rating={rating} onChange={setRating} interactive />
@@ -139,7 +139,7 @@ export default function CreatorTestimonials({ creatorId, isOwner }: { creatorId:
             rows={3}
             placeholder="Share your experience..."
             className="w-full rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#555] resize-none focus:outline-none focus:ring-1 focus:ring-[#00FF85]/40"
-            style={{ background: "#0A0A0A", border: "1px solid #1E1E1E" }}
+            style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}
           />
           <div className="flex justify-between items-center mt-2">
             <span className="text-[#555] text-xs">{body.length}/500</span>
@@ -147,7 +147,7 @@ export default function CreatorTestimonials({ creatorId, isOwner }: { creatorId:
               onClick={() => submitMutation.mutate()}
               disabled={submitMutation.isPending || !body.trim()}
               className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold disabled:opacity-40"
-              style={{ background: "#00FF85", color: "#0A0A0A" }}
+              style={{ background: "hsl(var(--primary))", color: "hsl(var(--background))" }}
             >
               <Send className="w-3.5 h-3.5" /> Submit
             </button>
@@ -161,12 +161,12 @@ export default function CreatorTestimonials({ creatorId, isOwner }: { creatorId:
           <div
             key={review.id}
             className="rounded-xl p-4"
-            style={{ background: "#111", border: "1px solid #1E1E1E" }}
+            style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}
           >
             <div className="flex items-center gap-3 mb-2">
               <Avatar className="w-8 h-8">
                 <AvatarImage src={review.reviewer?.avatar_url || undefined} />
-                <AvatarFallback className="text-xs" style={{ background: "#1a1a1a", color: "#00FF85" }}>
+                <AvatarFallback className="text-xs" style={{ background: "hsl(var(--card))", color: "hsl(var(--primary))" }}>
                   {review.reviewer?.display_name?.charAt(0) || "?"}
                 </AvatarFallback>
               </Avatar>
