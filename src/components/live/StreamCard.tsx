@@ -41,6 +41,7 @@ export default function StreamCard({ stream, index = 0 }: { stream: StreamCardDa
             <img
               src={`https://image.mux.com/${stream.muxPlaybackId}/thumbnail.png?width=640&height=360&time=1`}
               alt={stream.title}
+              loading="lazy"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
