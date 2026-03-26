@@ -1,6 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import type { Database } from "@/integrations/supabase/types";
+
+type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
+type ProfileUpdate = Database["public"]["Tables"]["profiles"]["Update"];
 
 export interface Profile {
   id: string;
@@ -35,7 +39,7 @@ export function useProfile() {
         .eq("user_id", user.id)
         .single();
       if (error) throw error;
-      return data as Profile;
+      return data as unknown as Profile;
     },
     enabled: !!user,
   });
@@ -48,9 +52,25 @@ export function useUpdateProfile() {
   return useMutation({
     mutationFn: async (updates: Partial<Profile>) => {
       if (!user) throw new Error("Not authenticated");
+      // Map Profile fields to DB column names
+      const dbUpdates: ProfileUpdate = {};
+      if (updates.display_name !== undefined) dbUpdates.display_name = updates.display_name;
+      if (updates.avatar_url !== undefined) dbUpdates.avatar_url = updates.avatar_url;
+      if (updates.bio !== undefined) dbUpdates.bio = updates.bio;
+      if (updates.creator_type !== undefined) dbUpdates.creator_type = updates.creator_type;
+      if (updates.creator_stage !== undefined) dbUpdates.creator_stage = updates.creator_stage;
+      if (updates.creator_challenge !== undefined) dbUpdates.creator_challenge = updates.creator_challenge;
+      if (updates.tier !== undefined) dbUpdates.tier = updates.tier;
+      if (updates.tier_name !== undefined) dbUpdates.tier_name = updates.tier_name;
+      if (updates.members !== undefined) dbUpdates.members = updates.members;
+      if (updates.mrr !== undefined) dbUpdates.mrr = updates.mrr;
+      if (updates.total_revenue !== undefined) dbUpdates.total_revenue = updates.total_revenue;
+      if (updates.health_score !== undefined) dbUpdates.health_score = updates.health_score;
+      if (updates.credits_balance !== undefined) dbUpdates.credits_balance = updates.credits_balance;
+
       const { error } = await supabase
         .from("profiles")
-        .update(updates as any)
+        .update(dbUpdates)
         .eq("user_id", user.id);
       if (error) throw error;
     },
