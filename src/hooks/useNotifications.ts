@@ -81,19 +81,20 @@ export function useNotifications() {
   useEffect(() => {
     if (!user) return;
 
-    const showToast = (payload: any, source: string) => {
+    const showToast = (payload: { new: Record<string, unknown> }, source: string) => {
       if (!initialLoadDone.current) return;
-      const row = payload.new as any;
+      const row = payload.new;
       if (row) {
         const icon = source === "job" ? "💼" : source === "social" ? "💬" : "📢";
-        toast(row.title, {
-          description: row.message,
+        toast(row.title as string, {
+          description: row.message as string,
           icon,
           duration: 5000,
         });
         if (localStorage.getItem("notif_sound_enabled") !== "false") {
           try {
-            const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+            const ctx = new AudioCtx();
             const playTone = (freq: number, startTime: number, duration: number) => {
               const osc = ctx.createOscillator();
               const gain = ctx.createGain();

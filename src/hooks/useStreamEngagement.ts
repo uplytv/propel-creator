@@ -64,7 +64,7 @@ export function useStreamEngagement(streamId: string | undefined, creatorUserId?
         .eq("stream_id", streamId)
         .order("created_at", { ascending: true })
         .limit(100);
-      if (data) setChatMessages(data as any);
+      if (data) setChatMessages(data as LiveChatMessage[]);
     };
     fetchInitial();
   }, [streamId]);

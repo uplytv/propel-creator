@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import { fetchProfileMap } from "@/lib/supabaseTyped";
 
 export type SkillCategory =
   | "video_editing" | "thumbnail_design" | "copywriting" | "email_marketing"
@@ -40,7 +41,6 @@ export interface Job {
   applicant_count: number;
   created_at: string;
   updated_at: string;
-  // Joined from profiles
   creator_name?: string;
   creator_avatar?: string;
   creator_tier?: number;
@@ -77,27 +77,15 @@ export function useJobs(filters?: {
       const { data, error } = await query;
       if (error) throw error;
 
-      // Fetch creator profiles for all jobs
-      const creatorIds = [...new Set((data || []).map((j: any) => j.creator_id))];
-      let profiles: any[] = [];
-      if (creatorIds.length > 0) {
-        const { data: profileData } = await (supabase as any)
-          .from("profiles_public")
-          .select("user_id, display_name, avatar_url")
-          .in("user_id", creatorIds);
-        profiles = profileData || [];
-      }
+      const creatorIds = [...new Set((data || []).map((j) => j.creator_id))];
+      const profileMap = await fetchProfileMap(creatorIds);
 
-      const profileMap = new Map(profiles.map((p: any) => [p.user_id, p]));
-
-      return (data || []).map((job: any) => {
+      return (data || []).map((job) => {
         const profile = profileMap.get(job.creator_id);
         return {
           ...job,
           creator_name: profile?.display_name || "Creator",
           creator_avatar: profile?.avatar_url,
-          creator_tier: profile?.tier || 1,
-          creator_tier_name: profile?.tier_name || "Starter",
         } as Job;
       });
     },
@@ -134,19 +122,17 @@ export function useMyApplications() {
         .order("created_at", { ascending: false });
       if (error) throw error;
 
-      // Fetch job titles
-      const jobIds = [...new Set((data || []).map((a: any) => a.job_id))];
-      let jobs: any[] = [];
+      const jobIds = [...new Set((data || []).map((a) => a.job_id))];
+      let jobMap = new Map<string, { title: string; skill_category: string }>();
       if (jobIds.length > 0) {
         const { data: jobData } = await supabase
           .from("jobs")
           .select("id, title, skill_category")
           .in("id", jobIds);
-        jobs = jobData || [];
+        jobMap = new Map((jobData || []).map((j) => [j.id, j]));
       }
-      const jobMap = new Map(jobs.map((j: any) => [j.id, j]));
 
-      return (data || []).map((app: any) => ({
+      return (data || []).map((app) => ({
         ...app,
         job_title: jobMap.get(app.job_id)?.title || "Job",
         job_skill: jobMap.get(app.job_id)?.skill_category,
@@ -183,7 +169,7 @@ export function useCreateJob() {
       queryClient.invalidateQueries({ queryKey: ["my-jobs"] });
       toast.success("Job posted successfully!");
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toast.error(err.message || "Failed to post job");
     },
   });
@@ -201,36 +187,22 @@ export function useJobApplications(jobId?: string) {
         .order("created_at", { ascending: false });
       if (error) throw error;
 
-      // Fetch applicant profiles
-      const applicantIds = [...new Set((data || []).map((a: any) => a.applicant_id))];
-      let profiles: any[] = [];
-      if (applicantIds.length > 0) {
-        const { data: profileData } = await (supabase as any)
-          .from("profiles_public")
-          .select("user_id, display_name, avatar_url")
-          .in("user_id", applicantIds);
-        profiles = profileData || [];
-      }
+      const applicantIds = [...new Set((data || []).map((a) => a.applicant_id))];
+      const profileMap = await fetchProfileMap(applicantIds);
 
-      // Fetch talent profiles
-      let talentProfiles: any[] = [];
+      let talentMap = new Map<string, Record<string, unknown>>();
       if (applicantIds.length > 0) {
         const { data: talentData } = await supabase
           .from("talent_profiles")
           .select("*")
           .in("user_id", applicantIds);
-        talentProfiles = talentData || [];
+        talentMap = new Map((talentData || []).map((t) => [t.user_id, t]));
       }
 
-      const profileMap = new Map(profiles.map((p: any) => [p.user_id, p]));
-      const talentMap = new Map(talentProfiles.map((t: any) => [t.user_id, t]));
-
-      return (data || []).map((app: any) => ({
+      return (data || []).map((app) => ({
         ...app,
         applicant_name: profileMap.get(app.applicant_id)?.display_name || "User",
         applicant_avatar: profileMap.get(app.applicant_id)?.avatar_url,
-        applicant_tier: profileMap.get(app.applicant_id)?.tier || 1,
-        applicant_tier_name: profileMap.get(app.applicant_id)?.tier_name || "Starter",
         talent_profile: talentMap.get(app.applicant_id),
       }));
     },
@@ -253,15 +225,13 @@ export function useApplyToJob() {
         .from("job_applications")
         .insert({ ...application, applicant_id: user!.id });
       if (error) throw error;
-
-      // Note: applicant_count is tracked via query count, no need to increment manually
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
       queryClient.invalidateQueries({ queryKey: ["job-applications"] });
       toast.success("Application submitted!");
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toast.error(err.message || "Failed to apply");
     },
   });
@@ -302,24 +272,13 @@ export function useTalentProfiles(skillFilter?: SkillCategory) {
       const { data, error } = await query;
       if (error) throw error;
 
-      const userIds = (data || []).map((t: any) => t.user_id);
-      let profiles: any[] = [];
-      if (userIds.length > 0) {
-        const { data: profileData } = await (supabase as any)
-          .from("profiles_public")
-          .select("user_id, display_name, avatar_url")
-          .in("user_id", userIds);
-        profiles = profileData || [];
-      }
+      const userIds = (data || []).map((t) => t.user_id);
+      const profileMap = await fetchProfileMap(userIds);
 
-      const profileMap = new Map(profiles.map((p: any) => [p.user_id, p]));
-
-      return (data || []).map((t: any) => ({
+      return (data || []).map((t) => ({
         ...t,
         display_name: profileMap.get(t.user_id)?.display_name || "Talent",
         avatar_url: profileMap.get(t.user_id)?.avatar_url,
-        tier: profileMap.get(t.user_id)?.tier || 1,
-        tier_name: profileMap.get(t.user_id)?.tier_name || "Starter",
       }));
     },
   });
@@ -358,7 +317,7 @@ export function useUpsertTalentProfile() {
     }) => {
       const { error } = await supabase
         .from("talent_profiles")
-        .upsert({ ...profile, user_id: user!.id } as any, { onConflict: "user_id" });
+        .upsert({ ...profile, user_id: user!.id }, { onConflict: "user_id" });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -366,7 +325,7 @@ export function useUpsertTalentProfile() {
       queryClient.invalidateQueries({ queryKey: ["talent-profiles"] });
       toast.success("Talent profile saved!");
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toast.error(err.message || "Failed to save profile");
     },
   });
@@ -384,18 +343,10 @@ export function useJobReviews(userId?: string) {
         .order("created_at", { ascending: false });
       if (error) throw error;
 
-      const reviewerIds = [...new Set((data || []).map((r: any) => r.reviewer_id))];
-      let profiles: any[] = [];
-      if (reviewerIds.length > 0) {
-        const { data: profileData } = await (supabase as any)
-          .from("profiles_public")
-          .select("user_id, display_name, avatar_url")
-          .in("user_id", reviewerIds);
-        profiles = profileData || [];
-      }
-      const profileMap = new Map(profiles.map((p: any) => [p.user_id, p]));
+      const reviewerIds = [...new Set((data || []).map((r) => r.reviewer_id))];
+      const profileMap = await fetchProfileMap(reviewerIds);
 
-      return (data || []).map((r: any) => ({
+      return (data || []).map((r) => ({
         ...r,
         reviewer_name: profileMap.get(r.reviewer_id)?.display_name || "User",
         reviewer_avatar: profileMap.get(r.reviewer_id)?.avatar_url,
@@ -424,7 +375,7 @@ export function useCreateReview() {
       queryClient.invalidateQueries({ queryKey: ["job-reviews"] });
       toast.success("Review submitted!");
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toast.error(err.message || "Failed to submit review");
     },
   });

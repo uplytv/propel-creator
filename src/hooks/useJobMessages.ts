@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect } from "react";
 import { toast } from "sonner";
+import { fetchProfileMap } from "@/lib/supabaseTyped";
 
 export interface JobConversation {
   id: string;
@@ -11,7 +12,6 @@ export interface JobConversation {
   applicant_id: string;
   created_at: string;
   updated_at: string;
-  // Joined
   job_title?: string;
   other_name?: string;
   other_avatar?: string;
@@ -47,26 +47,19 @@ export function useJobConversations() {
       const conversations = data || [];
       if (conversations.length === 0) return [];
 
-      // Fetch job titles
-      const jobIds = [...new Set(conversations.map((c: any) => c.job_id))];
+      const jobIds = [...new Set(conversations.map((c) => c.job_id))];
       const { data: jobs } = await supabase
         .from("jobs")
         .select("id, title")
         .in("id", jobIds);
-      const jobMap = new Map((jobs || []).map((j: any) => [j.id, j.title]));
+      const jobMap = new Map((jobs || []).map((j) => [j.id, j.title]));
 
-      // Fetch other user profiles
-      const otherIds = [...new Set(conversations.map((c: any) =>
+      const otherIds = [...new Set(conversations.map((c) =>
         c.creator_id === user!.id ? c.applicant_id : c.creator_id
       ))];
-      const { data: profiles } = await (supabase as any)
-        .from("profiles_public")
-        .select("user_id, display_name, avatar_url")
-        .in("user_id", otherIds);
-      const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
+      const profileMap = await fetchProfileMap(otherIds);
 
-      // Fetch last message + unread counts for each conversation
-      const enriched = await Promise.all(conversations.map(async (conv: any) => {
+      const enriched = await Promise.all(conversations.map(async (conv) => {
         const otherId = conv.creator_id === user!.id ? conv.applicant_id : conv.creator_id;
         const otherProfile = profileMap.get(otherId);
 
@@ -87,8 +80,8 @@ export function useJobConversations() {
         return {
           ...conv,
           job_title: jobMap.get(conv.job_id) || "Unknown Job",
-          other_name: (otherProfile as any)?.display_name || "User",
-          other_avatar: (otherProfile as any)?.avatar_url,
+          other_name: otherProfile?.display_name || "User",
+          other_avatar: otherProfile?.avatar_url,
           last_message: lastMsg?.[0]?.content,
           last_message_at: lastMsg?.[0]?.created_at,
           unread_count: count || 0,
@@ -115,19 +108,10 @@ export function useJobMessages(conversationId?: string) {
         .order("created_at", { ascending: true });
       if (error) throw error;
 
-      // Fetch sender profiles
-      const senderIds = [...new Set((data || []).map((m: any) => m.sender_id))];
-      let profiles: any[] = [];
-      if (senderIds.length > 0) {
-        const { data: profileData } = await (supabase as any)
-          .from("profiles_public")
-          .select("user_id, display_name, avatar_url")
-          .in("user_id", senderIds);
-        profiles = profileData || [];
-      }
-      const profileMap = new Map(profiles.map((p: any) => [p.user_id, p]));
+      const senderIds = [...new Set((data || []).map((m) => m.sender_id))];
+      const profileMap = await fetchProfileMap(senderIds);
 
-      return (data || []).map((msg: any) => ({
+      return (data || []).map((msg) => ({
         ...msg,
         sender_name: profileMap.get(msg.sender_id)?.display_name || "User",
         sender_avatar: profileMap.get(msg.sender_id)?.avatar_url,
@@ -135,7 +119,6 @@ export function useJobMessages(conversationId?: string) {
     },
   });
 
-  // Mark messages as read
   useEffect(() => {
     if (!conversationId || !user) return;
     supabase
@@ -149,7 +132,6 @@ export function useJobMessages(conversationId?: string) {
       });
   }, [conversationId, user, query.data]);
 
-  // Realtime subscription
   useEffect(() => {
     if (!conversationId) return;
     const channel = supabase
@@ -193,7 +175,6 @@ export function useSendJobMessage() {
         });
       if (error) throw error;
 
-      // Touch conversation updated_at
       await supabase
         .from("job_conversations")
         .update({ updated_at: new Date().toISOString() })
@@ -203,7 +184,7 @@ export function useSendJobMessage() {
       queryClient.invalidateQueries({ queryKey: ["job-messages", vars.conversationId] });
       queryClient.invalidateQueries({ queryKey: ["job-conversations"] });
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toast.error(err.message || "Failed to send message");
     },
   });
@@ -218,7 +199,6 @@ export function useStartConversation() {
       applicantId: string;
       initialMessage: string;
     }) => {
-      // Check if conversation already exists
       const { data: existing } = await supabase
         .from("job_conversations")
         .select("id")
@@ -244,7 +224,6 @@ export function useStartConversation() {
         conversationId = data.id;
       }
 
-      // Send the initial message
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
@@ -263,7 +242,7 @@ export function useStartConversation() {
       queryClient.invalidateQueries({ queryKey: ["job-conversations"] });
       toast.success("Message sent!");
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toast.error(err.message || "Failed to start conversation");
     },
   });
@@ -276,14 +255,13 @@ export function useUnreadJobMessageCount() {
     enabled: !!user,
     refetchInterval: 30000,
     queryFn: async () => {
-      // Get user's conversation IDs
       const { data: convs } = await supabase
         .from("job_conversations")
         .select("id")
         .or(`creator_id.eq.${user!.id},applicant_id.eq.${user!.id}`);
 
       if (!convs || convs.length === 0) return 0;
-      const convIds = convs.map((c: any) => c.id);
+      const convIds = convs.map((c) => c.id);
 
       const { count } = await supabase
         .from("job_messages")
