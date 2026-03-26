@@ -548,6 +548,7 @@ export default function Stream() {
                   streamId={id || ''} 
                   status={dbStream.status} 
                   creatorId={dbStream.user_id}
+                  creatorName={creatorName}
                 />
               )}
 
