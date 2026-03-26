@@ -62,7 +62,7 @@ export default function TimestampedComments({
     const loadComments = async () => {
       // Using community_comments as a proxy — in production, use a dedicated table
       const { data } = await supabase
-        .from("community_comments" as any)
+        .from("community_comments")
         .select("*")
         .eq("post_id", contentId)
         .order("created_at", { ascending: true });

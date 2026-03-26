@@ -27,7 +27,7 @@ export default function ScheduleStreamTab() {
     enabled: !!user,
     queryFn: async () => {
       const { data } = await supabase
-        .from("scheduled_streams" as any)
+        .from("scheduled_streams")
         .select("*")
         .eq("creator_id", user!.id)
         .order("scheduled_at", { ascending: true });
@@ -39,7 +39,7 @@ export default function ScheduleStreamTab() {
     if (!title.trim() || !scheduledAt || !user) return;
     setSaving(true);
     try {
-      const { error } = await supabase.from("scheduled_streams" as any).insert({
+      const { error } = await supabase.from("scheduled_streams").insert({
         creator_id: user.id,
         title: title.trim(),
         description: description.trim(),

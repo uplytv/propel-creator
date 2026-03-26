@@ -29,7 +29,7 @@ export function useNotificationPreferences() {
     queryKey: key,
     queryFn: async (): Promise<NotificationPrefs> => {
       const { data, error } = await supabase
-        .from("notification_preferences" as any)
+        .from("notification_preferences")
         .select("budget_warning, campaign_completed, weekly_report_email, new_follower_email, tip_received_email, member_joined_email")
         .eq("user_id", user!.id)
         .maybeSingle();
@@ -44,7 +44,7 @@ export function useNotificationPreferences() {
     mutationFn: async (prefs: Partial<NotificationPrefs>) => {
       if (!user) throw new Error("Not authenticated");
       const { error } = await supabase
-        .from("notification_preferences" as any)
+        .from("notification_preferences")
         .upsert(
           { user_id: user.id, ...prefs } as any,
           { onConflict: "user_id" }

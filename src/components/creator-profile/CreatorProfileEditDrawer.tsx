@@ -59,7 +59,7 @@ export default function CreatorProfileEditDrawer({ open, onOpenChange, profile, 
       const { error: uploadError } = await supabase.storage.from("covers").upload(path, file, { upsert: true });
       if (uploadError) throw uploadError;
       const { data: { publicUrl } } = supabase.storage.from("covers").getPublicUrl(path);
-      await supabase.from("profiles").update({ cover_image_url: publicUrl } as any).eq("user_id", profile.user_id);
+      await supabase.from("profiles").update({ cover_image_url: publicUrl }).eq("user_id", profile.user_id);
       queryClient.invalidateQueries({ queryKey: ["creator-public-profile"] });
       toast.success("Cover updated!");
     } catch (err: any) {
@@ -86,13 +86,13 @@ export default function CreatorProfileEditDrawer({ open, onOpenChange, profile, 
         username: username as any,
         bio,
         creator_type: creatorType,
-      } as any).eq("user_id", profile.user_id);
+      }).eq("user_id", profile.user_id);
 
       // Upsert social links — delete all first, then insert
-      await (supabase.from("social_links" as any) as any).delete().eq("user_id", profile.user_id);
+      await (supabase.from("social_links") as any).delete().eq("user_id", profile.user_id);
       const validLinks = links.filter(l => l.url.trim());
       if (validLinks.length > 0) {
-        await (supabase.from("social_links" as any) as any).insert(
+        await (supabase.from("social_links") as any).insert(
           validLinks.map(l => ({ user_id: profile.user_id, platform: l.platform, url: l.url.trim() }))
         );
       }

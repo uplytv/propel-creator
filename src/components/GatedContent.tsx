@@ -93,7 +93,7 @@ function FreeJoinCTA({
           creator_id: "",
           amount: 0,
           status: "completed",
-        } as any);
+        });
         onGranted();
       } catch {
         // silent

@@ -24,7 +24,7 @@ export default function InviteCodes() {
     if (!user) return;
     const fetch = async () => {
       const { data } = await supabase
-        .from("invite_codes" as any)
+        .from("invite_codes")
         .select("id, code, is_used, used_by")
         .eq("owner_id", user.id)
         .order("created_at") as any;

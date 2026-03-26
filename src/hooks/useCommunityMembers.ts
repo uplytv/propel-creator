@@ -8,13 +8,13 @@ export function useCommunityMembers(creatorId: string | undefined) {
     enabled: !!creatorId,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("community_members" as any)
+        .from("community_members")
         .select("*")
         .eq("creator_id", creatorId!)
         .order("joined_at", { ascending: false });
       if (error) throw error;
 
-      const members = (data || []) as any[];
+      const members = (data || []);
       const userIds = members.map((m) => m.user_id);
       if (userIds.length === 0) return [];
 
@@ -40,7 +40,7 @@ export function useMemberCount(creatorId: string | undefined) {
     enabled: !!creatorId,
     queryFn: async () => {
       const { count, error } = await supabase
-        .from("community_members" as any)
+        .from("community_members")
         .select("*", { count: "exact", head: true })
         .eq("creator_id", creatorId!);
       if (error) throw error;
@@ -56,7 +56,7 @@ export function useIsMember(creatorId: string | undefined) {
     enabled: !!creatorId && !!user,
     queryFn: async () => {
       const { data } = await supabase
-        .from("community_members" as any)
+        .from("community_members")
         .select("id")
         .eq("creator_id", creatorId!)
         .eq("user_id", user!.id)
@@ -74,8 +74,8 @@ export function useJoinCommunity() {
     mutationFn: async (creatorId: string) => {
       if (!user) throw new Error("Not authenticated");
       const { error } = await supabase
-        .from("community_members" as any)
-        .insert({ creator_id: creatorId, user_id: user.id } as any);
+        .from("community_members")
+        .insert({ creator_id: creatorId, user_id: user.id });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -94,7 +94,7 @@ export function useLeaveCommunity() {
     mutationFn: async (creatorId: string) => {
       if (!user) throw new Error("Not authenticated");
       const { error } = await supabase
-        .from("community_members" as any)
+        .from("community_members")
         .delete()
         .eq("creator_id", creatorId)
         .eq("user_id", user!.id);
@@ -114,7 +114,7 @@ export function useMemberPoints(creatorId: string | undefined, period?: "weekly"
     enabled: !!creatorId,
     queryFn: async () => {
       let query = supabase
-        .from("member_points" as any)
+        .from("member_points")
         .select("user_id, points")
         .eq("creator_id", creatorId!);
 
@@ -129,7 +129,7 @@ export function useMemberPoints(creatorId: string | undefined, period?: "weekly"
 
       // Aggregate by user
       const pointsMap = new Map<string, number>();
-      for (const row of (data || []) as any[]) {
+      for (const row of (data || [])) {
         pointsMap.set(row.user_id, (pointsMap.get(row.user_id) || 0) + row.points);
       }
 
@@ -142,7 +142,7 @@ export function useMemberPoints(creatorId: string | undefined, period?: "weekly"
       if (userIds.length === 0) return [];
 
       const { data: profiles } = await supabase
-        .from("profiles_public" as any)
+        .from("profiles_public")
         .select("user_id, display_name, avatar_url")
         .in("user_id", userIds);
 
@@ -163,12 +163,12 @@ export function useCommunityEvents(creatorId: string | undefined) {
     enabled: !!creatorId,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("community_events" as any)
+        .from("community_events")
         .select("*")
         .eq("creator_id", creatorId!)
         .order("event_date", { ascending: true });
       if (error) throw error;
-      return (data || []) as any[];
+      return (data || []);
     },
   });
 }
@@ -181,7 +181,7 @@ export function useCreateEvent() {
     mutationFn: async (event: { creator_id: string; title: string; description: string; event_date: string; event_time?: string; link?: string }) => {
       if (!user) throw new Error("Not authenticated");
       const { error } = await supabase
-        .from("community_events" as any)
+        .from("community_events")
         .insert(event as any);
       if (error) throw error;
     },

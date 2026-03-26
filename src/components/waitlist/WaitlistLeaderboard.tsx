@@ -22,20 +22,20 @@ export default function WaitlistLeaderboard({ currentEmail }: { currentEmail: st
 
   const fetchLeaderboard = async () => {
     const { data } = await supabase
-      .from("waitlist" as any)
+      .from("waitlist")
       .select("id, full_name, referral_count")
       .order("referral_count", { ascending: false })
       .limit(10) as any;
     if (data) setTop(data);
 
     const { data: me } = await supabase
-      .from("waitlist" as any)
+      .from("waitlist")
       .select("id, full_name, referral_count")
       .eq("email", currentEmail)
       .maybeSingle() as any;
     if (me) {
       const { count } = await supabase
-        .from("waitlist" as any)
+        .from("waitlist")
         .select("*", { count: "exact", head: true })
         .gt("referral_count", me.referral_count) as any;
       setCurrentUser({ ...me, rank: (count || 0) + 1 });

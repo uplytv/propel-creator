@@ -116,7 +116,7 @@ export default function StreamCountdownPage() {
     } else {
       await supabase
         .from('stream_reminders' as any)
-        .insert({ scheduled_stream_id: id, user_id: user.id } as any);
+        .insert({ scheduled_stream_id: id, user_id: user.id });
       setReminded(true);
       setReminderCount(prev => prev + 1);
       toast({ title: '🔔 Reminder set! We\'ll notify you 15 min before.' });

@@ -190,7 +190,7 @@ export default function Launchpad() {
                   name: name.trim(),
                   description: description || "",
                   cover_image_url: imageUrl || undefined,
-                } as any)
+                })
                 .eq("creator_id", user.id);
             } else {
               await supabase
@@ -203,7 +203,7 @@ export default function Launchpad() {
                   name: name.trim(),
                   description: description || "",
                   cover_image_url: imageUrl || undefined,
-                } as any);
+                });
             }
           }
           setCreating(false);

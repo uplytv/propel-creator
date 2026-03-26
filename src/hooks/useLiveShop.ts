@@ -137,7 +137,7 @@ export function useLiveShop(streamId: string | undefined) {
         creator_id: product.creator_id,
         starting_bid: product.starting_bid || product.price,
         ends_at: endsAt,
-      } as any);
+      });
     }
 
     toast({ title: "Product activated!", description: `${product.title} is now live.` });
@@ -184,7 +184,7 @@ export function useLiveShop(streamId: string | undefined) {
       stream_id: streamId,
       creator_id: user.id,
       title,
-    } as any);
+    });
     toast({ title: "Giveaway started!", description: `"${title}" is now live.` });
   }, [streamId, user, toast]);
 
@@ -212,7 +212,7 @@ export function useLiveShop(streamId: string | undefined) {
       giveaway_id: giveawayId,
       user_id: user.id,
       username: profile?.display_name || "Anonymous",
-    } as any);
+    });
 
     if (error) {
       if (error.code === "23505") {

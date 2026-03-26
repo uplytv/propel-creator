@@ -44,14 +44,14 @@ export default function WaitlistPage() {
 
     const [profRes, configRes] = await Promise.all([
       supabase.from("profiles").select("referral_code, first_name, last_name, display_name, is_approved, avatar_url, role_type, origin_member, username").eq("user_id", user.id).single(),
-      supabase.from("waitlist_config" as any).select("*").limit(1).single(),
+      supabase.from("waitlist_config").select("*").limit(1).single(),
     ]);
     setProfile(profRes.data);
     setConfig(configRes.data);
 
     // Get waitlist position
     const { data: wlEntry } = await supabase
-      .from("waitlist" as any)
+      .from("waitlist")
       .select("position, referral_count")
       .eq("email", user.email)
       .order("created_at", { ascending: false })
@@ -64,7 +64,7 @@ export default function WaitlistPage() {
     } else {
       // Fallback to referrals table
       const { count: refCount } = await supabase
-        .from("referrals" as any)
+        .from("referrals")
         .select("*", { count: "exact", head: true })
         .eq("referrer_id", user.id) as any;
       setReferralCount(refCount || 0);
@@ -72,7 +72,7 @@ export default function WaitlistPage() {
 
     // Get total waitlist
     const { count: wlCount } = await supabase
-      .from("waitlist" as any)
+      .from("waitlist")
       .select("*", { count: "exact", head: true }) as any;
     setTotalWaitlist(wlCount || 0);
 
@@ -87,7 +87,7 @@ export default function WaitlistPage() {
 
     // Leaderboard from waitlist table
     const { data: topReferrers } = await supabase
-      .from("waitlist" as any)
+      .from("waitlist")
       .select("id, full_name, referral_count")
       .gt("referral_count", 0)
       .order("referral_count", { ascending: false })

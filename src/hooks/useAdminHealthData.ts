@@ -67,7 +67,7 @@ export function useAdminOverview(range: DateRange) {
         ),
         safeCount(supabase.from("waitlist").select("*", { count: "exact", head: true })),
         safeData(supabase.from("waitlist").select("created_at, referral_count, referred_by, early_access").order("created_at", { ascending: false }).limit(1000)),
-        safeData(supabase.from("stripe_webhook_log" as any).select("id, status, created_at").gte("created_at", subDays(new Date(), 1).toISOString())),
+        safeData(supabase.from("stripe_webhook_log").select("id, status, created_at").gte("created_at", subDays(new Date(), 1).toISOString())),
         safeData(supabase.from("member_subscriptions").select("id, member_id, creator_id, created_at, status").order("created_at", { ascending: false }).limit(20)),
         safeData(supabase.from("mux_live_streams").select("id, title, user_id, status, created_at").order("created_at", { ascending: false }).limit(20)),
         safeData(supabase.from("tip_transactions").select("id, sender_id, receiver_id, amount, created_at").order("created_at", { ascending: false }).limit(20)),
@@ -75,19 +75,19 @@ export function useAdminOverview(range: DateRange) {
         safeData(supabase.from("waitlist").select("full_name, email, created_at, referral_code, referred_by").order("created_at", { ascending: false }).limit(20)),
       ]);
 
-      const transactions = results[0] as any[];
-      const prevTransactions = results[1] as any[];
-      const activeCreatorSpaces = results[2] as any[];
-      const activeMembers = results[3] as number;
-      const prevActiveMembers = results[4] as number;
-      const waitlistCount = results[5] as number;
-      const waitlistData = results[6] as any[];
-      const webhookLogs = results[7] as any[];
-      const recentSubs = results[8] as any[];
-      const recentStreams = results[9] as any[];
-      const recentTips = results[10] as any[];
-      const recentBlasts = results[11] as any[];
-      const recentWaitlist = results[12] as any[];
+      const transactions = results[0];
+      const prevTransactions = results[1];
+      const activeCreatorSpaces = results[2];
+      const activeMembers = results[3];
+      const prevActiveMembers = results[4];
+      const waitlistCount = results[5];
+      const waitlistData = results[6];
+      const webhookLogs = results[7];
+      const recentSubs = results[8];
+      const recentStreams = results[9];
+      const recentTips = results[10];
+      const recentBlasts = results[11];
+      const recentWaitlist = results[12];
 
       const succeeded = transactions.filter((t: any) => t.status === "succeeded" || t.status === "completed");
       const prevSucceeded = (prevTransactions as any[]).filter((t: any) => t.status === "succeeded" || t.status === "completed");
@@ -211,7 +211,7 @@ export function useAdminRevenue(range: DateRange) {
         safeData(supabase.from("tip_transactions").select("amount, created_at").order("created_at", { ascending: true }).limit(1000)),
         safeData(supabase.from("live_purchases").select("amount, platform_fee, creator_earnings, created_at").order("created_at", { ascending: true }).limit(1000)),
         safeData(supabase.from("tickets").select("amount, created_at").order("created_at", { ascending: true }).limit(1000)),
-        safeData(supabase.from("stripe_webhook_log" as any).select("id, status, event_type, error_message, created_at").order("created_at", { ascending: false }).limit(100)),
+        safeData(supabase.from("stripe_webhook_log").select("id, status, event_type, error_message, created_at").order("created_at", { ascending: false }).limit(100)),
         safeData(supabase.from("creator_stripe_accounts").select("id, charges_enabled, details_submitted, payouts_enabled")),
       ]);
 
@@ -484,7 +484,7 @@ export function useAdminTechnical(range: DateRange) {
         emailLogs,
         emailState,
       ] = await Promise.all([
-        safeData(supabase.from("stripe_webhook_log" as any).select("id, event_type, status, error_message, created_at, attempts").order("created_at", { ascending: false }).limit(200)),
+        safeData(supabase.from("stripe_webhook_log").select("id, event_type, status, error_message, created_at, attempts").order("created_at", { ascending: false }).limit(200)),
         safeData(supabase.from("creator_stripe_accounts").select("id, charges_enabled, details_submitted, payouts_enabled")),
         safeCount(supabase.from("mux_live_streams").select("*", { count: "exact", head: true }).eq("status", "active")),
         safeCount(supabase.from("stream_recordings").select("*", { count: "exact", head: true }).eq("is_published", false)),

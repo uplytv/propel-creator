@@ -14,7 +14,7 @@ const LiveSignupTicker = forwardRef<HTMLDivElement>(function LiveSignupTicker(_p
   useEffect(() => {
     const fetchRecent = async () => {
       const { data } = await supabase
-        .from("waitlist" as any)
+        .from("waitlist")
         .select("full_name, created_at")
         .order("created_at", { ascending: false })
         .limit(10) as any;

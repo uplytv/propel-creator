@@ -30,7 +30,7 @@ export function SubscriptionsTab() {
 
       const creatorIds = [...new Set((data || []).map((s: any) => s.creator_id))];
       const { data: profiles } = await supabase
-        .from("profiles" as any)
+        .from("profiles")
         .select("user_id, display_name, avatar_url, username")
         .in("user_id", creatorIds);
 

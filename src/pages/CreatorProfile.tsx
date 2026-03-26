@@ -88,14 +88,14 @@ function useCreatorProfileData(username: string | undefined) {
     queryKey: ["creator-live-status", userId],
     queryFn: async () => {
       const { data } = await supabase
-        .from("mux_live_streams_public" as any)
+        .from("mux_live_streams_public")
         .select("*")
         .eq("user_id", userId!)
         .eq("status", "active")
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
-      return data as any;
+      return data;
     },
     enabled: !!userId,
   });

@@ -59,7 +59,7 @@ export function useProductPurchase(productId: string | undefined) {
     enabled: !!productId && !!user,
     queryFn: async () => {
       const { data } = await supabase
-        .from("product_purchases" as any)
+        .from("product_purchases")
         .select("id")
         .eq("product_id", productId!)
         .eq("buyer_id", user!.id)
@@ -74,7 +74,7 @@ export function useCreditPackages() {
     queryKey: ["credit-packages"],
     queryFn: async () => {
       const { data } = await supabase
-        .from("credit_packages" as any)
+        .from("credit_packages")
         .select("*")
         .order("price_usd", { ascending: true });
       return data || [];

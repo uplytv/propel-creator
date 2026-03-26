@@ -160,7 +160,7 @@ export default function AdminFeatureToggles() {
       target_id: selectedCategory,
       old_value: { enabled: !enabled },
       new_value: { enabled },
-    } as any);
+    });
 
     queryClient.invalidateQueries({ queryKey: ["admin-category-defaults", selectedCategory] });
     queryClient.invalidateQueries({ queryKey: ["admin-audit-log"] });

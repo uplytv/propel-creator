@@ -35,13 +35,13 @@ export default function AdminWaitlistTab() {
       const enriched = await Promise.all(
         (profiles as any[]).map(async (p) => {
           const { count } = await supabase
-            .from("referrals" as any)
+            .from("referrals")
             .select("*", { count: "exact", head: true })
             .eq("referrer_id", p.user_id) as any;
 
           // Get who referred them
           const { data: refData } = await supabase
-            .from("referrals" as any)
+            .from("referrals")
             .select("referrer_id")
             .eq("referred_id", p.user_id)
             .maybeSingle() as any;
@@ -58,7 +58,7 @@ export default function AdminWaitlistTab() {
 
           // Count invite codes used
           const { count: codesUsed } = await supabase
-            .from("invite_codes" as any)
+            .from("invite_codes")
             .select("*", { count: "exact", head: true })
             .eq("owner_id", p.user_id)
             .eq("is_used", true) as any;

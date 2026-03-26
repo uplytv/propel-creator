@@ -191,11 +191,11 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
     queryKey: ["space-media", creatorId],
     queryFn: async () => {
       const { data } = await supabase
-        .from("space_media" as any)
+        .from("space_media")
         .select("*")
         .eq("creator_id", creatorId)
         .order("position", { ascending: true });
-      return (data || []) as any[];
+      return (data || []);
     },
   });
 
@@ -286,8 +286,8 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
         ? Math.max(...galleryMedia.map((m: any) => m.position)) + 1 : 0;
 
       const { error: insertError } = await supabase
-        .from("space_media" as any)
-        .insert({ creator_id: ownerId, media_type: isVideo ? "video" : "image", url: urlData.publicUrl, position: maxPos } as any);
+        .from("space_media")
+        .insert({ creator_id: ownerId, media_type: isVideo ? "video" : "image", url: urlData.publicUrl, position: maxPos });
       if (insertError) throw insertError;
 
       await queryClient.invalidateQueries({ queryKey: ["space-media", creatorId] });
@@ -308,7 +308,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
       // Try gallery first, then mux asset
       const item = thumbnails.find((t) => t.id === mediaId);
       if (item?.source === "gallery") {
-        const { error } = await supabase.from("space_media" as any).delete().eq("id", mediaId);
+        const { error } = await supabase.from("space_media").delete().eq("id", mediaId);
         if (error) throw error;
       } else if (item?.source === "mux") {
         // Remove from content library display (hide, don't delete the actual asset)
@@ -328,7 +328,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
     mutationFn: async (newOrder: { id: string; position: number }[]) => {
       await Promise.all(
         newOrder.map((item) =>
-          supabase.from("space_media" as any).update({ position: item.position } as any).eq("id", item.id)
+          supabase.from("space_media").update({ position: item.position }).eq("id", item.id)
         )
       );
     },

@@ -51,7 +51,7 @@ export default function CreatorTestimonials({ creatorId, isOwner }: { creatorId:
     queryKey: ["creator-reviews", creatorId],
     queryFn: async () => {
       const { data } = await supabase
-        .from("creator_reviews" as any)
+        .from("creator_reviews")
         .select("*")
         .eq("creator_id", creatorId)
         .order("created_at", { ascending: false })
@@ -81,12 +81,12 @@ export default function CreatorTestimonials({ creatorId, isOwner }: { creatorId:
   const submitMutation = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Login required");
-      const { error } = await supabase.from("creator_reviews" as any).insert({
+      const { error } = await supabase.from("creator_reviews").insert({
         creator_id: creatorId,
         reviewer_id: user.id,
         rating,
         body: body.trim(),
-      } as any);
+      });
       if (error) throw error;
     },
     onSuccess: () => {

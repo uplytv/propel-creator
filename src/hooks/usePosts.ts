@@ -77,7 +77,7 @@ export function useCreatePost() {
         user_id: user.id,
         content,
         category,
-      } as any);
+      });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -100,7 +100,7 @@ export function useLikePost() {
 
       const { error } = await supabase
         .from("posts")
-        .update({ like_count: ((data as any)?.like_count || 0) + 1 } as any)
+        .update({ like_count: ((data as any)?.like_count || 0) + 1 })
         .eq("id", postId);
       if (error) throw error;
     },

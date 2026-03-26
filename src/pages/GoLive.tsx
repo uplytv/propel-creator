@@ -95,7 +95,7 @@ export default function GoLive() {
       if (featuredProductId && data?.streamId) {
         await supabase
           .from('mux_live_streams')
-          .update({ featured_product_id: featuredProductId } as any)
+          .update({ featured_product_id: featuredProductId })
           .eq('id', data.streamId);
       }
 
@@ -319,7 +319,7 @@ export default function GoLive() {
                 if (streamData) {
                   await supabase
                     .from('mux_live_streams')
-                    .update({ featured_product_id: productId } as any)
+                    .update({ featured_product_id: productId })
                     .eq('id', streamData.streamId);
                 }
               }}

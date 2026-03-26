@@ -77,7 +77,7 @@ export function useDiscoveryFeed(
         // Live streams
         (filter === "all" || filter === "livestream")
           ? supabase
-              .from("mux_live_streams_public" as any)
+              .from("mux_live_streams_public")
               .select("*")
               .eq("is_public", true)
               .eq("status", "active")
@@ -88,7 +88,7 @@ export function useDiscoveryFeed(
         // Products
         (filter === "all" || filter === "course" || filter === "community" || filter === "service")
           ? supabase
-              .from("products_public" as any)
+              .from("products_public")
               .select("*")
               .order("created_at", { ascending: false })
               .limit(30)
@@ -107,7 +107,7 @@ export function useDiscoveryFeed(
         // Creators
         (filter === "all" || filter === "creator")
           ? supabase
-              .from("profiles_public" as any)
+              .from("profiles_public")
               .select("user_id, display_name, username, avatar_url, bio, creator_type, tier, tier_name, created_at")
               .not("display_name", "is", null)
               .order("created_at", { ascending: false })
@@ -158,7 +158,7 @@ export function useDiscoveryFeed(
       const [profilesRes, memberCountsRes] = await Promise.all([
         userIds.size > 0
           ? supabase
-              .from("profiles_public" as any)
+              .from("profiles_public")
               .select("user_id, display_name, username, avatar_url, creator_type")
               .in("user_id", Array.from(userIds))
           : Promise.resolve({ data: [] }),

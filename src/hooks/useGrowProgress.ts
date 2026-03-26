@@ -70,7 +70,7 @@ export function useUpdateGrowProgress() {
             streak_days: streakDays,
             last_activity_date: today,
             updated_at: new Date().toISOString(),
-          } as any)
+          })
           .eq("user_id", user.id);
         if (error) throw error;
       } else {
@@ -79,7 +79,7 @@ export function useUpdateGrowProgress() {
           completed_tasks: completedTasks,
           streak_days: streakDays,
           last_activity_date: today,
-        } as any);
+        });
         if (error) throw error;
       }
     },

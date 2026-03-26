@@ -271,10 +271,10 @@ export function useUpdateApplicationStatus() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+    mutationFn: async ({ id, status }: { id: string; status: "pending" | "reviewed" | "shortlisted" | "hired" | "rejected" }) => {
       const { error } = await supabase
         .from("job_applications")
-        .update({ status } as any)
+        .update({ status })
         .eq("id", id);
       if (error) throw error;
     },

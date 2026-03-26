@@ -69,7 +69,7 @@ export default function BlastComposer({ open, onClose, creatorId, spaceId, lastB
     if (!open) return;
     (async () => {
       const { count } = await supabase
-        .from("community_members" as any)
+        .from("community_members")
         .select("*", { count: "exact", head: true })
         .eq("creator_id", creatorId)
         .eq("email_opt_in", true);
@@ -198,7 +198,7 @@ export default function BlastComposer({ open, onClose, creatorId, spaceId, lastB
     try {
       // Create blast record
       const { data: blast, error: blastErr } = await supabase
-        .from("community_blasts" as any)
+        .from("community_blasts")
         .insert({
           creator_id: creatorId,
           space_id: spaceId,
@@ -208,7 +208,7 @@ export default function BlastComposer({ open, onClose, creatorId, spaceId, lastB
           media_url: mediaUrl,
           mux_asset_id: muxAssetId,
           mux_playback_id: muxPlaybackId,
-        } as any)
+        })
         .select()
         .single();
 

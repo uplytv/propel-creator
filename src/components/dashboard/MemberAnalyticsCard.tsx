@@ -41,7 +41,7 @@ export function MemberAnalyticsCard() {
         supabase.from("community_posts").select("author_id").eq("creator_id", user!.id).in("author_id", userIds),
         supabase.from("community_comments").select("author_id").in("author_id", userIds),
         supabase.from("community_post_likes").select("user_id").in("user_id", userIds),
-        supabase.from("profiles_public" as any).select("user_id, display_name, avatar_url").in("user_id", userIds),
+        supabase.from("profiles_public").select("user_id, display_name, avatar_url").in("user_id", userIds),
       ]);
 
       const profileMap = new Map((profilesRes.data || []).map((p: any) => [p.user_id, p]));

@@ -44,7 +44,7 @@ export default function PaidDMModal({ open, onClose, creatorId, creatorName, pri
         const platformFee = price * 0.05;
         const creatorEarnings = price - platformFee;
 
-        await supabase.from("paid_dms" as any).insert({
+        await supabase.from("paid_dms").insert({
           sender_id: user.id,
           creator_id: creatorId,
           message: message.trim(),

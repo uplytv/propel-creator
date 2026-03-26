@@ -8,7 +8,7 @@ export default function WaitlistLiveCounter() {
   useEffect(() => {
     const fetchCount = async () => {
       const { count: total } = await supabase
-        .from("waitlist" as any)
+        .from("waitlist")
         .select("*", { count: "exact", head: true });
       if (total !== null) setCount(total);
     };
