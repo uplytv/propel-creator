@@ -44,7 +44,7 @@ export function useMarkReportRead() {
     mutationFn: async (reportId: string) => {
       const { error } = await supabase
         .from("weekly_growth_reports")
-        .update({ read: true } as any)
+        .update({ read: true })
         .eq("id", reportId);
       if (error) throw error;
     },

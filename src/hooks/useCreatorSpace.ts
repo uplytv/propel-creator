@@ -33,7 +33,7 @@ export function useEnsureSpace() {
       if (existing) return existing;
       const { data, error } = await supabase
         .from("creator_spaces")
-        .insert({ creator_id: user.id } as any)
+        .insert({ creator_id: user.id })
         .select()
         .single();
       if (error) throw error;
@@ -113,7 +113,7 @@ export function useCreateCommunityPost() {
       if (!user) throw new Error("Not authenticated");
       const { error } = await supabase
         .from("community_posts")
-        .insert({ ...post, author_id: user.id } as any);
+        .insert({ ...post, author_id: user.id });
       if (error) throw error;
       // Award points
       await supabase.from("member_points").insert({
@@ -148,16 +148,16 @@ export function useToggleLike() {
         await supabase.from("community_post_likes").delete().eq("id", (existing as any).id);
         await supabase
           .from("community_posts")
-          .update({ like_count: supabase.rpc as any } as any)
+          .update({ like_count: supabase.rpc as any })
           .eq("id", postId);
         // Decrement manually
         const { data: post } = await supabase.from("community_posts").select("like_count").eq("id", postId).single();
-        await supabase.from("community_posts").update({ like_count: Math.max(0, ((post as any)?.like_count || 1) - 1) } as any).eq("id", postId);
+        await supabase.from("community_posts").update({ like_count: Math.max(0, ((post as any)?.like_count || 1) - 1) }).eq("id", postId);
         return { liked: false };
       } else {
-        await supabase.from("community_post_likes").insert({ post_id: postId, user_id: user.id } as any);
+        await supabase.from("community_post_likes").insert({ post_id: postId, user_id: user.id });
         const { data: post } = await supabase.from("community_posts").select("like_count").eq("id", postId).single();
-        await supabase.from("community_posts").update({ like_count: ((post as any)?.like_count || 0) + 1 } as any).eq("id", postId);
+        await supabase.from("community_posts").update({ like_count: ((post as any)?.like_count || 0) + 1 }).eq("id", postId);
         // Award points
         await supabase.from("member_points").insert({
           user_id: user.id,
@@ -230,10 +230,10 @@ export function useCreateComment() {
   return useMutation({
     mutationFn: async ({ postId, body, creatorId }: { postId: string; body: string; creatorId: string }) => {
       if (!user) throw new Error("Not authenticated");
-      await supabase.from("community_comments").insert({ post_id: postId, author_id: user.id, body } as any);
+      await supabase.from("community_comments").insert({ post_id: postId, author_id: user.id, body });
       // Update comment count
       const { data: post } = await supabase.from("community_posts").select("comment_count").eq("id", postId).single();
-      await supabase.from("community_posts").update({ comment_count: ((post as any)?.comment_count || 0) + 1 } as any).eq("id", postId);
+      await supabase.from("community_posts").update({ comment_count: ((post as any)?.comment_count || 0) + 1 }).eq("id", postId);
       // Award points
       await supabase.from("member_points").insert({
         user_id: user.id,
@@ -272,7 +272,7 @@ export function useTogglePin() {
     mutationFn: async ({ postId, isPinned }: { postId: string; isPinned: boolean }) => {
       const { error } = await supabase
         .from("community_posts")
-        .update({ is_pinned: !isPinned } as any)
+        .update({ is_pinned: !isPinned })
         .eq("id", postId);
       if (error) throw error;
     },

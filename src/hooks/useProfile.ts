@@ -83,7 +83,7 @@ export function useUploadAvatar() {
 
       const { error: updateError } = await supabase
         .from("profiles")
-        .update({ avatar_url: urlWithCacheBust } as any)
+        .update({ avatar_url: urlWithCacheBust })
         .eq("user_id", user.id);
       if (updateError) throw updateError;
 

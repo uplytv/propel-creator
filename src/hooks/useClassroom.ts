@@ -65,7 +65,7 @@ export function useCompleteLesson() {
       if (!user) throw new Error("Not authenticated");
       const { error } = await supabase
         .from("lesson_completions")
-        .insert({ lesson_id: lessonId, user_id: user.id } as any);
+        .insert({ lesson_id: lessonId, user_id: user.id });
       if (error && !error.message.includes("duplicate")) throw error;
       await supabase.from("member_points").insert({
         user_id: user.id, creator_id: creatorId, action_type: "lesson_complete", points: 10,
@@ -92,7 +92,7 @@ export function useCreateModule() {
       const nextPos = existing && (existing as any[]).length > 0 ? (existing as any[])[0].position + 1 : 0;
       const { data, error } = await supabase
         .from("classroom_modules")
-        .insert({ creator_id: creatorId, title, description, position: nextPos, is_free: is_free ?? true } as any)
+        .insert({ creator_id: creatorId, title, description, position: nextPos, is_free: is_free ?? true })
         .select()
         .maybeSingle();
       if (error) {
@@ -123,7 +123,7 @@ export function useCreateLesson() {
       const nextPos = existing && (existing as any[]).length > 0 ? (existing as any[])[0].position + 1 : 0;
       const { error } = await supabase
         .from("classroom_lessons")
-        .insert({ ...lesson, position: nextPos } as any);
+        .insert({ ...lesson, position: nextPos });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -138,7 +138,7 @@ export function useUpdateModule() {
     mutationFn: async ({ id, title, description }: { id: string; title: string; description: string }) => {
       const { error } = await supabase
         .from("classroom_modules")
-        .update({ title, description } as any)
+        .update({ title, description })
         .eq("id", id);
       if (error) throw error;
     },
@@ -172,7 +172,7 @@ export function useReorderModules() {
   return useMutation({
     mutationFn: async (modules: { id: string; position: number }[]) => {
       const promises = modules.map((m) =>
-        supabase.from("classroom_modules").update({ position: m.position } as any).eq("id", m.id)
+        supabase.from("classroom_modules").update({ position: m.position }).eq("id", m.id)
       );
       await Promise.all(promises);
     },
@@ -187,7 +187,7 @@ export function useReorderLessons() {
   return useMutation({
     mutationFn: async (lessons: { id: string; position: number }[]) => {
       const promises = lessons.map((l) =>
-        supabase.from("classroom_lessons").update({ position: l.position } as any).eq("id", l.id)
+        supabase.from("classroom_lessons").update({ position: l.position }).eq("id", l.id)
       );
       await Promise.all(promises);
     },

@@ -147,7 +147,7 @@ export function useAdminNotifConfig() {
     mutationFn: async (params: { event_type: string; field: string; value: any }) => {
       const { error } = await supabase
         .from("admin_notification_config")
-        .update({ [params.field]: params.value } as any)
+        .update({ [params.field]: params.value })
         .eq("admin_id", user!.id)
         .eq("event_type", params.event_type);
       if (error) throw error;

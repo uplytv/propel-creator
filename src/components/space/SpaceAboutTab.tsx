@@ -287,7 +287,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
 
       const { error: insertError } = await supabase
         .from("space_media")
-        .insert({ creator_id: ownerId, media_type: isVideo ? "video" : "image", url: urlData.publicUrl, position: maxPos } as any);
+        .insert({ creator_id: ownerId, media_type: isVideo ? "video" : "image", url: urlData.publicUrl, position: maxPos });
       if (insertError) throw insertError;
 
       await queryClient.invalidateQueries({ queryKey: ["space-media", creatorId] });
@@ -328,7 +328,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
     mutationFn: async (newOrder: { id: string; position: number }[]) => {
       await Promise.all(
         newOrder.map((item) =>
-          supabase.from("space_media").update({ position: item.position } as any).eq("id", item.id)
+          supabase.from("space_media").update({ position: item.position }).eq("id", item.id)
         )
       );
     },

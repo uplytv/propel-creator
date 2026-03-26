@@ -158,27 +158,27 @@ export default function AdminUsers() {
     try {
       if (type === "approve") {
         for (const id of ids) {
-          await supabase.from("profiles").update({ is_approved: true } as any).eq("user_id", id);
+          await supabase.from("profiles").update({ is_approved: true }).eq("user_id", id);
         }
         await sendApprovalEmail(ids);
         toast.success(`Approved ${ids.length} user(s) — notification email sent`);
       } else if (type === "revoke") {
         for (const id of ids) {
-          await supabase.from("profiles").update({ is_approved: false } as any).eq("user_id", id);
+          await supabase.from("profiles").update({ is_approved: false }).eq("user_id", id);
         }
         toast.success(`Revoked access for ${ids.length} user(s)`);
       } else if (type === "approve-all") {
         const pending = users.filter(u => !u.is_approved);
         const pendingIds = pending.map(u => u.user_id);
         for (const u of pending) {
-          await supabase.from("profiles").update({ is_approved: true } as any).eq("user_id", u.user_id);
+          await supabase.from("profiles").update({ is_approved: true }).eq("user_id", u.user_id);
         }
         if (pendingIds.length > 0) await sendApprovalEmail(pendingIds);
         toast.success(`Approved all ${pending.length} pending users — emails sent`);
       } else if (type === "revoke-all") {
         const approved = users.filter(u => u.is_approved && !u.roles.includes("admin"));
         for (const u of approved) {
-          await supabase.from("profiles").update({ is_approved: false } as any).eq("user_id", u.user_id);
+          await supabase.from("profiles").update({ is_approved: false }).eq("user_id", u.user_id);
         }
         toast.success(`Revoked access for ${approved.length} users`);
       }

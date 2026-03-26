@@ -59,7 +59,7 @@ export default function CreatorProfileEditDrawer({ open, onOpenChange, profile, 
       const { error: uploadError } = await supabase.storage.from("covers").upload(path, file, { upsert: true });
       if (uploadError) throw uploadError;
       const { data: { publicUrl } } = supabase.storage.from("covers").getPublicUrl(path);
-      await supabase.from("profiles").update({ cover_image_url: publicUrl } as any).eq("user_id", profile.user_id);
+      await supabase.from("profiles").update({ cover_image_url: publicUrl }).eq("user_id", profile.user_id);
       queryClient.invalidateQueries({ queryKey: ["creator-public-profile"] });
       toast.success("Cover updated!");
     } catch (err: any) {

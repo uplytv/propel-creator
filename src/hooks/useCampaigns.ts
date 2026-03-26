@@ -93,7 +93,7 @@ export function useCampaigns() {
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const { error } = await supabase
         .from("campaigns")
-        .update({ status, updated_at: new Date().toISOString() } as any)
+        .update({ status, updated_at: new Date().toISOString() })
         .eq("id", id);
       if (error) throw error;
     },

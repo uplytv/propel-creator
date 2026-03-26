@@ -249,7 +249,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
       const { error: uploadError } = await supabase.storage.from("covers").upload(path, file, { upsert: true, contentType: file.type });
       if (uploadError) throw uploadError;
       const { data: urlData } = supabase.storage.from("covers").getPublicUrl(path);
-      const { error: updateError } = await supabase.from("classroom_modules").update({ cover_image_url: urlData.publicUrl } as any).eq("id", moduleId);
+      const { error: updateError } = await supabase.from("classroom_modules").update({ cover_image_url: urlData.publicUrl }).eq("id", moduleId);
       if (updateError) throw updateError;
       queryClient.invalidateQueries({ queryKey: ["classroom-modules"] });
       toast({ title: "Cover image updated!" });

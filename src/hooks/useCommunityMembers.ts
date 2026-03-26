@@ -75,7 +75,7 @@ export function useJoinCommunity() {
       if (!user) throw new Error("Not authenticated");
       const { error } = await supabase
         .from("community_members")
-        .insert({ creator_id: creatorId, user_id: user.id } as any);
+        .insert({ creator_id: creatorId, user_id: user.id });
       if (error) throw error;
     },
     onSuccess: () => {

@@ -274,7 +274,7 @@ export function useUpdateApplicationStatus() {
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const { error } = await supabase
         .from("job_applications")
-        .update({ status } as any)
+        .update({ status })
         .eq("id", id);
       if (error) throw error;
     },
