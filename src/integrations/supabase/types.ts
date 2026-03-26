@@ -1829,6 +1829,33 @@ export type Database = {
         }
         Relationships: []
       }
+      creator_reviews: {
+        Row: {
+          body: string
+          created_at: string
+          creator_id: string
+          id: string
+          rating: number
+          reviewer_id: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          creator_id: string
+          id?: string
+          rating: number
+          reviewer_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          creator_id?: string
+          id?: string
+          rating?: number
+          reviewer_id?: string
+        }
+        Relationships: []
+      }
       creator_spaces: {
         Row: {
           avatar_url: string | null

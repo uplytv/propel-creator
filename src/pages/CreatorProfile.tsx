@@ -14,6 +14,8 @@ import {
   ExternalLink, Users, BookOpen, FileText, Pencil, ShoppingBag, Loader2 as BuyLoader
 } from "lucide-react";
 import CreatorProfileEditDrawer from "@/components/creator-profile/CreatorProfileEditDrawer";
+import CreatorMilestones from "@/components/creator-profile/CreatorMilestones";
+import CreatorTestimonials from "@/components/creator-profile/CreatorTestimonials";
 import SEOHead from "@/components/SEOHead";
 import { useToast } from "@/hooks/use-toast";
 import { CalendarDays } from "lucide-react";
@@ -870,8 +872,14 @@ export default function CreatorProfile() {
         </section>
       )}
 
+      {/* MILESTONES */}
+      {profile?.user_id && <CreatorMilestones creatorId={profile.user_id} />}
+
       {/* EVENTS */}
       <CreatorProfileEvents username={username} />
+
+      {/* TESTIMONIALS */}
+      {profile?.user_id && <CreatorTestimonials creatorId={profile.user_id} isOwner={!!isOwner} />}
 
       {/* MOBILE STICKY BOTTOM BAR */}
       <AnimatePresence>
