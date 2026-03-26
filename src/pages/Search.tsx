@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Search as SearchIcon, X, Users, Package, Radio, Film, Briefcase, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { useSearch, SearchResult } from "@/hooks/useSearch";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import BackNav from "@/components/BackNav";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const typeIcon: Record<string, typeof Users> = {
   creator: Users,
@@ -24,16 +25,27 @@ const typeLabel: Record<string, string> = {
   job: "Job",
 };
 
+const filterOptions = [
+  { value: "all", label: "All" },
+  { value: "creator", label: "Creators" },
+  { value: "product", label: "Products" },
+  { value: "stream", label: "Streams" },
+  { value: "recording", label: "Recordings" },
+  { value: "job", label: "Jobs" },
+] as const;
+
+type FilterType = typeof filterOptions[number]["value"];
+
 export default function SearchPage() {
   const { query, search, results, loading } = useSearch();
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
+  const [activeFilter, setActiveFilter] = useState<FilterType>("all");
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  // Debounce search
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const handleChange = (val: string) => {
     clearTimeout(timeoutRef.current);
@@ -44,9 +56,18 @@ export default function SearchPage() {
     navigate(result.link);
   };
 
+  // Apply filter
+  const filtered = activeFilter === "all" ? results : results.filter(r => r.type === activeFilter);
+
   // Group results by type
-  const grouped = results.reduce<Record<string, SearchResult[]>>((acc, r) => {
+  const grouped = filtered.reduce<Record<string, SearchResult[]>>((acc, r) => {
     (acc[r.type] = acc[r.type] || []).push(r);
+    return acc;
+  }, {});
+
+  // Count per type for filter badges
+  const typeCounts = results.reduce<Record<string, number>>((acc, r) => {
+    acc[r.type] = (acc[r.type] || 0) + 1;
     return acc;
   }, {});
 
@@ -66,6 +87,47 @@ export default function SearchPage() {
           />
           {loading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 animate-spin text-muted-foreground" />}
         </div>
+
+        {/* Type filter chips */}
+        {results.length > 0 && (
+          <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
+            {filterOptions.map(opt => {
+              const count = opt.value === "all" ? results.length : (typeCounts[opt.value] || 0);
+              if (opt.value !== "all" && count === 0) return null;
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => setActiveFilter(opt.value)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors border ${
+                    activeFilter === opt.value
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-card/60 text-muted-foreground border-border hover:bg-secondary/60 hover:text-foreground"
+                  }`}
+                >
+                  {opt.label}
+                  <span className={`text-[10px] ${activeFilter === opt.value ? "text-primary-foreground/70" : "text-muted-foreground/60"}`}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Loading skeleton */}
+        {loading && query.length >= 2 && results.length === 0 && (
+          <div className="mt-6 space-y-3">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="flex items-center gap-3 p-3">
+                <Skeleton className="w-10 h-10 rounded-lg" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {query.length >= 2 && !loading && results.length === 0 && (
           <div className="text-center py-16 text-muted-foreground">
@@ -101,7 +163,7 @@ export default function SearchPage() {
                       className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-accent/50 transition-colors text-left"
                     >
                       {item.image ? (
-                        <img src={item.image} alt="" className="w-10 h-10 rounded-lg object-cover bg-muted" />
+                        <img src={item.image} alt="" className="w-10 h-10 rounded-lg object-cover bg-muted" loading="lazy" />
                       ) : (
                         <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
                           <Icon className="w-5 h-5 text-muted-foreground" />
