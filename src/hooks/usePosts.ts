@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { fetchProfileMap } from "@/lib/supabaseTyped";
 
 export interface Post {
   id: string;
@@ -38,23 +39,15 @@ export function usePosts(category?: string) {
       const { data: posts, error } = await query;
       if (error) throw error;
 
-      // Fetch author profiles
-      const userIds = [...new Set((posts || []).map((p: any) => p.user_id))];
+      const userIds = [...new Set((posts || []).map((p) => p.user_id))];
       if (userIds.length === 0) return [];
 
-      const { data: profiles } = await (supabase as any)
-        .from("profiles_public")
-        .select("user_id, display_name, avatar_url")
-        .in("user_id", userIds);
+      const profileMap = await fetchProfileMap(userIds);
 
-      const profileMap = new Map(
-        (profiles || []).map((p: any) => [p.user_id, p])
-      );
-
-      return (posts || []).map((p: any) => ({
+      return (posts || []).map((p) => ({
         ...p,
-        author_name: (profileMap.get(p.user_id) as any)?.display_name || "Creator",
-        author_avatar: (profileMap.get(p.user_id) as any)?.avatar_url || null,
+        author_name: profileMap.get(p.user_id)?.display_name || "Creator",
+        author_avatar: profileMap.get(p.user_id)?.avatar_url || null,
       }));
     },
   });
@@ -100,7 +93,7 @@ export function useLikePost() {
 
       const { error } = await supabase
         .from("posts")
-        .update({ like_count: ((data as any)?.like_count || 0) + 1 })
+        .update({ like_count: (data?.like_count || 0) + 1 })
         .eq("id", postId);
       if (error) throw error;
     },

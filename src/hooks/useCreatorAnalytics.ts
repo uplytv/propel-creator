@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { fetchProfileMap } from "@/lib/supabaseTyped";
 
 export function useCreatorAnalytics() {
   const { user } = useAuth();
@@ -14,7 +15,6 @@ export function useCreatorAnalytics() {
       const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
       const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000).toISOString();
 
-      // First get the creator's wallet to filter transactions
       const { data: wallet } = await supabase
         .from("wallets")
         .select("id")
@@ -43,7 +43,6 @@ export function useCreatorAnalytics() {
         supabase.from("community_members").select("id", { count: "exact", head: true }).eq("creator_id", userId).gte("joined_at", sixtyDaysAgo).lt("joined_at", thirtyDaysAgo),
         supabase.from("views_log").select("id", { count: "exact", head: true }).eq("asset_type", "stream").gte("viewed_at", thirtyDaysAgo),
         supabase.from("views_log").select("id", { count: "exact", head: true }).eq("asset_type", "stream").gte("viewed_at", sixtyDaysAgo).lt("viewed_at", thirtyDaysAgo),
-        // Revenue: filter by wallet_id if available
         walletId
           ? supabase.from("transactions").select("amount, created_at").eq("wallet_id", walletId).eq("status", "completed").gte("created_at", thirtyDaysAgo)
           : Promise.resolve({ data: [] as { amount: number; created_at: string }[] }),
@@ -63,7 +62,6 @@ export function useCreatorAnalytics() {
 
       const calcGrowth = (curr: number, prev: number) => prev === 0 ? (curr > 0 ? 100 : 0) : Math.round(((curr - prev) / prev) * 100);
 
-      // Build daily revenue map from real transaction data
       const dailyRevenue: Record<string, number> = {};
       for (const t of revenueData) {
         if (t.created_at) {
@@ -72,16 +70,12 @@ export function useCreatorAnalytics() {
         }
       }
 
-      // Get follower profiles
       const followerIds = (recentFollowersRes.data ?? []).map((f) => f.follower_id);
-      const { data: followerProfiles } = followerIds.length > 0
-        ? await supabase.from("profiles_public").select("user_id, display_name, avatar_url").in("user_id", followerIds)
-        : { data: [] };
+      const profileMap = await fetchProfileMap(followerIds);
 
-      // Merge top content: stream recordings + videos
       const topContent = [
-        ...(topContentRes.data ?? []).map((r: any) => ({ ...r, source: "recording" })),
-        ...(topVideosRes.data ?? []).map((v: any) => ({ ...v, playback_id: v.playback_id, source: "video" })),
+        ...(topContentRes.data ?? []).map((r) => ({ ...r, source: "recording" as const })),
+        ...(topVideosRes.data ?? []).map((v) => ({ ...v, source: "video" as const })),
       ].sort((a, b) => (b.view_count || 0) - (a.view_count || 0)).slice(0, 10);
 
       return {
@@ -98,8 +92,8 @@ export function useCreatorAnalytics() {
         dailyRevenue,
         topContent,
         recentFollowers: (recentFollowersRes.data ?? []).map((f) => {
-          const profile = (followerProfiles ?? []).find((p: any) => p.user_id === f.follower_id);
-          return { ...f, display_name: (profile as any)?.display_name, avatar_url: (profile as any)?.avatar_url };
+          const profile = profileMap.get(f.follower_id);
+          return { ...f, display_name: profile?.display_name, avatar_url: profile?.avatar_url };
         }),
         streamSessions: streamSessionsRes.data ?? [],
       };
