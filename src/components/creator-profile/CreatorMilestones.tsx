@@ -28,7 +28,7 @@ export default function CreatorMilestones({ creatorId }: { creatorId: string }) 
       const [members, posts, streams, products, lessons, recordings] = await Promise.all([
         supabase.from("community_members").select("*", { count: "exact", head: true }).eq("creator_id", creatorId),
         supabase.from("community_posts").select("*", { count: "exact", head: true }).eq("creator_id", creatorId),
-        supabase.from("mux_live_streams_public" as any).select("*", { count: "exact", head: true }).eq("user_id", creatorId),
+        supabase.from("mux_live_streams_public").select("*", { count: "exact", head: true }).eq("user_id", creatorId),
         supabase.from("products").select("*", { count: "exact", head: true }).eq("user_id", creatorId).eq("status", "active"),
         supabase.from("classroom_lessons").select("*", { count: "exact", head: true }).eq("creator_id", creatorId),
         supabase.from("stream_recordings").select("*", { count: "exact", head: true }).eq("creator_id", creatorId).eq("is_published", true),

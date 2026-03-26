@@ -9,7 +9,7 @@ export function useLatestWeeklyReport() {
     enabled: !!user,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("weekly_growth_reports" as any)
+        .from("weekly_growth_reports")
         .select("*")
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false })
@@ -28,7 +28,7 @@ export function useAllWeeklyReports() {
     enabled: !!user,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("weekly_growth_reports" as any)
+        .from("weekly_growth_reports")
         .select("*")
         .eq("user_id", user!.id)
         .order("week_start", { ascending: false });
@@ -43,7 +43,7 @@ export function useMarkReportRead() {
   return useMutation({
     mutationFn: async (reportId: string) => {
       const { error } = await supabase
-        .from("weekly_growth_reports" as any)
+        .from("weekly_growth_reports")
         .update({ read: true } as any)
         .eq("id", reportId);
       if (error) throw error;

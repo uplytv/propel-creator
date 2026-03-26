@@ -61,7 +61,7 @@ export function useAriaAgents() {
     queryKey: ["aria-agents", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("aria_agents" as any)
+        .from("aria_agents")
         .select("*")
         .eq("creator_id", user!.id);
       if (error) throw error;
@@ -71,14 +71,14 @@ export function useAriaAgents() {
         const agentTypes = ["content", "growth", "community", "sales", "operations"];
         const inserts = agentTypes.map(t => ({ creator_id: user!.id, agent_type: t }));
         const { data: newAgents, error: insertError } = await supabase
-          .from("aria_agents" as any)
+          .from("aria_agents")
           .upsert(inserts, { onConflict: "creator_id,agent_type" })
           .select("*");
         if (insertError) throw insertError;
 
         // Also ensure usage tracking row exists
         const currentMonth = new Date().toISOString().slice(0, 7) + "-01";
-        await supabase.from("aria_usage_tracking" as any).upsert({
+        await supabase.from("aria_usage_tracking").upsert({
           creator_id: user!.id,
           month: currentMonth,
           budget_limit: 500,
@@ -99,7 +99,7 @@ export function useAriaAgentTasks(status?: string) {
     queryKey: ["aria-agent-tasks", user?.id, status],
     queryFn: async () => {
       let query = supabase
-        .from("aria_agent_tasks" as any)
+        .from("aria_agent_tasks")
         .select("*")
         .eq("creator_id", user!.id)
         .order("created_at", { ascending: false })
@@ -123,7 +123,7 @@ export function useAriaInsights() {
     queryKey: ["aria-insights", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("aria_agent_insights" as any)
+        .from("aria_agent_insights")
         .select("*")
         .eq("creator_id", user!.id)
         .eq("is_read", false)
@@ -143,7 +143,7 @@ export function useAriaUsage() {
     queryKey: ["aria-usage", user?.id, currentMonth],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("aria_usage_tracking" as any)
+        .from("aria_usage_tracking")
         .select("*")
         .eq("creator_id", user!.id)
         .eq("month", currentMonth)
@@ -161,7 +161,7 @@ export function useAriaDailyReport() {
     queryKey: ["aria-daily-report", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("aria_daily_reports" as any)
+        .from("aria_daily_reports")
         .select("*")
         .eq("creator_id", user!.id)
         .order("report_date", { ascending: false })
@@ -179,7 +179,7 @@ export function useApproveTask() {
   return useMutation({
     mutationFn: async ({ taskId, feedback }: { taskId: string; feedback?: string }) => {
       const { error } = await supabase
-        .from("aria_agent_tasks" as any)
+        .from("aria_agent_tasks")
         .update({
           status: "approved",
           was_approved: true,
@@ -190,14 +190,14 @@ export function useApproveTask() {
       if (error) throw error;
 
       // Get task to update agent confidence
-      const { data: taskData } = await supabase.from("aria_agent_tasks" as any).select("agent_id").eq("id", taskId).single();
+      const { data: taskData } = await supabase.from("aria_agent_tasks").select("agent_id").eq("id", taskId).single();
       const taskRow = taskData as any;
       if (taskRow?.agent_id) {
-        const { data: agentData } = await supabase.from("aria_agents" as any).select("*").eq("id", taskRow.agent_id).single();
+        const { data: agentData } = await supabase.from("aria_agents").select("*").eq("id", taskRow.agent_id).single();
         const agentRow = agentData as any;
         if (agentRow) {
           const newConf = 0.9 * (agentRow.confidence_score || 0.5) + 0.1 * 1.0;
-          await supabase.from("aria_agents" as any).update({
+          await supabase.from("aria_agents").update({
             confidence_score: newConf,
             tasks_approved: (agentRow.tasks_approved || 0) + 1,
           }).eq("id", agentRow.id);
@@ -216,7 +216,7 @@ export function useRejectTask() {
   return useMutation({
     mutationFn: async ({ taskId, feedback }: { taskId: string; feedback: string }) => {
       const { error } = await supabase
-        .from("aria_agent_tasks" as any)
+        .from("aria_agent_tasks")
         .update({
           status: "rejected",
           was_approved: false,
@@ -227,14 +227,14 @@ export function useRejectTask() {
       if (error) throw error;
 
       // Update agent confidence and store boundary memory
-      const { data: taskData2 } = await supabase.from("aria_agent_tasks" as any).select("agent_id, agent_type, task_type, output_data, creator_id").eq("id", taskId).single();
+      const { data: taskData2 } = await supabase.from("aria_agent_tasks").select("agent_id, agent_type, task_type, output_data, creator_id").eq("id", taskId).single();
       const taskRow2 = taskData2 as any;
       if (taskRow2?.agent_id) {
-        const { data: agentData2 } = await supabase.from("aria_agents" as any).select("*").eq("id", taskRow2.agent_id).single();
+        const { data: agentData2 } = await supabase.from("aria_agents").select("*").eq("id", taskRow2.agent_id).single();
         const agentRow2 = agentData2 as any;
         if (agentRow2) {
           const newConf = 0.9 * (agentRow2.confidence_score || 0.5) + 0.1 * 0.0;
-          await supabase.from("aria_agents" as any).update({
+          await supabase.from("aria_agents").update({
             confidence_score: newConf,
             tasks_rejected: (agentRow2.tasks_rejected || 0) + 1,
           }).eq("id", agentRow2.id);
@@ -242,7 +242,7 @@ export function useRejectTask() {
 
         // Store boundary memory
         if (feedback) {
-          await supabase.from("aria_agent_memory" as any).upsert({
+          await supabase.from("aria_agent_memory").upsert({
             creator_id: taskRow2.creator_id,
             agent_type: taskRow2.agent_type,
             memory_type: "boundary",
@@ -265,7 +265,7 @@ export function useToggleAgent() {
   return useMutation({
     mutationFn: async ({ agentId, status }: { agentId: string; status: string }) => {
       const { error } = await supabase
-        .from("aria_agents" as any)
+        .from("aria_agents")
         .update({ status })
         .eq("id", agentId);
       if (error) throw error;
@@ -279,7 +279,7 @@ export function useDismissInsight() {
   return useMutation({
     mutationFn: async (insightId: string) => {
       const { error } = await supabase
-        .from("aria_agent_insights" as any)
+        .from("aria_agent_insights")
         .update({ is_read: true })
         .eq("id", insightId);
       if (error) throw error;

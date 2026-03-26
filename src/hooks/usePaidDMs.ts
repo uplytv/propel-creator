@@ -9,7 +9,7 @@ export function usePaidDMsReceived() {
     enabled: !!user,
     queryFn: async () => {
       const { data } = await supabase
-        .from("paid_dms" as any)
+        .from("paid_dms")
         .select("*")
         .eq("creator_id", user!.id)
         .order("created_at", { ascending: false });
@@ -25,7 +25,7 @@ export function usePaidDMsSent() {
     enabled: !!user,
     queryFn: async () => {
       const { data } = await supabase
-        .from("paid_dms" as any)
+        .from("paid_dms")
         .select("*")
         .eq("sender_id", user!.id)
         .order("created_at", { ascending: false });
@@ -39,7 +39,7 @@ export function useMarkDMRead() {
   return useMutation({
     mutationFn: async (dmId: string) => {
       const { error } = await supabase
-        .from("paid_dms" as any)
+        .from("paid_dms")
         .update({ is_read: true })
         .eq("id", dmId);
       if (error) throw error;
@@ -55,7 +55,7 @@ export function useReplyToDM() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ dmId, message }: { dmId: string; message: string }) => {
-      const { error } = await supabase.from("paid_dm_replies" as any).insert({
+      const { error } = await supabase.from("paid_dm_replies").insert({
         dm_id: dmId,
         creator_id: user!.id,
         message,

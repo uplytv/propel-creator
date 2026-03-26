@@ -37,7 +37,7 @@ export function useCampaigns() {
     queryKey: ["campaigns", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("campaigns" as any)
+        .from("campaigns")
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -69,7 +69,7 @@ export function useCampaigns() {
   const launchMutation = useMutation({
     mutationFn: async (campaign: LaunchedCampaign) => {
       if (!user) throw new Error("Not authenticated");
-      const { error } = await supabase.from("campaigns" as any).insert({
+      const { error } = await supabase.from("campaigns").insert({
         user_id: user.id,
         stream_title: campaign.streamTitle,
         objective: campaign.objective,
@@ -92,7 +92,7 @@ export function useCampaigns() {
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const { error } = await supabase
-        .from("campaigns" as any)
+        .from("campaigns")
         .update({ status, updated_at: new Date().toISOString() } as any)
         .eq("id", id);
       if (error) throw error;
@@ -105,7 +105,7 @@ export function useCampaigns() {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from("campaigns" as any)
+        .from("campaigns")
         .delete()
         .eq("id", id);
       if (error) throw error;
@@ -118,7 +118,7 @@ export function useCampaigns() {
   const duplicateMutation = useMutation({
     mutationFn: async (source: CampaignRow) => {
       if (!user) throw new Error("Not authenticated");
-      const { error } = await supabase.from("campaigns" as any).insert({
+      const { error } = await supabase.from("campaigns").insert({
         user_id: user.id,
         stream_title: source.stream_title,
         objective: source.objective,

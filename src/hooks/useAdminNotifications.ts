@@ -134,7 +134,7 @@ export function useAdminNotifConfig() {
     queryKey: ["admin-notif-config", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("admin_notification_config" as any)
+        .from("admin_notification_config")
         .select("*")
         .eq("admin_id", user!.id);
       if (error) throw error;
@@ -146,7 +146,7 @@ export function useAdminNotifConfig() {
   const update = useMutation({
     mutationFn: async (params: { event_type: string; field: string; value: any }) => {
       const { error } = await supabase
-        .from("admin_notification_config" as any)
+        .from("admin_notification_config")
         .update({ [params.field]: params.value } as any)
         .eq("admin_id", user!.id)
         .eq("event_type", params.event_type);

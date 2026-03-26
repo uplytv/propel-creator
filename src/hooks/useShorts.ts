@@ -78,7 +78,7 @@ export function useShorts(batchSize = 10) {
     // Enrich with profiles
     const creatorIds = [...new Set(combined.map((s) => s.creator_id))];
     const { data: profiles } = await supabase
-      .from("profiles_public" as any)
+      .from("profiles_public")
       .select("user_id, display_name, avatar_url")
       .in("user_id", creatorIds);
 

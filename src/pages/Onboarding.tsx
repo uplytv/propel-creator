@@ -155,19 +155,19 @@ export default function Onboarding() {
     let isApproved = false;
     if (inviteCode) {
       const { data: invite } = await supabase
-        .from("invite_codes" as any)
+        .from("invite_codes")
         .select("id, is_used, owner_id")
         .eq("code", inviteCode)
         .eq("is_used", false)
         .maybeSingle() as any;
       if (invite) {
         await supabase
-          .from("invite_codes" as any)
+          .from("invite_codes")
           .update({ is_used: true, used_by: user.id, used_at: new Date().toISOString() })
           .eq("id", invite.id);
         isApproved = true;
         if (invite.owner_id !== user.id) {
-          await supabase.from("referrals" as any).insert({
+          await supabase.from("referrals").insert({
             referrer_id: invite.owner_id,
             referred_id: user.id,
           });
@@ -184,7 +184,7 @@ export default function Onboarding() {
         .eq("referral_code", refCode)
         .maybeSingle();
       if (referrer && (referrer as any).user_id !== user.id) {
-        await supabase.from("referrals" as any).insert({
+        await supabase.from("referrals").insert({
           referrer_id: (referrer as any).user_id,
           referred_id: user.id,
         });
@@ -221,7 +221,7 @@ export default function Onboarding() {
     const referrerAvatarUrl = localStorage.getItem("uply_referrer_avatar");
 
     const { data: waitlistRow } = await supabase
-      .from("waitlist" as any)
+      .from("waitlist")
       .insert({
         full_name: `${firstName.trim()} ${lastName.trim()}`.trim(),
         email: user.email || "",
@@ -258,7 +258,7 @@ export default function Onboarding() {
         const referrerDisplayName = (referrerProfile as any).display_name || "Creator";
         // Get updated referral count & position
         const { data: referrerWaitlist } = await supabase
-          .from("waitlist" as any)
+          .from("waitlist")
           .select("referral_count, position")
           .eq("referral_code", refCode)
           .maybeSingle() as any;
@@ -277,7 +277,7 @@ export default function Onboarding() {
 
         // Email notification to referrer (fire and forget)
         const { data: referrerAuth } = await supabase.rpc("lookup_referrer_by_code", { ref_code: refCode });
-        const referrerEmail = await supabase.from("waitlist" as any).select("email").eq("referral_code", refCode).maybeSingle() as any;
+        const referrerEmail = await supabase.from("waitlist").select("email").eq("referral_code", refCode).maybeSingle() as any;
         const rEmail = referrerEmail?.data?.email;
         if (rEmail) {
           const { buildReferralUrl: buildUrl } = await import("@/lib/referralUrls");
@@ -298,7 +298,7 @@ export default function Onboarding() {
 
     // Send welcome email to the new applicant (fire and forget)
     const applicantFullName = `${firstName.trim()} ${lastName.trim()}`.trim();
-    const { count: totalCount } = await supabase.from("waitlist" as any).select("*", { count: "exact", head: true }) as any;
+    const { count: totalCount } = await supabase.from("waitlist").select("*", { count: "exact", head: true }) as any;
     const applicantPosition = waitlistRow?.position || 0;
     const { buildReferralUrl: buildRefUrl } = await import("@/lib/referralUrls");
     supabase.functions.invoke("send-referral-email", {

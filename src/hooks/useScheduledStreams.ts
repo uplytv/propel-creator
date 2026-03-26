@@ -6,7 +6,7 @@ export function useScheduledStreams(creatorId?: string) {
     queryKey: ["scheduled-streams", creatorId || "all"],
     queryFn: async () => {
       let query = supabase
-        .from("scheduled_streams" as any)
+        .from("scheduled_streams")
         .select("*")
         .eq("status", "scheduled")
         .gte("scheduled_at", new Date().toISOString())
@@ -29,7 +29,7 @@ export function useStreamReminder(scheduledStreamId: string, userId?: string) {
     enabled: !!userId && !!scheduledStreamId,
     queryFn: async () => {
       const { data } = await supabase
-        .from("stream_reminders" as any)
+        .from("stream_reminders")
         .select("id")
         .eq("scheduled_stream_id", scheduledStreamId)
         .eq("user_id", userId!)

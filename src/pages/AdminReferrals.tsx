@@ -26,7 +26,7 @@ export default function AdminReferrals() {
 
       // Get all referrals
       const { data: referrals } = await supabase
-        .from("referrals" as any)
+        .from("referrals")
         .select("referrer_id, referred_id, created_at") as any;
 
       // Count per referrer

@@ -75,7 +75,7 @@ export function useCreatorAnalytics() {
       // Get follower profiles
       const followerIds = (recentFollowersRes.data ?? []).map((f) => f.follower_id);
       const { data: followerProfiles } = followerIds.length > 0
-        ? await supabase.from("profiles_public" as any).select("user_id, display_name, avatar_url").in("user_id", followerIds)
+        ? await supabase.from("profiles_public").select("user_id, display_name, avatar_url").in("user_id", followerIds)
         : { data: [] };
 
       // Merge top content: stream recordings + videos

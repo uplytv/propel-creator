@@ -65,7 +65,7 @@ export default function AdminUsers() {
 
       const [{ data: roles }, { data: referrals }] = await Promise.all([
         supabase.from("user_roles").select("user_id, role").in("user_id", userIds),
-        supabase.from("referrals" as any).select("referrer_id, referred_id") as any,
+        supabase.from("referrals").select("referrer_id, referred_id") as any,
       ]);
 
       const roleMap: Record<string, string[]> = {};

@@ -64,7 +64,7 @@ export default function ReferralRedirect() {
       }
 
       const { count } = await supabase
-        .from("waitlist" as any)
+        .from("waitlist")
         .select("*", { count: "exact", head: true }) as any;
       setTotalApplicants(count || 0);
 

@@ -46,7 +46,7 @@ export function useClips(options?: { creatorId?: string; publicOnly?: boolean; l
       // Enrich with creator profiles
       const creatorIds = [...new Set(data.map((c) => c.creator_id))];
       const { data: profiles } = await supabase
-        .from("profiles_public" as any)
+        .from("profiles_public")
         .select("user_id, display_name, avatar_url")
         .in("user_id", creatorIds);
 

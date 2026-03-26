@@ -13,7 +13,7 @@ export function useAriaJobs() {
     enabled: !!user,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("aria_content_jobs" as any)
+        .from("aria_content_jobs")
         .select("*")
         .eq("creator_id", user!.id)
         .order("created_at", { ascending: false })
@@ -52,7 +52,7 @@ export function useAriaGeneratedContent(jobId?: string) {
     enabled: !!user,
     queryFn: async () => {
       let q = supabase
-        .from("aria_generated_content" as any)
+        .from("aria_generated_content")
         .select("*")
         .eq("creator_id", user!.id)
         .order("created_at", { ascending: false });
@@ -91,7 +91,7 @@ export function useAriaDistributionSettings() {
     enabled: !!user,
     queryFn: async () => {
       const { data } = await supabase
-        .from("aria_distribution_settings" as any)
+        .from("aria_distribution_settings")
         .select("*")
         .eq("creator_id", user!.id)
         .maybeSingle();
@@ -102,15 +102,15 @@ export function useAriaDistributionSettings() {
   const update = useMutation({
     mutationFn: async (updates: Record<string, any>) => {
       const { data: existing } = await supabase
-        .from("aria_distribution_settings" as any)
+        .from("aria_distribution_settings")
         .select("id")
         .eq("creator_id", user!.id)
         .maybeSingle();
 
       if (existing) {
-        await supabase.from("aria_distribution_settings" as any).update(updates).eq("creator_id", user!.id);
+        await supabase.from("aria_distribution_settings").update(updates).eq("creator_id", user!.id);
       } else {
-        await supabase.from("aria_distribution_settings" as any).insert({ creator_id: user!.id, ...updates });
+        await supabase.from("aria_distribution_settings").insert({ creator_id: user!.id, ...updates });
       }
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["aria-settings", user?.id] }),
@@ -151,7 +151,7 @@ export function useUpdateContentStatus() {
       const updates: any = { status };
       if (status === "published") updates.published_at = new Date().toISOString();
       const { error } = await supabase
-        .from("aria_generated_content" as any)
+        .from("aria_generated_content")
         .update(updates)
         .eq("id", contentId);
       if (error) throw error;
@@ -169,7 +169,7 @@ export function useBulkUpdateContentStatus() {
       const updates: any = { status };
       if (status === "published") updates.published_at = new Date().toISOString();
       const { error } = await supabase
-        .from("aria_generated_content" as any)
+        .from("aria_generated_content")
         .update(updates)
         .in("id", contentIds);
       if (error) throw error;

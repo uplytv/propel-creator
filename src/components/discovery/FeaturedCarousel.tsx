@@ -40,7 +40,7 @@ export default function FeaturedCarousel() {
           .order("created_at", { ascending: false })
           .limit(4),
         supabase
-          .from("products_public" as any)
+          .from("products_public")
           .select("id, user_id, name, description, image_url, type")
           .in("type", ["course", "community"])
           .order("created_at", { ascending: false })

@@ -19,7 +19,7 @@ export default function BlastHistory({ creatorId }: BlastHistoryProps) {
     queryKey: ["blast-history", creatorId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("community_blasts" as any)
+        .from("community_blasts")
         .select("*")
         .eq("creator_id", creatorId)
         .order("created_at", { ascending: false });

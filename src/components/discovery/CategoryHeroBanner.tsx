@@ -57,7 +57,7 @@ function useHeroStats(category: Exclude<FilterCategory, "all">) {
       switch (category) {
         case "livestream": {
           const { count } = await supabase
-            .from("mux_live_streams_public" as any)
+            .from("mux_live_streams_public")
             .select("*", { count: "exact", head: true })
             .in("status", ["active", "live"]);
           return [
@@ -90,7 +90,7 @@ function useHeroStats(category: Exclude<FilterCategory, "all">) {
         }
         case "service": {
           const { count: products } = await supabase
-            .from("products_public" as any)
+            .from("products_public")
             .select("*", { count: "exact", head: true })
             .eq("type", "service");
           return [
@@ -99,7 +99,7 @@ function useHeroStats(category: Exclude<FilterCategory, "all">) {
         }
         case "creator": {
           const { count } = await supabase
-            .from("profiles_public" as any)
+            .from("profiles_public")
             .select("*", { count: "exact", head: true });
           return [
             { label: "Creators", value: count ?? 0 },

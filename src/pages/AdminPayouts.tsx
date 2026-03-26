@@ -33,7 +33,7 @@ function FailedWebhooksTab() {
     queryKey: ["admin-failed-webhooks"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("stripe_webhook_log" as any)
+        .from("stripe_webhook_log")
         .select("*")
         .eq("status", "failed")
         .gte("attempts", 1)
@@ -153,7 +153,7 @@ export default function AdminPayouts() {
       if (error) throw error;
       const userIds = [...new Set((data || []).map((p: any) => p.user_id))];
       const { data: profiles } = await supabase
-        .from("profiles_public" as any)
+        .from("profiles_public")
         .select("user_id, display_name")
         .in("user_id", userIds);
       const nameMap = Object.fromEntries((profiles || []).map((p: any) => [p.user_id, p.display_name || "Unknown"]));

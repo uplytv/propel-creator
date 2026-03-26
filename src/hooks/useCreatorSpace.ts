@@ -8,7 +8,7 @@ export function useCreatorSpace(creatorId: string | undefined) {
     enabled: !!creatorId,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("creator_spaces" as any)
+        .from("creator_spaces")
         .select("*")
         .eq("creator_id", creatorId!)
         .maybeSingle();
@@ -26,13 +26,13 @@ export function useEnsureSpace() {
     mutationFn: async () => {
       if (!user) throw new Error("Not authenticated");
       const { data: existing } = await supabase
-        .from("creator_spaces" as any)
+        .from("creator_spaces")
         .select("*")
         .eq("creator_id", user.id)
         .maybeSingle();
       if (existing) return existing;
       const { data, error } = await supabase
-        .from("creator_spaces" as any)
+        .from("creator_spaces")
         .insert({ creator_id: user.id } as any)
         .select()
         .single();
@@ -53,7 +53,7 @@ export function useUpdateSpace() {
     mutationFn: async (updates: Record<string, any>) => {
       if (!user) throw new Error("Not authenticated");
       const { error } = await supabase
-        .from("creator_spaces" as any)
+        .from("creator_spaces")
         .update(updates as any)
         .eq("creator_id", user.id);
       if (error) throw error;
@@ -70,7 +70,7 @@ export function useCommunityPosts(creatorId: string | undefined, category?: stri
     enabled: !!creatorId,
     queryFn: async () => {
       let query = supabase
-        .from("community_posts" as any)
+        .from("community_posts")
         .select("*")
         .eq("creator_id", creatorId!)
         .order("is_pinned", { ascending: false })
@@ -89,7 +89,7 @@ export function useCommunityPosts(creatorId: string | undefined, category?: stri
       if (authorIds.length === 0) return [];
 
       const { data: profiles } = await supabase
-        .from("profiles_public" as any)
+        .from("profiles_public")
         .select("user_id, display_name, avatar_url")
         .in("user_id", authorIds);
 
@@ -112,11 +112,11 @@ export function useCreateCommunityPost() {
     mutationFn: async (post: { creator_id: string; title: string; body: string; category: string; image_url?: string }) => {
       if (!user) throw new Error("Not authenticated");
       const { error } = await supabase
-        .from("community_posts" as any)
+        .from("community_posts")
         .insert({ ...post, author_id: user.id } as any);
       if (error) throw error;
       // Award points
-      await supabase.from("member_points" as any).insert({
+      await supabase.from("member_points").insert({
         user_id: user.id,
         creator_id: post.creator_id,
         action_type: "post",
@@ -138,28 +138,28 @@ export function useToggleLike() {
       if (!user) throw new Error("Not authenticated");
 
       const { data: existing } = await supabase
-        .from("community_post_likes" as any)
+        .from("community_post_likes")
         .select("id")
         .eq("post_id", postId)
         .eq("user_id", user.id)
         .maybeSingle();
 
       if (existing) {
-        await supabase.from("community_post_likes" as any).delete().eq("id", (existing as any).id);
+        await supabase.from("community_post_likes").delete().eq("id", (existing as any).id);
         await supabase
-          .from("community_posts" as any)
+          .from("community_posts")
           .update({ like_count: supabase.rpc as any } as any)
           .eq("id", postId);
         // Decrement manually
-        const { data: post } = await supabase.from("community_posts" as any).select("like_count").eq("id", postId).single();
-        await supabase.from("community_posts" as any).update({ like_count: Math.max(0, ((post as any)?.like_count || 1) - 1) } as any).eq("id", postId);
+        const { data: post } = await supabase.from("community_posts").select("like_count").eq("id", postId).single();
+        await supabase.from("community_posts").update({ like_count: Math.max(0, ((post as any)?.like_count || 1) - 1) } as any).eq("id", postId);
         return { liked: false };
       } else {
-        await supabase.from("community_post_likes" as any).insert({ post_id: postId, user_id: user.id } as any);
-        const { data: post } = await supabase.from("community_posts" as any).select("like_count").eq("id", postId).single();
-        await supabase.from("community_posts" as any).update({ like_count: ((post as any)?.like_count || 0) + 1 } as any).eq("id", postId);
+        await supabase.from("community_post_likes").insert({ post_id: postId, user_id: user.id } as any);
+        const { data: post } = await supabase.from("community_posts").select("like_count").eq("id", postId).single();
+        await supabase.from("community_posts").update({ like_count: ((post as any)?.like_count || 0) + 1 } as any).eq("id", postId);
         // Award points
-        await supabase.from("member_points" as any).insert({
+        await supabase.from("member_points").insert({
           user_id: user.id,
           creator_id: creatorId,
           action_type: "like_received",
@@ -182,7 +182,7 @@ export function useUserLikes(postIds: string[]) {
     enabled: !!user && postIds.length > 0,
     queryFn: async () => {
       const { data } = await supabase
-        .from("community_post_likes" as any)
+        .from("community_post_likes")
         .select("post_id")
         .eq("user_id", user!.id)
         .in("post_id", postIds);
@@ -197,7 +197,7 @@ export function useCommunityComments(postId: string | undefined) {
     enabled: !!postId,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("community_comments" as any)
+        .from("community_comments")
         .select("*")
         .eq("post_id", postId!)
         .order("created_at", { ascending: true });
@@ -208,7 +208,7 @@ export function useCommunityComments(postId: string | undefined) {
       if (authorIds.length === 0) return [];
 
       const { data: profiles } = await supabase
-        .from("profiles_public" as any)
+        .from("profiles_public")
         .select("user_id, display_name, avatar_url")
         .in("user_id", authorIds);
 
@@ -230,12 +230,12 @@ export function useCreateComment() {
   return useMutation({
     mutationFn: async ({ postId, body, creatorId }: { postId: string; body: string; creatorId: string }) => {
       if (!user) throw new Error("Not authenticated");
-      await supabase.from("community_comments" as any).insert({ post_id: postId, author_id: user.id, body } as any);
+      await supabase.from("community_comments").insert({ post_id: postId, author_id: user.id, body } as any);
       // Update comment count
-      const { data: post } = await supabase.from("community_posts" as any).select("comment_count").eq("id", postId).single();
-      await supabase.from("community_posts" as any).update({ comment_count: ((post as any)?.comment_count || 0) + 1 } as any).eq("id", postId);
+      const { data: post } = await supabase.from("community_posts").select("comment_count").eq("id", postId).single();
+      await supabase.from("community_posts").update({ comment_count: ((post as any)?.comment_count || 0) + 1 } as any).eq("id", postId);
       // Award points
-      await supabase.from("member_points" as any).insert({
+      await supabase.from("member_points").insert({
         user_id: user.id,
         creator_id: creatorId,
         action_type: "comment",
@@ -255,7 +255,7 @@ export function useCommunityCategories(creatorId: string | undefined) {
     enabled: !!creatorId,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("community_categories" as any)
+        .from("community_categories")
         .select("*")
         .eq("creator_id", creatorId!)
         .order("created_at", { ascending: true });
@@ -271,7 +271,7 @@ export function useTogglePin() {
   return useMutation({
     mutationFn: async ({ postId, isPinned }: { postId: string; isPinned: boolean }) => {
       const { error } = await supabase
-        .from("community_posts" as any)
+        .from("community_posts")
         .update({ is_pinned: !isPinned } as any)
         .eq("id", postId);
       if (error) throw error;

@@ -17,7 +17,7 @@ export function useCampaignMetrics(campaignId: string | null) {
     queryKey: ["campaign_metrics", campaignId],
     queryFn: async (): Promise<MetricPoint[]> => {
       const { data, error } = await supabase
-        .from("campaign_metrics" as any)
+        .from("campaign_metrics")
         .select("recorded_at, impressions, clicks, conversions, spent")
         .eq("campaign_id", campaignId!)
         .order("recorded_at", { ascending: true });
