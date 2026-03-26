@@ -70,8 +70,8 @@ export default function AdminNotificationBell() {
       </Button>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="right" className="w-[400px] max-w-full bg-[#0A0A0A] border-l border-[#1E1E1E] p-0">
-          <SheetHeader className="px-4 pt-4 pb-3 border-b border-[#1E1E1E]">
+        <SheetContent side="right" className="w-[400px] max-w-full bg-background border-l border-border p-0">
+          <SheetHeader className="px-4 pt-4 pb-3 border-b border-border">
             <div className="flex items-center justify-between">
               <SheetTitle className="text-white font-heading text-lg">Admin Alerts</SheetTitle>
               <div className="flex items-center gap-2">

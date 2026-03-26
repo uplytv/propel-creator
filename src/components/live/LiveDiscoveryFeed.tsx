@@ -204,25 +204,25 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
       <div>
         {/* Header skeleton */}
         <div className="flex items-center justify-between mb-5">
-          <div className="h-7 w-40 rounded bg-[#1a1a1a] animate-pulse" />
-          <div className="h-5 w-28 rounded bg-[#1a1a1a] animate-pulse" />
+          <div className="h-7 w-40 rounded bg-card animate-pulse" />
+          <div className="h-5 w-28 rounded bg-card animate-pulse" />
         </div>
         {/* Tab skeleton */}
         <div className="flex gap-6 mb-6">
-          <div className="h-5 w-16 rounded bg-[#1a1a1a] animate-pulse" />
-          <div className="h-5 w-20 rounded bg-[#1a1a1a] animate-pulse" />
+          <div className="h-5 w-16 rounded bg-card animate-pulse" />
+          <div className="h-5 w-20 rounded bg-card animate-pulse" />
         </div>
         {/* Grid skeleton */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {[0, 1, 2, 3].map((i) => (
             <div key={i}>
-              <div className="aspect-video rounded-lg bg-[#1a1a1a] animate-pulse" />
+              <div className="aspect-video rounded-lg bg-card animate-pulse" />
               <div className="mt-2.5 flex gap-2.5">
-                <div className="w-9 h-9 rounded-full bg-[#1a1a1a] animate-pulse flex-shrink-0" />
+                <div className="w-9 h-9 rounded-full bg-card animate-pulse flex-shrink-0" />
                 <div className="flex-1 space-y-1.5">
-                  <div className="h-3.5 w-3/4 rounded bg-[#1a1a1a] animate-pulse" />
-                  <div className="h-3 w-full rounded bg-[#1a1a1a] animate-pulse" />
-                  <div className="h-3 w-16 rounded bg-[#1a1a1a] animate-pulse" />
+                  <div className="h-3.5 w-3/4 rounded bg-card animate-pulse" />
+                  <div className="h-3 w-full rounded bg-card animate-pulse" />
+                  <div className="h-3 w-16 rounded bg-card animate-pulse" />
                 </div>
               </div>
             </div>
@@ -238,11 +238,11 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
       <div className="flex items-center justify-between mb-5">
         <h2 className="flex items-center gap-2 text-xl font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
           <span className="inline-flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#FF3B3B] animate-pulse" />
+            <span className="w-2.5 h-2.5 rounded-full bg-destructive animate-pulse" />
             Live Now
           </span>
         </h2>
-        <span className="text-sm font-medium text-[#00FF85]">
+        <span className="text-sm font-medium text-primary">
           {liveCount} stream{liveCount !== 1 ? 's' : ''} live
         </span>
       </div>
@@ -256,14 +256,14 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
             className={`pb-2.5 text-sm font-medium transition-colors relative ${
               activeTab === tab.id
                 ? "text-white"
-                : "text-[#888888] hover:text-white"
+                : "text-muted-foreground hover:text-white"
             }`}
           >
             {tab.label}
             {activeTab === tab.id && (
               <motion.div
                 layoutId="live-tab-underline"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#00FF85] rounded-full"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full"
               />
             )}
           </button>
@@ -273,13 +273,13 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
       {/* ─── Empty State ───────────────────────────────────────── */}
       {activeTab === "following" && filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <Users className="w-12 h-12 text-[#888888] mb-4" />
+          <Users className="w-12 h-12 text-muted-foreground mb-4" />
           {!user ? (
             <>
               <p className="text-white font-semibold mb-1">Log in to see who you follow</p>
               <button
                 onClick={() => navigate('/auth')}
-                className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#00FF85] text-[#0A0A0A] text-sm font-bold hover:brightness-110 transition-all"
+                className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-foreground text-sm font-bold hover:brightness-110 transition-all"
               >
                 Log in
                 <ChevronRight className="w-4 h-4" />
@@ -288,10 +288,10 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
           ) : followingIds.length === 0 ? (
             <>
               <p className="text-white font-semibold mb-1">You're not following anyone yet.</p>
-              <p className="text-[#888888] text-sm">Follow creators to see their streams here.</p>
+              <p className="text-muted-foreground text-sm">Follow creators to see their streams here.</p>
               <button
                 onClick={() => navigate('/discover')}
-                className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#00FF85] text-[#0A0A0A] text-sm font-bold hover:brightness-110 transition-all"
+                className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-foreground text-sm font-bold hover:brightness-110 transition-all"
               >
                 Discover creators
                 <ChevronRight className="w-4 h-4" />
@@ -300,10 +300,10 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
           ) : (
             <>
               <p className="text-white font-semibold mb-1">None of your followed creators are live.</p>
-              <p className="text-[#888888] text-sm">Check back later or explore other streams.</p>
+              <p className="text-muted-foreground text-sm">Check back later or explore other streams.</p>
               <button
                 onClick={() => setActiveTab('foryou')}
-                className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#00FF85] text-[#0A0A0A] text-sm font-bold hover:brightness-110 transition-all"
+                className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-foreground text-sm font-bold hover:brightness-110 transition-all"
               >
                 Browse all streams
                 <ChevronRight className="w-4 h-4" />
@@ -313,11 +313,11 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <Tv className="w-12 h-12 text-[#888888] mb-4" />
+          <Tv className="w-12 h-12 text-muted-foreground mb-4" />
           <p className="text-white font-semibold mb-1">No one is live right now.</p>
           <button
             onClick={() => navigate('/go-live')}
-            className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#00FF85] text-[#0A0A0A] text-sm font-bold hover:brightness-110 transition-all"
+            className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-foreground text-sm font-bold hover:brightness-110 transition-all"
           >
             Be the first to go live
             <ChevronRight className="w-4 h-4" />
@@ -349,11 +349,11 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
               key={cat.name}
               className="flex-shrink-0 w-28 sm:w-auto cursor-pointer group"
             >
-              <div className="aspect-square rounded-lg bg-[#111111] border border-white/5 flex items-center justify-center text-4xl group-hover:border-[#00FF85]/40 transition-colors">
+              <div className="aspect-square rounded-lg bg-background border border-white/5 flex items-center justify-center text-4xl group-hover:border-primary/40 transition-colors">
                 {cat.emoji}
               </div>
               <p className="text-sm font-medium text-white mt-2 text-center truncate">{cat.name}</p>
-              <p className="text-[11px] text-[#888888] text-center">
+              <p className="text-[11px] text-muted-foreground text-center">
                 {categoryCounts[cat.name] || 0} live
               </p>
             </div>
@@ -366,7 +366,7 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
         <div className="mt-12">
           <div className="flex items-center justify-between mb-5">
             <h2 className="flex items-center gap-2 text-lg font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              <Film className="w-5 h-5 text-[#888888]" />
+              <Film className="w-5 h-5 text-muted-foreground" />
               Recent Recordings
             </h2>
           </div>
@@ -387,12 +387,12 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
                   onClick={() => navigate(`/stream/${asset.id}?type=vod`)}
                   className="group cursor-pointer"
                 >
-                  <div className="relative aspect-video rounded-lg overflow-hidden bg-[#111111] border-2 border-transparent group-hover:border-[#00FF85] transition-all duration-200 group-hover:scale-[1.02]">
+                  <div className="relative aspect-video rounded-lg overflow-hidden bg-background border-2 border-transparent group-hover:border-primary transition-all duration-200 group-hover:scale-[1.02]">
                     {thumb ? (
                       <img src={thumb} alt={asset.title || 'Recording'} className="w-full h-full object-cover" loading="lazy" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <Film className="w-8 h-8 text-[#888888]/40" />
+                        <Film className="w-8 h-8 text-muted-foreground/40" />
                       </div>
                     )}
                     {duration && (
@@ -402,7 +402,7 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
                     )}
                   </div>
                   <div className="mt-2.5 flex gap-2.5">
-                    <div className="flex-shrink-0 w-9 h-9 rounded-full bg-[#1a1a1a] flex items-center justify-center text-[11px] font-bold text-[#888888] overflow-hidden">
+                    <div className="flex-shrink-0 w-9 h-9 rounded-full bg-card flex items-center justify-center text-[11px] font-bold text-muted-foreground overflow-hidden">
                       {asset.creator_avatar ? (
                         <img src={asset.creator_avatar} alt="" className="w-full h-full object-cover" />
                       ) : (
@@ -411,7 +411,7 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-white truncate">{asset.title || 'Untitled Recording'}</p>
-                      <p className="text-xs text-[#888888]">{asset.creator_name || 'Creator'}</p>
+                      <p className="text-xs text-muted-foreground">{asset.creator_name || 'Creator'}</p>
                     </div>
                   </div>
                 </motion.div>

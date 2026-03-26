@@ -29,14 +29,14 @@ export default function StickyMobileCTA() {
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
       >
-        <div className="bg-[#0A0A0A]/95 backdrop-blur-xl border-t border-white/[0.08] px-4 py-3 flex items-center gap-3">
+        <div className="bg-background/95 backdrop-blur-xl border-t border-white/[0.08] px-4 py-3 flex items-center gap-3">
           <div className="flex-1 min-w-0">
             <p className="text-xs text-white/50 truncate">Limited spots remaining</p>
             <p className="text-sm font-bold text-white truncate">Apply before the waitlist closes</p>
           </div>
           <Button
             size="sm"
-            className="bg-[#00FF85] text-[#0A0A0A] font-bold hover:bg-[#00FF85]/90 border-0 shrink-0 gap-1 active:scale-[0.96]"
+            className="bg-primary text-foreground font-bold hover:bg-primary/90 border-0 shrink-0 gap-1 active:scale-[0.96]"
             onClick={() => document.getElementById("waitlist")?.scrollIntoView({ behavior: "smooth" })}
           >
             Apply <ArrowRight className="w-3 h-3" />

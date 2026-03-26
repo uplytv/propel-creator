@@ -669,7 +669,7 @@ export default function CreatorProfile() {
                 <span className="w-1.5 h-1.5 rounded-full bg-white" /> LIVE NOW
               </span>
               <span className="text-white text-sm font-semibold flex-1">{liveStream.title || "Untitled Stream"}</span>
-              <span className="text-[#888] text-xs">{liveStream.viewer_count || 0} watching</span>
+              <span className="text-muted-foreground text-xs">{liveStream.viewer_count || 0} watching</span>
             </div>
             {liveStream.mux_playback_id ? (
               <div className="aspect-video rounded-lg overflow-hidden bg-black">
@@ -682,7 +682,7 @@ export default function CreatorProfile() {
               </div>
             ) : (
               <div className="aspect-video rounded-lg flex items-center justify-center" style={{ background: "hsl(var(--card))" }}>
-                <p className="text-[#888] text-sm animate-pulse">Stream loading...</p>
+                <p className="text-muted-foreground text-sm animate-pulse">Stream loading...</p>
               </div>
             )}
             {!isMember && (
@@ -699,15 +699,15 @@ export default function CreatorProfile() {
         <section className="max-w-[720px] mx-auto px-4 mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-white text-xl font-bold">Community</h2>
-            <span className="text-[#888] text-sm">{memberCount} members</span>
+            <span className="text-muted-foreground text-sm">{memberCount} members</span>
           </div>
           <div className="space-y-3">
             {posts.map((post: any) => (
               <div key={post.id} className="relative rounded-lg p-4" style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}>
                 {!isMember && (
                   <div className="absolute inset-0 rounded-lg z-10 flex flex-col items-center justify-center backdrop-blur-sm" style={{ background: "rgba(10,10,10,0.7)" }}>
-                    <Lock className="w-5 h-5 text-[#888] mb-1" />
-                    <span className="text-[#888] text-xs">Join to read the full post</span>
+                    <Lock className="w-5 h-5 text-muted-foreground mb-1" />
+                    <span className="text-muted-foreground text-xs">Join to read the full post</span>
                   </div>
                 )}
                 <div className="flex items-center gap-2 mb-2">
@@ -719,11 +719,11 @@ export default function CreatorProfile() {
                     </div>
                   )}
                   <span className="text-white text-sm font-medium">{(post as any).profiles?.display_name || "Member"}</span>
-                  <span className="text-[#555] text-xs ml-auto">{formatTimeAgo(post.created_at)}</span>
+                  <span className="text-muted-foreground text-xs ml-auto">{formatTimeAgo(post.created_at)}</span>
                 </div>
                 <h3 className="text-white text-[15px] font-semibold truncate">{post.title}</h3>
-                <p className="text-[#888] text-[13px] line-clamp-2 mt-1">{post.body}</p>
-                <div className="flex items-center gap-4 mt-2 text-[#555] text-xs">
+                <p className="text-muted-foreground text-[13px] line-clamp-2 mt-1">{post.body}</p>
+                <div className="flex items-center gap-4 mt-2 text-muted-foreground text-xs">
                   <span className="flex items-center gap-1"><Heart className="w-3.5 h-3.5" /> {post.like_count}</span>
                   <span className="flex items-center gap-1"><MessageCircle className="w-3.5 h-3.5" /> {post.comment_count}</span>
                 </div>
@@ -732,11 +732,11 @@ export default function CreatorProfile() {
           </div>
           <div className="mt-4 text-center">
             {!isMember ? (
-              <button onClick={handleJoin} className="text-[#00FF85] text-sm font-medium">
+              <button onClick={handleJoin} className="text-primary text-sm font-medium">
                 More posts inside. Join the community →
               </button>
             ) : (
-              <Link to={`/community/${profile.user_id}/community`} className="text-[#00FF85] text-sm font-medium">
+              <Link to={`/community/${profile.user_id}/community`} className="text-primary text-sm font-medium">
                 View all posts →
               </Link>
             )}
@@ -749,7 +749,7 @@ export default function CreatorProfile() {
         <section className="max-w-[720px] mx-auto px-4 mb-24">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-white text-xl font-bold">Courses</h2>
-            <span className="text-[#888] text-sm">{totalLessons} lessons</span>
+            <span className="text-muted-foreground text-sm">{totalLessons} lessons</span>
           </div>
           <div className="space-y-3">
             {modules.map((mod: any) => (
@@ -760,9 +760,9 @@ export default function CreatorProfile() {
                 >
                   <div>
                     <h3 className="text-white text-base font-semibold">{mod.title}</h3>
-                    <p className="text-[#888] text-[13px] mt-0.5">{mod.lessons?.length || 0} lessons</p>
+                    <p className="text-muted-foreground text-[13px] mt-0.5">{mod.lessons?.length || 0} lessons</p>
                   </div>
-                  {expandedModules.has(mod.id) ? <ChevronUp className="w-4 h-4 text-[#888]" /> : <ChevronDown className="w-4 h-4 text-[#888]" />}
+                  {expandedModules.has(mod.id) ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                 </button>
                 <AnimatePresence>
                   {expandedModules.has(mod.id) && (
@@ -782,16 +782,16 @@ export default function CreatorProfile() {
                             }}
                           >
                             {lesson.is_free ? (
-                              <Play className="w-4 h-4 text-[#00FF85] shrink-0" />
+                              <Play className="w-4 h-4 text-primary shrink-0" />
                             ) : (
-                              <Lock className="w-4 h-4 text-[#555] shrink-0" />
+                              <Lock className="w-4 h-4 text-muted-foreground shrink-0" />
                             )}
                             <span className="text-white text-sm flex-1 truncate">{lesson.title}</span>
                             {lesson.is_free && (
                               <span className="px-1.5 py-0.5 rounded text-[10px] font-bold" style={{ background: "hsl(var(--primary))", color: "hsl(var(--background))" }}>FREE</span>
                             )}
                             {lesson.duration_seconds > 0 && (
-                              <span className="text-[#555] text-xs">{formatDuration(lesson.duration_seconds)}</span>
+                              <span className="text-muted-foreground text-xs">{formatDuration(lesson.duration_seconds)}</span>
                             )}
                           </div>
                         ))}
@@ -810,7 +810,7 @@ export default function CreatorProfile() {
         <section className="max-w-[720px] mx-auto px-4 mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-white text-xl font-bold">Shop</h2>
-            <span className="text-[#888] text-sm">{products.length} product{products.length !== 1 ? "s" : ""}</span>
+            <span className="text-muted-foreground text-sm">{products.length} product{products.length !== 1 ? "s" : ""}</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {products.map((product: any) => {
@@ -834,10 +834,10 @@ export default function CreatorProfile() {
                     </div>
                     <h3 className="text-white text-sm font-bold mt-1">{product.name}</h3>
                     {product.description && (
-                      <p className="text-[#888] text-xs line-clamp-2 mt-1">{product.description}</p>
+                      <p className="text-muted-foreground text-xs line-clamp-2 mt-1">{product.description}</p>
                     )}
                     <div className="flex items-center justify-between mt-3">
-                      <span className="text-[#00FF85] font-bold text-base">
+                      <span className="text-primary font-bold text-base">
                         {isFreeProduct ? "Free" : `$${product.price}`}
                       </span>
                       {!isOwner && !isFreeProduct && (
@@ -899,8 +899,8 @@ export default function CreatorProfile() {
             <div className="flex-1 min-w-0">
               <p className="text-white text-sm font-semibold truncate">{creatorName}</p>
               {isLive && (
-                <span className="flex items-center gap-1 text-[10px] font-bold text-[#FF3B3B]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#FF3B3B] animate-pulse" /> LIVE
+                <span className="flex items-center gap-1 text-[10px] font-bold text-destructive">
+                  <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" /> LIVE
                 </span>
               )}
             </div>
@@ -969,13 +969,13 @@ function CreatorProfileEvents({ username }: { username?: string }) {
           <div
             key={event.id}
             onClick={() => navigate(`/${username}/events/${event.slug}`)}
-            className="rounded-lg p-4 cursor-pointer hover:border-[#00FF85]/40 transition-colors"
+            className="rounded-lg p-4 cursor-pointer hover:border-primary/40 transition-colors"
             style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}
           >
             <div className="flex items-center justify-between">
               <div className="flex-1 min-w-0">
                 <h3 className="text-white text-[15px] font-semibold truncate">{event.title}</h3>
-                <p className="text-[#00FF85] text-xs mt-1">
+                <p className="text-primary text-xs mt-1">
                   {new Date(event.starts_at).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })} · {new Date(event.starts_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                 </p>
               </div>
@@ -994,7 +994,7 @@ function CreatorProfileEvents({ username }: { username?: string }) {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-white text-[15px] font-semibold truncate">{event.title}</h3>
-                <p className="text-[#888] text-xs mt-1">Ended</p>
+                <p className="text-muted-foreground text-xs mt-1">Ended</p>
               </div>
             </div>
           </div>

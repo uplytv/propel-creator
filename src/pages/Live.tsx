@@ -642,7 +642,7 @@ export default function Live() {
                             {thumb ? (
                               <img src={thumb} alt={short.caption} className="w-full h-full object-cover" loading="lazy" />
                             ) : (
-                              <div className="w-full h-full bg-gradient-to-b from-secondary to-[#111] flex items-center justify-center">
+                              <div className="w-full h-full bg-gradient-to-b from-secondary to-background flex items-center justify-center">
                                 <Smartphone className="w-6 h-6 text-muted-foreground/40" />
                               </div>
                             )}

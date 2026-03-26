@@ -29,7 +29,7 @@ function AuctionCountdown({ endsAt, onEnd }: { endsAt: string; onEnd?: () => voi
   const isUrgent = remaining < 30;
 
   return (
-    <span className={`font-mono text-sm font-bold ${isUrgent ? "text-[#FF3B3B] animate-pulse" : "text-white/60"}`}>
+    <span className={`font-mono text-sm font-bold ${isUrgent ? "text-destructive animate-pulse" : "text-white/60"}`}>
       {isUrgent && "☠️ "}{m}:{s.toString().padStart(2, "0")}
     </span>
   );
@@ -68,7 +68,7 @@ function ProductCard({ product, auction, onBuy, onBid }: {
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-white truncate">{product.title}</p>
             {product.description && (
-              <p className="text-xs text-[#888] line-clamp-1 mt-0.5">{product.description}</p>
+              <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{product.description}</p>
             )}
 
             {isAuction ? (
@@ -79,19 +79,19 @@ function ProductCard({ product, auction, onBuy, onBid }: {
                     <span className="text-amber-400 ml-1 font-semibold">is winning!</span>
                   </p>
                 ) : (
-                  <p className="text-xs text-[#888]">No bids yet</p>
+                  <p className="text-xs text-muted-foreground">No bids yet</p>
                 )}
                 <div className="flex items-center gap-2 mt-1">
                   <AuctionCountdown endsAt={auction!.ends_at} />
-                  <span className="text-[10px] text-[#888]">{auction!.bid_count} bids</span>
+                  <span className="text-[10px] text-muted-foreground">{auction!.bid_count} bids</span>
                 </div>
               </div>
             ) : (
               <div className="mt-1.5 flex items-center gap-2">
                 {product.quantity_remaining <= 5 && product.quantity_remaining > 0 && (
-                  <span className="text-[10px] font-bold text-[#FF3B3B]">{product.quantity_remaining} left</span>
+                  <span className="text-[10px] font-bold text-destructive">{product.quantity_remaining} left</span>
                 )}
-                <span className="text-xs text-[#555]">Shipping & Tax</span>
+                <span className="text-xs text-muted-foreground">Shipping & Tax</span>
               </div>
             )}
           </div>
@@ -145,7 +145,7 @@ function ProductCard({ product, auction, onBuy, onBid }: {
               )}
             </>
           ) : product.is_sold_out ? (
-            <button disabled className="w-full py-2.5 rounded-xl text-sm font-bold bg-[#333] text-[#666]">
+            <button disabled className="w-full py-2.5 rounded-xl text-sm font-bold bg-[#333] text-muted-foreground">
               Sold Out
             </button>
           ) : (
@@ -328,7 +328,7 @@ export default function ViewerShopOverlay({ streamId, creatorUserId }: Props) {
                         {p.is_active && <span className="px-1 py-0.5 rounded text-[9px] font-bold bg-primary/20 text-primary">LIVE</span>}
                         <p className="text-sm font-semibold text-white truncate">{p.title}</p>
                       </div>
-                      <p className="text-xs text-[#888] mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         {p.type === "auction" ? `Auction · Start $${p.starting_bid}` : `$${p.price}`}
                         {auction && ` · Current $${auction.current_bid}`}
                       </p>

@@ -117,7 +117,7 @@ export default function CreatorProfileEditDrawer({ open, onOpenChange, profile, 
         <div className="space-y-5 mt-6">
           {/* Avatar */}
           <div>
-            <Label className="text-[#888] text-xs mb-1.5">Avatar</Label>
+            <Label className="text-muted-foreground text-xs mb-1.5">Avatar</Label>
             <label className="flex items-center gap-3 cursor-pointer">
               {profile.avatar_url ? (
                 <img src={profile.avatar_url} className="w-14 h-14 rounded-full object-cover" style={{ border: "2px solid #00FF85" }} alt="" />
@@ -126,7 +126,7 @@ export default function CreatorProfileEditDrawer({ open, onOpenChange, profile, 
                   {displayName.charAt(0) || "U"}
                 </div>
               )}
-              <span className="text-sm text-[#00FF85] font-medium flex items-center gap-1">
+              <span className="text-sm text-primary font-medium flex items-center gap-1">
                 {avatarUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                 Change avatar
               </span>
@@ -136,12 +136,12 @@ export default function CreatorProfileEditDrawer({ open, onOpenChange, profile, 
 
           {/* Cover */}
           <div>
-            <Label className="text-[#888] text-xs mb-1.5">Cover Image</Label>
+            <Label className="text-muted-foreground text-xs mb-1.5">Cover Image</Label>
             <label className="block cursor-pointer rounded-lg overflow-hidden h-20" style={{ background: "hsl(var(--background))", border: "1px dashed #1E1E1E" }}>
               {profile.cover_image_url ? (
                 <img src={profile.cover_image_url} className="w-full h-full object-cover" alt="" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-[#555] text-xs">
+                <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
                   {coverUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Click to upload cover"}
                 </div>
               )}
@@ -151,25 +151,25 @@ export default function CreatorProfileEditDrawer({ open, onOpenChange, profile, 
 
           {/* Fields */}
           <div>
-            <Label className="text-[#888] text-xs">Display Name</Label>
+            <Label className="text-muted-foreground text-xs">Display Name</Label>
             <Input value={displayName} onChange={e => setDisplayName(e.target.value)} className="mt-1" style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--card))", color: "white" }} />
           </div>
           <div>
-            <Label className="text-[#888] text-xs">Username</Label>
+            <Label className="text-muted-foreground text-xs">Username</Label>
             <Input value={username} onChange={e => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))} className="mt-1" style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--card))", color: "white" }} placeholder="your_username" />
           </div>
           <div>
-            <Label className="text-[#888] text-xs">Bio</Label>
+            <Label className="text-muted-foreground text-xs">Bio</Label>
             <Textarea value={bio} onChange={e => setBio(e.target.value)} rows={4} className="mt-1" style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--card))", color: "white" }} />
           </div>
           <div>
-            <Label className="text-[#888] text-xs">Creator Type</Label>
+            <Label className="text-muted-foreground text-xs">Creator Type</Label>
             <Input value={creatorType} onChange={e => setCreatorType(e.target.value)} className="mt-1" style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--card))", color: "white" }} placeholder="e.g. Fitness, Tech, Music" />
           </div>
 
           {/* Social Links */}
           <div>
-            <Label className="text-[#888] text-xs mb-2 block">Social Links</Label>
+            <Label className="text-muted-foreground text-xs mb-2 block">Social Links</Label>
             <div className="space-y-2">
               {links.map((link, idx) => (
                 <div key={idx} className="flex items-center gap-2">
@@ -196,14 +196,14 @@ export default function CreatorProfileEditDrawer({ open, onOpenChange, profile, 
                     className="flex-1"
                     style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--card))", color: "white" }}
                   />
-                  <button onClick={() => removeLink(idx)} className="text-[#555] hover:text-[#FF3B3B] transition-colors">
+                  <button onClick={() => removeLink(idx)} className="text-muted-foreground hover:text-destructive transition-colors">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               ))}
             </div>
             {links.length < PLATFORMS.length && (
-              <button onClick={addLink} className="flex items-center gap-1 text-[#00FF85] text-sm mt-2 font-medium">
+              <button onClick={addLink} className="flex items-center gap-1 text-primary text-sm mt-2 font-medium">
                 <Plus className="w-4 h-4" /> Add link
               </button>
             )}

@@ -27,7 +27,7 @@ function AuctionCountdown({ endsAt }: { endsAt: string }) {
   const isUrgent = remaining < 30;
 
   return (
-    <span className={`font-mono text-xs font-bold ${isUrgent ? "text-[#FF3B3B]" : "text-muted-foreground"}`}>
+    <span className={`font-mono text-xs font-bold ${isUrgent ? "text-destructive" : "text-muted-foreground"}`}>
       {isUrgent && "☠️ "}{m}:{s.toString().padStart(2, "0")}
     </span>
   );

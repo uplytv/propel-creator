@@ -208,7 +208,7 @@ const FeedCard = memo(function FeedCard({ item, index, isLiveSection }: FeedCard
 
         {/* LIVE badge top-left */}
         {isLive && (
-          <div className="absolute top-2 left-2 z-20 flex items-center gap-1 px-2 py-0.5 rounded bg-[#FF3B3B] text-white text-[11px] font-bold" style={{ fontFamily: "Space Grotesk, sans-serif" }}>
+          <div className="absolute top-2 left-2 z-20 flex items-center gap-1 px-2 py-0.5 rounded bg-destructive text-white text-[11px] font-bold" style={{ fontFamily: "Space Grotesk, sans-serif" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
             LIVE
           </div>
@@ -278,7 +278,7 @@ const FeedCard = memo(function FeedCard({ item, index, isLiveSection }: FeedCard
 
         {/* Live border indicator */}
         {isLive && isLiveSection && (
-          <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-[#FF3B3B] z-20" />
+          <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-destructive z-20" />
         )}
       </div>
 
@@ -298,7 +298,7 @@ const FeedCard = memo(function FeedCard({ item, index, isLiveSection }: FeedCard
               alt=""
               className={cn(
                 "w-8 h-8 md:w-9 md:h-9 rounded-full object-cover",
-                isLive && "ring-2 ring-[#FF3B3B] animate-pulse"
+                isLive && "ring-2 ring-destructive animate-pulse"
               )}
               loading="lazy"
             />
@@ -340,7 +340,7 @@ const FeedCard = memo(function FeedCard({ item, index, isLiveSection }: FeedCard
             {isLive && (
               <>
                 <span className="mx-1">·</span>
-                <span className="text-[#FF3B3B]">Live now</span>
+                <span className="text-destructive">Live now</span>
               </>
             )}
           </p>

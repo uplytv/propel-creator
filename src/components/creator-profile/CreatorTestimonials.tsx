@@ -109,7 +109,7 @@ export default function CreatorTestimonials({ creatorId, isOwner }: { creatorId:
           <MessageSquareQuote className="w-5 h-5" style={{ color: "hsl(var(--primary))" }} />
           Reviews
           {reviews.length > 0 && (
-            <span className="text-sm font-normal text-[#888] ml-1">
+            <span className="text-sm font-normal text-muted-foreground ml-1">
               ({avgRating.toFixed(1)} · {reviews.length})
             </span>
           )}
@@ -138,11 +138,11 @@ export default function CreatorTestimonials({ creatorId, isOwner }: { creatorId:
             maxLength={500}
             rows={3}
             placeholder="Share your experience..."
-            className="w-full rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#555] resize-none focus:outline-none focus:ring-1 focus:ring-[#00FF85]/40"
+            className="w-full rounded-lg px-3 py-2 text-sm text-white placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary/40"
             style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}
           />
           <div className="flex justify-between items-center mt-2">
-            <span className="text-[#555] text-xs">{body.length}/500</span>
+            <span className="text-muted-foreground text-xs">{body.length}/500</span>
             <button
               onClick={() => submitMutation.mutate()}
               disabled={submitMutation.isPending || !body.trim()}
@@ -172,11 +172,11 @@ export default function CreatorTestimonials({ creatorId, isOwner }: { creatorId:
               </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-white text-sm font-semibold truncate">{review.reviewer?.display_name || "Member"}</p>
-                <p className="text-[#555] text-[11px]">{formatDistanceToNow(new Date(review.created_at), { addSuffix: true })}</p>
+                <p className="text-muted-foreground text-[11px]">{formatDistanceToNow(new Date(review.created_at), { addSuffix: true })}</p>
               </div>
               <StarRating rating={review.rating} />
             </div>
-            {review.body && <p className="text-[#ccc] text-sm leading-relaxed">{review.body}</p>}
+            {review.body && <p className="text-muted-foreground text-sm leading-relaxed">{review.body}</p>}
           </div>
         ))}
       </div>

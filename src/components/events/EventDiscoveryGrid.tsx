@@ -20,9 +20,9 @@ const filters = [
 ];
 
 const typeBadge: Record<string, { emoji: string; color: string; label: string }> = {
-  virtual: { emoji: "🖥️", color: "bg-[#3B82F6]/20 text-[#3B82F6]", label: "Virtual" },
-  in_person: { emoji: "📍", color: "bg-[#F59E0B]/20 text-[#F59E0B]", label: "In Person" },
-  hybrid: { emoji: "🌐", color: "bg-[#8B5CF6]/20 text-[#8B5CF6]", label: "Hybrid" },
+  virtual: { emoji: "🖥️", color: "bg-blue-500/20 text-blue-500", label: "Virtual" },
+  in_person: { emoji: "📍", color: "bg-warning/20 text-warning", label: "In Person" },
+  hybrid: { emoji: "🌐", color: "bg-violet-500/20 text-violet-500", label: "Hybrid" },
 };
 
 function EventCard({ event }: { event: EventRow }) {
@@ -74,7 +74,7 @@ function EventCard({ event }: { event: EventRow }) {
             {event.is_free ? <span className="text-primary">FREE</span> : `$${event.ticket_price}`}
           </span>
           {event.ticket_quantity && event.ticket_quantity - event.tickets_sold <= 20 && !event.is_sold_out && (
-            <span className="text-xs text-[#FF3B3B]">{event.ticket_quantity - event.tickets_sold} left</span>
+            <span className="text-xs text-destructive">{event.ticket_quantity - event.tickets_sold} left</span>
           )}
         </div>
       </div>

@@ -64,7 +64,7 @@ export default function ExitIntentModal() {
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="relative max-w-sm w-full rounded-2xl border border-[#00FF85]/20 bg-[#0A0A0A] p-8 text-center"
+            className="relative max-w-sm w-full rounded-2xl border border-primary/20 bg-background p-8 text-center"
             style={{ boxShadow: "0 0 80px rgba(0,255,133,0.1)" }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -75,8 +75,8 @@ export default function ExitIntentModal() {
               <X className="w-5 h-5" />
             </button>
 
-            <div className="w-14 h-14 rounded-full bg-[#00FF85]/10 flex items-center justify-center mx-auto mb-5">
-              <Flame className="w-7 h-7 text-[#00FF85]" />
+            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-5">
+              <Flame className="w-7 h-7 text-primary" />
             </div>
 
             <h3 className="text-xl font-bold text-white mb-2">
@@ -96,7 +96,7 @@ export default function ExitIntentModal() {
                 onKeyDown={(e) => e.key === "Enter" && handleApply()}
               />
               <Button
-                className="w-full bg-[#00FF85] text-[#0A0A0A] font-bold hover:bg-[#00FF85]/90 border-0 h-12 active:scale-[0.96] transition-transform"
+                className="w-full bg-primary text-foreground font-bold hover:bg-primary/90 border-0 h-12 active:scale-[0.96] transition-transform"
                 onClick={handleApply}
               >
                 Claim My Spot <ArrowRight className="ml-2 w-4 h-4" />

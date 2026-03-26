@@ -18,9 +18,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 const eventTypes = [
-  { value: "virtual", label: "Virtual", icon: Monitor, emoji: "🖥️", color: "border-[#3B82F6] bg-[#3B82F6]/10 text-[#3B82F6]" },
-  { value: "in_person", label: "In Person", icon: MapPin, emoji: "📍", color: "border-[#F59E0B] bg-[#F59E0B]/10 text-[#F59E0B]" },
-  { value: "hybrid", label: "Hybrid", icon: Globe, emoji: "🌐", color: "border-[#8B5CF6] bg-[#8B5CF6]/10 text-[#8B5CF6]" },
+  { value: "virtual", label: "Virtual", icon: Monitor, emoji: "🖥️", color: "border-blue-500 bg-blue-500/10 text-blue-500" },
+  { value: "in_person", label: "In Person", icon: MapPin, emoji: "📍", color: "border-warning bg-warning/10 text-warning" },
+  { value: "hybrid", label: "Hybrid", icon: Globe, emoji: "🌐", color: "border-violet-500 bg-violet-500/10 text-violet-500" },
 ];
 
 const refundPolicies = [
