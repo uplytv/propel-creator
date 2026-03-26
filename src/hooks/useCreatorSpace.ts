@@ -146,10 +146,7 @@ export function useToggleLike() {
 
       if (existing) {
         await supabase.from("community_post_likes").delete().eq("id", (existing as any).id);
-        await supabase
-          .from("community_posts")
-          .update({ like_count: supabase.rpc })
-          .eq("id", postId);
+        // Decrement handled below
         // Decrement manually
         const { data: post } = await supabase.from("community_posts").select("like_count").eq("id", postId).single();
         await supabase.from("community_posts").update({ like_count: Math.max(0, ((post as any)?.like_count || 1) - 1) }).eq("id", postId);
