@@ -22,7 +22,7 @@ interface ExternalEncoderViewProps {
   soundboard: {
     sounds: any[];
     playing: string | null;
-    playSound: (id: string) => void;
+    playSound: (sound: any) => void;
     volume: number;
     setVolume: (v: number) => void;
   };
