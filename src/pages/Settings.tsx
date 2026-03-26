@@ -2,7 +2,8 @@ import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 import {
   User, Bell, Shield, CreditCard, Palette, Mail,
-  Camera, Save, Eye, EyeOff, Trash2, Download, Megaphone, Loader2, Users, Ticket, Bot
+  Camera, Save, Eye, EyeOff, Trash2, Download, Megaphone, Loader2, Users, Ticket, Bot,
+  Sun, Moon, Monitor
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useApp } from "@/context/AppContext";
@@ -269,6 +270,36 @@ export default function Settings() {
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Save Profile
             </button>
+
+            <Separator />
+
+            {/* Appearance */}
+            <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-4">
+              <div className="flex items-center gap-3">
+                <Palette className="w-5 h-5 text-primary" />
+                <h2 className="text-lg font-semibold text-foreground">Appearance</h2>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { value: "light" as const, label: "Light", icon: Sun },
+                  { value: "dark" as const, label: "Dark", icon: Moon },
+                  { value: "system" as const, label: "System", icon: Monitor },
+                ]).map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setTheme(opt.value)}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-xl border text-sm font-medium transition-colors ${
+                      theme === opt.value
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border text-muted-foreground hover:bg-secondary/40 hover:text-foreground"
+                    }`}
+                  >
+                    <opt.icon className="w-5 h-5" />
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             <Separator />
 

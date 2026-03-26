@@ -50,6 +50,20 @@ function buildNewSubscriberEmailHtml(subscriberName: string, tierName: string, a
 }
 
 async function updateWallet(supabase: any, creatorId: string, amount: number, fee: number, description: string, paymentIntentId: string | null) {
+  // Guard: skip if already credited for this payment intent (idempotency)
+  if (paymentIntentId) {
+    const { data: existingTx } = await supabase
+      .from("transactions")
+      .select("id")
+      .eq("stripe_payment_intent_id", paymentIntentId)
+      .eq("status", "completed")
+      .maybeSingle();
+    if (existingTx) {
+      logStep("Wallet update skipped (already credited)", { paymentIntentId });
+      return;
+    }
+  }
+
   const { data: creatorWallet } = await supabase
     .from("wallets").select("id, available_balance, lifetime_earned").eq("user_id", creatorId).maybeSingle();
   if (creatorWallet) {
