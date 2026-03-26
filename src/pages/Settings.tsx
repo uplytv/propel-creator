@@ -365,6 +365,56 @@ export default function Settings() {
               ))}
             </div>
 
+            {/* Live & Stream Notifications */}
+            <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-4">
+              <div className="flex items-center gap-3">
+                <Radio className="w-5 h-5 text-primary" />
+                <h2 className="text-lg font-semibold">Live & Streams</h2>
+              </div>
+              {[
+                { key: "live_start_push" as const, label: "Creator Goes Live", desc: "Get notified when a creator you follow starts streaming" },
+                { key: "stream_raid_push" as const, label: "Raids & Co-streams", desc: "Alerts when you receive a raid or co-stream invite" },
+              ].map(pref => (
+                <div key={pref.key} className="flex items-center justify-between py-2">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{pref.label}</p>
+                    <p className="text-xs text-muted-foreground">{pref.desc}</p>
+                  </div>
+                  <Switch
+                    checked={localStorage.getItem(`notif_${pref.key}`) !== "false"}
+                    onCheckedChange={(checked) => {
+                      localStorage.setItem(`notif_${pref.key}`, String(checked));
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Purchases & Events */}
+            <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-4">
+              <div className="flex items-center gap-3">
+                <CreditCard className="w-5 h-5 text-primary" />
+                <h2 className="text-lg font-semibold">Purchases & Events</h2>
+              </div>
+              {[
+                { key: "purchase_receipt_email" as const, label: "Purchase Receipts", desc: "Email confirmation when you buy a product or course" },
+                { key: "event_reminder_push" as const, label: "Event Reminders", desc: "Reminder 1 hour before events you've RSVP'd to" },
+              ].map(pref => (
+                <div key={pref.key} className="flex items-center justify-between py-2">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{pref.label}</p>
+                    <p className="text-xs text-muted-foreground">{pref.desc}</p>
+                  </div>
+                  <Switch
+                    checked={localStorage.getItem(`notif_${pref.key}`) !== "false"}
+                    onCheckedChange={(checked) => {
+                      localStorage.setItem(`notif_${pref.key}`, String(checked));
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+
             {/* In-App Notifications */}
             <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-4">
               <div className="flex items-center gap-3">

@@ -61,14 +61,20 @@ export default function Shorts() {
     if (currentIndex > 0) setCurrentIndex((i) => i - 1);
   }, [currentIndex]);
 
-  // Touch/swipe handling
+  // Touch/swipe handling with velocity detection
   const touchStartY = useRef(0);
+  const touchStartTime = useRef(0);
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
+    touchStartTime.current = Date.now();
   };
   const handleTouchEnd = (e: React.TouchEvent) => {
     const diff = touchStartY.current - e.changedTouches[0].clientY;
-    if (Math.abs(diff) > 60) {
+    const elapsed = Date.now() - touchStartTime.current;
+    const velocity = Math.abs(diff) / elapsed;
+    // Lower threshold for fast swipes (flicks)
+    const threshold = velocity > 0.5 ? 30 : 60;
+    if (Math.abs(diff) > threshold) {
       if (diff > 0) goNext();
       else goPrev();
     }
