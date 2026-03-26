@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Home } from "lucide-react";
 
@@ -6,7 +7,7 @@ interface BackNavProps {
   label?: string;
 }
 
-export default function BackNav({ fallback = "/dashboard", label }: BackNavProps) {
+const BackNav = forwardRef<HTMLDivElement, BackNavProps>(function BackNav({ fallback = "/dashboard", label }, ref) {
   const navigate = useNavigate();
 
   const handleBack = () => {
@@ -18,7 +19,7 @@ export default function BackNav({ fallback = "/dashboard", label }: BackNavProps
   };
 
   return (
-    <div className="flex items-center gap-1 px-3 py-2">
+    <div ref={ref} className="flex items-center gap-1 px-3 py-2">
       <button
         onClick={handleBack}
         className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
@@ -34,4 +35,6 @@ export default function BackNav({ fallback = "/dashboard", label }: BackNavProps
       </button>
     </div>
   );
-}
+});
+
+export default BackNav;
