@@ -38,21 +38,30 @@ import ClipCreator from "@/components/clips/ClipCreator";
 import SharePanel from "@/components/share/SharePanel";
 import SEOHead from "@/components/SEOHead";
 
-function StreamEndedState({ streamId, status, creatorId }: { streamId: string; status: string; creatorId: string }) {
+function StreamEndedState({ streamId, status, creatorId, creatorName, creatorAvatar }: { streamId: string; status: string; creatorId: string; creatorName?: string; creatorAvatar?: string }) {
   const navigate = useNavigate();
   const [vodId, setVodId] = useState<string | null>(null);
+  const [creatorUsername, setCreatorUsername] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
     const checkVod = async () => {
-      const { data } = await supabase
-        .from('stream_recordings')
-        .select('id')
-        .eq('creator_id', creatorId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-      if (data) setVodId(data.id);
+      const [{ data: rec }, { data: prof }] = await Promise.all([
+        supabase
+          .from('stream_recordings')
+          .select('id')
+          .eq('creator_id', creatorId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single(),
+        supabase
+          .from('profiles')
+          .select('username')
+          .eq('user_id', creatorId)
+          .single(),
+      ]);
+      if (rec) setVodId(rec.id);
+      if (prof?.username) setCreatorUsername(prof.username);
       setChecking(false);
     };
     checkVod();
@@ -60,18 +69,25 @@ function StreamEndedState({ streamId, status, creatorId }: { streamId: string; s
 
   return (
     <div className="w-full aspect-video bg-muted/50 flex items-center justify-center border-b border-border">
-      <div className="text-center">
+      <div className="text-center px-4">
         <Radio className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
         <h2 className="text-lg font-bold text-foreground mb-1">
           {status === 'idle' ? "Stream hasn't started yet" : "Stream has ended"}
         </h2>
         <p className="text-sm text-muted-foreground mb-4">
-          {status === 'idle' ? "Check back soon or browse other live streams." : "This stream is no longer live."}
+          {status === 'idle'
+            ? `Check back soon or browse ${creatorName ? creatorName + "'s profile" : "other live streams"}.`
+            : `This stream is no longer live.${creatorName ? ` Check out ${creatorName}'s profile for more content.` : ""}`}
         </p>
-        <div className="flex items-center justify-center gap-3">
+        <div className="flex flex-wrap items-center justify-center gap-3">
           {vodId && (
             <Button variant="default" size="sm" onClick={() => navigate(`/stream/${vodId}?type=recording`)}>
               Watch Recording
+            </Button>
+          )}
+          {creatorUsername && (
+            <Button variant="outline" size="sm" onClick={() => navigate(`/creator/${creatorUsername}`)}>
+              View Creator Profile
             </Button>
           )}
           <Button variant="outline" size="sm" onClick={() => navigate("/live")}>
