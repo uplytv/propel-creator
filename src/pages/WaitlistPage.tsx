@@ -249,7 +249,7 @@ export default function WaitlistPage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             className="rounded-xl p-6 mb-6 text-center"
-            style={{ background: "#111111", border: "2px solid hsl(var(--primary))" }}
+            style={{ background: "hsl(var(--background))", border: "2px solid hsl(var(--primary))" }}
           >
             <p className="text-[10px] font-semibold tracking-widest uppercase mb-1 text-muted-foreground">YOUR POSITION</p>
             <p className="text-5xl font-extrabold text-primary mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>

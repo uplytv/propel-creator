@@ -987,11 +987,11 @@ export default function BroadcastStudio({
                           <span className="text-[11px] font-semibold text-white">{engagement.viewerCount}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <Zap className="w-3.5 h-3.5" style={{ color: "#00FF85" }} />
+                          <Zap className="w-3.5 h-3.5" style={{ color: "hsl(var(--primary))" }} />
                           <div className="w-12 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.1)" }}>
                             <motion.div
                               className="h-full rounded-full"
-                              style={{ backgroundColor: "#00FF85" }}
+                              style={{ backgroundColor: "hsl(var(--primary))" }}
                               animate={{ width: `${engagement.energyScore}%` }}
                             />
                           </div>
@@ -1073,7 +1073,7 @@ export default function BroadcastStudio({
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: -20, opacity: 0 }}
                         className="absolute top-16 inset-x-0 z-20 pointer-events-none mx-auto w-fit rounded-xl px-4 py-2 text-xs font-bold text-center"
-                        style={{ backgroundColor: "rgba(0,255,133,0.15)", color: "#00FF85", backdropFilter: "blur(12px)" }}
+                        style={{ backgroundColor: "rgba(0,255,133,0.15)", color: "hsl(var(--primary))", backdropFilter: "blur(12px)" }}
                       >
                         {coachingNudge}
                       </motion.div>
@@ -1096,7 +1096,7 @@ export default function BroadcastStudio({
                               className="text-[13px] leading-tight"
                               style={{ textShadow: "0 1px 4px rgba(0,0,0,0.8)" }}
                             >
-                              <span className="font-bold" style={{ color: isCreator ? "#FFD700" : "#00FF85" }}>
+                              <span className="font-bold" style={{ color: isCreator ? "hsl(var(--warning))" : "hsl(var(--primary))" }}>
                                 {isCreator && "⭐ "}{msg.username}
                               </span>
                               <span className="text-white/90 ml-1.5">{msg.message}</span>
@@ -1490,7 +1490,7 @@ export default function BroadcastStudio({
                 <button
                   onClick={handleLiveChatSend}
                   className="p-2.5 rounded-xl"
-                  style={{ backgroundColor: "#00FF85" }}
+                  style={{ backgroundColor: "hsl(var(--primary))" }}
                 >
                   <Send className="w-4 h-4 text-black" />
                 </button>
@@ -1580,7 +1580,7 @@ export default function BroadcastStudio({
                     style={{
                       height: `${Math.max(4, (i + 1) * 2)}px`,
                       backgroundColor: audioLevel > i / 8
-                        ? i < 5 ? "#22c55e" : i < 7 ? "#eab308" : "#ef4444"
+                        ? i < 5 ? "hsl(var(--success))" : i < 7 ? "hsl(var(--warning))" : "hsl(var(--destructive))"
                         : "rgba(255,255,255,0.2)",
                     }}
                   />

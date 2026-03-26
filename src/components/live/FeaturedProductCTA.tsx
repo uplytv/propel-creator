@@ -180,7 +180,7 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
         {enrollCount > 0 && (
           <motion.p
             key={enrollCount}
-            initial={{ scale: 1.2, color: "#00FF85" }}
+            initial={{ scale: 1.2, color: "hsl(var(--primary))" }}
             animate={{ scale: 1, color: "rgba(255,255,255,0.5)" }}
             className="text-[10px] mt-2 text-center font-semibold"
           >
@@ -208,7 +208,7 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
       >
         <div
           className="mx-2 mb-2 rounded-2xl border overflow-hidden"
-          style={{ backgroundColor: "rgba(13,13,13,0.95)", borderColor: "#1E1E1E", backdropFilter: "blur(16px)" }}
+          style={{ backgroundColor: "rgba(13,13,13,0.95)", borderColor: "hsl(var(--card))", backdropFilter: "blur(16px)" }}
         >
           <div className="p-3 flex items-center gap-3">
             {product.image_url ? (
@@ -221,7 +221,7 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
             )}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 mb-0.5">
-                <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: "#00FF85" }}>
+                <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--primary))" }}>
                   {getTypeLabel(product.type)}
                 </span>
               </div>
@@ -234,8 +234,8 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
               className="px-4 py-2.5 rounded-xl text-xs font-bold flex-shrink-0 transition-all"
               style={
                 enrolled
-                  ? { backgroundColor: "rgba(0,255,133,0.1)", color: "#00FF85", border: "1px solid rgba(0,255,133,0.3)" }
-                  : { backgroundColor: "#00FF85", color: "#0A0A0A" }
+                  ? { backgroundColor: "rgba(0,255,133,0.1)", color: "hsl(var(--primary))", border: "1px solid rgba(0,255,133,0.3)" }
+                  : { backgroundColor: "hsl(var(--primary))", color: "hsl(var(--background))" }
               }
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : enrolled ? (
@@ -263,11 +263,11 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
               exit={{ y: 100 }}
               onClick={e => e.stopPropagation()}
               className="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden"
-              style={{ backgroundColor: "#111111" }}
+              style={{ backgroundColor: "hsl(var(--background))" }}
             >
               {/* Header */}
               <div className="flex items-center justify-between px-4 pt-4 pb-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#00FF85" }}>
+                <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--primary))" }}>
                   {getTypeLabel(product.type)}
                 </span>
                 <button onClick={() => !loading && setModalOpen(false)} className="text-white/40 hover:text-white">
@@ -298,7 +298,7 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
                     <button
                       onClick={() => { setModalOpen(false); navigate("/auth"); }}
                       className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2"
-                      style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}
+                      style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--background))" }}
                     >
                       <LogIn className="w-4 h-4" /> Sign In
                     </button>
@@ -313,7 +313,7 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
                       onClick={handleFreeJoin}
                       disabled={loading}
                       className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2"
-                      style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}
+                      style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--background))" }}
                     >
                       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Get Instant Access"}
                     </button>
@@ -328,7 +328,7 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
                       onClick={handlePaidPurchase}
                       disabled={loading}
                       className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2"
-                      style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}
+                      style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--background))" }}
                     >
                       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : `Buy Now · $${product.price}`}
                     </button>
@@ -345,14 +345,14 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
                   className="px-4 pb-6 text-center"
                 >
                   <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: "rgba(0,255,133,0.1)" }}>
-                    <Check className="w-6 h-6" style={{ color: "#00FF85" }} />
+                    <Check className="w-6 h-6" style={{ color: "hsl(var(--primary))" }} />
                   </div>
                   <p className="text-sm font-bold text-white mb-1">You're in!</p>
                   <p className="text-xs text-white/50 mb-3">Access {product.name} now</p>
                   <button
                     onClick={() => navigate(`/community/${creatorId}`, { state: { tab: product.type === "course" ? "classroom" : "community" } })}
                     className="px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 mx-auto"
-                    style={{ backgroundColor: "rgba(0,255,133,0.1)", color: "#00FF85" }}
+                    style={{ backgroundColor: "rgba(0,255,133,0.1)", color: "hsl(var(--primary))" }}
                   >
                     <ExternalLink className="w-3.5 h-3.5" /> Open {getTypeLabel(product.type)}
                   </button>

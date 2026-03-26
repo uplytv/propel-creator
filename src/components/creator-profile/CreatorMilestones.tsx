@@ -11,14 +11,14 @@ interface MilestoneConfig {
 }
 
 const MILESTONES: MilestoneConfig[] = [
-  { key: "first_stream", label: "First Stream", icon: Radio, check: (s) => s.streams > 0, color: "#FF3B3B" },
-  { key: "first_post", label: "Community Starter", icon: Star, check: (s) => s.posts > 0, color: "#FFD700" },
-  { key: "10_members", label: "10 Members", icon: Users, check: (s) => s.members >= 10, color: "#00FF85" },
-  { key: "100_members", label: "100 Members", icon: Users, check: (s) => s.members >= 100, color: "#00BFFF" },
+  { key: "first_stream", label: "First Stream", icon: Radio, check: (s) => s.streams > 0, color: "hsl(var(--destructive))" },
+  { key: "first_post", label: "Community Starter", icon: Star, check: (s) => s.posts > 0, color: "hsl(var(--warning))" },
+  { key: "10_members", label: "10 Members", icon: Users, check: (s) => s.members >= 10, color: "hsl(var(--primary))" },
+  { key: "100_members", label: "100 Members", icon: Users, check: (s) => s.members >= 100, color: "hsl(195 100% 50%)" },
   { key: "first_product", label: "Merchant", icon: ShoppingBag, check: (s) => s.products > 0, color: "#FF69B4" },
   { key: "first_course", label: "Educator", icon: BookOpen, check: (s) => s.lessons > 0, color: "#9B59B6" },
   { key: "10_recordings", label: "Content Machine", icon: Film, check: (s) => s.recordings >= 10, color: "#E67E22" },
-  { key: "1000_members", label: "1K Community", icon: Zap, check: (s) => s.members >= 1000, color: "#00FF85" },
+  { key: "1000_members", label: "1K Community", icon: Zap, check: (s) => s.members >= 1000, color: "hsl(var(--primary))" },
 ];
 
 export default function CreatorMilestones({ creatorId }: { creatorId: string }) {
@@ -53,7 +53,7 @@ export default function CreatorMilestones({ creatorId }: { creatorId: string }) 
   return (
     <section className="max-w-[720px] mx-auto px-4 mb-6">
       <h2 className="text-white text-lg font-bold mb-3 flex items-center gap-2">
-        <Trophy className="w-5 h-5" style={{ color: "#FFD700" }} /> Milestones
+        <Trophy className="w-5 h-5" style={{ color: "hsl(var(--warning))" }} /> Milestones
       </h2>
       <div className="flex flex-wrap gap-2">
         {earned.map(m => {

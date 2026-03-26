@@ -106,7 +106,7 @@ export default function ClipCreator({ sourceAssetId, creatorId, duration, playba
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#111] border border-white/10 text-sm font-medium text-white hover:border-[#00FF85]/40 hover:text-[#00FF85] transition-all"
+        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-background border border-white/10 text-sm font-medium text-white hover:border-primary/40 hover:text-primary transition-all"
       >
         <Scissors className="w-4 h-4" />
         Create Clip
@@ -120,22 +120,22 @@ export default function ClipCreator({ sourceAssetId, creatorId, duration, playba
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="p-4 rounded-xl bg-[#111] border border-white/10"
+        className="p-4 rounded-xl bg-background border border-white/10"
       >
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-bold text-white flex items-center gap-2">
-            <Check className="w-4 h-4 text-[#00FF85]" /> Clip Created!
+            <Check className="w-4 h-4 text-primary" /> Clip Created!
           </h3>
-          <button onClick={() => { setShareUrl(null); setIsOpen(false); setCaption(""); }} className="text-[#888] hover:text-white">
+          <button onClick={() => { setShareUrl(null); setIsOpen(false); setCaption(""); }} className="text-muted-foreground hover:text-white">
             <X className="w-4 h-4" />
           </button>
         </div>
-        <p className="text-xs text-[#888] mb-3">Your clip is processing. Share it now:</p>
+        <p className="text-xs text-muted-foreground mb-3">Your clip is processing. Share it now:</p>
         <div className="flex gap-2">
-          <div className="flex-1 px-3 py-2 rounded-lg bg-[#0A0A0A] border border-white/5 text-xs text-[#888] truncate">
+          <div className="flex-1 px-3 py-2 rounded-lg bg-background border border-white/5 text-xs text-muted-foreground truncate">
             {shareUrl}
           </div>
-          <Button size="sm" onClick={handleCopy} className="bg-[#00FF85] text-[#0A0A0A] font-bold hover:brightness-110 border-0">
+          <Button size="sm" onClick={handleCopy} className="bg-primary text-foreground font-bold hover:brightness-110 border-0">
             {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
           </Button>
         </div>
@@ -147,13 +147,13 @@ export default function ClipCreator({ sourceAssetId, creatorId, duration, playba
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="p-4 rounded-xl bg-[#111] border border-white/10"
+      className="p-4 rounded-xl bg-background border border-white/10"
     >
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-bold text-white flex items-center gap-2">
-          <Scissors className="w-4 h-4 text-[#00FF85]" /> Create Clip
+          <Scissors className="w-4 h-4 text-primary" /> Create Clip
         </h3>
-        <button onClick={() => setIsOpen(false)} className="text-[#888] hover:text-white">
+        <button onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-white">
           <X className="w-4 h-4" />
         </button>
       </div>
@@ -161,7 +161,7 @@ export default function ClipCreator({ sourceAssetId, creatorId, duration, playba
       {/* Timeline track */}
       <div
         ref={trackRef}
-        className="relative h-10 rounded-lg bg-[#0A0A0A] border border-white/5 cursor-crosshair select-none mb-3"
+        className="relative h-10 rounded-lg bg-background border border-white/5 cursor-crosshair select-none mb-3"
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
       >
@@ -183,7 +183,7 @@ export default function ClipCreator({ sourceAssetId, creatorId, duration, playba
 
         {/* Selected range highlight */}
         <div
-          className="absolute top-0 bottom-0 bg-[#00FF85]/20 border-y-2 border-[#00FF85]/50"
+          className="absolute top-0 bottom-0 bg-primary/20 border-y-2 border-primary/50"
           style={{
             left: `${(startTime / duration) * 100}%`,
             width: `${((endTime - startTime) / duration) * 100}%`,
@@ -196,8 +196,8 @@ export default function ClipCreator({ sourceAssetId, creatorId, duration, playba
           style={{ left: `calc(${(startTime / duration) * 100}% - 6px)` }}
           onPointerDown={handlePointerDown("start")}
         >
-          <div className="w-full h-full rounded-l bg-[#00FF85] group-hover:bg-[#00FF85]/80 transition-colors flex items-center justify-center">
-            <div className="w-0.5 h-4 bg-[#0A0A0A] rounded" />
+          <div className="w-full h-full rounded-l bg-primary group-hover:bg-primary/80 transition-colors flex items-center justify-center">
+            <div className="w-0.5 h-4 bg-background rounded" />
           </div>
         </div>
 
@@ -207,16 +207,16 @@ export default function ClipCreator({ sourceAssetId, creatorId, duration, playba
           style={{ left: `calc(${(endTime / duration) * 100}% - 6px)` }}
           onPointerDown={handlePointerDown("end")}
         >
-          <div className="w-full h-full rounded-r bg-[#00FF85] group-hover:bg-[#00FF85]/80 transition-colors flex items-center justify-center">
-            <div className="w-0.5 h-4 bg-[#0A0A0A] rounded" />
+          <div className="w-full h-full rounded-r bg-primary group-hover:bg-primary/80 transition-colors flex items-center justify-center">
+            <div className="w-0.5 h-4 bg-background rounded" />
           </div>
         </div>
       </div>
 
       {/* Time labels */}
-      <div className="flex items-center justify-between text-[10px] text-[#888] mb-3">
+      <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-3">
         <span>{formatTime(startTime)}</span>
-        <span className={`font-semibold ${isValid ? "text-[#00FF85]" : "text-red-400"}`}>
+        <span className={`font-semibold ${isValid ? "text-primary" : "text-red-400"}`}>
           {formatTime(clipDuration)} clip {!isValid && "(5-60s required)"}
         </span>
         <span>{formatTime(endTime)}</span>
@@ -227,7 +227,7 @@ export default function ClipCreator({ sourceAssetId, creatorId, duration, playba
         value={caption}
         onChange={(e) => setCaption(e.target.value)}
         placeholder="Add a clip title..."
-        className="bg-[#0A0A0A] border-white/10 text-white placeholder:text-[#888] text-sm mb-3 focus-visible:ring-[#00FF85]/50"
+        className="bg-background border-white/10 text-white placeholder:text-muted-foreground text-sm mb-3 focus-visible:ring-primary/50"
         maxLength={100}
       />
 
@@ -235,7 +235,7 @@ export default function ClipCreator({ sourceAssetId, creatorId, duration, playba
       <Button
         onClick={handleCreate}
         disabled={creating || !isValid}
-        className="w-full bg-[#00FF85] text-[#0A0A0A] font-bold hover:brightness-110 border-0 disabled:opacity-50"
+        className="w-full bg-primary text-foreground font-bold hover:brightness-110 border-0 disabled:opacity-50"
       >
         {creating ? (
           <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Creating Clip...</>

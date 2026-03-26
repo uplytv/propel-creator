@@ -110,23 +110,23 @@ export default function CreatorProfileEditDrawer({ open, onOpenChange, profile, 
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto" style={{ background: "#0A0A0A", borderColor: "#1E1E1E" }}>
+      <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto" style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--card))" }}>
         <SheetHeader>
           <SheetTitle className="text-white">Edit Profile</SheetTitle>
         </SheetHeader>
         <div className="space-y-5 mt-6">
           {/* Avatar */}
           <div>
-            <Label className="text-[#888] text-xs mb-1.5">Avatar</Label>
+            <Label className="text-muted-foreground text-xs mb-1.5">Avatar</Label>
             <label className="flex items-center gap-3 cursor-pointer">
               {profile.avatar_url ? (
                 <img src={profile.avatar_url} className="w-14 h-14 rounded-full object-cover" style={{ border: "2px solid #00FF85" }} alt="" />
               ) : (
-                <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: "#1a1a1a", border: "2px solid #00FF85", color: "#00FF85" }}>
+                <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--card))", border: "2px solid #00FF85", color: "hsl(var(--primary))" }}>
                   {displayName.charAt(0) || "U"}
                 </div>
               )}
-              <span className="text-sm text-[#00FF85] font-medium flex items-center gap-1">
+              <span className="text-sm text-primary font-medium flex items-center gap-1">
                 {avatarUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                 Change avatar
               </span>
@@ -136,12 +136,12 @@ export default function CreatorProfileEditDrawer({ open, onOpenChange, profile, 
 
           {/* Cover */}
           <div>
-            <Label className="text-[#888] text-xs mb-1.5">Cover Image</Label>
-            <label className="block cursor-pointer rounded-lg overflow-hidden h-20" style={{ background: "#111", border: "1px dashed #1E1E1E" }}>
+            <Label className="text-muted-foreground text-xs mb-1.5">Cover Image</Label>
+            <label className="block cursor-pointer rounded-lg overflow-hidden h-20" style={{ background: "hsl(var(--background))", border: "1px dashed #1E1E1E" }}>
               {profile.cover_image_url ? (
                 <img src={profile.cover_image_url} className="w-full h-full object-cover" alt="" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-[#555] text-xs">
+                <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
                   {coverUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Click to upload cover"}
                 </div>
               )}
@@ -151,25 +151,25 @@ export default function CreatorProfileEditDrawer({ open, onOpenChange, profile, 
 
           {/* Fields */}
           <div>
-            <Label className="text-[#888] text-xs">Display Name</Label>
-            <Input value={displayName} onChange={e => setDisplayName(e.target.value)} className="mt-1" style={{ background: "#111", borderColor: "#1E1E1E", color: "white" }} />
+            <Label className="text-muted-foreground text-xs">Display Name</Label>
+            <Input value={displayName} onChange={e => setDisplayName(e.target.value)} className="mt-1" style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--card))", color: "white" }} />
           </div>
           <div>
-            <Label className="text-[#888] text-xs">Username</Label>
-            <Input value={username} onChange={e => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))} className="mt-1" style={{ background: "#111", borderColor: "#1E1E1E", color: "white" }} placeholder="your_username" />
+            <Label className="text-muted-foreground text-xs">Username</Label>
+            <Input value={username} onChange={e => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))} className="mt-1" style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--card))", color: "white" }} placeholder="your_username" />
           </div>
           <div>
-            <Label className="text-[#888] text-xs">Bio</Label>
-            <Textarea value={bio} onChange={e => setBio(e.target.value)} rows={4} className="mt-1" style={{ background: "#111", borderColor: "#1E1E1E", color: "white" }} />
+            <Label className="text-muted-foreground text-xs">Bio</Label>
+            <Textarea value={bio} onChange={e => setBio(e.target.value)} rows={4} className="mt-1" style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--card))", color: "white" }} />
           </div>
           <div>
-            <Label className="text-[#888] text-xs">Creator Type</Label>
-            <Input value={creatorType} onChange={e => setCreatorType(e.target.value)} className="mt-1" style={{ background: "#111", borderColor: "#1E1E1E", color: "white" }} placeholder="e.g. Fitness, Tech, Music" />
+            <Label className="text-muted-foreground text-xs">Creator Type</Label>
+            <Input value={creatorType} onChange={e => setCreatorType(e.target.value)} className="mt-1" style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--card))", color: "white" }} placeholder="e.g. Fitness, Tech, Music" />
           </div>
 
           {/* Social Links */}
           <div>
-            <Label className="text-[#888] text-xs mb-2 block">Social Links</Label>
+            <Label className="text-muted-foreground text-xs mb-2 block">Social Links</Label>
             <div className="space-y-2">
               {links.map((link, idx) => (
                 <div key={idx} className="flex items-center gap-2">
@@ -181,7 +181,7 @@ export default function CreatorProfileEditDrawer({ open, onOpenChange, profile, 
                       setLinks(updated);
                     }}
                     className="rounded-md px-2 py-2 text-xs w-28 shrink-0"
-                    style={{ background: "#111", borderColor: "#1E1E1E", color: "white", border: "1px solid #1E1E1E" }}
+                    style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--card))", color: "white", border: "1px solid #1E1E1E" }}
                   >
                     {PLATFORMS.map(p => <option key={p} value={p}>{p}</option>)}
                   </select>
@@ -194,16 +194,16 @@ export default function CreatorProfileEditDrawer({ open, onOpenChange, profile, 
                     }}
                     placeholder="https://..."
                     className="flex-1"
-                    style={{ background: "#111", borderColor: "#1E1E1E", color: "white" }}
+                    style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--card))", color: "white" }}
                   />
-                  <button onClick={() => removeLink(idx)} className="text-[#555] hover:text-[#FF3B3B] transition-colors">
+                  <button onClick={() => removeLink(idx)} className="text-muted-foreground hover:text-destructive transition-colors">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               ))}
             </div>
             {links.length < PLATFORMS.length && (
-              <button onClick={addLink} className="flex items-center gap-1 text-[#00FF85] text-sm mt-2 font-medium">
+              <button onClick={addLink} className="flex items-center gap-1 text-primary text-sm mt-2 font-medium">
                 <Plus className="w-4 h-4" /> Add link
               </button>
             )}
@@ -213,7 +213,7 @@ export default function CreatorProfileEditDrawer({ open, onOpenChange, profile, 
             onClick={handleSave}
             disabled={saving}
             className="w-full font-bold"
-            style={{ background: "#00FF85", color: "#0A0A0A" }}
+            style={{ background: "hsl(var(--primary))", color: "hsl(var(--background))" }}
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
             Save Changes

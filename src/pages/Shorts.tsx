@@ -121,7 +121,7 @@ export default function Shorts() {
   if (loading && shorts.length === 0) {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#00FF85] border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>
     );
   }
@@ -129,10 +129,10 @@ export default function Shorts() {
   if (shorts.length === 0) {
     return (
       <div className="fixed inset-0 bg-black flex flex-col items-center justify-center text-white">
-        <Scissors className="w-12 h-12 mb-4 text-[#888]" />
+        <Scissors className="w-12 h-12 mb-4 text-muted-foreground" />
         <h2 className="text-xl font-bold mb-2">No shorts yet</h2>
         <p className="text-sm text-white/60">Clips from live streams will appear here.</p>
-        <button onClick={() => navigate(-1)} className="mt-6 px-4 py-2 rounded-lg bg-[#00FF85] text-[#0A0A0A] text-sm font-bold hover:brightness-110 transition">
+        <button onClick={() => navigate(-1)} className="mt-6 px-4 py-2 rounded-lg bg-primary text-foreground text-sm font-bold hover:brightness-110 transition">
           Go Back
         </button>
       </div>
@@ -197,7 +197,7 @@ export default function Shorts() {
 
             {/* Source badge */}
             {currentShort.source === "clip" && (
-              <div className="absolute top-16 left-4 z-10 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold text-[#00FF85] bg-[#00FF85]/10 border border-[#00FF85]/30">
+              <div className="absolute top-16 left-4 z-10 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold text-primary bg-primary/10 border border-primary/30">
                 <Scissors className="w-3 h-3" /> CLIP
               </div>
             )}
@@ -210,7 +210,7 @@ export default function Shorts() {
               >
                 <Avatar className="w-10 h-10 border-2 border-white/30">
                   <AvatarImage src={currentShort.creator_avatar || undefined} />
-                  <AvatarFallback className="bg-[#00FF85]/20 text-[#00FF85] text-xs">
+                  <AvatarFallback className="bg-primary/20 text-primary text-xs">
                     {currentShort.creator_name?.slice(0, 2)}
                   </AvatarFallback>
                 </Avatar>
@@ -242,7 +242,7 @@ export default function Shorts() {
                 <span className="text-white text-[10px] font-semibold">0</span>
               </button>
               <button onClick={handleShare} className="flex flex-col items-center gap-1">
-                {copied ? <Check className="w-7 h-7 text-[#00FF85]" /> : <Share2 className="w-7 h-7 text-white" />}
+                {copied ? <Check className="w-7 h-7 text-primary" /> : <Share2 className="w-7 h-7 text-white" />}
                 <span className="text-white text-[10px] font-semibold">{copied ? "Copied" : "Share"}</span>
               </button>
             </div>
@@ -275,7 +275,7 @@ export default function Shorts() {
           return (
             <div
               key={s.id}
-              className={`w-1 rounded-full transition-all ${realIdx === currentIndex ? "h-4 bg-[#00FF85]" : "h-1.5 bg-white/30"}`}
+              className={`w-1 rounded-full transition-all ${realIdx === currentIndex ? "h-4 bg-primary" : "h-1.5 bg-white/30"}`}
             />
           );
         })}

@@ -40,7 +40,7 @@ const CHART_COLORS = {
   bg: "hsl(var(--card))",
 };
 
-const PIE_COLORS = ["hsl(var(--primary))", "hsl(var(--muted-foreground))", "#FFD700", "#FF6B6B"];
+const PIE_COLORS = ["hsl(var(--primary))", "hsl(var(--muted-foreground))", "hsl(var(--warning))", "#FF6B6B"];
 
 export default function AnalyticsPage() {
   const { data, isLoading } = useCreatorAnalytics();

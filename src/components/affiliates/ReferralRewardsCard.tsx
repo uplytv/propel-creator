@@ -5,9 +5,9 @@ import { Gift, Trophy, Crown, Zap, Users, Check, ChevronRight } from "lucide-rea
 import { useNavigate } from "react-router-dom";
 
 const REWARD_TIERS = [
-  { count: 3, label: "Jump 30 spots", icon: Zap, color: "#00BFFF", description: "Move up 30 positions on the waitlist" },
-  { count: 5, label: "Early Access", icon: Gift, color: "#00FF85", description: "Get early access to new features" },
-  { count: 10, label: "Top 100", icon: Trophy, color: "#FFD700", description: "Guaranteed Top 100 waitlist position" },
+  { count: 3, label: "Jump 30 spots", icon: Zap, color: "hsl(195 100% 50%)", description: "Move up 30 positions on the waitlist" },
+  { count: 5, label: "Early Access", icon: Gift, color: "hsl(var(--primary))", description: "Get early access to new features" },
+  { count: 10, label: "Top 100", icon: Trophy, color: "hsl(var(--warning))", description: "Guaranteed Top 100 waitlist position" },
   { count: 25, label: "Founding Creator", icon: Crown, color: "#FF69B4", description: "0% platform fees forever" },
 ];
 

@@ -43,10 +43,10 @@ export function CreatorVideoOverlay({
   const connection = useConnectionQuality(isRecording);
 
   const qualityConfig: Record<ConnectionQuality, { color: string; bars: number; label: string }> = {
-    excellent: { color: "#22c55e", bars: 4, label: "Excellent" },
-    good: { color: "#00FF85", bars: 3, label: "Good" },
-    fair: { color: "#eab308", bars: 2, label: "Fair" },
-    poor: { color: "#ef4444", bars: 1, label: "Poor" },
+    excellent: { color: "hsl(var(--success))", bars: 4, label: "Excellent" },
+    good: { color: "hsl(var(--primary))", bars: 3, label: "Good" },
+    fair: { color: "hsl(var(--warning))", bars: 2, label: "Fair" },
+    poor: { color: "hsl(var(--destructive))", bars: 1, label: "Poor" },
   };
   const qc = qualityConfig[connection.quality];
 
@@ -87,12 +87,12 @@ export function CreatorVideoOverlay({
           <div className="w-16 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.1)" }}>
             <motion.div
               className="h-full rounded-full"
-              style={{ backgroundColor: "#00FF85" }}
+              style={{ backgroundColor: "hsl(var(--primary))" }}
               animate={{ width: `${energyScore}%`, opacity: energyScore >= 50 ? [1, 0.6, 1] : 1 }}
               transition={energyScore >= 50 ? { opacity: { duration: 2, repeat: Infinity } } : {}}
             />
           </div>
-          <span className="text-[10px] font-bold" style={{ color: "#00FF85" }}>{energyScore}%</span>
+          <span className="text-[10px] font-bold" style={{ color: "hsl(var(--primary))" }}>{energyScore}%</span>
         </div>
         {/* End */}
         <button onClick={onEndStream} className="px-2 py-1 rounded-lg text-[10px] font-bold bg-red-500 text-white">
@@ -108,7 +108,7 @@ export function CreatorVideoOverlay({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -20, opacity: 0 }}
             className="pointer-events-none mx-auto mt-2 w-fit rounded-xl px-4 py-2 text-xs font-bold text-center"
-            style={{ backgroundColor: "rgba(0,255,133,0.15)", color: "#00FF85", backdropFilter: "blur(12px)" }}
+            style={{ backgroundColor: "rgba(0,255,133,0.15)", color: "hsl(var(--primary))", backdropFilter: "blur(12px)" }}
           >
             {coachingNudge}
           </motion.div>
@@ -226,7 +226,7 @@ export function CreatorDashboardPanel({
             {chatMessages.filter((m) => m.is_pinned).map((pm) => (
               <div key={pm.id} className="mx-3 mt-2 rounded-lg px-3 py-2 text-xs"
                 style={{ border: "1px solid #00FF85", backgroundColor: "rgba(0,255,133,0.05)" }}>
-                <span className="font-bold" style={{ color: "#00FF85" }}>📌 {pm.username}:</span>{" "}
+                <span className="font-bold" style={{ color: "hsl(var(--primary))" }}>📌 {pm.username}:</span>{" "}
                 <span className="text-white/80">{pm.message}</span>
               </div>
             ))}
@@ -239,7 +239,7 @@ export function CreatorDashboardPanel({
                   <div key={msg.id} className="text-xs group relative py-0.5 pr-6 cursor-pointer" onClick={() => handlePin(msg)}>
                     <span className="inline-flex items-center gap-1">
                       {isCreator && <span className="text-[10px]">⭐</span>}
-                      <span className="font-semibold" style={{ color: isCreator ? "#FFD700" : "#00FF85" }}>
+                      <span className="font-semibold" style={{ color: isCreator ? "hsl(var(--warning))" : "hsl(var(--primary))" }}>
                         {msg.username}
                       </span>
                     </span>
@@ -263,7 +263,7 @@ export function CreatorDashboardPanel({
                   className="flex-1 rounded-lg px-3 py-2 text-xs text-white placeholder:text-white/30 focus:outline-none"
                   style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
                 />
-                <button onClick={handleSend} className="px-3 py-2 rounded-lg" style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}>
+                <button onClick={handleSend} className="px-3 py-2 rounded-lg" style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--background))" }}>
                   <Send className="w-3.5 h-3.5" />
                 </button>
               </div>

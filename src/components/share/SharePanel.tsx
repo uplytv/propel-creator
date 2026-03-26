@@ -335,7 +335,7 @@ export default function SharePanel({
   const panelContent = (
     <div className="space-y-5 pb-8">
       {/* Preview Row */}
-      <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "#111111" }}>
+      <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "hsl(var(--background))" }}>
         <div className="relative w-24 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-black">
           {thumbnailUrl ? (
             <img src={thumbnailUrl} alt={title} className="w-full h-full object-cover" />
@@ -349,7 +349,7 @@ export default function SharePanel({
             className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded text-[8px] font-bold"
             style={{
               background: "hsl(var(--primary))",
-              color: "#0A0A0A",
+              color: "hsl(var(--background))",
               fontFamily: "'Plus Jakarta Sans', sans-serif",
             }}
           >
@@ -370,7 +370,7 @@ export default function SharePanel({
           onChange={(e) => setCaption(e.target.value)}
           rows={2}
           className="w-full rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors resize-none"
-          style={{ background: "#111111", border: "1px solid #1E1E1E" }}
+          style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}
         />
       </div>
 
@@ -382,7 +382,7 @@ export default function SharePanel({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             className="rounded-xl p-6 text-center space-y-3"
-            style={{ background: "#111111", border: "1px solid #1E1E1E" }}
+            style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}
           >
             <QrCode className="w-16 h-16 mx-auto text-primary" />
             <p className="text-sm text-foreground font-medium">
@@ -407,7 +407,7 @@ export default function SharePanel({
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             className="rounded-xl p-4 space-y-2 overflow-hidden"
-            style={{ background: "#111111", border: "1px solid #1E1E1E" }}
+            style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}
           >
             <p className="text-xs font-medium text-foreground">Embed Code</p>
             <code className="block text-[11px] text-muted-foreground bg-black/50 rounded-lg p-3 break-all font-mono">
@@ -442,7 +442,7 @@ export default function SharePanel({
                   onClick={() => handlePlatformClick(p.key)}
                   disabled={isDownload && downloading}
                   className="flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all hover:scale-105 active:scale-95"
-                  style={{ background: "#111111", border: "1px solid #1E1E1E" }}
+                  style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}
                 >
                   <div className="text-foreground">
                     {isDownload && downloading ? (
@@ -490,7 +490,7 @@ export default function SharePanel({
       )}
 
       {/* Copy Link field */}
-      <div className="flex items-center gap-2 rounded-xl overflow-hidden" style={{ background: "#111111", border: "1px solid #1E1E1E" }}>
+      <div className="flex items-center gap-2 rounded-xl overflow-hidden" style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}>
         <input
           readOnly
           value={contentUrl}
@@ -507,7 +507,7 @@ export default function SharePanel({
 
       {/* Share Stats */}
       {totalShares > 0 && (
-        <div className="rounded-xl p-3 space-y-2" style={{ background: "#111111", border: "1px solid #1E1E1E" }}>
+        <div className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}>
           <p className="text-xs text-muted-foreground">
             This {contentType} has been shared <span className="text-primary font-bold">{totalShares}</span> time{totalShares !== 1 ? "s" : ""}
           </p>
@@ -518,7 +518,7 @@ export default function SharePanel({
                 <span
                   key={pb.platform}
                   className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-muted-foreground"
-                  style={{ background: "#1A1A1A" }}
+                  style={{ background: "hsl(var(--card))" }}
                 >
                   {plat?.label || pb.platform} {pb.count}
                 </span>
@@ -533,7 +533,7 @@ export default function SharePanel({
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={(o) => !o && onClose()}>
-        <DrawerContent className="max-h-[90vh]" style={{ background: "#0A0A0A" }}>
+        <DrawerContent className="max-h-[90vh]" style={{ background: "hsl(var(--background))" }}>
           <DrawerHeader className="pb-0">
             <div className="flex items-center justify-between">
               <div>
@@ -553,7 +553,7 @@ export default function SharePanel({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-[480px] max-h-[85vh] overflow-y-auto" style={{ background: "#0A0A0A" }}>
+      <DialogContent className="max-w-[480px] max-h-[85vh] overflow-y-auto" style={{ background: "hsl(var(--background))" }}>
         <DialogHeader>
           <DialogTitle className="text-foreground">Share & Distribute</DialogTitle>
           <DialogDescription className="sr-only">Share this content link or export it to external platforms.</DialogDescription>

@@ -511,7 +511,7 @@ export default function CreatorProfile() {
                 <button
                   onClick={() => document.getElementById("live-section")?.scrollIntoView({ behavior: "smooth" })}
                   className="absolute -bottom-1 -right-1 flex items-center gap-1 px-2 py-0.5 rounded-full text-white text-[11px] font-bold animate-pulse"
-                  style={{ background: "#FF3B3B" }}
+                  style={{ background: "hsl(var(--destructive))" }}
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-white" /> LIVE
                 </button>
@@ -627,8 +627,8 @@ export default function CreatorProfile() {
                   disabled={joinLoading}
                   className="px-8 py-3 rounded-xl text-sm font-bold transition-shadow disabled:opacity-50"
                   style={{
-                    background: "#00FF85",
-                    color: "#0A0A0A",
+                    background: "hsl(var(--primary))",
+                    color: "hsl(var(--background))",
                     boxShadow: "0 0 24px rgba(0,255,133,0.3)",
                     height: 48,
                   }}
@@ -663,13 +663,13 @@ export default function CreatorProfile() {
       {/* LIVE NOW SECTION */}
       {isLive && (
         <section id="live-section" className="max-w-[720px] mx-auto px-4 mb-8">
-          <div className="rounded-xl p-4" style={{ background: "#111", border: "2px solid #FF3B3B", boxShadow: "0 0 20px rgba(255,59,59,0.15)" }}>
+          <div className="rounded-xl p-4" style={{ background: "hsl(var(--background))", border: "2px solid #FF3B3B", boxShadow: "0 0 20px rgba(255,59,59,0.15)" }}>
             <div className="flex items-center gap-2 mb-3">
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold text-white animate-pulse" style={{ background: "#FF3B3B" }}>
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold text-white animate-pulse" style={{ background: "hsl(var(--destructive))" }}>
                 <span className="w-1.5 h-1.5 rounded-full bg-white" /> LIVE NOW
               </span>
               <span className="text-white text-sm font-semibold flex-1">{liveStream.title || "Untitled Stream"}</span>
-              <span className="text-[#888] text-xs">{liveStream.viewer_count || 0} watching</span>
+              <span className="text-muted-foreground text-xs">{liveStream.viewer_count || 0} watching</span>
             </div>
             {liveStream.mux_playback_id ? (
               <div className="aspect-video rounded-lg overflow-hidden bg-black">
@@ -681,12 +681,12 @@ export default function CreatorProfile() {
                 />
               </div>
             ) : (
-              <div className="aspect-video rounded-lg flex items-center justify-center" style={{ background: "#1a1a1a" }}>
-                <p className="text-[#888] text-sm animate-pulse">Stream loading...</p>
+              <div className="aspect-video rounded-lg flex items-center justify-center" style={{ background: "hsl(var(--card))" }}>
+                <p className="text-muted-foreground text-sm animate-pulse">Stream loading...</p>
               </div>
             )}
             {!isMember && (
-              <button onClick={handleJoin} className="w-full mt-3 py-2.5 rounded-lg text-sm font-semibold" style={{ background: "#00FF85", color: "#0A0A0A" }}>
+              <button onClick={handleJoin} className="w-full mt-3 py-2.5 rounded-lg text-sm font-semibold" style={{ background: "hsl(var(--primary))", color: "hsl(var(--background))" }}>
                 Join to chat and support {creatorName} →
               </button>
             )}
@@ -699,31 +699,31 @@ export default function CreatorProfile() {
         <section className="max-w-[720px] mx-auto px-4 mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-white text-xl font-bold">Community</h2>
-            <span className="text-[#888] text-sm">{memberCount} members</span>
+            <span className="text-muted-foreground text-sm">{memberCount} members</span>
           </div>
           <div className="space-y-3">
             {posts.map((post: any) => (
-              <div key={post.id} className="relative rounded-lg p-4" style={{ background: "#111", border: "1px solid #1E1E1E" }}>
+              <div key={post.id} className="relative rounded-lg p-4" style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}>
                 {!isMember && (
                   <div className="absolute inset-0 rounded-lg z-10 flex flex-col items-center justify-center backdrop-blur-sm" style={{ background: "rgba(10,10,10,0.7)" }}>
-                    <Lock className="w-5 h-5 text-[#888] mb-1" />
-                    <span className="text-[#888] text-xs">Join to read the full post</span>
+                    <Lock className="w-5 h-5 text-muted-foreground mb-1" />
+                    <span className="text-muted-foreground text-xs">Join to read the full post</span>
                   </div>
                 )}
                 <div className="flex items-center gap-2 mb-2">
                   {(post as any).profiles?.avatar_url ? (
                     <img src={(post as any).profiles.avatar_url} className="w-8 h-8 rounded-full object-cover" alt="" />
                   ) : (
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#1a1a1a", color: "#00FF85" }}>
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "hsl(var(--card))", color: "hsl(var(--primary))" }}>
                       {((post as any).profiles?.display_name || "U").charAt(0)}
                     </div>
                   )}
                   <span className="text-white text-sm font-medium">{(post as any).profiles?.display_name || "Member"}</span>
-                  <span className="text-[#555] text-xs ml-auto">{formatTimeAgo(post.created_at)}</span>
+                  <span className="text-muted-foreground text-xs ml-auto">{formatTimeAgo(post.created_at)}</span>
                 </div>
                 <h3 className="text-white text-[15px] font-semibold truncate">{post.title}</h3>
-                <p className="text-[#888] text-[13px] line-clamp-2 mt-1">{post.body}</p>
-                <div className="flex items-center gap-4 mt-2 text-[#555] text-xs">
+                <p className="text-muted-foreground text-[13px] line-clamp-2 mt-1">{post.body}</p>
+                <div className="flex items-center gap-4 mt-2 text-muted-foreground text-xs">
                   <span className="flex items-center gap-1"><Heart className="w-3.5 h-3.5" /> {post.like_count}</span>
                   <span className="flex items-center gap-1"><MessageCircle className="w-3.5 h-3.5" /> {post.comment_count}</span>
                 </div>
@@ -732,11 +732,11 @@ export default function CreatorProfile() {
           </div>
           <div className="mt-4 text-center">
             {!isMember ? (
-              <button onClick={handleJoin} className="text-[#00FF85] text-sm font-medium">
+              <button onClick={handleJoin} className="text-primary text-sm font-medium">
                 More posts inside. Join the community →
               </button>
             ) : (
-              <Link to={`/community/${profile.user_id}/community`} className="text-[#00FF85] text-sm font-medium">
+              <Link to={`/community/${profile.user_id}/community`} className="text-primary text-sm font-medium">
                 View all posts →
               </Link>
             )}
@@ -749,20 +749,20 @@ export default function CreatorProfile() {
         <section className="max-w-[720px] mx-auto px-4 mb-24">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-white text-xl font-bold">Courses</h2>
-            <span className="text-[#888] text-sm">{totalLessons} lessons</span>
+            <span className="text-muted-foreground text-sm">{totalLessons} lessons</span>
           </div>
           <div className="space-y-3">
             {modules.map((mod: any) => (
-              <div key={mod.id} className="rounded-lg overflow-hidden" style={{ background: "#111", border: "1px solid #1E1E1E" }}>
+              <div key={mod.id} className="rounded-lg overflow-hidden" style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}>
                 <button
                   onClick={() => toggleModule(mod.id)}
                   className="w-full flex items-center justify-between p-4 text-left"
                 >
                   <div>
                     <h3 className="text-white text-base font-semibold">{mod.title}</h3>
-                    <p className="text-[#888] text-[13px] mt-0.5">{mod.lessons?.length || 0} lessons</p>
+                    <p className="text-muted-foreground text-[13px] mt-0.5">{mod.lessons?.length || 0} lessons</p>
                   </div>
-                  {expandedModules.has(mod.id) ? <ChevronUp className="w-4 h-4 text-[#888]" /> : <ChevronDown className="w-4 h-4 text-[#888]" />}
+                  {expandedModules.has(mod.id) ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                 </button>
                 <AnimatePresence>
                   {expandedModules.has(mod.id) && (
@@ -782,16 +782,16 @@ export default function CreatorProfile() {
                             }}
                           >
                             {lesson.is_free ? (
-                              <Play className="w-4 h-4 text-[#00FF85] shrink-0" />
+                              <Play className="w-4 h-4 text-primary shrink-0" />
                             ) : (
-                              <Lock className="w-4 h-4 text-[#555] shrink-0" />
+                              <Lock className="w-4 h-4 text-muted-foreground shrink-0" />
                             )}
                             <span className="text-white text-sm flex-1 truncate">{lesson.title}</span>
                             {lesson.is_free && (
-                              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold" style={{ background: "#00FF85", color: "#0A0A0A" }}>FREE</span>
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold" style={{ background: "hsl(var(--primary))", color: "hsl(var(--background))" }}>FREE</span>
                             )}
                             {lesson.duration_seconds > 0 && (
-                              <span className="text-[#555] text-xs">{formatDuration(lesson.duration_seconds)}</span>
+                              <span className="text-muted-foreground text-xs">{formatDuration(lesson.duration_seconds)}</span>
                             )}
                           </div>
                         ))}
@@ -810,7 +810,7 @@ export default function CreatorProfile() {
         <section className="max-w-[720px] mx-auto px-4 mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-white text-xl font-bold">Shop</h2>
-            <span className="text-[#888] text-sm">{products.length} product{products.length !== 1 ? "s" : ""}</span>
+            <span className="text-muted-foreground text-sm">{products.length} product{products.length !== 1 ? "s" : ""}</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {products.map((product: any) => {
@@ -820,7 +820,7 @@ export default function CreatorProfile() {
                 <div
                   key={product.id}
                   className="rounded-xl overflow-hidden"
-                  style={{ background: "#111", border: "1px solid #1E1E1E" }}
+                  style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}
                 >
                   {product.image_url && (
                     <img src={product.image_url} alt={product.name} className="w-full h-32 object-cover" />
@@ -828,16 +828,16 @@ export default function CreatorProfile() {
                   <div className="p-4">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-lg">{typeEmoji[product.type] || "📦"}</span>
-                      <span className="text-[10px] font-medium uppercase px-1.5 py-0.5 rounded" style={{ background: "#1a1a1a", color: "#888" }}>
+                      <span className="text-[10px] font-medium uppercase px-1.5 py-0.5 rounded" style={{ background: "hsl(var(--card))", color: "hsl(var(--muted-foreground))" }}>
                         {product.type}
                       </span>
                     </div>
                     <h3 className="text-white text-sm font-bold mt-1">{product.name}</h3>
                     {product.description && (
-                      <p className="text-[#888] text-xs line-clamp-2 mt-1">{product.description}</p>
+                      <p className="text-muted-foreground text-xs line-clamp-2 mt-1">{product.description}</p>
                     )}
                     <div className="flex items-center justify-between mt-3">
-                      <span className="text-[#00FF85] font-bold text-base">
+                      <span className="text-primary font-bold text-base">
                         {isFreeProduct ? "Free" : `$${product.price}`}
                       </span>
                       {!isOwner && !isFreeProduct && (
@@ -845,7 +845,7 @@ export default function CreatorProfile() {
                           onClick={() => handleBuyProduct(product.id)}
                           disabled={buyingProductId === product.id}
                           className="px-4 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50"
-                          style={{ background: "#00FF85", color: "#0A0A0A" }}
+                          style={{ background: "hsl(var(--primary))", color: "hsl(var(--background))" }}
                         >
                           {buyingProductId === product.id ? (
                             <BuyLoader className="w-3.5 h-3.5 animate-spin" />
@@ -858,7 +858,7 @@ export default function CreatorProfile() {
                         <button
                           onClick={() => navigate(`/community/${profile.user_id}/${product.type === 'course' ? 'classroom' : 'community'}`)}
                           className="px-4 py-1.5 rounded-lg text-xs font-bold"
-                          style={{ background: "#1a1a1a", color: "#00FF85", border: "1px solid #1E1E1E" }}
+                          style={{ background: "hsl(var(--card))", color: "hsl(var(--primary))", border: "1px solid #1E1E1E" }}
                         >
                           Access Free
                         </button>
@@ -892,22 +892,22 @@ export default function CreatorProfile() {
             {profile.avatar_url ? (
               <img src={profile.avatar_url} className="w-8 h-8 rounded-full object-cover shrink-0" style={{ border: "2px solid #00FF85" }} alt="" />
             ) : (
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: "#1a1a1a", color: "#00FF85", border: "2px solid #00FF85" }}>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: "hsl(var(--card))", color: "hsl(var(--primary))", border: "2px solid #00FF85" }}>
                 {creatorName.charAt(0)}
               </div>
             )}
             <div className="flex-1 min-w-0">
               <p className="text-white text-sm font-semibold truncate">{creatorName}</p>
               {isLive && (
-                <span className="flex items-center gap-1 text-[10px] font-bold text-[#FF3B3B]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#FF3B3B] animate-pulse" /> LIVE
+                <span className="flex items-center gap-1 text-[10px] font-bold text-destructive">
+                  <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" /> LIVE
                 </span>
               )}
             </div>
             <button
               onClick={handleJoin}
               className="px-4 py-2 rounded-lg text-xs font-bold shrink-0"
-              style={{ background: "#00FF85", color: "#0A0A0A" }}
+              style={{ background: "hsl(var(--primary))", color: "hsl(var(--background))" }}
             >
               {isMember ? "Open" : "Join Community →"}
             </button>
@@ -969,18 +969,18 @@ function CreatorProfileEvents({ username }: { username?: string }) {
           <div
             key={event.id}
             onClick={() => navigate(`/${username}/events/${event.slug}`)}
-            className="rounded-lg p-4 cursor-pointer hover:border-[#00FF85]/40 transition-colors"
-            style={{ background: "#111", border: "1px solid #1E1E1E" }}
+            className="rounded-lg p-4 cursor-pointer hover:border-primary/40 transition-colors"
+            style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}
           >
             <div className="flex items-center justify-between">
               <div className="flex-1 min-w-0">
                 <h3 className="text-white text-[15px] font-semibold truncate">{event.title}</h3>
-                <p className="text-[#00FF85] text-xs mt-1">
+                <p className="text-primary text-xs mt-1">
                   {new Date(event.starts_at).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })} · {new Date(event.starts_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                 </p>
               </div>
               <span className="text-white text-sm font-semibold ml-3">
-                {event.is_free ? <span style={{ color: "#00FF85" }}>FREE</span> : `$${event.ticket_price}`}
+                {event.is_free ? <span style={{ color: "hsl(var(--primary))" }}>FREE</span> : `$${event.ticket_price}`}
               </span>
             </div>
           </div>
@@ -989,12 +989,12 @@ function CreatorProfileEvents({ username }: { username?: string }) {
           <div
             key={event.id}
             className="rounded-lg p-4 opacity-50"
-            style={{ background: "#111", border: "1px solid #1E1E1E" }}
+            style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}
           >
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-white text-[15px] font-semibold truncate">{event.title}</h3>
-                <p className="text-[#888] text-xs mt-1">Ended</p>
+                <p className="text-muted-foreground text-xs mt-1">Ended</p>
               </div>
             </div>
           </div>
@@ -1006,28 +1006,28 @@ function CreatorProfileEvents({ username }: { username?: string }) {
 
 function ProfileSkeleton() {
   return (
-    <div className="min-h-screen" style={{ background: "#0A0A0A" }}>
+    <div className="min-h-screen" style={{ background: "hsl(var(--background))" }}>
       <div className="h-14" style={{ borderBottom: "1px solid #1E1E1E" }} />
-      <div className="h-44 w-full animate-pulse" style={{ background: "#111" }} />
+      <div className="h-44 w-full animate-pulse" style={{ background: "hsl(var(--background))" }} />
       <div className="max-w-[720px] mx-auto px-4 -mt-12 relative z-10 flex flex-col items-center">
-        <div className="w-24 h-24 rounded-full animate-pulse" style={{ background: "#1a1a1a", border: "3px solid #222" }} />
-        <div className="h-7 w-48 rounded mt-4 animate-pulse" style={{ background: "#1a1a1a" }} />
-        <div className="h-4 w-24 rounded mt-2 animate-pulse" style={{ background: "#1a1a1a" }} />
-        <div className="h-4 w-80 rounded mt-4 animate-pulse" style={{ background: "#1a1a1a" }} />
-        <div className="h-4 w-64 rounded mt-2 animate-pulse" style={{ background: "#1a1a1a" }} />
+        <div className="w-24 h-24 rounded-full animate-pulse" style={{ background: "hsl(var(--card))", border: "3px solid #222" }} />
+        <div className="h-7 w-48 rounded mt-4 animate-pulse" style={{ background: "hsl(var(--card))" }} />
+        <div className="h-4 w-24 rounded mt-2 animate-pulse" style={{ background: "hsl(var(--card))" }} />
+        <div className="h-4 w-80 rounded mt-4 animate-pulse" style={{ background: "hsl(var(--card))" }} />
+        <div className="h-4 w-64 rounded mt-2 animate-pulse" style={{ background: "hsl(var(--card))" }} />
         <div className="flex gap-8 mt-6">
           {[1, 2, 3].map(i => (
             <div key={i} className="flex flex-col items-center gap-1">
-              <div className="h-5 w-8 rounded animate-pulse" style={{ background: "#1a1a1a" }} />
-              <div className="h-3 w-12 rounded animate-pulse" style={{ background: "#1a1a1a" }} />
+              <div className="h-5 w-8 rounded animate-pulse" style={{ background: "hsl(var(--card))" }} />
+              <div className="h-3 w-12 rounded animate-pulse" style={{ background: "hsl(var(--card))" }} />
             </div>
           ))}
         </div>
-        <div className="h-12 w-64 rounded-xl mt-6 animate-pulse" style={{ background: "#1a1a1a" }} />
+        <div className="h-12 w-64 rounded-xl mt-6 animate-pulse" style={{ background: "hsl(var(--card))" }} />
       </div>
       <div className="max-w-[720px] mx-auto px-4 mt-8 space-y-3">
         {[1, 2, 3].map(i => (
-          <div key={i} className="h-28 rounded-lg animate-pulse" style={{ background: "#111" }} />
+          <div key={i} className="h-28 rounded-lg animate-pulse" style={{ background: "hsl(var(--background))" }} />
         ))}
       </div>
     </div>

@@ -27,7 +27,7 @@ function AuctionCountdown({ endsAt }: { endsAt: string }) {
   const isUrgent = remaining < 30;
 
   return (
-    <span className={`font-mono text-xs font-bold ${isUrgent ? "text-[#FF3B3B]" : "text-muted-foreground"}`}>
+    <span className={`font-mono text-xs font-bold ${isUrgent ? "text-destructive" : "text-muted-foreground"}`}>
       {isUrgent && "☠️ "}{m}:{s.toString().padStart(2, "0")}
     </span>
   );
@@ -50,8 +50,8 @@ export default function CreatorShopPanel({ streamId }: Props) {
       {/* Stats row */}
       <div className="grid grid-cols-4 gap-2">
         {[
-          { label: "Revenue", value: `$${totalRevenue.toFixed(0)}`, color: "#00FF85" },
-          { label: "Sold", value: unitsSold.toString(), color: "#FFD700" },
+          { label: "Revenue", value: `$${totalRevenue.toFixed(0)}`, color: "hsl(var(--primary))" },
+          { label: "Sold", value: unitsSold.toString(), color: "hsl(var(--warning))" },
           { label: "Bids", value: activeBidCount.toString(), color: "#FF9F43" },
           { label: "Products", value: products.length.toString(), color: "white" },
         ].map(s => (
@@ -70,7 +70,7 @@ export default function CreatorShopPanel({ streamId }: Props) {
             const auction = auctions.find(a => a.live_product_id === p.id && a.status === "active");
             return (
               <motion.div key={p.id} layout className="rounded-lg p-2.5 mb-1.5 border"
-                style={{ backgroundColor: "rgba(0,255,133,0.05)", borderColor: "#00FF85" }}>
+                style={{ backgroundColor: "rgba(0,255,133,0.05)", borderColor: "hsl(var(--primary))" }}>
                 <div className="flex items-center gap-2">
                   {p.image_url ? (
                     <img src={p.image_url} alt="" className="w-10 h-10 rounded object-cover flex-shrink-0" />
@@ -81,7 +81,7 @@ export default function CreatorShopPanel({ streamId }: Props) {
                     <p className="text-xs font-semibold text-white truncate">{p.title}</p>
                     {auction ? (
                       <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[10px]" style={{ color: "#00FF85" }}>
+                        <span className="text-[10px]" style={{ color: "hsl(var(--primary))" }}>
                           ${auction.current_bid} · {auction.current_winner_username || "No bids"}
                         </span>
                         <AuctionCountdown endsAt={auction.ends_at} />
@@ -126,7 +126,7 @@ export default function CreatorShopPanel({ streamId }: Props) {
               </div>
               <button onClick={() => activateProduct(p.id)}
                 className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all"
-                style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}>
+                style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--background))" }}>
                 Activate
               </button>
             </div>
@@ -138,7 +138,7 @@ export default function CreatorShopPanel({ streamId }: Props) {
       <div className="border-t pt-3" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
         <p className="text-[10px] font-semibold text-white/50 uppercase tracking-wider mb-1.5">Giveaway</p>
         {activeGiveaway ? (
-          <div className="rounded-lg p-2.5 border" style={{ backgroundColor: "rgba(255,215,0,0.05)", borderColor: "#FFD700" }}>
+          <div className="rounded-lg p-2.5 border" style={{ backgroundColor: "rgba(255,215,0,0.05)", borderColor: "hsl(var(--warning))" }}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-white">🎁 {activeGiveaway.title}</p>
@@ -164,7 +164,7 @@ export default function CreatorShopPanel({ streamId }: Props) {
               <button onClick={() => { startGiveaway(giveawayTitle); setGiveawayTitle(""); setShowGiveawayForm(false); }}
                 disabled={!giveawayTitle.trim()}
                 className="flex-1 py-1.5 rounded-lg text-xs font-bold disabled:opacity-50"
-                style={{ backgroundColor: "#FFD700", color: "#0A0A0A" }}>
+                style={{ backgroundColor: "hsl(var(--warning))", color: "hsl(var(--background))" }}>
                 🎁 Launch
               </button>
             </div>

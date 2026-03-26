@@ -31,15 +31,15 @@ const rewards = [
 ];
 
 const features = [
-  { icon: Radio, title: "Go Live", desc: "Stream directly to your community. Tips, reactions, and live shopping built in.", color: "#FF3B3B" },
-  { icon: BookOpen, title: "Courses", desc: "Build and sell courses with modules, lessons, and progress tracking.", color: "#3B82F6" },
-  { icon: Calendar, title: "Events & Ticketing", desc: "Host paid virtual or in-person events with QR check-in.", color: "#F59E0B" },
-  { icon: MessageSquare, title: "Paid DMs", desc: "Monetize your inbox. Fans pay to message you directly.", color: "#8B5CF6" },
+  { icon: Radio, title: "Go Live", desc: "Stream directly to your community. Tips, reactions, and live shopping built in.", color: "hsl(var(--destructive))" },
+  { icon: BookOpen, title: "Courses", desc: "Build and sell courses with modules, lessons, and progress tracking.", color: "hsl(220 90% 56%)" },
+  { icon: Calendar, title: "Events & Ticketing", desc: "Host paid virtual or in-person events with QR check-in.", color: "hsl(var(--warning))" },
+  { icon: MessageSquare, title: "Paid DMs", desc: "Monetize your inbox. Fans pay to message you directly.", color: "hsl(258 90% 66%)" },
   { icon: ShoppingBag, title: "Live Shopping", desc: "Sell products mid-stream. Auctions, giveaways, and instant checkout.", color: "#EC4899" },
-  { icon: Users, title: "Community", desc: "Posts, comments, leaderboards, and member tiers — all in your space.", color: "#00FF85" },
+  { icon: Users, title: "Community", desc: "Posts, comments, leaderboards, and member tiers — all in your space.", color: "hsl(var(--primary))" },
   { icon: TrendingUp, title: "Analytics & ARIA", desc: "AI-powered growth insights and weekly performance reports.", color: "#06B6D4" },
   { icon: Zap, title: "Affiliate System", desc: "Let your members earn by referring new subscribers.", color: "#EAB308" },
-  { icon: Users, title: "AI Creator Team", desc: "🤖 5 autonomous agents running your business 24/7.", color: "#8B5CF6" },
+  { icon: Users, title: "AI Creator Team", desc: "🤖 5 autonomous agents running your business 24/7.", color: "hsl(258 90% 66%)" },
 ];
 
 const steps = [
@@ -169,7 +169,7 @@ export default function Landing() {
   const multiplier = ytEarnings > 0 ? Math.round(uplyEarnings / ytEarnings) : 0;
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white font-sans selection:bg-[#00FF85]/30">
+    <div className="min-h-screen bg-background text-white font-sans selection:bg-primary/30">
       <SEOHead />
       <StickyMobileCTA />
       <ExitIntentModal />
@@ -179,7 +179,7 @@ export default function Landing() {
       />
 
       {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06] bg-[#0A0A0A]/80 backdrop-blur-xl">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06] bg-background/80 backdrop-blur-xl">
         <div className="container flex h-14 items-center justify-between">
           <img
             src="/logo.png"
@@ -199,7 +199,7 @@ export default function Landing() {
             </Button>
             <Button
               size="sm"
-              className="bg-[#00FF85] text-[#0A0A0A] font-bold hover:bg-[#00FF85]/90 border-0 active:scale-[0.96] transition-transform"
+              className="bg-primary text-foreground font-bold hover:bg-primary/90 border-0 active:scale-[0.96] transition-transform"
               onClick={scrollToWaitlist}
             >
               {CTA_LABEL}
@@ -242,7 +242,7 @@ export default function Landing() {
         <motion.div
           className="absolute z-[1] pointer-events-none w-[350px] h-[350px] rounded-full opacity-[0.06] blur-[100px] hidden md:block"
           style={{
-            background: "#00FF85",
+            background: "hsl(var(--primary))",
             left: springX,
             top: springY,
             translateX: "-50%",
@@ -255,7 +255,7 @@ export default function Landing() {
           {particles.map((p) => (
             <motion.div
               key={p.id}
-              className="absolute rounded-full bg-[#00FF85]/20"
+              className="absolute rounded-full bg-primary/20"
               style={{ left: p.x, top: p.y, width: p.size, height: p.size }}
               animate={{
                 y: [0, -50, 0],
@@ -302,7 +302,7 @@ export default function Landing() {
             <h1 className="text-[2.5rem] md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.05] mb-2 font-heading">
               Don't be late again.
             </h1>
-            <p className="text-lg md:text-2xl font-semibold text-[#00FF85] mb-6 font-heading tracking-tight">
+            <p className="text-lg md:text-2xl font-semibold text-primary mb-6 font-heading tracking-tight">
               Run your entire creator business with AI.
             </p>
 
@@ -335,7 +335,7 @@ export default function Landing() {
             >
               <Button
                 size="lg"
-                className="bg-[#00FF85] text-[#0A0A0A] font-bold text-base px-8 py-6 rounded hover:bg-[#00FF85]/90 hover:shadow-[0_0_30px_rgba(0,255,133,0.3)] transition-all duration-300 border-0 active:scale-[0.96]"
+                className="bg-primary text-foreground font-bold text-base px-8 py-6 rounded hover:bg-primary/90 hover:shadow-[0_0_30px_rgba(0,255,133,0.3)] transition-all duration-300 border-0 active:scale-[0.96]"
                 onClick={scrollToWaitlist}
               >
                 {CTA_LABEL}
@@ -379,7 +379,7 @@ export default function Landing() {
               {/* Browser chrome */}
               <div className="flex items-center gap-2 px-4 py-3 bg-[#1A1A1A] border-b border-white/[0.06]">
                 <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-[#FF5F57]" />
+                  <div className="w-3 h-3 rounded-full bg-destructive" />
                   <div className="w-3 h-3 rounded-full bg-[#FEBC2E]" />
                   <div className="w-3 h-3 rounded-full bg-[#28C840]" />
                 </div>
@@ -396,7 +396,7 @@ export default function Landing() {
                 loading="lazy"
               />
               {/* Gradient fade at bottom */}
-              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#0A0A0A] to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent" />
             </div>
           </motion.div>
         </div>
@@ -410,7 +410,7 @@ export default function Landing() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.7 }}
-            className="max-w-2xl mx-auto rounded-xl border border-[#00FF85]/10 bg-white/[0.02] p-8 md:p-10 text-center"
+            className="max-w-2xl mx-auto rounded-xl border border-primary/10 bg-white/[0.02] p-8 md:p-10 text-center"
             style={{
               boxShadow: "0 0 60px rgba(0,255,133,0.04), inset 0 1px 0 rgba(255,255,255,0.03)",
             }}
@@ -418,7 +418,7 @@ export default function Landing() {
             <p className="text-white/50 text-sm md:text-base mb-3">
               Uply has hand selected its founding creators.
             </p>
-            <p className="text-[#00FF85] font-bold text-xl md:text-2xl mb-3 font-heading">
+            <p className="text-primary font-bold text-xl md:text-2xl mb-3 font-heading">
               The Uply Games begin.
             </p>
             <p className="text-white/30 text-xs md:text-sm leading-relaxed">
@@ -501,7 +501,7 @@ export default function Landing() {
                 transition={{ delay: i * 0.15, duration: 0.6 }}
                 className="relative text-center md:text-left"
               >
-                <span className="text-5xl md:text-6xl font-extrabold text-[#00FF85]/10 block mb-2 font-heading">
+                <span className="text-5xl md:text-6xl font-extrabold text-primary/10 block mb-2 font-heading">
                   {s.num}
                 </span>
                 <h3 className="font-bold text-white text-lg mb-2">{s.title}</h3>
@@ -540,7 +540,7 @@ export default function Landing() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.6, delay: 0.15 }}
-            className="max-w-xl mx-auto rounded-xl border border-[#00FF85]/10 bg-white/[0.02] p-6 md:p-8"
+            className="max-w-xl mx-auto rounded-xl border border-primary/10 bg-white/[0.02] p-6 md:p-8"
             style={{
               boxShadow: "0 0 60px rgba(0,255,133,0.04), inset 0 1px 0 rgba(255,255,255,0.03)",
             }}
@@ -549,7 +549,7 @@ export default function Landing() {
             <div className="mb-8">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm text-white/50">How many followers do you have?</span>
-                <span className="text-sm font-bold text-[#00FF85]">{formatFollowers(followers)}</span>
+                <span className="text-sm font-bold text-primary">{formatFollowers(followers)}</span>
               </div>
               <Slider
                 min={1000}
@@ -557,7 +557,7 @@ export default function Landing() {
                 step={1000}
                 value={[followers]}
                 onValueChange={(v) => setFollowers(v[0])}
-                className="[&_[data-orientation=horizontal]>.relative]:bg-white/10 [&_[role=slider]]:bg-[#00FF85] [&_[role=slider]]:border-[#00FF85] [&_span[data-orientation=horizontal]>span]:bg-[#00FF85]"
+                className="[&_[data-orientation=horizontal]>.relative]:bg-white/10 [&_[role=slider]]:bg-primary [&_[role=slider]]:border-primary [&_span[data-orientation=horizontal]>span]:bg-primary"
               />
               <div className="flex justify-between mt-2 text-[10px] text-white/20">
                 <span>1K</span>
@@ -579,20 +579,20 @@ export default function Landing() {
                 <span className="text-[10px] text-white/20 block mt-1">/month est.</span>
               </div>
 
-              <div className="rounded-lg bg-[#00FF85]/[0.05] border border-[#00FF85]/20 p-4 text-center">
-                <span className="text-xs text-[#00FF85]/60 block mb-1">Uply Memberships</span>
+              <div className="rounded-lg bg-primary/[0.05] border border-primary/20 p-4 text-center">
+                <span className="text-xs text-primary/60 block mb-1">Uply Memberships</span>
                 <AnimatedNumber
                   value={uplyEarnings}
-                  className="text-2xl md:text-3xl font-bold text-[#00FF85]"
+                  className="text-2xl md:text-3xl font-bold text-primary"
                 />
-                <span className="text-[10px] text-[#00FF85]/40 block mt-1">/month est.</span>
+                <span className="text-[10px] text-primary/40 block mt-1">/month est.</span>
               </div>
             </div>
 
             {multiplier > 0 && (
               <p className="text-center text-lg md:text-xl font-bold mb-4">
                 That's{" "}
-                <span className="text-[#00FF85]">{multiplier}x more</span>
+                <span className="text-primary">{multiplier}x more</span>
                 {" "}with Uply
               </p>
             )}
@@ -603,7 +603,7 @@ export default function Landing() {
 
             <div className="flex justify-center">
               <Button
-                className="bg-[#00FF85] text-[#0A0A0A] font-bold hover:bg-[#00FF85]/90 border-0 active:scale-[0.96] transition-transform"
+                className="bg-primary text-foreground font-bold hover:bg-primary/90 border-0 active:scale-[0.96] transition-transform"
                 onClick={scrollToWaitlist}
               >
                 Start earning like this
@@ -643,7 +643,7 @@ export default function Landing() {
             <div className="grid grid-cols-5 bg-white/[0.03] border-b border-white/[0.06]">
               <div className="col-span-1 p-3 md:p-4" />
               <div className="p-3 md:p-4 text-center">
-                <span className="text-xs md:text-sm font-bold text-[#00FF85]">Uply</span>
+                <span className="text-xs md:text-sm font-bold text-primary">Uply</span>
               </div>
               <div className="p-3 md:p-4 text-center">
                 <span className="text-xs md:text-sm text-white/40">YouTube</span>
@@ -668,8 +668,8 @@ export default function Landing() {
                 {[row.uply, row.youtube, row.patreon, row.skool].map((val, j) => (
                   <div key={j} className="p-3 md:p-4 flex items-center justify-center">
                     {val ? (
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center ${j === 0 ? "bg-[#00FF85]/20" : "bg-white/10"}`}>
-                        <Check className={`w-3 h-3 ${j === 0 ? "text-[#00FF85]" : "text-white/50"}`} />
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center ${j === 0 ? "bg-primary/20" : "bg-white/10"}`}>
+                        <Check className={`w-3 h-3 ${j === 0 ? "text-primary" : "text-white/50"}`} />
                       </div>
                     ) : (
                       <X className="w-3.5 h-3.5 text-white/15" />
@@ -684,7 +684,7 @@ export default function Landing() {
 
       {/* ─── WAITLIST ─── */}
       <section id="waitlist" className="py-20 md:py-28 relative">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[#00FF85]/[0.04] rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-primary/[0.04] rounded-full blur-[120px] pointer-events-none" />
         <div className="container relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -706,11 +706,11 @@ export default function Landing() {
                 placeholder="you@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="bg-white/[0.05] border-white/[0.1] text-white placeholder:text-white/25 focus-visible:ring-[#00FF85]/40 h-12"
+                className="bg-white/[0.05] border-white/[0.1] text-white placeholder:text-white/25 focus-visible:ring-primary/40 h-12"
                 onKeyDown={(e) => e.key === "Enter" && handleApply()}
               />
               <Button
-                className="bg-[#00FF85] text-[#0A0A0A] font-bold hover:bg-[#00FF85]/90 border-0 px-6 h-12 shrink-0 active:scale-[0.96] transition-transform"
+                className="bg-primary text-foreground font-bold hover:bg-primary/90 border-0 px-6 h-12 shrink-0 active:scale-[0.96] transition-transform"
                 onClick={handleApply}
                 disabled={submitting}
               >
@@ -726,8 +726,8 @@ export default function Landing() {
                 className="flex items-center justify-center gap-2 mt-5"
               >
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00FF85] opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00FF85]" />
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
                 </span>
                 <span className="text-sm text-white/50">
                   Join{" "}
@@ -770,7 +770,7 @@ export default function Landing() {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.12, duration: 0.6 }}
                 whileHover={{ y: -4, transition: { duration: 0.25 } }}
-                className="relative rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-sm p-6 text-center group hover:border-[#00FF85]/20 transition-colors"
+                className="relative rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-sm p-6 text-center group hover:border-primary/20 transition-colors"
               >
                 <span className="text-3xl mb-4 block">{r.emoji}</span>
                 <h3 className="font-bold text-white mb-2">{r.title}</h3>

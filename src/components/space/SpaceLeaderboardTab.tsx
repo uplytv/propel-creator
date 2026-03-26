@@ -17,7 +17,7 @@ export default function SpaceLeaderboardTab({ creatorId }: Props) {
   const currentUserEntry = user ? leaderboard.find((e: any) => e.user_id === user.id) : null;
   const currentUserInTop = topEntries.some((e: any) => e.user_id === user?.id);
 
-  const crownColors: Record<number, string> = { 1: "#FFD700", 2: "#C0C0C0", 3: "#CD7F32" };
+  const crownColors: Record<number, string> = { 1: "hsl(var(--warning))", 2: "#C0C0C0", 3: "#CD7F32" };
 
   return (
     <div className="px-4 pt-4">
@@ -29,8 +29,8 @@ export default function SpaceLeaderboardTab({ creatorId }: Props) {
             onClick={() => setPeriod(p)}
             className="px-4 py-1.5 rounded-full text-xs font-semibold capitalize"
             style={{
-              background: period === p ? "#00FF85" : "transparent",
-              color: period === p ? "#0A0A0A" : "#888",
+              background: period === p ? "hsl(var(--primary))" : "transparent",
+              color: period === p ? "hsl(var(--background))" : "hsl(var(--muted-foreground))",
               border: period === p ? "none" : "1px solid #1e1e1e",
             }}
           >
@@ -42,16 +42,16 @@ export default function SpaceLeaderboardTab({ creatorId }: Props) {
       {isLoading ? (
         <div className="space-y-2">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="p-3 rounded-lg animate-pulse" style={{ background: "#111111" }}>
-              <div className="h-6 w-full rounded" style={{ background: "#1e1e1e" }} />
+            <div key={i} className="p-3 rounded-lg animate-pulse" style={{ background: "hsl(var(--background))" }}>
+              <div className="h-6 w-full rounded" style={{ background: "hsl(var(--card))" }} />
             </div>
           ))}
         </div>
       ) : leaderboard.length === 0 ? (
-        <div className="p-12 text-center rounded-lg" style={{ background: "#111111" }}>
-          <Crown className="w-8 h-8 mx-auto mb-2" style={{ color: "#888" }} />
+        <div className="p-12 text-center rounded-lg" style={{ background: "hsl(var(--background))" }}>
+          <Crown className="w-8 h-8 mx-auto mb-2" style={{ color: "hsl(var(--muted-foreground))" }} />
           <p className="font-semibold text-white mb-1">No rankings yet</p>
-          <p className="text-sm" style={{ color: "#888" }}>Earn points by posting, commenting, and completing lessons!</p>
+          <p className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>Earn points by posting, commenting, and completing lessons!</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -62,30 +62,30 @@ export default function SpaceLeaderboardTab({ creatorId }: Props) {
                 key={entry.user_id}
                 className="flex items-center gap-3 p-3 rounded-lg"
                 style={{
-                  background: isCurrentUser ? "rgba(0,255,133,0.1)" : "#111111",
-                  border: `1px solid ${isCurrentUser ? "#00FF85" : "#1e1e1e"}`,
+                  background: isCurrentUser ? "rgba(0,255,133,0.1)" : "hsl(var(--background))",
+                  border: `1px solid ${isCurrentUser ? "hsl(var(--primary))" : "hsl(var(--card))"}`,
                 }}
               >
                 <div className="w-8 text-center">
                   {crownColors[entry.rank] ? (
                     <Crown className="w-5 h-5 mx-auto" style={{ color: crownColors[entry.rank] }} />
                   ) : (
-                    <span className="text-sm font-bold" style={{ color: "#888" }}>#{entry.rank}</span>
+                    <span className="text-sm font-bold" style={{ color: "hsl(var(--muted-foreground))" }}>#{entry.rank}</span>
                   )}
                 </div>
                 {entry.avatar_url ? (
                   <img src={entry.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
                 ) : (
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#1e1e1e", color: "#fff" }}>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "hsl(var(--card))", color: "hsl(var(--foreground))" }}>
                     {(entry.display_name || "M").charAt(0)}
                   </div>
                 )}
                 <span className="flex-1 text-sm font-semibold text-white truncate flex items-center gap-1.5">
                   {entry.display_name}
                   <MemberXPBadge xp={entry.total_points} showLabel />
-                  {isCurrentUser && <span className="text-xs" style={{ color: "#00FF85" }}>(you)</span>}
+                  {isCurrentUser && <span className="text-xs" style={{ color: "hsl(var(--primary))" }}>(you)</span>}
                 </span>
-                <span className="text-sm font-bold" style={{ color: "#00FF85" }}>{entry.total_points} pts</span>
+                <span className="text-sm font-bold" style={{ color: "hsl(var(--primary))" }}>{entry.total_points} pts</span>
               </div>
             );
           })}
@@ -94,28 +94,28 @@ export default function SpaceLeaderboardTab({ creatorId }: Props) {
           {currentUserEntry && !currentUserInTop && (
             <>
               <div className="text-center py-1">
-                <span className="text-xs" style={{ color: "#888" }}>···</span>
+                <span className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>···</span>
               </div>
               <div
                 className="flex items-center gap-3 p-3 rounded-lg"
                 style={{ background: "rgba(0,255,133,0.1)", border: "1px solid #00FF85" }}
               >
                 <div className="w-8 text-center">
-                  <span className="text-sm font-bold" style={{ color: "#888" }}>#{currentUserEntry.rank}</span>
+                  <span className="text-sm font-bold" style={{ color: "hsl(var(--muted-foreground))" }}>#{currentUserEntry.rank}</span>
                 </div>
                 {currentUserEntry.avatar_url ? (
                   <img src={currentUserEntry.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
                 ) : (
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#1e1e1e", color: "#fff" }}>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "hsl(var(--card))", color: "hsl(var(--foreground))" }}>
                     {(currentUserEntry.display_name || "M").charAt(0)}
                   </div>
                 )}
                 <span className="flex-1 text-sm font-semibold text-white truncate flex items-center gap-1.5">
                   {currentUserEntry.display_name}
                   <MemberXPBadge xp={currentUserEntry.total_points} showLabel />
-                  <span className="text-xs" style={{ color: "#00FF85" }}>(you)</span>
+                  <span className="text-xs" style={{ color: "hsl(var(--primary))" }}>(you)</span>
                 </span>
-                <span className="text-sm font-bold" style={{ color: "#00FF85" }}>{currentUserEntry.total_points} pts</span>
+                <span className="text-sm font-bold" style={{ color: "hsl(var(--primary))" }}>{currentUserEntry.total_points} pts</span>
               </div>
             </>
           )}
@@ -123,7 +123,7 @@ export default function SpaceLeaderboardTab({ creatorId }: Props) {
       )}
 
       {/* Points Guide */}
-      <div className="mt-6 p-3 rounded-lg" style={{ background: "#111111", border: "1px solid #1e1e1e" }}>
+      <div className="mt-6 p-3 rounded-lg" style={{ background: "hsl(var(--background))", border: "1px solid #1e1e1e" }}>
         <p className="text-xs font-semibold text-white mb-2">How to earn points</p>
         <div className="space-y-1">
           {[
@@ -134,8 +134,8 @@ export default function SpaceLeaderboardTab({ creatorId }: Props) {
             { action: "Receive a like", pts: 1 },
           ].map((item) => (
             <div key={item.action} className="flex justify-between text-xs">
-              <span style={{ color: "#ccc" }}>{item.action}</span>
-              <span style={{ color: "#00FF85" }}>+{item.pts}</span>
+              <span style={{ color: "hsl(var(--border))" }}>{item.action}</span>
+              <span style={{ color: "hsl(var(--primary))" }}>+{item.pts}</span>
             </div>
           ))}
         </div>

@@ -180,7 +180,7 @@ export default function Discover() {
           >
             <div className="flex items-center justify-between px-4 py-2.5 bg-card border-l-2 border-l-[#FF3B3B]">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="w-2 h-2 rounded-full bg-[#FF3B3B] animate-pulse shrink-0" />
+                <span className="w-2 h-2 rounded-full bg-destructive animate-pulse shrink-0" />
                 <span className="text-sm font-semibold text-foreground truncate">
                   {followedLiveCreator.creatorName} is LIVE
                 </span>

@@ -82,7 +82,7 @@ export default function EventCheckIn({ event, onClose }: { event: EventRow; onCl
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className={`absolute inset-0 z-50 flex flex-col items-center justify-center ${
-              state === "success" ? "bg-primary" : "bg-[#FF3B3B]"
+              state === "success" ? "bg-primary" : "bg-destructive"
             }`}
           >
             {state === "success" && (
