@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { fetchProfileMap } from "@/lib/supabaseTyped";
 
 export function useCommunityMembers(creatorId: string | undefined) {
   return useQuery({
@@ -14,21 +15,16 @@ export function useCommunityMembers(creatorId: string | undefined) {
         .order("joined_at", { ascending: false });
       if (error) throw error;
 
-      const members = (data || []);
+      const members = data || [];
       const userIds = members.map((m) => m.user_id);
       if (userIds.length === 0) return [];
 
-      const { data: profiles } = await (supabase as any)
-        .from("profiles_public")
-        .select("user_id, display_name, avatar_url")
-        .in("user_id", userIds);
-
-      const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
+      const profileMap = await fetchProfileMap(userIds);
 
       return members.map((m) => ({
         ...m,
-        display_name: (profileMap.get(m.user_id) as any)?.display_name || "Member",
-        avatar_url: (profileMap.get(m.user_id) as any)?.avatar_url || null,
+        display_name: profileMap.get(m.user_id)?.display_name || "Member",
+        avatar_url: profileMap.get(m.user_id)?.avatar_url || null,
       }));
     },
   });
@@ -127,9 +123,8 @@ export function useMemberPoints(creatorId: string | undefined, period?: "weekly"
       const { data, error } = await query;
       if (error) throw error;
 
-      // Aggregate by user
       const pointsMap = new Map<string, number>();
-      for (const row of (data || [])) {
+      for (const row of data || []) {
         pointsMap.set(row.user_id, (pointsMap.get(row.user_id) || 0) + row.points);
       }
 
@@ -137,21 +132,15 @@ export function useMemberPoints(creatorId: string | undefined, period?: "weekly"
         .sort((a, b) => b[1] - a[1])
         .map(([userId, total], idx) => ({ user_id: userId, total_points: total, rank: idx + 1 }));
 
-      // Fetch profiles
       const userIds = sorted.map((s) => s.user_id);
       if (userIds.length === 0) return [];
 
-      const { data: profiles } = await supabase
-        .from("profiles_public")
-        .select("user_id, display_name, avatar_url")
-        .in("user_id", userIds);
-
-      const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
+      const profileMap = await fetchProfileMap(userIds);
 
       return sorted.map((s) => ({
         ...s,
-        display_name: (profileMap.get(s.user_id) as any)?.display_name || "Member",
-        avatar_url: (profileMap.get(s.user_id) as any)?.avatar_url || null,
+        display_name: profileMap.get(s.user_id)?.display_name || "Member",
+        avatar_url: profileMap.get(s.user_id)?.avatar_url || null,
       }));
     },
   });
@@ -168,7 +157,7 @@ export function useCommunityEvents(creatorId: string | undefined) {
         .eq("creator_id", creatorId!)
         .order("event_date", { ascending: true });
       if (error) throw error;
-      return (data || []);
+      return data || [];
     },
   });
 }
@@ -182,7 +171,7 @@ export function useCreateEvent() {
       if (!user) throw new Error("Not authenticated");
       const { error } = await supabase
         .from("community_events")
-        .insert(event as any);
+        .insert(event);
       if (error) throw error;
     },
     onSuccess: () => {

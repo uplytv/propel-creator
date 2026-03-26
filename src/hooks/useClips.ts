@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { fetchProfileMap } from "@/lib/supabaseTyped";
 
 export interface Clip {
   id: string;
@@ -43,14 +44,8 @@ export function useClips(options?: { creatorId?: string; publicOnly?: boolean; l
 
     const { data } = await query;
     if (data) {
-      // Enrich with creator profiles
       const creatorIds = [...new Set(data.map((c) => c.creator_id))];
-      const { data: profiles } = await supabase
-        .from("profiles_public")
-        .select("user_id, display_name, avatar_url")
-        .in("user_id", creatorIds);
-
-      const profileMap = new Map((profiles as any[])?.map((p: any) => [p.user_id, p]) || []);
+      const profileMap = await fetchProfileMap(creatorIds);
 
       setClips(
         data.map((c) => ({
