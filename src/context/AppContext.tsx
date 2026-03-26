@@ -66,20 +66,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
       .single();
     if (data) {
       setProfileState({
-        type: (data as any).creator_type as CreatorType | null,
-        stage: (data as any).creator_stage as CreatorStage | null,
-        challenge: (data as any).creator_challenge as CreatorChallenge | null,
-        tier: (data as any).tier as 1 | 2 | 3 | 4,
-        tierName: (data as any).tier_name || "Starter",
-        members: (data as any).members || 0,
-        mrr: Number((data as any).mrr) || 0,
-        totalRevenue: Number((data as any).total_revenue) || 0,
-        healthScore: (data as any).health_score || 0,
-        name: (data as any).display_name || "Creator",
-        avatarUrl: (data as any).avatar_url || null,
+        type: data.creator_type as CreatorType | null,
+        stage: data.creator_stage as CreatorStage | null,
+        challenge: data.creator_challenge as CreatorChallenge | null,
+        tier: data.tier as 1 | 2 | 3 | 4,
+        tierName: data.tier_name || "Starter",
+        members: data.members || 0,
+        mrr: Number(data.mrr) || 0,
+        totalRevenue: Number(data.total_revenue) || 0,
+        healthScore: data.health_score || 0,
+        name: data.display_name || "Creator",
+        avatarUrl: data.avatar_url || null,
       });
-      // Check if onboarded (has creator_type set)
-      setIsOnboarded(!!(data as any).creator_type);
+      setIsOnboarded(!!data.creator_type);
     }
   };
 
