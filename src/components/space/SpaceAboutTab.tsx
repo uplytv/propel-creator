@@ -195,7 +195,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
         .select("*")
         .eq("creator_id", creatorId)
         .order("position", { ascending: true });
-      return (data || []) as any[];
+      return (data || []);
     },
   });
 

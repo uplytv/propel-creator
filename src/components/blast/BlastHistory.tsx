@@ -24,7 +24,7 @@ export default function BlastHistory({ creatorId }: BlastHistoryProps) {
         .eq("creator_id", creatorId)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data || []) as any[];
+      return (data || []);
     },
   });
 

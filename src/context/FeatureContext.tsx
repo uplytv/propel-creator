@@ -31,7 +31,7 @@ export function FeatureProvider({ children }: { children: ReactNode }) {
         .select("business_category")
         .eq("user_id", user!.id)
         .single();
-      return data as any;
+      return data;
     },
     enabled: !!user,
   });

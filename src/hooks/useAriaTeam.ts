@@ -149,7 +149,7 @@ export function useAriaUsage() {
         .eq("month", currentMonth)
         .maybeSingle();
       if (error) throw error;
-      return data as any;
+      return data;
     },
     enabled: !!user,
   });
@@ -168,7 +168,7 @@ export function useAriaDailyReport() {
         .limit(1)
         .maybeSingle();
       if (error) throw error;
-      return data as any;
+      return data;
     },
     enabled: !!user,
   });

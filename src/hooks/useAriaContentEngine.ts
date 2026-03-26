@@ -19,7 +19,7 @@ export function useAriaJobs() {
         .order("created_at", { ascending: false })
         .limit(50);
       if (error) throw error;
-      return data as any[];
+      return data[];
     },
   });
 
@@ -59,7 +59,7 @@ export function useAriaGeneratedContent(jobId?: string) {
       if (jobId) q = q.eq("job_id", jobId);
       const { data, error } = await q.limit(200);
       if (error) throw error;
-      return data as any[];
+      return data[];
     },
   });
 
@@ -95,7 +95,7 @@ export function useAriaDistributionSettings() {
         .select("*")
         .eq("creator_id", user!.id)
         .maybeSingle();
-      return data as any;
+      return data;
     },
   });
 

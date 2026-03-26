@@ -13,7 +13,7 @@ export function useCreatorSpace(creatorId: string | undefined) {
         .eq("creator_id", creatorId!)
         .maybeSingle();
       if (error) throw error;
-      return data as any;
+      return data;
     },
   });
 }
@@ -84,7 +84,7 @@ export function useCommunityPosts(creatorId: string | undefined, category?: stri
       const { data, error } = await query;
       if (error) throw error;
 
-      const posts = (data || []) as any[];
+      const posts = (data || []);
       const authorIds = [...new Set(posts.map((p) => p.author_id))];
       if (authorIds.length === 0) return [];
 
@@ -148,7 +148,7 @@ export function useToggleLike() {
         await supabase.from("community_post_likes").delete().eq("id", (existing as any).id);
         await supabase
           .from("community_posts")
-          .update({ like_count: supabase.rpc as any })
+          .update({ like_count: supabase.rpc })
           .eq("id", postId);
         // Decrement manually
         const { data: post } = await supabase.from("community_posts").select("like_count").eq("id", postId).single();
@@ -203,7 +203,7 @@ export function useCommunityComments(postId: string | undefined) {
         .order("created_at", { ascending: true });
       if (error) throw error;
 
-      const comments = (data || []) as any[];
+      const comments = (data || []);
       const authorIds = [...new Set(comments.map((c) => c.author_id))];
       if (authorIds.length === 0) return [];
 
@@ -260,7 +260,7 @@ export function useCommunityCategories(creatorId: string | undefined) {
         .eq("creator_id", creatorId!)
         .order("created_at", { ascending: true });
       if (error) throw error;
-      return (data || []) as any[];
+      return (data || []);
     },
   });
 }

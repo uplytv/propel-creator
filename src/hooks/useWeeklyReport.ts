@@ -16,7 +16,7 @@ export function useLatestWeeklyReport() {
         .limit(1)
         .maybeSingle();
       if (error) throw error;
-      return data as any;
+      return data;
     },
   });
 }
@@ -33,7 +33,7 @@ export function useAllWeeklyReports() {
         .eq("user_id", user!.id)
         .order("week_start", { ascending: false });
       if (error) throw error;
-      return (data || []) as any[];
+      return (data || []);
     },
   });
 }

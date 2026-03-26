@@ -14,7 +14,7 @@ export function useCommunityMembers(creatorId: string | undefined) {
         .order("joined_at", { ascending: false });
       if (error) throw error;
 
-      const members = (data || []) as any[];
+      const members = (data || []);
       const userIds = members.map((m) => m.user_id);
       if (userIds.length === 0) return [];
 
@@ -129,7 +129,7 @@ export function useMemberPoints(creatorId: string | undefined, period?: "weekly"
 
       // Aggregate by user
       const pointsMap = new Map<string, number>();
-      for (const row of (data || []) as any[]) {
+      for (const row of (data || [])) {
         pointsMap.set(row.user_id, (pointsMap.get(row.user_id) || 0) + row.points);
       }
 
@@ -168,7 +168,7 @@ export function useCommunityEvents(creatorId: string | undefined) {
         .eq("creator_id", creatorId!)
         .order("event_date", { ascending: true });
       if (error) throw error;
-      return (data || []) as any[];
+      return (data || []);
     },
   });
 }

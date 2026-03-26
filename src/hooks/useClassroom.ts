@@ -13,7 +13,7 @@ export function useClassroomModules(creatorId: string | undefined) {
         .eq("creator_id", creatorId!)
         .order("position", { ascending: true });
       if (error) throw error;
-      return (data || []) as any[];
+      return (data || []);
     },
   });
 }
@@ -29,7 +29,7 @@ export function useClassroomLessons(moduleIds: string[]) {
         .in("module_id", moduleIds)
         .order("position", { ascending: true });
       if (error) throw error;
-      return (data || []) as any[];
+      return (data || []);
     },
   });
 }
@@ -100,7 +100,7 @@ export function useCreateModule() {
         throw error;
       }
       if (!data) throw new Error("Module was created but could not be retrieved");
-      return data as any;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["classroom-modules"] });
