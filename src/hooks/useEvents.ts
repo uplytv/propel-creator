@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { tables } from "@/lib/supabaseTyped";
 
 export type EventRow = {
   id: string;
@@ -56,8 +57,7 @@ export function useCreatorEvents() {
     queryKey: ["creator-events", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from("events")
+      const { data, error } = await tables.events()
         .select("*")
         .eq("creator_id", user!.id)
         .order("starts_at", { ascending: false });
@@ -71,8 +71,7 @@ export function usePublishedEvents(filter?: string) {
   return useQuery({
     queryKey: ["published-events", filter],
     queryFn: async () => {
-      let q = (supabase as any)
-        .from("events")
+      let q = tables.events()
         .select("*")
         .eq("status", "published")
         .gte("ends_at", new Date().toISOString())
@@ -94,15 +93,12 @@ export function useEvent(slugOrId?: string) {
     queryKey: ["event", slugOrId],
     enabled: !!slugOrId,
     queryFn: async () => {
-      // Try slug first, then ID
-      let { data, error } = await (supabase as any)
-        .from("events")
+      let { data, error } = await tables.events()
         .select("*")
         .eq("slug", slugOrId)
         .maybeSingle();
       if (!data) {
-        ({ data, error } = await (supabase as any)
-          .from("events")
+        ({ data, error } = await tables.events()
           .select("*")
           .eq("id", slugOrId)
           .maybeSingle());
@@ -119,8 +115,7 @@ export function useEventTickets(eventId?: string) {
     queryKey: ["event-tickets", eventId, user?.id],
     enabled: !!eventId && !!user,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from("tickets")
+      const { data, error } = await tables.tickets()
         .select("*")
         .eq("event_id", eventId);
       if (error) throw error;
@@ -135,8 +130,7 @@ export function useMyTickets() {
     queryKey: ["my-tickets", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from("tickets")
+      const { data, error } = await tables.tickets()
         .select("*, events:event_id(*)")
         .eq("buyer_id", user!.id)
         .order("created_at", { ascending: false });
@@ -152,8 +146,7 @@ export function useMyTicketForEvent(eventId?: string) {
     queryKey: ["my-ticket", eventId, user?.id],
     enabled: !!eventId && !!user,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from("tickets")
+      const { data, error } = await tables.tickets()
         .select("*")
         .eq("event_id", eventId)
         .eq("buyer_id", user!.id)
@@ -170,8 +163,7 @@ export function useCreateEvent() {
   const { toast } = useToast();
   return useMutation({
     mutationFn: async (event: Partial<EventRow>) => {
-      const { data, error } = await (supabase as any)
-        .from("events")
+      const { data, error } = await tables.events()
         .insert(event)
         .select()
         .single();
@@ -182,7 +174,7 @@ export function useCreateEvent() {
       qc.invalidateQueries({ queryKey: ["creator-events"] });
       toast({ title: "Event created!" });
     },
-    onError: (e: any) => {
+    onError: (e: Error) => {
       toast({ title: "Error creating event", description: e.message, variant: "destructive" });
     },
   });
@@ -193,8 +185,7 @@ export function useUpdateEvent() {
   const { toast } = useToast();
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<EventRow> & { id: string }) => {
-      const { data, error } = await (supabase as any)
-        .from("events")
+      const { data, error } = await tables.events()
         .update(updates)
         .eq("id", id)
         .select()
@@ -207,7 +198,7 @@ export function useUpdateEvent() {
       qc.invalidateQueries({ queryKey: ["event"] });
       qc.invalidateQueries({ queryKey: ["published-events"] });
     },
-    onError: (e: any) => {
+    onError: (e: Error) => {
       toast({ title: "Error updating event", description: e.message, variant: "destructive" });
     },
   });
@@ -221,8 +212,7 @@ export function useClaimFreeTicket() {
     mutationFn: async (event: EventRow) => {
       if (!user) throw new Error("Must be logged in");
       const token = crypto.randomUUID();
-      const { data, error } = await (supabase as any)
-        .from("tickets")
+      const { data, error } = await tables.tickets()
         .insert({
           event_id: event.id,
           buyer_id: user.id,
@@ -237,9 +227,7 @@ export function useClaimFreeTicket() {
         .single();
       if (error) throw error;
 
-      // Increment tickets_sold
-      await (supabase as any)
-        .from("events")
+      await tables.events()
         .update({ tickets_sold: event.tickets_sold + 1 })
         .eq("id", event.id);
 
@@ -250,7 +238,7 @@ export function useClaimFreeTicket() {
       qc.invalidateQueries({ queryKey: ["event"] });
       toast({ title: "You're going! 🎉", description: "Free ticket claimed successfully." });
     },
-    onError: (e: any) => {
+    onError: (e: Error) => {
       toast({ title: "Error claiming ticket", description: e.message, variant: "destructive" });
     },
   });
@@ -263,8 +251,7 @@ export function useSetEventReminder() {
   return useMutation({
     mutationFn: async (eventId: string) => {
       if (!user) throw new Error("Must be logged in");
-      const { error } = await (supabase as any)
-        .from("event_reminders")
+      const { error } = await tables.eventReminders()
         .insert({ event_id: eventId, user_id: user.id });
       if (error) throw error;
     },
@@ -272,7 +259,7 @@ export function useSetEventReminder() {
       qc.invalidateQueries({ queryKey: ["event-reminder"] });
       toast({ title: "Reminder set! 🔔" });
     },
-    onError: (e: any) => {
+    onError: (e: Error) => {
       if (e.message?.includes("duplicate")) {
         toast({ title: "Reminder already set" });
       } else {
@@ -287,7 +274,6 @@ export function useCreatorEventsByUsername(username?: string) {
     queryKey: ["creator-events-public", username],
     enabled: !!username,
     queryFn: async () => {
-      // Get creator profile
       const { data: profile } = await supabase
         .from("profiles")
         .select("user_id")
@@ -295,8 +281,7 @@ export function useCreatorEventsByUsername(username?: string) {
         .maybeSingle();
       if (!profile) return [];
 
-      const { data, error } = await (supabase as any)
-        .from("events")
+      const { data, error } = await tables.events()
         .select("*")
         .eq("creator_id", profile.user_id)
         .eq("status", "published")
@@ -312,8 +297,7 @@ export function useCheckInTicket() {
   const { toast } = useToast();
   return useMutation({
     mutationFn: async (qrToken: string) => {
-      const { data, error } = await (supabase as any)
-        .from("tickets")
+      const { data, error } = await tables.tickets()
         .select("*, events:event_id(title)")
         .eq("qr_code_token", qrToken)
         .maybeSingle();
@@ -322,8 +306,7 @@ export function useCheckInTicket() {
       if (data.status === "used") throw new Error("ALREADY_USED:" + data.checked_in_at);
       if (data.status !== "active") throw new Error("INVALID_STATUS:" + data.status);
 
-      await (supabase as any)
-        .from("tickets")
+      await tables.tickets()
         .update({ status: "used", checked_in_at: new Date().toISOString() })
         .eq("id", data.id);
 

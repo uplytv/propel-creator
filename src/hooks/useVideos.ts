@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { tables } from "@/lib/supabaseTyped";
 
 export interface Video {
   id: string;
@@ -41,7 +42,7 @@ export function useVideos(creatorId?: string) {
   return useQuery({
     queryKey: ["videos", creatorId],
     queryFn: async () => {
-      let q = (supabase as any).from("videos").select("*").order("created_at", { ascending: false });
+      let q = tables.videos().select("*").order("created_at", { ascending: false });
       if (creatorId) q = q.eq("creator_id", creatorId);
       else q = q.eq("is_public", true);
       const { data, error } = await q.limit(100);
@@ -55,8 +56,7 @@ export function useVideo(slug: string | undefined) {
   return useQuery({
     queryKey: ["video", slug],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from("videos")
+      const { data, error } = await tables.videos()
         .select("*")
         .eq("slug", slug)
         .maybeSingle();
@@ -71,8 +71,7 @@ export function useVideoComments(videoId: string | undefined) {
   return useQuery({
     queryKey: ["video-comments", videoId],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from("video_comments")
+      const { data, error } = await tables.videoComments()
         .select("*, profiles:user_id(display_name, avatar_url)")
         .eq("video_id", videoId)
         .order("created_at", { ascending: false })
@@ -92,8 +91,7 @@ export function useVideoLike(videoId: string | undefined) {
     queryKey: ["video-like", videoId, user?.id],
     queryFn: async () => {
       if (!user) return false;
-      const { data } = await (supabase as any)
-        .from("video_likes")
+      const { data } = await tables.videoLikes()
         .select("id")
         .eq("video_id", videoId)
         .eq("user_id", user.id)
@@ -106,12 +104,12 @@ export function useVideoLike(videoId: string | undefined) {
   const toggleLike = async () => {
     if (!user || !videoId) return;
     if (likeQuery.data) {
-      await (supabase as any).from("video_likes").delete().eq("video_id", videoId).eq("user_id", user.id);
+      await tables.videoLikes().delete().eq("video_id", videoId).eq("user_id", user.id);
     } else {
-      await (supabase as any).from("video_likes").insert({ video_id: videoId, user_id: user.id });
+      await tables.videoLikes().insert({ video_id: videoId, user_id: user.id });
     }
     qc.invalidateQueries({ queryKey: ["video-like", videoId] });
-    qc.invalidateQueries({ queryKey: ["video", ] });
+    qc.invalidateQueries({ queryKey: ["video"] });
   };
 
   return { isLiked: likeQuery.data || false, toggleLike };
@@ -125,8 +123,7 @@ export function useAddComment(videoId: string | undefined) {
   return useMutation({
     mutationFn: async (body: string) => {
       if (!user || !videoId) throw new Error("Not authenticated");
-      const { error } = await (supabase as any)
-        .from("video_comments")
+      const { error } = await tables.videoComments()
         .insert({ video_id: videoId, user_id: user.id, body });
       if (error) throw error;
     },
@@ -134,7 +131,7 @@ export function useAddComment(videoId: string | undefined) {
       qc.invalidateQueries({ queryKey: ["video-comments", videoId] });
       qc.invalidateQueries({ queryKey: ["video"] });
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     },
   });
@@ -162,8 +159,7 @@ export function useCreateVideo() {
       if (!user) throw new Error("Not authenticated");
       const visibility = video.visibility || "public";
       const isPublic = visibility === "public" && !video.scheduled_publish_at;
-      const { data, error } = await (supabase as any)
-        .from("videos")
+      const { data, error } = await tables.videos()
         .insert({
           creator_id: user.id,
           title: video.title,
@@ -183,10 +179,10 @@ export function useCreateVideo() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["videos"] });
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     },
   });
