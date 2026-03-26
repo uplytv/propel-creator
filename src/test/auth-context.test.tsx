@@ -1,21 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, act } from "@testing-library/react";
-import { AuthProvider, useAuth } from "@/context/AuthContext";
 
-// Mock supabase
-const mockOnAuthStateChange = vi.fn();
-const mockGetSession = vi.fn();
-const mockSignOut = vi.fn();
-
-vi.mock("@/integrations/supabase/client", () => ({
-  supabase: {
-    auth: {
-      onAuthStateChange: mockOnAuthStateChange,
-      getSession: mockGetSession,
-      signOut: mockSignOut,
+// Must use inline factories since vi.mock is hoisted
+vi.mock("@/integrations/supabase/client", () => {
+  const onAuthStateChange = vi.fn();
+  const getSession = vi.fn();
+  const signOut = vi.fn();
+  return {
+    supabase: {
+      auth: { onAuthStateChange, getSession, signOut },
     },
-  },
-}));
+  };
+});
 
 vi.mock("@/lib/sentry", () => ({
   setSentryUser: vi.fn(),
@@ -26,6 +22,13 @@ vi.mock("@/lib/posthog", () => ({
   identifyUser: vi.fn(),
   resetPostHog: vi.fn(),
 }));
+
+// Import after mocks
+import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+
+const mockOnAuthStateChange = supabase.auth.onAuthStateChange as ReturnType<typeof vi.fn>;
+const mockGetSession = supabase.auth.getSession as ReturnType<typeof vi.fn>;
 
 function TestConsumer() {
   const { user, loading, session } = useAuth();
@@ -96,7 +99,6 @@ describe("AuthContext", () => {
       expect(screen.getByTestId("loading").textContent).toBe("false");
     });
 
-    // Simulate login via auth state change
     act(() => {
       authCallback("SIGNED_IN", {
         user: { id: "user-456", email: "a@b.com", created_at: "2024-01-01" },
@@ -108,7 +110,6 @@ describe("AuthContext", () => {
   });
 
   it("throws when useAuth is called outside provider", () => {
-    // Suppress console.error for this test
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
     expect(() => {
       render(<TestConsumer />);
