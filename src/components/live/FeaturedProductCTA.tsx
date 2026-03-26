@@ -105,7 +105,7 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
         creator_id: creatorId,
         amount: 0,
         status: "completed",
-      } as any);
+      });
       setEnrolled(true);
       toast.success(`You're in! Access ${product.name} now`);
       setModalOpen(false);

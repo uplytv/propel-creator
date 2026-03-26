@@ -69,7 +69,7 @@ export function useCompleteLesson() {
       if (error && !error.message.includes("duplicate")) throw error;
       await supabase.from("member_points").insert({
         user_id: user.id, creator_id: creatorId, action_type: "lesson_complete", points: 10,
-      } as any);
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lesson-completions"] });

@@ -208,7 +208,7 @@ export default function BlastComposer({ open, onClose, creatorId, spaceId, lastB
           media_url: mediaUrl,
           mux_asset_id: muxAssetId,
           mux_playback_id: muxPlaybackId,
-        } as any)
+        })
         .select()
         .single();
 

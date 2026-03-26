@@ -81,7 +81,7 @@ export function useCampaigns() {
         audience_label: campaign.audienceLabel,
         platform: campaign.platform,
         status: "active",
-      } as any);
+      });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -130,7 +130,7 @@ export function useCampaigns() {
         audience_label: source.audience_label,
         platform: source.platform,
         status: "active",
-      } as any);
+      });
       if (error) throw error;
     },
     onSuccess: () => {

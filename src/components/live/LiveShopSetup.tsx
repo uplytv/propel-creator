@@ -67,7 +67,7 @@ export default function LiveShopSetup({ streamId, products, onProductsChange }: 
       type: form.type,
       auction_duration_minutes: form.type === "auction" ? form.auction_duration : null,
       position: products.length,
-    } as any);
+    });
 
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });

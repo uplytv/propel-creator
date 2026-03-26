@@ -203,7 +203,7 @@ export default function Onboarding() {
         onboarding_complete: true,
         is_approved: isApproved,
         creator_type: creatorType || "Content Creator",
-      } as any)
+      })
       .eq("user_id", user.id);
 
     // Get updated referral code
@@ -241,7 +241,7 @@ export default function Onboarding() {
         referrer_display_name: referrerDisplayName || null,
         referrer_avatar_url: referrerAvatarUrl || null,
         referrer_username: referrerUsername || null,
-      } as any)
+      })
       .select("position, id")
       .single() as any;
 

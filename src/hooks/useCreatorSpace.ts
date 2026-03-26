@@ -121,7 +121,7 @@ export function useCreateCommunityPost() {
         creator_id: post.creator_id,
         action_type: "post",
         points: 5,
-      } as any);
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["community-posts"] });
@@ -164,7 +164,7 @@ export function useToggleLike() {
           creator_id: creatorId,
           action_type: "like_received",
           points: 1,
-        } as any);
+        });
         return { liked: true };
       }
     },
@@ -240,7 +240,7 @@ export function useCreateComment() {
         creator_id: creatorId,
         action_type: "comment",
         points: 2,
-      } as any);
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["community-comments"] });

@@ -86,7 +86,7 @@ export default function CreatorTestimonials({ creatorId, isOwner }: { creatorId:
         reviewer_id: user.id,
         rating,
         body: body.trim(),
-      } as any);
+      });
       if (error) throw error;
     },
     onSuccess: () => {

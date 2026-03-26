@@ -101,7 +101,7 @@ export function getCameraConstraints(facingMode: 'user' | 'environment'): MediaS
       height: { ideal: 720, max: 1080 },
       frameRate: { ideal: 30, max: 30 },
       // Reduce latency on supported browsers
-      ...(typeof window !== 'undefined' && { latency: { ideal: 0 } } as any),
+      ...(typeof window !== 'undefined' && { latency: { ideal: 0 } }),
     },
     audio: {
       echoCancellation: true,

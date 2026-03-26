@@ -86,7 +86,7 @@ export default function CreatorProfileEditDrawer({ open, onOpenChange, profile, 
         username: username as any,
         bio,
         creator_type: creatorType,
-      } as any).eq("user_id", profile.user_id);
+      }).eq("user_id", profile.user_id);
 
       // Upsert social links — delete all first, then insert
       await (supabase.from("social_links") as any).delete().eq("user_id", profile.user_id);

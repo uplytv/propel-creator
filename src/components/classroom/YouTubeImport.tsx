@@ -107,7 +107,7 @@ export default function YouTubeImport({ creatorId }: { creatorId: string }) {
           .update({
             video_type: "youtube",
             youtube_video_id: metadata.video_id,
-          } as any)
+          })
           .eq("id", lessons[0].id);
       }
 

@@ -77,7 +77,7 @@ export function useCreatePost() {
         user_id: user.id,
         content,
         category,
-      } as any);
+      });
       if (error) throw error;
     },
     onSuccess: () => {
