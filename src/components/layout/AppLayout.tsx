@@ -429,7 +429,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       {/* Main Content */}
       <div className={`flex-1 transition-all duration-300 ${collapsed ? "md:ml-[68px]" : "md:ml-60"}`}>
         {/* Top Bar */}
-        <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl safe-area-top">
+        <header role="banner" className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl safe-area-top">
           <div className="flex items-center justify-between px-4 md:px-8 h-14">
             <div className="flex items-center gap-2 md:hidden">
               <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Open menu" className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground">
@@ -511,7 +511,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main id="main-content" className="pb-16 md:pb-0" tabIndex={-1}>{children}</main>
+        <main id="main-content" role="main" aria-label="Page content" className="pb-16 md:pb-0" tabIndex={-1}>{children}</main>
       </div>
 
       {/* Mobile Tab Bar */}
@@ -558,7 +558,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 </div>
               </div>
 
-              <nav className="flex-1 py-2 px-3 overflow-y-auto">
+              <nav aria-label="Mobile navigation" className="flex-1 py-2 px-3 overflow-y-auto">
                 {renderNavItem({ label: "Discover", icon: Search, path: "/discover", desc: "Find creators" }, false, () => setMobileMenuOpen(false))}
                 {renderNavItem({ label: "Home", icon: Home, path: "/dashboard", desc: "Overview" }, false, () => setMobileMenuOpen(false))}
 
