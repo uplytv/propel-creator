@@ -39,8 +39,10 @@ export function useConnectionQuality(enabled: boolean = true): ConnectionState {
   useEffect(() => {
     if (!enabled) return;
 
+    const nav = navigator as Navigator & { connection?: { rtt?: number; downlink?: number; effectiveType?: string; addEventListener?: (type: string, fn: () => void) => void; removeEventListener?: (type: string, fn: () => void) => void } };
+
     const update = () => {
-      const conn = (navigator as any).connection;
+      const conn = nav.connection;
       const rtt = conn?.rtt ?? null;
       const downlink = conn?.downlink ?? null;
       const effectiveType = conn?.effectiveType ?? null;
@@ -51,7 +53,7 @@ export function useConnectionQuality(enabled: boolean = true): ConnectionState {
     update();
 
     // Listen to Network Information API changes
-    const conn = (navigator as any).connection;
+    const conn = nav.connection;
     if (conn?.addEventListener) {
       conn.addEventListener("change", update);
     }
