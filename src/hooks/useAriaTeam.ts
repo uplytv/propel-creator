@@ -191,16 +191,14 @@ export function useApproveTask() {
 
       // Get task to update agent confidence
       const { data: taskData } = await supabase.from("aria_agent_tasks").select("agent_id").eq("id", taskId).single();
-      const taskRow = taskData as any;
-      if (taskRow?.agent_id) {
-        const { data: agentData } = await supabase.from("aria_agents").select("*").eq("id", taskRow.agent_id).single();
-        const agentRow = agentData as any;
-        if (agentRow) {
-          const newConf = 0.9 * (agentRow.confidence_score || 0.5) + 0.1 * 1.0;
+      if (taskData?.agent_id) {
+        const { data: agentData } = await supabase.from("aria_agents").select("*").eq("id", taskData.agent_id).single();
+        if (agentData) {
+          const newConf = 0.9 * (agentData.confidence_score || 0.5) + 0.1 * 1.0;
           await supabase.from("aria_agents").update({
             confidence_score: newConf,
-            tasks_approved: (agentRow.tasks_approved || 0) + 1,
-          }).eq("id", agentRow.id);
+            tasks_approved: (agentData.tasks_approved || 0) + 1,
+          }).eq("id", agentData.id);
         }
       }
     },
@@ -228,26 +226,24 @@ export function useRejectTask() {
 
       // Update agent confidence and store boundary memory
       const { data: taskData2 } = await supabase.from("aria_agent_tasks").select("agent_id, agent_type, task_type, output_data, creator_id").eq("id", taskId).single();
-      const taskRow2 = taskData2 as any;
-      if (taskRow2?.agent_id) {
-        const { data: agentData2 } = await supabase.from("aria_agents").select("*").eq("id", taskRow2.agent_id).single();
-        const agentRow2 = agentData2 as any;
-        if (agentRow2) {
-          const newConf = 0.9 * (agentRow2.confidence_score || 0.5) + 0.1 * 0.0;
+      if (taskData2?.agent_id) {
+        const { data: agentData2 } = await supabase.from("aria_agents").select("*").eq("id", taskData2.agent_id).single();
+        if (agentData2) {
+          const newConf = 0.9 * (agentData2.confidence_score || 0.5) + 0.1 * 0.0;
           await supabase.from("aria_agents").update({
             confidence_score: newConf,
-            tasks_rejected: (agentRow2.tasks_rejected || 0) + 1,
-          }).eq("id", agentRow2.id);
+            tasks_rejected: (agentData2.tasks_rejected || 0) + 1,
+          }).eq("id", agentData2.id);
         }
 
         // Store boundary memory
         if (feedback) {
           await supabase.from("aria_agent_memory").upsert({
-            creator_id: taskRow2.creator_id,
-            agent_type: taskRow2.agent_type,
+            creator_id: taskData2.creator_id,
+            agent_type: taskData2.agent_type,
             memory_type: "boundary",
-            key: `rejected_${taskRow2.task_type}_${Date.now()}`,
-            value: { feedback, task_type: taskRow2.task_type },
+            key: `rejected_${taskData2.task_type}_${Date.now()}`,
+            value: { feedback, task_type: taskData2.task_type },
             confidence: 1.0,
           }, { onConflict: "creator_id,agent_type,key" });
         }
