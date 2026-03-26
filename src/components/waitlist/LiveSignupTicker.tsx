@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, forwardRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -7,7 +7,7 @@ interface RecentSignup {
   time: string;
 }
 
-export default function LiveSignupTicker() {
+const LiveSignupTicker = forwardRef<HTMLDivElement>(function LiveSignupTicker(_props, ref) {
   const [signups, setSignups] = useState<RecentSignup[]>([]);
   const [visible, setVisible] = useState(0);
 
@@ -34,12 +34,10 @@ export default function LiveSignupTicker() {
     };
     fetchRecent();
 
-    // Rotate every 3 seconds
     const interval = setInterval(() => {
       setVisible((v) => v + 1);
     }, 3000);
 
-    // Realtime: add new signups to the front
     const channel = supabase
       .channel("ticker-signups")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "waitlist" }, (payload: any) => {
@@ -61,7 +59,7 @@ export default function LiveSignupTicker() {
   const current = signups[visible % signups.length];
 
   return (
-    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-card/80 border border-border/40 backdrop-blur-sm">
+    <div ref={ref} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-card/80 border border-border/40 backdrop-blur-sm">
       <span className="relative flex h-2 w-2">
         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
         <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
@@ -81,4 +79,6 @@ export default function LiveSignupTicker() {
       </AnimatePresence>
     </div>
   );
-}
+});
+
+export default LiveSignupTicker;
