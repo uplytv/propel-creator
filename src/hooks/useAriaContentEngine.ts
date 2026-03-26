@@ -59,7 +59,7 @@ export function useAriaGeneratedContent(jobId?: string) {
       if (jobId) q = q.eq("job_id", jobId);
       const { data, error } = await q.limit(200);
       if (error) throw error;
-      return data[];
+      return data || [];
     },
   });
 
