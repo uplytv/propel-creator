@@ -23,6 +23,7 @@ import AriaChat from "@/components/dashboard/AriaChat";
 import DiscoverMarketplace from "@/components/dashboard/DiscoverMarketplace";
 import VideoUploadSheet from "@/components/videos/VideoUploadSheet";
 import { RevenueGoalTracker } from "@/components/dashboard/RevenueGoalTracker";
+import ReferralRewardsCard from "@/components/affiliates/ReferralRewardsCard";
 
 function PlatformUpgradeBanner() {
   const { user } = useAuth();
@@ -212,6 +213,11 @@ export default function Dashboard() {
         {/* Onboarding Checklist */}
         <div className="px-4 md:px-8">
           <OnboardingChecklist />
+        </div>
+
+        {/* Referral Rewards */}
+        <div className="px-4 md:px-8 mb-4">
+          <ReferralRewardsCard />
         </div>
 
         {/* Discover Mode */}
