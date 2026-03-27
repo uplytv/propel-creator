@@ -25,27 +25,43 @@ Deno.serve(async (req) => {
     );
 
     // Increment clicks on affiliate_links
-    const { error } = await supabase.rpc("increment_affiliate_clicks", { ref_code: code });
-    
-    // Fallback: direct update if RPC doesn't exist
-    if (error) {
+    const { data: link } = await supabase
+      .from("affiliate_links")
+      .select("id, clicks")
+      .eq("code", code)
+      .maybeSingle();
+
+    if (link) {
       await supabase
         .from("affiliate_links")
-        .update({ clicks: supabase.rpc ? undefined : 0 })
-        .eq("code", code);
-      
-      // Manual increment
-      const { data: link } = await supabase
-        .from("affiliate_links")
-        .select("clicks")
-        .eq("code", code)
+        .update({ clicks: (link.clicks || 0) + 1 })
+        .eq("id", link.id);
+      console.log(`Click tracked for affiliate code ${code}: ${(link.clicks || 0) + 1} total`);
+    } else {
+      // Try matching by referral_code in profiles
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("referral_code", code)
         .maybeSingle();
-      
-      if (link) {
-        await supabase
+
+      if (profile) {
+        // Check if affiliate_links row exists for this user
+        const { data: existingLink } = await supabase
           .from("affiliate_links")
-          .update({ clicks: (link.clicks || 0) + 1 })
-          .eq("code", code);
+          .select("id, clicks")
+          .eq("user_id", profile.user_id)
+          .maybeSingle();
+
+        if (existingLink) {
+          await supabase
+            .from("affiliate_links")
+            .update({ clicks: (existingLink.clicks || 0) + 1 })
+            .eq("id", existingLink.id);
+          console.log(`Click tracked for profile referral code ${code}`);
+        }
+      } else {
+        console.log(`No affiliate link or profile found for code: ${code}`);
       }
     }
 

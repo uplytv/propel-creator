@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { setAffiliateCookie } from "@/lib/affiliateCookies";
+import { setReferralData, getReferralData } from "@/lib/affiliateCookies";
 import { useAuth } from "@/context/AuthContext";
-import { Loader2, Video, DollarSign, Bot, Shield, Clock, Users } from "lucide-react";
+import { Loader2, Video, DollarSign, Bot, Shield, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SEOHead from "@/components/SEOHead";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import LiveSignupTicker from "@/components/waitlist/LiveSignupTicker";
 
 interface ReferrerInfo {
@@ -33,6 +33,8 @@ export default function ReferralRedirect() {
       return;
     }
 
+    console.log(`Referral link visited — code ${actualCode} from username ${username || "unknown"}`);
+
     const fetchReferrer = async () => {
       const { data, error } = await supabase.rpc("lookup_referrer_by_code", {
         ref_code: actualCode,
@@ -42,37 +44,40 @@ export default function ReferralRedirect() {
         const referrerData = data as unknown as ReferrerInfo;
         setReferrer(referrerData);
 
-        // Set cookies AND localStorage immediately
-        setAffiliateCookie("uply_waitlist_ref", actualCode, 30);
-        if (referrerData.username) {
-          setAffiliateCookie("uply_referrer_username", referrerData.username, 30);
-        }
-        if (referrerData.display_name) {
-          setAffiliateCookie("uply_referrer_name", referrerData.display_name, 30);
-        }
+        // STEP 1: Write to ALL THREE storage methods simultaneously
+        setReferralData(
+          actualCode,
+          referrerData.username || username || null,
+          referrerData.display_name || null
+        );
+
+        // Also store avatar in localStorage
         if (referrerData.avatar_url) {
           try { localStorage.setItem("uply_referrer_avatar", referrerData.avatar_url); } catch {}
         }
+
+        console.log(`Referral cookie set for code ${actualCode} from referrer ${referrerData.username || username} — all three storage methods written successfully`);
 
         // Track click via edge function (fire and forget)
         supabase.functions.invoke("track-referral-click", {
           body: { code: actualCode },
         }).catch(() => {});
       } else {
-        setAffiliateCookie("uply_waitlist_ref", actualCode, 30);
+        // Even if referrer not found, store the code
+        setReferralData(actualCode, username || null, null);
         setNotFound(true);
       }
 
       const { count } = await supabase
         .from("waitlist")
-        .select("*", { count: "exact", head: true }) as any;
+        .select("*", { count: "exact", head: true }) as { count: number | null };
       setTotalApplicants(count || 0);
 
       setLoading(false);
     };
 
     fetchReferrer();
-  }, [actualCode, navigate]);
+  }, [actualCode, navigate, username]);
 
   useEffect(() => {
     if (!loading && notFound) {
@@ -85,18 +90,22 @@ export default function ReferralRedirect() {
   const handleAcceptInvite = async () => {
     if (authLoading) return;
 
-    // Cookies already set on page load, but reinforce them
-    setAffiliateCookie("uply_waitlist_ref", actualCode!, 30);
+    // Reinforce storage on button tap (reads current data and re-writes)
+    const current = getReferralData();
+    if (current.code) {
+      setReferralData(current.code, current.username || referrer?.username || null, current.name || referrer?.display_name || null);
+    }
+
+    if (referrer?.avatar_url) {
+      try {
+        localStorage.setItem("uply_referrer_avatar", referrer.avatar_url);
+        sessionStorage.setItem("referrer_avatar", referrer.avatar_url);
+      } catch {}
+    }
     if (referrer?.display_name) {
-      setAffiliateCookie("uply_referrer_name", referrer.display_name, 30);
       sessionStorage.setItem("referrer_name", referrer.display_name);
     }
-    if (referrer?.avatar_url) {
-      sessionStorage.setItem("referrer_avatar", referrer.avatar_url);
-      try { localStorage.setItem("uply_referrer_avatar", referrer.avatar_url); } catch {}
-    }
     if (referrer?.username) {
-      setAffiliateCookie("uply_referrer_username", referrer.username, 30);
       sessionStorage.setItem("referrer_username", referrer.username);
     }
 
@@ -112,7 +121,7 @@ export default function ReferralRedirect() {
       .eq("user_id", user.id)
       .single();
 
-    const p = profile as any;
+    const p = profile as Record<string, unknown> | null;
     if (!p?.onboarding_complete) {
       navigate("/onboarding", { replace: true });
     } else if (p?.is_approved) {
@@ -179,7 +188,6 @@ export default function ReferralRedirect() {
                 {firstName[0]?.toUpperCase()}
               </div>
             )}
-            {/* Online indicator */}
             <div className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-primary border-2 border-background" />
           </div>
 
@@ -222,8 +230,7 @@ export default function ReferralRedirect() {
             UPLY is the creator platform where you go live, build your community, host courses, and get paid directly — all in one place.
             You keep <span className="text-primary font-semibold">95%</span> of everything you earn.
           </p>
-          
-          {/* Social proof stats */}
+
           <div className="grid grid-cols-3 gap-2 pt-3 border-t border-border">
             <div className="text-center">
               <p className="text-lg font-bold text-foreground">{totalApplicants.toLocaleString()}+</p>
@@ -241,12 +248,7 @@ export default function ReferralRedirect() {
         </motion.div>
 
         {/* Live signup ticker */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="mb-5"
-        >
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="mb-5">
           <LiveSignupTicker />
         </motion.div>
 
@@ -283,7 +285,7 @@ export default function ReferralRedirect() {
           <p className="text-xs text-muted-foreground text-center uppercase tracking-wider font-semibold mb-4">
             What you're getting early access to
           </p>
-          
+
           {[
             { icon: <Video className="w-5 h-5 text-primary flex-shrink-0" />, label: "Go Live & Get Discovered", desc: "Stream to a built-in audience. Tips, reactions, and live shopping." },
             { icon: <DollarSign className="w-5 h-5 text-primary flex-shrink-0" />, label: "7 Revenue Streams", desc: "Subscriptions, tips, courses, events, DMs, products, affiliates." },
@@ -300,7 +302,7 @@ export default function ReferralRedirect() {
           ))}
         </motion.div>
 
-        {/* Testimonial-style social proof */}
+        {/* Testimonial */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
