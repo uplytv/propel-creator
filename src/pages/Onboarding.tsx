@@ -109,8 +109,9 @@ export default function Onboarding() {
     };
     check();
 
-    // Load referrer info
-    const name = getAffiliateCookie("uply_referrer_name") || sessionStorage.getItem("referrer_name");
+    // Load referrer info from all storage methods
+    const refData = getReferralData();
+    const name = refData.name || sessionStorage.getItem("referrer_name");
     const avatar = localStorage.getItem("uply_referrer_avatar") || sessionStorage.getItem("referrer_avatar");
     if (name) setReferrerName(name);
     if (avatar) setReferrerAvatar(avatar);
