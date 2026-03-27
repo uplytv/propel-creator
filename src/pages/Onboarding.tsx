@@ -9,7 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight, ArrowLeft, Camera, Check, X } from "lucide-react";
 import { toast } from "sonner";
-import { getAffiliateCookie, clearAffiliateCookie } from "@/lib/affiliateCookies";
+import { getAffiliateCookie, clearAffiliateCookie, getReferralData, clearReferralData } from "@/lib/affiliateCookies";
 import logoImg from "@/assets/logo.png";
 
 const CREATOR_TYPES = [
@@ -148,7 +148,9 @@ export default function Onboarding() {
     let uploadedUrl = avatarUrl;
     if (avatarFile) uploadedUrl = await uploadPhoto();
 
-    const refCode = getAffiliateCookie("uply_waitlist_ref");
+    // STEP 3: Read referral data at submit time using bulletproof reader
+    const { code: refCode, username: referrerUsernameFromStorage, name: referrerNameFromStorage } = getReferralData();
+    console.log('Submitting onboarding with referral code:', refCode);
 
     // Handle invite codes
     const inviteCode = getAffiliateCookie("uply_invite_code");
@@ -215,10 +217,12 @@ export default function Onboarding() {
     const updatedRefCode = (updatedProfile as any)?.referral_code || "";
     const updatedUsername = (updatedProfile as any)?.username;
 
-    // Insert into waitlist table
-    const referrerUsername = getAffiliateCookie("uply_referrer_username");
-    const referrerDisplayName = getAffiliateCookie("uply_referrer_name");
+    // Insert into waitlist table — use data from getReferralData() called above
+    const referrerUsername = referrerUsernameFromStorage || getAffiliateCookie("uply_referrer_username");
+    const referrerDisplayName = referrerNameFromStorage || getAffiliateCookie("uply_referrer_name");
     const referrerAvatarUrl = localStorage.getItem("uply_referrer_avatar");
+
+    console.log('Waitlist insert with referred_by:', refCode, 'referrer_username:', referrerUsername, 'referrer_display_name:', referrerDisplayName);
 
     const { data: waitlistRow } = await supabase
       .from("waitlist")
@@ -312,16 +316,8 @@ export default function Onboarding() {
       },
     }).catch(() => {});
 
-    // Clear referral cookies
-    clearAffiliateCookie("uply_waitlist_ref");
-    clearAffiliateCookie("uply_referrer_username");
-    clearAffiliateCookie("uply_referrer_name");
-    try {
-      localStorage.removeItem("uply_referrer_avatar");
-      localStorage.removeItem("uply_waitlist_ref");
-      localStorage.removeItem("uply_referrer_username");
-      localStorage.removeItem("uply_referrer_name");
-    } catch {}
+    // Clear all referral data from all storage methods
+    clearReferralData();
 
     // Store position for post-application screen
     const position = waitlistRow?.position || 0;
