@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Camera, TrendingUp, Users, DollarSign, Settings as GearIcon,
   Check, X, ChevronRight, Loader2, Zap, Bot, Eye, AlertTriangle,
-  Lightbulb, Trophy, Target, BarChart3, Clock, Sparkles
+  Lightbulb, Trophy, Target, BarChart3, Clock, Sparkles, Rocket
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useAuth } from "@/context/AuthContext";
@@ -23,17 +23,17 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 
-const AGENT_META: Record<string, { emoji: string; label: string; color: string }> = {
-  content: { emoji: "📸", label: "Content AI", color: "text-blue-400" },
-  growth: { emoji: "📈", label: "Growth AI", color: "text-primary" },
-  community: { emoji: "👥", label: "Community AI", color: "text-purple-400" },
-  sales: { emoji: "💰", label: "Sales AI", color: "text-yellow-400" },
-  operations: { emoji: "⚙️", label: "Operations AI", color: "text-orange-400" },
+const AGENT_META: Record<string, { emoji: string; label: string; color: string; nextAction: string }> = {
+  content: { emoji: "📸", label: "Content AI", color: "text-blue-400", nextAction: "Generate content calendar for this week" },
+  growth: { emoji: "📈", label: "Growth AI", color: "text-primary", nextAction: "Build landing page when you create your first product" },
+  community: { emoji: "👥", label: "Community AI", color: "text-purple-400", nextAction: "Monitor community questions — checks every 30 min" },
+  sales: { emoji: "💰", label: "Sales AI", color: "text-yellow-400", nextAction: "Watch for buying signals during your next live stream" },
+  operations: { emoji: "⚙️", label: "Operations AI", color: "text-orange-400", nextAction: "Weekly business report — Monday 7am" },
 };
 
 const PLACEHOLDER_AGENTS: AriaAgent[] = [
   "content", "growth", "community", "sales", "operations"
-].map((t, i) => ({
+].map((t) => ({
   id: `placeholder-${t}`,
   creator_id: "",
   agent_type: t,
@@ -41,7 +41,7 @@ const PLACEHOLDER_AGENTS: AriaAgent[] = [
   tasks_completed: 0,
   tasks_approved: 0,
   tasks_rejected: 0,
-  confidence_score: 0,
+  confidence_score: 0.65,
   last_active_at: null,
   config: null,
   memory: null,
@@ -71,9 +71,9 @@ function ConfidenceBar({ score }: { score: number }) {
   );
 }
 
+/* PROBLEM 5 — Agent cards show specific next action */
 function AgentCard({ agent, onToggle }: { agent: AriaAgent; onToggle: (id: string, status: string) => void }) {
-  const meta = AGENT_META[agent.agent_type] || { emoji: "🤖", label: agent.agent_type, color: "text-foreground" };
-  const todayTasks = 0; // Would need filtered query
+  const meta = AGENT_META[agent.agent_type] || { emoji: "🤖", label: agent.agent_type, color: "text-foreground", nextAction: "Initializing..." };
   return (
     <div className="rounded-xl border border-border bg-card/60 p-4 space-y-3 min-w-[180px]">
       <div className="flex items-center justify-between">
@@ -92,13 +92,11 @@ function AgentCard({ agent, onToggle }: { agent: AriaAgent; onToggle: (id: strin
           onCheckedChange={(checked) => onToggle(agent.id, checked ? "active" : "paused")}
         />
       </div>
-      <ConfidenceBar score={agent.confidence_score || 0.5} />
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>{agent.tasks_completed || 0} tasks done</span>
-        {agent.last_active_at && (
-          <span>{formatDistanceToNow(new Date(agent.last_active_at), { addSuffix: true })}</span>
-        )}
-      </div>
+      <ConfidenceBar score={agent.confidence_score || 0.65} />
+      {/* Next action line instead of generic stats */}
+      <p className="text-[10px] text-muted-foreground leading-snug">
+        <span className="text-foreground font-medium">Next:</span> {meta.nextAction}
+      </p>
     </div>
   );
 }
@@ -110,7 +108,7 @@ function PendingTaskCard({ task, onApprove, onReject }: {
 }) {
   const [feedback, setFeedback] = useState("");
   const [showReject, setShowReject] = useState(false);
-  const meta = AGENT_META[task.agent_type] || { emoji: "🤖", label: task.agent_type, color: "text-foreground" };
+  const meta = AGENT_META[task.agent_type] || { emoji: "🤖", label: task.agent_type, color: "text-foreground", nextAction: "" };
   const confPct = Math.round((task.confidence || 0.5) * 100);
 
   const renderOutput = (data: any) => {
@@ -198,7 +196,7 @@ function PendingTaskCard({ task, onApprove, onReject }: {
 
 function InsightCard({ insight, onDismiss }: { insight: AriaInsight; onDismiss: (id: string) => void }) {
   const Icon = INSIGHT_ICONS[insight.insight_type] || Lightbulb;
-  const meta = AGENT_META[insight.agent_type] || { emoji: "🤖", label: "ARIA", color: "text-foreground" };
+  const meta = AGENT_META[insight.agent_type] || { emoji: "🤖", label: "ARIA", color: "text-foreground", nextAction: "" };
   return (
     <div className="rounded-xl border border-border bg-card/40 p-3 space-y-2">
       <div className="flex items-start gap-2">
@@ -282,6 +280,66 @@ function OnboardingModal({ onComplete, isGenerating }: { onComplete: () => void;
   );
 }
 
+/* PROBLEM 3 — Onboarding value preview when 0 tasks */
+function OnboardingValuePreview({ creatorType }: { creatorType?: string }) {
+  const type = (creatorType || "general").toLowerCase();
+
+  const getExamples = () => {
+    const base = [
+      { agent: "📸 Content AI", action: "Generate your first content clips automatically when you go live" },
+      { agent: "📈 Growth AI", action: "Build a landing page for your next product the moment you create it" },
+      { agent: "👥 Community AI", action: "Answer member questions within 2 hours so you never miss engagement" },
+    ];
+    // Customize based on creator type
+    if (type === "fitness") {
+      base[0].action = "Create workout highlight clips from your live training sessions";
+      base[1].action = "Build a landing page for your next fitness program automatically";
+    } else if (type === "gaming") {
+      base[0].action = "Clip your best gaming moments and create highlight reels automatically";
+      base[1].action = "Optimize your stream titles and thumbnails for maximum discoverability";
+    } else if (type === "finance") {
+      base[0].action = "Turn your market analysis streams into shareable short-form content";
+      base[1].action = "Build a funnel for your next financial course or guide";
+    } else if (type === "music") {
+      base[0].action = "Create performance clips and behind-the-scenes content from your sessions";
+      base[1].action = "Build a pre-save page for your upcoming releases";
+    } else if (type === "education") {
+      base[0].action = "Turn your lesson recordings into study guides and recap clips";
+      base[1].action = "Create a landing page for your next course module automatically";
+    }
+    return base;
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/5 to-card p-5 space-y-4"
+    >
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+          <Rocket className="w-5 h-5 text-primary" />
+        </div>
+        <div>
+          <h3 className="text-base font-bold text-foreground">Your AI Team is warming up</h3>
+          <p className="text-xs text-muted-foreground">Here's what they'll do for you this week</p>
+        </div>
+      </div>
+      <div className="space-y-3">
+        {getExamples().map((ex, i) => (
+          <div key={i} className="flex items-start gap-3 rounded-lg bg-card/60 border border-border/50 p-3">
+            <span className="text-lg">{ex.agent.split(" ")[0]}</span>
+            <div>
+              <p className="text-xs font-semibold text-foreground">{ex.agent.split(" ").slice(1).join(" ")}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{ex.action}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
 export default function AITeamDashboard() {
   const { user } = useAuth();
   const { data: agents, isLoading: agentsLoading } = useAriaAgents();
@@ -299,6 +357,14 @@ export default function AITeamDashboard() {
 
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [creatorType, setCreatorType] = useState<string | undefined>();
+
+  // Fetch creator type for personalized onboarding
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("creator_type").eq("user_id", user.id).maybeSingle()
+      .then(({ data }) => { if (data?.creator_type) setCreatorType(data.creator_type); });
+  }, [user]);
 
   // Check onboarding
   useEffect(() => {
@@ -307,7 +373,6 @@ export default function AITeamDashboard() {
     if (localStorage.getItem(key)) return;
     if (!allTasks || allTasks.length === 0) {
       setShowOnboarding(true);
-      // Trigger first content calendar
       setIsGenerating(true);
       triggerAgent.mutateAsync({ agentType: "content", taskType: "content_calendar" })
         .then(() => setIsGenerating(false))
@@ -332,21 +397,25 @@ export default function AITeamDashboard() {
     });
   };
 
-  const handleBulkApprove = () => {
-    const lowRisk = pendingTasks?.filter(t => (t.confidence || 0) >= 0.75) || [];
-    Promise.all(lowRisk.map(t => approveTask.mutateAsync({ taskId: t.id }))).then(() => {
-      toast.success(`Approved ${lowRisk.length} low-risk tasks`);
+  /* PROBLEM 4 — Bulk approve ALL pending tasks (not just low-risk) */
+  const handleBulkApproveAll = () => {
+    const calendarTasks = pendingTasks?.filter(t => t.task_type === "content_calendar") || [];
+    if (calendarTasks.length === 0) return;
+    Promise.all(calendarTasks.map(t => approveTask.mutateAsync({ taskId: t.id }))).then(() => {
+      toast.success(`🚀 Approved ${calendarTasks.length} tasks — your AI team is now running!`);
     });
   };
 
   // Stats
   const today = new Date().toISOString().slice(0, 10);
-  const todayTasks = allTasks?.filter(t => t.created_at?.startsWith(today) && (t.status === "completed" || t.status === "approved")) || [];
-  const weekTasks = allTasks?.filter(t => {
+  const completedTasks = allTasks?.filter(t => t.status === "completed" || t.status === "approved") || [];
+  const todayTasks = completedTasks.filter(t => t.created_at?.startsWith(today));
+  const weekTasks = completedTasks.filter(t => {
     const d = new Date(t.created_at);
-    return d > new Date(Date.now() - 7 * 86400000) && (t.status === "completed" || t.status === "approved");
-  }) || [];
+    return d > new Date(Date.now() - 7 * 86400000);
+  });
   const hoursSaved = (weekTasks.length * 0.5).toFixed(1);
+  const hasCompletedTasks = completedTasks.length > 0;
 
   if (agentsLoading) {
     return (
@@ -369,25 +438,32 @@ export default function AITeamDashboard() {
         {/* Header */}
         <div>
           <h1 className="text-2xl md:text-3xl font-extrabold text-foreground font-heading">Your AI Team</h1>
-          <div className="flex flex-wrap gap-4 mt-3">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border">
-              <Zap className="w-4 h-4 text-primary" />
-              <span className="text-sm font-semibold">{todayTasks.length}</span>
-              <span className="text-xs text-muted-foreground">tasks today</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border">
-              <Clock className="w-4 h-4 text-primary" />
-              <span className="text-sm font-semibold">{hoursSaved}h</span>
-              <span className="text-xs text-muted-foreground">saved this week</span>
-            </div>
-            {report?.revenue_generated > 0 && (
+          {/* PROBLEM 3: Show value preview OR real stats */}
+          {hasCompletedTasks ? (
+            <div className="flex flex-wrap gap-4 mt-3">
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border">
-                <DollarSign className="w-4 h-4 text-primary" />
-                <span className="text-sm font-semibold">${report.revenue_generated}</span>
-                <span className="text-xs text-muted-foreground">influenced</span>
+                <Zap className="w-4 h-4 text-primary" />
+                <span className="text-sm font-semibold">{todayTasks.length}</span>
+                <span className="text-xs text-muted-foreground">tasks today</span>
               </div>
-            )}
-          </div>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border">
+                <Clock className="w-4 h-4 text-primary" />
+                <span className="text-sm font-semibold">{hoursSaved}h</span>
+                <span className="text-xs text-muted-foreground">saved this week</span>
+              </div>
+              {report?.revenue_generated > 0 && (
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border">
+                  <DollarSign className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-semibold">${report.revenue_generated}</span>
+                  <span className="text-xs text-muted-foreground">influenced</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="mt-3">
+              <OnboardingValuePreview creatorType={creatorType} />
+            </div>
+          )}
         </div>
 
         {/* Agent Cards */}
@@ -401,7 +477,7 @@ export default function AITeamDashboard() {
           ))}
         </div>
 
-        {/* Pending Approvals */}
+        {/* PROBLEM 4 — Pending Approvals with bulk approve CTA */}
         {(pendingTasks?.length || 0) > 0 && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -410,12 +486,28 @@ export default function AITeamDashboard() {
                 Pending Approvals
                 <Badge className="bg-yellow-500/20 text-yellow-400 text-xs">{pendingTasks?.length}</Badge>
               </h2>
-              {(pendingTasks?.filter(t => (t.confidence || 0) >= 0.75).length || 0) > 0 && (
-                <Button size="sm" variant="outline" onClick={handleBulkApprove}>
-                  <Check className="w-3 h-3 mr-1" /> Approve All Low-Risk
-                </Button>
-              )}
             </div>
+
+            {/* Bulk approve button */}
+            {(pendingTasks?.filter(t => t.task_type === "content_calendar").length || 0) > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground">These are low-risk suggestions — approve all to let your AI team get started</p>
+                <Button
+                  size="lg"
+                  className="w-full bg-primary text-primary-foreground font-bold text-base py-6"
+                  onClick={handleBulkApproveAll}
+                  disabled={approveTask.isPending}
+                >
+                  {approveTask.isPending ? (
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  ) : (
+                    <Rocket className="w-5 h-5 mr-2" />
+                  )}
+                  Start My AI Team — Approve All
+                </Button>
+              </div>
+            )}
+
             <div className="grid gap-3 md:grid-cols-2">
               {pendingTasks?.slice(0, 6).map(task => (
                 <PendingTaskCard key={task.id} task={task} onApprove={handleApprove} onReject={handleReject} />
@@ -457,7 +549,7 @@ export default function AITeamDashboard() {
             <div className="space-y-2 max-h-80 overflow-y-auto">
               <AnimatePresence>
                 {allTasks?.slice(0, 20).map(task => {
-                  const meta = AGENT_META[task.agent_type] || { emoji: "🤖", label: "ARIA", color: "text-foreground" };
+                  const meta = AGENT_META[task.agent_type] || { emoji: "🤖", label: "ARIA", color: "text-foreground", nextAction: "" };
                   return (
                     <motion.div
                       key={task.id}

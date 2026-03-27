@@ -69,7 +69,7 @@ export function useAriaAgents() {
       // Auto-initialize all 5 agents if none exist
       if (!data || data.length === 0) {
         const agentTypes = ["content", "growth", "community", "sales", "operations"];
-        const inserts = agentTypes.map(t => ({ creator_id: user!.id, agent_type: t }));
+        const inserts = agentTypes.map(t => ({ creator_id: user!.id, agent_type: t, confidence_score: 0.65 }));
         const { data: newAgents, error: insertError } = await supabase
           .from("aria_agents")
           .upsert(inserts, { onConflict: "creator_id,agent_type" })

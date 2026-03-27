@@ -66,7 +66,7 @@ serve(async (req) => {
     // Get creator profile
     const { data: profile } = await supabase
       .from("profiles")
-      .select("display_name, creator_type, bio")
+      .select("display_name, creator_type, bio, username")
       .eq("user_id", creator_id)
       .maybeSingle();
 
@@ -77,7 +77,6 @@ serve(async (req) => {
       ? `\n\nNEVER do these (creator rejected them before): ${boundaryMemories.map(m => `${m.key}: ${JSON.stringify(m.value)}`).join("; ")}`
       : "";
 
-    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     // Create task record
@@ -95,29 +94,105 @@ serve(async (req) => {
     let output: any = {};
 
     if (task_type === "content_calendar") {
-      // Generate a 7-day content calendar
-      const systemPrompt = `You are ARIA Content AI, a content strategist for creators on UPLY. Generate content calendars that maximize engagement and growth.${memoryContext}${boundaryContext}`;
+      // --- PROBLEM 2: Fetch real creator-specific data ---
+      
+      // Get last 5 videos/recordings
+      const { data: recentVideos } = await supabase
+        .from("videos")
+        .select("title, view_count, like_count, created_at")
+        .eq("creator_id", creator_id)
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      const { data: recentRecordings } = await supabase
+        .from("stream_recordings")
+        .select("title, view_count, created_at")
+        .eq("creator_id", creator_id)
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      // Get top 3 community posts by like_count in last 30 days
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString();
+      const { data: topPosts } = await supabase
+        .from("community_posts")
+        .select("title, like_count, comment_count, category")
+        .eq("creator_id", creator_id)
+        .gte("created_at", thirtyDaysAgo)
+        .order("like_count", { ascending: false })
+        .limit(3);
+
+      // Get platform learnings for this creator type
+      const { data: platformLearnings } = await supabase
+        .from("aria_platform_learnings")
+        .select("key, value, confidence")
+        .eq("creator_type", profile?.creator_type || "general")
+        .order("confidence", { ascending: false })
+        .limit(5);
+
+      // Build current date context
+      const now = new Date();
+      const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const currentDay = dayNames[now.getDay()];
+      const currentDate = now.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+
+      // Build creator-specific context blocks
+      const recentContentBlock = (recentVideos?.length || recentRecordings?.length)
+        ? `\n\nRecent content by ${profile?.display_name}:\n${
+          [...(recentVideos || []), ...(recentRecordings || [])]
+            .slice(0, 5)
+            .map((v: any) => `- "${v.title}" (${v.view_count || 0} views, ${v.like_count || 0} likes)`)
+            .join("\n")
+        }`
+        : "";
+
+      const topPostsBlock = topPosts?.length
+        ? `\n\nTop community posts (last 30 days):\n${topPosts.map(p => `- "${p.title}" (${p.like_count} likes, ${p.comment_count} comments, category: ${p.category})`).join("\n")}`
+        : "";
+
+      const learningsBlock = platformLearnings?.length
+        ? `\n\nPlatform insights for ${profile?.creator_type} creators:\n${platformLearnings.map(l => `- ${l.key}: ${JSON.stringify(l.value)} (${Math.round((l.confidence || 0) * 100)}% confidence)`).join("\n")}`
+        : "";
+
+      // Niche-specific instruction
+      const nicheInstruction = getNicheInstruction(profile?.creator_type);
+
+      const systemPrompt = `You are ARIA Content AI, a personalized content strategist for ${profile?.display_name || "this creator"} on UPLY. You create content calendars that are SPECIFIC to this creator's niche, audience, and content history. Never use generic suggestions like "Morning Routine" or "Productivity Hacks" unless they are genuinely relevant to this creator's niche. Every suggestion must feel like it was written specifically for ${profile?.display_name}.${memoryContext}${boundaryContext}`;
 
       const userPrompt = `Create a 7-day content calendar for ${profile?.display_name || "this creator"}.
+
+Today is ${currentDay}, ${currentDate}.
 Creator type: ${profile?.creator_type || "general"}
+Creator username: @${profile?.username || "creator"}
 Bio: ${profile?.bio || "N/A"}
+${nicheInstruction}
+${recentContentBlock}
+${topPostsBlock}
+${learningsBlock}
+
+IMPORTANT RULES:
+- Address ${profile?.display_name} by name in the weekly theme
+- Suggest content topics SPECIFIC to their ${profile?.creator_type || "general"} niche
+- Reference their recent content when suggesting follow-ups or series
+- Recommend specific days and posting times based on their platform
+- Start from ${currentDay} (today) and plan 7 days forward
+- Make every single suggestion feel personalized, not generic
 
 Return a JSON object with this structure:
 {
   "calendar": [
     {
       "day": 1,
-      "date_label": "Monday",
+      "date_label": "${currentDay}",
       "content_type": "short_clip|community_post|live_stream|course_teaser",
-      "title": "content title",
-      "description": "what to create",
+      "title": "specific content title relevant to their niche",
+      "description": "detailed description of what to create",
       "platform": "uply|tiktok|instagram|youtube",
       "best_time": "9:00 AM",
       "estimated_engagement": "high|medium|low",
-      "caption_draft": "ready-to-use caption"
+      "caption_draft": "ready-to-use caption with relevant hashtags"
     }
   ],
-  "weekly_theme": "overarching theme",
+  "weekly_theme": "personalized theme mentioning creator name",
   "key_hashtags": ["#tag1", "#tag2"]
 }`;
 
@@ -261,8 +336,13 @@ Suggest 3 specific repurposing ideas. Return JSON:
     const approvedCount = agent.tasks_approved || 0;
     const experienceScore = Math.min(taskHistory / 20, 1.0) * 0.3;
     const accuracyScore = (approvedCount / Math.max(taskHistory, 1)) * 0.5;
-    const trustScore = (agent.confidence_score || 0.5) * 0.2;
-    const confidence = experienceScore + accuracyScore + trustScore;
+    const trustScore = (agent.confidence_score || 0.65) * 0.2;
+    let confidence = experienceScore + accuracyScore + trustScore;
+
+    // PROBLEM 1: Override for content_calendar — low risk, auto-approve at 0.75
+    if (task_type === "content_calendar" && confidence < 0.75) {
+      confidence = 0.75;
+    }
 
     const requiresApproval = confidence < 0.85;
 
@@ -280,7 +360,6 @@ Suggest 3 specific repurposing ideas. Return JSON:
 
     // Increment usage
     await supabase.rpc("increment_aria_usage" as any, { p_creator_id: creator_id }).catch(() => {
-      // Fallback: direct upsert
       supabase.from("aria_usage_tracking").upsert({
         creator_id,
         month: currentMonth,
@@ -305,3 +384,20 @@ Suggest 3 specific repurposing ideas. Return JSON:
     });
   }
 });
+
+function getNicheInstruction(creatorType: string | null | undefined): string {
+  const type = (creatorType || "general").toLowerCase();
+  const map: Record<string, string> = {
+    fitness: "This is a FITNESS creator. Suggest workout content, form tips, transformation challenges, nutrition advice, and fitness Q&As. Never suggest unrelated generic content.",
+    finance: "This is a FINANCE creator. Suggest market analysis, money tips, investment education, budgeting challenges, and financial literacy content. Never suggest unrelated generic content.",
+    gaming: "This is a GAMING creator. Suggest stream highlights, game reviews, clip compilations, tier lists, reaction content, and gaming challenges. Never suggest unrelated generic content.",
+    music: "This is a MUSIC creator. Suggest performance clips, production tutorials, song breakdowns, behind-the-scenes sessions, and collaboration content. Never suggest unrelated generic content.",
+    education: "This is an EDUCATION creator. Suggest lesson recaps, study tips, concept explainers, Q&A sessions, and course teasers. Never suggest unrelated generic content.",
+    beauty: "This is a BEAUTY creator. Suggest tutorials, product reviews, get-ready-with-me content, skincare routines, and trend breakdowns. Never suggest unrelated generic content.",
+    cooking: "This is a COOKING/FOOD creator. Suggest recipe videos, cooking challenges, ingredient spotlights, meal prep guides, and food reviews. Never suggest unrelated generic content.",
+    tech: "This is a TECH creator. Suggest product reviews, tutorials, setup tours, coding sessions, and tech news commentary. Never suggest unrelated generic content.",
+    lifestyle: "This is a LIFESTYLE creator. Suggest day-in-my-life vlogs, routines, favorites roundups, Q&As, and collaboration content.",
+    art: "This is an ART creator. Suggest time-lapse creation videos, technique tutorials, art challenges, commission reveals, and creative process content.",
+  };
+  return map[type] || `This is a ${type.toUpperCase()} creator. Suggest content specific to their ${type} niche. Be specific and relevant.`;
+}
