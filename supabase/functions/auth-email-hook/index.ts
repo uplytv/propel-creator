@@ -39,7 +39,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 const SITE_NAME = "UPLY"
 const SENDER_DOMAIN = "notify.uply.tv"
 const ROOT_DOMAIN = "uply.tv"
-const FROM_DOMAIN = "uply.tv" // Domain shown in From address (may be root or sender subdomain)
+const FROM_ADDRESS = `${SITE_NAME} <noreply@${SENDER_DOMAIN}>`
 
 // Sample data for preview mode ONLY (not used in actual email sending).
 // URLs are baked in at scaffold time from the project's real data.
@@ -256,7 +256,7 @@ async function handleWebhook(req: Request): Promise<Response> {
       run_id,
       message_id: messageId,
       to: payload.data.email,
-      from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
+      from: FROM_ADDRESS,
       sender_domain: SENDER_DOMAIN,
       subject: EMAIL_SUBJECTS[emailType] || 'Notification',
       html,

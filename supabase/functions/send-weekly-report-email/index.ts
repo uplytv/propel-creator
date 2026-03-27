@@ -165,7 +165,7 @@ Deno.serve(async (req) => {
       payload: {
         run_id: crypto.randomUUID(),
         to: recipientEmail,
-        from: 'ARIA <aria@notify.uply.tv>',
+        from: 'UPLY <noreply@notify.uply.tv>',
         sender_domain: 'notify.uply.tv',
         subject: `📊 Your Weekly Growth Report – ${new Date(weekStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} to ${new Date(weekEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
         html,

@@ -101,7 +101,7 @@ Deno.serve(async (req) => {
         payload: {
           run_id: crypto.randomUUID(),
           to: referrerEmail,
-          from: "UPLY <hello@notify.uply.tv>",
+          from: "UPLY <noreply@notify.uply.tv>",
           sender_domain: "notify.uply.tv",
           subject: `🎉 ${applicantName.split(" ")[0]} just joined your waitlist!`,
           html,
@@ -136,7 +136,7 @@ Deno.serve(async (req) => {
         payload: {
           run_id: crypto.randomUUID(),
           to: applicantEmail,
-          from: "UPLY <hello@notify.uply.tv>",
+          from: "UPLY <noreply@notify.uply.tv>",
           sender_domain: "notify.uply.tv",
           subject: `You're on the UPLY waitlist — here's your spot`,
           html,
