@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import OriginBadge from "@/components/OriginBadge";
 import logoImg from "@/assets/logo.png";
 import { buildReferralUrl, buildReferralUrlDisplay, getFirstName, getShareMessages } from "@/lib/referralUrls";
-import { getAffiliateCookie } from "@/lib/affiliateCookies";
+import { getReferralData } from "@/lib/affiliateCookies";
 import PostApplicationScreen from "@/components/waitlist/PostApplicationScreen";
 
 interface LeaderboardEntry {

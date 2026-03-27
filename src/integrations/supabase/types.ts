@@ -3802,6 +3802,8 @@ export type Database = {
           paid_dm_price: number | null
           paid_dms_enabled: boolean | null
           referral_code: string | null
+          referred_by: string | null
+          referred_by_username: string | null
           role_type: string | null
           tier: number
           tier_name: string
@@ -3837,6 +3839,8 @@ export type Database = {
           paid_dm_price?: number | null
           paid_dms_enabled?: boolean | null
           referral_code?: string | null
+          referred_by?: string | null
+          referred_by_username?: string | null
           role_type?: string | null
           tier?: number
           tier_name?: string
@@ -3872,6 +3876,8 @@ export type Database = {
           paid_dm_price?: number | null
           paid_dms_enabled?: boolean | null
           referral_code?: string | null
+          referred_by?: string | null
+          referred_by_username?: string | null
           role_type?: string | null
           tier?: number
           tier_name?: string

@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { Mail, Lock, User, ArrowLeft, CheckCircle2 } from "lucide-react";
-import { getAffiliateCookie, clearAffiliateCookie } from "@/lib/affiliateCookies";
+import { getAffiliateCookie, clearAffiliateCookie, getReferralData } from "@/lib/affiliateCookies";
 import { trackEvent } from "@/lib/posthog";
 
 export default function Auth() {
@@ -80,13 +80,19 @@ export default function Auth() {
     // Check for platform referral cookie and creator affiliate cookie
     const refCode = getAffiliateCookie("uply_ref");
     const creatorRefCode = getAffiliateCookie("uply_creator_ref");
+    // Also capture waitlist referral data for profile attribution
+    const waitlistRef = getReferralData();
 
     const { data: signUpData, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { full_name: name, referred_by: refCode || creatorRefCode || undefined },
+        data: {
+          full_name: name,
+          referred_by: waitlistRef.code || refCode || creatorRefCode || undefined,
+          referrer_username: waitlistRef.username || undefined,
+        },
       },
     });
     setLoading(false);
