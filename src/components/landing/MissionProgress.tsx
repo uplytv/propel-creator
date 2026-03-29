@@ -141,8 +141,9 @@ function ShareModal({ displayCount, effectiveCount, onClose }: { displayCount: s
     : `I joined @uplyTV before 1M creators.\n\n0% fees locked in forever.\n\nAt 5M: $10K cash + Rolex 🏆\nAt 10M: supercar up to $300K + Vegas + $50K deal 🏎️\n\nWindow still open → uply.tv`;
 
   const handleShare = async () => {
-    // Mobile: native share sheet
-    if (isMobile && typeof navigator.share === "function") {
+    const fullContent = shareText + "\n\nhttps://uply.tv";
+    // Always try native share sheet first (shows app picker on mobile & supported desktops)
+    if (typeof navigator.share === "function") {
       try {
         await navigator.share({
           title: "I joined UPLY before 1M creators",
@@ -151,13 +152,12 @@ function ShareModal({ displayCount, effectiveCount, onClose }: { displayCount: s
         });
         return;
       } catch {
-        // User cancelled or share failed — fall through
+        // User cancelled or share failed — fall through to copy
       }
     }
-    // Desktop: copy to clipboard
+    // Fallback: copy to clipboard
     if (navigator.clipboard) {
       try {
-        const fullContent = shareText + "\n\nhttps://uply.tv";
         await navigator.clipboard.writeText(fullContent);
         toast.success("Copied to clipboard — paste it anywhere 📋");
         return;
@@ -165,7 +165,7 @@ function ShareModal({ displayCount, effectiveCount, onClose }: { displayCount: s
         // Clipboard failed — fall through
       }
     }
-    // Fallback: open Twitter intent
+    // Last resort: open Twitter intent
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`, "_blank");
   };
 
