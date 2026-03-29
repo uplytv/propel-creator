@@ -13,14 +13,15 @@ import {
 } from "@/components/ui/dialog";
 
 // ── Display count logic ──
-const STATIC_FALLBACK = 24200;
+const HARDCODED_FALLBACK = 24200;
 
-function getDisplayCount(rawCount: number): { display: string; isEarly: boolean } {
-  const effectiveCount = Math.max(rawCount, STATIC_FALLBACK);
-  if (effectiveCount < 1000) return { display: "hundreds", isEarly: true };
-  if (effectiveCount < 10000) return { display: "thousands", isEarly: true };
-  if (effectiveCount < 100000) return { display: effectiveCount.toLocaleString(), isEarly: true };
-  if (effectiveCount < 1000000) return { display: effectiveCount.toLocaleString(), isEarly: false };
+function formatCount(count: number): string {
+  return '+' + count.toLocaleString();
+}
+
+function getDisplayCount(effectiveCount: number): { display: string; isEarly: boolean } {
+  if (effectiveCount < 100000) return { display: formatCount(effectiveCount), isEarly: true };
+  if (effectiveCount < 1000000) return { display: formatCount(effectiveCount), isEarly: false };
   return { display: (effectiveCount / 1000000).toFixed(1) + "M", isEarly: false };
 }
 
@@ -609,21 +610,22 @@ const MissionProgress = React.memo(function MissionProgress() {
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [rawCount, setRawCount] = useState(0);
-  const [animatedValue, setAnimatedValue] = useState(STATIC_FALLBACK);
+  const [baseOffset, setBaseOffset] = useState(HARDCODED_FALLBACK);
+  const [displayCount, setDisplayCount] = useState(HARDCODED_FALLBACK);
+  const [animatedValue, setAnimatedValue] = useState(HARDCODED_FALLBACK);
   const [tickerItems, setTickerItems] = useState<TickerItem[]>([]);
   const [shareOpen, setShareOpen] = useState(false);
   
   const [awardsOpen, setAwardsOpen] = useState(false);
   const [counterFlash, setCounterFlash] = useState(false);
   const [hintShown, setHintShown] = useState(false);
+  const processedIds = useRef(new Set<string>());
 
-  const effectiveCount = Math.max(rawCount, STATIC_FALLBACK);
-  const { display, isEarly } = getDisplayCount(rawCount);
+  const effectiveCount = displayCount;
+  const { display, isEarly } = getDisplayCount(effectiveCount);
 
   // Use a scaled fill: milestone positions are at log positions, fill should match
-  // 24,200 → log10(24200) ≈ 4.38, log10(100M) = 8, so ~54% which is too much
-  // Instead use linear interpolation between milestones for accurate visual
+  // 24,200 → linear interpolation between milestones for accurate visual
   const computeFill = (count: number) => {
     if (count <= 0) return 0;
     const points = [
@@ -670,61 +672,76 @@ const MissionProgress = React.memo(function MissionProgress() {
   }, []);
 
   // Fetch data
+  const fetchCounts = useCallback(async () => {
+    const [{ count: cCount }, { count: wCount }, { data: configData }] = await Promise.all([
+      supabase.from("profiles").select("*", { count: "exact", head: true }).not("creator_type", "is", null),
+      supabase.from("waitlist").select("*", { count: "exact", head: true }),
+      supabase.from("platform_config").select("value").eq("key", "waitlist_base_count").single(),
+    ]);
+    const offset = configData?.value ? parseInt(configData.value, 10) : HARDCODED_FALLBACK;
+    setBaseOffset(offset);
+    const realCount = (cCount || 0) + (wCount || 0);
+    const effective = offset + realCount;
+    
+    if (effective > displayCount) {
+      animateCountUp(displayCount, effective, 1500);
+    }
+    setDisplayCount(effective);
+
+    const { data: recent } = await supabase
+      .from("profiles")
+      .select("display_name, creator_type, created_at")
+      .not("creator_type", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    if (recent && recent.length > 0) {
+      setTickerItems(recent.map((r: any) => ({
+        name: privacyName(r.display_name),
+        type: r.creator_type || "Creator",
+        ago: formatTimeAgo(r.created_at),
+      })));
+    } else {
+      setTickerItems(PLACEHOLDER_ITEMS);
+    }
+    setIsLoaded(true);
+  }, [animateCountUp, displayCount]);
+
   useEffect(() => {
-    (async () => {
-      const [{ count: cCount }, { count: wCount }] = await Promise.all([
-        supabase.from("profiles").select("*", { count: "exact", head: true }).not("creator_type", "is", null),
-        supabase.from("waitlist").select("*", { count: "exact", head: true }),
-      ]);
-      const raw = (cCount || 0) + (wCount || 0);
-      setRawCount(raw);
-      const eff = Math.max(raw, STATIC_FALLBACK);
-      if (eff > STATIC_FALLBACK) {
-        animateCountUp(STATIC_FALLBACK, eff, 1500);
+    fetchCounts();
+  }, []);
+
+  // Realtime with deduplication
+  useEffect(() => {
+    function handleNewSignup(payload: any) {
+      const rowId = payload.new?.id;
+      if (!rowId || processedIds.current.has(rowId)) return;
+      processedIds.current.add(rowId);
+
+      setDisplayCount(prev => {
+        const newCount = prev + 1;
+        animateCountUp(prev, newCount, 300);
+        return newCount;
+      });
+      setCounterFlash(true);
+      setTimeout(() => setCounterFlash(false), 500);
+
+      // Update ticker for profile inserts
+      const p = payload.new;
+      if (p?.creator_type) {
+        setTickerItems(prev => [{ name: privacyName(p.display_name), type: p.creator_type, ago: "just now" }, ...prev.slice(0, 19)]);
       }
 
-      const { data: recent } = await supabase
-        .from("profiles")
-        .select("display_name, creator_type, created_at")
-        .not("creator_type", "is", null)
-        .order("created_at", { ascending: false })
-        .limit(20);
+      // Clean up old IDs after 60s
+      setTimeout(() => { processedIds.current.delete(rowId); }, 60000);
+    }
 
-      if (recent && recent.length > 0) {
-        setTickerItems(recent.map((r: any) => ({
-          name: privacyName(r.display_name),
-          type: r.creator_type || "Creator",
-          ago: formatTimeAgo(r.created_at),
-        })));
-      } else {
-        setTickerItems(PLACEHOLDER_ITEMS);
-      }
-      setIsLoaded(true);
-    })();
-  }, [animateCountUp]);
-
-  // Realtime
-  useEffect(() => {
     const chan = supabase.channel("mission-progress")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "profiles" }, (payload: any) => {
-        setRawCount(prev => prev + 1);
-        setAnimatedValue(prev => prev + 1);
-        setCounterFlash(true);
-        setTimeout(() => setCounterFlash(false), 500);
-        const p = payload.new;
-        if (p?.creator_type) {
-          setTickerItems(prev => [{ name: privacyName(p.display_name), type: p.creator_type, ago: "just now" }, ...prev.slice(0, 19)]);
-        }
-      })
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "waitlist" }, () => {
-        setRawCount(prev => prev + 1);
-        setAnimatedValue(prev => prev + 1);
-        setCounterFlash(true);
-        setTimeout(() => setCounterFlash(false), 500);
-      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "profiles" }, handleNewSignup)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "waitlist" }, handleNewSignup)
       .subscribe();
     return () => { supabase.removeChannel(chan); };
-  }, []);
+  }, [animateCountUp]);
 
   // Scroll hint
   useEffect(() => {
@@ -784,8 +801,12 @@ const MissionProgress = React.memo(function MissionProgress() {
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}
                 className="rounded-lg px-4 py-2 inline-block transition-colors duration-500"
                 style={{ backgroundColor: counterFlash ? "rgba(0,255,133,0.15)" : "transparent" }}>
-                <p className="font-heading text-[52px] md:text-[72px] font-extrabold text-primary">
-                  {effectiveCount > STATIC_FALLBACK ? "+" : ""}{animatedValue.toLocaleString()}
+                <p className="font-heading text-[52px] md:text-[72px] font-extrabold text-primary"
+                  style={{
+                    transition: 'textShadow 300ms ease',
+                    textShadow: counterFlash ? '0 0 20px rgba(0,255,133,0.8)' : 'none',
+                  }}>
+                  {formatCount(animatedValue)}
                 </p>
                 <div className="flex items-center justify-center gap-1.5 mt-1">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" style={{ animation: "pulse-dot 2s infinite" }} />
