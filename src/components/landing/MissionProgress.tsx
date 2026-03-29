@@ -13,14 +13,15 @@ import {
 } from "@/components/ui/dialog";
 
 // ── Display count logic ──
-const STATIC_FALLBACK = 24200;
+const HARDCODED_FALLBACK = 24200;
 
-function getDisplayCount(rawCount: number): { display: string; isEarly: boolean } {
-  const effectiveCount = Math.max(rawCount, STATIC_FALLBACK);
-  if (effectiveCount < 1000) return { display: "hundreds", isEarly: true };
-  if (effectiveCount < 10000) return { display: "thousands", isEarly: true };
-  if (effectiveCount < 100000) return { display: effectiveCount.toLocaleString(), isEarly: true };
-  if (effectiveCount < 1000000) return { display: effectiveCount.toLocaleString(), isEarly: false };
+function formatCount(count: number): string {
+  return '+' + count.toLocaleString();
+}
+
+function getDisplayCount(effectiveCount: number): { display: string; isEarly: boolean } {
+  if (effectiveCount < 100000) return { display: formatCount(effectiveCount), isEarly: true };
+  if (effectiveCount < 1000000) return { display: formatCount(effectiveCount), isEarly: false };
   return { display: (effectiveCount / 1000000).toFixed(1) + "M", isEarly: false };
 }
 
