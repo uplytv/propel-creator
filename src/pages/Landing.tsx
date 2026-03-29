@@ -20,12 +20,12 @@ import MissionProgress from "@/components/landing/MissionProgress";
 const JSON_LD = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  name: "Uply",
+  name: "UPLY",
   url: "https://uply.tv",
   description: "Don't be late again. The creator platform for those who move first.",
   applicationCategory: "SocialNetworkingApplication",
   operatingSystem: "Web",
-  creator: { "@type": "Organization", name: "Uply" },
+  creator: { "@type": "Organization", name: "UPLY" },
 };
 
 const rewards = [
