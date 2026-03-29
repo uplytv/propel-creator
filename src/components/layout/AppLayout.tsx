@@ -341,7 +341,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         {/* Logo + Collapse */}
         <div className={`flex items-center justify-between p-4 ${collapsed ? "px-3" : "px-5"}`}>
           <div className="cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2" onClick={() => navigate("/")}>
-            <img src="/logo.png" alt="Uply" className={collapsed ? "h-[66px]" : "h-[88px]"} />
+            <img src="/logo.png" alt="UPLY" className={collapsed ? "h-[66px]" : "h-[88px]"} />
           </div>
           <button
             onClick={() => setCollapsed(!collapsed)}
