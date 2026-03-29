@@ -44,10 +44,10 @@ const milestones: Milestone[] = [
     context: "Already unlocked ✓", reward_type: "platform", is_unlocked: true,
   },
   {
-    count: 100000, label: "100K", unlock: "$100K + Rolex + Founding Creator forever",
-    detail: "The ultimate milestone for early creators. UPLY awards the top creator $100,000 cash and a Rolex Submariner delivered to their door. Every creator who joined before 100K locks in permanent Founding Creator benefits — priority support, exclusive badges, and early access to every future feature. The window closes the moment UPLY hits 100K and never reopens.",
+    count: 100000, label: "100K", unlock: "$100K cash + Rolex Submariner",
+    detail: "UPLY awards the top creator $100,000 cash and a Rolex Submariner delivered to their door. The ultimate reward for helping build the platform from the ground up. The window closes the moment UPLY hits 100K and never reopens.",
     context: "This window closes permanently at 100K", reward_type: "money", is_unlocked: false,
-    prize_line: "$100K cash + Rolex Submariner + Founding Creator forever",
+    prize_line: "$100K cash + Rolex Submariner",
   },
   {
     count: 500000, label: "500K", unlock: "We pass Skool",
@@ -55,8 +55,8 @@ const milestones: Milestone[] = [
     context: "Skool estimated at ~500K total users", reward_type: "status", is_unlocked: false,
   },
   {
-    count: 1000000, label: "1M", unlock: "0% fees — locked in forever",
-    detail: "Every creator who joined before 1M locks in 0% platform fees permanently. If you earn $10,000/month that's $6,000 saved every single year forever. The window closes the moment UPLY hits 1M and never reopens. There are no exceptions after this milestone.",
+    count: 1000000, label: "1M", unlock: "0% fees + Founding Creator forever",
+    detail: "Every creator who joined before 1M locks in 0% platform fees permanently and earns Founding Creator status — priority support, exclusive badges, and early access to every future feature. If you earn $10,000/month that's $6,000 saved every single year forever. The window closes the moment UPLY hits 1M and never reopens.",
     context: "This window closes permanently at 1M", reward_type: "urgency", urgency: true, is_unlocked: false,
   },
   {
@@ -309,8 +309,6 @@ function MilestoneCard({ m, effectiveCount, isMobile, onOpenAwards }: {
             <span className="text-muted-foreground mx-1">+</span>
             <span className="font-heading font-bold" style={{ color: "#FFD700" }}>⌚ Rolex Submariner</span>
           </p>
-          <p className="text-[12px] text-primary font-medium mt-1">+ Founding Creator benefits forever</p>
-          <p className="text-[11px] text-muted-foreground italic mt-1">Priority support, exclusive badges, early access to every future feature</p>
         </div>
       )}
 
@@ -322,7 +320,8 @@ function MilestoneCard({ m, effectiveCount, isMobile, onOpenAwards }: {
             <span className="text-muted-foreground mx-1">—</span>
             <span className="font-heading font-bold text-foreground">forever</span>
           </p>
-          <p className="text-[11px] text-muted-foreground italic mt-1">If you earn $10K/month that's $6,000 saved every year</p>
+          <p className="text-[12px] text-primary font-medium mt-1">+ Founding Creator benefits forever</p>
+          <p className="text-[11px] text-muted-foreground italic mt-1">Priority support, exclusive badges, early access to every future feature</p>
         </div>
       )}
 
