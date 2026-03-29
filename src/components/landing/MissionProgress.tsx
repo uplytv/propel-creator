@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { X, Info, Twitter, Copy, Link2, Share2, ChevronRight } from "lucide-react";
+import { X, Info, ChevronRight } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Dialog,
