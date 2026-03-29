@@ -26,6 +26,8 @@ import LiveShopSetup from "@/components/live/LiveShopSetup";
 import ScheduleStreamTab from "@/components/scheduled/ScheduleStreamTab";
 import { trackEvent } from "@/lib/posthog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SimulcastGoLivePanel from "@/components/live/SimulcastGoLivePanel";
+import { useSimulcastDestinations, useSimulcastSessions } from "@/hooks/useSimulcast";
 
 export default function GoLive() {
   const navigate = useNavigate();
