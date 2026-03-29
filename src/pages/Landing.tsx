@@ -82,18 +82,18 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-white font-sans selection:bg-primary/30">
+    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/30">
       <SEOHead />
       <StickyMobileCTA />
       <ExitIntentModal />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }} />
 
       {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06] bg-background/80 backdrop-blur-xl">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-foreground/[0.06] bg-background/80 backdrop-blur-xl">
         <div className="container flex h-14 items-center justify-between">
           <img src="/logo.png" alt="UPLY" className="h-[60px] md:h-[70px] w-auto object-contain" width="1024" height="1024" />
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" className="text-white/60 hover:text-white hover:bg-white/5" onClick={() => navigate("/auth")}>Log in</Button>
+            <Button variant="ghost" size="sm" className="text-foreground/60 hover:text-foreground hover:bg-foreground/5" onClick={() => navigate("/auth")}>Log in</Button>
             <Button size="sm" className="bg-primary text-foreground font-bold hover:bg-primary/90 border-0 active:scale-[0.96] transition-transform" onClick={scrollToWaitlist}>{CTA_LABEL}</Button>
           </div>
         </div>
