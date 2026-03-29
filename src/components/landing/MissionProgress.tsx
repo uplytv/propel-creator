@@ -60,10 +60,10 @@ const milestones: Milestone[] = [
     context: "This window closes permanently at 1M", reward_type: "urgency", urgency: true, is_unlocked: false,
   },
   {
-    count: 10000000, label: "10M", unlock: "Play Games begin",
-    detail: "At 10M creators UPLY launches the Play Games — winners get flown out to the ARIA hotel in Las Vegas with the opportunity to sign deals with top brands and investors. The ultimate winner takes home their choice of any supercar up to $300,000. Fully paid for. Delivered. Yours. The Play Games happen every year from this milestone forward.",
-    context: "Annual event. Las Vegas. ARIA hotel. Supercar.", reward_type: "supercar",
-    prize_line: "Flown to ARIA, Las Vegas + deals + supercar up to $300K", is_unlocked: false,
+    count: 10000000, label: "10M", unlock: "The UPLY Games begin",
+    detail: "At 10M creators UPLY launches the UPLY Games — an annual event where top creators are flown out to the ARIA Hotel in Las Vegas, all expenses paid. Winners meet with leading brands and investors for the opportunity to sign life-changing deals. The grand prize winner drives home in the supercar of their choice — up to $300,000. No catch. No strings. Just keys.",
+    context: "Annual. Las Vegas. ARIA Hotel. Your supercar.", reward_type: "supercar",
+    prize_line: "ARIA Hotel, Las Vegas + deals + supercar of choice", is_unlocked: false,
   },
   {
     count: 100000000, label: "100M", unlock: "Largest creator platform on Earth",
@@ -343,7 +343,7 @@ function MilestoneCard({ m, effectiveCount, isMobile, onOpenAwards }: {
                 style={{ background: "rgba(249,115,22,0.08)", borderColor: "rgba(249,115,22,0.3)", color: "#FB923C" }}>{c}</span>
             ))}
           </div>
-          <p className="text-[11px] text-muted-foreground italic mt-1">Annual Play Games at the ARIA, Las Vegas</p>
+          <p className="text-[11px] text-muted-foreground italic mt-1">Annual UPLY Games at the ARIA Hotel, Las Vegas</p>
         </div>
       )}
 
