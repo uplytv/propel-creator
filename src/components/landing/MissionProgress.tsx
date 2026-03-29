@@ -35,6 +35,9 @@ interface Milestone {
   is_unlocked: boolean;
   urgency?: boolean;
   prize_line?: string;
+  judging?: string;
+  logistics?: string;
+  deal_details?: string;
 }
 
 const milestones: Milestone[] = [
@@ -60,10 +63,14 @@ const milestones: Milestone[] = [
     context: "This window closes permanently at 1M", reward_type: "urgency", urgency: true, is_unlocked: false,
   },
   {
-    count: 10000000, label: "10M", unlock: "The UPLY Games begin",
-    detail: "At 10M creators UPLY launches the UPLY Games — an annual event where top creators are flown out to the ARIA Hotel in Las Vegas, all expenses paid. Winners meet with leading brands and investors for the opportunity to sign life-changing deals. The grand prize winner drives home in the supercar of their choice — up to $300,000. No catch. No strings. Just keys.",
-    context: "Annual. Las Vegas. ARIA Hotel. Your supercar.", reward_type: "supercar",
-    prize_line: "ARIA Hotel, Las Vegas + deals + supercar of choice", is_unlocked: false,
+    count: 10000000, label: "10M", unlock: "The UPLY Awards — the night everything changes",
+    detail: "At 10M creators UPLY launches its annual Awards — a live ceremony celebrating the world's top creators. The Creator of the Year wins a supercar of their choice up to $300,000, an all-expenses-paid trip for two to the Aria Hotel in Las Vegas, a 12-month UPLY Creator Partnership worth $50,000 in promotional value, and a professional film crew documenting every moment of the experience. This is not a prize. This is a career-defining moment.",
+    context: "Annual event. Annual supercar. Annual deal. Every year.", reward_type: "supercar",
+    prize_line: "Supercar up to $300K + Aria Las Vegas + $50K Partnership Deal",
+    judging: "40% revenue growth · 30% community engagement · 30% member votes",
+    logistics: "Round-trip flights for winner + guest · 3 nights Aria Hotel · All meals included · Professional film crew provided",
+    deal_details: "12-month featured creator partnership · Priority platform support · $50K in co-marketing from UPLY · Content ownership stays with the creator",
+    is_unlocked: false,
   },
   {
     count: 100000000, label: "100M", unlock: "Largest creator platform on Earth",
