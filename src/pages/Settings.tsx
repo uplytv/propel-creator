@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import {
   User, Bell, Shield, CreditCard, Palette, Mail,
   Camera, Save, Eye, EyeOff, Trash2, Download, Megaphone, Loader2, Users, Ticket, Bot,
-  Sun, Moon, Monitor, Radio
+  Sun, Moon, Monitor, Radio, Cast
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useApp } from "@/context/AppContext";
@@ -23,15 +23,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 import { format, isBefore } from "date-fns";
 
-type SettingsTab = "profile" | "notifications" | "subscriptions" | "tickets" | "aria" | "ai-team" | "account";
+type SettingsTab = "profile" | "notifications" | "subscriptions" | "tickets" | "aria" | "ai-team" | "simulcast" | "account";
 
 const AriaSettingsSection = lazy(() => import("@/components/aria/AriaSettingsSection"));
+const SimulcastSettings = lazy(() => import("@/components/settings/SimulcastSettings"));
 
 const tabs = [
   { id: "profile" as const, label: "Profile", icon: User },
   { id: "notifications" as const, label: "Notifications", icon: Bell },
   { id: "subscriptions" as const, label: "Subscriptions", icon: Users },
   { id: "tickets" as const, label: "My Tickets", icon: Ticket },
+  { id: "simulcast" as const, label: "Simulcast", icon: Cast },
   { id: "aria" as const, label: "ARIA Agent", icon: Bot },
   { id: "ai-team" as const, label: "AI Team", icon: Bot },
   { id: "account" as const, label: "Account", icon: Shield },
@@ -456,6 +458,13 @@ export default function Settings() {
         {activeTab === "aria" && (
           <Suspense fallback={<div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>}>
             <AriaSettingsSection />
+          </Suspense>
+        )}
+
+        {/* Simulcast tab */}
+        {activeTab === "simulcast" && (
+          <Suspense fallback={<div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>}>
+            <SimulcastSettings />
           </Suspense>
         )}
 
