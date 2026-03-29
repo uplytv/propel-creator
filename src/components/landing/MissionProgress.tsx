@@ -60,10 +60,10 @@ const milestones: Milestone[] = [
     context: "This window closes permanently at 1M", reward_type: "urgency", urgency: true, is_unlocked: false,
   },
   {
-    count: 10000000, label: "10M", unlock: "The UPLY Awards — win a supercar",
-    detail: "At 10M creators UPLY launches its annual Awards — a live ceremony celebrating the platform's top creators. The Creator of the Year wins their choice of any supercar up to $300,000. Fully paid for. Delivered. Yours. The UPLY Awards happens every year from this milestone forward.",
-    context: "Annual event. Annual supercar. Your choice.", reward_type: "supercar",
-    prize_line: "Winner's choice — any supercar up to $300K", is_unlocked: false,
+    count: 10000000, label: "10M", unlock: "The UPLY Awards begin",
+    detail: "At 10M creators UPLY launches its annual Awards — a live ceremony in Las Vegas. Winners get flown out, stay at the ARIA hotel, and sign potential deals with top brands and investors. The Creator of the Year wins their choice of any supercar up to $300,000. Fully paid for. Delivered. Yours. The UPLY Awards happens every year from this milestone forward.",
+    context: "Annual event. Las Vegas. Supercar. Your choice.", reward_type: "supercar",
+    prize_line: "Flown to Vegas + ARIA hotel + supercar up to $300K", is_unlocked: false,
   },
   {
     count: 100000000, label: "100M", unlock: "Largest creator platform on Earth",
@@ -329,17 +329,21 @@ function MilestoneCard({ m, effectiveCount, isMobile, onOpenAwards }: {
       {is10M && showDetails && (
         <div className="mt-2 pt-2 border-t border-border">
           <p className="text-[13px]">
-            <span className="font-heading font-bold text-foreground">🏎️ Your choice of supercar</span>
+            <span className="font-heading font-bold text-foreground">✈️ Flown to Las Vegas</span>
+            <span className="text-muted-foreground mx-1">+</span>
+            <span className="font-heading font-bold" style={{ color: "#FB923C" }}>🏨 ARIA hotel stay</span>
+          </p>
+          <p className="text-[13px] mt-1">
+            <span className="font-heading font-bold text-foreground">🏎️ Supercar</span>
             <span className="font-heading font-bold ml-1" style={{ color: "#FB923C" }}>— up to $300,000</span>
           </p>
           <div className="flex flex-wrap gap-1 mt-1.5">
-            {["Lamborghini", "Ferrari", "Porsche", "+ more"].map(c => (
+            {["Brand deals", "Investor meetings", "Lamborghini", "Ferrari", "+ more"].map(c => (
               <span key={c} className="px-2.5 py-0.5 rounded-full text-[11px] border cursor-default"
-                style={{ background: "rgba(249,115,22,0.08)", borderColor: "rgba(249,115,22,0.3)", color: "#FB923C" }}
-                title="Winner chooses any supercar up to $300K. Fully paid. Delivered anywhere in the world.">{c}</span>
+                style={{ background: "rgba(249,115,22,0.08)", borderColor: "rgba(249,115,22,0.3)", color: "#FB923C" }}>{c}</span>
             ))}
           </div>
-          <p className="text-[11px] text-muted-foreground italic mt-1">Awarded annually at the UPLY Awards ceremony</p>
+          <p className="text-[11px] text-muted-foreground italic mt-1">Annual ceremony at the ARIA, Las Vegas</p>
         </div>
       )}
 
