@@ -63,7 +63,7 @@ const milestones: Milestone[] = [
     context: "This window closes permanently at 1M", reward_type: "urgency", urgency: true, is_unlocked: false,
   },
   {
-    count: 10000000, label: "10M", unlock: "The UPLY Awards — the night everything changes",
+    count: 10000000, label: "10M", unlock: "The UPLY Awards — fly to Vegas, sign a deal, drive home in a supercar",
     detail: "At 10M creators UPLY launches its annual Awards — a live ceremony celebrating the world's top creators. The Creator of the Year wins a supercar of their choice up to $300,000, an all-expenses-paid trip for two to the Aria Hotel in Las Vegas, a 12-month UPLY Creator Partnership worth $50,000 in promotional value, and a professional film crew documenting every moment of the experience. This is not a prize. This is a career-defining moment.",
     context: "Annual event. Annual supercar. Annual deal. Every year.", reward_type: "supercar",
     prize_line: "Supercar up to $300K + Aria Las Vegas + $50K Partnership Deal",
