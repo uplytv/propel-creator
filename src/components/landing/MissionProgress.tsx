@@ -118,7 +118,7 @@ const REWARD_BADGES: Record<string, { emoji: string; label: string; bg: string; 
   money: { emoji: "💰", label: "Cash Prize", bg: "rgba(0,255,133,0.12)", border: "rgba(0,255,133,0.4)", text: "hsl(var(--primary))" },
   status: { emoji: "🏆", label: "Status", bg: "rgba(255,215,0,0.12)", border: "rgba(255,215,0,0.4)", text: "#FFD700" },
   urgency: { emoji: "⚡", label: "Closes at 1M", bg: "rgba(220,38,38,0.15)", border: "rgba(220,38,38,0.5)", text: "#FF4444" },
-  games: { emoji: "🎮", label: "Competition", bg: "rgba(220,38,38,0.12)", border: "rgba(220,38,38,0.4)", text: "#FF6B6B" },
+  
   supercar: { emoji: "🏎️", label: "UPLY Awards", bg: "rgba(249,115,22,0.12)", border: "rgba(249,115,22,0.4)", text: "#FB923C" },
   mission: { emoji: "👑", label: "Mission", bg: "rgba(255,215,0,0.15)", border: "rgba(255,215,0,0.5)", text: "#FFD700" },
 };
