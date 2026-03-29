@@ -801,8 +801,12 @@ const MissionProgress = React.memo(function MissionProgress() {
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}
                 className="rounded-lg px-4 py-2 inline-block transition-colors duration-500"
                 style={{ backgroundColor: counterFlash ? "rgba(0,255,133,0.15)" : "transparent" }}>
-                <p className="font-heading text-[52px] md:text-[72px] font-extrabold text-primary">
-                  {effectiveCount > STATIC_FALLBACK ? "+" : ""}{animatedValue.toLocaleString()}
+                <p className="font-heading text-[52px] md:text-[72px] font-extrabold text-primary"
+                  style={{
+                    transition: 'textShadow 300ms ease',
+                    textShadow: counterFlash ? '0 0 20px rgba(0,255,133,0.8)' : 'none',
+                  }}>
+                  {formatCount(animatedValue)}
                 </p>
                 <div className="flex items-center justify-center gap-1.5 mt-1">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" style={{ animation: "pulse-dot 2s infinite" }} />
