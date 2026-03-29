@@ -139,6 +139,8 @@ export default function Landing() {
         </div>
       </section>
 
+      <MissionProgress />
+
       {/* ─── PRODUCT PREVIEW ─── */}
       <section className="pb-16 md:pb-24 relative">
         <div className="container relative z-10">
@@ -173,8 +175,6 @@ export default function Landing() {
           </motion.div>
         </div>
       </section>
-
-      <MissionProgress />
       <FeatureGrid />
       <HowItWorks />
       <EarningsCalculator onCTAClick={scrollToWaitlist} />

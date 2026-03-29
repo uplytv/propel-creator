@@ -441,7 +441,32 @@ const MissionProgress = React.memo(function MissionProgress() {
   const effectiveCount = Math.max(rawCount, STATIC_FALLBACK);
   const { display, isEarly } = getDisplayCount(rawCount);
 
-  const fillPercentage = effectiveCount > 0 ? Math.min(Math.log10(Math.max(effectiveCount, 1)) / Math.log10(100000000) * 100, 100) : 0;
+  // Use a scaled fill: milestone positions are at log positions, fill should match
+  // 24,200 → log10(24200) ≈ 4.38, log10(100M) = 8, so ~54% which is too much
+  // Instead use linear interpolation between milestones for accurate visual
+  const computeFill = (count: number) => {
+    if (count <= 0) return 0;
+    const points = [
+      { count: 0, pct: 0 },
+      { count: 10000, pct: 12.5 },
+      { count: 100000, pct: 25 },
+      { count: 500000, pct: 37.5 },
+      { count: 1000000, pct: 50 },
+      { count: 5000000, pct: 62.5 },
+      { count: 10000000, pct: 75 },
+      { count: 100000000, pct: 100 },
+    ];
+    for (let i = 1; i < points.length; i++) {
+      if (count <= points[i].count) {
+        const prev = points[i - 1];
+        const curr = points[i];
+        const ratio = (count - prev.count) / (curr.count - prev.count);
+        return prev.pct + ratio * (curr.pct - prev.pct);
+      }
+    }
+    return 100;
+  };
+  const fillPercentage = computeFill(effectiveCount);
 
   // Count-up animation
   const animateCountUp = useCallback((from: number, to: number, durationMs: number) => {
@@ -621,7 +646,9 @@ const MissionProgress = React.memo(function MissionProgress() {
           {isLoaded && (
             <div className="relative w-full flex justify-between mt-3 px-1 md:block">
               {milestones.map((m, idx) => {
-                const pos = Math.log10(m.count) / Math.log10(100000000) * 100;
+                const pos = [10000,100000,500000,1000000,5000000,10000000,100000000].indexOf(m.count) !== -1
+                  ? [12.5, 25, 37.5, 50, 62.5, 75, 100][[10000,100000,500000,1000000,5000000,10000000,100000000].indexOf(m.count)]
+                  : 0;
                 const passed = effectiveCount >= m.count;
                 const nextIdx = milestones.findIndex(ms => effectiveCount < ms.count);
                 const isNext = milestones[nextIdx]?.count === m.count;
