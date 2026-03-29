@@ -187,51 +187,6 @@ function ShareModal({ displayCount, effectiveCount, onClose }: { displayCount: s
   );
 }
 
-// ── UPLY Games Modal ──
-function GamesModal({ onClose }: { onClose: () => void }) {
-  return (
-    <Dialog open onOpenChange={() => onClose()}>
-      <DialogContent className="bg-card border-border max-w-[480px] max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="font-heading text-[22px] font-bold text-foreground">🎮 UPLY Games</DialogTitle>
-        </DialogHeader>
-        <p className="text-muted-foreground text-sm">The competition that changes everything.</p>
-        <div className="text-center py-6">
-          <p className="font-heading text-4xl font-extrabold text-primary">$10,000 CASH</p>
-          <p className="text-muted-foreground text-lg my-1">+</p>
-          <p className="font-heading text-xl font-bold" style={{ color: "#FFD700" }}>ROLEX SUBMARINER</p>
-        </div>
-        <div className="space-y-3 text-sm text-muted-foreground">
-          <p className="text-foreground font-semibold text-xs uppercase tracking-wider">How it works</p>
-          {[
-            "UPLY hits 5M creators — milestone confirmed",
-            "30-day competition window opens — all creators compete simultaneously",
-            "Leaderboard tracks total revenue earned — real time rankings visible to everyone",
-            "Top creator at day 30 wins everything — $10,000 wired to their account. Rolex shipped to their door.",
-          ].map((step, i) => (
-            <div key={i} className="flex gap-2">
-              <span className="text-primary font-bold text-xs mt-0.5">{i + 1}.</span>
-              <p className="text-[13px]">{step}</p>
-            </div>
-          ))}
-        </div>
-        <div className="mt-4 space-y-1.5 text-[13px] text-muted-foreground">
-          <p className="text-foreground font-semibold text-xs uppercase tracking-wider mb-2">Rules</p>
-          <p>• Every creator who joined before 5M is automatically entered — no signup required</p>
-          <p>• Competition measures total revenue earned on UPLY during the 30-day window only</p>
-          <p>• Subscriptions, tips, courses, tickets, and live commerce all count</p>
-          <p>• Winner announced live on UPLY at the end of day 30</p>
-          <p>• Prize delivered within 14 days of announcement</p>
-        </div>
-        <a href="#waitlist" onClick={onClose} className="mt-4 block w-full text-center py-3 rounded-md bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors">
-          Apply for Early Access →
-        </a>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// ── UPLY Awards Modal ──
 function AwardsModal({ onClose }: { onClose: () => void }) {
   const categories = ["Creator of the Year", "Best Live Streamer", "Community Builder", "Most Growth", "Best Course", "Fan Favorite", "Rising Creator", "Best Collab", "Most Innovative", "UPLY OG"];
   const cars = ["Lamborghini Huracán", "Ferrari F8", "Porsche 911 GT3", "McLaren 720S", "any car up to $300K"];
@@ -278,9 +233,9 @@ function AwardsModal({ onClose }: { onClose: () => void }) {
 }
 
 // ── Milestone Card ──
-function MilestoneCard({ m, effectiveCount, isMobile, onOpenGames, onOpenAwards }: {
+function MilestoneCard({ m, effectiveCount, isMobile, onOpenAwards }: {
   m: Milestone; effectiveCount: number; isMobile: boolean;
-  onOpenGames: () => void; onOpenAwards: () => void;
+  onOpenAwards: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const passed = effectiveCount >= m.count;
@@ -429,7 +384,7 @@ const MissionProgress = React.memo(function MissionProgress() {
   const [animatedValue, setAnimatedValue] = useState(STATIC_FALLBACK);
   const [tickerItems, setTickerItems] = useState<TickerItem[]>([]);
   const [shareOpen, setShareOpen] = useState(false);
-  const [gamesOpen, setGamesOpen] = useState(false);
+  
   const [awardsOpen, setAwardsOpen] = useState(false);
   const [counterFlash, setCounterFlash] = useState(false);
   const [hintShown, setHintShown] = useState(false);
@@ -676,7 +631,7 @@ const MissionProgress = React.memo(function MissionProgress() {
           <div className="-mx-5 md:mx-0 px-5 md:px-0 flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
             {milestones.map(m => (
               <MilestoneCard key={m.label} m={m} effectiveCount={effectiveCount} isMobile={!!isMobile}
-                onOpenGames={() => setGamesOpen(true)} onOpenAwards={() => setAwardsOpen(true)} />
+                onOpenAwards={() => setAwardsOpen(true)} />
             ))}
           </div>
           <AnimatePresence>
@@ -744,7 +699,7 @@ const MissionProgress = React.memo(function MissionProgress() {
 
       {/* Modals */}
       {shareOpen && <ShareModal displayCount={display} effectiveCount={effectiveCount} onClose={() => setShareOpen(false)} />}
-      {gamesOpen && <GamesModal onClose={() => setGamesOpen(false)} />}
+      
       {awardsOpen && <AwardsModal onClose={() => setAwardsOpen(false)} />}
     </section>
   );
