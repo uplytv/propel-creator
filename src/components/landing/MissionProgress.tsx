@@ -16,7 +16,7 @@ import {
 const HARDCODED_FALLBACK = 24200;
 
 function formatCount(count: number): string {
-  return '+' + count.toLocaleString();
+  return count.toLocaleString();
 }
 
 function getDisplayCount(effectiveCount: number): { display: string; isEarly: boolean } {
