@@ -279,6 +279,17 @@ export default function GoLive() {
                 )}
               </div>
 
+              {/* Simulcast Panel */}
+              <SimulcastGoLivePanel
+                username={profileData?.display_name}
+                enabledPlatforms={enabledPlatforms}
+                onTogglePlatform={(platform, enabled) => {
+                  setEnabledPlatforms(prev => enabled ? [...prev, platform] : prev.filter(p => p !== platform));
+                }}
+                simulcastEnabled={simulcastEnabled}
+                onSimulcastToggle={setSimulcastEnabled}
+              />
+
               {/* Set Up Stream Button */}
               <Button
                 variant="hero"
