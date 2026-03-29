@@ -5309,6 +5309,8 @@ export type Database = {
         }[]
       }
       recalculate_waitlist_positions: { Args: never; Returns: undefined }
+      send_creator_lifecycle_emails_batch: { Args: never; Returns: undefined }
+      send_member_lifecycle_emails_batch: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
