@@ -288,7 +288,7 @@ function MilestoneCard({ m, effectiveCount, isMobile, onOpenGames, onOpenAwards 
   const isNext = milestones[nextIdx]?.count === m.count;
   const is100M = m.count === 100000000;
   const is1M = m.count === 1000000;
-  const is5M = m.count === 5000000;
+  
   const is10M = m.count === 10000000;
   const away = m.count - effectiveCount;
   const badge = REWARD_BADGES[m.reward_type];
@@ -345,15 +345,16 @@ function MilestoneCard({ m, effectiveCount, isMobile, onOpenGames, onOpenAwards 
         )}
       </div>
 
-      {/* Prize display for 5M */}
-      {is5M && showDetails && (
+      {/* Prize display for 1M */}
+      {is1M && showDetails && (
         <div className="mt-2 pt-2 border-t border-border">
           <p className="text-[13px]">
-            <span className="font-heading font-bold text-primary">💰 $10,000 cash</span>
+            <span className="font-heading font-bold text-primary">💰 $100,000 cash</span>
             <span className="text-muted-foreground mx-1">+</span>
             <span className="font-heading font-bold" style={{ color: "#FFD700" }}>⌚ Rolex Submariner</span>
           </p>
-          <p className="text-[11px] text-muted-foreground italic mt-1">Awarded to top earning creator over 30 days</p>
+          <p className="text-[12px] text-primary font-medium mt-1">+ Founding Creator benefits forever</p>
+          <p className="text-[11px] text-muted-foreground italic mt-1">Priority support, exclusive badges, early access to every future feature</p>
         </div>
       )}
 
@@ -393,14 +394,14 @@ function MilestoneCard({ m, effectiveCount, isMobile, onOpenGames, onOpenAwards 
               <p className="text-[11px] text-[#FF4444] mt-0.5">{(1000000 - effectiveCount).toLocaleString()} away from closing</p>
             </>
           ) : (
-            <p className="text-[11px] text-primary">✓ Window closed — 0% fees locked in for founding creators</p>
+            <p className="text-[11px] text-primary">✓ Window closed — Founding Creator benefits locked in</p>
           )}
         </div>
       )}
 
-      {/* Learn more for 5M / 10M */}
-      {(is5M || is10M) && showDetails && (
-        <button onClick={is5M ? onOpenGames : onOpenAwards}
+      {/* Learn more for 10M */}
+      {is10M && showDetails && (
+        <button onClick={onOpenAwards}
           className="text-[11px] text-muted-foreground hover:text-primary mt-2 flex items-center gap-0.5 transition-colors">
           Learn more <ChevronRight className="w-3 h-3" />
         </button>
