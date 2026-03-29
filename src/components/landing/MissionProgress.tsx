@@ -44,9 +44,10 @@ const milestones: Milestone[] = [
     context: "Already unlocked ✓", reward_type: "platform", is_unlocked: true,
   },
   {
-    count: 100000, label: "100K", unlock: "$100K Creator Fund",
-    detail: "UPLY launches a $100,000 fund and distributes it to 10 creators — $10,000 each to build something great on the platform. Every creator who joined before 100K is eligible to apply. Applications open the day we hit this milestone.",
-    context: "Bigger than Kajabi's entire creator base", reward_type: "money", is_unlocked: false,
+    count: 100000, label: "100K", unlock: "$100K + Rolex + Founding Creator forever",
+    detail: "The ultimate milestone for early creators. UPLY awards the top creator $100,000 cash and a Rolex Submariner delivered to their door. Every creator who joined before 100K locks in permanent Founding Creator benefits — priority support, exclusive badges, and early access to every future feature. The window closes the moment UPLY hits 100K and never reopens.",
+    context: "This window closes permanently at 100K", reward_type: "money", is_unlocked: false,
+    prize_line: "$100K cash + Rolex Submariner + Founding Creator forever",
   },
   {
     count: 500000, label: "500K", unlock: "We pass Skool",
@@ -54,10 +55,9 @@ const milestones: Milestone[] = [
     context: "Skool estimated at ~500K total users", reward_type: "status", is_unlocked: false,
   },
   {
-    count: 1000000, label: "1M", unlock: "$100K + Rolex + Founding Creator forever",
-    detail: "The ultimate milestone for early creators. UPLY awards the top creator $100,000 cash and a Rolex Submariner delivered to their door. Every creator who joined before 1M locks in permanent Founding Creator benefits — priority support, exclusive badges, and early access to every future feature. The window closes the moment UPLY hits 1M and never reopens.",
+    count: 1000000, label: "1M", unlock: "0% fees — locked in forever",
+    detail: "Every creator who joined before 1M locks in 0% platform fees permanently. If you earn $10,000/month that's $6,000 saved every single year forever. The window closes the moment UPLY hits 1M and never reopens. There are no exceptions after this milestone.",
     context: "This window closes permanently at 1M", reward_type: "urgency", urgency: true, is_unlocked: false,
-    prize_line: "$100K cash + Rolex Submariner + Founding Creator forever",
   },
   {
     count: 10000000, label: "10M", unlock: "The UPLY Awards — win a supercar",
