@@ -92,70 +92,42 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
     if (type === "referrer_notification") {
-      const { referrerEmail, referrerName, applicantName, newCount, position, referralLink } = params;
-      const html = buildReferrerEmailHtml({ referrerName, applicantName, newCount, position, referralLink });
-      const messageId = `ref-notify-${crypto.randomUUID().slice(0, 12)}`;
-
-      await supabase.rpc("enqueue_email", {
-        queue_name: "transactional_emails",
-        payload: {
-          run_id: crypto.randomUUID(),
-          to: referrerEmail,
-          from: "UPLY <noreply@notify.uply.tv>",
-          sender_domain: "notify.uply.tv",
-          subject: `🎉 ${applicantName.split(" ")[0]} just joined your waitlist!`,
-          html,
-          text: `${applicantName} used your invite link! Your referral count is now ${newCount}.`,
-          purpose: "transactional",
-          label: "referrer-notification",
-          message_id: messageId,
-          idempotency_key: messageId,
-          queued_at: new Date().toISOString(),
+      const { referrerWaitlistId, applicantName, applicantCreatorType } = params;
+      // Delegate to send-waitlist-emails for enhanced referrer notification
+      const waitlistEmailUrl = `${supabaseUrl}/functions/v1/send-waitlist-emails`;
+      await fetch(waitlistEmailUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
         },
+        body: JSON.stringify({
+          event_type: "referrer_notified",
+          waitlist_id: referrerWaitlistId,
+          applicant_name: applicantName,
+          applicant_creator_type: applicantCreatorType || "Creator",
+        }),
       });
-
-      await supabase.from("email_send_log").insert({
-        message_id: messageId,
-        template_name: "referrer-notification",
-        recipient_email: referrerEmail,
-        status: "pending",
-      });
-
       return new Response(JSON.stringify({ ok: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     if (type === "welcome_applicant") {
-      const { applicantEmail, applicantName, position, referralLink, total } = params;
-      const html = buildWelcomeEmailHtml({ applicantName, position, referralLink, total });
-      const messageId = `welcome-${crypto.randomUUID().slice(0, 12)}`;
-
-      await supabase.rpc("enqueue_email", {
-        queue_name: "transactional_emails",
-        payload: {
-          run_id: crypto.randomUUID(),
-          to: applicantEmail,
-          from: "UPLY <noreply@notify.uply.tv>",
-          sender_domain: "notify.uply.tv",
-          subject: `You're on the UPLY waitlist — here's your spot`,
-          html,
-          text: `Welcome to the UPLY waitlist! Your position is #${position}. Share your link to move up: ${referralLink}`,
-          purpose: "transactional",
-          label: "welcome-applicant",
-          message_id: messageId,
-          idempotency_key: messageId,
-          queued_at: new Date().toISOString(),
+      const { waitlistId } = params;
+      // Delegate to send-waitlist-emails for enhanced welcome
+      const waitlistEmailUrl = `${supabaseUrl}/functions/v1/send-waitlist-emails`;
+      await fetch(waitlistEmailUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
         },
+        body: JSON.stringify({
+          event_type: "waitlist_confirmation",
+          waitlist_id: waitlistId,
+        }),
       });
-
-      await supabase.from("email_send_log").insert({
-        message_id: messageId,
-        template_name: "welcome-applicant",
-        recipient_email: applicantEmail,
-        status: "pending",
-      });
-
       return new Response(JSON.stringify({ ok: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
