@@ -120,7 +120,7 @@ export default function Landing() {
             <motion.img src="/logo.png" alt="UPLY" className="h-20 md:h-28 w-auto object-contain mx-auto mb-10" width="1024" height="1024" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1, duration: 0.6 }} />
             <h1 className="text-[2.5rem] md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.05] mb-2 font-heading">Don't be late again.</h1>
             <p className="text-lg md:text-2xl font-semibold text-primary mb-6 font-heading tracking-tight">Run your entire creator business with AI.</p>
-            <p className="text-base md:text-lg text-white/40 mb-10 max-w-lg mx-auto leading-relaxed italic">5 AI employees — Content, Growth, Community, Sales &amp; Operations — working 24/7 so you can focus on creating.</p>
+            <p className="text-base md:text-lg text-muted-foreground mb-10 max-w-lg mx-auto leading-relaxed italic">5 AI employees — Content, Growth, Community, Sales &amp; Operations — working 24/7 so you can focus on creating.</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 mb-10">
               {[{ emoji: "🚫", label: "No Censorship" }, { emoji: "🤝", label: "Co-Collaborate" }, { emoji: "💸", label: "Go Live & Monetize" }].map((pill) => (
                 <span key={pill.label} className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/[0.08] bg-white/[0.03] text-sm text-white/60">
@@ -133,7 +133,7 @@ export default function Landing() {
                 {CTA_LABEL}<ArrowRight className="ml-2 w-4 h-4" />
               </Button>
             </motion.div>
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }} className="text-xs text-white/30 mt-4 italic">Waitlist &amp; invite only.</motion.p>
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }} className="text-xs text-muted-foreground/60 mt-4 italic">Waitlist &amp; invite only.</motion.p>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} className="mt-6"><LiveSignupTicker /></motion.div>
           </motion.div>
         </div>
@@ -186,7 +186,7 @@ export default function Landing() {
         <div className="container relative z-10">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-80px" }} transition={{ duration: 0.7 }} className="max-w-md mx-auto text-center">
             <h2 className="text-2xl md:text-3xl font-bold mb-3 font-heading">Claim your spot.</h2>
-            <p className="text-white/40 text-sm mb-8">Enter your email. We'll let you know when it's your turn.</p>
+            <p className="text-muted-foreground text-sm mb-8">Enter your email. We'll let you know when it's your turn.</p>
             <div className="flex gap-2">
               <Input type="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)}
                 className="bg-white/[0.05] border-white/[0.1] text-white placeholder:text-white/25 focus-visible:ring-primary/40 h-12"
@@ -213,7 +213,7 @@ export default function Landing() {
         <div className="container relative z-10">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-80px" }} transition={{ duration: 0.7 }} className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 font-heading">Be Early. Win Big.</h2>
-            <p className="text-white/40 text-base max-w-lg mx-auto leading-relaxed">Apply now for a chance to win cash, prizes, and a founding creator spot. The first wave sets the culture.</p>
+            <p className="text-muted-foreground text-base max-w-lg mx-auto leading-relaxed">Apply now for a chance to win cash, prizes, and a founding creator spot. The first wave sets the culture.</p>
           </motion.div>
           <div className="grid sm:grid-cols-3 gap-5 max-w-3xl mx-auto">
             {rewards.map((r, i) => (
@@ -221,8 +221,8 @@ export default function Landing() {
                 whileHover={{ y: -4, transition: { duration: 0.25 } }}
                 className="relative rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-sm p-6 text-center group hover:border-primary/20 transition-colors">
                 <span className="text-3xl mb-4 block">{r.emoji}</span>
-                <h3 className="font-bold text-white mb-2">{r.title}</h3>
-                <p className="text-sm text-white/40 leading-relaxed">{r.desc}</p>
+                <h3 className="font-bold text-foreground mb-2">{r.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{r.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -230,7 +230,7 @@ export default function Landing() {
       </section>
 
       {/* ─── FOOTER ─── */}
-      <footer className="border-t border-white/[0.06] py-10">
+      <footer className="border-t border-border py-10">
         <div className="container flex flex-col items-center gap-5">
           <img src="/logo.png" alt="UPLY" className="h-10 w-auto object-contain opacity-60" width="1024" height="1024" loading="lazy" decoding="async" />
           <div className="flex items-center gap-5">
@@ -238,7 +238,7 @@ export default function Landing() {
               <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="text-xs text-white/30 hover:text-white/60 transition-colors">{s.label}</a>
             ))}
           </div>
-          <p className="text-xs text-white/20">© 2026 UPLY</p>
+          <p className="text-xs text-muted-foreground/50">© 2026 UPLY</p>
         </div>
       </footer>
     </div>
