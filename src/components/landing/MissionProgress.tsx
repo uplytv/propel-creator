@@ -195,43 +195,223 @@ function ShareModal({ displayCount, effectiveCount, onClose }: { displayCount: s
 }
 
 function AwardsModal({ onClose }: { onClose: () => void }) {
-  const categories = ["Creator of the Year", "Best Live Streamer", "Community Builder", "Most Growth", "Best Course", "Fan Favorite", "Rising Creator", "Best Collab", "Most Innovative", "UPLY OG"];
-  const cars = ["Lamborghini Huracán", "Ferrari F8", "Porsche 911 GT3", "McLaren 720S", "any car up to $300K"];
+  const categories = [
+    { name: "🏆 Creator of the Year", special: "gold" },
+    { name: "🔴 Best Live Streamer" },
+    { name: "👥 Community Builder of the Year" },
+    { name: "📈 Most Growth" },
+    { name: "📚 Best Course" },
+    { name: "❤️ Fan Favorite" },
+    { name: "🌱 Rising Creator" },
+    { name: "🤝 Best Collab" },
+    { name: "💡 Most Innovative" },
+    { name: "👑 UPLY OG", special: "og" },
+  ];
+
+  const [ogTooltip, setOgTooltip] = useState(false);
 
   return (
     <Dialog open onOpenChange={() => onClose()}>
-      <DialogContent className="bg-card border-border max-w-[480px] max-h-[85vh] overflow-y-auto">
+      <DialogContent className="bg-card border-border max-w-[520px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-heading text-[22px] font-bold text-foreground">🏎️ The UPLY Awards</DialogTitle>
+          <DialogTitle className="font-heading text-[24px] font-bold text-foreground text-center" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            🏎️ The UPLY Awards
+          </DialogTitle>
         </DialogHeader>
-        <p className="text-muted-foreground text-sm">The Oscars of the creator economy.</p>
-        <div className="text-center py-6">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">CREATOR OF THE YEAR</p>
-          <p className="text-muted-foreground text-sm mb-2">wins</p>
-          <p className="font-heading text-[28px] font-extrabold text-foreground">YOUR CHOICE OF SUPERCAR</p>
-          <p className="font-heading text-2xl font-extrabold" style={{ color: "#FB923C" }}>UP TO $300,000</p>
-        </div>
-        <div className="flex flex-wrap justify-center gap-2 mb-4">
-          {cars.map(c => (
-            <span key={c} className="px-3 py-1 rounded-full text-[11px] border" style={{ background: "rgba(249,115,22,0.08)", borderColor: "rgba(249,115,22,0.3)", color: "#FB923C" }}>{c}</span>
+        <p className="text-[15px] text-muted-foreground text-center" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          The night your creator career changes forever.
+        </p>
+
+        {/* Cinematic description */}
+        <div className="rounded-lg p-5 my-4" style={{ background: "#0A0A0A", border: "1px solid hsl(var(--border))" }}>
+          {[
+            { text: "You land in Las Vegas.", highlight: false },
+            { text: "", highlight: false },
+            { text: "A car picks you up from the airport", highlight: false },
+            { text: "and takes you to the Aria Hotel.", highlight: false },
+            { text: "", highlight: false },
+            { text: "That night UPLY holds its annual Awards ceremony —", highlight: false },
+            { text: "streamed live to every creator on the platform.", highlight: false },
+            { text: "", highlight: false },
+            { text: "Your name is announced.", highlight: true },
+            { text: "", highlight: false },
+            { text: "You walk on stage.", highlight: false },
+            { text: "", highlight: false },
+            { text: "You sit down with the UPLY team and sign", highlight: false },
+            { text: "a 12-month partnership deal.", highlight: false },
+            { text: "", highlight: false },
+            { text: "You step outside.", highlight: false },
+            { text: "", highlight: false },
+            { text: "Your supercar is waiting.", highlight: true },
+            { text: "", highlight: false },
+            { text: "You chose it. UPLY paid for it.", highlight: false },
+            { text: "It's yours.", highlight: false },
+          ].map((line, i) => (
+            line.text === "" ? <br key={i} /> :
+            <p key={i} className={line.highlight ? "font-heading font-bold text-[15px] text-primary" : "text-[14px] text-muted-foreground"}
+              style={{ fontFamily: line.highlight ? "'Space Grotesk', sans-serif" : "'Plus Jakarta Sans', sans-serif", lineHeight: 2.0 }}>
+              {line.text}
+            </p>
           ))}
         </div>
-        <div className="space-y-2 text-[13px] text-muted-foreground">
-          <p className="text-foreground font-semibold text-xs uppercase tracking-wider mb-2">How it works</p>
-          <p>• UPLY hits 10M creators — Awards ceremony becomes an annual event</p>
-          <p>• Platform-wide vote determines nominees in 10 categories</p>
-          <p>• Creator of the Year determined by revenue growth, community engagement, and member votes</p>
-          <p>• Live ceremony streamed on UPLY — all creators can watch</p>
-          <p>• Winner chooses any supercar up to $300,000. Fully paid. Delivered anywhere in the world. No conditions.</p>
-          <p>• Awards happen every year from 10M forward — new winner every year</p>
+
+        {/* Prize Cards */}
+        <div className="space-y-2">
+          {/* Supercar */}
+          <div className="rounded-lg p-4 bg-card border border-border">
+            <p className="font-heading text-[16px] font-bold text-foreground" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              🏎️ SUPERCAR OF YOUR CHOICE
+            </p>
+            <p className="text-[13px] text-muted-foreground mt-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              Any car up to $300,000 — Lamborghini, Ferrari, Porsche, McLaren, or any other. Fully paid. Delivered to your door anywhere in the world.
+            </p>
+            <p className="text-[14px] font-extrabold mt-2" style={{ color: "#FB923C", fontFamily: "'Space Grotesk', sans-serif" }}>
+              UP TO $300,000
+            </p>
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {["Lamborghini", "Ferrari", "Porsche", "McLaren", "+ any car"].map(c => (
+                <span key={c} className="px-2.5 py-0.5 rounded-full text-[11px] border"
+                  style={{ background: "transparent", borderColor: "rgba(249,115,22,0.4)", color: "#FB923C" }}>{c}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* Vegas */}
+          <div className="rounded-lg p-4 bg-card border border-border">
+            <p className="font-heading text-[16px] font-bold text-foreground" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              🏨 ARIA HOTEL · LAS VEGAS
+            </p>
+            <p className="text-[13px] text-muted-foreground mt-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              Round-trip flights for you and one guest. 3 nights at the Aria Hotel. All meals covered. UPLY handles every logistic — you just show up.
+            </p>
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {["✈️ Flights for 2", "🏨 3 Nights Aria", "🍽️ All Meals"].map(c => (
+                <span key={c} className="px-2.5 py-0.5 rounded-full text-[11px] border"
+                  style={{ background: "transparent", borderColor: "rgba(255,215,0,0.4)", color: "#FFD700" }}>{c}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* Partnership */}
+          <div className="rounded-lg p-4 bg-card border border-border">
+            <p className="font-heading text-[16px] font-bold text-foreground" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              🤝 UPLY CREATOR PARTNERSHIP
+            </p>
+            <p className="text-[13px] text-muted-foreground mt-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              A 12-month partnership deal with UPLY signed at the ceremony. Includes featured creator placement on the platform, priority support, and $50,000 in co-marketing commitment from UPLY to promote your content and community.
+            </p>
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {["✓ Featured placement", "✓ Priority support", "✓ $50K co-marketing", "✓ You own all content"].map(c => (
+                <span key={c} className="px-2.5 py-0.5 rounded-full text-[11px] border"
+                  style={{ background: "transparent", borderColor: "rgba(0,255,133,0.4)", color: "hsl(var(--primary))" }}>{c}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* Film Crew */}
+          <div className="rounded-lg p-4 bg-card border border-border">
+            <p className="font-heading text-[16px] font-bold text-foreground" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              🎬 PROFESSIONAL FILM CREW
+            </p>
+            <p className="text-[13px] text-muted-foreground mt-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              UPLY provides a professional photographer and videographer to document the full experience — the ceremony, the deal signing, and the moment you see your car for the first time. Every piece of content belongs to you. Post it everywhere.
+            </p>
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {["📸 Photos yours", "🎥 Video yours"].map(c => (
+                <span key={c} className="px-2.5 py-0.5 rounded-full text-[11px] border"
+                  style={{ background: "transparent", borderColor: "rgba(129,140,248,0.4)", color: "#818CF8" }}>{c}</span>
+              ))}
+            </div>
+          </div>
         </div>
-        <p className="text-foreground font-semibold text-xs uppercase tracking-wider mt-4 mb-2">Categories</p>
-        <div className="grid grid-cols-2 gap-2">
-          {categories.map(c => (
-            <span key={c} className="px-3 py-1.5 rounded-md text-[11px] text-muted-foreground bg-muted/30 border border-border text-center">{c}</span>
-          ))}
+
+        {/* Judging */}
+        <div className="mt-6">
+          <p className="text-[14px] font-semibold text-foreground mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            How the winner is determined
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { pct: "40%", label: "Revenue Growth" },
+              { pct: "30%", label: "Community Score" },
+              { pct: "30%", label: "Member Votes" },
+            ].map(s => (
+              <div key={s.label} className="rounded-md p-3 text-center" style={{ background: "#0A0A0A", border: "1px solid hsl(var(--border))" }}>
+                <p className="font-heading text-[28px] font-extrabold text-primary" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{s.pct}</p>
+                <p className="text-[12px] text-muted-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{s.label}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-[11px] text-muted-foreground italic text-center mt-2">
+            Scores calculated over the calendar year. All UPLY creators are eligible. No minimum revenue required.
+          </p>
         </div>
-        <a href="#waitlist" onClick={onClose} className="mt-4 block w-full text-center py-3 rounded-md bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors">
+
+        {/* Categories */}
+        <div className="mt-6">
+          <p className="text-[14px] font-semibold text-foreground mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            Award Categories
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {categories.map(c => (
+              <div key={c.name} className="relative">
+                <span
+                  className="block px-3 py-1.5 rounded-md text-[11px] text-center cursor-default"
+                  style={{
+                    background: "hsl(var(--muted) / 0.3)",
+                    border: c.special === "gold" ? "1px solid rgba(255,215,0,0.4)" : c.special === "og" ? "1px solid rgba(0,255,133,0.4)" : "1px solid hsl(var(--border))",
+                    color: c.special === "gold" ? "#FFD700" : c.special === "og" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  }}
+                  onClick={() => c.special === "og" && setOgTooltip(!ogTooltip)}
+                >
+                  {c.name}
+                </span>
+                {c.special === "og" && ogTooltip && (
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-3 py-2 rounded-md text-[10px] text-foreground whitespace-normal w-[200px] text-center z-10"
+                    style={{ background: "#0A0A0A", border: "1px solid hsl(var(--border))" }}>
+                    Only creators who joined before 1M are eligible for this award — forever.
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* How it works */}
+        <div className="mt-6">
+          <p className="text-[14px] font-semibold text-foreground mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            How it works
+          </p>
+          <div className="space-y-2">
+            {[
+              "UPLY hits 10M creators — Awards ceremony becomes an annual event permanently",
+              "Nominations open platform-wide — community nominates creators in each category",
+              "Voting window opens for 30 days — all creators and members vote",
+              "Creator of the Year determined — revenue growth plus community score plus member votes",
+              "Live ceremony streamed on UPLY — winner announced, deal signed, car revealed, film crew rolling",
+            ].map((step, i) => (
+              <div key={i} className="flex items-start gap-2">
+                <span className="shrink-0 w-5 h-5 rounded-md flex items-center justify-center text-[11px] font-bold"
+                  style={{ background: "#0A0A0A", border: "1px solid hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}>{i + 1}</span>
+                <p className="text-[13px] text-muted-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{step}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Closing */}
+        <div className="text-center mt-6">
+          <p className="font-heading text-[16px] font-bold text-foreground" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            This happens every year. Every year a new creator wins. Every year a new career changes.
+          </p>
+          <p className="text-[13px] text-muted-foreground mt-1">
+            Starting the day UPLY hits 10M creators.
+          </p>
+        </div>
+
+        <a href="#waitlist" onClick={onClose}
+          className="mt-4 block w-full text-center py-3 rounded-md bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors">
           Apply for Early Access →
         </a>
       </DialogContent>
