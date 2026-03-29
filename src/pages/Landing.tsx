@@ -234,11 +234,11 @@ export default function Landing() {
         <div className="container flex flex-col items-center gap-5">
           <img src="/logo.png" alt="Uply" className="h-10 w-auto object-contain opacity-60" width="1024" height="1024" loading="lazy" />
           <div className="flex items-center gap-5">
-            {[{ label: "Instagram", href: "#" }, { label: "X", href: "#" }, { label: "TikTok", href: "#" }].map((s) => (
-              <a key={s.label} href={s.href} className="text-xs text-white/30 hover:text-white/60 transition-colors">{s.label}</a>
+          {[{ label: "Instagram", href: "https://instagram.com/uply.tv" }, { label: "X", href: "https://x.com/uplyTV" }, { label: "TikTok", href: "https://tiktok.com/@uply.tv" }].map((s) => (
+              <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="text-xs text-white/30 hover:text-white/60 transition-colors">{s.label}</a>
             ))}
           </div>
-          <p className="text-xs text-white/20">© 2025 Uply</p>
+          <p className="text-xs text-white/20">© 2026 UPLY</p>
         </div>
       </footer>
     </div>
