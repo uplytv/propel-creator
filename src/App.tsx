@@ -74,6 +74,7 @@ const EventPage = lazy(() => import("./pages/EventPage"));
 const TicketDetail = lazy(() => import("./pages/TicketDetail"));
 const ContentStudio = lazy(() => import("./pages/ContentStudio"));
 const AITeamDashboard = lazy(() => import("./pages/AITeamDashboard"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -168,6 +169,7 @@ const App = () => (
                     <Route path="/:username/videos/:slug" element={<VideoPlayer />} />
                     <Route path="/:username/clips/:slug" element={<Stream />} />
                     <Route path="/leaderboard" element={<Leaderboard />} />
+                    <Route path="/unsubscribe" element={<Unsubscribe />} />
                     <Route path="/ref/:code" element={<ReferralRedirect />} />
                     <Route path="/join/:username/:code" element={<ReferralRedirect />} />
                     <Route path="/join/:code" element={<ReferralRedirect />} />
