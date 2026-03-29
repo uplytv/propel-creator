@@ -3,14 +3,20 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { X, Info, Twitter, Copy, Link2, Share2 } from "lucide-react";
+import { X, Info, Twitter, Copy, Link2, Share2, ChevronRight } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
-// ── Display count logic (Fix 1) ──
-const FLOOR = 10000;
+// ── Display count logic ──
+const STATIC_FALLBACK = 10000;
 
 function getDisplayCount(rawCount: number): { display: string; isEarly: boolean } {
-  const effectiveCount = Math.max(rawCount, FLOOR);
+  const effectiveCount = Math.max(rawCount, STATIC_FALLBACK);
   if (effectiveCount < 1000) return { display: "hundreds", isEarly: true };
   if (effectiveCount < 10000) return { display: "thousands", isEarly: true };
   if (effectiveCount < 100000) return { display: effectiveCount.toLocaleString(), isEarly: true };
@@ -18,13 +24,57 @@ function getDisplayCount(rawCount: number): { display: string; isEarly: boolean 
   return { display: (effectiveCount / 1000000).toFixed(1) + "M", isEarly: false };
 }
 
-const milestones = [
-  { count: 10000, label: "10K", unlock: "ARIA gets smarter", detail: "More creator data means better AI for everyone on the platform", color: "#00FF85" },
-  { count: 100000, label: "100K", unlock: "Instagram Live unlocks", detail: "Simulcast to Instagram when we reach 100K — currently API-restricted", color: "#00FF85" },
-  { count: 1000000, label: "1M", unlock: "Creator Fund launches", detail: "UPLY allocates $1M/year to fund independent creator projects", color: "#00FF85" },
-  { count: 10000000, label: "10M", unlock: "TikTok integration", detail: "Full TikTok Live and distribution unlocks at scale", color: "#00FF85" },
-  { count: 100000000, label: "100M", unlock: "Largest creator platform", detail: "UPLY becomes the largest creator monetization platform on earth", color: "#00FF85" },
-  { count: 1000000000, label: "1B", unlock: "Mission complete", detail: "1 billion creators owning their audience and their income", color: "#FFD700" },
+// ── Milestones ──
+interface Milestone {
+  count: number;
+  label: string;
+  unlock: string;
+  detail: string;
+  context: string;
+  reward_type: string;
+  is_unlocked: boolean;
+  urgency?: boolean;
+  prize_line?: string;
+}
+
+const milestones: Milestone[] = [
+  {
+    count: 10000, label: "10K", unlock: "ARIA gets smarter",
+    detail: "Every creator makes ARIA better for everyone — more data means stronger AI recommendations, better content suggestions, and smarter growth strategies across the entire platform.",
+    context: "Already unlocked ✓", reward_type: "platform", is_unlocked: true,
+  },
+  {
+    count: 100000, label: "100K", unlock: "$100K Creator Fund",
+    detail: "UPLY launches a $100,000 fund and distributes it to 10 creators — $10,000 each to build something great on the platform. Every creator who joined before 100K is eligible to apply. Applications open the day we hit this milestone.",
+    context: "Bigger than Kajabi's entire creator base", reward_type: "money", is_unlocked: false,
+  },
+  {
+    count: 500000, label: "500K", unlock: "We pass Skool",
+    detail: "UPLY officially surpasses Skool's estimated total user base making it the largest independent creator community platform in the world. Every founding creator who helped get us here receives a permanent Founding Pioneer badge on their profile — visible forever.",
+    context: "Skool estimated at ~500K total users", reward_type: "status", is_unlocked: false,
+  },
+  {
+    count: 1000000, label: "1M", unlock: "0% fees — locked in forever",
+    detail: "Every creator who joined before 1M locks in 0% platform fees permanently. If you earn $10,000/month that's $6,000 saved every single year forever. The window closes the moment UPLY hits 1M and never reopens. There are no exceptions after this milestone.",
+    context: "This window closes permanently at 1M", reward_type: "urgency", urgency: true, is_unlocked: false,
+  },
+  {
+    count: 5000000, label: "5M", unlock: "UPLY Games — $10K + Rolex",
+    detail: "UPLY launches its first ever platform-wide competition. The top earning creator over a 30-day window wins $10,000 cash and a Rolex Submariner delivered to their door. Every creator who joined before 5M is automatically entered. One creator. One watch. One moment.",
+    context: "The competition that makes UPLY legendary", reward_type: "games",
+    prize_line: "$10,000 cash + Rolex Submariner", is_unlocked: false,
+  },
+  {
+    count: 10000000, label: "10M", unlock: "The UPLY Awards — win a supercar",
+    detail: "At 10M creators UPLY launches its annual Awards — a live ceremony celebrating the platform's top creators. The Creator of the Year wins their choice of any supercar up to $300,000. Fully paid for. Delivered. Yours. The UPLY Awards happens every year from this milestone forward.",
+    context: "Annual event. Annual supercar. Your choice.", reward_type: "supercar",
+    prize_line: "Winner's choice — any supercar up to $300K", is_unlocked: false,
+  },
+  {
+    count: 100000000, label: "100M", unlock: "Largest creator platform on Earth",
+    detail: "UPLY becomes the largest creator monetization platform in the world — bigger than every competitor combined. 100 million creators owning their audience, their content, and their income. The mission is complete.",
+    context: "200M creators exist worldwide — we're building for all of them", reward_type: "mission", is_unlocked: false,
+  },
 ];
 
 function easeOutCubic(t: number) { return 1 - Math.pow(1 - t, 3); }
@@ -39,25 +89,6 @@ function useReducedMotion() {
     return () => mq.removeEventListener("change", handler);
   }, []);
   return reduced;
-}
-
-function useCountUp(target: number, duration: number, trigger: boolean, reducedMotion: boolean) {
-  const [value, setValue] = useState(0);
-  useEffect(() => {
-    if (!trigger) return;
-    if (reducedMotion) { setValue(target); return; }
-    let start: number | null = null;
-    let raf: number;
-    const step = (ts: number) => {
-      if (!start) start = ts;
-      const progress = Math.min((ts - start) / (duration * 1000), 1);
-      setValue(Math.floor(easeOutCubic(progress) * target));
-      if (progress < 1) raf = requestAnimationFrame(step);
-    };
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
-  }, [target, duration, trigger, reducedMotion]);
-  return value;
 }
 
 // ── Ticker ──
@@ -86,23 +117,29 @@ const PLACEHOLDER_ITEMS: TickerItem[] = [
   { name: "A creator from London", type: "Art", ago: "5m ago" },
 ];
 
-// ── Share Modal ──
-function ShareModal({ displayCount, onClose }: { displayCount: string; onClose: () => void }) {
-  const isMobile = useIsMobile();
-  const dateStr = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
-  const tweetText = `I just joined @uplyTV when it had ${displayCount} creators.\n\nDon't be late to this one.\n\nThe creator economy is $250 billion. Most of it goes to platforms. UPLY is giving it back.\n\nuply.tv — waitlist & invite only.`;
+// ── Reward badge config ──
+const REWARD_BADGES: Record<string, { emoji: string; label: string; bg: string; border: string; text: string }> = {
+  platform: { emoji: "⚡", label: "Platform", bg: "rgba(99,102,241,0.15)", border: "rgba(99,102,241,0.4)", text: "#818CF8" },
+  money: { emoji: "💰", label: "Cash Prize", bg: "rgba(0,255,133,0.12)", border: "rgba(0,255,133,0.4)", text: "hsl(var(--primary))" },
+  status: { emoji: "🏆", label: "Status", bg: "rgba(255,215,0,0.12)", border: "rgba(255,215,0,0.4)", text: "#FFD700" },
+  urgency: { emoji: "⚡", label: "Closes at 1M", bg: "rgba(220,38,38,0.15)", border: "rgba(220,38,38,0.5)", text: "#FF4444" },
+  games: { emoji: "🎮", label: "Competition", bg: "rgba(220,38,38,0.12)", border: "rgba(220,38,38,0.4)", text: "#FF6B6B" },
+  supercar: { emoji: "🏎️", label: "UPLY Awards", bg: "rgba(249,115,22,0.12)", border: "rgba(249,115,22,0.4)", text: "#FB923C" },
+  mission: { emoji: "👑", label: "Mission", bg: "rgba(255,215,0,0.15)", border: "rgba(255,215,0,0.5)", text: "#FFD700" },
+};
 
-  const handleTwitter = () => {
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`, "_blank");
-  };
-  const handleCopyText = () => {
-    navigator.clipboard.writeText(tweetText);
-    toast.success("Copied to clipboard ✓");
-  };
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText("https://uply.tv");
-    toast.success("Link copied ✓");
-  };
+// ── Share Modal ──
+function ShareModal({ displayCount, effectiveCount, onClose }: { displayCount: string; effectiveCount: number; onClose: () => void }) {
+  const isMobile = useIsMobile();
+  const past1M = effectiveCount >= 1000000;
+
+  const tweetText = past1M
+    ? `I was on @uplyTV before 1M creators.\n\n0% fees locked in forever.\nEntered in the $10K + Rolex competition at 5M.\nEligible for the supercar at the annual UPLY Awards.\n\nThe window is closed now. I got in. uply.tv`
+    : `I just joined @uplyTV before they hit 1M creators.\n\nThat means I locked in 0% platform fees forever.\n\nAt 5M creators there's a $10K cash + Rolex competition.\nAt 10M there's an annual Awards where the winner gets a supercar.\n\nThe window is still open: uply.tv`;
+
+  const handleTwitter = () => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`, "_blank");
+  const handleCopyText = () => { navigator.clipboard.writeText(tweetText); toast.success("Copied to clipboard ✓"); };
+  const handleCopyLink = () => { navigator.clipboard.writeText("https://uply.tv"); toast.success("Link copied ✓"); };
   const handleNativeShare = async () => {
     try {
       await navigator.share({ title: "I joined UPLY early", text: `I joined UPLY when it had ${displayCount} creators. Don't be late to this one. uply.tv`, url: "https://uply.tv" });
@@ -110,85 +147,280 @@ function ShareModal({ displayCount, onClose }: { displayCount: string; onClose: 
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={onClose}>
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-        className="relative w-full max-w-[520px] rounded-xl border border-[hsl(var(--surface-border))] bg-[#0A0A0A] p-6" onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-4 right-4 text-[hsl(var(--muted-foreground))] hover:text-white"><X className="w-5 h-5" /></button>
+    <Dialog open onOpenChange={() => onClose()}>
+      <DialogContent className="bg-card border-border max-w-[520px]">
+        <DialogHeader>
+          <DialogTitle className="text-foreground font-heading">Share your spot</DialogTitle>
+        </DialogHeader>
         {/* Preview card */}
-        <div className="mx-auto mb-6 w-full max-w-[480px] aspect-video rounded-lg overflow-hidden flex flex-col items-center justify-center text-center p-6"
-          style={{ background: "#0A0A0A", boxShadow: "inset 0 0 120px rgba(0,255,133,0.06)", border: "1px solid #1E1E1E" }}>
+        <div className="mx-auto mb-6 w-full max-w-[480px] aspect-video rounded-lg overflow-hidden flex flex-col items-center justify-center text-center p-6 bg-background border border-border"
+          style={{ boxShadow: "inset 0 0 120px rgba(0,255,133,0.06)" }}>
           <span className="text-3xl mb-3">😊</span>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">I joined UPLY when it had</p>
-          <p className="text-4xl font-extrabold text-[hsl(var(--primary))] font-heading my-1">{displayCount} creators.</p>
-          <p className="text-xs text-[#555555] mt-2">{dateStr}</p>
-          <p className="text-sm text-[hsl(var(--primary))] mt-1">uply.tv</p>
+          {past1M ? (
+            <>
+              <p className="text-[28px] font-extrabold text-primary font-heading my-1">I was here before 1M.</p>
+              <p className="text-sm text-foreground mt-2">I locked in 0% fees forever.</p>
+              <p className="text-[13px] text-primary mt-2">uply.tv</p>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground">I joined before 1M.</p>
+              <p className="text-sm text-foreground mt-1">The 0% fees forever window<br />is still open.</p>
+              <p className="text-xs text-muted-foreground mt-2">+{displayCount} creators so far.</p>
+              <p className="text-[13px] text-primary mt-2">uply.tv — invite only.</p>
+            </>
+          )}
         </div>
         <div className="flex items-center justify-center gap-3 flex-wrap">
-          <button onClick={handleTwitter} className="flex items-center gap-2 px-4 py-2.5 rounded-md border border-[#333] text-sm text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--primary))] hover:text-white transition-colors">
+          <button onClick={handleTwitter} className="flex items-center gap-2 px-4 py-2.5 rounded-md border border-border text-sm text-muted-foreground hover:border-primary hover:text-foreground transition-colors">
             <Twitter className="w-4 h-4" /> Tweet
           </button>
-          <button onClick={handleCopyText} className="flex items-center gap-2 px-4 py-2.5 rounded-md border border-[#333] text-sm text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--primary))] hover:text-white transition-colors">
+          <button onClick={handleCopyText} className="flex items-center gap-2 px-4 py-2.5 rounded-md border border-border text-sm text-muted-foreground hover:border-primary hover:text-foreground transition-colors">
             <Copy className="w-4 h-4" /> Copy Text
           </button>
-          <button onClick={handleCopyLink} className="flex items-center gap-2 px-4 py-2.5 rounded-md border border-[#333] text-sm text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--primary))] hover:text-white transition-colors">
+          <button onClick={handleCopyLink} className="flex items-center gap-2 px-4 py-2.5 rounded-md border border-border text-sm text-muted-foreground hover:border-primary hover:text-foreground transition-colors">
             <Link2 className="w-4 h-4" /> Copy Link
           </button>
           {isMobile && typeof navigator.share === "function" && (
-            <button onClick={handleNativeShare} className="flex items-center gap-2 px-4 py-2.5 rounded-md border border-[#333] text-sm text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--primary))] hover:text-white transition-colors">
+            <button onClick={handleNativeShare} className="flex items-center gap-2 px-4 py-2.5 rounded-md border border-border text-sm text-muted-foreground hover:border-primary hover:text-foreground transition-colors">
               <Share2 className="w-4 h-4" /> More
             </button>
           )}
         </div>
-      </motion.div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
-// ── Milestone Card (Fix 2 — mobile tap expand) ──
-function MilestoneCard({ m, effectiveCount, isMobile }: { m: typeof milestones[0]; effectiveCount: number; isMobile: boolean }) {
+// ── UPLY Games Modal ──
+function GamesModal({ onClose }: { onClose: () => void }) {
+  return (
+    <Dialog open onOpenChange={() => onClose()}>
+      <DialogContent className="bg-card border-border max-w-[480px] max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="font-heading text-[22px] font-bold text-foreground">🎮 UPLY Games</DialogTitle>
+        </DialogHeader>
+        <p className="text-muted-foreground text-sm">The competition that changes everything.</p>
+        <div className="text-center py-6">
+          <p className="font-heading text-4xl font-extrabold text-primary">$10,000 CASH</p>
+          <p className="text-muted-foreground text-lg my-1">+</p>
+          <p className="font-heading text-xl font-bold" style={{ color: "#FFD700" }}>ROLEX SUBMARINER</p>
+        </div>
+        <div className="space-y-3 text-sm text-muted-foreground">
+          <p className="text-foreground font-semibold text-xs uppercase tracking-wider">How it works</p>
+          {[
+            "UPLY hits 5M creators — milestone confirmed",
+            "30-day competition window opens — all creators compete simultaneously",
+            "Leaderboard tracks total revenue earned — real time rankings visible to everyone",
+            "Top creator at day 30 wins everything — $10,000 wired to their account. Rolex shipped to their door.",
+          ].map((step, i) => (
+            <div key={i} className="flex gap-2">
+              <span className="text-primary font-bold text-xs mt-0.5">{i + 1}.</span>
+              <p className="text-[13px]">{step}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 space-y-1.5 text-[13px] text-muted-foreground">
+          <p className="text-foreground font-semibold text-xs uppercase tracking-wider mb-2">Rules</p>
+          <p>• Every creator who joined before 5M is automatically entered — no signup required</p>
+          <p>• Competition measures total revenue earned on UPLY during the 30-day window only</p>
+          <p>• Subscriptions, tips, courses, tickets, and live commerce all count</p>
+          <p>• Winner announced live on UPLY at the end of day 30</p>
+          <p>• Prize delivered within 14 days of announcement</p>
+        </div>
+        <a href="#waitlist" onClick={onClose} className="mt-4 block w-full text-center py-3 rounded-md bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors">
+          Apply for Early Access →
+        </a>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── UPLY Awards Modal ──
+function AwardsModal({ onClose }: { onClose: () => void }) {
+  const categories = ["Creator of the Year", "Best Live Streamer", "Community Builder", "Most Growth", "Best Course", "Fan Favorite", "Rising Creator", "Best Collab", "Most Innovative", "UPLY OG"];
+  const cars = ["Lamborghini Huracán", "Ferrari F8", "Porsche 911 GT3", "McLaren 720S", "any car up to $300K"];
+
+  return (
+    <Dialog open onOpenChange={() => onClose()}>
+      <DialogContent className="bg-card border-border max-w-[480px] max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="font-heading text-[22px] font-bold text-foreground">🏎️ The UPLY Awards</DialogTitle>
+        </DialogHeader>
+        <p className="text-muted-foreground text-sm">The Oscars of the creator economy.</p>
+        <div className="text-center py-6">
+          <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">CREATOR OF THE YEAR</p>
+          <p className="text-muted-foreground text-sm mb-2">wins</p>
+          <p className="font-heading text-[28px] font-extrabold text-foreground">YOUR CHOICE OF SUPERCAR</p>
+          <p className="font-heading text-2xl font-extrabold" style={{ color: "#FB923C" }}>UP TO $300,000</p>
+        </div>
+        <div className="flex flex-wrap justify-center gap-2 mb-4">
+          {cars.map(c => (
+            <span key={c} className="px-3 py-1 rounded-full text-[11px] border" style={{ background: "rgba(249,115,22,0.08)", borderColor: "rgba(249,115,22,0.3)", color: "#FB923C" }}>{c}</span>
+          ))}
+        </div>
+        <div className="space-y-2 text-[13px] text-muted-foreground">
+          <p className="text-foreground font-semibold text-xs uppercase tracking-wider mb-2">How it works</p>
+          <p>• UPLY hits 10M creators — Awards ceremony becomes an annual event</p>
+          <p>• Platform-wide vote determines nominees in 10 categories</p>
+          <p>• Creator of the Year determined by revenue growth, community engagement, and member votes</p>
+          <p>• Live ceremony streamed on UPLY — all creators can watch</p>
+          <p>• Winner chooses any supercar up to $300,000. Fully paid. Delivered anywhere in the world. No conditions.</p>
+          <p>• Awards happen every year from 10M forward — new winner every year</p>
+        </div>
+        <p className="text-foreground font-semibold text-xs uppercase tracking-wider mt-4 mb-2">Categories</p>
+        <div className="grid grid-cols-2 gap-2">
+          {categories.map(c => (
+            <span key={c} className="px-3 py-1.5 rounded-md text-[11px] text-muted-foreground bg-muted/30 border border-border text-center">{c}</span>
+          ))}
+        </div>
+        <a href="#waitlist" onClick={onClose} className="mt-4 block w-full text-center py-3 rounded-md bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors">
+          Apply for Early Access →
+        </a>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── Milestone Card ──
+function MilestoneCard({ m, effectiveCount, isMobile, onOpenGames, onOpenAwards }: {
+  m: Milestone; effectiveCount: number; isMobile: boolean;
+  onOpenGames: () => void; onOpenAwards: () => void;
+}) {
   const [expanded, setExpanded] = useState(false);
   const passed = effectiveCount >= m.count;
   const nextIdx = milestones.findIndex(ms => effectiveCount < ms.count);
   const isNext = milestones[nextIdx]?.count === m.count;
-  const is1B = m.count === 1000000000;
+  const is100M = m.count === 100000000;
+  const is1M = m.count === 1000000;
+  const is5M = m.count === 5000000;
+  const is10M = m.count === 10000000;
   const away = m.count - effectiveCount;
+  const badge = REWARD_BADGES[m.reward_type];
 
-  const borderClass = passed
-    ? "border-[hsl(var(--primary))]"
-    : isNext
-    ? "border-[hsl(var(--primary)/0.5)]"
-    : is1B
-    ? "border-[#FFD700]"
-    : "border-[#1E1E1E]";
+  const borderStyle = is1M
+    ? "2px solid hsl(var(--primary))"
+    : passed ? "1px solid hsl(var(--primary))"
+    : isNext ? "1px solid hsl(var(--primary) / 0.5)"
+    : is100M ? "1px solid #FFD700"
+    : "1px solid hsl(var(--border))";
 
-  const bgClass = passed ? "bg-[hsl(var(--primary)/0.04)]" : "bg-[#111111]";
+  const bgColor = is1M
+    ? "rgba(0,255,133,0.05)"
+    : passed ? "hsl(var(--primary) / 0.04)"
+    : is100M ? "rgba(255,215,0,0.02)"
+    : "hsl(var(--card))";
+
+  const showDetails = !isMobile || expanded;
 
   return (
-    <div className={`relative flex-shrink-0 rounded-lg border p-4 ${borderClass} ${bgClass} ${isMobile ? "w-[260px]" : "w-[200px]"}`}
-      style={isNext ? { animation: "pulse-border 2s ease-in-out infinite" } : undefined}>
+    <div className="relative flex-shrink-0 rounded-lg p-3.5"
+      style={{ border: borderStyle, background: bgColor, width: isMobile ? 220 : 180, animation: isNext && !is1M ? "pulse-border 2s ease-in-out infinite" : undefined }}>
+      {/* Reward badge */}
+      {badge && (
+        <span className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-[10px] font-semibold mb-2"
+          style={{ background: badge.bg, border: `1px solid ${badge.border}`, color: badge.text }}>
+          {badge.emoji} {badge.label}
+        </span>
+      )}
       {isMobile && (
-        <button onClick={() => setExpanded(!expanded)} className="absolute top-3 right-3 text-[#555] hover:text-white">
+        <button onClick={() => setExpanded(!expanded)} className="absolute top-3 right-3 text-muted-foreground hover:text-foreground">
           <Info className="w-3.5 h-3.5" />
         </button>
       )}
-      <p className={`font-heading text-xl font-extrabold ${passed ? "text-[hsl(var(--primary))]" : isNext ? "text-white" : is1B ? "text-[#FFD700]" : "text-[#333]"}`}>
-        {m.label}
-      </p>
-      <p className="text-[10px] uppercase tracking-wider text-[#555] mt-2">UNLOCKS</p>
-      <p className={`text-sm font-semibold mt-0.5 ${passed || isNext ? "text-white" : "text-[#444]"}`}>{m.unlock}</p>
-      {/* Detail — always on desktop, tap on mobile */}
-      {!isMobile && <p className="text-xs text-[hsl(var(--muted-foreground))] mt-2 line-clamp-2">{m.detail}</p>}
-      <div className="overflow-hidden transition-all duration-200" style={{ maxHeight: isMobile && expanded ? 80 : isMobile ? 0 : undefined }}>
-        {isMobile && <p className="text-xs text-[hsl(var(--muted-foreground))] mt-2">{m.detail}</p>}
+      <p className={`font-heading text-xl font-extrabold ${
+        passed ? "text-primary" : isNext ? "text-foreground" : is100M ? "text-[#FFD700]" : "text-muted-foreground/40"
+      }`}>{m.label}</p>
+      <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-2">UNLOCKS</p>
+      <p className={`text-sm font-semibold mt-0.5 ${passed || isNext ? "text-foreground" : "text-muted-foreground/60"}`}>{m.unlock}</p>
+
+      {/* Detail — always desktop, tap mobile */}
+      {!isMobile && (
+        <>
+          <p className="text-xs text-muted-foreground mt-2 line-clamp-3">{m.detail}</p>
+          <p className="text-[11px] text-muted-foreground italic mt-1">{m.context}</p>
+        </>
+      )}
+      <div className="overflow-hidden transition-all duration-200" style={{ maxHeight: isMobile && expanded ? 300 : isMobile ? 0 : undefined }}>
+        {isMobile && (
+          <>
+            <p className="text-xs text-muted-foreground mt-2">{m.detail}</p>
+            <p className="text-[11px] text-muted-foreground italic mt-1">{m.context}</p>
+          </>
+        )}
       </div>
+
+      {/* Prize display for 5M */}
+      {is5M && showDetails && (
+        <div className="mt-2 pt-2 border-t border-border">
+          <p className="text-[13px]">
+            <span className="font-heading font-bold text-primary">💰 $10,000 cash</span>
+            <span className="text-muted-foreground mx-1">+</span>
+            <span className="font-heading font-bold" style={{ color: "#FFD700" }}>⌚ Rolex Submariner</span>
+          </p>
+          <p className="text-[11px] text-muted-foreground italic mt-1">Awarded to top earning creator over 30 days</p>
+        </div>
+      )}
+
+      {/* Prize display for 10M */}
+      {is10M && showDetails && (
+        <div className="mt-2 pt-2 border-t border-border">
+          <p className="text-[13px]">
+            <span className="font-heading font-bold text-foreground">🏎️ Your choice of supercar</span>
+            <span className="font-heading font-bold ml-1" style={{ color: "#FB923C" }}>— up to $300,000</span>
+          </p>
+          <div className="flex flex-wrap gap-1 mt-1.5">
+            {["Lamborghini", "Ferrari", "Porsche", "+ more"].map(c => (
+              <span key={c} className="px-2.5 py-0.5 rounded-full text-[11px] border cursor-default"
+                style={{ background: "rgba(249,115,22,0.08)", borderColor: "rgba(249,115,22,0.3)", color: "#FB923C" }}
+                title="Winner chooses any supercar up to $300K. Fully paid. Delivered anywhere in the world.">{c}</span>
+            ))}
+          </div>
+          <p className="text-[11px] text-muted-foreground italic mt-1">Awarded annually at the UPLY Awards ceremony</p>
+        </div>
+      )}
+
+      {/* Bottom status */}
       <div className="mt-3">
-        {passed && <p className="text-[11px] text-[hsl(var(--primary))]">✓ Unlocked</p>}
-        {isNext && <p className="text-[11px] text-white">{away.toLocaleString()} away</p>}
-        {is1B && !passed && !isNext && <p className="text-[11px] text-[#FFD700]">👑 The Mission</p>}
+        {passed && <p className="text-[11px] text-primary">✓ Unlocked</p>}
+        {isNext && !is1M && <p className="text-[11px] text-foreground">{away.toLocaleString()} away</p>}
+        {is100M && !passed && !isNext && <p className="text-[11px]" style={{ color: "#FFD700" }}>👑 Largest on Earth</p>}
       </div>
+
+      {/* 1M urgency */}
+      {is1M && (
+        <div className="mt-2">
+          {effectiveCount < 1000000 ? (
+            <>
+              <p className="text-[10px] font-bold uppercase text-[#FF4444]" style={{ animation: "pulse-dot 2.5s infinite" }}>
+                ⚡ WINDOW CLOSES AT 1M — PERMANENTLY
+              </p>
+              <p className="text-[11px] text-[#FF4444] mt-0.5">{(1000000 - effectiveCount).toLocaleString()} away from closing</p>
+            </>
+          ) : (
+            <p className="text-[11px] text-primary">✓ Window closed — 0% fees locked in for founding creators</p>
+          )}
+        </div>
+      )}
+
+      {/* Learn more for 5M / 10M */}
+      {(is5M || is10M) && showDetails && (
+        <button onClick={is5M ? onOpenGames : onOpenAwards}
+          className="text-[11px] text-muted-foreground hover:text-primary mt-2 flex items-center gap-0.5 transition-colors">
+          Learn more <ChevronRight className="w-3 h-3" />
+        </button>
+      )}
     </div>
   );
 }
+
+// ── Platform Timeline ──
+const platforms = [
+  { name: "Instagram", outcome: "2B users today" },
+  { name: "TikTok", outcome: "1B users today" },
+  { name: "YouTube", outcome: "2.5B users today" },
+  { name: "Twitch", outcome: "140M users today" },
+];
 
 // ── Main Component ──
 const MissionProgress = React.memo(function MissionProgress() {
@@ -196,18 +428,33 @@ const MissionProgress = React.memo(function MissionProgress() {
   const reducedMotion = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [isLoaded, setIsLoaded] = useState(false);
   const [rawCount, setRawCount] = useState(0);
+  const [animatedValue, setAnimatedValue] = useState(STATIC_FALLBACK);
   const [tickerItems, setTickerItems] = useState<TickerItem[]>([]);
   const [shareOpen, setShareOpen] = useState(false);
+  const [gamesOpen, setGamesOpen] = useState(false);
+  const [awardsOpen, setAwardsOpen] = useState(false);
   const [counterFlash, setCounterFlash] = useState(false);
   const [hintShown, setHintShown] = useState(false);
 
-  const effectiveCount = Math.max(rawCount, FLOOR);
+  const effectiveCount = Math.max(rawCount, STATIC_FALLBACK);
   const { display, isEarly } = getDisplayCount(rawCount);
-  const animatedCount = useCountUp(effectiveCount, 1.5, isVisible && !loading, reducedMotion);
 
-  const fillPercentage = effectiveCount > 0 ? Math.min(Math.log10(effectiveCount) / Math.log10(1000000000) * 100, 100) : 0;
+  const fillPercentage = effectiveCount > 0 ? Math.min(Math.log10(Math.max(effectiveCount, 1)) / Math.log10(100000000) * 100, 100) : 0;
+
+  // Count-up animation
+  const animateCountUp = useCallback((from: number, to: number, durationMs: number) => {
+    if (reducedMotion) { setAnimatedValue(to); return; }
+    let start: number | null = null;
+    const step = (ts: number) => {
+      if (!start) start = ts;
+      const progress = Math.min((ts - start) / durationMs, 1);
+      setAnimatedValue(Math.floor(from + (to - from) * easeOutCubic(progress)));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [reducedMotion]);
 
   // IO
   useEffect(() => {
@@ -225,9 +472,13 @@ const MissionProgress = React.memo(function MissionProgress() {
         supabase.from("profiles").select("*", { count: "exact", head: true }).not("creator_type", "is", null),
         supabase.from("waitlist").select("*", { count: "exact", head: true }),
       ]);
-      setRawCount((cCount || 0) + (wCount || 0));
+      const raw = (cCount || 0) + (wCount || 0);
+      setRawCount(raw);
+      const eff = Math.max(raw, STATIC_FALLBACK);
+      if (eff > STATIC_FALLBACK) {
+        animateCountUp(STATIC_FALLBACK, eff, 1500);
+      }
 
-      // Ticker
       const { data: recent } = await supabase
         .from("profiles")
         .select("display_name, creator_type, created_at")
@@ -244,15 +495,16 @@ const MissionProgress = React.memo(function MissionProgress() {
       } else {
         setTickerItems(PLACEHOLDER_ITEMS);
       }
-      setLoading(false);
+      setIsLoaded(true);
     })();
-  }, []);
+  }, [animateCountUp]);
 
   // Realtime
   useEffect(() => {
     const chan = supabase.channel("mission-progress")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "profiles" }, (payload: any) => {
         setRawCount(prev => prev + 1);
+        setAnimatedValue(prev => prev + 1);
         setCounterFlash(true);
         setTimeout(() => setCounterFlash(false), 500);
         const p = payload.new;
@@ -262,6 +514,7 @@ const MissionProgress = React.memo(function MissionProgress() {
       })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "waitlist" }, () => {
         setRawCount(prev => prev + 1);
+        setAnimatedValue(prev => prev + 1);
         setCounterFlash(true);
         setTimeout(() => setCounterFlash(false), 500);
       })
@@ -272,10 +525,10 @@ const MissionProgress = React.memo(function MissionProgress() {
   // Scroll hint
   useEffect(() => {
     if (!isMobile || hintShown) return;
-    if (sessionStorage.getItem("mission_hint_shown")) { setHintShown(true); return; }
+    if (sessionStorage.getItem("uply_milestone_hint")) { setHintShown(true); return; }
     const timer = setTimeout(() => {
       setHintShown(true);
-      sessionStorage.setItem("mission_hint_shown", "true");
+      sessionStorage.setItem("uply_milestone_hint", "true");
     }, 3000);
     return () => clearTimeout(timer);
   }, [isMobile, hintShown]);
@@ -283,8 +536,7 @@ const MissionProgress = React.memo(function MissionProgress() {
   const tickerDup = useMemo(() => [...tickerItems, ...tickerItems], [tickerItems]);
 
   return (
-    <section ref={sectionRef} className="relative py-16 md:py-20 overflow-hidden"
-      style={{ background: "radial-gradient(ellipse 80% 40% at 50% 50%, rgba(0,255,133,0.04) 0%, transparent 70%), #0A0A0A" }}>
+    <section ref={sectionRef} className="relative overflow-hidden border-t border-b border-border bg-background py-12 md:py-[72px]">
       <style>{`
         @keyframes pulse-border { 0%,100% { border-color: hsl(145 100% 50% / 0.3); } 50% { border-color: hsl(145 100% 50% / 0.7); } }
         @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
@@ -294,48 +546,63 @@ const MissionProgress = React.memo(function MissionProgress() {
       `}</style>
 
       <div className="mx-auto max-w-[640px] px-5 md:px-6">
+        {/* Urgency banner — only after 500K */}
+        {effectiveCount > 500000 && effectiveCount < 1000000 && (
+          <div className="mb-6 rounded-md px-4 py-3 text-center text-[13px] text-foreground"
+            style={{ background: "rgba(255,68,68,0.06)", border: "1px solid rgba(255,68,68,0.25)" }}>
+            ⚡ The 0% fees forever window is closing — <span className="font-bold" style={{ color: "#FF4444" }}>{(1000000 - effectiveCount).toLocaleString()}</span> creators until it's gone permanently
+          </div>
+        )}
+
         {/* BLOCK 1 — Declaration */}
-        <div className="text-center mb-12">
-          <p className="text-[11px] uppercase tracking-[0.15em] text-[#555] font-heading mb-5">THE MISSION</p>
-          <h2 className="font-heading text-[26px] md:text-[32px] font-extrabold leading-[1.2] tracking-tight text-white">
-            The creator economy is worth $250 billion.<br />
-            Most of it goes to platforms.<br />
-            <span className="text-[hsl(var(--primary))]">We're giving it back.</span>
-          </h2>
-          <p className="text-[15px] text-[hsl(var(--muted-foreground))] mt-5 max-w-[480px] mx-auto leading-relaxed">
-            UPLY is building the infrastructure for 1 billion creators to own their audience, their content, and their income. You're here at the very beginning.
+        <div className="text-center mb-10">
+          <p className="font-heading text-[28px] md:text-[36px] font-extrabold leading-[1.2] tracking-[-0.02em] text-foreground mb-4">
+            The creator economy is worth $250 billion.
+          </p>
+          <p className="font-heading text-[28px] md:text-[36px] font-extrabold leading-[1.2] tracking-[-0.02em] text-foreground mb-4">
+            Most of it goes to platforms.
+          </p>
+          <p className="font-heading text-[28px] md:text-[36px] font-extrabold leading-[1.2] tracking-[-0.02em] text-primary mb-6">
+            We're giving it back.
+          </p>
+          <p className="text-base text-muted-foreground max-w-[400px] mx-auto leading-relaxed">
+            UPLY is building the creator economy's infrastructure.<br />
+            100 million creators. Zero middlemen.
           </p>
         </div>
 
         {/* BLOCK 2 — Live Counter */}
-        <div className="text-center mb-10">
-          {loading ? (
-            <div className="mx-auto w-[120px] h-[56px] rounded-md" style={{ background: "linear-gradient(90deg, #1E1E1E 0%, #2a2a2a 50%, #1E1E1E 100%)", backgroundSize: "200% 100%", animation: "shimmer 1.5s infinite" }} />
-          ) : (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}
-              className="rounded-lg px-4 py-2 inline-block transition-colors duration-500"
-              style={{ backgroundColor: counterFlash ? "rgba(0,255,133,0.15)" : "transparent" }}>
-              <p className="font-heading text-[40px] md:text-[56px] font-extrabold text-[hsl(var(--primary))]">
-                {animatedCount.toLocaleString()}
-              </p>
-              <div className="flex items-center justify-center gap-1.5 mt-1">
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-[hsl(var(--primary))]" style={{ animation: "pulse-dot 2s infinite" }} />
-                <p className="text-[13px] text-[#666]">creators and applicants have joined</p>
-              </div>
-            </motion.div>
-          )}
+        <div className="border-t border-b border-border py-6 mb-8">
+          <div className="text-center">
+            {!isLoaded && !isVisible ? (
+              <div className="mx-auto w-[120px] h-[56px] rounded-md" style={{ background: "linear-gradient(90deg, hsl(var(--muted)) 0%, hsl(var(--muted)/0.6) 50%, hsl(var(--muted)) 100%)", backgroundSize: "200% 100%", animation: "shimmer 1.5s infinite" }} />
+            ) : (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}
+                className="rounded-lg px-4 py-2 inline-block transition-colors duration-500"
+                style={{ backgroundColor: counterFlash ? "rgba(0,255,133,0.15)" : "transparent" }}>
+                <p className="font-heading text-[52px] md:text-[72px] font-extrabold text-primary">
+                  {effectiveCount > STATIC_FALLBACK ? "+" : ""}{animatedValue.toLocaleString()}
+                </p>
+                <div className="flex items-center justify-center gap-1.5 mt-1">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" style={{ animation: "pulse-dot 2s infinite" }} />
+                  <p className="text-[13px] text-muted-foreground">creators building on UPLY</p>
+                </div>
+              </motion.div>
+            )}
+          </div>
         </div>
 
         {/* BLOCK 3 — Progress Bar */}
         <div className="relative mb-10">
-          {loading ? (
-            <Skeleton className="w-full h-2 rounded-full" />
+          {!isLoaded ? (
+            <Skeleton className="w-full h-1.5 rounded-full" />
           ) : (
-            <div className="relative w-full h-2 rounded-full bg-[#1E1E1E] overflow-hidden">
-              <div className="h-full rounded-full relative overflow-hidden"
+            <div className="relative w-full h-1.5 rounded-[3px] bg-muted/30">
+              <div className="h-full rounded-[3px] relative overflow-hidden"
                 style={{
                   width: isVisible ? `${fillPercentage}%` : "0%",
                   background: "linear-gradient(90deg, hsl(var(--primary)), #00CC6A)",
+                  boxShadow: "0 0 12px rgba(0,255,133,0.25)",
                   transition: "width 1.5s cubic-bezier(0.22, 1, 0.36, 1)",
                 }}>
                 <div className="absolute inset-0" style={{
@@ -343,30 +610,35 @@ const MissionProgress = React.memo(function MissionProgress() {
                   animation: reducedMotion ? "none" : "bar-shimmer 3s infinite",
                 }} />
               </div>
-              {/* You are here */}
+              {/* You are here indicator */}
               <div className="absolute top-0" style={{ left: `${fillPercentage}%`, transform: "translateX(-50%)" }}>
-                <p className="text-[10px] text-[hsl(var(--primary))] whitespace-nowrap -mt-4 font-medium">You are here</p>
-                <span className="text-[hsl(var(--primary))] text-[8px] block text-center">▲</span>
+                <p className="text-[10px] text-primary whitespace-nowrap -mt-4 font-medium">You are here</p>
+                <div className="w-2 h-2 rounded-full bg-primary mx-auto -mt-0.5" style={{ boxShadow: "0 0 8px rgba(0,255,133,0.8)" }} />
               </div>
             </div>
           )}
           {/* Milestone ticks */}
-          {!loading && (
-            <div className="relative w-full mt-2">
+          {isLoaded && (
+            <div className="relative w-full mt-3">
               {milestones.map(m => {
-                const pos = Math.log10(m.count) / Math.log10(1000000000) * 100;
+                const pos = Math.log10(m.count) / Math.log10(100000000) * 100;
                 const passed = effectiveCount >= m.count;
                 const nextIdx = milestones.findIndex(ms => effectiveCount < ms.count);
                 const isNext = milestones[nextIdx]?.count === m.count;
+                const is1M = m.count === 1000000;
                 return (
                   <div key={m.label} className="absolute" style={{ left: `${pos}%`, transform: "translateX(-50%)" }}>
-                    <div className={`w-px h-2 mx-auto ${passed ? "bg-[hsl(var(--primary))]" : isNext ? "bg-[hsl(var(--primary))]" : "bg-[#333]"}`}
+                    {is1M && effectiveCount < 1000000 && (
+                      <span className="block w-1.5 h-1.5 rounded-full mx-auto mb-0.5" style={{ background: "#FF4444", animation: "pulse-dot 2s infinite" }} />
+                    )}
+                    <div className={`w-px h-2 mx-auto ${passed ? "bg-primary" : isNext ? "bg-primary" : "bg-muted-foreground/20"}`}
                       style={isNext ? { animation: "pulse-dot 2s infinite" } : undefined} />
                     <p className={`text-[11px] font-bold mt-0.5 whitespace-nowrap ${
-                      passed ? "text-[hsl(var(--primary))]" : isNext ? "text-white" : "text-[#444]"
+                      passed ? "text-primary" : isNext ? "text-foreground" : "text-muted-foreground/40"
                     }`} style={isNext ? { textShadow: "0 0 8px rgba(0,255,133,0.5)" } : undefined}>
                       {passed && "✓ "}{m.label}
                     </p>
+                    <p className="text-[10px] text-muted-foreground italic whitespace-nowrap mt-0.5 hidden md:block">{m.context}</p>
                   </div>
                 );
               })}
@@ -374,22 +646,21 @@ const MissionProgress = React.memo(function MissionProgress() {
           )}
         </div>
 
-        {/* Spacer for milestone ticks */}
-        <div className="h-6" />
+        <div className="h-8 md:h-12" />
 
         {/* BLOCK 4 — Milestone Cards */}
         <div className="relative mb-10">
           <div className="flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
             {milestones.map(m => (
-              <MilestoneCard key={m.label} m={m} effectiveCount={effectiveCount} isMobile={!!isMobile} />
+              <MilestoneCard key={m.label} m={m} effectiveCount={effectiveCount} isMobile={!!isMobile}
+                onOpenGames={() => setGamesOpen(true)} onOpenAwards={() => setAwardsOpen(true)} />
             ))}
           </div>
-          {/* Scroll hint (mobile, once) */}
           <AnimatePresence>
             {isMobile && !hintShown && (
               <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 transition={{ delay: 1, duration: 0.5 }}
-                className="text-center text-[11px] text-[#333] mt-2">
+                className="text-center text-[11px] text-muted-foreground/30 mt-2">
                 swipe →
               </motion.p>
             )}
@@ -397,37 +668,50 @@ const MissionProgress = React.memo(function MissionProgress() {
         </div>
 
         {/* BLOCK 5 — Early Adopter Callout */}
-        <div className="rounded-[10px] border border-[#1E1E1E] bg-[#111111] p-6 max-w-[480px] mx-auto mb-8 text-center">
-          <div className="space-y-3 text-sm text-[hsl(var(--muted-foreground))] leading-[1.7]">
-            <p>The people who found Instagram when it had {display} users<br />are now influencers with millions of followers.</p>
-            <p>The people who found TikTok when it had {display} users<br />are now full-time creators earning millions.</p>
-            <p>The people who found YouTube when it had {display} users<br />built media empires.</p>
-            <p className="text-white font-semibold">UPLY has {display} creators and applicants today.</p>
+        <div className="rounded-[10px] border border-border bg-card p-6 max-w-[520px] mx-auto mb-8">
+          <div className="flex flex-col md:flex-row gap-6">
+            {/* Left — platform timeline */}
+            <div className="md:w-1/2 space-y-3 relative">
+              <div className="absolute left-[7px] top-4 bottom-4 w-0.5 bg-border" />
+              {platforms.map(p => (
+                <div key={p.name} className="flex items-center gap-3 relative pl-5">
+                  <div className="absolute left-0 w-3.5 h-3.5 rounded-full bg-muted border-2 border-border" />
+                  <span className="text-[13px] font-semibold text-foreground">{p.name}</span>
+                  <span className="text-muted-foreground text-xs">→</span>
+                  <span className="text-primary text-[13px]">{p.outcome}</span>
+                </div>
+              ))}
+            </div>
+            {/* Right */}
+            <div className="md:w-1/2 md:border-l md:border-border md:pl-6 flex flex-col justify-center">
+              <p className="font-heading text-2xl font-extrabold text-foreground mb-3">Don't be late again.</p>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                Every platform above was invite-only<br />at the beginning. So is UPLY.
+              </p>
+              <p className="text-sm text-primary">
+                {isEarly ? "You're here at the very beginning. Remember this moment." : `You're here at ${display}. Remember this number.`}
+              </p>
+            </div>
           </div>
-          <div className="my-5 h-px bg-[#1E1E1E]" />
-          <p className="font-heading text-[22px] font-extrabold text-white mb-2">Don't be late again.</p>
-          <p className="text-sm text-[hsl(var(--primary))]">
-            {isEarly ? "You're here at the very beginning. Remember this moment." : `You're here at ${display}. Remember this number.`}
-          </p>
         </div>
 
         {/* BLOCK 6 — Share Button */}
         <div className="text-center mb-10">
           <button onClick={() => setShareOpen(true)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md border border-[#333] text-[13px] text-[hsl(var(--muted-foreground))] hover:border-[hsl(var(--primary))] hover:text-white transition-colors">
-            📸  Share this moment
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md border border-border bg-card text-[13px] text-foreground hover:border-primary transition-colors">
+            📸 <span>Share your spot</span> <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
           </button>
         </div>
 
         {/* BLOCK 7 — Social Proof Ticker */}
         {tickerItems.length > 0 && (
           <div className="relative overflow-hidden h-6"
-            style={{ maskImage: "linear-gradient(90deg, transparent, black 10%, black 90%, transparent)", WebkitMaskImage: "linear-gradient(90deg, transparent, black 10%, black 90%, transparent)" }}>
-            <div className="flex whitespace-nowrap" style={{ animation: reducedMotion ? "none" : "ticker-scroll 30s linear infinite" }}>
+            style={{ maskImage: "linear-gradient(90deg, transparent, black 8%, black 92%, transparent)", WebkitMaskImage: "linear-gradient(90deg, transparent, black 8%, black 92%, transparent)" }}>
+            <div className="flex whitespace-nowrap" style={{ animation: reducedMotion ? "none" : "ticker-scroll 40s linear infinite" }}>
               {tickerDup.map((item, i) => (
-                <span key={i} className="text-xs text-[#555] mx-3">
-                  {item.name} joined as a {item.type} creator · {item.ago}
-                  <span className="text-[#333] mx-2">·</span>
+                <span key={i} className="text-xs text-muted-foreground/50 mx-3">
+                  {item.name} — {item.type} · {item.ago}
+                  <span className="text-muted-foreground/20 mx-2">·</span>
                 </span>
               ))}
             </div>
@@ -435,10 +719,10 @@ const MissionProgress = React.memo(function MissionProgress() {
         )}
       </div>
 
-      {/* Share Modal */}
-      <AnimatePresence>
-        {shareOpen && <ShareModal displayCount={display} onClose={() => setShareOpen(false)} />}
-      </AnimatePresence>
+      {/* Modals */}
+      {shareOpen && <ShareModal displayCount={display} effectiveCount={effectiveCount} onClose={() => setShareOpen(false)} />}
+      {gamesOpen && <GamesModal onClose={() => setGamesOpen(false)} />}
+      {awardsOpen && <AwardsModal onClose={() => setAwardsOpen(false)} />}
     </section>
   );
 });
