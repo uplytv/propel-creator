@@ -223,7 +223,7 @@ export default function Onboarding() {
     const referrerDisplayName = referrerNameFromStorage || getAffiliateCookie("uply_referrer_name");
     const referrerAvatarUrl = localStorage.getItem("uply_referrer_avatar");
 
-    console.log('Waitlist insert with referred_by:', refCode, 'referrer_username:', referrerUsername, 'referrer_display_name:', referrerDisplayName);
+    
 
     const { data: waitlistRow } = await supabase
       .from("waitlist")
