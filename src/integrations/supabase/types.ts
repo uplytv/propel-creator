@@ -2104,6 +2104,24 @@ export type Database = {
         }
         Relationships: []
       }
+      email_unsubscribes: {
+        Row: {
+          email: string
+          id: string
+          unsubscribed_at: string | null
+        }
+        Insert: {
+          email: string
+          id?: string
+          unsubscribed_at?: string | null
+        }
+        Update: {
+          email?: string
+          id?: string
+          unsubscribed_at?: string | null
+        }
+        Relationships: []
+      }
       event_reminders: {
         Row: {
           created_at: string
@@ -3231,7 +3249,10 @@ export type Database = {
           current_period_end: string | null
           current_period_start: string | null
           id: string
+          member_day3_email_sent_at: string | null
           member_id: string
+          member_renewal_reminder_sent_at: string | null
+          member_welcome_email_sent_at: string | null
           status: string
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
@@ -3243,7 +3264,10 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
+          member_day3_email_sent_at?: string | null
           member_id: string
+          member_renewal_reminder_sent_at?: string | null
+          member_welcome_email_sent_at?: string | null
           status?: string
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -3255,7 +3279,10 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
+          member_day3_email_sent_at?: string | null
           member_id?: string
+          member_renewal_reminder_sent_at?: string | null
+          member_welcome_email_sent_at?: string | null
           status?: string
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -3788,13 +3815,20 @@ export type Database = {
           creator_stage: string | null
           creator_type: string | null
           credits_balance: number
+          day14_email_sent_at: string | null
+          day3_email_sent_at: string | null
+          day7_email_sent_at: string | null
           display_name: string | null
           first_name: string | null
+          first_payment_email_sent_at: string | null
+          first_stream_email_sent_at: string | null
           health_score: number
           id: string
           interests: string[] | null
           is_approved: boolean
           last_name: string | null
+          last_reengagement_email_sent_at: string | null
+          last_revenue_milestone_amount: number | null
           members: number
           mrr: number
           onboarding_complete: boolean
@@ -3813,6 +3847,7 @@ export type Database = {
           user_type: string | null
           username: string | null
           website: string | null
+          welcome_email_sent_at: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -3825,13 +3860,20 @@ export type Database = {
           creator_stage?: string | null
           creator_type?: string | null
           credits_balance?: number
+          day14_email_sent_at?: string | null
+          day3_email_sent_at?: string | null
+          day7_email_sent_at?: string | null
           display_name?: string | null
           first_name?: string | null
+          first_payment_email_sent_at?: string | null
+          first_stream_email_sent_at?: string | null
           health_score?: number
           id?: string
           interests?: string[] | null
           is_approved?: boolean
           last_name?: string | null
+          last_reengagement_email_sent_at?: string | null
+          last_revenue_milestone_amount?: number | null
           members?: number
           mrr?: number
           onboarding_complete?: boolean
@@ -3850,6 +3892,7 @@ export type Database = {
           user_type?: string | null
           username?: string | null
           website?: string | null
+          welcome_email_sent_at?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -3862,13 +3905,20 @@ export type Database = {
           creator_stage?: string | null
           creator_type?: string | null
           credits_balance?: number
+          day14_email_sent_at?: string | null
+          day3_email_sent_at?: string | null
+          day7_email_sent_at?: string | null
           display_name?: string | null
           first_name?: string | null
+          first_payment_email_sent_at?: string | null
+          first_stream_email_sent_at?: string | null
           health_score?: number
           id?: string
           interests?: string[] | null
           is_approved?: boolean
           last_name?: string | null
+          last_reengagement_email_sent_at?: string | null
+          last_revenue_milestone_amount?: number | null
           members?: number
           mrr?: number
           onboarding_complete?: boolean
@@ -3887,6 +3937,7 @@ export type Database = {
           user_type?: string | null
           username?: string | null
           website?: string | null
+          welcome_email_sent_at?: string | null
         }
         Relationships: []
       }
@@ -4725,6 +4776,7 @@ export type Database = {
           created_at: string
           creator_type: string | null
           early_access: boolean
+          early_access_email_sent_at: string | null
           email: string
           first_use_case: string | null
           follower_count: string | null
@@ -4733,20 +4785,30 @@ export type Database = {
           id: string
           invite_code: string | null
           is_monetizing: string | null
+          last_position_email_sent_at: string | null
+          last_rank_email_sent_at: string | null
+          leaderboard_rank: number | null
+          milestone_10_email_sent_at: string | null
+          milestone_25_email_sent_at: string | null
+          milestone_3_email_sent_at: string | null
           monetization_challenges: string[] | null
           monetization_goal: string | null
           monthly_earnings: string | null
           one_sentence: string | null
           position: number | null
+          previous_leaderboard_rank: number | null
           primary_platform: string | null
+          prize_tier: string | null
           referral_code: string | null
           referral_count: number
           referred_by: string | null
           referrer_avatar_url: string | null
           referrer_display_name: string | null
+          referrer_notification_email_sent_count: number | null
           referrer_username: string | null
           social_handle: string | null
           user_id: string | null
+          welcome_email_sent_at: string | null
         }
         Insert: {
           business_category?: string | null
@@ -4754,6 +4816,7 @@ export type Database = {
           created_at?: string
           creator_type?: string | null
           early_access?: boolean
+          early_access_email_sent_at?: string | null
           email: string
           first_use_case?: string | null
           follower_count?: string | null
@@ -4762,20 +4825,30 @@ export type Database = {
           id?: string
           invite_code?: string | null
           is_monetizing?: string | null
+          last_position_email_sent_at?: string | null
+          last_rank_email_sent_at?: string | null
+          leaderboard_rank?: number | null
+          milestone_10_email_sent_at?: string | null
+          milestone_25_email_sent_at?: string | null
+          milestone_3_email_sent_at?: string | null
           monetization_challenges?: string[] | null
           monetization_goal?: string | null
           monthly_earnings?: string | null
           one_sentence?: string | null
           position?: number | null
+          previous_leaderboard_rank?: number | null
           primary_platform?: string | null
+          prize_tier?: string | null
           referral_code?: string | null
           referral_count?: number
           referred_by?: string | null
           referrer_avatar_url?: string | null
           referrer_display_name?: string | null
+          referrer_notification_email_sent_count?: number | null
           referrer_username?: string | null
           social_handle?: string | null
           user_id?: string | null
+          welcome_email_sent_at?: string | null
         }
         Update: {
           business_category?: string | null
@@ -4783,6 +4856,7 @@ export type Database = {
           created_at?: string
           creator_type?: string | null
           early_access?: boolean
+          early_access_email_sent_at?: string | null
           email?: string
           first_use_case?: string | null
           follower_count?: string | null
@@ -4791,20 +4865,30 @@ export type Database = {
           id?: string
           invite_code?: string | null
           is_monetizing?: string | null
+          last_position_email_sent_at?: string | null
+          last_rank_email_sent_at?: string | null
+          leaderboard_rank?: number | null
+          milestone_10_email_sent_at?: string | null
+          milestone_25_email_sent_at?: string | null
+          milestone_3_email_sent_at?: string | null
           monetization_challenges?: string[] | null
           monetization_goal?: string | null
           monthly_earnings?: string | null
           one_sentence?: string | null
           position?: number | null
+          previous_leaderboard_rank?: number | null
           primary_platform?: string | null
+          prize_tier?: string | null
           referral_code?: string | null
           referral_count?: number
           referred_by?: string | null
           referrer_avatar_url?: string | null
           referrer_display_name?: string | null
+          referrer_notification_email_sent_count?: number | null
           referrer_username?: string | null
           social_handle?: string | null
           user_id?: string | null
+          welcome_email_sent_at?: string | null
         }
         Relationships: []
       }
@@ -4969,6 +5053,16 @@ export type Database = {
       }
     }
     Views: {
+      email_ab_test_results: {
+        Row: {
+          delivered: number | null
+          delivery_rate: number | null
+          emails_sent: number | null
+          template_name: string | null
+          variant: string | null
+        }
+        Relationships: []
+      }
       mux_live_streams_public: {
         Row: {
           category: string | null
@@ -5139,6 +5233,7 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_waitlist_leaderboard_rank: { Args: never; Returns: undefined }
       check_auth_rate_limit: {
         Args: {
           p_action_type?: string
@@ -5149,6 +5244,7 @@ export type Database = {
         }
         Returns: Json
       }
+      check_rank_movements_and_email: { Args: never; Returns: undefined }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -5181,6 +5277,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      is_email_suppressed: { Args: { p_email: string }; Returns: boolean }
       lookup_referrer_by_code: { Args: { ref_code: string }; Returns: Json }
       move_to_dlq: {
         Args: {
