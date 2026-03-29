@@ -1,0 +1,1 @@
+UPDATE aria_agents SET confidence_score = 0.65 WHERE confidence_score < 0.65;
