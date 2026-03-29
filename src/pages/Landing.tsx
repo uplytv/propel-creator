@@ -169,7 +169,7 @@ export default function Landing() {
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.7 }}
             className="max-w-2xl mx-auto rounded-xl border border-primary/10 bg-white/[0.02] p-8 md:p-10 text-center"
             style={{ boxShadow: "0 0 60px rgba(0,255,133,0.04), inset 0 1px 0 rgba(255,255,255,0.03)" }}>
-            <p className="text-foreground/50 text-sm md:text-base mb-3">Uply has hand selected its founding creators.</p>
+            <p className="text-foreground/50 text-sm md:text-base mb-3">UPLY has hand selected its founding creators.</p>
             <p className="text-primary font-bold text-xl md:text-2xl mb-3 font-heading">The Uply Games begin.</p>
             <p className="text-foreground/30 text-xs md:text-sm leading-relaxed">This is not a public launch.<br />You were either invited or you found us.</p>
           </motion.div>
@@ -235,7 +235,7 @@ export default function Landing() {
           <img src="/logo.png" alt="UPLY" className="h-10 w-auto object-contain opacity-60" width="1024" height="1024" loading="lazy" decoding="async" />
           <div className="flex items-center gap-5">
           {[{ label: "Instagram", href: "https://instagram.com/uply.tv" }, { label: "X", href: "https://x.com/uplyTV" }, { label: "TikTok", href: "https://tiktok.com/@uply.tv" }].map((s) => (
-              <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="text-xs text-white/30 hover:text-white/60 transition-colors">{s.label}</a>
+              <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors">{s.label}</a>
             ))}
           </div>
           <p className="text-xs text-muted-foreground/50">© 2026 UPLY</p>
