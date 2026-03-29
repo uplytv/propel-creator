@@ -593,7 +593,7 @@ const MissionProgress = React.memo(function MissionProgress() {
         </div>
 
         {/* BLOCK 3 — Progress Bar */}
-        <div className="relative mb-10">
+        <div className="relative mb-6">
           {!isLoaded ? (
             <Skeleton className="w-full h-1.5 rounded-full" />
           ) : (
@@ -617,28 +617,31 @@ const MissionProgress = React.memo(function MissionProgress() {
               </div>
             </div>
           )}
-          {/* Milestone ticks */}
+          {/* Milestone ticks — use evenly spaced on mobile to prevent overlap */}
           {isLoaded && (
-            <div className="relative w-full mt-3">
-              {milestones.map(m => {
+            <div className="relative w-full flex justify-between mt-3 px-1 md:block">
+              {milestones.map((m, idx) => {
                 const pos = Math.log10(m.count) / Math.log10(100000000) * 100;
                 const passed = effectiveCount >= m.count;
                 const nextIdx = milestones.findIndex(ms => effectiveCount < ms.count);
                 const isNext = milestones[nextIdx]?.count === m.count;
                 const is1M = m.count === 1000000;
+                // On mobile, show only key milestones to avoid overlap
+                const showOnMobile = [10000, 100000, 1000000, 10000000, 100000000].includes(m.count);
                 return (
-                  <div key={m.label} className="absolute" style={{ left: `${pos}%`, transform: "translateX(-50%)" }}>
+                  <div key={m.label} className={`text-center flex-shrink-0 ${!showOnMobile && isMobile ? "hidden" : ""} md:absolute`}
+                    style={isMobile ? {} : { left: `${pos}%`, transform: "translateX(-50%)" }}>
                     {is1M && effectiveCount < 1000000 && (
                       <span className="block w-1.5 h-1.5 rounded-full mx-auto mb-0.5" style={{ background: "#FF4444", animation: "pulse-dot 2s infinite" }} />
                     )}
                     <div className={`w-px h-2 mx-auto ${passed ? "bg-primary" : isNext ? "bg-primary" : "bg-muted-foreground/20"}`}
                       style={isNext ? { animation: "pulse-dot 2s infinite" } : undefined} />
-                    <p className={`text-[11px] font-bold mt-0.5 whitespace-nowrap ${
+                    <p className={`text-[10px] md:text-[11px] font-bold mt-0.5 whitespace-nowrap ${
                       passed ? "text-primary" : isNext ? "text-foreground" : "text-muted-foreground/40"
                     }`} style={isNext ? { textShadow: "0 0 8px rgba(0,255,133,0.5)" } : undefined}>
                       {passed && "✓ "}{m.label}
                     </p>
-                    <p className="text-[10px] text-muted-foreground italic whitespace-nowrap mt-0.5 hidden md:block">{m.context}</p>
+                    <p className="text-[9px] text-muted-foreground italic whitespace-nowrap mt-0.5 hidden md:block max-w-[80px] truncate">{m.context}</p>
                   </div>
                 );
               })}
@@ -646,11 +649,9 @@ const MissionProgress = React.memo(function MissionProgress() {
           )}
         </div>
 
-        <div className="h-8 md:h-12" />
-
         {/* BLOCK 4 — Milestone Cards */}
         <div className="relative mb-10">
-          <div className="flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
+          <div className="-mx-5 md:mx-0 px-5 md:px-0 flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
             {milestones.map(m => (
               <MilestoneCard key={m.label} m={m} effectiveCount={effectiveCount} isMobile={!!isMobile}
                 onOpenGames={() => setGamesOpen(true)} onOpenAwards={() => setAwardsOpen(true)} />
