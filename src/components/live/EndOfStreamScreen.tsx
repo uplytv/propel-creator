@@ -10,6 +10,7 @@ import SharePanel from "@/components/share/SharePanel";
 import StreamToCourseDialog from "./StreamToCourseDialog";
 import AIStreamSummary from "./AIStreamSummary";
 import AutoClipSuggestions from "./AutoClipSuggestions";
+import SimulcastSummary from "./SimulcastSummary";
 import { useStreamDownload } from "@/hooks/useStreamDownload";
 import { useAutoClipAI } from "@/hooks/useAutoClipAI";
 import { useStreamAchievements } from "@/hooks/useStreamAchievements";
@@ -228,6 +229,9 @@ export default function EndOfStreamScreen({
             <pre className="text-[10px] text-muted-foreground font-mono whitespace-pre-wrap">{chaptersDescription}</pre>
           </div>
         )}
+
+        {/* Simulcast Summary */}
+        <SimulcastSummary streamId={streamId} />
 
         {/* AI-Powered Stream Summary */}
         <AIStreamSummary
