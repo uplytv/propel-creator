@@ -242,6 +242,7 @@ function MilestoneCard({ m, effectiveCount, isMobile, onOpenAwards }: {
   const nextIdx = milestones.findIndex(ms => effectiveCount < ms.count);
   const isNext = milestones[nextIdx]?.count === m.count;
   const is100M = m.count === 100000000;
+  const is100K = m.count === 100000;
   const is1M = m.count === 1000000;
   
   const is10M = m.count === 10000000;
@@ -300,8 +301,8 @@ function MilestoneCard({ m, effectiveCount, isMobile, onOpenAwards }: {
         )}
       </div>
 
-      {/* Prize display for 1M */}
-      {is1M && showDetails && (
+      {/* Prize display for 100K */}
+      {is100K && showDetails && (
         <div className="mt-2 pt-2 border-t border-border">
           <p className="text-[13px]">
             <span className="font-heading font-bold text-primary">💰 $100,000 cash</span>
@@ -310,6 +311,18 @@ function MilestoneCard({ m, effectiveCount, isMobile, onOpenAwards }: {
           </p>
           <p className="text-[12px] text-primary font-medium mt-1">+ Founding Creator benefits forever</p>
           <p className="text-[11px] text-muted-foreground italic mt-1">Priority support, exclusive badges, early access to every future feature</p>
+        </div>
+      )}
+
+      {/* Prize display for 1M */}
+      {is1M && showDetails && (
+        <div className="mt-2 pt-2 border-t border-border">
+          <p className="text-[13px]">
+            <span className="font-heading font-bold text-primary">⚡ 0% platform fees</span>
+            <span className="text-muted-foreground mx-1">—</span>
+            <span className="font-heading font-bold text-foreground">forever</span>
+          </p>
+          <p className="text-[11px] text-muted-foreground italic mt-1">If you earn $10K/month that's $6,000 saved every year</p>
         </div>
       )}
 
@@ -349,7 +362,7 @@ function MilestoneCard({ m, effectiveCount, isMobile, onOpenAwards }: {
               <p className="text-[11px] text-[#FF4444] mt-0.5">{(1000000 - effectiveCount).toLocaleString()} away from closing</p>
             </>
           ) : (
-            <p className="text-[11px] text-primary">✓ Window closed — Founding Creator benefits locked in</p>
+            <p className="text-[11px] text-primary">✓ Window closed — 0% fees locked in for early creators</p>
           )}
         </div>
       )}
