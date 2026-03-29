@@ -15,6 +15,7 @@ import FeatureGrid from "@/components/landing/FeatureGrid";
 import HowItWorks from "@/components/landing/HowItWorks";
 import EarningsCalculator from "@/components/landing/EarningsCalculator";
 import ComparisonTable from "@/components/landing/ComparisonTable";
+import MissionProgress from "@/components/landing/MissionProgress";
 
 const JSON_LD = {
   "@context": "https://schema.org",
