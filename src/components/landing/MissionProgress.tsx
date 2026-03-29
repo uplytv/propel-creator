@@ -610,21 +610,22 @@ const MissionProgress = React.memo(function MissionProgress() {
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [rawCount, setRawCount] = useState(0);
-  const [animatedValue, setAnimatedValue] = useState(STATIC_FALLBACK);
+  const [baseOffset, setBaseOffset] = useState(HARDCODED_FALLBACK);
+  const [displayCount, setDisplayCount] = useState(HARDCODED_FALLBACK);
+  const [animatedValue, setAnimatedValue] = useState(HARDCODED_FALLBACK);
   const [tickerItems, setTickerItems] = useState<TickerItem[]>([]);
   const [shareOpen, setShareOpen] = useState(false);
   
   const [awardsOpen, setAwardsOpen] = useState(false);
   const [counterFlash, setCounterFlash] = useState(false);
   const [hintShown, setHintShown] = useState(false);
+  const processedIds = useRef(new Set<string>());
 
-  const effectiveCount = Math.max(rawCount, STATIC_FALLBACK);
-  const { display, isEarly } = getDisplayCount(rawCount);
+  const effectiveCount = displayCount;
+  const { display, isEarly } = getDisplayCount(effectiveCount);
 
   // Use a scaled fill: milestone positions are at log positions, fill should match
-  // 24,200 → log10(24200) ≈ 4.38, log10(100M) = 8, so ~54% which is too much
-  // Instead use linear interpolation between milestones for accurate visual
+  // 24,200 → linear interpolation between milestones for accurate visual
   const computeFill = (count: number) => {
     if (count <= 0) return 0;
     const points = [
@@ -671,61 +672,76 @@ const MissionProgress = React.memo(function MissionProgress() {
   }, []);
 
   // Fetch data
+  const fetchCounts = useCallback(async () => {
+    const [{ count: cCount }, { count: wCount }, { data: configData }] = await Promise.all([
+      supabase.from("profiles").select("*", { count: "exact", head: true }).not("creator_type", "is", null),
+      supabase.from("waitlist").select("*", { count: "exact", head: true }),
+      supabase.from("platform_config").select("value").eq("key", "waitlist_base_count").single(),
+    ]);
+    const offset = configData?.value ? parseInt(configData.value, 10) : HARDCODED_FALLBACK;
+    setBaseOffset(offset);
+    const realCount = (cCount || 0) + (wCount || 0);
+    const effective = offset + realCount;
+    
+    if (effective > displayCount) {
+      animateCountUp(displayCount, effective, 1500);
+    }
+    setDisplayCount(effective);
+
+    const { data: recent } = await supabase
+      .from("profiles")
+      .select("display_name, creator_type, created_at")
+      .not("creator_type", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    if (recent && recent.length > 0) {
+      setTickerItems(recent.map((r: any) => ({
+        name: privacyName(r.display_name),
+        type: r.creator_type || "Creator",
+        ago: formatTimeAgo(r.created_at),
+      })));
+    } else {
+      setTickerItems(PLACEHOLDER_ITEMS);
+    }
+    setIsLoaded(true);
+  }, [animateCountUp, displayCount]);
+
   useEffect(() => {
-    (async () => {
-      const [{ count: cCount }, { count: wCount }] = await Promise.all([
-        supabase.from("profiles").select("*", { count: "exact", head: true }).not("creator_type", "is", null),
-        supabase.from("waitlist").select("*", { count: "exact", head: true }),
-      ]);
-      const raw = (cCount || 0) + (wCount || 0);
-      setRawCount(raw);
-      const eff = Math.max(raw, STATIC_FALLBACK);
-      if (eff > STATIC_FALLBACK) {
-        animateCountUp(STATIC_FALLBACK, eff, 1500);
+    fetchCounts();
+  }, []);
+
+  // Realtime with deduplication
+  useEffect(() => {
+    function handleNewSignup(payload: any) {
+      const rowId = payload.new?.id;
+      if (!rowId || processedIds.current.has(rowId)) return;
+      processedIds.current.add(rowId);
+
+      setDisplayCount(prev => {
+        const newCount = prev + 1;
+        animateCountUp(prev, newCount, 300);
+        return newCount;
+      });
+      setCounterFlash(true);
+      setTimeout(() => setCounterFlash(false), 500);
+
+      // Update ticker for profile inserts
+      const p = payload.new;
+      if (p?.creator_type) {
+        setTickerItems(prev => [{ name: privacyName(p.display_name), type: p.creator_type, ago: "just now" }, ...prev.slice(0, 19)]);
       }
 
-      const { data: recent } = await supabase
-        .from("profiles")
-        .select("display_name, creator_type, created_at")
-        .not("creator_type", "is", null)
-        .order("created_at", { ascending: false })
-        .limit(20);
+      // Clean up old IDs after 60s
+      setTimeout(() => { processedIds.current.delete(rowId); }, 60000);
+    }
 
-      if (recent && recent.length > 0) {
-        setTickerItems(recent.map((r: any) => ({
-          name: privacyName(r.display_name),
-          type: r.creator_type || "Creator",
-          ago: formatTimeAgo(r.created_at),
-        })));
-      } else {
-        setTickerItems(PLACEHOLDER_ITEMS);
-      }
-      setIsLoaded(true);
-    })();
-  }, [animateCountUp]);
-
-  // Realtime
-  useEffect(() => {
     const chan = supabase.channel("mission-progress")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "profiles" }, (payload: any) => {
-        setRawCount(prev => prev + 1);
-        setAnimatedValue(prev => prev + 1);
-        setCounterFlash(true);
-        setTimeout(() => setCounterFlash(false), 500);
-        const p = payload.new;
-        if (p?.creator_type) {
-          setTickerItems(prev => [{ name: privacyName(p.display_name), type: p.creator_type, ago: "just now" }, ...prev.slice(0, 19)]);
-        }
-      })
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "waitlist" }, () => {
-        setRawCount(prev => prev + 1);
-        setAnimatedValue(prev => prev + 1);
-        setCounterFlash(true);
-        setTimeout(() => setCounterFlash(false), 500);
-      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "profiles" }, handleNewSignup)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "waitlist" }, handleNewSignup)
       .subscribe();
     return () => { supabase.removeChannel(chan); };
-  }, []);
+  }, [animateCountUp]);
 
   // Scroll hint
   useEffect(() => {
