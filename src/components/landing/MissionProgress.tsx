@@ -44,9 +44,10 @@ const milestones: Milestone[] = [
     context: "Already unlocked ✓", reward_type: "platform", is_unlocked: true,
   },
   {
-    count: 100000, label: "100K", unlock: "$100K Creator Fund",
-    detail: "UPLY launches a $100,000 fund and distributes it to 10 creators — $10,000 each to build something great on the platform. Every creator who joined before 100K is eligible to apply. Applications open the day we hit this milestone.",
-    context: "Bigger than Kajabi's entire creator base", reward_type: "money", is_unlocked: false,
+    count: 100000, label: "100K", unlock: "$100K + Rolex + Founding Creator forever",
+    detail: "The ultimate milestone for early creators. UPLY awards the top creator $100,000 cash and a Rolex Submariner delivered to their door. Every creator who joined before 100K locks in permanent Founding Creator benefits — priority support, exclusive badges, and early access to every future feature. The window closes the moment UPLY hits 100K and never reopens.",
+    context: "This window closes permanently at 100K", reward_type: "money", is_unlocked: false,
+    prize_line: "$100K cash + Rolex Submariner + Founding Creator forever",
   },
   {
     count: 500000, label: "500K", unlock: "We pass Skool",
@@ -54,10 +55,9 @@ const milestones: Milestone[] = [
     context: "Skool estimated at ~500K total users", reward_type: "status", is_unlocked: false,
   },
   {
-    count: 1000000, label: "1M", unlock: "$100K + Rolex + Founding Creator forever",
-    detail: "The ultimate milestone for early creators. UPLY awards the top creator $100,000 cash and a Rolex Submariner delivered to their door. Every creator who joined before 1M locks in permanent Founding Creator benefits — priority support, exclusive badges, and early access to every future feature. The window closes the moment UPLY hits 1M and never reopens.",
+    count: 1000000, label: "1M", unlock: "0% fees — locked in forever",
+    detail: "Every creator who joined before 1M locks in 0% platform fees permanently. If you earn $10,000/month that's $6,000 saved every single year forever. The window closes the moment UPLY hits 1M and never reopens. There are no exceptions after this milestone.",
     context: "This window closes permanently at 1M", reward_type: "urgency", urgency: true, is_unlocked: false,
-    prize_line: "$100K cash + Rolex Submariner + Founding Creator forever",
   },
   {
     count: 10000000, label: "10M", unlock: "The UPLY Awards — win a supercar",
@@ -242,6 +242,7 @@ function MilestoneCard({ m, effectiveCount, isMobile, onOpenAwards }: {
   const nextIdx = milestones.findIndex(ms => effectiveCount < ms.count);
   const isNext = milestones[nextIdx]?.count === m.count;
   const is100M = m.count === 100000000;
+  const is100K = m.count === 100000;
   const is1M = m.count === 1000000;
   
   const is10M = m.count === 10000000;
@@ -300,8 +301,8 @@ function MilestoneCard({ m, effectiveCount, isMobile, onOpenAwards }: {
         )}
       </div>
 
-      {/* Prize display for 1M */}
-      {is1M && showDetails && (
+      {/* Prize display for 100K */}
+      {is100K && showDetails && (
         <div className="mt-2 pt-2 border-t border-border">
           <p className="text-[13px]">
             <span className="font-heading font-bold text-primary">💰 $100,000 cash</span>
@@ -310,6 +311,18 @@ function MilestoneCard({ m, effectiveCount, isMobile, onOpenAwards }: {
           </p>
           <p className="text-[12px] text-primary font-medium mt-1">+ Founding Creator benefits forever</p>
           <p className="text-[11px] text-muted-foreground italic mt-1">Priority support, exclusive badges, early access to every future feature</p>
+        </div>
+      )}
+
+      {/* Prize display for 1M */}
+      {is1M && showDetails && (
+        <div className="mt-2 pt-2 border-t border-border">
+          <p className="text-[13px]">
+            <span className="font-heading font-bold text-primary">⚡ 0% platform fees</span>
+            <span className="text-muted-foreground mx-1">—</span>
+            <span className="font-heading font-bold text-foreground">forever</span>
+          </p>
+          <p className="text-[11px] text-muted-foreground italic mt-1">If you earn $10K/month that's $6,000 saved every year</p>
         </div>
       )}
 
@@ -349,7 +362,7 @@ function MilestoneCard({ m, effectiveCount, isMobile, onOpenAwards }: {
               <p className="text-[11px] text-[#FF4444] mt-0.5">{(1000000 - effectiveCount).toLocaleString()} away from closing</p>
             </>
           ) : (
-            <p className="text-[11px] text-primary">✓ Window closed — Founding Creator benefits locked in</p>
+            <p className="text-[11px] text-primary">✓ Window closed — 0% fees locked in for early creators</p>
           )}
         </div>
       )}
