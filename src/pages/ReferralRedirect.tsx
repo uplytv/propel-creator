@@ -33,7 +33,7 @@ export default function ReferralRedirect() {
       return;
     }
 
-    console.log(`Referral link visited — code ${actualCode} from username ${username || "unknown"}`);
+    
 
     const fetchReferrer = async () => {
       const { data, error } = await supabase.rpc("lookup_referrer_by_code", {
@@ -56,7 +56,7 @@ export default function ReferralRedirect() {
           try { localStorage.setItem("uply_referrer_avatar", referrerData.avatar_url); } catch {}
         }
 
-        console.log(`Referral cookie set for code ${actualCode} from referrer ${referrerData.username || username} — all three storage methods written successfully`);
+        
 
         // Track click via edge function (fire and forget)
         supabase.functions.invoke("track-referral-click", {

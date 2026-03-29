@@ -151,7 +151,7 @@ export default function Onboarding() {
 
     // STEP 3: Read referral data at submit time using bulletproof reader
     const { code: refCode, username: referrerUsernameFromStorage, name: referrerNameFromStorage } = getReferralData();
-    console.log('Submitting onboarding with referral code:', refCode);
+    
 
     // Handle invite codes
     const inviteCode = getAffiliateCookie("uply_invite_code");

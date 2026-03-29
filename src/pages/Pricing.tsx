@@ -105,7 +105,7 @@ export default function Pricing() {
 
     setCheckoutLoading(planKey);
     try {
-      console.log("[Pricing] Starting checkout for", planKey, plan.priceId);
+      
       const { data, error } = await supabase.functions.invoke("create-platform-checkout", {
         body: { price_id: plan.priceId },
       });
