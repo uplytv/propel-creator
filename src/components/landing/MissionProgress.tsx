@@ -54,15 +54,10 @@ const milestones: Milestone[] = [
     context: "Skool estimated at ~500K total users", reward_type: "status", is_unlocked: false,
   },
   {
-    count: 1000000, label: "1M", unlock: "0% fees — locked in forever",
-    detail: "Every creator who joined before 1M locks in 0% platform fees permanently. If you earn $10,000/month that's $6,000 saved every single year forever. The window closes the moment UPLY hits 1M and never reopens. There are no exceptions after this milestone.",
+    count: 1000000, label: "1M", unlock: "$100K + Rolex + Founding Creator forever",
+    detail: "The ultimate milestone for early creators. UPLY awards the top creator $100,000 cash and a Rolex Submariner delivered to their door. Every creator who joined before 1M locks in permanent Founding Creator benefits — priority support, exclusive badges, and early access to every future feature. The window closes the moment UPLY hits 1M and never reopens.",
     context: "This window closes permanently at 1M", reward_type: "urgency", urgency: true, is_unlocked: false,
-  },
-  {
-    count: 5000000, label: "5M", unlock: "UPLY Games — $10K + Rolex",
-    detail: "UPLY launches its first ever platform-wide competition. The top earning creator over a 30-day window wins $10,000 cash and a Rolex Submariner delivered to their door. Every creator who joined before 5M is automatically entered. One creator. One watch. One moment.",
-    context: "The competition that makes UPLY legendary", reward_type: "games",
-    prize_line: "$10,000 cash + Rolex Submariner", is_unlocked: false,
+    prize_line: "$100K cash + Rolex Submariner + Founding Creator forever",
   },
   {
     count: 10000000, label: "10M", unlock: "The UPLY Awards — win a supercar",
@@ -448,12 +443,11 @@ const MissionProgress = React.memo(function MissionProgress() {
     if (count <= 0) return 0;
     const points = [
       { count: 0, pct: 0 },
-      { count: 10000, pct: 12.5 },
-      { count: 100000, pct: 25 },
-      { count: 500000, pct: 37.5 },
-      { count: 1000000, pct: 50 },
-      { count: 5000000, pct: 62.5 },
-      { count: 10000000, pct: 75 },
+      { count: 10000, pct: 14.3 },
+      { count: 100000, pct: 28.6 },
+      { count: 500000, pct: 42.9 },
+      { count: 1000000, pct: 57.1 },
+      { count: 10000000, pct: 78.6 },
       { count: 100000000, pct: 100 },
     ];
     for (let i = 1; i < points.length; i++) {
@@ -646,8 +640,8 @@ const MissionProgress = React.memo(function MissionProgress() {
           {isLoaded && (
             <div className="relative w-full flex justify-between mt-3 px-1 md:block">
               {milestones.map((m, idx) => {
-                const pos = [10000,100000,500000,1000000,5000000,10000000,100000000].indexOf(m.count) !== -1
-                  ? [12.5, 25, 37.5, 50, 62.5, 75, 100][[10000,100000,500000,1000000,5000000,10000000,100000000].indexOf(m.count)]
+                const pos = [10000,100000,500000,1000000,10000000,100000000].indexOf(m.count) !== -1
+                  ? [14.3, 28.6, 42.9, 57.1, 78.6, 100][[10000,100000,500000,1000000,10000000,100000000].indexOf(m.count)]
                   : 0;
                 const passed = effectiveCount >= m.count;
                 const nextIdx = milestones.findIndex(ms => effectiveCount < ms.count);
