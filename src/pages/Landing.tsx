@@ -91,7 +91,7 @@ export default function Landing() {
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06] bg-background/80 backdrop-blur-xl">
         <div className="container flex h-14 items-center justify-between">
-          <img src="/logo.png" alt="Uply" className="h-[60px] md:h-[70px] w-auto object-contain" width="1024" height="1024" />
+          <img src="/logo.png" alt="UPLY" className="h-[60px] md:h-[70px] w-auto object-contain" width="1024" height="1024" />
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm" className="text-white/60 hover:text-white hover:bg-white/5" onClick={() => navigate("/auth")}>Log in</Button>
             <Button size="sm" className="bg-primary text-foreground font-bold hover:bg-primary/90 border-0 active:scale-[0.96] transition-transform" onClick={scrollToWaitlist}>{CTA_LABEL}</Button>
@@ -117,7 +117,7 @@ export default function Landing() {
 
         <div className="container relative z-10">
           <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: "easeOut" }} className="max-w-2xl mx-auto text-center">
-            <motion.img src="/logo.png" alt="Uply" className="h-20 md:h-28 w-auto object-contain mx-auto mb-10" width="1024" height="1024" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1, duration: 0.6 }} />
+            <motion.img src="/logo.png" alt="UPLY" className="h-20 md:h-28 w-auto object-contain mx-auto mb-10" width="1024" height="1024" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1, duration: 0.6 }} />
             <h1 className="text-[2.5rem] md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.05] mb-2 font-heading">Don't be late again.</h1>
             <p className="text-lg md:text-2xl font-semibold text-primary mb-6 font-heading tracking-tight">Run your entire creator business with AI.</p>
             <p className="text-base md:text-lg text-white/40 mb-10 max-w-lg mx-auto leading-relaxed italic">5 AI employees — Content, Growth, Community, Sales &amp; Operations — working 24/7 so you can focus on creating.</p>
@@ -156,7 +156,7 @@ export default function Landing() {
                   <div className="bg-white/[0.06] rounded-md px-4 py-1 text-xs text-white/30 max-w-[200px] md:max-w-none">uply.tv/dashboard</div>
                 </div>
               </div>
-              <img src={dashboardPreview} alt="Uply creator dashboard showing revenue analytics, live streaming, community feed, and courses" className="w-full h-auto block" loading="lazy" />
+              <img src={dashboardPreview} alt="UPLY creator dashboard showing revenue analytics, live streaming, community feed, and courses" className="w-full h-auto block" loading="lazy" decoding="async" />
               <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent" />
             </div>
           </motion.div>
@@ -169,9 +169,9 @@ export default function Landing() {
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.7 }}
             className="max-w-2xl mx-auto rounded-xl border border-primary/10 bg-white/[0.02] p-8 md:p-10 text-center"
             style={{ boxShadow: "0 0 60px rgba(0,255,133,0.04), inset 0 1px 0 rgba(255,255,255,0.03)" }}>
-            <p className="text-white/50 text-sm md:text-base mb-3">Uply has hand selected its founding creators.</p>
+            <p className="text-foreground/50 text-sm md:text-base mb-3">Uply has hand selected its founding creators.</p>
             <p className="text-primary font-bold text-xl md:text-2xl mb-3 font-heading">The Uply Games begin.</p>
-            <p className="text-white/30 text-xs md:text-sm leading-relaxed">This is not a public launch.<br />You were either invited or you found us.</p>
+            <p className="text-foreground/30 text-xs md:text-sm leading-relaxed">This is not a public launch.<br />You were either invited or you found us.</p>
           </motion.div>
         </div>
       </section>
@@ -232,7 +232,7 @@ export default function Landing() {
       {/* ─── FOOTER ─── */}
       <footer className="border-t border-white/[0.06] py-10">
         <div className="container flex flex-col items-center gap-5">
-          <img src="/logo.png" alt="Uply" className="h-10 w-auto object-contain opacity-60" width="1024" height="1024" loading="lazy" />
+          <img src="/logo.png" alt="UPLY" className="h-10 w-auto object-contain opacity-60" width="1024" height="1024" loading="lazy" decoding="async" />
           <div className="flex items-center gap-5">
           {[{ label: "Instagram", href: "https://instagram.com/uply.tv" }, { label: "X", href: "https://x.com/uplyTV" }, { label: "TikTok", href: "https://tiktok.com/@uply.tv" }].map((s) => (
               <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="text-xs text-white/30 hover:text-white/60 transition-colors">{s.label}</a>
