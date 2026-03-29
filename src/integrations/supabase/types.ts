@@ -1904,6 +1904,54 @@ export type Database = {
         }
         Relationships: []
       }
+      creator_stream_destinations: {
+        Row: {
+          created_at: string | null
+          creator_id: string
+          id: string
+          is_enabled: boolean | null
+          is_verified: boolean | null
+          key_created_at: string | null
+          key_rotation_reminded_at: string | null
+          last_used_at: string | null
+          platform: string
+          platform_label: string | null
+          rtmp_url: string
+          stream_key_encrypted: string
+          stream_key_last_four: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          creator_id: string
+          id?: string
+          is_enabled?: boolean | null
+          is_verified?: boolean | null
+          key_created_at?: string | null
+          key_rotation_reminded_at?: string | null
+          last_used_at?: string | null
+          platform: string
+          platform_label?: string | null
+          rtmp_url: string
+          stream_key_encrypted: string
+          stream_key_last_four?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          creator_id?: string
+          id?: string
+          is_enabled?: boolean | null
+          is_verified?: boolean | null
+          key_created_at?: string | null
+          key_rotation_reminded_at?: string | null
+          last_used_at?: string | null
+          platform?: string
+          platform_label?: string | null
+          rtmp_url?: string
+          stream_key_encrypted?: string
+          stream_key_last_four?: string | null
+        }
+        Relationships: []
+      }
       creator_stripe_accounts: {
         Row: {
           charges_enabled: boolean
@@ -4088,6 +4136,33 @@ export type Database = {
         }
         Relationships: []
       }
+      simulcast_test_log: {
+        Row: {
+          creator_id: string | null
+          error_message: string | null
+          id: string
+          platform: string
+          status: string
+          tested_at: string | null
+        }
+        Insert: {
+          creator_id?: string | null
+          error_message?: string | null
+          id?: string
+          platform: string
+          status: string
+          tested_at?: string | null
+        }
+        Update: {
+          creator_id?: string | null
+          error_message?: string | null
+          id?: string
+          platform?: string
+          status?: string
+          tested_at?: string | null
+        }
+        Relationships: []
+      }
       social_links: {
         Row: {
           created_at: string
@@ -4233,6 +4308,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      stream_simulcast_sessions: {
+        Row: {
+          created_at: string | null
+          creator_id: string | null
+          ended_at: string | null
+          error_message: string | null
+          id: string
+          mux_simulcast_id: string | null
+          platform: string
+          retry_count: number | null
+          rtmp_url: string | null
+          started_at: string | null
+          status: string | null
+          stream_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          creator_id?: string | null
+          ended_at?: string | null
+          error_message?: string | null
+          id?: string
+          mux_simulcast_id?: string | null
+          platform: string
+          retry_count?: number | null
+          rtmp_url?: string | null
+          started_at?: string | null
+          status?: string | null
+          stream_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          creator_id?: string | null
+          ended_at?: string | null
+          error_message?: string | null
+          id?: string
+          mux_simulcast_id?: string | null
+          platform?: string
+          retry_count?: number | null
+          rtmp_url?: string | null
+          started_at?: string | null
+          status?: string | null
+          stream_id?: string | null
+        }
+        Relationships: []
       }
       stream_transcripts: {
         Row: {
@@ -5245,6 +5365,7 @@ export type Database = {
         Returns: Json
       }
       check_rank_movements_and_email: { Args: never; Returns: undefined }
+      check_simulcast_key_rotation: { Args: never; Returns: undefined }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean

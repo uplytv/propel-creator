@@ -26,6 +26,8 @@ import LiveShopSetup from "@/components/live/LiveShopSetup";
 import ScheduleStreamTab from "@/components/scheduled/ScheduleStreamTab";
 import { trackEvent } from "@/lib/posthog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SimulcastGoLivePanel from "@/components/live/SimulcastGoLivePanel";
+import { useSimulcastDestinations, useSimulcastSessions } from "@/hooks/useSimulcast";
 
 export default function GoLive() {
   const navigate = useNavigate();
@@ -51,6 +53,16 @@ export default function GoLive() {
   const { data: profileData } = useProfile();
   const { data: products } = useProducts();
   const activeProducts = products?.filter(p => p.status === 'active') || [];
+  const { destinations } = useSimulcastDestinations();
+  const { startSimulcast, stopSimulcast } = useSimulcastSessions(streamData?.streamId || null);
+  const [simulcastEnabled, setSimulcastEnabled] = useState(true);
+  const [enabledPlatforms, setEnabledPlatforms] = useState<string[]>([]);
+
+  // Initialize enabled platforms from saved destinations
+  useEffect(() => {
+    const enabled = destinations.filter(d => d.is_enabled && d.stream_key_last_four).map(d => d.platform);
+    setEnabledPlatforms(enabled);
+  }, [destinations]);
 
   // Realtime subscription on mux_live_streams for status
   useEffect(() => {
@@ -102,8 +114,13 @@ export default function GoLive() {
       setStreamData(data);
       setStreamStatus("idle");
       setStreamStartTime(Date.now());
-      trackEvent("stream_created", { mode, category, has_featured_product: !!featuredProductId });
+      trackEvent("stream_created", { mode, category, has_featured_product: !!featuredProductId, simulcast: simulcastEnabled });
       toast({ title: "Stream created!", description: "Your broadcast studio is ready." });
+
+      // Start simulcast non-blocking
+      if (simulcastEnabled && enabledPlatforms.length > 0 && data?.streamId) {
+        startSimulcast(data.streamId, user.id).catch(() => {});
+      }
     } catch (e: any) {
       toast({ title: "Error", description: e.message || "Failed to create stream", variant: "destructive" });
     } finally {
@@ -116,6 +133,10 @@ export default function GoLive() {
     setStreamDuration(duration);
     setStreamMuxAssetId(info?.muxAssetId || null);
     setShowEndScreen(true);
+    // Stop simulcast non-blocking
+    if (streamData?.streamId && user) {
+      stopSimulcast(streamData.streamId, user.id).catch(() => {});
+    }
   };
 
   const selectedProduct = activeProducts.find(p => p.id === featuredProductId);
@@ -257,6 +278,17 @@ export default function GoLive() {
                   <p className="text-xs text-muted-foreground py-2">No active products yet. Create one in the Products page.</p>
                 )}
               </div>
+
+              {/* Simulcast Panel */}
+              <SimulcastGoLivePanel
+                username={profileData?.display_name}
+                enabledPlatforms={enabledPlatforms}
+                onTogglePlatform={(platform, enabled) => {
+                  setEnabledPlatforms(prev => enabled ? [...prev, platform] : prev.filter(p => p !== platform));
+                }}
+                simulcastEnabled={simulcastEnabled}
+                onSimulcastToggle={setSimulcastEnabled}
+              />
 
               {/* Set Up Stream Button */}
               <Button
