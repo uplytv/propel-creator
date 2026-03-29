@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { X, Info, Twitter, Copy, Link2, Share2, ChevronRight } from "lucide-react";
+import { X, Info, ChevronRight } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Dialog,
@@ -16,7 +16,7 @@ import {
 const HARDCODED_FALLBACK = 24200;
 
 function formatCount(count: number): string {
-  return '+' + count.toLocaleString();
+  return count.toLocaleString();
 }
 
 function getDisplayCount(effectiveCount: number): { display: string; isEarly: boolean } {
@@ -136,60 +136,82 @@ function ShareModal({ displayCount, effectiveCount, onClose }: { displayCount: s
   const isMobile = useIsMobile();
   const past1M = effectiveCount >= 1000000;
 
-  const tweetText = past1M
-    ? `I was on @uplyTV before 1M creators.\n\n0% fees locked in forever. ✓\nEntered in the $10K + Rolex competition at 5M. ✓\nEligible for the annual UPLY Awards at 10M:\n— supercar up to $300K\n— Aria Las Vegas trip for 2\n— $50K partnership deal\n— film crew to document it all\n\nThe window is closed now. I got in.\n\nuply.tv`
-    : `I just joined @uplyTV before they hit 1M creators.\n\n0% platform fees locked in forever.\n\nAt 5M there's a $10K cash + Rolex competition.\n\nAt 10M the Creator of the Year wins:\n🏎️ Supercar of their choice up to $300K\n🏨 All-expenses trip for 2 to the Aria in Las Vegas\n🤝 A $50K partnership deal with UPLY\n🎬 A film crew to document everything\n\nThe window is still open: uply.tv\nWaitlist & invite only.`;
+  const shareText = past1M
+    ? `I was on @uplyTV before 1M creators.\n\n0% fees locked in forever ✓\nEntered for the $10K + Rolex at 5M ✓\nEligible for the supercar + Vegas + deal at 10M ✓\n\nWindow closed. I got in.\n\nuply.tv`
+    : `I joined @uplyTV before 1M creators.\n\n0% fees locked in forever.\n\nAt 5M: $10K cash + Rolex 🏆\nAt 10M: supercar up to $300K + Vegas + $50K deal 🏎️\n\nWindow still open → uply.tv`;
 
-  const handleTwitter = () => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`, "_blank");
-  const handleCopyText = () => { navigator.clipboard.writeText(tweetText); toast.success("Copied to clipboard ✓"); };
-  const handleCopyLink = () => { navigator.clipboard.writeText("https://uply.tv"); toast.success("Link copied ✓"); };
-  const handleNativeShare = async () => {
-    try {
-      await navigator.share({ title: "I joined UPLY early", text: `I joined UPLY when it had ${displayCount} creators. Don't be late to this one. uply.tv`, url: "https://uply.tv" });
-    } catch {}
+  const handleShare = async () => {
+    // Mobile: native share sheet
+    if (isMobile && typeof navigator.share === "function") {
+      try {
+        await navigator.share({
+          title: "I joined UPLY before 1M creators",
+          text: shareText,
+          url: "https://uply.tv",
+        });
+        return;
+      } catch {
+        // User cancelled or share failed — fall through
+      }
+    }
+    // Desktop: copy to clipboard
+    if (navigator.clipboard) {
+      try {
+        const fullContent = shareText + "\n\nhttps://uply.tv";
+        await navigator.clipboard.writeText(fullContent);
+        toast.success("Copied to clipboard — paste it anywhere 📋");
+        return;
+      } catch {
+        // Clipboard failed — fall through
+      }
+    }
+    // Fallback: open Twitter intent
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`, "_blank");
   };
 
   return (
     <Dialog open onOpenChange={() => onClose()}>
       <DialogContent className="bg-card border-border max-w-[520px]">
         <DialogHeader>
-          <DialogTitle className="text-foreground font-heading">Share your spot</DialogTitle>
+          <DialogTitle className="text-foreground font-heading text-center text-[18px]" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700 }}>
+            Share before the window closes
+          </DialogTitle>
         </DialogHeader>
         {/* Preview card */}
-        <div className="mx-auto mb-6 w-full max-w-[480px] aspect-video rounded-lg overflow-hidden flex flex-col items-center justify-center text-center p-6 bg-background border border-border"
-          style={{ boxShadow: "inset 0 0 120px rgba(0,255,133,0.06)" }}>
-          <span className="text-3xl mb-3">😊</span>
+        <div className="mx-auto mb-5 w-full max-w-[480px] rounded-[10px] overflow-hidden flex flex-col items-center justify-center text-center p-6"
+          style={{ background: "#0A0A0A", border: "1px solid hsl(var(--primary))" }}>
+          {/* UPLY logo mark */}
+          <p className="text-[32px] font-extrabold font-heading text-foreground mb-3" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>U</p>
           {past1M ? (
             <>
-              <p className="text-[28px] font-extrabold text-primary font-heading my-1">I was here before 1M.</p>
-              <p className="text-sm text-foreground mt-2">I locked in 0% fees forever.</p>
-              <p className="text-[13px] text-primary mt-2">uply.tv</p>
+              <p className="text-[20px] font-extrabold text-primary font-heading" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>I was here before 1M.</p>
+              <p className="text-[13px] text-foreground mt-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>I locked in 0% fees forever.</p>
+              <p className="text-[13px] text-primary mt-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>uply.tv</p>
             </>
           ) : (
             <>
-              <p className="text-sm text-muted-foreground">I joined before 1M.</p>
-              <p className="text-sm text-foreground mt-1">The 0% fees forever window<br />is still open.</p>
-              <p className="text-xs text-muted-foreground mt-2">+{displayCount} creators so far.</p>
-              <p className="text-[13px] text-primary mt-2">uply.tv — invite only.</p>
+              <p className="text-[20px] font-extrabold text-primary font-heading" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>I joined before 1M.</p>
+              <p className="text-[13px] text-foreground mt-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>The 0% fees forever window<br />is still open.</p>
+              <p className="text-[12px] text-muted-foreground mt-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>+{displayCount} creators so far.</p>
+              <p className="text-[13px] text-primary mt-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>uply.tv — invite only.</p>
             </>
           )}
         </div>
-        <div className="flex items-center justify-center gap-3 flex-wrap">
-          <button onClick={handleTwitter} className="flex items-center gap-2 px-4 py-2.5 rounded-md border border-border text-sm text-muted-foreground hover:border-primary hover:text-foreground transition-colors">
-            <Twitter className="w-4 h-4" /> Tweet
-          </button>
-          <button onClick={handleCopyText} className="flex items-center gap-2 px-4 py-2.5 rounded-md border border-border text-sm text-muted-foreground hover:border-primary hover:text-foreground transition-colors">
-            <Copy className="w-4 h-4" /> Copy Text
-          </button>
-          <button onClick={handleCopyLink} className="flex items-center gap-2 px-4 py-2.5 rounded-md border border-border text-sm text-muted-foreground hover:border-primary hover:text-foreground transition-colors">
-            <Link2 className="w-4 h-4" /> Copy Link
-          </button>
-          {isMobile && typeof navigator.share === "function" && (
-            <button onClick={handleNativeShare} className="flex items-center gap-2 px-4 py-2.5 rounded-md border border-border text-sm text-muted-foreground hover:border-primary hover:text-foreground transition-colors">
-              <Share2 className="w-4 h-4" /> More
-            </button>
-          )}
-        </div>
+        {/* Single share button */}
+        <button
+          onClick={handleShare}
+          className="w-full flex items-center justify-center gap-2 text-[15px] font-bold transition-opacity hover:opacity-90 active:scale-[0.97]"
+          style={{
+            height: 48,
+            borderRadius: 6,
+            background: "hsl(var(--primary))",
+            color: "#000",
+            fontFamily: "'Space Grotesk', sans-serif",
+            fontWeight: 700,
+          }}
+        >
+          Share UPLY <ChevronRight className="w-4 h-4" />
+        </button>
       </DialogContent>
     </Dialog>
   );
@@ -806,7 +828,7 @@ const MissionProgress = React.memo(function MissionProgress() {
                     transition: 'textShadow 300ms ease',
                     textShadow: counterFlash ? '0 0 20px rgba(0,255,133,0.8)' : 'none',
                   }}>
-                  {formatCount(animatedValue)}
+                  +{formatCount(animatedValue)}
                 </p>
                 <div className="flex items-center justify-center gap-1.5 mt-1">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" style={{ animation: "pulse-dot 2s infinite" }} />
