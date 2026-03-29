@@ -38,7 +38,7 @@ export function getReferralData(): ReferralData {
   const cookieName = document.cookie.match(/uply_referrer_name=([^;]+)/)?.[1] || null;
 
   if (cookieCode) {
-    console.log('Referral found in cookie:', decodeURIComponent(cookieCode));
+    
     return {
       code: decodeURIComponent(cookieCode),
       username: cookieUsername ? decodeURIComponent(cookieUsername) : null,
