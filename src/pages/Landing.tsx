@@ -178,6 +178,7 @@ export default function Landing() {
       <HowItWorks />
       <EarningsCalculator onCTAClick={scrollToWaitlist} />
       <ComparisonTable />
+      <MissionProgress />
 
       {/* ─── WAITLIST ─── */}
       <section id="waitlist" className="py-20 md:py-28 relative">
