@@ -646,7 +646,9 @@ const MissionProgress = React.memo(function MissionProgress() {
           {isLoaded && (
             <div className="relative w-full flex justify-between mt-3 px-1 md:block">
               {milestones.map((m, idx) => {
-                const pos = Math.log10(m.count) / Math.log10(100000000) * 100;
+                const pos = [10000,100000,500000,1000000,5000000,10000000,100000000].indexOf(m.count) !== -1
+                  ? [12.5, 25, 37.5, 50, 62.5, 75, 100][[10000,100000,500000,1000000,5000000,10000000,100000000].indexOf(m.count)]
+                  : 0;
                 const passed = effectiveCount >= m.count;
                 const nextIdx = milestones.findIndex(ms => effectiveCount < ms.count);
                 const isNext = milestones[nextIdx]?.count === m.count;
