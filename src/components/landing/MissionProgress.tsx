@@ -136,8 +136,8 @@ function ShareModal({ displayCount, effectiveCount, onClose }: { displayCount: s
   const past1M = effectiveCount >= 1000000;
 
   const tweetText = past1M
-    ? `I was on @uplyTV before 1M creators.\n\n0% fees locked in forever.\nEntered in the $10K + Rolex competition at 5M.\nEligible for the supercar at the annual UPLY Awards.\n\nThe window is closed now. I got in. uply.tv`
-    : `I just joined @uplyTV before they hit 1M creators.\n\nThat means I locked in 0% platform fees forever.\n\nAt 5M creators there's a $10K cash + Rolex competition.\nAt 10M there's an annual Awards where the winner gets a supercar.\n\nThe window is still open: uply.tv`;
+    ? `I was on @uplyTV before 1M creators.\n\n0% fees locked in forever. ✓\nEntered in the $10K + Rolex competition at 5M. ✓\nEligible for the annual UPLY Awards at 10M:\n— supercar up to $300K\n— Aria Las Vegas trip for 2\n— $50K partnership deal\n— film crew to document it all\n\nThe window is closed now. I got in.\n\nuply.tv`
+    : `I just joined @uplyTV before they hit 1M creators.\n\n0% platform fees locked in forever.\n\nAt 5M there's a $10K cash + Rolex competition.\n\nAt 10M the Creator of the Year wins:\n🏎️ Supercar of their choice up to $300K\n🏨 All-expenses trip for 2 to the Aria in Las Vegas\n🤝 A $50K partnership deal with UPLY\n🎬 A film crew to document everything\n\nThe window is still open: uply.tv\nWaitlist & invite only.`;
 
   const handleTwitter = () => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`, "_blank");
   const handleCopyText = () => { navigator.clipboard.writeText(tweetText); toast.success("Copied to clipboard ✓"); };
@@ -334,26 +334,49 @@ function MilestoneCard({ m, effectiveCount, isMobile, onOpenAwards }: {
 
       {/* Prize display for 10M */}
       {is10M && showDetails && (
-        <div className="mt-2 pt-2 border-t border-border">
-          <p className="text-[13px]">
-            <span className="font-heading font-bold text-foreground">✈️ Las Vegas Meet Up</span>
-            <span className="text-muted-foreground mx-1">+</span>
-            <span className="font-heading font-bold" style={{ color: "#FB923C" }}>🏨 ARIA Hotel</span>
-          </p>
-          <p className="text-[13px] mt-1">
-            <span className="font-heading font-bold text-foreground">🏎️ Supercar of choice</span>
-            <span className="font-heading font-bold ml-1" style={{ color: "#FB923C" }}>— up to $300K</span>
-          </p>
-          <p className="text-[13px] mt-1">
-            <span className="font-heading font-bold text-primary">🏆 UPLY Prizes</span>
-          </p>
-          <div className="flex flex-wrap gap-1 mt-1.5">
-            {["Brand deals", "Investor meetings", "UPLY Prizes", "Supercar", "+ more"].map(c => (
-              <span key={c} className="px-2.5 py-0.5 rounded-full text-[11px] border cursor-default"
-                style={{ background: "rgba(249,115,22,0.08)", borderColor: "rgba(249,115,22,0.3)", color: "#FB923C" }}>{c}</span>
-            ))}
+        <div className="mt-2 pt-2 border-t border-border space-y-0">
+          {/* Row 1 — Supercar */}
+          <div className="flex items-start gap-2 py-2">
+            <span className="text-[20px] leading-none mt-0.5">🏎️</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>SUPERCAR OF YOUR CHOICE</p>
+              <p className="text-[13px] font-semibold" style={{ color: "#FB923C", fontFamily: "'Space Grotesk', sans-serif" }}>Any car up to $300,000 — fully paid, delivered anywhere</p>
+            </div>
+            <span className="text-[14px] font-extrabold shrink-0" style={{ color: "#FB923C", fontFamily: "'Space Grotesk', sans-serif" }}>$300K</span>
           </div>
-          <p className="text-[11px] text-muted-foreground italic mt-1">Annual UPLY Games at the ARIA Hotel, Las Vegas</p>
+          <div className="border-t border-border" />
+          {/* Row 2 — Vegas */}
+          <div className="flex items-start gap-2 py-2">
+            <span className="text-[20px] leading-none mt-0.5">🏨</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>ARIA HOTEL · LAS VEGAS</p>
+              <p className="text-[13px] font-semibold" style={{ color: "#FFD700", fontFamily: "'Space Grotesk', sans-serif" }}>Round-trip flights for you and a guest · 3 nights · All meals</p>
+            </div>
+            <span className="text-[14px] font-extrabold shrink-0" style={{ color: "#FFD700", fontFamily: "'Space Grotesk', sans-serif" }}>For 2</span>
+          </div>
+          <div className="border-t border-border" />
+          {/* Row 3 — Partnership */}
+          <div className="flex items-start gap-2 py-2">
+            <span className="text-[20px] leading-none mt-0.5">🤝</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>UPLY CREATOR PARTNERSHIP</p>
+              <p className="text-[13px] font-semibold text-primary" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>12-month deal · Featured placement · $50K co-marketing commitment</p>
+            </div>
+            <span className="text-[14px] font-extrabold shrink-0 text-primary" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>$50K</span>
+          </div>
+          <div className="border-t border-border" />
+          {/* Row 4 — Film Crew */}
+          <div className="flex items-start gap-2 py-2">
+            <span className="text-[20px] leading-none mt-0.5">🎬</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>PROFESSIONAL FILM CREW</p>
+              <p className="text-[13px] font-semibold" style={{ color: "#818CF8", fontFamily: "'Space Grotesk', sans-serif" }}>UPLY documents everything. All content is yours to own and post.</p>
+            </div>
+            <span className="text-[14px] font-extrabold shrink-0" style={{ color: "#818CF8", fontFamily: "'Space Grotesk', sans-serif" }}>Yours</span>
+          </div>
+          <p className="text-[11px] text-muted-foreground italic text-center pt-2">
+            Awarded annually at the UPLY Awards · Every year from 10M forward · All logistics handled by UPLY
+          </p>
         </div>
       )}
 
