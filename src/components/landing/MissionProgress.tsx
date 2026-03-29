@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 
 // ── Display count logic ──
-const STATIC_FALLBACK = 10000;
+const STATIC_FALLBACK = 24200;
 
 function getDisplayCount(rawCount: number): { display: string; isEarly: boolean } {
   const effectiveCount = Math.max(rawCount, STATIC_FALLBACK);
