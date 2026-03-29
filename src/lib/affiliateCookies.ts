@@ -38,7 +38,7 @@ export function getReferralData(): ReferralData {
   const cookieName = document.cookie.match(/uply_referrer_name=([^;]+)/)?.[1] || null;
 
   if (cookieCode) {
-    console.log('Referral found in cookie:', decodeURIComponent(cookieCode));
+    
     return {
       code: decodeURIComponent(cookieCode),
       username: cookieUsername ? decodeURIComponent(cookieUsername) : null,
@@ -52,7 +52,7 @@ export function getReferralData(): ReferralData {
     const lsUsername = localStorage.getItem('uply_referrer_username');
     const lsName = localStorage.getItem('uply_referrer_name');
     if (lsCode) {
-      console.log('Referral found in localStorage:', lsCode);
+      
       return { code: lsCode, username: lsUsername, name: lsName };
     }
   } catch {}
@@ -63,12 +63,12 @@ export function getReferralData(): ReferralData {
     const ssUsername = sessionStorage.getItem('uply_referrer_username');
     const ssName = sessionStorage.getItem('uply_referrer_name');
     if (ssCode) {
-      console.log('Referral found in sessionStorage:', ssCode);
+      
       return { code: ssCode, username: ssUsername, name: ssName };
     }
   } catch {}
 
-  console.log('No referral data found in any storage method');
+  
   return { code: null, username: null, name: null };
 }
 
@@ -97,7 +97,7 @@ export function setReferralData(code: string, username?: string | null, displayN
     if (displayName) sessionStorage.setItem('uply_referrer_name', displayName);
   } catch {}
 
-  console.log(`Referral stored in cookie, localStorage, and sessionStorage — code: ${code}, username: ${username}, name: ${displayName}`);
+  
 }
 
 /**
@@ -124,5 +124,5 @@ export function clearReferralData(): void {
     sessionStorage.removeItem('uply_referrer_name');
   } catch {}
 
-  console.log('Referral data cleared from all storage methods');
+  
 }

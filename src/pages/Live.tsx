@@ -303,7 +303,7 @@ export default function Live() {
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/90 backdrop-blur-xl">
         <div className="container flex h-14 items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Uply" className="h-[60px] cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate("/")} />
+            <img src="/logo.png" alt="UPLY" className="h-[60px] cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate("/")} />
             <span className="text-foreground/10">|</span>
             <div className="flex items-center gap-1.5 text-primary">
               <Radio className="w-4 h-4" />

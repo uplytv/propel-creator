@@ -10,7 +10,7 @@ interface SEOHeadProps {
 }
 
 const BASE_URL = "https://uply.tv";
-const DEFAULT_TITLE = "Uply — A Social Network for Creators to Monetize";
+const DEFAULT_TITLE = "UPLY — A Social Network for Creators to Monetize";
 const DEFAULT_DESCRIPTION =
   "The creator platform that invests more in you as you grow. Monetize your community, go live, sell courses, and scale with AI — all in one place.";
 const DEFAULT_IMAGE =
@@ -24,7 +24,7 @@ export default function SEOHead({
   twitterCard = "summary_large_image",
 }: SEOHeadProps) {
   const { pathname } = useLocation();
-  const fullTitle = title ? `${title} | Uply` : DEFAULT_TITLE;
+  const fullTitle = title ? `${title} | UPLY` : DEFAULT_TITLE;
   const desc = description || DEFAULT_DESCRIPTION;
   const img = image || DEFAULT_IMAGE;
   const canonical = `${BASE_URL}${pathname === "/" ? "" : pathname}`;
@@ -62,7 +62,7 @@ export default function SEOHead({
     setMeta("property", "og:type", type);
     setMeta("property", "og:url", canonical);
     setMeta("property", "og:image", img);
-    setMeta("property", "og:site_name", "Uply");
+    setMeta("property", "og:site_name", "UPLY");
 
     // Twitter
     setMeta("name", "twitter:title", fullTitle);

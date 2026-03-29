@@ -105,11 +105,11 @@ export default function Pricing() {
 
     setCheckoutLoading(planKey);
     try {
-      console.log("[Pricing] Starting checkout for", planKey, plan.priceId);
+      
       const { data, error } = await supabase.functions.invoke("create-platform-checkout", {
         body: { price_id: plan.priceId },
       });
-      console.log("[Pricing] Checkout response:", { data, error });
+      
       if (error) throw error;
       if (data?.url) {
         trackEvent("platform_upgrade_started", { plan: planKey, price: plan.price });
