@@ -53,6 +53,10 @@ export default function GoLive() {
   const { data: profileData } = useProfile();
   const { data: products } = useProducts();
   const activeProducts = products?.filter(p => p.status === 'active') || [];
+  const { destinations } = useSimulcastDestinations();
+  const { startSimulcast, stopSimulcast } = useSimulcastSessions(streamData?.streamId || null);
+  const [simulcastEnabled, setSimulcastEnabled] = useState(true);
+  const [enabledPlatforms, setEnabledPlatforms] = useState<string[]>([]);
 
   // Realtime subscription on mux_live_streams for status
   useEffect(() => {
