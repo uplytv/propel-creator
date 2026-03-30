@@ -54,9 +54,9 @@ const milestones: Milestone[] = [
     prize_line: "$100K cash + Rolex Submariner",
   },
   {
-    count: 500000, label: "500K", unlock: "We pass Skool",
-    detail: "UPLY officially surpasses Skool's estimated total user base making it the largest independent creator community platform in the world. Every founding creator who helped get us here receives a permanent Founding Pioneer badge on their profile — visible forever.",
-    context: "Skool estimated at ~500K total users", reward_type: "status", is_unlocked: false,
+    count: 500000, label: "500K", unlock: "Unlock Creator Fund + pass Skool",
+    detail: "The UPLY Creator Fund opens — direct funding for creators building on the platform. At the same time UPLY officially surpasses Skool's estimated total user base making it the largest independent creator community platform in the world. Every founding creator receives a permanent Founding Pioneer badge.",
+    context: "Creator Fund unlocks • Skool estimated at ~500K total users", reward_type: "status", is_unlocked: false,
   },
   {
     count: 1000000, label: "1M", unlock: "0% fees + Founding Creator forever",
