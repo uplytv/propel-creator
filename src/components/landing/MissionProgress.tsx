@@ -74,9 +74,9 @@ const milestones: Milestone[] = [
     is_unlocked: false,
   },
   {
-    count: 100000000, label: "100M", unlock: "Largest creator platform on Earth",
-    detail: "UPLY becomes the largest creator monetization platform in the world — bigger than every competitor combined. 100 million creators owning their audience, their content, and their income. The mission is complete.",
-    context: "200M creators exist worldwide — we're building for all of them", reward_type: "mission", is_unlocked: false,
+    count: 100000000, label: "100M", unlock: "IPO",
+    detail: "UPLY goes public. 100 million creators on the platform — the largest creator economy company in history takes the next step. Every founding creator who believed from the beginning helped build this. The mission is complete.",
+    context: "100M creators • UPLY goes public", reward_type: "mission", is_unlocked: false,
   },
 ];
 
