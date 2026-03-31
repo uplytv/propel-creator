@@ -8,6 +8,7 @@ import { AppProvider } from "@/context/AppContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { FeatureProvider } from "@/context/FeatureContext";
+import { NetworkProvider } from "@/context/NetworkContext";
 import TierCelebration from "@/components/TierCelebration";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
