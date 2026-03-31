@@ -23,6 +23,7 @@ export const tables = {
   profilesPublic: () => untypedFrom("profiles_public"),
   webhookEventLog: () => untypedFrom("webhook_event_log"),
   waitlist: () => untypedFrom("waitlist"),
+  uplyChannels: () => untypedFrom("uply_channels"),
 } as const;
 
 // ── Profile map helper (used across many hooks) ────────────────────────

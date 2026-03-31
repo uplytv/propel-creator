@@ -24,6 +24,7 @@ import DiscoverMarketplace from "@/components/dashboard/DiscoverMarketplace";
 import VideoUploadSheet from "@/components/videos/VideoUploadSheet";
 import { RevenueGoalTracker } from "@/components/dashboard/RevenueGoalTracker";
 import ReferralRewardsCard from "@/components/affiliates/ReferralRewardsCard";
+import ScheduleFirstShowCard from "@/components/scheduled/ScheduleFirstShowCard";
 
 function PlatformUpgradeBanner() {
   const { user } = useAuth();
@@ -218,6 +219,11 @@ export default function Dashboard() {
         {/* Referral Rewards */}
         <div className="px-4 md:px-8 mb-4">
           <ReferralRewardsCard />
+        </div>
+
+        {/* Schedule First Show Prompt */}
+        <div className="px-4 md:px-8 mb-4">
+          <ScheduleFirstShowCard />
         </div>
 
         {/* Discover Mode */}
