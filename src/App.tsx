@@ -146,6 +146,7 @@ const App = () => (
         <AuthProvider>
           <AppProvider>
             <FeatureProvider>
+              <NetworkProvider>
               <NativeShell>
               <Toaster />
               <Sonner />
