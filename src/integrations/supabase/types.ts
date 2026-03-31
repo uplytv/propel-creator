@@ -1216,6 +1216,27 @@ export type Database = {
           },
         ]
       }
+      channel_follows: {
+        Row: {
+          channel_slug: string
+          created_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          channel_slug: string
+          created_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          channel_slug?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           collaboration_id: string
