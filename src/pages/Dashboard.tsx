@@ -221,6 +221,12 @@ export default function Dashboard() {
           <ReferralRewardsCard />
         </div>
 
+        {/* Schedule First Show Prompt */}
+        <div className="px-4 md:px-8 mb-4">
+          <ScheduleFirstShowCard />
+        </div>
+        </div>
+
         {/* Discover Mode */}
         {dashMode === "discover" ? (
           <motion.div
