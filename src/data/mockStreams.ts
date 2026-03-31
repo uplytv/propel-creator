@@ -57,7 +57,7 @@ export const mockStreams: MockStream[] = [
     viewers: 1523,
     isLive: true,
     isPublic: true,
-    thumbnailGradient: "from-violet-900/80 via-purple-900/60 to-background",
+    thumbnailGradient: "from-primary/30 via-primary/15 to-background",
     communityPrice: 19,
     startedAt: "1h 12m ago",
     description: "Watch me edit my latest street photography series in Lightroom. Tips, tricks, and honest feedback on your submissions.",

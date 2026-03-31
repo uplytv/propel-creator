@@ -37,7 +37,7 @@ const coreLabels: Record<string, string> = {
 const tierColors: Record<string, string> = {
   core: "bg-primary/20 text-primary",
   embedded: "bg-blue-500/20 text-blue-400",
-  advanced: "bg-purple-500/20 text-purple-400",
+  advanced: "bg-amber-500/20 text-amber-400",
 };
 
 export default function AdminFeatureToggles() {
