@@ -3403,6 +3403,7 @@ export type Database = {
       mux_live_streams: {
         Row: {
           category: string | null
+          channel_category: string | null
           created_at: string | null
           description: string | null
           ended_at: string | null
@@ -3424,6 +3425,7 @@ export type Database = {
         }
         Insert: {
           category?: string | null
+          channel_category?: string | null
           created_at?: string | null
           description?: string | null
           ended_at?: string | null
@@ -3445,6 +3447,7 @@ export type Database = {
         }
         Update: {
           category?: string | null
+          channel_category?: string | null
           created_at?: string | null
           description?: string | null
           ended_at?: string | null
@@ -3881,6 +3884,8 @@ export type Database = {
           beta_user: boolean
           bio: string | null
           business_category: string | null
+          channel_category: string | null
+          channel_tagline: string | null
           cover_image_url: string | null
           created_at: string
           creator_challenge: string | null
@@ -3926,6 +3931,8 @@ export type Database = {
           beta_user?: boolean
           bio?: string | null
           business_category?: string | null
+          channel_category?: string | null
+          channel_tagline?: string | null
           cover_image_url?: string | null
           created_at?: string
           creator_challenge?: string | null
@@ -3971,6 +3978,8 @@ export type Database = {
           beta_user?: boolean
           bio?: string | null
           business_category?: string | null
+          channel_category?: string | null
+          channel_tagline?: string | null
           cover_image_url?: string | null
           created_at?: string
           creator_challenge?: string | null
@@ -4699,6 +4708,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      uply_channels: {
+        Row: {
+          category: string
+          created_at: string | null
+          creator_count: number | null
+          description: string | null
+          display_name: string
+          icon: string | null
+          id: string
+          position: number | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          creator_count?: number | null
+          description?: string | null
+          display_name: string
+          icon?: string | null
+          id?: string
+          position?: number | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          creator_count?: number | null
+          description?: string | null
+          display_name?: string
+          icon?: string | null
+          id?: string
+          position?: number | null
+        }
+        Relationships: []
       }
       user_feature_overrides: {
         Row: {
