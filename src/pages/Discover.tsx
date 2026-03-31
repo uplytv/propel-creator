@@ -224,6 +224,14 @@ export default function Discover() {
         </div>
       </div>
 
+      {/* Network Layer */}
+      <div className="max-w-7xl mx-auto px-4 py-4 space-y-4">
+        <NetworkBanner />
+        <PrimetimeSection />
+        <TonightOnUPLY />
+        <UPLYChannels onChannelSelect={(cat) => handleCategoryChange("all" as DiscoverCategory)} />
+      </div>
+
       {/* Content area */}
       <div className="max-w-7xl mx-auto px-4 py-4">
         {showEvents ? (
