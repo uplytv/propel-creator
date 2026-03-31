@@ -15,6 +15,8 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
   const { user } = useAuth();
   const [createOpen, setCreateOpen] = useState(false);
   const [ariaOpen, setAriaOpen] = useState(false);
+  let liveCount = 0;
+  try { liveCount = useNetwork().liveCount; } catch { /* not in provider */ }
 
   const communityPath = user ? `/community/${user.id}` : "/dashboard";
 
