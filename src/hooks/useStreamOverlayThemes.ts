@@ -73,7 +73,7 @@ const OVERLAY_THEMES: StreamOverlayTheme[] = [
     name: 'Party Mode',
     description: 'High energy with rainbow effects',
     preview: '🎉',
-    colors: { primary: 'hsl(var(--destructive))', secondary: '#8b5cf6', accent: 'hsl(var(--success))', text: 'hsl(var(--foreground))', background: 'rgba(0,0,0,0.75)' },
+    colors: { primary: 'hsl(var(--destructive))', secondary: 'hsl(var(--primary))', accent: 'hsl(var(--success))', text: 'hsl(var(--foreground))', background: 'rgba(0,0,0,0.75)' },
     borderRadius: '8px',
     fontStyle: 'font-bold',
     alertAnimation: 'bounce',

@@ -34,7 +34,7 @@ const typeBadge = (type: string) => {
     withdrawal: { color: "bg-destructive/15 text-destructive border-destructive/20", label: "Withdrawal", icon: ArrowUpRight },
     fee: { color: "bg-muted/50 text-muted-foreground border-border", label: "Fee", icon: Receipt },
     refund: { color: "bg-blue-500/15 text-blue-400 border-blue-500/20", label: "Refund", icon: ArrowDownCircle },
-    tip: { color: "bg-purple-500/15 text-purple-400 border-purple-500/20", label: "Tip", icon: Zap },
+    tip: { color: "bg-primary/15 text-primary border-primary/20", label: "Tip", icon: Zap },
     transfer: { color: "bg-amber-500/15 text-amber-400 border-amber-500/20", label: "Transfer", icon: SendHorizontal },
     subscription: { color: "bg-primary/15 text-primary border-primary/20", label: "Subscription", icon: Users },
     subscription_renewal: { color: "bg-primary/15 text-primary border-primary/20", label: "Renewal", icon: Users },

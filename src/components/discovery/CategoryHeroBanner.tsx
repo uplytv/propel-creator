@@ -45,8 +45,8 @@ const categoryConfigs: Record<Exclude<FilterCategory, "all">, CategoryConfig> = 
     title: "Creators",
     subtitle: "Discover top creators on the platform",
     icon: Star,
-    gradient: "from-purple-500/20 via-fuchsia-500/10 to-transparent",
-    accentClass: "text-purple-400",
+    gradient: "from-primary/20 via-primary/10 to-transparent",
+    accentClass: "text-primary",
   },
 };
 

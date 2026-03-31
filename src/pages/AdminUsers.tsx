@@ -215,7 +215,7 @@ export default function AdminUsers() {
             { label: "Pending", value: stats.pending, color: "text-yellow-400" },
             { label: "Approved", value: stats.approved, color: "text-primary" },
             { label: "Beta", value: stats.beta, color: "text-blue-400" },
-            { label: "Origin", value: stats.origin, color: "text-purple-400" },
+            { label: "Origin", value: stats.origin, color: "text-primary" },
           ].map(s => (
             <Card key={s.label} className="bg-card border-border">
               <CardContent className="p-4 text-center">
