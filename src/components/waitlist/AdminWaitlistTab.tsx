@@ -208,7 +208,7 @@ export default function AdminWaitlistTab() {
   const statusBadge = (status: string) => {
     const styles: Record<string, string> = {
       beta: "bg-blue-500/10 text-blue-500 border-0",
-      origin: "bg-purple-500/10 text-purple-500 border-0",
+      origin: "bg-primary/10 text-primary border-0",
       approved: "bg-primary/10 text-primary border-0",
       waitlist: "bg-muted text-muted-foreground border-0",
     };

@@ -84,7 +84,7 @@ export default function AdminReferrals() {
           </Card>
           <Card className="bg-card border-border">
             <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold text-purple-400">{data?.topReferrer?.name || "—"}</p>
+              <p className="text-2xl font-bold text-primary">{data?.topReferrer?.name || "—"}</p>
               <p className="text-xs text-muted-foreground">Top Referrer ({data?.topReferrer?.signups || 0})</p>
             </CardContent>
           </Card>

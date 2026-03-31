@@ -104,7 +104,7 @@ export default function Landing() {
       <section ref={heroRef} className="relative overflow-hidden pt-28 pb-8 md:pt-40 md:pb-12 min-h-[70vh] flex items-center" onMouseMove={handleMouseMove}>
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
           <motion.div className="absolute w-[700px] h-[700px] rounded-full blur-[160px] opacity-[0.12]" style={{ background: "radial-gradient(circle, #00FF85 0%, transparent 70%)", top: "-20%", left: "20%" }} animate={{ x: [0, 60, 0], y: [0, 30, 0], scale: [1, 1.1, 1] }} transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }} />
-          <motion.div className="absolute w-[500px] h-[500px] rounded-full blur-[140px] opacity-[0.08]" style={{ background: "radial-gradient(circle, #8B5CF6 0%, transparent 70%)", bottom: "-10%", right: "10%" }} animate={{ x: [0, -40, 0], y: [0, -30, 0], scale: [1.05, 0.95, 1.05] }} transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }} />
+          <motion.div className="absolute w-[500px] h-[500px] rounded-full blur-[140px] opacity-[0.08]" style={{ background: "radial-gradient(circle, hsl(145 100% 50%) 0%, transparent 70%)", bottom: "-10%", right: "10%" }} animate={{ x: [0, -40, 0], y: [0, -30, 0], scale: [1.05, 0.95, 1.05] }} transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }} />
         </div>
         <motion.div className="absolute z-[1] pointer-events-none w-[350px] h-[350px] rounded-full opacity-[0.06] blur-[100px] hidden md:block" style={{ background: "hsl(var(--primary))", left: springX, top: springY, translateX: "-50%", translateY: "-50%" }} />
         <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden hidden md:block">

@@ -20,7 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 const eventTypes = [
   { value: "virtual", label: "Virtual", icon: Monitor, emoji: "🖥️", color: "border-blue-500 bg-blue-500/10 text-blue-500" },
   { value: "in_person", label: "In Person", icon: MapPin, emoji: "📍", color: "border-warning bg-warning/10 text-warning" },
-  { value: "hybrid", label: "Hybrid", icon: Globe, emoji: "🌐", color: "border-violet-500 bg-violet-500/10 text-violet-500" },
+  { value: "hybrid", label: "Hybrid", icon: Globe, emoji: "🌐", color: "border-primary bg-primary/10 text-primary" },
 ];
 
 const refundPolicies = [
