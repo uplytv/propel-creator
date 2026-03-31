@@ -246,18 +246,18 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
                     <span className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
                   )}
                   <Icon
-                    className={`w-6 h-6 transition-colors ${
+                    className={`w-5 h-5 transition-colors ${
                       active
-                        ? "text-foreground"
+                        ? "text-primary"
                         : "text-muted-foreground group-hover:text-foreground"
                     }`}
                   />
                 </div>
                 <span
-                  className={`text-[10px] mt-0.5 transition-colors ${
+                  className={`text-[10px] mt-0.5 transition-colors font-semibold ${
                     active
-                      ? "text-foreground font-semibold"
-                      : "text-muted-foreground font-medium"
+                      ? "text-primary"
+                      : "text-muted-foreground"
                   }`}
                 >
                   {tab.label}
