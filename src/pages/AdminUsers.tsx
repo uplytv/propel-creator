@@ -193,7 +193,7 @@ export default function AdminUsers() {
 
   const statusBadge = (u: UserRow) => {
     const s = getStatus(u);
-    if (s === "origin") return <Badge className="bg-purple-500/20 text-purple-400 border-0 text-xs"><Shield className="w-3 h-3 mr-1" /> Origin</Badge>;
+    if (s === "origin") return <Badge className="bg-primary/20 text-primary border-0 text-xs"><Shield className="w-3 h-3 mr-1" /> Origin</Badge>;
     if (s === "beta") return <Badge className="bg-blue-500/20 text-blue-400 border-0 text-xs">Beta</Badge>;
     if (s === "approved") return <Badge className="bg-primary/20 text-primary border-0 text-xs"><CheckCircle className="w-3 h-3 mr-1" /> Approved</Badge>;
     return <Badge className="bg-yellow-500/20 text-yellow-400 border-0 text-xs">Pending</Badge>;
