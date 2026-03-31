@@ -16,6 +16,7 @@ import HowItWorks from "@/components/landing/HowItWorks";
 import EarningsCalculator from "@/components/landing/EarningsCalculator";
 import ComparisonTable from "@/components/landing/ComparisonTable";
 import MissionProgress from "@/components/landing/MissionProgress";
+import NetworkPreview from "@/components/landing/NetworkPreview";
 
 const JSON_LD = {
   "@context": "https://schema.org",
