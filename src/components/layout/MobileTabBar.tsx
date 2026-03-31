@@ -242,6 +242,9 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
                       transition={{ type: "spring", stiffness: 400, damping: 30 }}
                     />
                   )}
+                  {tab.label === "Discover" && liveCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-destructive" />
+                  )}
                   <Icon
                     className={`w-6 h-6 transition-colors ${
                       active
