@@ -12,6 +12,10 @@ import SEOHead from "@/components/SEOHead";
 import { useFollows } from "@/hooks/useFollows";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
+import NetworkBanner from "@/components/network/NetworkBanner";
+import PrimetimeSection from "@/components/network/PrimetimeSection";
+import TonightOnUPLY from "@/components/network/TonightOnUPLY";
+import UPLYChannels from "@/components/network/UPLYChannels";
 
 const PAGE_SIZE = 24;
 
@@ -218,6 +222,14 @@ export default function Discover() {
             onSortChange={setSort}
           />
         </div>
+      </div>
+
+      {/* Network Layer */}
+      <div className="max-w-7xl mx-auto px-4 py-4 space-y-4">
+        <NetworkBanner />
+        <PrimetimeSection />
+        <TonightOnUPLY />
+        <UPLYChannels onChannelSelect={(cat) => handleCategoryChange("all" as DiscoverCategory)} />
       </div>
 
       {/* Content area */}

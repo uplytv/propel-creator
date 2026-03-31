@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Search, Users, DollarSign, Sparkles, Plus, Radio, Upload, Calendar, X, Bot, Rocket, TrendingUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
+import { useNetwork } from "@/context/NetworkContext";
 
 interface MobileTabBarProps {
   onUploadVideo?: () => void;
@@ -14,6 +15,8 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
   const { user } = useAuth();
   const [createOpen, setCreateOpen] = useState(false);
   const [ariaOpen, setAriaOpen] = useState(false);
+  let liveCount = 0;
+  try { liveCount = useNetwork().liveCount; } catch { /* not in provider */ }
 
   const communityPath = user ? `/community/${user.id}` : "/dashboard";
 
@@ -238,6 +241,9 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
                       className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"
                       transition={{ type: "spring", stiffness: 400, damping: 30 }}
                     />
+                  )}
+                  {tab.label === "Discover" && liveCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-destructive" />
                   )}
                   <Icon
                     className={`w-6 h-6 transition-colors ${
