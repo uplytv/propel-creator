@@ -239,6 +239,7 @@ const App = () => (
               </BrowserRouter>
               </AppWithSplash>
               </NativeShell>
+              </NetworkProvider>
             </FeatureProvider>
           </AppProvider>
         </AuthProvider>

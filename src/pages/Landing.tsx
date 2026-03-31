@@ -141,6 +141,7 @@ export default function Landing() {
       </section>
 
       <MissionProgress />
+      <NetworkPreview />
 
       {/* ─── PRODUCT PREVIEW ─── */}
       <section className="pb-16 md:pb-24 relative">
