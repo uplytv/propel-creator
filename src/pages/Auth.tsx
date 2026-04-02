@@ -188,13 +188,24 @@ export default function Auth() {
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
-    const { error } = await lovable.auth.signInWithOAuth("google", {
+    const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
-    setLoading(false);
-    if (error) {
-      toast({ title: "Google sign in failed", description: String(error), variant: "destructive" });
+
+    if (result.error) {
+      setLoading(false);
+      toast({ title: "Google sign in failed", description: String(result.error), variant: "destructive" });
+      return;
     }
+
+    if (result.redirected) {
+      // Browser will redirect to Google — just return and let it happen
+      return;
+    }
+
+    // Tokens were returned and session is already set — user is authenticated
+    // The onAuthStateChange listener above will handle navigation
+    setLoading(false);
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
