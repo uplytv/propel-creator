@@ -207,7 +207,7 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
 
   const compressImage = (file: File, maxSizeKB = 1800): Promise<Blob> => {
     return new Promise((resolve, reject) => {
-      const img = new Image();
+      const img = new (window as any).Image() as HTMLImageElement;
       const url = URL.createObjectURL(file);
       img.onload = () => {
         URL.revokeObjectURL(url);
