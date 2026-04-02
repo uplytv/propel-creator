@@ -44,13 +44,6 @@ export async function uploadToMuxWithRetry(opts: UploadOptions): Promise<string>
   const maxRetries = opts.maxRetries ?? 2;
   let lastError: Error | null = null;
 
-    fileSize: opts.file.size,
-    fileType: opts.file.type,
-    isFile: opts.file instanceof File,
-    title: opts.title,
-    userId: opts.userId,
-  });
-
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       if (attempt > 0) {
@@ -74,12 +67,6 @@ export async function uploadToMuxWithRetry(opts: UploadOptions): Promise<string>
             ? opts.file
             : new File([opts.file], "recording.webm", { type: opts.file.type || "video/webm" });
 
-          fileName: file.name,
-          fileSize: file.size,
-          fileType: file.type,
-          chunkSize: opts.chunkSize ?? 5120,
-        });
-
         const upload = createUpload({
           endpoint: uploadUrl,
           file,
@@ -89,8 +76,6 @@ export async function uploadToMuxWithRetry(opts: UploadOptions): Promise<string>
 
         upload.on("progress", (detail: { detail: number }) => {
           const pct = Math.round(detail.detail);
-          if (pct % 10 === 0 || pct === 100) {
-          }
           opts.onProgress?.(pct);
         });
 
@@ -103,22 +88,19 @@ export async function uploadToMuxWithRetry(opts: UploadOptions): Promise<string>
           reject(new Error(err.detail?.message || "Chunked upload failed"));
         });
 
-        upload.on("attempt", (detail: any) => {
-        });
+        upload.on("attempt", () => {});
 
         upload.on("attemptFailure", (detail: any) => {
           console.warn(`[MuxUpload] UpChunk chunk attempt FAILED`, detail?.detail);
         });
 
-        upload.on("chunkSuccess", (detail: any) => {
-        });
+        upload.on("chunkSuccess", () => {});
 
         upload.on("offline", () => {
           console.warn(`[MuxUpload] Browser went OFFLINE during upload`);
         });
 
-        upload.on("online", () => {
-        });
+        upload.on("online", () => {});
       });
 
       return uploadId;
