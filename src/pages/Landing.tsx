@@ -1,5 +1,6 @@
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { useRef, useMemo, useCallback, useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,9 +40,31 @@ const CTA_LABEL = "Apply for Early Access";
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [applicantCount, setApplicantCount] = useState<number | null>(null);
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  // Redirect authenticated users away from landing
+  useEffect(() => {
+    if (authLoading || !user) return;
+    const redirect = async () => {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("onboarding_complete, is_approved")
+        .eq("user_id", user.id)
+        .single();
+      const p = profile as any;
+      if (!p?.onboarding_complete) {
+        navigate("/onboarding", { replace: true });
+      } else if (p?.is_approved) {
+        navigate("/discover", { replace: true });
+      } else {
+        navigate("/waitlist", { replace: true });
+      }
+    };
+    redirect();
+  }, [user, authLoading, navigate]);
   const heroRef = useRef<HTMLElement>(null);
 
   const mouseX = useMotionValue(0);
