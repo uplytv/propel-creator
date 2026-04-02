@@ -1,12 +1,11 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, X, Loader2, Film, Check, CloudUpload, Image, Tag, Calendar, Clock } from "lucide-react";
+import { Upload, X, Loader2, Film, Check, CloudUpload, Image, Tag, Calendar, Clock, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/context/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useCreateVideo } from "@/hooks/useVideos";
 import { uploadToMuxWithRetry } from "@/lib/muxUpload";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,7 +24,6 @@ interface VideoUploadSheetProps {
 
 export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProps) {
   const { user } = useAuth();
-  const { toast } = useToast();
   const createVideo = useCreateVideo();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -64,8 +62,8 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
   const { data: creatorProfile } = useQuery({
     queryKey: ["my-profile-upload", user?.id],
     queryFn: async () => {
-      const { data } = await (supabase as any)
-        .from("profiles_public")
+      const { data } = await supabase
+        .from("profiles")
         .select("username, display_name")
         .eq("user_id", user!.id)
         .maybeSingle();
@@ -125,7 +123,6 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
         file: selectedFile,
         onProgress: (pct) => {
           setUploadProgress(pct);
-          // Calculate speed
           const elapsed = (Date.now() - uploadStartRef.current) / 1000;
           if (elapsed > 1) {
             const bytesUploaded = (pct / 100) * selectedFile.size;
@@ -161,9 +158,9 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
     } catch (err: any) {
       setUploadPhase("error");
       setUploadSpeed("");
-      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+      toast.error("Upload failed", { description: err.message });
     }
-  }, [user, title, toast]);
+  }, [user, title]);
 
   // Cleanup polling on unmount
   useEffect(() => {
@@ -247,7 +244,7 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
     const f = e.target.files?.[0];
     if (!f || !user) return;
     if (f.size > 20 * 1024 * 1024) {
-      toast({ title: "File too large", description: "Thumbnail must be under 20MB", variant: "destructive" });
+      toast.error("File too large", { description: "Thumbnail must be under 20MB" });
       return;
     }
     let uploadFile: File | Blob = f;
@@ -255,14 +252,14 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
       try {
         uploadFile = await compressImage(f);
       } catch {
-        toast({ title: "Compression failed", description: "Could not compress image", variant: "destructive" });
+        toast.error("Compression failed", { description: "Could not compress image" });
         return;
       }
     }
     const path = `${user.id}/${Date.now()}.jpg`;
     const { error } = await supabase.storage.from("covers").upload(path, uploadFile, { contentType: "image/jpeg" });
     if (error) {
-      toast({ title: "Upload failed", description: error.message, variant: "destructive" });
+      toast.error("Upload failed", { description: error.message });
       return;
     }
     const { data: { publicUrl } } = supabase.storage.from("covers").getPublicUrl(path);
@@ -299,16 +296,16 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
       onClose();
 
       if (scheduledPublishAt) {
-        toast({ title: "Video scheduled ✓", description: `Will publish on ${new Date(scheduledPublishAt).toLocaleString()}` });
+        toast.success("Video scheduled ✓", { description: `Will publish on ${new Date(scheduledPublishAt).toLocaleString()}` });
       } else if (!draft && result?.slug) {
         const username = creatorProfile?.username || creatorProfile?.display_name || user.id;
         navigate(`/${encodeURIComponent(username)}/videos/${result.slug}`);
-        toast({ title: "Video published ✓", description: "Your video is live!" });
+        toast.success("Video published ✓", { description: "Your video is live!" });
       } else {
-        toast({ title: draft ? "Draft saved" : "Video published ✓" });
+        toast(draft ? "Draft saved" : "Video published ✓");
       }
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error("Error", { description: err.message });
     } finally {
       setPublishing(false);
     }
@@ -324,16 +321,14 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
   ];
 
   const hasSchedule = !!(scheduledDate && scheduledTime);
-  const publishDisabled = !title.trim() || publishing || (uploadPhase !== "ready" && uploadPhase !== "idle");
-  const publishLabel = publishing
-    ? "Publishing…"
-    : uploadPhase === "uploading"
-    ? `Uploading ${uploadProgress}%…`
-    : uploadPhase === "processing"
-    ? "Processing…"
-    : hasSchedule
-    ? "Schedule Publish →"
-    : "Publish Video →";
+  const canPublish = title.trim().length > 0 && uploadPhase === "ready" && !publishing;
+  const isUploading = uploadPhase === "uploading" || uploadPhase === "processing";
+
+  const steps = [
+    { step: 1, label: "Upload", done: uploadPhase !== "idle" && uploadPhase !== "uploading", active: uploadPhase === "uploading" },
+    { step: 2, label: "Details", done: uploadPhase === "ready" && title.trim().length > 0, active: uploadPhase === "ready" || uploadPhase === "processing" },
+    { step: 3, label: "Publish", done: false, active: false },
+  ];
 
   if (!open) return null;
 
@@ -376,11 +371,36 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
             )}
 
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-3 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-foreground font-display">Upload Video</h2>
-              <button onClick={handleClose} className="p-2 rounded-lg hover:bg-secondary transition-colors">
-                <X className="w-5 h-5 text-muted-foreground" />
-              </button>
+            <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-bold text-foreground font-display">Upload Video</h2>
+                <button onClick={handleClose} aria-label="Close" className="p-2 rounded-lg hover:bg-secondary transition-colors">
+                  <X className="w-5 h-5 text-muted-foreground" />
+                </button>
+              </div>
+
+              {/* Step indicator */}
+              {file && (
+                <div className="flex items-center justify-center gap-1 mt-3 pb-1">
+                  {steps.map((s, i) => (
+                    <div key={s.step} className="flex items-center gap-1">
+                      <div className="flex flex-col items-center gap-0.5">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-colors ${
+                          s.done ? "bg-primary text-primary-foreground" :
+                          s.active ? "bg-primary/20 text-primary border border-primary" :
+                          "bg-secondary text-muted-foreground"
+                        }`}>
+                          {s.done ? '✓' : s.step}
+                        </div>
+                        <span className={`text-[10px] ${s.active || s.done ? "text-primary font-medium" : "text-muted-foreground"}`}>
+                          {s.label}
+                        </span>
+                      </div>
+                      {i < 2 && <div className={`w-8 h-px mb-3 ${s.done ? "bg-primary" : "bg-border"}`} />}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="p-4 space-y-5">
@@ -501,7 +521,7 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
                       <div className="flex items-center gap-3">
                         <div className="w-32 h-[72px] rounded-lg overflow-hidden bg-card border border-border flex items-center justify-center shrink-0">
                           {displayThumb ? (
-                            <img src={displayThumb} alt="Thumbnail" className="w-full h-full object-cover" />
+                            <img src={displayThumb} alt="Video thumbnail preview" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                           ) : (
                             <div className="flex flex-col items-center gap-1">
                               <Image className="w-5 h-5 text-muted-foreground" />
@@ -528,19 +548,28 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
                       </div>
                     </div>
 
-                    {/* Category */}
+                    {/* Category — native select for iOS compatibility */}
                     <div>
                       <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Category</label>
-                      <Select value={category} onValueChange={setCategory}>
-                        <SelectTrigger className="bg-card border-border focus:ring-primary">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
+                      <div className="relative">
+                        <select
+                          value={category}
+                          onChange={(e) => setCategory(e.target.value)}
+                          className="w-full h-11 px-3 pr-10 rounded-md border border-border bg-card text-foreground text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+                          style={{
+                            fontSize: '16px',
+                            colorScheme: 'dark',
+                            WebkitAppearance: 'none',
+                          }}
+                        >
                           {CATEGORIES.map(c => (
-                            <SelectItem key={c} value={c}>{c}</SelectItem>
+                            <option key={c} value={c}>{c}</option>
                           ))}
-                        </SelectContent>
-                      </Select>
+                        </select>
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                          <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                      </div>
                     </div>
 
                     {/* Tags */}
@@ -550,7 +579,7 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
                         {tags.map(tag => (
                           <span key={tag} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
                             {tag}
-                            <button onClick={() => setTags(tags.filter(t => t !== tag))} className="hover:text-foreground">
+                            <button onClick={() => setTags(tags.filter(t => t !== tag))} aria-label={`Remove ${tag} tag`} className="hover:text-foreground">
                               <X className="w-3 h-3" />
                             </button>
                           </span>
@@ -640,20 +669,37 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
                 <Button
                   variant="ghost"
                   onClick={() => handlePublish(true)}
-                  disabled={!title.trim() || publishing || !muxAssetId}
+                  disabled={!title.trim() || publishing || isUploading || !muxAssetId}
                   className="text-sm"
                 >
                   Save Draft
                 </Button>
                 <Button
                   onClick={() => handlePublish(false)}
-                  disabled={publishDisabled && uploadPhase !== "ready"}
-                  className="flex-1 gap-2"
+                  disabled={!canPublish}
+                  className={`flex-1 gap-2 transition-all ${isUploading ? 'opacity-100 cursor-default' : ''}`}
                 >
-                  {uploadPhase === "uploading" && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {uploadPhase === "processing" && <span className="w-2 h-2 rounded-full bg-primary-foreground animate-pulse" />}
-                  {publishing && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {publishLabel}
+                  {uploadPhase === "uploading" && (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Uploading {uploadProgress}%…
+                    </>
+                  )}
+                  {uploadPhase === "processing" && (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Processing…
+                    </>
+                  )}
+                  {publishing && (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Publishing…
+                    </>
+                  )}
+                  {!isUploading && !publishing && (
+                    hasSchedule ? "Schedule Publish →" : "Publish Video →"
+                  )}
                 </Button>
               </div>
             )}
