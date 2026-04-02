@@ -160,6 +160,7 @@ const App = () => (
               <Sonner />
               <TierCelebration />
               <InstallPrompt />
+              <PushNotificationPermission />
               <AppWithSplash>
               <BrowserRouter>
                 <ErrorBoundary>
