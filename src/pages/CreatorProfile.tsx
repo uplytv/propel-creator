@@ -48,17 +48,17 @@ function useCreatorProfileData(username: string | undefined) {
   const profileQuery = useQuery({
     queryKey: ["creator-public-profile", username],
     queryFn: async () => {
-      // Try username first, then display_name as fallback — use public view to hide financial fields
-      let { data, error } = await (supabase as any)
-        .from("profiles_public")
-        .select("*")
+      // Try username first, then display_name as fallback
+      let { data, error } = await supabase
+        .from("profiles")
+        .select("id, user_id, display_name, username, avatar_url, bio, creator_type, members, mrr, total_revenue, social_links")
         .eq("username", username)
         .maybeSingle();
       if (!data) {
-        const res = await (supabase as any)
-          .from("profiles_public")
-          .select("*")
-          .eq("display_name", username!)
+        const res = await supabase
+          .from("profiles")
+          .select("id, user_id, display_name, username, avatar_url, bio, creator_type, members, mrr, total_revenue, social_links")
+          .ilike("display_name", username!)
           .maybeSingle();
         data = res.data;
         error = res.error;
