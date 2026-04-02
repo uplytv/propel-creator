@@ -17,7 +17,7 @@ const categories = [
 export default function ScheduleStreamTab() {
   const { user } = useAuth();
   const { profile } = useApp();
-  const { toast } = useToast();
+  const toast = sonnerToast;
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
