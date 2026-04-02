@@ -49,7 +49,7 @@ export default function PinnedProductOverlay({ streamId }: PinnedProductOverlayP
       }, (payload: any) => {
         const row = payload.new;
         if (row?.is_pinned) {
-          setProduct({ id: row.id, name: row.name, price: row.price, image_url: row.image_url, stripe_price_id: row.stripe_price_id, external_url: row.external_url });
+          setProduct({ id: row.id, title: row.title, price: row.price, image_url: row.image_url, stripe_price_id: row.stripe_price_id });
           setDismissed(false);
         } else if (payload.old?.is_pinned && !row?.is_pinned) {
           setProduct(null);
