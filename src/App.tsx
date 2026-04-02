@@ -232,6 +232,12 @@ const App = () => (
                     <Route path="/invite-codes" element={<ProtectedRoute><InviteCodes /></ProtectedRoute>} />
                     <Route path="/dashboard/content-studio" element={<ProtectedRoute><ContentStudio /></ProtectedRoute>} />
                     <Route path="/dashboard/ai-team" element={<ProtectedRoute><AITeamDashboard /></ProtectedRoute>} />
+                    <Route path="/newsletter" element={<ProtectedRoute><Newsletter /></ProtectedRoute>} />
+                    <Route path="/my-page" element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
+                    <Route path="/my-page/funnel/:pageId" element={<ProtectedRoute><FunnelEditor /></ProtectedRoute>} />
+                    <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
+                    <Route path="/marketplace/deal/:dealId" element={<ProtectedRoute><BrandDeal /></ProtectedRoute>} />
+                    <Route path="/podcast" element={<ProtectedRoute><Podcast /></ProtectedRoute>} />
 
                     {/* Admin routes */}
                     <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
