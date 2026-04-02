@@ -400,6 +400,56 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Churn Prediction Section */}
+      <Card className="border-border">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-base font-bold flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-yellow-500" /> Members At Risk
+              </h3>
+              {churnLastRun && <p className="text-[11px] text-muted-foreground mt-0.5">Last updated {formatDistanceToNow(new Date(churnLastRun), { addSuffix: true })}</p>}
+            </div>
+            <Button size="sm" variant="outline" onClick={runChurnAnalysis} disabled={churnLoading}>
+              {churnLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : null}
+              Run Analysis
+            </Button>
+          </div>
+          {churnLoading ? (
+            <div className="space-y-2">{[1,2,3].map(i => <Skeleton key={i} className="h-12 w-full" />)}</div>
+          ) : churnData.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-6">Click "Run Analysis" to identify at-risk members</p>
+          ) : (
+            <div className="space-y-2">
+              {churnData.map((p: any) => {
+                const riskColors: Record<string, string> = { critical: "destructive", high: "destructive", medium: "secondary", low: "default" };
+                const sent = messagedIds.has(p.member_id) || p.intervention_sent;
+                return (
+                  <div key={p.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold">
+                        {(p.member_id || "?").slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{p.member_id?.slice(0, 8)}...</p>
+                        <p className="text-xs text-muted-foreground">{p.days_since_last_active ?? 0}d inactive</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={(riskColors[p.risk_level] as any) || "default"} className="text-[10px]">{p.risk_level}</Badge>
+                      <span className="text-xs text-muted-foreground w-10 text-right">{Math.round((p.churn_probability || 0) * 100)}%</span>
+                      <Button size="sm" variant={sent ? "ghost" : "outline"} onClick={() => !sent && sendIntervention(p)} disabled={sent} className="text-xs h-7">
+                        {sent ? <><Check className="w-3 h-3 mr-1" /> Done</> : <><MessageSquare className="w-3 h-3 mr-1" /> Reach out</>}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </AppLayout>
   );
 }
