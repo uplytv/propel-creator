@@ -205,16 +205,62 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
     }
   };
 
+  const compressImage = (file: File, maxSizeKB = 1800): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const canvas = document.createElement("canvas");
+        const MAX_DIM = 1920;
+        let w = img.width, h = img.height;
+        if (w > MAX_DIM || h > MAX_DIM) {
+          const ratio = Math.min(MAX_DIM / w, MAX_DIM / h);
+          w = Math.round(w * ratio);
+          h = Math.round(h * ratio);
+        }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject(new Error("Canvas not supported"));
+        ctx.drawImage(img, 0, 0, w, h);
+        let quality = 0.85;
+        const tryCompress = () => {
+          canvas.toBlob((blob) => {
+            if (!blob) return reject(new Error("Compression failed"));
+            if (blob.size > maxSizeKB * 1024 && quality > 0.3) {
+              quality -= 0.1;
+              tryCompress();
+            } else {
+              resolve(blob);
+            }
+          }, "image/jpeg", quality);
+        };
+        tryCompress();
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Invalid image")); };
+      img.src = url;
+    });
+  };
+
   const handleThumbUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f || !user) return;
-    if (f.size > 2 * 1024 * 1024) {
-      toast({ title: "File too large", description: "Thumbnail must be under 2MB", variant: "destructive" });
+    if (f.size > 20 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Thumbnail must be under 20MB", variant: "destructive" });
       return;
     }
-    const ext = f.name.split(".").pop() || "jpg";
-    const path = `${user.id}/${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from("covers").upload(path, f);
+    let uploadFile: File | Blob = f;
+    if (f.size > 2 * 1024 * 1024) {
+      try {
+        uploadFile = await compressImage(f);
+      } catch {
+        toast({ title: "Compression failed", description: "Could not compress image", variant: "destructive" });
+        return;
+      }
+    }
+    const path = `${user.id}/${Date.now()}.jpg`;
+    const { error } = await supabase.storage.from("covers").upload(path, uploadFile, { contentType: "image/jpeg" });
     if (error) {
       toast({ title: "Upload failed", description: error.message, variant: "destructive" });
       return;
