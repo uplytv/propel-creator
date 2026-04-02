@@ -44,7 +44,6 @@ export async function uploadToMuxWithRetry(opts: UploadOptions): Promise<string>
   const maxRetries = opts.maxRetries ?? 2;
   let lastError: Error | null = null;
 
-  console.log("[MuxUpload] Starting upload flow", {
     fileSize: opts.file.size,
     fileType: opts.file.type,
     isFile: opts.file instanceof File,
@@ -55,20 +54,17 @@ export async function uploadToMuxWithRetry(opts: UploadOptions): Promise<string>
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       if (attempt > 0) {
-        console.log(`[MuxUpload] Retry ${attempt}/${maxRetries} after ${2000 * attempt}ms delay...`);
         await new Promise((r) => setTimeout(r, 2000 * attempt));
         opts.onProgress?.(0);
       }
 
       // Get a fresh upload URL each attempt (previous may have expired)
-      console.log(`[MuxUpload] Attempt ${attempt + 1}: Requesting upload URL from edge function...`);
       const { uploadId, uploadUrl } = await createMuxUpload({
         userId: opts.userId,
         title: opts.title,
         description: opts.description,
         isPublic: opts.isPublic,
       });
-      console.log(`[MuxUpload] Got upload URL`, { uploadId, uploadUrlPrefix: uploadUrl.substring(0, 80) });
 
       // Use UpChunk for chunked, resumable upload
       await new Promise<void>((resolve, reject) => {
@@ -78,7 +74,6 @@ export async function uploadToMuxWithRetry(opts: UploadOptions): Promise<string>
             ? opts.file
             : new File([opts.file], "recording.webm", { type: opts.file.type || "video/webm" });
 
-        console.log(`[MuxUpload] Creating UpChunk upload`, {
           fileName: file.name,
           fileSize: file.size,
           fileType: file.type,
@@ -95,13 +90,11 @@ export async function uploadToMuxWithRetry(opts: UploadOptions): Promise<string>
         upload.on("progress", (detail: { detail: number }) => {
           const pct = Math.round(detail.detail);
           if (pct % 10 === 0 || pct === 100) {
-            console.log(`[MuxUpload] Progress: ${pct}%`);
           }
           opts.onProgress?.(pct);
         });
 
         upload.on("success", () => {
-          console.log(`[MuxUpload] UpChunk upload SUCCESS for uploadId=${uploadId}`);
           resolve();
         });
 
@@ -111,7 +104,6 @@ export async function uploadToMuxWithRetry(opts: UploadOptions): Promise<string>
         });
 
         upload.on("attempt", (detail: any) => {
-          console.log(`[MuxUpload] UpChunk chunk attempt`, detail?.detail);
         });
 
         upload.on("attemptFailure", (detail: any) => {
@@ -119,7 +111,6 @@ export async function uploadToMuxWithRetry(opts: UploadOptions): Promise<string>
         });
 
         upload.on("chunkSuccess", (detail: any) => {
-          console.log(`[MuxUpload] Chunk uploaded successfully`, detail?.detail);
         });
 
         upload.on("offline", () => {
@@ -127,11 +118,9 @@ export async function uploadToMuxWithRetry(opts: UploadOptions): Promise<string>
         });
 
         upload.on("online", () => {
-          console.log(`[MuxUpload] Browser back ONLINE, resuming upload`);
         });
       });
 
-      console.log(`[MuxUpload] Upload complete! uploadId=${uploadId}`);
       return uploadId;
     } catch (err: any) {
       lastError = err;

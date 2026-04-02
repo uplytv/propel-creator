@@ -186,7 +186,7 @@ export default function WebRTCPlayer({ streamId, playbackId, title, className }:
           retryTimerRef.current = setTimeout(connect, delay);
         } else {
           // Exhausted WebRTC retries — fall back to HLS
-          console.log('[WebRTCPlayer] WebRTC retries exhausted — falling back to HLS');
+          
           startHLSFallback();
         }
         return next;
