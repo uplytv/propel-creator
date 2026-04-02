@@ -57,6 +57,9 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
       { label: "Jobs & Talent", icon: Briefcase, path: "/jobs", desc: "Freelance marketplace", featureKey: "jobs_marketplace" },
       { label: "Collaborate", icon: Handshake, path: "/collaborate", desc: "Co-creator collabs", badgeKey: "collaborate", featureKey: "collaborations" },
       { label: "Affiliates", icon: Share2, path: "/affiliates", desc: "Referral program", featureKey: "affiliates" },
+      { label: "Newsletter", icon: Mail, path: "/newsletter", desc: "Email your members", featureKey: "newsletter" },
+      { label: "My Page", icon: Globe, path: "/my-page", desc: "Bio link & funnel pages" },
+      { label: "Brand Deals", icon: Briefcase, path: "/marketplace", desc: "Sponsored opportunities" },
     ],
   },
   {
