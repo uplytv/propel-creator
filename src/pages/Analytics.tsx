@@ -51,7 +51,7 @@ const PIE_COLORS = ["hsl(var(--primary))", "hsl(var(--muted-foreground))", "hsl(
 export default function AnalyticsPage() {
   const { data, isLoading } = useCreatorAnalytics();
   const { user } = useAuth();
-  const { profile } = useProfile();
+  const { data: profile } = useProfile();
   const { toast } = useToast();
   const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d" | "all">("30d");
   const [churnData, setChurnData] = useState<any[]>([]);
