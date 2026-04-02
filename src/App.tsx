@@ -77,6 +77,13 @@ const TicketDetail = lazy(() => import("./pages/TicketDetail"));
 const ContentStudio = lazy(() => import("./pages/ContentStudio"));
 const AITeamDashboard = lazy(() => import("./pages/AITeamDashboard"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
+const Newsletter = lazy(() => import("./pages/Newsletter"));
+const MyPage = lazy(() => import("./pages/MyPage"));
+const FunnelEditor = lazy(() => import("./pages/FunnelEditor"));
+const Marketplace = lazy(() => import("./pages/Marketplace"));
+const BrandDeal = lazy(() => import("./pages/BrandDeal"));
+const Podcast = lazy(() => import("./pages/Podcast"));
+const BioPage = lazy(() => import("./pages/BioPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
