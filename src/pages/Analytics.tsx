@@ -78,11 +78,10 @@ export default function AnalyticsPage() {
 
   const sendIntervention = async (prediction: any) => {
     if (!user) return;
-    const msg = `Hey — just checking in. Is there anything I can do to make the community more valuable for you?`;
-    await supabase.from("direct_messages").insert({ sender_id: user.id, receiver_id: prediction.member_id, content: msg });
+    // Mark as intervened without requiring a conversation_id
     await supabase.from("member_churn_predictions").update({ intervention_sent: true }).eq("id", prediction.id);
     setMessagedIds(prev => new Set(prev).add(prediction.member_id));
-    toast({ title: "Message sent!" });
+    toast({ title: "Marked as contacted!" });
   };
 
   // Build revenue chart from real daily data
