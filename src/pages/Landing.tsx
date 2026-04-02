@@ -1,5 +1,6 @@
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { useRef, useMemo, useCallback, useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
