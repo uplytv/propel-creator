@@ -1,16 +1,22 @@
 import { useMemo, useState } from "react";
-import { TrendingUp, TrendingDown, Users, Eye, DollarSign, UserPlus, Play, Calendar, Activity, PieChart as PieChartIcon } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, Eye, DollarSign, UserPlus, Play, Calendar, Activity, PieChart as PieChartIcon, AlertTriangle, MessageSquare, Loader2, Check } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import BackNav from "@/components/BackNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCreatorAnalytics } from "@/hooks/useCreatorAnalytics";
+import { useAuth } from "@/context/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
+import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow, format, subDays } from "date-fns";
 import SEOHead from "@/components/SEOHead";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { MemberAnalyticsCard } from "@/components/dashboard/MemberAnalyticsCard";
 import { ContentScheduler } from "@/components/dashboard/ContentScheduler";
+import { useToast } from "@/hooks/use-toast";
 
 function MetricCard({ label, value, growth, icon: Icon }: { label: string; value: string; growth: number; icon: typeof Users }) {
   const isPositive = growth >= 0;
@@ -44,7 +50,39 @@ const PIE_COLORS = ["hsl(var(--primary))", "hsl(var(--muted-foreground))", "hsl(
 
 export default function AnalyticsPage() {
   const { data, isLoading } = useCreatorAnalytics();
+  const { user } = useAuth();
+  const { data: profile } = useProfile();
+  const { toast } = useToast();
   const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d" | "all">("30d");
+  const [churnData, setChurnData] = useState<any[]>([]);
+  const [churnLoading, setChurnLoading] = useState(false);
+  const [churnLastRun, setChurnLastRun] = useState<string | null>(null);
+  const [messagedIds, setMessagedIds] = useState<Set<string>>(new Set());
+
+  const runChurnAnalysis = async () => {
+    if (!profile?.id) return;
+    setChurnLoading(true);
+    try {
+      await supabase.functions.invoke("calculate-churn-predictions", { body: { creator_id: profile.id } });
+      const { data: predictions } = await supabase
+        .from("member_churn_predictions")
+        .select("*")
+        .eq("creator_id", profile.id)
+        .order("churn_probability", { ascending: false })
+        .limit(20);
+      setChurnData(predictions || []);
+      setChurnLastRun(new Date().toISOString());
+    } catch { toast({ title: "Analysis failed", variant: "destructive" }); }
+    setChurnLoading(false);
+  };
+
+  const sendIntervention = async (prediction: any) => {
+    if (!user) return;
+    // Mark as intervened without requiring a conversation_id
+    await supabase.from("member_churn_predictions").update({ intervention_sent: true }).eq("id", prediction.id);
+    setMessagedIds(prev => new Set(prev).add(prediction.member_id));
+    toast({ title: "Marked as contacted!" });
+  };
 
   // Build revenue chart from real daily data
   const revenueChartData = useMemo(() => {
@@ -362,6 +400,56 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Churn Prediction Section */}
+      <Card className="border-border">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-base font-bold flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-yellow-500" /> Members At Risk
+              </h3>
+              {churnLastRun && <p className="text-[11px] text-muted-foreground mt-0.5">Last updated {formatDistanceToNow(new Date(churnLastRun), { addSuffix: true })}</p>}
+            </div>
+            <Button size="sm" variant="outline" onClick={runChurnAnalysis} disabled={churnLoading}>
+              {churnLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : null}
+              Run Analysis
+            </Button>
+          </div>
+          {churnLoading ? (
+            <div className="space-y-2">{[1,2,3].map(i => <Skeleton key={i} className="h-12 w-full" />)}</div>
+          ) : churnData.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-6">Click "Run Analysis" to identify at-risk members</p>
+          ) : (
+            <div className="space-y-2">
+              {churnData.map((p: any) => {
+                const riskColors: Record<string, string> = { critical: "destructive", high: "destructive", medium: "secondary", low: "default" };
+                const sent = messagedIds.has(p.member_id) || p.intervention_sent;
+                return (
+                  <div key={p.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold">
+                        {(p.member_id || "?").slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{p.member_id?.slice(0, 8)}...</p>
+                        <p className="text-xs text-muted-foreground">{p.days_since_last_active ?? 0}d inactive</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={(riskColors[p.risk_level] as any) || "default"} className="text-[10px]">{p.risk_level}</Badge>
+                      <span className="text-xs text-muted-foreground w-10 text-right">{Math.round((p.churn_probability || 0) * 100)}%</span>
+                      <Button size="sm" variant={sent ? "ghost" : "outline"} onClick={() => !sent && sendIntervention(p)} disabled={sent} className="text-xs h-7">
+                        {sent ? <><Check className="w-3 h-3 mr-1" /> Done</> : <><MessageSquare className="w-3 h-3 mr-1" /> Reach out</>}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </AppLayout>
   );
 }

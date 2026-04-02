@@ -14,6 +14,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import InstallPrompt from "@/components/InstallPrompt";
+import PushNotificationPermission from "@/components/PushNotificationPermission";
 import OfflineScreen from "@/components/OfflineScreen";
 import SplashScreen from "@/components/SplashScreen";
 import { useNativeInit, useKeyboardState } from "@/hooks/useNativePlatform";
@@ -76,6 +77,13 @@ const TicketDetail = lazy(() => import("./pages/TicketDetail"));
 const ContentStudio = lazy(() => import("./pages/ContentStudio"));
 const AITeamDashboard = lazy(() => import("./pages/AITeamDashboard"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
+const Newsletter = lazy(() => import("./pages/Newsletter"));
+const MyPage = lazy(() => import("./pages/MyPage"));
+const FunnelEditor = lazy(() => import("./pages/FunnelEditor"));
+const Marketplace = lazy(() => import("./pages/Marketplace"));
+const BrandDeal = lazy(() => import("./pages/BrandDeal"));
+const Podcast = lazy(() => import("./pages/Podcast"));
+const BioPage = lazy(() => import("./pages/BioPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -152,6 +160,7 @@ const App = () => (
               <Sonner />
               <TierCelebration />
               <InstallPrompt />
+              <PushNotificationPermission />
               <AppWithSplash>
               <BrowserRouter>
                 <ErrorBoundary>
@@ -187,6 +196,7 @@ const App = () => (
                     <Route path="/:username/events/:slug" element={<EventPage />} />
                     <Route path="/creator/:username/events/:slug" element={<EventPage />} />
                     <Route path="/tickets/:token" element={<TicketDetail />} />
+                    <Route path="/:username/page" element={<BioPage />} />
 
                     {/* Onboarding & Waitlist (auth required but no approval needed) */}
                     <Route path="/onboarding" element={<Onboarding />} />
@@ -222,6 +232,12 @@ const App = () => (
                     <Route path="/invite-codes" element={<ProtectedRoute><InviteCodes /></ProtectedRoute>} />
                     <Route path="/dashboard/content-studio" element={<ProtectedRoute><ContentStudio /></ProtectedRoute>} />
                     <Route path="/dashboard/ai-team" element={<ProtectedRoute><AITeamDashboard /></ProtectedRoute>} />
+                    <Route path="/newsletter" element={<ProtectedRoute><Newsletter /></ProtectedRoute>} />
+                    <Route path="/my-page" element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
+                    <Route path="/my-page/funnel/:pageId" element={<ProtectedRoute><FunnelEditor /></ProtectedRoute>} />
+                    <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
+                    <Route path="/marketplace/deal/:dealId" element={<ProtectedRoute><BrandDeal /></ProtectedRoute>} />
+                    <Route path="/podcast" element={<ProtectedRoute><Podcast /></ProtectedRoute>} />
 
                     {/* Admin routes */}
                     <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
