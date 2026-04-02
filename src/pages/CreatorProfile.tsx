@@ -49,15 +49,15 @@ function useCreatorProfileData(username: string | undefined) {
     queryKey: ["creator-public-profile", username],
     queryFn: async () => {
       // Try username first, then display_name as fallback
-      let { data, error } = await supabase
+      let { data, error } = await (supabase as any)
         .from("profiles")
-        .select("id, user_id, display_name, username, avatar_url, bio, creator_type, members, mrr, total_revenue, social_links")
+        .select("id, user_id, display_name, username, avatar_url, bio, creator_type, members, mrr, total_revenue, cover_image_url, business_category, website")
         .eq("username", username)
         .maybeSingle();
       if (!data) {
-        const res = await supabase
+        const res = await (supabase as any)
           .from("profiles")
-          .select("id, user_id, display_name, username, avatar_url, bio, creator_type, members, mrr, total_revenue, social_links")
+          .select("id, user_id, display_name, username, avatar_url, bio, creator_type, members, mrr, total_revenue, cover_image_url, business_category, website")
           .ilike("display_name", username!)
           .maybeSingle();
         data = res.data;
