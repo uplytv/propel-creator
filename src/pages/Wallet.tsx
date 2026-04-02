@@ -82,7 +82,7 @@ export default function Wallet() {
       if (error) throw error;
       if (data?.url) window.open(data.url, "_blank");
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error("Error", { description: err.message });
     }
   };
 
