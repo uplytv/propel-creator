@@ -43,6 +43,7 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
     items: [
       { label: "Content Library", icon: Film, path: "/content-library", desc: "Videos & uploads", featureKey: "content_library" },
       { label: "Ad Campaigns", icon: Plug, path: "/ad-integrations", desc: "Boost streams", featureKey: "stream_boost" },
+      { label: "Podcast", icon: Mic, path: "/podcast", desc: "Host your podcast", featureKey: "podcast" },
     ],
   },
   {
