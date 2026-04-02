@@ -335,7 +335,7 @@ export default function CreatorProfile() {
   const [editOpen, setEditOpen] = useState(false);
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [joinLoading, setJoinLoading] = useState(false);
-  const [buyingProductId, setBuyingProductId] = useStateBuy<string | null>(null);
+  const [buyingProductId, setBuyingProductId] = useState<string | null>(null);
   const [enrollProduct, setEnrollProduct] = useState<any>(null);
 
   const {
