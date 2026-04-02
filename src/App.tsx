@@ -196,6 +196,7 @@ const App = () => (
                     <Route path="/:username/events/:slug" element={<EventPage />} />
                     <Route path="/creator/:username/events/:slug" element={<EventPage />} />
                     <Route path="/tickets/:token" element={<TicketDetail />} />
+                    <Route path="/:username/page" element={<BioPage />} />
 
                     {/* Onboarding & Waitlist (auth required but no approval needed) */}
                     <Route path="/onboarding" element={<Onboarding />} />
