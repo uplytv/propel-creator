@@ -178,7 +178,7 @@ export default function ScheduleStreamTab() {
           { duration: 8000, unstyled: true, className: "w-full" }
         );
       } else {
-        toast({ title: "Stream scheduled! 📅", description: `Scheduled for ${format(dateObj, "PPpp")}` });
+        toast.success(`Stream scheduled! 📅 — ${format(dateObj, "PPpp")}`);
       }
 
       setTitle("");
