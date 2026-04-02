@@ -68,12 +68,23 @@ export default function BlastComposer({ open, onClose, creatorId, spaceId, lastB
   useEffect(() => {
     if (!open) return;
     (async () => {
-      const { count } = await supabase
+      // Try with email_opt_in filter first
+      const { count: filteredCount, error } = await supabase
         .from("community_members")
         .select("*", { count: "exact", head: true })
         .eq("creator_id", creatorId)
         .eq("email_opt_in", true);
-      setMemberCount(count || 0);
+
+      if (error?.message?.includes("email_opt_in") || error?.code === "42703") {
+        // Column doesn't exist — fall back to total member count
+        const { count: totalCount } = await supabase
+          .from("community_members")
+          .select("*", { count: "exact", head: true })
+          .eq("creator_id", creatorId);
+        setMemberCount(totalCount || 0);
+      } else {
+        setMemberCount(filteredCount || 0);
+      }
     })();
   }, [open, creatorId]);
 
