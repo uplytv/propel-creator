@@ -85,7 +85,7 @@ export default function PinnedProductOverlay({ streamId }: PinnedProductOverlayP
           </button>
           <div className="flex items-center gap-3">
             {product.image_url ? (
-              <img src={product.image_url} alt={product.name} className="w-12 h-12 rounded-lg object-cover" />
+              <img src={product.image_url} alt={product.title} className="w-12 h-12 rounded-lg object-cover" />
             ) : (
               <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
                 <ShoppingBag className="w-5 h-5 text-primary" />
