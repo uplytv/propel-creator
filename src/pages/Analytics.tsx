@@ -50,7 +50,40 @@ const PIE_COLORS = ["hsl(var(--primary))", "hsl(var(--muted-foreground))", "hsl(
 
 export default function AnalyticsPage() {
   const { data, isLoading } = useCreatorAnalytics();
+  const { user } = useAuth();
+  const { profile } = useProfile();
+  const { toast } = useToast();
   const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d" | "all">("30d");
+  const [churnData, setChurnData] = useState<any[]>([]);
+  const [churnLoading, setChurnLoading] = useState(false);
+  const [churnLastRun, setChurnLastRun] = useState<string | null>(null);
+  const [messagedIds, setMessagedIds] = useState<Set<string>>(new Set());
+
+  const runChurnAnalysis = async () => {
+    if (!profile?.id) return;
+    setChurnLoading(true);
+    try {
+      await supabase.functions.invoke("calculate-churn-predictions", { body: { creator_id: profile.id } });
+      const { data: predictions } = await supabase
+        .from("member_churn_predictions")
+        .select("*")
+        .eq("creator_id", profile.id)
+        .order("churn_probability", { ascending: false })
+        .limit(20);
+      setChurnData(predictions || []);
+      setChurnLastRun(new Date().toISOString());
+    } catch { toast({ title: "Analysis failed", variant: "destructive" }); }
+    setChurnLoading(false);
+  };
+
+  const sendIntervention = async (prediction: any) => {
+    if (!user) return;
+    const msg = `Hey — just checking in. Is there anything I can do to make the community more valuable for you?`;
+    await supabase.from("direct_messages").insert({ sender_id: user.id, receiver_id: prediction.member_id, content: msg });
+    await supabase.from("member_churn_predictions").update({ intervention_sent: true }).eq("id", prediction.id);
+    setMessagedIds(prev => new Set(prev).add(prediction.member_id));
+    toast({ title: "Message sent!" });
+  };
 
   // Build revenue chart from real daily data
   const revenueChartData = useMemo(() => {
