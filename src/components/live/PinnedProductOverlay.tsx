@@ -92,7 +92,7 @@ export default function PinnedProductOverlay({ streamId }: PinnedProductOverlayP
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white truncate">{product.name}</p>
+              <p className="text-sm font-semibold text-white truncate">{product.title}</p>
               <p className="text-sm font-bold text-primary">${product.price}</p>
             </div>
             <Button size="sm" onClick={handleCTA} className="shrink-0">
