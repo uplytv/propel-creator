@@ -186,7 +186,7 @@ export default function ScheduleStreamTab() {
       setScheduledAt("");
       queryClient.invalidateQueries({ queryKey: ["scheduled-streams"] });
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error(err.message || "Failed to schedule stream");
     } finally {
       setSaving(false);
     }
