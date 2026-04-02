@@ -25,7 +25,7 @@ export default function PinnedProductOverlay({ streamId }: PinnedProductOverlayP
     const fetchPinned = async () => {
       const { data } = await supabase
         .from("live_products")
-        .select("id, name, price, image_url, stripe_price_id, external_url")
+        .select("id, title, price, image_url, stripe_price_id")
         .eq("stream_id", streamId)
         .eq("is_pinned", true)
         .maybeSingle();
