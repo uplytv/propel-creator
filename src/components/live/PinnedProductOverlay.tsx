@@ -62,11 +62,7 @@ export default function PinnedProductOverlay({ streamId }: PinnedProductOverlayP
 
   const handleCTA = async () => {
     if (!product) return;
-    // Track click
     await supabase.from("live_products").update({ click_count: 1 }).eq("id", product.id);
-    if (product.external_url) {
-      window.open(product.external_url, "_blank");
-    }
   };
 
   return (
