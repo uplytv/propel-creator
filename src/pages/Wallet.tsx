@@ -15,7 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useWallet, useTransactions, usePayoutRequests } from "@/hooks/useWallet";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useMemo } from "react";
 import SEOHead from "@/components/SEOHead";
 import StripeGate from "@/components/StripeGate";

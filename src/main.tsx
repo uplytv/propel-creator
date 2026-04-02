@@ -9,12 +9,14 @@ import { initPostHog } from "./lib/posthog";
 initSentry();
 initPostHog();
 
-// Register service worker for push notifications and offline
+// Register service worker for push notifications and offline (production only)
 if ('serviceWorker' in navigator) {
   const isInIframe = (() => { try { return window.self !== window.top; } catch { return true; } })();
   const isPreviewHost = window.location.hostname.includes("id-preview--") || window.location.hostname.includes("lovableproject.com");
-  if (!isInIframe && !isPreviewHost) {
-    navigator.serviceWorker.register('/sw.js').catch(console.error);
+  if (!isInIframe && !isPreviewHost && import.meta.env.PROD) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
   } else {
     navigator.serviceWorker?.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
   }
