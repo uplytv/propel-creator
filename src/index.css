@@ -15,7 +15,7 @@
     --secondary: 260 10% 94%;
     --secondary-foreground: 260 10% 15%;
     --muted: 260 8% 92%;
-    --muted-foreground: 0 0% 53%;
+    --muted-foreground: 0 0% 58%;
     --accent: 145 100% 50%;
     --accent-foreground: 0 0% 0%;
     --destructive: 0 84% 55%;
@@ -42,7 +42,7 @@
     --surface: 260 10% 7%;
     --surface-raised: 260 8% 10%;
     --surface-border: 260 8% 12%;
-    --text-dim: 0 0% 53%;
+    --text-dim: 0 0% 58%;
     --glow-green: 145 100% 50% / 0.08;
     --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
     --card-shadow-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
@@ -75,7 +75,7 @@
     --secondary: 0 0% 10%;
     --secondary-foreground: 0 0% 95%;
     --muted: 0 0% 14%;
-    --muted-foreground: 0 0% 53%;
+    --muted-foreground: 0 0% 58%;
     --accent: 145 100% 50%;
     --accent-foreground: 0 0% 0%;
     --destructive: 0 84% 60%;
@@ -101,7 +101,7 @@
     --surface: 0 0% 4%;
     --surface-raised: 0 0% 7%;
     --surface-border: 0 0% 12%;
-    --text-dim: 0 0% 53%;
+    --text-dim: 0 0% 58%;
     --glow-green: 145 100% 50% / 0.15;
     --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
     --card-shadow-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
@@ -512,4 +512,13 @@ select {
 @keyframes pageIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Prevent iOS auto-zoom on input focus */
+@media (max-width: 768px) {
+  input:not([type="range"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
 }

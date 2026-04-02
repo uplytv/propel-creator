@@ -15,7 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useWallet, useTransactions, usePayoutRequests } from "@/hooks/useWallet";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useMemo } from "react";
 import SEOHead from "@/components/SEOHead";
 import StripeGate from "@/components/StripeGate";
@@ -82,7 +82,7 @@ export default function Wallet() {
       if (error) throw error;
       if (data?.url) window.open(data.url, "_blank");
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error("Error", { description: err.message });
     }
   };
 

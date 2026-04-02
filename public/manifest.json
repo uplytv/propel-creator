@@ -1,11 +1,11 @@
 {
-  "name": "Uply — Creator Platform",
-  "short_name": "Uply",
-  "description": "A social network for creators to monetize. Go live, sell courses, build community, and scale with AI.",
+  "name": "UPLY — Your Creator Network",
+  "short_name": "UPLY",
+  "description": "The creator-owned network. Keep 95% of everything you earn.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0A0A0A",
-  "theme_color": "#0A0A0A",
+  "theme_color": "#00FF85",
   "orientation": "portrait-primary",
   "categories": ["social", "business", "entertainment"],
   "icons": [

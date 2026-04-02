@@ -1,5 +1,4 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { useState as useStateBuy } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -49,17 +48,17 @@ function useCreatorProfileData(username: string | undefined) {
   const profileQuery = useQuery({
     queryKey: ["creator-public-profile", username],
     queryFn: async () => {
-      // Try username first, then display_name as fallback — use public view to hide financial fields
+      // Try username first, then display_name as fallback
       let { data, error } = await (supabase as any)
-        .from("profiles_public")
-        .select("*")
+        .from("profiles")
+        .select("id, user_id, display_name, username, avatar_url, bio, creator_type, members, mrr, total_revenue, cover_image_url, business_category, website")
         .eq("username", username)
         .maybeSingle();
       if (!data) {
         const res = await (supabase as any)
-          .from("profiles_public")
-          .select("*")
-          .eq("display_name", username!)
+          .from("profiles")
+          .select("id, user_id, display_name, username, avatar_url, bio, creator_type, members, mrr, total_revenue, cover_image_url, business_category, website")
+          .ilike("display_name", username!)
           .maybeSingle();
         data = res.data;
         error = res.error;
@@ -336,7 +335,7 @@ export default function CreatorProfile() {
   const [editOpen, setEditOpen] = useState(false);
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [joinLoading, setJoinLoading] = useState(false);
-  const [buyingProductId, setBuyingProductId] = useStateBuy<string | null>(null);
+  const [buyingProductId, setBuyingProductId] = useState<string | null>(null);
   const [enrollProduct, setEnrollProduct] = useState<any>(null);
 
   const {

@@ -85,3 +85,8 @@ export const useNetwork = () => {
   if (!ctx) throw new Error("useNetwork must be used within NetworkProvider");
   return ctx;
 };
+
+export function useLiveCount(): number {
+  const ctx = useContext(NetworkContext);
+  return ctx?.liveCount ?? 0;
+}

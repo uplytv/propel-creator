@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Search, Users, DollarSign, Sparkles, Plus, Radio, Upload, Calendar, X, Bot, Rocket, TrendingUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
-import { useNetwork } from "@/context/NetworkContext";
+import { useLiveCount } from "@/context/NetworkContext";
 
 interface MobileTabBarProps {
   onUploadVideo?: () => void;
@@ -15,8 +15,7 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
   const { user } = useAuth();
   const [createOpen, setCreateOpen] = useState(false);
   const [ariaOpen, setAriaOpen] = useState(false);
-  let liveCount = 0;
-  try { liveCount = useNetwork().liveCount; } catch { /* not in provider */ }
+  const liveCount = useLiveCount();
 
   const communityPath = user ? `/community/${user.id}` : "/dashboard";
 

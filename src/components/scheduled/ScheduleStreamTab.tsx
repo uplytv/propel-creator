@@ -3,7 +3,6 @@ import { CalendarIcon, Loader2, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -18,7 +17,7 @@ const categories = [
 export default function ScheduleStreamTab() {
   const { user } = useAuth();
   const { profile } = useApp();
-  const { toast } = useToast();
+  const toast = sonnerToast;
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -179,7 +178,7 @@ export default function ScheduleStreamTab() {
           { duration: 8000, unstyled: true, className: "w-full" }
         );
       } else {
-        toast({ title: "Stream scheduled! 📅", description: `Scheduled for ${format(dateObj, "PPpp")}` });
+        toast.success(`Stream scheduled! 📅 — ${format(dateObj, "PPpp")}`);
       }
 
       setTitle("");
@@ -187,7 +186,7 @@ export default function ScheduleStreamTab() {
       setScheduledAt("");
       queryClient.invalidateQueries({ queryKey: ["scheduled-streams"] });
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error(err.message || "Failed to schedule stream");
     } finally {
       setSaving(false);
     }
