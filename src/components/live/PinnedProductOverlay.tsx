@@ -6,11 +6,10 @@ import { Button } from "@/components/ui/button";
 
 interface PinnedProduct {
   id: string;
-  name: string;
+  title: string;
   price: number;
-  image_url?: string;
-  stripe_price_id?: string;
-  external_url?: string;
+  image_url?: string | null;
+  stripe_price_id?: string | null;
 }
 
 interface PinnedProductOverlayProps {

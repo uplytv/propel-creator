@@ -64,7 +64,7 @@ export default function FunnelEditor() {
 
   return (
     <AppLayout>
-      <BackNav label="Back to My Page" to="/my-page" />
+      <BackNav label="Back to My Page" fallback="/my-page" />
       <div className="p-4 space-y-4 max-w-2xl mx-auto">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-bold capitalize">{pageType.replace("_", " ")} Editor</h1>
