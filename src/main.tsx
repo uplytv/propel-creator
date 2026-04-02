@@ -9,13 +9,15 @@ import { initPostHog } from "./lib/posthog";
 initSentry();
 initPostHog();
 
-// Register service worker offline handler
+// Register service worker for push notifications and offline
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.ready.then(() => {
-      console.log('SW ready');
-    });
-  });
+  const isInIframe = (() => { try { return window.self !== window.top; } catch { return true; } })();
+  const isPreviewHost = window.location.hostname.includes("id-preview--") || window.location.hostname.includes("lovableproject.com");
+  if (!isInIframe && !isPreviewHost) {
+    navigator.serviceWorker.register('/sw.js').catch(console.error);
+  } else {
+    navigator.serviceWorker?.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+  }
 }
 
 // Online/offline detection
