@@ -97,7 +97,7 @@ export function useCreateModule() {
         .select()
         .maybeSingle();
       if (error) {
-        Sentry.captureException(JSON.stringify(error, { tags: { context: "classroom" } }));
+        Sentry.captureException(error, { tags: { context: "classroom" } });
         throw error;
       }
       if (!data) throw new Error("Module was created but could not be retrieved");
