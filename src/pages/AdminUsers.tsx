@@ -41,6 +41,7 @@ interface UserRow {
   referral_count: number;
   referred_by_name: string | null;
   roles: string[];
+  invite_codes_count?: number;
 }
 
 export default function AdminUsers() {
@@ -63,10 +64,16 @@ export default function AdminUsers() {
 
       const userIds = (profiles || []).map((p: any) => p.user_id);
 
-      const [{ data: roles }, { data: referrals }] = await Promise.all([
+      const [{ data: roles }, { data: referrals }, { data: inviteCounts }] = await Promise.all([
         supabase.from("user_roles").select("user_id, role").in("user_id", userIds),
         supabase.from("referrals").select("referrer_id, referred_id") as any,
+        (supabase as any).from("invite_codes").select("owner_id").in("owner_id", userIds),
       ]);
+
+      const inviteCountMap: Record<string, number> = {};
+      ((inviteCounts || []) as any[]).forEach((ic: any) => {
+        inviteCountMap[ic.owner_id] = (inviteCountMap[ic.owner_id] || 0) + 1;
+      });
 
       const roleMap: Record<string, string[]> = {};
       (roles || []).forEach((r: any) => {
@@ -93,6 +100,7 @@ export default function AdminUsers() {
         roles: roleMap[p.user_id] || [],
         referral_count: refCountMap[p.user_id] || 0,
         referred_by_name: refByMap[p.user_id] ? nameMap[refByMap[p.user_id]] || null : null,
+        invite_codes_count: inviteCountMap[p.user_id] || 0,
       })) as UserRow[];
     },
   });
@@ -308,7 +316,16 @@ export default function AdminUsers() {
                         <td className="py-3 px-3">
                           <Badge variant="outline" className="text-xs capitalize">{u.role_type || "member"}</Badge>
                         </td>
-                        <td className="py-3 px-3">{statusBadge(u)}</td>
+                        <td className="py-3 px-3">
+                          <div className="flex items-center gap-1.5">
+                            {statusBadge(u)}
+                            {u.is_approved && (
+                              <span className="text-[10px] text-muted-foreground">
+                                {u.invite_codes_count ?? 0}/5
+                              </span>
+                            )}
+                          </div>
+                        </td>
                         <td className="py-3 px-3 font-mono">{u.referral_count}</td>
                         <td className="py-3 px-3 text-xs text-muted-foreground">{u.referred_by_name || "—"}</td>
                         <td className="py-3 px-3 text-xs text-muted-foreground">{format(new Date(u.created_at), "MMM d, yyyy")}</td>

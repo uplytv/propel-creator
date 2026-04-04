@@ -18,6 +18,7 @@ export interface CreatorProfile {
   healthScore: number;
   name: string;
   avatarUrl: string | null;
+  isApproved: boolean;
 }
 
 interface AppContextType {
@@ -46,6 +47,7 @@ const defaultProfile: CreatorProfile = {
   healthScore: 0,
   name: "Creator",
   avatarUrl: null,
+  isApproved: false,
 };
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -77,6 +79,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         healthScore: data.health_score || 0,
         name: data.display_name || "Creator",
         avatarUrl: data.avatar_url || null,
+        isApproved: !!(data as any).is_approved,
       });
       setIsOnboarded(!!data.creator_type);
     }

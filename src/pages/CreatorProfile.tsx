@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
   Heart, MessageCircle, Lock, Play, ChevronDown, ChevronUp,
-  ExternalLink, Users, BookOpen, FileText, Pencil, ShoppingBag, Loader2 as BuyLoader
+  ExternalLink, Users, BookOpen, FileText, Pencil, ShoppingBag, Loader2 as BuyLoader, Gift
 } from "lucide-react";
 import CreatorProfileEditDrawer from "@/components/creator-profile/CreatorProfileEditDrawer";
 import CreatorMilestones from "@/components/creator-profile/CreatorMilestones";
@@ -18,6 +18,7 @@ import CreatorTestimonials from "@/components/creator-profile/CreatorTestimonial
 import SEOHead from "@/components/SEOHead";
 import { toast } from "sonner";
 import { CalendarDays } from "lucide-react";
+import { useInviteCodes } from "@/hooks/useInviteCodes";
 
 // Social platform icons as simple SVG components
 const socialIcons: Record<string, React.FC<{ className?: string }>> = {
@@ -343,6 +344,9 @@ export default function CreatorProfile() {
     memberCount, posts, modules, totalLessons, isMember, space, tiers, products,
   } = useCreatorProfileData(username);
 
+  const { data: inviteData } = useInviteCodes();
+  const remainingInvites = inviteData?.remaining ?? 0;
+
   useCreatorSEO(profile);
 
   const isOwner = user && profile && user.id === profile.user_id;
@@ -465,9 +469,23 @@ export default function CreatorProfile() {
         <Link to="/" className="font-bold text-lg text-foreground tracking-tight">UPLY</Link>
         <div className="flex items-center gap-2">
           {isOwner ? (
-            <button onClick={() => setEditOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-foreground bg-secondary border border-border">
-              <Pencil className="w-3.5 h-3.5" /> Edit Profile
-            </button>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setEditOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-foreground bg-secondary border border-border">
+                <Pencil className="w-3.5 h-3.5" /> Edit Profile
+              </button>
+              {remainingInvites > 0 && (
+                <button
+                  onClick={() => navigate("/invite-codes")}
+                  className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold bg-primary/10 border border-primary/25 text-primary hover:bg-primary/20 transition-all"
+                  aria-label={`${remainingInvites} beta invites remaining`}
+                >
+                  <Gift className="w-3.5 h-3.5" />
+                  <span>
+                    {remainingInvites} Invite{remainingInvites !== 1 ? "s" : ""}
+                  </span>
+                </button>
+              )}
+            </div>
           ) : !user ? (
             <>
               <Link to="/auth" className="px-3 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Log In</Link>
@@ -529,6 +547,30 @@ export default function CreatorProfile() {
             </div>
           )}
 
+          {/* Beta invite banner for owner */}
+          {isOwner && remainingInvites > 0 && (
+            <div className="mt-4 max-w-[560px] mx-auto">
+              <button
+                onClick={() => navigate("/invite-codes")}
+                className="w-full flex items-center gap-3 p-4 rounded-xl border border-primary/25 bg-primary/5 cursor-pointer hover:bg-primary/10 transition-all group"
+              >
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Gift className="w-5 h-5 text-primary" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="text-sm font-semibold text-foreground">
+                    {remainingInvites} beta invite{remainingInvites !== 1 ? "s" : ""} to give
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Share with creators you want on UPLY — they skip the entire waitlist
+                  </p>
+                </div>
+                <span className="text-xs font-semibold text-primary group-hover:translate-x-0.5 transition-transform">
+                  Share →
+                </span>
+              </button>
+            </div>
+          )}
           {/* Bio */}
           {profile.bio && (
             <div className="text-center mt-4 max-w-[560px] mx-auto">

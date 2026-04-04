@@ -9,7 +9,7 @@ import {
   Zap, Crown, Sparkles, BarChart3, Radio, Menu, X, Wallet, LayoutGrid, ChevronDown,
   GraduationCap, DollarSign, Bot, Briefcase, Handshake, Share2, Film,
   Trophy, Plug, MessageSquare, Bell as BellIcon, UserCheck, Search, Rocket,
-  Video, CreditCard, UserPlus, User, Globe, Mail, Mic
+  Video, CreditCard, UserPlus, User, Globe, Mail, Mic, Gift
 } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import { useApp, tierNames } from "@/context/AppContext";
@@ -22,6 +22,7 @@ import { useWallet } from "@/hooks/useWallet";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useInviteCodes } from "@/hooks/useInviteCodes";
 
 type NavItem = { label: string; icon: React.ElementType; path: string; desc: string; requiresTier?: number; badgeKey?: string; featureKey?: string };
 
@@ -112,6 +113,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { data: jobUnreadCount = 0 } = useUnreadJobMessageCount();
   const { unreadCount: notifUnreadCount } = useNotifications();
   const { data: wallet } = useWallet();
+  const { data: inviteData } = useInviteCodes();
+  const remainingInvites = inviteData?.remaining ?? 0;
+  const isApprovedUser = profile.isApproved;
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -446,6 +450,19 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               <TierBadge tier={profile.tier} tierName={profile.tierName} size="sm" />
             </div>
             <div className="flex items-center gap-3">
+              {isApprovedUser && remainingInvites > 0 && (
+                <button
+                  onClick={() => navigate("/invite-codes")}
+                  className="relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 border border-primary/25 text-primary text-xs font-semibold hover:bg-primary/20 transition-all"
+                  aria-label={`${remainingInvites} beta invite${remainingInvites !== 1 ? "s" : ""} remaining`}
+                >
+                  <Gift className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">
+                    {remainingInvites} Invite{remainingInvites !== 1 ? "s" : ""}
+                  </span>
+                  <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-primary animate-pulse" />
+                </button>
+              )}
               <NotificationBell />
               <div className="hidden md:block w-px h-6 bg-border" />
               <div ref={profileRef} className="relative">
@@ -485,6 +502,19 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                       >
                         <BarChart3 className="w-4 h-4" /> Dashboard
                       </button>
+                      {isApprovedUser && (
+                        <button
+                          onClick={() => { navigate("/invite-codes"); setProfileOpen(false); }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                        >
+                          <Gift className="w-4 h-4" /> Beta Invites
+                          {remainingInvites > 0 && (
+                            <span className="ml-auto min-w-[18px] h-[18px] rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center px-1">
+                              {remainingInvites}
+                            </span>
+                          )}
+                        </button>
+                      )}
                       <button
                         onClick={() => { navigate("/settings"); setProfileOpen(false); }}
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
@@ -561,6 +591,32 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                   </div>
                 </div>
               </div>
+
+              {isApprovedUser && (
+                <div className="px-4 py-2">
+                  <button
+                    onClick={() => { navigate("/invite-codes"); setMobileMenuOpen(false); }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/5 border border-primary/20 group"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Gift className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex-1 text-left min-w-0">
+                      <p className="text-sm font-semibold text-foreground">Beta Invites</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        {remainingInvites > 0
+                          ? `${remainingInvites} remaining — share with creators`
+                          : "All invites used 🎉"}
+                      </p>
+                    </div>
+                    {remainingInvites > 0 && (
+                      <span className="min-w-[22px] h-[22px] rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+                        {remainingInvites}
+                      </span>
+                    )}
+                  </button>
+                </div>
+              )}
 
               <nav aria-label="Mobile navigation" className="flex-1 py-2 px-3 overflow-y-auto">
                 {renderNavItem({ label: "Discover", icon: Search, path: "/discover", desc: "Find creators" }, false, () => setMobileMenuOpen(false))}

@@ -26,6 +26,7 @@ export default function ReferralRedirect() {
   const [totalApplicants, setTotalApplicants] = useState(0);
 
   const actualCode = code;
+  const isBetaInvite = window.location.pathname.startsWith("/invite/");
 
   useEffect(() => {
     if (!actualCode) {
@@ -54,6 +55,16 @@ export default function ReferralRedirect() {
         // Also store avatar in localStorage
         if (referrerData.avatar_url) {
           try { localStorage.setItem("uply_referrer_avatar", referrerData.avatar_url); } catch {}
+        }
+
+        // Store invite type
+        if (isBetaInvite) {
+          try {
+            document.cookie = `uply_invite_code=${actualCode}; path=/; max-age=86400; SameSite=Lax`;
+            sessionStorage.setItem("uply_invite_type", "beta");
+          } catch {}
+        } else {
+          sessionStorage.setItem("uply_invite_type", "waitlist");
         }
 
         
@@ -158,7 +169,12 @@ export default function ReferralRedirect() {
           style={{ background: "hsl(var(--primary) / 0.08)", border: "1px solid hsl(var(--primary) / 0.2)" }}
         >
           <Clock className="w-3 h-3 text-primary" />
-          <span className="text-muted-foreground">Invite-only access · <span className="text-primary font-semibold">Limited spots</span></span>
+          <span className="text-muted-foreground">
+            {isBetaInvite
+              ? <>Beta access · <span className="text-primary font-semibold">Skips the waitlist entirely</span></>
+              : <>Invite-only access · <span className="text-primary font-semibold">Limited spots</span></>
+            }
+          </span>
         </motion.div>
 
         {/* Avatar + name */}
@@ -224,7 +240,10 @@ export default function ReferralRedirect() {
             className="text-[22px] sm:text-[26px] font-bold text-foreground leading-tight mb-3"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           >
-            {firstName} thinks you belong on UPLY.
+            {isBetaInvite
+              ? `${firstName} is giving you their beta invite.`
+              : `${firstName} thinks you belong on UPLY.`
+            }
           </h1>
           <p className="text-[15px] text-muted-foreground leading-relaxed mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             UPLY is the creator platform where you go live, build your community, host courses, and get paid directly — all in one place.
@@ -271,7 +290,10 @@ export default function ReferralRedirect() {
             />
           </Button>
           <p className="text-[11px] text-muted-foreground text-center">
-            ✓ Free to apply · ✓ No credit card · ✓ {firstName}'s invite skips the line
+            {isBetaInvite
+              ? "✓ Immediate beta access · ✓ No waitlist · ✓ No credit card required"
+              : `✓ Free to apply · ✓ No credit card · ✓ ${firstName}'s invite skips the line`
+            }
           </p>
         </motion.div>
 

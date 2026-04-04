@@ -91,7 +91,21 @@ export default function LaunchGate({ children }: LaunchGateProps) {
     return <>{children}</>;
   }
 
-  // The routing in App.tsx handles showing onboarding vs waitlist
-  // We just need to pass through but restrict access
+  if (status === "waitlist") {
+    const p = window.location.pathname;
+    const allowed = ["/", "/waitlist", "/auth", "/onboarding", "/pricing", "/leaderboard", "/reset-password", "/unsubscribe"];
+    const allowedPrefixes = ["/ref/", "/invite/", "/join/"];
+    const ok = allowed.includes(p) || allowedPrefixes.some((pre) => p.startsWith(pre));
+    if (!ok) { window.location.replace("/waitlist"); return null; }
+    return <>{children}</>;
+  }
+
+  if (status === "needs_onboarding") {
+    const p = window.location.pathname;
+    const ok = p === "/onboarding" || p.startsWith("/ref/") || p.startsWith("/invite/") || p === "/auth" || p === "/reset-password";
+    if (!ok) { window.location.replace("/onboarding"); return null; }
+    return <>{children}</>;
+  }
+
   return <>{children}</>;
 }

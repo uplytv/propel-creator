@@ -49,26 +49,20 @@ export default function WaitlistPage() {
     setProfile(profRes.data);
     setConfig(configRes.data);
 
-    // Get waitlist position
-    const { data: wlEntry } = await supabase
-      .from("waitlist")
-      .select("position, referral_count")
-      .eq("email", user.email)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle() as any;
-
-    if (wlEntry) {
-      setWaitlistPosition(wlEntry.position || 0);
-      setReferralCount(wlEntry.referral_count || 0);
-    } else {
-      // Fallback to referrals table
-      const { count: refCount } = await supabase
-        .from("referrals")
-        .select("*", { count: "exact", head: true })
-        .eq("referrer_id", user.id) as any;
-      setReferralCount(refCount || 0);
+    // Redirect approved users to discover
+    if (profRes.data?.is_approved) {
+      navigate("/discover", { replace: true });
+      return;
     }
+
+    // Combined referral count from both waitlist + post-signup referrals
+    const [{ count: postSignupRefs }, { data: wlRow }] = await Promise.all([
+      supabase.from("referrals").select("*", { count: "exact", head: true }).eq("referrer_id", user.id) as any,
+      supabase.from("waitlist").select("referral_count, position").eq("email", user.email!).order("created_at", { ascending: false }).limit(1).maybeSingle() as any,
+    ]);
+    const combinedCount = (postSignupRefs || 0) + ((wlRow as any)?.referral_count || 0);
+    setReferralCount(combinedCount);
+    setWaitlistPosition((wlRow as any)?.position || 0);
 
     // Get total waitlist
     const { count: wlCount } = await supabase
@@ -85,23 +79,23 @@ export default function WaitlistPage() {
       setShowPostApp(true);
     }
 
-    // Leaderboard from waitlist table
-    const { data: topReferrers } = await supabase
-      .from("waitlist")
-      .select("id, full_name, referral_count")
-      .gt("referral_count", 0)
-      .order("referral_count", { ascending: false })
-      .limit(20) as any;
+    // Unified leaderboard
+    const { data: topReferrers } = await (supabase as any)
+      .from("unified_referral_leaderboard")
+      .select("user_id, display_name, username, avatar_url, total_referrals, is_approved, origin_member, role_type")
+      .gt("total_referrals", 0)
+      .order("total_referrals", { ascending: false })
+      .limit(20);
 
     if (topReferrers) {
       const entries: LeaderboardEntry[] = topReferrers.map((r: any) => ({
-        user_id: r.id,
-        first_name: r.full_name?.split(" ")[0] || null,
-        last_name: r.full_name?.split(" ")[1] || null,
-        display_name: r.full_name,
-        referral_count: r.referral_count,
-        role_type: null,
-        origin_member: false,
+        user_id: r.user_id,
+        first_name: r.display_name?.split(" ")[0] || null,
+        last_name: r.display_name?.split(" ")[1] || null,
+        display_name: r.display_name,
+        referral_count: r.total_referrals,
+        role_type: r.role_type,
+        origin_member: r.origin_member || false,
       }));
       setLeaderboard(entries);
     }

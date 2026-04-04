@@ -7,7 +7,7 @@ import {
   TrendingUp, Users, DollarSign, Brain, Radio, Sparkles,
   BarChart3, ChevronRight, Film, Play, Loader2, Clock,
   LayoutGrid, Package, Search, ArrowRight, Zap, GraduationCap,
-  Plus, Eye, CreditCard, MessageCircle, Crown, Upload
+  Plus, Eye, CreditCard, MessageCircle, Crown, Upload, Gift
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
@@ -25,6 +25,7 @@ import VideoUploadSheet from "@/components/videos/VideoUploadSheet";
 import { RevenueGoalTracker } from "@/components/dashboard/RevenueGoalTracker";
 import ReferralRewardsCard from "@/components/affiliates/ReferralRewardsCard";
 import ScheduleFirstShowCard from "@/components/scheduled/ScheduleFirstShowCard";
+import { useInviteCodes } from "@/hooks/useInviteCodes";
 
 function PlatformUpgradeBanner() {
   const { user } = useAuth();
@@ -72,6 +73,8 @@ export default function Dashboard() {
   const [activeStream, setActiveStream] = useState<any>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
   const { data: dashStats, isLoading: statsLoading } = useDashboardStats();
+  const { data: inviteData } = useInviteCodes();
+  const remainingInvites = inviteData?.remaining ?? 0;
 
   useEffect(() => {
     if (!user) return;
@@ -111,6 +114,47 @@ export default function Dashboard() {
             <DashboardModeToggle mode={dashMode} onChange={setDashMode} />
           </div>
         </motion.div>
+
+        {/* Beta invite banner */}
+        {inviteData && remainingInvites > 0 && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="px-4 md:px-8 mb-4">
+            <button
+              onClick={() => navigate("/invite-codes")}
+              className="w-full flex items-center gap-3 p-4 rounded-xl border border-primary/25 bg-primary/5 cursor-pointer hover:bg-primary/10 transition-all group text-left"
+            >
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center relative flex-shrink-0">
+                <Gift className="w-5 h-5 text-primary" />
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-primary animate-pulse" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground">
+                  {remainingInvites} beta invite{remainingInvites !== 1 ? "s" : ""} waiting to be used
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Each invite bypasses the waitlist — share with creators you want to build with
+                </p>
+              </div>
+              <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+            </button>
+          </motion.div>
+        )}
+
+        {inviteData && inviteData.used === 5 && remainingInvites === 0 && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="px-4 md:px-8 mb-4">
+            <button
+              onClick={() => navigate("/invite-codes")}
+              className="w-full flex items-center gap-3 p-3 rounded-xl border border-border bg-card/60 cursor-pointer hover:bg-card transition-all text-left"
+            >
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Gift className="w-4 h-4 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground">All 5 invites used 🎉</p>
+                <p className="text-xs text-muted-foreground">You've helped build UPLY's founding class</p>
+              </div>
+            </button>
+          </motion.div>
+        )}
 
         {/* Stats Cards */}
         <motion.div
