@@ -66,7 +66,7 @@ export default function AdIntegrations() {
       return;
     }
     if (platform === "google" && !/^(AW-|G-|GT-)[A-Z0-9]+$/i.test(pixelId)) {
-      toast.error("Invalid Tag ID", { description: "Google Tag IDs start with AW- });
+      toast.error("Invalid Tag ID", { description: "Google Tag IDs start with AW-, G-, or GT-" });
       return;
     }
 
