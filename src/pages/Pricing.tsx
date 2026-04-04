@@ -69,7 +69,6 @@ type PlanKey = keyof typeof PLATFORM_PLANS;
 export default function Pricing() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
   const { data: currentPlan = "free", refetch } = useQuery({
