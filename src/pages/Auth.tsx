@@ -209,7 +209,7 @@ export default function Auth() {
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
-      toast({ title: "Error", description: "Please enter your email address.", variant: "destructive" });
+      toast.error("Error", { description: "Please enter your email address." });
       return;
     }
     setForgotLoading(true);
