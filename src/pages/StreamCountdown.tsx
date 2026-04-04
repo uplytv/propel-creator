@@ -118,7 +118,7 @@ export default function StreamCountdownPage() {
         .insert({ scheduled_stream_id: id, user_id: user.id });
       setReminded(true);
       setReminderCount(prev => prev + 1);
-      toast.success("🔔 Reminder set! We\");
+      toast.success("🔔 Reminder set! We'll notify you before the stream starts.");
     }
   };
 

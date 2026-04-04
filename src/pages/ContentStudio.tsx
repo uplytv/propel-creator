@@ -274,7 +274,7 @@ export default function ContentStudio() {
     const draftIds = (content || []).filter((c: any) => c.status === "draft").map((c: any) => c.id);
     if (draftIds.length === 0) return;
     await bulkUpdate.mutateAsync({ contentIds: draftIds, status: "approved" });
-    toast.success("${draftIds.length} items approved ✓");
+    toast.success(`${draftIds.length} items approved ✓`);
   };
 
   return (
