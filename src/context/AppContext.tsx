@@ -47,6 +47,7 @@ const defaultProfile: CreatorProfile = {
   healthScore: 0,
   name: "Creator",
   avatarUrl: null,
+  isApproved: false,
 };
 
 const AppContext = createContext<AppContextType | null>(null);
