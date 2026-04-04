@@ -26,6 +26,7 @@ export default function ReferralRedirect() {
   const [totalApplicants, setTotalApplicants] = useState(0);
 
   const actualCode = code;
+  const isBetaInvite = window.location.pathname.startsWith("/invite/");
 
   useEffect(() => {
     if (!actualCode) {
