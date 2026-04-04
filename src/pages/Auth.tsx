@@ -174,7 +174,7 @@ export default function Auth() {
       if (newAttempts >= 5) {
         const lockDuration = Math.min(30 * Math.pow(2, Math.floor((newAttempts - 5) / 3)), 300) * 1000;
         setLockoutUntil(Date.now() + lockDuration);
-        toast({ title: "Account locked", description: `Too many failed attempts. Try again in ${lockDuration / 1000}s.`, variant: "destructive" });
+        toast.error("Account locked", { description: `Too many failed attempts. Try again in ${lockDuration / 1000}s.` });
       } else {
         toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
       }
