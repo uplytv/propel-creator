@@ -267,7 +267,7 @@ export default function ContentStudio() {
     if (selectedIds.size === 0) return;
     await bulkUpdate.mutateAsync({ contentIds: Array.from(selectedIds), status });
     setSelectedIds(new Set());
-    toast.success("${selectedIds.size} items ${status}");
+    toast.success(`${selectedIds.size} items ${status}`);
   };
 
   const handleApproveAll = async () => {
