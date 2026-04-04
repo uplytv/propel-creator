@@ -2392,6 +2392,7 @@ export type Database = {
           rtmp_url: string
           stream_key_encrypted: string
           stream_key_last_four: string | null
+          stream_key_vault_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -2407,6 +2408,7 @@ export type Database = {
           rtmp_url: string
           stream_key_encrypted: string
           stream_key_last_four?: string | null
+          stream_key_vault_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -2422,6 +2424,7 @@ export type Database = {
           rtmp_url?: string
           stream_key_encrypted?: string
           stream_key_last_four?: string | null
+          stream_key_vault_id?: string | null
         }
         Relationships: []
       }
@@ -2572,6 +2575,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      edge_function_rate_limits: {
+        Row: {
+          call_count: number | null
+          key: string
+          updated_at: string | null
+          window_start: string | null
+        }
+        Insert: {
+          call_count?: number | null
+          key: string
+          updated_at?: string | null
+          window_start?: string | null
+        }
+        Update: {
+          call_count?: number | null
+          key?: string
+          updated_at?: string | null
+          window_start?: string | null
+        }
+        Relationships: []
       }
       email_send_log: {
         Row: {
@@ -4043,6 +4067,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      multistream_alerts: {
+        Row: {
+          alert_type: string | null
+          created_at: string | null
+          id: string
+          message: string | null
+          platform: string | null
+          resolved: boolean | null
+          session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          alert_type?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          platform?: string | null
+          resolved?: boolean | null
+          session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          alert_type?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          platform?: string | null
+          resolved?: boolean | null
+          session_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       mux_assets: {
         Row: {

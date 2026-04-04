@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Loader2, CheckCircle, XCircle, AlertTriangle, ExternalLink, Trash2, Info } from "lucide-react";
+import { Eye, EyeOff, Loader2, CheckCircle, XCircle, ExternalLink, Trash2, Info, ShieldCheck } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useSimulcastDestinations } from "@/hooks/useSimulcast";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const PLATFORMS = [
@@ -45,8 +45,7 @@ function getKeyAge(keyCreatedAt: string): { label: string; color: string; level:
 }
 
 export default function SimulcastSettings() {
-  const { destinations, loading, saveDestination, toggleDestination, deleteDestination, testConnection } = useSimulcastDestinations();
-  const { toast } = useToast();
+  const { destinations, loading, saveDestination, validateAndSave, toggleDestination, deleteDestination, testConnection } = useSimulcastDestinations();
 
   const [editState, setEditState] = useState<Record<string, {
     rtmpUrl: string;
@@ -57,6 +56,7 @@ export default function SimulcastSettings() {
     testing: boolean;
     testResult: { success: boolean; error?: string } | null;
     testCooldown: boolean;
+    validateResult: { valid: boolean; message: string } | null;
   }>>({});
 
   const getEdit = (platform: string) => {
@@ -71,6 +71,7 @@ export default function SimulcastSettings() {
       testing: false,
       testResult: null,
       testCooldown: false,
+      validateResult: null,
     };
   };
 
@@ -82,23 +83,34 @@ export default function SimulcastSettings() {
     const edit = getEdit(platformId);
     const dest = destinations.find((d) => d.platform === platformId);
     if (!edit.streamKey && !dest?.stream_key_last_four) {
-      toast({ title: "Stream key is required", variant: "destructive" });
+      toast.error("Stream key is required");
       return;
     }
-    updateEdit(platformId, { saving: true });
+    updateEdit(platformId, { saving: true, validateResult: null });
+
     try {
-      const keyToSave = edit.streamKey || dest?.stream_key_last_four || "";
-      if (!edit.streamKey && dest) {
-        // Just update label/rtmp, not key
-        await saveDestination(platformId, edit.rtmpUrl, dest.stream_key_last_four ? "EXISTING" : "", edit.label);
+      // Use validate-rtmp for all platforms when a new key is provided
+      if (edit.streamKey) {
+        const result = await validateAndSave(platformId, edit.rtmpUrl, edit.streamKey, edit.label);
+        updateEdit(platformId, {
+          saving: false,
+          streamKey: "",
+          validateResult: result,
+        });
+        if (result.valid) {
+          toast.success(`${platformId} saved & verified ✓`);
+        } else {
+          toast.error(`Validation failed: ${result.message}`);
+        }
       } else {
-        await saveDestination(platformId, edit.rtmpUrl, edit.streamKey, edit.label);
+        // Just update label/rtmp without re-validating key
+        await saveDestination(platformId, edit.rtmpUrl, dest?.stream_key_last_four ? "EXISTING" : "", edit.label);
+        updateEdit(platformId, { saving: false, streamKey: "" });
+        toast.success(`${platformId} saved ✓`);
       }
-      updateEdit(platformId, { saving: false, streamKey: "" });
-      toast({ title: `${platformId} saved ✓` });
     } catch {
       updateEdit(platformId, { saving: false });
-      toast({ title: "Failed to save", variant: "destructive" });
+      toast.error("Failed to save");
     }
   };
 
@@ -107,7 +119,6 @@ export default function SimulcastSettings() {
     try {
       const result = await testConnection(platformId);
       updateEdit(platformId, { testing: false, testResult: result, testCooldown: true });
-      // Re-enable after 60s
       setTimeout(() => updateEdit(platformId, { testCooldown: false }), 60000);
     } catch {
       updateEdit(platformId, { testing: false, testResult: { success: false, error: "Test failed" }, testCooldown: true });
@@ -118,7 +129,7 @@ export default function SimulcastSettings() {
   const handleDelete = async (platformId: string) => {
     await deleteDestination(platformId);
     setEditState((prev) => { const n = { ...prev }; delete n[platformId]; return n; });
-    toast({ title: "Destination removed" });
+    toast.success("Destination removed");
   };
 
   if (loading) {
@@ -128,8 +139,11 @@ export default function SimulcastSettings() {
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
       <div className="rounded-2xl border border-border bg-card/40 p-4">
-        <h2 className="text-lg font-semibold text-foreground mb-1">Multistream Simulcast</h2>
-        <p className="text-xs text-muted-foreground">Go live on UPLY and simultaneously broadcast to YouTube, Twitch, and Kick.</p>
+        <div className="flex items-center gap-2 mb-1">
+          <ShieldCheck className="w-4 h-4 text-primary" />
+          <h2 className="text-lg font-semibold text-foreground">Multistream Simulcast</h2>
+        </div>
+        <p className="text-xs text-muted-foreground">Go live on UPLY and simultaneously broadcast to YouTube, Twitch, and Kick. Credentials are encrypted at rest.</p>
       </div>
 
       {PLATFORMS.map((plat) => {
@@ -192,13 +206,14 @@ export default function SimulcastSettings() {
                 <input
                   type={edit.showKey ? "text" : "password"}
                   value={edit.streamKey}
-                  onChange={(e) => updateEdit(plat.id, { streamKey: e.target.value })}
+                  onChange={(e) => updateEdit(plat.id, { streamKey: e.target.value, validateResult: null })}
                   placeholder={dest?.stream_key_last_four ? `••••••••••••${dest.stream_key_last_four}` : "Paste your stream key"}
                   className="w-full rounded-lg bg-secondary/40 border border-border px-3 py-2 text-sm pr-10 font-mono focus:outline-none focus:ring-2 focus:ring-primary/50"
                 />
                 <button
                   onClick={() => updateEdit(plat.id, { showKey: !edit.showKey })}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  aria-label={edit.showKey ? "Hide stream key" : "Show stream key"}
                 >
                   {edit.showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -216,6 +231,14 @@ export default function SimulcastSettings() {
               <p className={`text-xs ${keyAge.color}`}>{keyAge.label}</p>
             )}
 
+            {/* Validation Result */}
+            {edit.validateResult && (
+              <div className={`text-xs flex items-center gap-1 px-3 py-2 rounded-lg ${edit.validateResult.valid ? "bg-green-500/10 text-green-400" : "bg-destructive/10 text-destructive"}`}>
+                {edit.validateResult.valid ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                {edit.validateResult.valid ? "✓ Connection verified & encrypted" : `✗ ${edit.validateResult.message}`}
+              </div>
+            )}
+
             {/* Actions */}
             <div className="flex items-center gap-2 flex-wrap">
               <Button
@@ -226,19 +249,20 @@ export default function SimulcastSettings() {
                 className="border-primary/30 text-primary"
               >
                 {edit.saving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
-                Save
+                {edit.streamKey ? "Validate & Save" : "Save"}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handleTest(plat.id)}
                 disabled={edit.testing || edit.testCooldown || !dest}
+                aria-label={`Test ${plat.name} connection`}
               >
                 {edit.testing ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
                 {edit.testing ? "Testing..." : "Test Connection"}
               </Button>
               {dest && (
-                <Button variant="ghost" size="sm" onClick={() => handleDelete(plat.id)} className="text-destructive hover:text-destructive">
+                <Button variant="ghost" size="sm" onClick={() => handleDelete(plat.id)} className="text-destructive hover:text-destructive" aria-label={`Remove ${plat.name}`}>
                   <Trash2 className="w-3 h-3" />
                 </Button>
               )}
@@ -264,8 +288,9 @@ export default function SimulcastSettings() {
         <div className="space-y-2">
           {[
             { step: "1", text: "Add your stream keys for YouTube, Twitch, and Kick above." },
-            { step: "2", text: "Enable platforms when setting up your stream on the Go Live page." },
-            { step: "3", text: "UPLY broadcasts to all enabled platforms simultaneously." },
+            { step: "2", text: "Keys are validated via TCP and encrypted in Vault before saving." },
+            { step: "3", text: "Enable platforms when setting up your stream on the Go Live page." },
+            { step: "4", text: "UPLY broadcasts to all enabled platforms simultaneously with live health monitoring." },
           ].map((s) => (
             <div key={s.step} className="flex items-start gap-3">
               <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">

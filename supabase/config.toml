@@ -91,3 +91,7 @@ project_id = "dbjlhmbgskvhuzqvqfrl"
     verify_jwt = false
   [functions.process-waitlist-expiry]
     verify_jwt = false
+  [functions.stream-heartbeat]
+    verify_jwt = false
+  [functions.validate-rtmp]
+    verify_jwt = false

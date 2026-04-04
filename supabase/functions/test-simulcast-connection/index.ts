@@ -9,6 +9,62 @@ function sanitizeError(msg: string): string {
   return msg.replace(/[a-zA-Z0-9_-]{16,}/g, "[REDACTED]");
 }
 
+async function checkRateLimit(supabase: any, userId: string, fnName: string): Promise<boolean> {
+  const key = `ratelimit:${userId}:${fnName}`;
+  const now = new Date();
+  const windowMs = 60_000;
+  const maxCalls = 10;
+
+  const { data } = await supabase
+    .from("edge_function_rate_limits")
+    .select("call_count, window_start")
+    .eq("key", key)
+    .single();
+
+  if (data) {
+    const windowAge = now.getTime() - new Date(data.window_start).getTime();
+    if (windowAge < windowMs && data.call_count >= maxCalls) return false;
+    if (windowAge >= windowMs) {
+      await supabase.from("edge_function_rate_limits").upsert({ key, call_count: 1, window_start: now.toISOString(), updated_at: now.toISOString() });
+    } else {
+      await supabase.from("edge_function_rate_limits").update({ call_count: data.call_count + 1, updated_at: now.toISOString() }).eq("key", key);
+    }
+  } else {
+    await supabase.from("edge_function_rate_limits").upsert({ key, call_count: 1, window_start: now.toISOString(), updated_at: now.toISOString() });
+  }
+  return true;
+}
+
+async function decryptStreamKey(supabase: any, dest: any): Promise<string> {
+  if (dest.stream_key_vault_id) {
+    try {
+      const { data: vaultRows } = await supabase
+        .from("vault.decrypted_secrets")
+        .select("decrypted_secret")
+        .eq("id", dest.stream_key_vault_id)
+        .single();
+      if (vaultRows?.decrypted_secret) return vaultRows.decrypted_secret;
+    } catch { /* fall through */ }
+  }
+
+  if (dest.stream_key_encrypted?.startsWith("vault:")) {
+    const vaultId = dest.stream_key_encrypted.replace("vault:", "");
+    try {
+      const { data: vaultRows } = await supabase
+        .from("vault.decrypted_secrets")
+        .select("decrypted_secret")
+        .eq("id", vaultId)
+        .single();
+      if (vaultRows?.decrypted_secret) return vaultRows.decrypted_secret;
+    } catch { /* fall through */ }
+  }
+
+  const { data: decrypted } = await supabase.rpc("decrypt_stream_key", { encrypted_key: dest.stream_key_encrypted });
+  if (decrypted) return decrypted;
+
+  return dest.stream_key_encrypted;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -25,7 +81,13 @@ Deno.serve(async (req) => {
     const auth = btoa(`${muxTokenId}:${muxTokenSecret}`);
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Rate limit: 60 second cooldown
+    // Rate limit
+    const allowed = await checkRateLimit(supabase, creator_id, "test-simulcast-connection");
+    if (!allowed) {
+      return new Response(JSON.stringify({ error: "Rate limit exceeded" }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // Rate limit: 60 second cooldown (existing)
     const { data: recentTests } = await supabase
       .from("simulcast_test_log")
       .select("tested_at")
@@ -57,16 +119,14 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "No destination configured for this platform" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Decrypt key
-    const { data: decrypted } = await supabase.rpc("decrypt_stream_key", { encrypted_key: dest.stream_key_encrypted });
-    const streamKey = decrypted || dest.stream_key_encrypted;
+    // Decrypt key via Vault or fallback
+    const streamKey = await decryptStreamKey(supabase, dest);
 
     let tempStreamId: string | null = null;
     let simulcastTargetId: string | null = null;
     let testResult: { success: boolean; error?: string } = { success: false };
 
     try {
-      // Create temp Mux live stream
       const createResp = await fetch("https://api.mux.com/video/v1/live-streams", {
         method: "POST",
         headers: { Authorization: `Basic ${auth}`, "Content-Type": "application/json" },
@@ -76,7 +136,6 @@ Deno.serve(async (req) => {
       const createJson = await createResp.json();
       tempStreamId = createJson.data.id;
 
-      // Add simulcast target
       const targetResp = await fetch(
         `https://api.mux.com/video/v1/live-streams/${tempStreamId}/simulcast-targets`,
         {
@@ -92,14 +151,11 @@ Deno.serve(async (req) => {
       const targetJson = await targetResp.json();
       simulcastTargetId = targetJson.data.id;
 
-      // Wait 3 seconds
       await new Promise((r) => setTimeout(r, 3000));
-
       testResult = { success: true };
     } catch (e: any) {
       testResult = { success: false, error: sanitizeError(e.message) };
     } finally {
-      // Always clean up
       try {
         if (simulcastTargetId && tempStreamId) {
           await fetch(
@@ -107,7 +163,7 @@ Deno.serve(async (req) => {
             { method: "DELETE", headers: { Authorization: `Basic ${auth}` } }
           );
         }
-      } catch { /* ignore cleanup errors */ }
+      } catch { /* ignore */ }
       try {
         if (tempStreamId) {
           await fetch(
@@ -115,9 +171,8 @@ Deno.serve(async (req) => {
             { method: "DELETE", headers: { Authorization: `Basic ${auth}` } }
           );
         }
-      } catch { /* ignore cleanup errors */ }
+      } catch { /* ignore */ }
 
-      // Log result
       await supabase.from("simulcast_test_log").insert({
         creator_id,
         platform,
@@ -125,7 +180,6 @@ Deno.serve(async (req) => {
         error_message: testResult.error || null,
       });
 
-      // Update verified status
       if (testResult.success) {
         await supabase
           .from("creator_stream_destinations")
