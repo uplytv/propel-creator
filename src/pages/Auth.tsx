@@ -17,7 +17,6 @@ import { Sentry } from "@/lib/sentry";
 export default function Auth() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
