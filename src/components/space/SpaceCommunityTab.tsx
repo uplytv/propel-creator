@@ -19,7 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import BlastComposer from "@/components/blast/BlastComposer";
 
 interface Props {
@@ -29,7 +29,6 @@ interface Props {
 
 export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [showComposer, setShowComposer] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
@@ -54,9 +53,9 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
       await createPost.mutateAsync({ creator_id: creatorId, title: postTitle, body: postBody, category: postCategory });
       setPostTitle(""); setPostBody(""); setPostCategory("general");
       setShowComposer(false);
-      toast({ title: "Post published!" });
+      toast.success("Post published!");
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error("Error", { description: err.message });
     }
   };
 

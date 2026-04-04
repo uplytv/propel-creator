@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export function useAriaJobs() {
   const { user } = useAuth();
@@ -121,7 +121,6 @@ export function useAriaDistributionSettings() {
 
 export function useStartAriaJob() {
   const { user } = useAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -133,11 +132,11 @@ export function useStartAriaJob() {
       return data;
     },
     onSuccess: () => {
-      toast({ title: "🤖 ARIA is processing your content", description: "Check Content Studio in a few minutes" });
+      toast.success("🤖 ARIA is processing your content", { description: "Check Content Studio in a few minutes" });
       queryClient.invalidateQueries({ queryKey: ["aria-jobs", user?.id] });
     },
     onError: (err: any) => {
-      toast({ title: "ARIA Error", description: err.message || "Failed to start processing", variant: "destructive" });
+      toast.error("ARIA Error", { description: err.message || "Failed to start processing" });
     },
   });
 }

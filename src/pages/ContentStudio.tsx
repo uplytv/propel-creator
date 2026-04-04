@@ -11,7 +11,7 @@ import UPLYMuxPlayer from "@/components/MuxPlayer";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
 const CONTENT_TABS = [
@@ -96,8 +96,6 @@ function ContentCard({
   onPlayClip?: (playbackId: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const { toast } = useToast();
-
   const isClip = item.content_type === "short_clip";
   const duration = item.metadata?.duration
     ? `${Math.round(item.metadata.duration)}s`
@@ -114,7 +112,7 @@ function ContentCard({
   const copyContent = () => {
     const text = item.body || item.title || "";
     navigator.clipboard.writeText(text);
-    toast({ title: "Copied to clipboard ✓" });
+    toast.success("Copied to clipboard ✓");
   };
 
   return (
@@ -226,8 +224,6 @@ export default function ContentStudio() {
   const { data: content, isLoading: contentLoading } = useAriaGeneratedContent();
   const updateStatus = useUpdateContentStatus();
   const bulkUpdate = useBulkUpdateContentStatus();
-  const { toast } = useToast();
-
   const [activeTab, setActiveTab] = useState("all");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [playingClipId, setPlayingClipId] = useState<string | null>(null);
@@ -271,14 +267,14 @@ export default function ContentStudio() {
     if (selectedIds.size === 0) return;
     await bulkUpdate.mutateAsync({ contentIds: Array.from(selectedIds), status });
     setSelectedIds(new Set());
-    toast({ title: `${selectedIds.size} items ${status}` });
+    toast.success("${selectedIds.size} items ${status}");
   };
 
   const handleApproveAll = async () => {
     const draftIds = (content || []).filter((c: any) => c.status === "draft").map((c: any) => c.id);
     if (draftIds.length === 0) return;
     await bulkUpdate.mutateAsync({ contentIds: draftIds, status: "approved" });
-    toast({ title: `${draftIds.length} items approved ✓` });
+    toast.success("${draftIds.length} items approved ✓");
   };
 
   return (

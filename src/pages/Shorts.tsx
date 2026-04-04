@@ -7,14 +7,13 @@ import { useShorts, Short } from "@/hooks/useShorts";
 import { useClipLikes } from "@/hooks/useClipLikes";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import SEOHead from "@/components/SEOHead";
 
 export default function Shorts() {
   const { shorts, loading, hasMore, loadMore } = useShorts(8);
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { likedClips, toggleLike: toggleClipLike, fetchLikeStatus, getLikeCount, isLiked } = useClipLikes();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [muted, setMuted] = useState(true);

@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Lock, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import type { Achievement } from "@/hooks/useStreamAchievements";
 
 interface StreamAchievementsProps {
@@ -22,8 +22,6 @@ export default function StreamAchievements({
   loading,
   creatorUsername,
 }: StreamAchievementsProps) {
-  const { toast } = useToast();
-
   if (loading) {
     return (
       <div className="glass-card p-4 animate-pulse">
@@ -58,7 +56,7 @@ export default function StreamAchievements({
     const copyText = `${shareText}\n${profileUrl}`;
     try {
       await navigator.clipboard.writeText(copyText);
-      toast({ title: "Copied to clipboard!" });
+      toast.success("Copied to clipboard!");
     } catch {
       // Textarea fallback
       const ta = document.createElement("textarea");
@@ -69,7 +67,7 @@ export default function StreamAchievements({
       ta.select();
       document.execCommand("copy");
       document.body.removeChild(ta);
-      toast({ title: "Copied to clipboard!" });
+      toast.success("Copied to clipboard!");
     }
   };
 

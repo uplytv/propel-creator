@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useClassroomModules, useCreateLesson } from "@/hooks/useClassroom";
 
@@ -29,7 +29,6 @@ interface YouTubeMetadata {
 
 export default function YouTubeImport({ creatorId }: { creatorId: string }) {
   const { user } = useAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
@@ -44,7 +43,7 @@ export default function YouTubeImport({ creatorId }: { creatorId: string }) {
   const handleFetch = async () => {
     const videoId = extractYouTubeVideoId(url);
     if (!videoId) {
-      toast({ title: "Invalid URL", description: "Please enter a valid YouTube video URL.", variant: "destructive" });
+      toast.error("Invalid URL", { description: "Please enter a valid YouTube video URL." });
       return;
     }
 
@@ -63,7 +62,7 @@ export default function YouTubeImport({ creatorId }: { creatorId: string }) {
       });
       setLessonTitle(data.title);
     } catch (err: any) {
-      toast({ title: "Error", description: err.message || "Failed to fetch video info", variant: "destructive" });
+      toast.error("Error", { description: err.message || "Failed to fetch video info" });
     } finally {
       setLoading(false);
     }
@@ -112,7 +111,7 @@ export default function YouTubeImport({ creatorId }: { creatorId: string }) {
       }
 
       queryClient.invalidateQueries({ queryKey: ["classroom-lessons"] });
-      toast({ title: "YouTube video added! 🎬", description: `"${lessonTitle}" is now in your classroom.` });
+      toast.success("YouTube video added! 🎬", { description: `"${lessonTitle });
 
       // Reset
       setUrl("");
@@ -120,7 +119,7 @@ export default function YouTubeImport({ creatorId }: { creatorId: string }) {
       setLessonTitle("");
       setSelectedModuleId("");
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error("Error", { description: err.message });
     } finally {
       setSaving(false);
     }

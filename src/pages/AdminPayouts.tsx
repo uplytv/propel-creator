@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 const statusBadge = (status: string) => {
@@ -51,10 +51,10 @@ function FailedWebhooksTab() {
         body: webhook.payload,
       });
       if (error) throw error;
-      toast({ title: "Retry sent", description: "Webhook event re-processed." });
+      toast.success("Retry sent", { description: "Webhook event re-processed." });
       queryClient.invalidateQueries({ queryKey: ["admin-failed-webhooks"] });
     } catch (err: any) {
-      toast({ title: "Retry failed", description: err.message, variant: "destructive" });
+      toast.error("Retry failed", { description: err.message });
     }
     setRetrying(null);
   };
@@ -137,7 +137,7 @@ export default function AdminPayouts() {
 
   useEffect(() => {
     if (!adminLoading && isAdmin === false) {
-      toast({ title: "Access denied", variant: "destructive" });
+      toast.error("Access denied");
       navigate("/dashboard");
     }
   }, [isAdmin, adminLoading, navigate]);
@@ -196,9 +196,9 @@ export default function AdminPayouts() {
         message: `Your payout of $${Number(payout.amount).toFixed(2)} is being processed and will arrive in 2–3 business days.`,
       });
       queryClient.invalidateQueries({ queryKey: ["admin-payouts-pending"] });
-      toast({ title: "Approved", description: "Payout marked as processing." });
+      toast.success("Approved", { description: "Payout marked as processing." });
     } else {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast.error("Error", { description: error.message });
     }
     setProcessing(null);
   };
@@ -221,9 +221,9 @@ export default function AdminPayouts() {
       queryClient.invalidateQueries({ queryKey: ["admin-payouts-history"] });
       setRejectingId(null);
       setRejectReason("");
-      toast({ title: "Rejected", description: "Payout marked as failed." });
+      toast.success("Rejected", { description: "Payout marked as failed." });
     } else {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast.error("Error", { description: error.message });
     }
     setProcessing(null);
   };

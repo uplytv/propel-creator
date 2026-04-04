@@ -3,7 +3,7 @@ import { CreditCard, Loader2, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useStripeAccount } from "@/hooks/useStripeAccount";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useReauthGuard } from "@/hooks/useReauthGuard";
 import ReauthDialog from "@/components/ReauthDialog";
 
@@ -18,7 +18,6 @@ interface StripeGateProps {
  */
 export default function StripeGate({ children }: StripeGateProps) {
   const { data: stripeAccount, isLoading } = useStripeAccount();
-  const { toast } = useToast();
   const [connecting, setConnecting] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const { showReauth, reauthLoading, requireReauth, confirmReauth, cancelReauth } = useReauthGuard();
@@ -30,7 +29,7 @@ export default function StripeGate({ children }: StripeGateProps) {
       if (error) throw error;
       if (data?.url) window.location.href = data.url;
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error("Error", { description: err.message });
     }
     setConnecting(false);
   };

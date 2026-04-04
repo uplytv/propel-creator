@@ -4,7 +4,7 @@ import { X, Loader2, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface PaidDMModalProps {
   open: boolean;
@@ -16,7 +16,6 @@ interface PaidDMModalProps {
 
 export default function PaidDMModal({ open, onClose, creatorId, creatorName, price }: PaidDMModalProps) {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
 
@@ -63,12 +62,12 @@ export default function PaidDMModal({ open, onClose, creatorId, creatorName, pri
           actor_id: user.id,
         });
 
-        toast({ title: "Message sent! 💬", description: `Your message to ${creatorName} was delivered.` });
+        toast.success("Message sent! 💬", { description: `Your message to ${creatorName });
         onClose();
         setMessage("");
       }
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error("Error", { description: err.message });
     } finally {
       setSending(false);
     }

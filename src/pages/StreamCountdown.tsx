@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import SEOHead from "@/components/SEOHead";
 import SharePanel from "@/components/share/SharePanel";
 
@@ -21,7 +21,6 @@ interface ScheduledStream {
 export default function StreamCountdownPage() {
   const { id } = useParams();
   const { user } = useAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const [stream, setStream] = useState<ScheduledStream | null>(null);
   const [creator, setCreator] = useState<{ display_name: string; avatar_url: string | null; username: string | null } | null>(null);
@@ -100,7 +99,7 @@ export default function StreamCountdownPage() {
 
   const toggleReminder = async () => {
     if (!user || !id) {
-      toast({ title: 'Sign in to set a reminder' });
+      toast.success("Sign in to set a reminder");
       return;
     }
 
@@ -112,14 +111,14 @@ export default function StreamCountdownPage() {
         .eq('user_id', user.id);
       setReminded(false);
       setReminderCount(prev => prev - 1);
-      toast({ title: 'Reminder removed' });
+      toast.success("Reminder removed");
     } else {
       await supabase
         .from('stream_reminders' as any)
         .insert({ scheduled_stream_id: id, user_id: user.id });
       setReminded(true);
       setReminderCount(prev => prev + 1);
-      toast({ title: '🔔 Reminder set! We\'ll notify you 15 min before.' });
+      toast.success("🔔 Reminder set! We\");
     }
   };
 

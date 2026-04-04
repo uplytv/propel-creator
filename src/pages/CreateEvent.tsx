@@ -15,7 +15,7 @@ import AppLayout from "@/components/layout/AppLayout";
 import { useAuth } from "@/context/AuthContext";
 import { useCreateEvent, useUpdateEvent } from "@/hooks/useEvents";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const eventTypes = [
   { value: "virtual", label: "Virtual", icon: Monitor, emoji: "🖥️", color: "border-blue-500 bg-blue-500/10 text-blue-500" },
@@ -38,7 +38,6 @@ const timezones = [
 export default function CreateEvent() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { toast } = useToast();
   const createEvent = useCreateEvent();
   const updateEvent = useUpdateEvent();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -76,7 +75,7 @@ export default function CreateEvent() {
     const path = `${user.id}/event-${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from("covers").upload(path, file);
     if (error) {
-      toast({ title: "Upload failed", variant: "destructive" });
+      toast.error("Upload failed");
     } else {
       const { data: { publicUrl } } = supabase.storage.from("covers").getPublicUrl(path);
       setCoverUrl(publicUrl);
@@ -86,7 +85,7 @@ export default function CreateEvent() {
 
   async function handleSave(publish: boolean) {
     if (!user || !title || !startDate || !endDate) {
-      toast({ title: "Fill in required fields", variant: "destructive" });
+      toast.error("Fill in required fields");
       return;
     }
 
@@ -120,7 +119,7 @@ export default function CreateEvent() {
       const result = await createEvent.mutateAsync(eventData);
 
       if (publish) {
-        toast({ title: "Event published! 🎉" });
+        toast.success("Event published! 🎉");
       }
 
       navigate("/events");

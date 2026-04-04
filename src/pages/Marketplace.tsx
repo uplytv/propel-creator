@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/context/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import SEOHead from "@/components/SEOHead";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -24,7 +24,6 @@ const budgetFilters = [{ label: "All", min: 0, max: Infinity }, { label: "$0-500
 export default function Marketplace() {
   const { user } = useAuth();
   const { data: profile } = useProfile();
-  const { toast } = useToast();
   const qc = useQueryClient();
   const profileId = profile?.id;
   const [typeFilter, setTypeFilter] = useState("all");
@@ -59,11 +58,11 @@ export default function Marketplace() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: "Application submitted!" });
+      toast.success("Application submitted!");
       setApplyingId(null); setPitch(""); setProposedRate("");
       qc.invalidateQueries({ queryKey: ["my-applications"] });
     },
-    onError: (err: any) => toast({ title: "Failed", description: err.message, variant: "destructive" }),
+    onError: (err: any) => toast.error("Failed", { description: err.message }),
   });
 
   const bf = budgetFilters[budgetFilter];

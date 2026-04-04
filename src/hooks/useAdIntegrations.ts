@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { initMetaPixel, initGoogleTag, resetMetaPixel, resetGoogleTag } from "@/lib/adTracking";
 
 type Platform = "meta" | "google";
@@ -15,7 +15,6 @@ interface AdIntegration {
 
 export function useAdIntegrations() {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [integrations, setIntegrations] = useState<AdIntegration[]>([]);
   const [loading, setLoading] = useState(true);
 

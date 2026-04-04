@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface MemberReferralWidgetProps {
   creatorId: string;
@@ -15,7 +15,6 @@ interface MemberReferralWidgetProps {
 
 export default function MemberReferralWidget({ creatorId, creatorName }: MemberReferralWidgetProps) {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -58,7 +57,7 @@ export default function MemberReferralWidget({ creatorId, creatorName }: MemberR
     } else {
       await navigator.clipboard.writeText(`${tweetText}`);
       setCopied(true);
-      toast({ title: "Copied to clipboard!" });
+      toast.success("Copied to clipboard!");
       setTimeout(() => setCopied(false), 2000);
     }
   };

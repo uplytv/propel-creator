@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Loader2, Tag, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface Tier {
   id: string;
@@ -21,7 +21,6 @@ interface Props {
 }
 
 export default function TierSelectionModal({ open, onClose, tiers, creatorId }: Props) {
-  const { toast } = useToast();
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -41,7 +40,7 @@ export default function TierSelectionModal({ open, onClose, tiers, creatorId }: 
         window.location.href = data.url;
       }
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error("Error", { description: err.message });
     }
     setLoading(false);
   };

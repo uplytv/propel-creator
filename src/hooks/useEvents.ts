@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { tables } from "@/lib/supabaseTyped";
 
 export type EventRow = {
@@ -160,7 +160,6 @@ export function useMyTicketForEvent(eventId?: string) {
 
 export function useCreateEvent() {
   const qc = useQueryClient();
-  const { toast } = useToast();
   return useMutation({
     mutationFn: async (event: Partial<EventRow>) => {
       const { data, error } = await tables.events()
@@ -172,17 +171,16 @@ export function useCreateEvent() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["creator-events"] });
-      toast({ title: "Event created!" });
+      toast.success("Event created!");
     },
     onError: (e: Error) => {
-      toast({ title: "Error creating event", description: e.message, variant: "destructive" });
+      toast.error("Error creating event", { description: e.message });
     },
   });
 }
 
 export function useUpdateEvent() {
   const qc = useQueryClient();
-  const { toast } = useToast();
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<EventRow> & { id: string }) => {
       const { data, error } = await tables.events()
@@ -199,7 +197,7 @@ export function useUpdateEvent() {
       qc.invalidateQueries({ queryKey: ["published-events"] });
     },
     onError: (e: Error) => {
-      toast({ title: "Error updating event", description: e.message, variant: "destructive" });
+      toast.error("Error updating event", { description: e.message });
     },
   });
 }
@@ -207,7 +205,6 @@ export function useUpdateEvent() {
 export function useClaimFreeTicket() {
   const qc = useQueryClient();
   const { user } = useAuth();
-  const { toast } = useToast();
   return useMutation({
     mutationFn: async (event: EventRow) => {
       if (!user) throw new Error("Must be logged in");
@@ -236,10 +233,10 @@ export function useClaimFreeTicket() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["my-ticket"] });
       qc.invalidateQueries({ queryKey: ["event"] });
-      toast({ title: "You're going! 🎉", description: "Free ticket claimed successfully." });
+      toast.success("You're going! 🎉", { description: "Free ticket claimed successfully." });
     },
     onError: (e: Error) => {
-      toast({ title: "Error claiming ticket", description: e.message, variant: "destructive" });
+      toast.error("Error claiming ticket", { description: e.message });
     },
   });
 }
@@ -247,7 +244,6 @@ export function useClaimFreeTicket() {
 export function useSetEventReminder() {
   const qc = useQueryClient();
   const { user } = useAuth();
-  const { toast } = useToast();
   return useMutation({
     mutationFn: async (eventId: string) => {
       if (!user) throw new Error("Must be logged in");
@@ -257,13 +253,13 @@ export function useSetEventReminder() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["event-reminder"] });
-      toast({ title: "Reminder set! 🔔" });
+      toast.success("Reminder set! 🔔");
     },
     onError: (e: Error) => {
       if (e.message?.includes("duplicate")) {
-        toast({ title: "Reminder already set" });
+        toast.success("Reminder already set");
       } else {
-        toast({ title: "Error", description: e.message, variant: "destructive" });
+        toast.error("Error", { description: e.message });
       }
     },
   });
@@ -294,7 +290,6 @@ export function useCreatorEventsByUsername(username?: string) {
 
 export function useCheckInTicket() {
   const qc = useQueryClient();
-  const { toast } = useToast();
   return useMutation({
     mutationFn: async (qrToken: string) => {
       const { data, error } = await tables.tickets()

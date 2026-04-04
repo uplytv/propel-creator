@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { format } from "date-fns";
 import BackNav from "@/components/BackNav";
 import {
@@ -113,11 +113,7 @@ export default function AdminFeatureToggles() {
         return depDefault && !depDefault.enabled;
       });
       if (missingDeps.length > 0) {
-        toast({
-          title: "Missing dependencies",
-          description: `Enable these first: ${missingDeps.join(", ")}`,
-          variant: "destructive",
-        });
+        toast.error("Missing dependencies", { description: `Enable these first: ${missingDeps.join(" });
         return;
       }
     }
@@ -130,11 +126,7 @@ export default function AdminFeatureToggles() {
       });
       if (dependents.length > 0) {
         const names = dependents.map((d: any) => (d as any).label).join(", ");
-        toast({
-          title: "Cannot disable",
-          description: `These features depend on it: ${names}. Disable them first.`,
-          variant: "destructive",
-        });
+        toast.error("Cannot disable", { description: `These features depend on it: ${names });
         return;
       }
     }
@@ -164,7 +156,7 @@ export default function AdminFeatureToggles() {
 
     queryClient.invalidateQueries({ queryKey: ["admin-category-defaults", selectedCategory] });
     queryClient.invalidateQueries({ queryKey: ["admin-audit-log"] });
-    toast({ title: `${enabled ? "Enabled" : "Disabled"} ${feature?.label || featureKey}` });
+    toast.success("${enabled ? "Enabled" : "Disabled"} ${feature?.label || featureKey}");
   };
 
   const bulkToggleCore = async (core: string, enabled: boolean) => {

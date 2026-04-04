@@ -17,7 +17,7 @@ import AppLayout from "@/components/layout/AppLayout";
 import { useProducts, useCreateProduct, useDeleteProduct, useUpdateProduct } from "@/hooks/useProducts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import UPLYMuxPlayer from "@/components/MuxPlayer";
 
 const typeIcons: Record<string, string> = {
@@ -39,7 +39,6 @@ export default function Products() {
   const [showCreate, setShowCreate] = useState(false);
   const [mode, setMode] = useState<CreateMode>(null);
   const { user } = useAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
 
   // Scratch / shared form state
@@ -124,7 +123,7 @@ export default function Products() {
         const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(path);
         image_url = publicUrl;
       } catch (e: any) {
-        toast({ title: "Image upload failed", description: e.message, variant: "destructive" });
+        toast.error("Image upload failed", { description: e.message });
         setEditImageUploading(false);
         return;
       }
@@ -190,7 +189,7 @@ export default function Products() {
       const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(path);
       return publicUrl;
     } catch (e: any) {
-      toast({ title: "Image upload failed", description: e.message, variant: "destructive" });
+      toast.error("Image upload failed", { description: e.message });
       return null;
     } finally {
       setImageUploading(false);
@@ -232,9 +231,9 @@ export default function Products() {
       setType(data.type || "digital");
       setPrice(String(data.price || 29));
       setMode("scratch");
-      toast({ title: "AI generated your product details!" });
+      toast.success("AI generated your product details!");
     } catch (e: any) {
-      toast({ title: "AI generation failed", description: e.message || "Please try again", variant: "destructive" });
+      toast.error("AI generation failed", { description: e.message || "Please try again" });
     } finally {
       setAiLoading(false);
     }
@@ -260,9 +259,9 @@ export default function Products() {
       setType(data.type || "digital");
       setPrice(String(data.price || 0));
       setMode("scratch");
-      toast({ title: "Product imported from URL!" });
+      toast.success("Product imported from URL!");
     } catch (e: any) {
-      toast({ title: "Import failed", description: e.message || "Could not import from that URL", variant: "destructive" });
+      toast.error("Import failed", { description: e.message || "Could not import from that URL" });
     } finally {
       setUrlLoading(false);
     }
@@ -300,10 +299,10 @@ export default function Products() {
       });
       setVideoUploadId(uploadId);
       setVideoUploading(false);
-      toast({ title: "Upload complete!", description: "Video is being processed..." });
+      toast.success("Upload complete!", { description: "Video is being processed..." });
     } catch (err: any) {
       setVideoUploading(false);
-      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+      toast.error("Upload failed", { description: err.message });
     }
   };
 

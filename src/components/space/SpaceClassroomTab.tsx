@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 import {
   DndContext,
@@ -119,7 +119,6 @@ function LessonPlayer({ lesson }: { lesson: any }) {
    ═══════════════════════════════════════════════════════════════ */
 export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
   const { user } = useAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: modules = [] } = useClassroomModules(creatorId);
   const moduleIds = modules.map((m: any) => m.id);
@@ -183,9 +182,9 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
   const handleComplete = async (lessonId: string) => {
     try {
       await completeLesson.mutateAsync({ lessonId, creatorId });
-      toast({ title: "Lesson completed! 🎉" });
+      toast.success("Lesson completed! 🎉");
     } catch {
-      toast({ title: "Already completed" });
+      toast.success("Already completed");
     }
   };
 
@@ -233,7 +232,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
   // Cover image upload for modules
   const handleModuleCoverUpload = async (moduleId: string, file: File) => {
     if (file.size > 5 * 1024 * 1024) {
-      toast({ title: "File too large", description: "Please use an image under 5MB.", variant: "destructive" });
+      toast.error("File too large", { description: "Please use an image under 5MB." });
       return;
     }
     setUploadingCover(moduleId);
@@ -241,7 +240,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
       const { data: sessionData } = await supabase.auth.getSession();
       const session = sessionData.session;
       if (!session?.user?.id) {
-        toast({ title: "Not authenticated", variant: "destructive" });
+        toast.error("Not authenticated");
         return;
       }
       const ext = file.name.split(".").pop()?.toLowerCase()?.replace(/[^a-z0-9]/g, "") || "jpg";
@@ -252,10 +251,10 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
       const { error: updateError } = await supabase.from("classroom_modules").update({ cover_image_url: urlData.publicUrl }).eq("id", moduleId);
       if (updateError) throw updateError;
       queryClient.invalidateQueries({ queryKey: ["classroom-modules"] });
-      toast({ title: "Cover image updated!" });
+      toast.success("Cover image updated!");
     } catch (err: any) {
       console.error("Cover upload error:", err);
-      toast({ title: "Upload failed", description: err.message || "Something went wrong", variant: "destructive" });
+      toast.error("Upload failed", { description: err.message || "Something went wrong" });
     } finally {
       setUploadingCover(null);
     }
@@ -387,7 +386,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => { deleteLesson.mutate(lesson.id); toast({ title: "Lesson deleted" }); }} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
+                                <AlertDialogAction onClick={() => { deleteLesson.mutate(lesson.id); toast.success("Lesson deleted"); }} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>
                           </AlertDialog>
@@ -524,7 +523,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
                                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                      <AlertDialogAction onClick={() => { deleteModule.mutate(mod.id); toast({ title: "Module deleted" }); }} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
+                                      <AlertDialogAction onClick={() => { deleteModule.mutate(mod.id); toast.success("Module deleted"); }} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
                                     </AlertDialogFooter>
                                   </AlertDialogContent>
                                 </AlertDialog>
@@ -630,7 +629,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => { deleteModule.mutate(mod.id); toast({ title: "Module deleted" }); }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                                    <AlertDialogAction onClick={() => { deleteModule.mutate(mod.id); toast.success("Module deleted"); }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
                                   </AlertDialogFooter>
                                 </AlertDialogContent>
                               </AlertDialog>
@@ -695,7 +694,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                                                 </AlertDialogHeader>
                                                 <AlertDialogFooter>
                                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                  <AlertDialogAction onClick={() => { deleteLesson.mutate(lesson.id); if (selectedLesson?.id === lesson.id) setSelectedLesson(null); toast({ title: "Lesson deleted" }); }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                                                  <AlertDialogAction onClick={() => { deleteLesson.mutate(lesson.id); if (selectedLesson?.id === lesson.id) setSelectedLesson(null); toast.success("Lesson deleted"); }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
                                                 </AlertDialogFooter>
                                               </AlertDialogContent>
                                             </AlertDialog>
@@ -844,14 +843,12 @@ function AddModuleDialog({ open, onClose, creatorId }: { open: boolean; onClose:
   const [description, setDescription] = useState("");
   const [isFree, setIsFree] = useState(true);
   const createModule = useCreateModule();
-  const { toast } = useToast();
-
   const handleSubmit = async () => {
     if (!title.trim()) return;
     await createModule.mutateAsync({ title, description, creatorId, is_free: isFree });
     setTitle(""); setDescription(""); setIsFree(true);
     onClose();
-    toast({ title: "Module added!" });
+    toast.success("Module added!");
   };
 
   return (
@@ -896,7 +893,6 @@ function AddLessonDialog({ open, onClose, moduleId, creatorId }: { open: boolean
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const createLesson = useCreateLesson();
-  const { toast } = useToast();
   const { user } = useAuth();
 
   const uploadToMux = async (file: File): Promise<string | null> => {
@@ -923,9 +919,9 @@ function AddLessonDialog({ open, onClose, moduleId, creatorId }: { open: boolean
       });
       setTitle(""); setDescription(""); setVideoFile(null); setUploadProgress(0); setIsFree(false);
       onClose();
-      toast({ title: videoFile ? "Lesson added! Video is processing..." : "Lesson added!" });
+      toast.success("videoFile ? "Lesson added! Video is processing..." : "Lesson added!"");
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error("Error", { description: err.message });
     } finally { setUploading(false); }
   };
 
@@ -993,13 +989,11 @@ function EditModuleDialog({ open, onClose, module: mod }: { open: boolean; onClo
   const [title, setTitle] = useState(mod.title);
   const [description, setDescription] = useState(mod.description || "");
   const updateModule = useUpdateModule();
-  const { toast } = useToast();
-
   const handleSubmit = async () => {
     if (!title.trim()) return;
     await updateModule.mutateAsync({ id: mod.id, title, description });
     onClose();
-    toast({ title: "Module updated!" });
+    toast.success("Module updated!");
   };
 
   return (
@@ -1024,7 +1018,6 @@ function EditLessonDialog({ open, onClose, lesson }: { open: boolean; onClose: (
   const [uploadProgress, setUploadProgress] = useState(0);
   const [removeVideo, setRemoveVideo] = useState(false);
   const updateLesson = useUpdateLesson();
-  const { toast } = useToast();
   const { user } = useAuth();
 
   const hasExistingVideo = !removeVideo && (lesson.mux_asset_id || lesson.video_url);
@@ -1054,9 +1047,9 @@ function EditLessonDialog({ open, onClose, lesson }: { open: boolean; onClose: (
       }
       await updateLesson.mutateAsync(updateData);
       onClose();
-      toast({ title: videoFile ? "Lesson updated! Video is processing..." : "Lesson updated!" });
+      toast.success("videoFile ? "Lesson updated! Video is processing..." : "Lesson updated!"");
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error("Error", { description: err.message });
     } finally { setUploading(false); }
   };
 

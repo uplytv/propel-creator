@@ -7,7 +7,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/context/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useContentShares } from "@/hooks/useContentShares";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle,
@@ -110,8 +110,6 @@ export default function SharePanel({
   const { data: profile } = useProfile();
   const username = creatorUsername || profile?.display_name || "creator";
   const { totalShares, platformBreakdown, trackShare } = useContentShares(contentType, contentId);
-  const { toast } = useToast();
-
   const [caption, setCaption] = useState("");
   const [copied, setCopied] = useState(false);
   const [embedCopied, setEmbedCopied] = useState(false);
@@ -212,7 +210,7 @@ export default function SharePanel({
     switch (platform) {
       case "tiktok": {
         await safeClipboard(caption);
-        toast({ title: "Caption copied! Opening TikTok…" });
+        toast.success("Caption copied! Opening TikTok…");
         if (isMobile && navigator.share) {
           const blob = await fetchVideoBlob();
           await handleNativeShare(platform, blob || undefined);
@@ -223,7 +221,7 @@ export default function SharePanel({
       }
       case "instagram": {
         await safeClipboard(caption);
-        toast({ title: "Caption copied! Opening Instagram…" });
+        toast.success("Caption copied! Opening Instagram…");
         if (isMobile && navigator.share) {
           const blob = await fetchVideoBlob();
           await handleNativeShare(platform, blob || undefined);
@@ -234,7 +232,7 @@ export default function SharePanel({
       }
       case "youtube": {
         await safeClipboard(caption);
-        toast({ title: "Caption copied! Opening YouTube Studio…" });
+        toast.success("Caption copied! Opening YouTube Studio…");
         if (isMobile && navigator.share) {
           const blob = await fetchVideoBlob();
           await handleNativeShare(platform, blob || undefined);
@@ -246,7 +244,7 @@ export default function SharePanel({
       case "twitter": {
         const tweetText = encodeURIComponent(caption);
         window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, "_blank");
-        toast({ title: "Opening X/Twitter…" });
+        toast.success("Opening X/Twitter…");
         break;
       }
       case "linkedin": {
@@ -254,7 +252,7 @@ export default function SharePanel({
           `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(contentUrl)}&title=${encodeURIComponent(title)}`,
           "_blank"
         );
-        toast({ title: "Opening LinkedIn…" });
+        toast.success("Opening LinkedIn…");
         break;
       }
       case "facebook": {
@@ -262,7 +260,7 @@ export default function SharePanel({
           `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(contentUrl)}`,
           "_blank"
         );
-        toast({ title: "Opening Facebook…" });
+        toast.success("Opening Facebook…");
         break;
       }
       case "download": {
@@ -281,7 +279,7 @@ export default function SharePanel({
               a.click();
               document.body.removeChild(a);
               URL.revokeObjectURL(a.href);
-              toast({ title: "Download started ✓" });
+              toast.success("Download started ✓");
             } else {
               throw new Error("MP4 not available");
             }
@@ -293,7 +291,7 @@ export default function SharePanel({
               },
             });
             if (error || !data?.download_url) {
-              toast({ title: "Download failed", description: "Could not fetch video", variant: "destructive" });
+              toast.error("Download failed", { description: "Could not fetch video" });
             } else {
               const a = document.createElement("a");
               a.href = data.download_url;
@@ -302,11 +300,11 @@ export default function SharePanel({
               document.body.appendChild(a);
               a.click();
               document.body.removeChild(a);
-              toast({ title: "Download started ✓" });
+              toast.success("Download started ✓");
             }
           }
         } catch {
-          toast({ title: "Download failed", variant: "destructive" });
+          toast.error("Download failed");
         }
         setDownloading(false);
         break;
@@ -315,10 +313,10 @@ export default function SharePanel({
         const ok = await safeClipboard(contentUrl);
         if (ok) {
           setCopied(true);
-          toast({ title: "Link copied ✓" });
+          toast.success("Link copied ✓");
           setTimeout(() => setCopied(false), 2000);
         } else {
-          toast({ title: "Could not copy link", variant: "destructive" });
+          toast.error("Could not copy link");
         }
         break;
       }
@@ -327,7 +325,7 @@ export default function SharePanel({
         const embedOk = await safeClipboard(embedCode);
         setEmbedCopied(true);
         setShowEmbed(true);
-        toast({ title: "Embed code copied ✓" });
+        toast.success("Embed code copied ✓");
         setTimeout(() => setEmbedCopied(false), 2000);
         break;
       }
@@ -418,7 +416,7 @@ export default function SharePanel({
             <button
               onClick={async () => {
                 await safeClipboard(`<iframe src="${contentUrl}?embed=true" width="560" height="315" frameborder="0" allowfullscreen style="border-radius:12px;"></iframe>`);
-                toast({ title: "Embed code copied ✓" });
+                toast.success("Embed code copied ✓");
               }}
               className="text-xs text-primary hover:underline"
             >

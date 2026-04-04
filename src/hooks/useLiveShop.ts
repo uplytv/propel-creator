@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export interface LiveProduct {
   id: string;
@@ -53,7 +53,6 @@ export interface LiveGiveaway {
 
 export function useLiveShop(streamId: string | undefined) {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [products, setProducts] = useState<LiveProduct[]>([]);
   const [auctions, setAuctions] = useState<LiveAuction[]>([]);
   const [giveaways, setGiveaways] = useState<LiveGiveaway[]>([]);
@@ -140,7 +139,7 @@ export function useLiveShop(streamId: string | undefined) {
       });
     }
 
-    toast({ title: "Product activated!", description: `${product.title} is now live.` });
+    toast.success("Product activated!", { description: `${product.title });
   }, [products, streamId, toast]);
 
   const deactivateProduct = useCallback(async (productId: string) => {
@@ -158,10 +157,10 @@ export function useLiveShop(streamId: string | undefined) {
       body: { live_product_id: productId, bid_amount: amount },
     });
     if (error || data?.error) {
-      toast({ title: "Bid failed", description: data?.error || error?.message, variant: "destructive" });
+      toast.error("Bid failed", { description: data?.error || error?.message });
       return false;
     }
-    toast({ title: "Bid placed!", description: `Your bid of $${amount} was placed.` });
+    toast.success("Bid placed!", { description: `Your bid of $${amount });
     return true;
   }, [toast]);
 
@@ -170,7 +169,7 @@ export function useLiveShop(streamId: string | undefined) {
       body: { live_product_id: productId },
     });
     if (error || data?.error) {
-      toast({ title: "Purchase failed", description: data?.error || error?.message, variant: "destructive" });
+      toast.error("Purchase failed", { description: data?.error || error?.message });
       return;
     }
     if (data?.url) {
@@ -185,7 +184,7 @@ export function useLiveShop(streamId: string | undefined) {
       creator_id: user.id,
       title,
     });
-    toast({ title: "Giveaway started!", description: `"${title}" is now live.` });
+    toast.success("Giveaway started!", { description: `"${title });
   }, [streamId, user, toast]);
 
   const endGiveaway = useCallback(async (giveawayId: string) => {
@@ -193,9 +192,9 @@ export function useLiveShop(streamId: string | undefined) {
       body: { giveaway_id: giveawayId },
     });
     if (data?.winner_username) {
-      toast({ title: "🎉 Winner!", description: `${data.winner_username} won the giveaway!` });
+      toast.success("🎉 Winner!", { description: `${data.winner_username });
     } else {
-      toast({ title: "Giveaway ended", description: "No entries were submitted." });
+      toast.success("Giveaway ended", { description: "No entries were submitted." });
     }
     return data;
   }, [toast]);
@@ -216,9 +215,9 @@ export function useLiveShop(streamId: string | undefined) {
 
     if (error) {
       if (error.code === "23505") {
-        toast({ title: "Already entered!", description: "You've already entered this giveaway." });
+        toast.success("Already entered!", { description: "You've already entered this giveaway." });
       } else {
-        toast({ title: "Error", description: error.message, variant: "destructive" });
+        toast.error("Error", { description: error.message });
       }
       return;
     }
@@ -232,7 +231,7 @@ export function useLiveShop(streamId: string | undefined) {
     }
 
     setGiveawayEntered(true);
-    toast({ title: "🎁 Entered!", description: "You're in the giveaway! Good luck!" });
+    toast.success("🎁 Entered!", { description: "You're in the giveaway! Good luck!" });
   }, [user, giveaways, toast]);
 
   return {

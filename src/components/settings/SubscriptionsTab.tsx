@@ -8,11 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import EmptyState from "@/components/ui/EmptyState";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export function SubscriptionsTab() {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [portalLoadingId, setPortalLoadingId] = useState<string | null>(null);
 
   const { data: subscriptions, isLoading } = useQuery({
@@ -45,7 +44,7 @@ export function SubscriptionsTab() {
 
   const handleManageSubscription = async (sub: any) => {
     if (!sub.stripe_customer_id) {
-      toast({ title: "No billing info found", variant: "destructive" });
+      toast.error("No billing info found");
       return;
     }
     setPortalLoadingId(sub.id);
@@ -56,7 +55,7 @@ export function SubscriptionsTab() {
       if (error) throw error;
       if (data?.url) window.open(data.url, "_blank");
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error("Error", { description: err.message });
     }
     setPortalLoadingId(null);
   };

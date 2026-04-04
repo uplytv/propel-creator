@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { useStreamEngagement } from "@/hooks/useStreamEngagement";
 import SharePanel from "@/components/share/SharePanel";
@@ -84,7 +84,6 @@ export default function BroadcastStudio({
   creatorUsername,
 }: BroadcastStudioProps) {
   const { user } = useAuth();
-  const { toast } = useToast();
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const animFrameRef = useRef<number>(0);
@@ -439,7 +438,7 @@ export default function BroadcastStudio({
         userId: user.id, title: `${title} (Recording)`, description: "Browser recording",
         isPublic: true, file: blob, onProgress: (pct) => setUploadProgress(pct),
       });
-      toast({ title: "Recording saved! 🎬", description: "Your video is processing." });
+      toast.success("Recording saved! 🎬", { description: "Your video is processing." });
       await clearChunks();
       chunksRef.current = [];
       setIsUploading(false);
@@ -447,7 +446,7 @@ export default function BroadcastStudio({
     } catch (err: any) {
       setUploadFailed(true);
       setUploadErrorMsg(err.message || "Upload failed");
-      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+      toast.error("Upload failed", { description: err.message });
       setIsUploading(false);
       onEndStream({ durationSeconds: duration });
     }

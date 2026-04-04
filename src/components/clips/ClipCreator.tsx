@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Scissors, Loader2, Share2, Copy, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { SITE_URL } from "@/lib/siteUrl";
 
@@ -15,7 +15,6 @@ interface ClipCreatorProps {
 }
 
 export default function ClipCreator({ sourceAssetId, creatorId, duration, playbackId }: ClipCreatorProps) {
-  const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [startTime, setStartTime] = useState(0);
   const [endTime, setEndTime] = useState(Math.min(30, duration));
@@ -79,16 +78,9 @@ export default function ClipCreator({ sourceAssetId, creatorId, duration, playba
 
       const clipId = data?.clip?.id;
       setShareUrl(`${SITE_URL}/shorts`);
-      toast({
-        title: "Clip created! ✂️",
-        description: "Your clip is being processed by Mux.",
-      });
+      toast.success("Clip created! ✂️", { description: "Your clip is being processed by Mux." });
     } catch (err: any) {
-      toast({
-        title: "Failed to create clip",
-        description: err.message || "Something went wrong",
-        variant: "destructive",
-      });
+      toast.error("Failed to create clip", { description: err.message || "Something went wrong" });
     } finally {
       setCreating(false);
     }

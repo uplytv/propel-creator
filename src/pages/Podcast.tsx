@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { useAuth } from "@/context/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import SEOHead from "@/components/SEOHead";
 
@@ -22,7 +22,6 @@ const CATEGORIES = ["Arts", "Business", "Comedy", "Education", "Fiction", "Healt
 export default function Podcast() {
   const { user } = useAuth();
   const { data: profile } = useProfile();
-  const { toast } = useToast();
   const qc = useQueryClient();
   const profileId = profile?.id;
 
@@ -66,8 +65,8 @@ export default function Podcast() {
     const { error } = await supabase.from("creator_podcasts").insert({
       creator_id: profileId, title, description, category, language, is_explicit: isExplicit, is_private: isPrivate, artwork_url: artworkUrl, author: profile?.display_name,
     });
-    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Podcast created!" });
+    if (error) { toast.error("Error", { description: error.message }); return; }
+    toast.success("Podcast created!");
     qc.invalidateQueries({ queryKey: ["my-podcast"] });
   };
 
@@ -102,8 +101,8 @@ export default function Podcast() {
       episode_number: epNumber, is_members_only: epMembersOnly,
       is_published: publish, published_at: publish ? new Date().toISOString() : null,
     });
-    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-    toast({ title: publish ? "Episode published!" : "Draft saved" });
+    if (error) { toast.error("Error", { description: error.message }); return; }
+    toast.success("publish ? "Episode published!" : "Draft saved"");
     setEpisodeDialogOpen(false);
     qc.invalidateQueries({ queryKey: ["podcast-episodes"] });
   };

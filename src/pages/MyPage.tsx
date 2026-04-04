@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/context/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import SEOHead from "@/components/SEOHead";
 import LinkInBioRenderer from "@/components/pages/LinkInBioRenderer";
@@ -21,7 +21,6 @@ import LinkInBioRenderer from "@/components/pages/LinkInBioRenderer";
 export default function MyPage() {
   const { user } = useAuth();
   const { data: profile } = useProfile();
-  const { toast } = useToast();
   const qc = useQueryClient();
   const profileId = profile?.id;
   const [tab, setTab] = useState("bio");
@@ -101,7 +100,7 @@ export default function MyPage() {
     await supabase.from("creator_pages").upsert({
       creator_id: profileId, page_type: "link_in_bio", title: profile?.display_name || "Bio", slug, is_published: true, content,
     }, { onConflict: "creator_id,slug" });
-    toast({ title: "Bio page published!" });
+    toast.success("Bio page published!");
     setSaving(false);
     qc.invalidateQueries({ queryKey: ["bio-page"] });
   };
@@ -206,7 +205,7 @@ export default function MyPage() {
                   </CardContent>
                 </Card>
               ))}
-              <Card className="border-dashed border-border cursor-pointer hover:border-primary/30 transition-colors" onClick={() => toast({ title: "Coming soon", description: "Funnel page editor launching soon" })}>
+              <Card className="border-dashed border-border cursor-pointer hover:border-primary/30 transition-colors" onClick={() => toast.success("Coming soon", { description: "Funnel page editor launching soon" })}>
                 <CardContent className="p-4 flex flex-col items-center justify-center min-h-[120px]">
                   <Plus className="w-8 h-8 text-muted-foreground mb-2" />
                   <p className="text-sm text-muted-foreground">Create Page</p>
@@ -236,7 +235,7 @@ export default function MyPage() {
                   <div className="bg-card rounded-lg p-3 text-xs font-mono space-y-1">
                     <p>Type: CNAME</p><p>Host: @</p><p>Value: cname.uply.tv</p><p>TTL: 3600</p>
                   </div>
-                  <Button variant="outline" onClick={() => toast({ title: "Domain verification", description: "Coming soon — use verify-custom-domain edge function" })}>
+                  <Button variant="outline" onClick={() => toast.success("Domain verification", { description: "Coming soon — use verify-custom-domain edge function" })}>
                     Verify Domain
                   </Button>
                 </>

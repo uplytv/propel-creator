@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Calendar, Clock, Film, FileText, Loader2, Check, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { format } from "date-fns";
 
 interface QueueItem {
@@ -21,8 +21,6 @@ interface QueueItem {
 export function ContentScheduler() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
   const { data: queue = [], isLoading } = useQuery({
     queryKey: ["content-schedule", user?.id],
     enabled: !!user,
@@ -65,7 +63,7 @@ export function ContentScheduler() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["content-schedule"] });
-      toast({ title: "Removed from schedule" });
+      toast.success("Removed from schedule");
     },
   });
 

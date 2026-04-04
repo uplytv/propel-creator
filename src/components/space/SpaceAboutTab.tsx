@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { UPLYMuxPlayer } from "@/components/MuxPlayer";
 import {
@@ -131,7 +131,6 @@ function SortableThumb({
 export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: space } = useCreatorSpace(creatorId);
   const { data: memberCount = 0 } = useMemberCount(creatorId);
@@ -225,19 +224,15 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
     if (requiresPaidJoin) {
       navigate(`/community/${creatorId}/pricing`);
       if (activeTiers.length === 0) {
-        toast({
-          title: "No live plan yet",
-          description: "This creator hasn't published a live paid tier yet.",
-          variant: "destructive",
-        });
+        toast.error("No live plan yet", { description: "This creator hasn't published a live paid tier yet." });
       }
       return;
     }
     try {
       await joinCommunity.mutateAsync(creatorId);
-      toast({ title: "Welcome to the community! 🎉" });
+      toast.success("Welcome to the community! 🎉");
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error("Error", { description: err.message });
     }
   };
 
@@ -245,13 +240,13 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
     const trimmed = nameInput.trim();
     if (!trimmed) return;
     updateSpace.mutate({ name: trimmed }, {
-      onSuccess: () => { toast({ title: "Name updated ✏️" }); setEditingName(false); },
+      onSuccess: () => { toast.success("Name updated ✏️"); setEditingName(false); },
     });
   };
 
   const handleSaveDesc = () => {
     updateSpace.mutate({ description: descInput.trim() }, {
-      onSuccess: () => { toast({ title: "Description updated ✏️" }); setEditingDesc(false); },
+      onSuccess: () => { toast.success("Description updated ✏️"); setEditingDesc(false); },
     });
   };
 
@@ -291,11 +286,11 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
       if (insertError) throw insertError;
 
       await queryClient.invalidateQueries({ queryKey: ["space-media", creatorId] });
-      toast({ title: isVideo ? "Video added 🎬" : "Photo added 📸" });
+      toast.success("isVideo ? "Video added 🎬" : "Photo added 📸"");
     } catch (err: any) {
       const message = String(err?.message || "Upload failed");
       const friendly = message.toLowerCase().includes("row-level security") ? "Please sign in again, then retry." : message;
-      toast({ title: "Upload failed", description: friendly, variant: "destructive" });
+      toast.error("Upload failed", { description: "friendly" });
     } finally {
       setUploadingMedia(false);
       if (mediaInputRef.current) mediaInputRef.current.value = "";
@@ -312,14 +307,14 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
         if (error) throw error;
       } else if (item?.source === "mux") {
         // Remove from content library display (hide, don't delete the actual asset)
-        toast({ title: "Recording hidden" });
+        toast.success("Recording hidden");
         return;
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["space-media", creatorId] });
       queryClient.invalidateQueries({ queryKey: ["space-content-assets", creatorId] });
-      toast({ title: "Deleted 🗑️" });
+      toast.success("Deleted 🗑️");
     },
   });
 
@@ -564,7 +559,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
             {isOwner ? (
               <button onClick={() => {
                 updateSpace.mutate({ is_public: !isPublic }, {
-                  onSuccess: () => toast({ title: isPublic ? "Set to Private 🔒" : "Set to Public 🌐" }),
+                  onSuccess: () => toast.success("isPublic ? "Set to Private 🔒" : "Set to Public 🌐""),
                 });
               }} className="flex items-center gap-2 px-2 py-1 -mx-2 rounded-md hover:bg-secondary/50 transition-colors">
                 {isPublic ? <Globe className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
@@ -589,7 +584,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
                     onCheckedChange={(checked) => {
                       if (!checked) {
                         updateSpace.mutate({ is_free: true, price: 0 }, {
-                          onSuccess: () => { toast({ title: "Set to Free ✨" }); setEditingPrice(false); setPriceInput(""); },
+                          onSuccess: () => { toast.success("Set to Free ✨"); setEditingPrice(false); setPriceInput(""); },
                         });
                       } else { setEditingPrice(true); setPriceInput(String(space?.price || "")); }
                     }} />
@@ -600,10 +595,10 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
                     const price = parseFloat(priceInput);
                     if (price > 0) {
                       updateSpace.mutate({ is_free: false, price }, {
-                        onSuccess: () => { toast({ title: `Set to $${price}/mo 💰` }); setEditingPrice(false); },
-                        onError: () => { toast({ title: "Failed to update price", variant: "destructive" }); },
+                        onSuccess: () => { toast.success("Set to $${price}/mo 💰"); setEditingPrice(false); },
+                        onError: () => { toast.error("Failed to update price"); },
                       });
-                    } else { toast({ title: "Enter a price greater than 0", variant: "destructive" }); }
+                    } else { toast.error("Enter a price greater than 0"); }
                   }}>
                     <span className="text-xs text-muted-foreground">$</span>
                     <Input type="number" min="1" step="1" placeholder="49" value={priceInput}

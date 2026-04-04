@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/context/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useCreateVideo } from "@/hooks/useVideos";
 import { uploadToMuxWithRetry } from "@/lib/muxUpload";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,7 +22,6 @@ interface VideoUploadModalProps {
 
 export default function VideoUploadModal({ open, onClose }: VideoUploadModalProps) {
   const { user } = useAuth();
-  const { toast } = useToast();
   const createVideo = useCreateVideo();
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -123,7 +122,7 @@ export default function VideoUploadModal({ open, onClose }: VideoUploadModalProp
       reset();
       onClose();
     } catch (err: any) {
-      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+      toast.error("Upload failed", { description: err.message });
     } finally {
       setUploading(false);
       setPolling(false);

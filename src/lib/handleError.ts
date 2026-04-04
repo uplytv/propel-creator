@@ -1,4 +1,4 @@
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 /**
  * Centralized error handler — shows a user-friendly toast for any caught error.
@@ -20,11 +20,7 @@ export function handleError(error: unknown, fallback = "Something went wrong. Pl
 
   console.error("[handleError]", error);
 
-  toast({
-    title: "Error",
-    description: message.length > 200 ? message.slice(0, 200) + "…" : message,
-    variant: "destructive",
-  });
+  toast.error("Error", { description: message.length > 200 ? message.slice(0 });
 }
 
 /**

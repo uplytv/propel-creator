@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MemberAnalyticsCard } from "@/components/dashboard/MemberAnalyticsCard";
 import { ContentScheduler } from "@/components/dashboard/ContentScheduler";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 function MetricCard({ label, value, growth, icon: Icon }: { label: string; value: string; growth: number; icon: typeof Users }) {
   const isPositive = growth >= 0;
@@ -52,7 +52,6 @@ export default function AnalyticsPage() {
   const { data, isLoading } = useCreatorAnalytics();
   const { user } = useAuth();
   const { data: profile } = useProfile();
-  const { toast } = useToast();
   const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d" | "all">("30d");
   const [churnData, setChurnData] = useState<any[]>([]);
   const [churnLoading, setChurnLoading] = useState(false);
@@ -72,7 +71,7 @@ export default function AnalyticsPage() {
         .limit(20);
       setChurnData(predictions || []);
       setChurnLastRun(new Date().toISOString());
-    } catch { toast({ title: "Analysis failed", variant: "destructive" }); }
+    } catch { toast.error("Analysis failed"); }
     setChurnLoading(false);
   };
 
@@ -81,7 +80,7 @@ export default function AnalyticsPage() {
     // Mark as intervened without requiring a conversation_id
     await supabase.from("member_churn_predictions").update({ intervention_sent: true }).eq("id", prediction.id);
     setMessagedIds(prev => new Set(prev).add(prediction.member_id));
-    toast({ title: "Marked as contacted!" });
+    toast.success("Marked as contacted!");
   };
 
   // Build revenue chart from real daily data

@@ -10,13 +10,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function FunnelEditor() {
   const { pageId } = useParams<{ pageId: string }>();
   const { user } = useAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [content, setContent] = useState<Record<string, any>>({});
@@ -51,7 +50,7 @@ export default function FunnelEditor() {
         .eq("id", pageId!);
     },
     onSuccess: () => {
-      toast({ title: "Page saved!" });
+      toast.success("Page saved!");
       queryClient.invalidateQueries({ queryKey: ["funnel-page", pageId] });
     },
   });
