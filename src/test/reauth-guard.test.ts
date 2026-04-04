@@ -119,9 +119,7 @@ describe("useReauthGuard", () => {
 
     expect(success).toBe(false);
     expect(action).not.toHaveBeenCalled();
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ variant: "destructive" })
-    );
+    expect(mockToastError).toHaveBeenCalled();
   });
 
   it("cancels reauth and clears pending action", () => {
