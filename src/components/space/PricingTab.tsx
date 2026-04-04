@@ -118,7 +118,7 @@ export function PricingTab({ creatorId }: PricingTabProps) {
         body: { name, description, price_monthly: parseFloat(price) },
       });
       if (error) throw error;
-      toast.success("Tier created", { description: `${name });
+      toast.success("Tier created", { description: `${name} is now live` });
       queryClient.invalidateQueries({ queryKey: ["subscription-tiers"] });
       setShowForm(false);
       setName("");

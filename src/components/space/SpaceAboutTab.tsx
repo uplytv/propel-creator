@@ -559,7 +559,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
             {isOwner ? (
               <button onClick={() => {
                 updateSpace.mutate({ is_public: !isPublic }, {
-                  onSuccess: () => toast.success("isPublic ? "Set to Private 🔒" : "Set to Public 🌐""),
+                  onSuccess: () => toast.success(isPublic ? "Set to Private 🔒" : "Set to Public 🌐"),
                 });
               }} className="flex items-center gap-2 px-2 py-1 -mx-2 rounded-md hover:bg-secondary/50 transition-colors">
                 {isPublic ? <Globe className="w-4 h-4" /> : <Lock className="w-4 h-4" />}

@@ -86,7 +86,7 @@ export default function AdIntegrations() {
   const handleDisconnect = async (platform: Platform) => {
     try {
       await disconnectIntegration(platform);
-      toast.success("${platform === "meta" ? "Meta Pixel" : "Google Tag"} disconnected");
+      toast.success(`${platform === "meta" ? "Meta Pixel" : "Google Tag"} disconnected`);
     } catch {
       toast.error("Failed to disconnect");
     }

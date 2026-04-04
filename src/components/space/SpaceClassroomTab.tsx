@@ -1048,7 +1048,7 @@ function EditLessonDialog({ open, onClose, lesson }: { open: boolean; onClose: (
       }
       await updateLesson.mutateAsync(updateData);
       onClose();
-      toast.success("videoFile ? "Lesson updated! Video is processing..." : "Lesson updated!"");
+      toast.success(videoFile ? "Lesson updated! Video is processing..." : "Lesson updated!");
     } catch (err: any) {
       toast.error("Error", { description: err.message });
     } finally { setUploading(false); }

@@ -192,7 +192,7 @@ export function useLiveShop(streamId: string | undefined) {
       body: { giveaway_id: giveawayId },
     });
     if (data?.winner_username) {
-      toast.success("🎉 Winner!", { description: `${data.winner_username });
+      toast.success("🎉 Winner!", { description: `${data.winner_username} won the giveaway!` });
     } else {
       toast.success("Giveaway ended", { description: "No entries were submitted." });
     }
