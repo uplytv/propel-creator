@@ -126,7 +126,7 @@ export default function Auth() {
           });
           clearAffiliateCookie("uply_creator_ref");
         } catch (err) {
-          console.error("Creator affiliate tracking failed:", err);
+          Sentry.captureException(err, { tags: { context: "creator_affiliate_tracking" } });
         }
       }
       trackEvent("signup_completed", { method: "email", has_referral: !!(refCode || creatorRefCode) });
