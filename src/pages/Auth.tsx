@@ -111,7 +111,7 @@ export default function Auth() {
           });
           clearAffiliateCookie("uply_ref");
         } catch (err) {
-          console.error("Platform affiliate tracking failed:", err);
+          Sentry.captureException(err, { tags: { context: "platform_affiliate_tracking" } });
         }
       }
       // Track creator affiliate conversion
