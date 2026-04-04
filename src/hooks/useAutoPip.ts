@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
+import { Sentry } from "@/lib/sentry";
 
 /**
  * Auto Picture-in-Picture hook.
@@ -49,7 +50,7 @@ export function useAutoPip(
         autoPipTriggeredRef.current = false; // manual toggle, don't auto-exit
       }
     } catch (err) {
-      console.error('PiP error:', err);
+      Sentry.captureException(err, { tags: { context: "auto_pip" } });
     }
   }, [videoRef]);
 

@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from "react";
+import { Sentry } from "@/lib/sentry";
 
 export type CameraSource = "front" | "back" | "screen";
 
@@ -70,7 +71,7 @@ export function useMultiCamera(
 
         setActiveSource(source);
       } catch (err) {
-        console.error("Camera switch failed:", err);
+        Sentry.captureException(err, { tags: { context: "multi_camera" } });
       } finally {
         setSwitching(false);
       }

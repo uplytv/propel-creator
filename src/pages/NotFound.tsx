@@ -4,13 +4,14 @@ import { motion } from "framer-motion";
 import { MapPin, Home, Search, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SEOHead from "@/components/SEOHead";
+import { Sentry } from "@/lib/sentry";
 
 export default function NotFound() {
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.error("404 Error: User attempted to access non-existent route:", location.pathname);
+    Sentry.captureException(location.pathname, { tags: { context: "not_found" } });
   }, [location.pathname]);
 
   return (

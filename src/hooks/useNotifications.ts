@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import { Sentry } from "@/lib/sentry";
 
 export interface AppNotification {
   id: string;
@@ -150,7 +151,7 @@ export function useNotifications() {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["all-notifications", user?.id] }),
-    onError: (err: any) => { console.error("Mark read error:", err); toast.error("Failed to mark notification as read"); },
+    onError: (err: any) => { Sentry.captureException(err, { tags: { context: "notifications" } }); toast.error("Failed to mark notification as read"); },
   });
 
   const deleteMutation = useMutation({
@@ -201,7 +202,7 @@ export function useNotifications() {
       queryClient.invalidateQueries({ queryKey: ["all-notifications", user?.id] });
     },
     onError: (err: any) => {
-      console.error("Mark all read error:", err);
+      Sentry.captureException(err, { tags: { context: "notifications" } });
       toast.error("Failed to mark all as read");
     },
   });

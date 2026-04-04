@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { useCreateJob, SKILL_LABELS, SKILL_CATEGORIES, type SkillCategory, useTalentProfiles } from "@/hooks/useJobs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Sentry } from "@/lib/sentry";
 
 interface AISuggestion {
   display_name: string;
@@ -85,7 +86,7 @@ export default function PostJob() {
       if (error) throw error;
       setAiSuggestions(data?.suggestions || []);
     } catch (err: any) {
-      console.error("AI match error:", err);
+      Sentry.captureException(err, { tags: { context: "post_job" } });
       // Fallback: simple skill-based matching
       const matched = allTalent
         .filter((t: any) => t.skills?.includes(skillCategory))

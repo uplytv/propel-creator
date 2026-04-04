@@ -4,6 +4,7 @@ import { GraduationCap, X, ChevronDown, Plus, Loader2, Sparkles } from "lucide-r
 import { Button } from "@/components/ui/button";
 import { useClassroomModules, useCreateModule, useCreateLesson } from "@/hooks/useClassroom";
 import { toast } from "sonner";
+import { Sentry } from "@/lib/sentry";
 
 interface StreamToCourseDialogProps {
   open: boolean;
@@ -47,7 +48,7 @@ export default function StreamToCourseDialog({
         });
         moduleId = newModule?.id || null;
       } catch (err: any) {
-        console.error("[StreamToCourse] Module creation failed:", err);
+        Sentry.captureException(err, { tags: { context: "stream_to_course" } });
         toast.error("Failed to create module", { description: err?.message || "Unknown error" });
         setIsSaving(false);
         return;

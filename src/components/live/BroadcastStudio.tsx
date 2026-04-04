@@ -54,6 +54,7 @@ import ModeSelectionScreen from "./ModeSelectionScreen";
 import PreRecordingSetup from "./PreRecordingSetup";
 import ExternalEncoderView from "./ExternalEncoderView";
 import type { Product } from "./FeaturedProductPicker";
+import { Sentry } from "@/lib/sentry";
 
 interface BroadcastStudioProps {
   streamData: {
@@ -338,7 +339,7 @@ export default function BroadcastStudio({
         .update({ status: active ? 'active' : 'idle', stream_type: 'browser', updated_at: now, ...(active ? { started_at: now } : { ended_at: now }) })
         .eq('id', streamData.streamId);
     } catch (err) {
-      console.error('Failed to update stream status:', err);
+      Sentry.captureException(err, { tags: { context: "broadcast_studio" } });
     }
   };
 
@@ -398,7 +399,7 @@ export default function BroadcastStudio({
     const { mimeType, videoBitsPerSecond } = getRecorderOptions();
     const recorder = new MediaRecorder(streamRef.current, { mimeType, videoBitsPerSecond });
     recorder.ondataavailable = (e) => {
-      if (e.data.size > 0) appendChunk(e.data).catch((err) => console.error("[Recording] Failed to persist chunk:", err));
+      if (e.data.size > 0) appendChunk(e.data).catch((err) => Sentry.captureException(err, { tags: { context: "broadcast_studio" } }));
     };
     recorder.onstop = () => {};
     recorder.start(5000);

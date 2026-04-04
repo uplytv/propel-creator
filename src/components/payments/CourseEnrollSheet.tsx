@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Sentry } from "@/lib/sentry";
 
 interface Props {
   open: boolean;
@@ -93,7 +94,7 @@ export default function CourseEnrollSheet({
       }
     } catch (err: any) {
       toast.error("Payment couldn't start — please try again");
-      console.error("Checkout error:", err);
+      Sentry.captureException(err, { tags: { context: "course_checkout" } });
     }
     setLoading(false);
   };

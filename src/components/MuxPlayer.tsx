@@ -3,6 +3,7 @@ import Hls from 'hls.js';
 import { Loader2, RefreshCw, WifiOff, PictureInPicture2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAutoPip } from '@/hooks/useAutoPip';
+import { Sentry } from "@/lib/sentry";
 
 interface MuxPlayerProps {
   playbackId: string;
@@ -68,7 +69,7 @@ export const UPLYMuxPlayer = ({
 
       hls.on(Hls.Events.ERROR, (_event, data) => {
         if (data.fatal) {
-          console.error('HLS fatal error:', data.type, data.details);
+          Sentry.captureException(data.details, { tags: { context: "hls_player" } });
           
           if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
             // Auto-retry for network errors (stream starting up)

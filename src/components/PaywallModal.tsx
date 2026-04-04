@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { Sentry } from "@/lib/sentry";
 
 const TYPE_LABELS: Record<string, string> = {
   membership_tier: "Membership",
@@ -110,7 +111,7 @@ export default function PaywallModal({
       }
     } catch (err: any) {
       setError(err.message || "Something went wrong. Please try again.");
-      console.error("Payment error:", err);
+      Sentry.captureException(err, { tags: { context: "paywall" } });
     } finally {
       setLoading(false);
     }

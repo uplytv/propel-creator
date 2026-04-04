@@ -30,6 +30,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { Sentry } from "@/lib/sentry";
 
 interface Props {
   creatorId: string;
@@ -253,7 +254,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
       queryClient.invalidateQueries({ queryKey: ["classroom-modules"] });
       toast.success("Cover image updated!");
     } catch (err: any) {
-      console.error("Cover upload error:", err);
+      Sentry.captureException(err, { tags: { context: "classroom" } });
       toast.error("Upload failed", { description: err.message || "Something went wrong" });
     } finally {
       setUploadingCover(null);

@@ -7,6 +7,7 @@ import { ICE_SERVERS, preferLowLatencyCodecs } from '@/lib/webrtcConfig';
 import { useConnectionQuality } from '@/hooks/useConnectionQuality';
 import Hls from 'hls.js';
 import ViewerClipButton from './ViewerClipButton';
+import { Sentry } from "@/lib/sentry";
 
 interface WebRTCPlayerProps {
   streamId: string;
@@ -213,7 +214,7 @@ export default function WebRTCPlayer({ streamId, playbackId, title, className }:
             iceCandidateQueueRef.current = [];
             if (offerIntervalRef.current) { clearInterval(offerIntervalRef.current); offerIntervalRef.current = null; }
           }
-        } catch (err) { console.error('Failed to set remote description:', err); }
+        } catch (err) { Sentry.captureException(err, { tags: { context: "webrtc_player" } }); }
       })
       .on('broadcast', { event: 'ice-candidate' }, async (payload: any) => {
         const msg = payload.payload;
@@ -242,7 +243,7 @@ export default function WebRTCPlayer({ streamId, playbackId, title, className }:
             sendOffer();
             offerIntervalRef.current = setInterval(sendOffer, 2000);
           } catch (err) {
-            console.error('Failed to create offer:', err);
+            Sentry.captureException(err, { tags: { context: "webrtc_player" } });
             startHLSFallback();
           }
         }

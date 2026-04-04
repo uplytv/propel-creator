@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import { Sentry } from "@/lib/sentry";
 
 /**
  * Centralized error handler — shows a user-friendly toast for any caught error.
@@ -18,7 +19,7 @@ export function handleError(error: unknown, fallback = "Something went wrong. Pl
   // Suppress Supabase "JWT expired" — handled by auth refresh
   if (message.includes("JWT expired") || message.includes("refresh_token")) return;
 
-  console.error("[handleError]", error);
+  Sentry.captureException(error, { tags: { context: "handle_error" } });
 
   toast.error("Error", { description: message.length > 200 ? message.slice(0 });
 }

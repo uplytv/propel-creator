@@ -16,6 +16,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useCreateEvent, useUpdateEvent } from "@/hooks/useEvents";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Sentry } from "@/lib/sentry";
 
 const eventTypes = [
   { value: "virtual", label: "Virtual", icon: Monitor, emoji: "🖥️", color: "border-blue-500 bg-blue-500/10 text-blue-500" },
@@ -124,7 +125,7 @@ export default function CreateEvent() {
 
       navigate("/events");
     } catch (err) {
-      console.error(err);
+      Sentry.captureMessage(err, { tags: { context: "create_event" } });
     } finally {
       setSaving(false);
     }
