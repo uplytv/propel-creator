@@ -157,12 +157,9 @@ export default function Onboarding() {
     const inviteCode = getAffiliateCookie("uply_invite_code");
     let isApproved = false;
     if (inviteCode) {
-      const { data: invite } = await supabase
-        .from("invite_codes")
-        .select("id, is_used, owner_id")
-        .eq("code", inviteCode)
-        .eq("is_used", false)
-        .maybeSingle() as any;
+      // Use secure RPC to validate — never exposes full table
+      const { data: inviteResult } = await supabase.rpc("validate_invite_code", { p_code: inviteCode }) as any;
+      const invite = inviteResult && inviteResult.id && !inviteResult.is_used ? inviteResult : null;
       if (invite) {
         await supabase
           .from("invite_codes")
