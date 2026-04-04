@@ -176,7 +176,7 @@ export default function Auth() {
         setLockoutUntil(Date.now() + lockDuration);
         toast.error("Account locked", { description: `Too many failed attempts. Try again in ${lockDuration / 1000}s.` });
       } else {
-        toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
+        toast.error("Sign in failed", { description: error.message });
       }
     } else {
       setLoginAttempts(0);
