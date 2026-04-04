@@ -7,16 +7,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Mail, Lock, User, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { getAffiliateCookie, clearAffiliateCookie, getReferralData } from "@/lib/affiliateCookies";
 import { trackEvent } from "@/lib/posthog";
+import { Sentry } from "@/lib/sentry";
 
 export default function Auth() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -70,7 +70,7 @@ export default function Auth() {
     e.preventDefault();
     const pwError = validatePassword(password);
     if (pwError) {
-      toast({ title: "Weak password", description: pwError, variant: "destructive" });
+      toast.error("Weak password", { description: pwError });
       return;
     }
     setLoading(true);
@@ -97,7 +97,7 @@ export default function Auth() {
     });
     setLoading(false);
     if (error) {
-      toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
+      toast.error("Sign up failed", { description: error.message });
     } else {
       // Track platform referral conversion
       if (refCode && signUpData?.user) {
@@ -111,7 +111,7 @@ export default function Auth() {
           });
           clearAffiliateCookie("uply_ref");
         } catch (err) {
-          console.error("Platform affiliate tracking failed:", err);
+          Sentry.captureException(err, { tags: { context: "platform_affiliate_tracking" } });
         }
       }
       // Track creator affiliate conversion
@@ -126,7 +126,7 @@ export default function Auth() {
           });
           clearAffiliateCookie("uply_creator_ref");
         } catch (err) {
-          console.error("Creator affiliate tracking failed:", err);
+          Sentry.captureException(err, { tags: { context: "creator_affiliate_tracking" } });
         }
       }
       trackEvent("signup_completed", { method: "email", has_referral: !!(refCode || creatorRefCode) });
@@ -145,10 +145,8 @@ export default function Auth() {
       if (error || !data) return true; // fail open
       if (!data.allowed) {
         const retryAfter = data.retry_after || 60;
-        toast({
-          title: "Too many attempts",
+        toast.error("Too many attempts", {
           description: `Please wait ${Math.ceil(retryAfter / 60)} minute(s) before trying again.`,
-          variant: "destructive",
         });
         return false;
       }
@@ -162,7 +160,7 @@ export default function Auth() {
     e.preventDefault();
     if (lockoutUntil && Date.now() < lockoutUntil) {
       const secsLeft = Math.ceil((lockoutUntil - Date.now()) / 1000);
-      toast({ title: "Too many attempts", description: `Please wait ${secsLeft}s before trying again.`, variant: "destructive" });
+      toast.error("Too many attempts", { description: `Please wait ${secsLeft}s before trying again.` });
       return;
     }
     setLoading(true);
@@ -176,9 +174,9 @@ export default function Auth() {
       if (newAttempts >= 5) {
         const lockDuration = Math.min(30 * Math.pow(2, Math.floor((newAttempts - 5) / 3)), 300) * 1000;
         setLockoutUntil(Date.now() + lockDuration);
-        toast({ title: "Account locked", description: `Too many failed attempts. Try again in ${lockDuration / 1000}s.`, variant: "destructive" });
+        toast.error("Account locked", { description: `Too many failed attempts. Try again in ${lockDuration / 1000}s.` });
       } else {
-        toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
+        toast.error("Sign in failed", { description: error.message });
       }
     } else {
       setLoginAttempts(0);
@@ -194,7 +192,7 @@ export default function Auth() {
 
     if (result.error) {
       setLoading(false);
-      toast({ title: "Google sign in failed", description: String(result.error), variant: "destructive" });
+      toast.error("Google sign in failed", { description: String(result.error) });
       return;
     }
 
@@ -211,7 +209,7 @@ export default function Auth() {
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
-      toast({ title: "Error", description: "Please enter your email address.", variant: "destructive" });
+      toast.error("Error", { description: "Please enter your email address." });
       return;
     }
     setForgotLoading(true);
@@ -222,9 +220,9 @@ export default function Auth() {
     });
     setForgotLoading(false);
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast.error("Error", { description: error.message });
     } else {
-      toast({ title: "Reset email sent", description: "Check your inbox for the password reset link." });
+      toast.success("Reset email sent", { description: "Check your inbox for the password reset link." });
       setForgotMode(false);
     }
   };
