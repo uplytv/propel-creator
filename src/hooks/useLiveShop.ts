@@ -184,7 +184,7 @@ export function useLiveShop(streamId: string | undefined) {
       creator_id: user.id,
       title,
     });
-    toast.success("Giveaway started!", { description: `"${title });
+    toast.success("Giveaway started!", { description: `"${title}" is now live` });
   }, [streamId, user, toast]);
 
   const endGiveaway = useCallback(async (giveawayId: string) => {
