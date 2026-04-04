@@ -116,7 +116,6 @@ export default function Stream() {
   const { id, username: routeUsername, slug: routeSlug } = useParams<{ id: string; username: string; slug: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { toast } = useToast();
   const [joinOpen, setJoinOpen] = useState(false);
   const [liked, setLiked] = useState(false);
   const [tipOpen, setTipOpen] = useState(false);
