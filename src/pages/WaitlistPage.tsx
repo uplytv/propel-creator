@@ -55,26 +55,14 @@ export default function WaitlistPage() {
       return;
     }
 
-    // Get waitlist position
-    const { data: wlEntry } = await supabase
-      .from("waitlist")
-      .select("position, referral_count")
-      .eq("email", user.email)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle() as any;
-
-    if (wlEntry) {
-      setWaitlistPosition(wlEntry.position || 0);
-      setReferralCount(wlEntry.referral_count || 0);
-    } else {
-      // Fallback to referrals table
-      const { count: refCount } = await supabase
-        .from("referrals")
-        .select("*", { count: "exact", head: true })
-        .eq("referrer_id", user.id) as any;
-      setReferralCount(refCount || 0);
-    }
+    // Combined referral count from both waitlist + post-signup referrals
+    const [{ count: postSignupRefs }, { data: wlRow }] = await Promise.all([
+      supabase.from("referrals").select("*", { count: "exact", head: true }).eq("referrer_id", user.id) as any,
+      supabase.from("waitlist").select("referral_count, position").eq("email", user.email!).order("created_at", { ascending: false }).limit(1).maybeSingle() as any,
+    ]);
+    const combinedCount = (postSignupRefs || 0) + ((wlRow as any)?.referral_count || 0);
+    setReferralCount(combinedCount);
+    setWaitlistPosition((wlRow as any)?.position || 0);
 
     // Get total waitlist
     const { count: wlCount } = await supabase
