@@ -160,7 +160,7 @@ export default function Auth() {
     e.preventDefault();
     if (lockoutUntil && Date.now() < lockoutUntil) {
       const secsLeft = Math.ceil((lockoutUntil - Date.now()) / 1000);
-      toast({ title: "Too many attempts", description: `Please wait ${secsLeft}s before trying again.`, variant: "destructive" });
+      toast.error("Too many attempts", { description: `Please wait ${secsLeft}s before trying again.` });
       return;
     }
     setLoading(true);
