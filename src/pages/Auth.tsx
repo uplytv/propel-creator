@@ -97,7 +97,7 @@ export default function Auth() {
     });
     setLoading(false);
     if (error) {
-      toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
+      toast.error("Sign up failed", { description: error.message });
     } else {
       // Track platform referral conversion
       if (refCode && signUpData?.user) {
