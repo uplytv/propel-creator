@@ -345,8 +345,8 @@ function RelatedVideoCard({ video }: { video: Video }) {
   const { data: creator } = useQuery({
     queryKey: ["video-creator-mini", video.creator_id],
     queryFn: async () => {
-      const { data } = await (supabase as any)
-        .from("profiles_public")
+      const { data } = await supabase
+        .from("profiles")
         .select("display_name, username, avatar_url")
         .eq("user_id", video.creator_id)
         .maybeSingle();
