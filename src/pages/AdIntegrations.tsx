@@ -56,17 +56,17 @@ export default function AdIntegrations() {
   const handleConnect = async (platform: Platform) => {
     const pixelId = platform === "meta" ? metaPixelInput.trim() : googleTagInput.trim();
     if (!pixelId) {
-      toast.error("Please enter your ${platform === "meta" ? "Meta Pixel ID" : "Google Tag ID"}");
+      toast.error(`Please enter your ${platform === "meta" ? "Meta Pixel ID" : "Google Tag ID"}`);
       return;
     }
 
     // Basic validation
     if (platform === "meta" && !/^\d{10,20}$/.test(pixelId)) {
-      toast.error("Invalid Pixel ID", { description: "Meta Pixel IDs are numeric });
+      toast.error("Invalid Pixel ID", { description: "Meta Pixel IDs are numeric (10-20 digits)" });
       return;
     }
     if (platform === "google" && !/^(AW-|G-|GT-)[A-Z0-9]+$/i.test(pixelId)) {
-      toast.error("Invalid Tag ID", { description: "Google Tag IDs start with AW- });
+      toast.error("Invalid Tag ID", { description: "Google Tag IDs start with AW-, G-, or GT-" });
       return;
     }
 
@@ -74,7 +74,7 @@ export default function AdIntegrations() {
     setter(true);
     try {
       await saveIntegration(platform, pixelId);
-      toast.success("${platform === "meta" ? "Meta Pixel" : "Google Tag"} connected!", { description: `Tracking script has been installed and is now firing events.` });
+      toast.success(`${platform === "meta" ? "Meta Pixel" : "Google Tag"} connected!`, { description: "Tracking script has been installed and is now firing events." });
       if (platform === "meta") setMetaPixelInput("");
       else setGoogleTagInput("");
     } catch (err) {
@@ -86,7 +86,7 @@ export default function AdIntegrations() {
   const handleDisconnect = async (platform: Platform) => {
     try {
       await disconnectIntegration(platform);
-      toast.success("${platform === "meta" ? "Meta Pixel" : "Google Tag"} disconnected");
+      toast.success(`${platform === "meta" ? "Meta Pixel" : "Google Tag"} disconnected`);
     } catch {
       toast.error("Failed to disconnect");
     }
@@ -95,7 +95,7 @@ export default function AdIntegrations() {
   const handleCampaignLaunch = async (campaign: LaunchedCampaign) => {
     try {
       await launchCampaign(campaign);
-      toast.success("Campaign launched!", { description: `"Boost: ${campaign.streamTitle });
+      toast.success("Campaign launched!", { description: `"Boost: ${campaign.streamTitle}" is now running` });
     } catch {
       toast.error("Failed to launch campaign");
     }
@@ -276,7 +276,7 @@ export default function AdIntegrations() {
             onDelete={deleteCampaign}
             onDuplicate={async (source) => {
               await duplicateCampaign(source);
-              toast.success("Campaign duplicated", { description: `A copy of "${source.stream_title });
+              toast.success("Campaign duplicated", { description: `A copy of "${source.stream_title}" has been created` });
             }}
           />
         </div>

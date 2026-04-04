@@ -62,7 +62,7 @@ export default function AdminSettings() {
     if (error) {
       toast.error("Error", { description: error.message });
     } else {
-      toast.success("launchConfig.is_launched ? "Platform set to pre-launch" : "Platform launched!"");
+      toast.success(launchConfig.is_launched ? "Platform set to pre-launch" : "Platform launched!");
       queryClient.invalidateQueries({ queryKey: ["launch-config"] });
     }
     setSaving(false);

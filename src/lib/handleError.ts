@@ -21,7 +21,7 @@ export function handleError(error: unknown, fallback = "Something went wrong. Pl
 
   Sentry.captureException(error, { tags: { context: "handle_error" } });
 
-  toast.error("Error", { description: message.length > 200 ? message.slice(0 });
+  toast.error("Error", { description: message.length > 200 ? message.slice(0, 200) + "…" : message });
 }
 
 /**

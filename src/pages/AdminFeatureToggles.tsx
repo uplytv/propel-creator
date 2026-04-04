@@ -113,7 +113,7 @@ export default function AdminFeatureToggles() {
         return depDefault && !depDefault.enabled;
       });
       if (missingDeps.length > 0) {
-        toast.error("Missing dependencies", { description: `Enable these first: ${missingDeps.join(" });
+        toast.error("Missing dependencies", { description: `Enable these first: ${missingDeps.join(", ")}` });
         return;
       }
     }
@@ -126,7 +126,7 @@ export default function AdminFeatureToggles() {
       });
       if (dependents.length > 0) {
         const names = dependents.map((d: any) => (d as any).label).join(", ");
-        toast.error("Cannot disable", { description: `These features depend on it: ${names });
+        toast.error("Cannot disable", { description: `These features depend on it: ${names}` });
         return;
       }
     }
@@ -156,7 +156,7 @@ export default function AdminFeatureToggles() {
 
     queryClient.invalidateQueries({ queryKey: ["admin-category-defaults", selectedCategory] });
     queryClient.invalidateQueries({ queryKey: ["admin-audit-log"] });
-    toast.success("${enabled ? "Enabled" : "Disabled"} ${feature?.label || featureKey}");
+    toast.success(`${enabled ? "Enabled" : "Disabled"} ${feature?.label || featureKey}`);
   };
 
   const bulkToggleCore = async (core: string, enabled: boolean) => {

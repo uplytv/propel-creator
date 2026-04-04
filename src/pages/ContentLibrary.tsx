@@ -101,7 +101,7 @@ export default function ContentLibrary() {
       .update({ is_public: !asset.is_public })
       .eq("id", asset.id);
     fetchAssets();
-    toast.success("asset.is_public ? "Video set to private" : "Video set to public"", { description: asset.is_public
+    toast.success(asset.is_public ? "Video set to private" : "Video set to public", { description: asset.is_public
         ? "This video is no longer visible in discovery."
         : "This video is now visible in the discovery feed." });
   };

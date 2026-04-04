@@ -109,7 +109,7 @@ export function PricingTab({ creatorId }: PricingTabProps) {
   const handleCreate = async () => {
     if (!name || !price) return;
     if ((tiers?.length || 0) >= MAX_TIERS) {
-      toast.error("Limit reached", { description: `You can create up to ${MAX_TIERS });
+      toast.error("Limit reached", { description: `You can create up to ${MAX_TIERS} tiers` });
       return;
     }
     setCreating(true);
@@ -118,7 +118,7 @@ export function PricingTab({ creatorId }: PricingTabProps) {
         body: { name, description, price_monthly: parseFloat(price) },
       });
       if (error) throw error;
-      toast.success("Tier created", { description: `${name });
+      toast.success("Tier created", { description: `${name} is now live` });
       queryClient.invalidateQueries({ queryKey: ["subscription-tiers"] });
       setShowForm(false);
       setName("");
@@ -138,7 +138,7 @@ export function PricingTab({ creatorId }: PricingTabProps) {
     if (error) {
       toast.error("Error", { description: error.message });
     } else {
-      toast.success("Tier deactivated", { description: `${tierName });
+      toast.success("Tier deactivated", { description: `${tierName} has been deactivated` });
       queryClient.invalidateQueries({ queryKey: ["subscription-tiers"] });
     }
   };

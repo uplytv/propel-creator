@@ -139,7 +139,7 @@ export function useLiveShop(streamId: string | undefined) {
       });
     }
 
-    toast.success("Product activated!", { description: `${product.title });
+    toast.success("Product activated!", { description: `${product.title} is now live` });
   }, [products, streamId, toast]);
 
   const deactivateProduct = useCallback(async (productId: string) => {
@@ -160,7 +160,7 @@ export function useLiveShop(streamId: string | undefined) {
       toast.error("Bid failed", { description: data?.error || error?.message });
       return false;
     }
-    toast.success("Bid placed!", { description: `Your bid of $${amount });
+    toast.success("Bid placed!", { description: `Your bid of $${amount} was submitted` });
     return true;
   }, [toast]);
 
@@ -184,7 +184,7 @@ export function useLiveShop(streamId: string | undefined) {
       creator_id: user.id,
       title,
     });
-    toast.success("Giveaway started!", { description: `"${title });
+    toast.success("Giveaway started!", { description: `"${title}" is now live` });
   }, [streamId, user, toast]);
 
   const endGiveaway = useCallback(async (giveawayId: string) => {
@@ -192,7 +192,7 @@ export function useLiveShop(streamId: string | undefined) {
       body: { giveaway_id: giveawayId },
     });
     if (data?.winner_username) {
-      toast.success("🎉 Winner!", { description: `${data.winner_username });
+      toast.success("🎉 Winner!", { description: `${data.winner_username} won the giveaway!` });
     } else {
       toast.success("Giveaway ended", { description: "No entries were submitted." });
     }

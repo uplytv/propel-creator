@@ -286,11 +286,11 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
       if (insertError) throw insertError;
 
       await queryClient.invalidateQueries({ queryKey: ["space-media", creatorId] });
-      toast.success("isVideo ? "Video added 🎬" : "Photo added 📸"");
+      toast.success(isVideo ? "Video added 🎬" : "Photo added 📸");
     } catch (err: any) {
       const message = String(err?.message || "Upload failed");
       const friendly = message.toLowerCase().includes("row-level security") ? "Please sign in again, then retry." : message;
-      toast.error("Upload failed", { description: "friendly" });
+      toast.error("Upload failed", { description: friendly });
     } finally {
       setUploadingMedia(false);
       if (mediaInputRef.current) mediaInputRef.current.value = "";
@@ -559,7 +559,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
             {isOwner ? (
               <button onClick={() => {
                 updateSpace.mutate({ is_public: !isPublic }, {
-                  onSuccess: () => toast.success("isPublic ? "Set to Private 🔒" : "Set to Public 🌐""),
+                  onSuccess: () => toast.success(isPublic ? "Set to Private 🔒" : "Set to Public 🌐"),
                 });
               }} className="flex items-center gap-2 px-2 py-1 -mx-2 rounded-md hover:bg-secondary/50 transition-colors">
                 {isPublic ? <Globe className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
