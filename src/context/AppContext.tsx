@@ -18,6 +18,7 @@ export interface CreatorProfile {
   healthScore: number;
   name: string;
   avatarUrl: string | null;
+  isApproved: boolean;
 }
 
 interface AppContextType {
