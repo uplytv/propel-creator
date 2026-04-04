@@ -29,7 +29,7 @@ export default function FeaturedCarousel() {
       const [creatorsRes, spacesRes, productsRes] = await Promise.all([
         supabase
           .from("profiles")
-          .select("user_id, display_name, avatar_url, bio")
+          .select("user_id, display_name, avatar_url, bio, members")
           .not("display_name", "is", null)
           .order("created_at", { ascending: false })
           .limit(5),

@@ -4,7 +4,7 @@ import { Play } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function RecentRecordingsRow({ creatorId }: { creatorId: string }) {
-  const { data: recordings = [], isLoading: loading } = useStreamRecordings(creatorId);
+  const { recordings, loading } = useStreamRecordings(creatorId);
   const navigate = useNavigate();
 
   if (loading) {

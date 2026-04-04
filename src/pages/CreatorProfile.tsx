@@ -329,7 +329,7 @@ export default function CreatorProfile() {
   const { username } = useParams<{ username: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { toast } = useToast();
+  
   const [bioExpanded, setBioExpanded] = useState(false);
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
   const [editOpen, setEditOpen] = useState(false);
