@@ -291,6 +291,7 @@ export default function VideoPlayer() {
         title={video.title}
         playbackId={video.playback_id}
         creatorUsername={creatorUsername}
+        contentSlug={video.slug || undefined}
       />
     </div>
   );

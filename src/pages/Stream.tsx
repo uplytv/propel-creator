@@ -37,6 +37,7 @@ import FollowButton from "@/components/FollowButton";
 import ClipCreator from "@/components/clips/ClipCreator";
 import SharePanel from "@/components/share/SharePanel";
 import SEOHead from "@/components/SEOHead";
+import RecentRecordingsRow from "@/components/live/RecentRecordingsRow";
 
 function StreamEndedState({ streamId, status, creatorId, creatorName, creatorAvatar }: { streamId: string; status: string; creatorId: string; creatorName?: string; creatorAvatar?: string }) {
   const navigate = useNavigate();
