@@ -62,7 +62,7 @@ export default function AdIntegrations() {
 
     // Basic validation
     if (platform === "meta" && !/^\d{10,20}$/.test(pixelId)) {
-      toast.error("Invalid Pixel ID", { description: "Meta Pixel IDs are numeric });
+      toast.error("Invalid Pixel ID", { description: "Meta Pixel IDs are numeric (10-20 digits)" });
       return;
     }
     if (platform === "google" && !/^(AW-|G-|GT-)[A-Z0-9]+$/i.test(pixelId)) {
