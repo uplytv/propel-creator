@@ -100,6 +100,7 @@ export default function AdminUsers() {
         roles: roleMap[p.user_id] || [],
         referral_count: refCountMap[p.user_id] || 0,
         referred_by_name: refByMap[p.user_id] ? nameMap[refByMap[p.user_id]] || null : null,
+        invite_codes_count: inviteCountMap[p.user_id] || 0,
       })) as UserRow[];
     },
   });
