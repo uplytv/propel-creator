@@ -145,10 +145,8 @@ export default function Auth() {
       if (error || !data) return true; // fail open
       if (!data.allowed) {
         const retryAfter = data.retry_after || 60;
-        toast({
-          title: "Too many attempts",
+        toast.error("Too many attempts", {
           description: `Please wait ${Math.ceil(retryAfter / 60)} minute(s) before trying again.`,
-          variant: "destructive",
         });
         return false;
       }
