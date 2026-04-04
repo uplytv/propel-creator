@@ -220,7 +220,7 @@ export default function Auth() {
     });
     setForgotLoading(false);
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast.error("Error", { description: error.message });
     } else {
       toast({ title: "Reset email sent", description: "Check your inbox for the password reset link." });
       setForgotMode(false);
