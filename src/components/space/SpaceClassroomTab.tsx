@@ -920,7 +920,7 @@ function AddLessonDialog({ open, onClose, moduleId, creatorId }: { open: boolean
       });
       setTitle(""); setDescription(""); setVideoFile(null); setUploadProgress(0); setIsFree(false);
       onClose();
-      toast.success("videoFile ? "Lesson added! Video is processing..." : "Lesson added!"");
+      toast.success(videoFile ? "Lesson added! Video is processing..." : "Lesson added!");
     } catch (err: any) {
       toast.error("Error", { description: err.message });
     } finally { setUploading(false); }
