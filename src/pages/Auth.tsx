@@ -222,7 +222,7 @@ export default function Auth() {
     if (error) {
       toast.error("Error", { description: error.message });
     } else {
-      toast({ title: "Reset email sent", description: "Check your inbox for the password reset link." });
+      toast.success("Reset email sent", { description: "Check your inbox for the password reset link." });
       setForgotMode(false);
     }
   };
