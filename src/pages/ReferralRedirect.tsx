@@ -240,6 +240,11 @@ export default function ReferralRedirect() {
             className="text-[22px] sm:text-[26px] font-bold text-foreground leading-tight mb-3"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           >
+            {isBetaInvite
+              ? `${firstName} is giving you their beta invite.`
+              : `${firstName} thinks you belong on UPLY.`
+            }
+          </h1>
             {firstName} thinks you belong on UPLY.
           </h1>
           <p className="text-[15px] text-muted-foreground leading-relaxed mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
