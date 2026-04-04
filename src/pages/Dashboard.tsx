@@ -73,6 +73,8 @@ export default function Dashboard() {
   const [activeStream, setActiveStream] = useState<any>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
   const { data: dashStats, isLoading: statsLoading } = useDashboardStats();
+  const { data: inviteData } = useInviteCodes();
+  const remainingInvites = inviteData?.remaining ?? 0;
 
   useEffect(() => {
     if (!user) return;
