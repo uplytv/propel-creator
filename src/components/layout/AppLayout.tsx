@@ -450,6 +450,19 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               <TierBadge tier={profile.tier} tierName={profile.tierName} size="sm" />
             </div>
             <div className="flex items-center gap-3">
+              {isApprovedUser && remainingInvites > 0 && (
+                <button
+                  onClick={() => navigate("/invite-codes")}
+                  className="relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 border border-primary/25 text-primary text-xs font-semibold hover:bg-primary/20 transition-all"
+                  aria-label={`${remainingInvites} beta invite${remainingInvites !== 1 ? "s" : ""} remaining`}
+                >
+                  <Gift className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">
+                    {remainingInvites} Invite{remainingInvites !== 1 ? "s" : ""}
+                  </span>
+                  <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-primary animate-pulse" />
+                </button>
+              )}
               <NotificationBell />
               <div className="hidden md:block w-px h-6 bg-border" />
               <div ref={profileRef} className="relative">
