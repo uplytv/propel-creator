@@ -502,6 +502,19 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                       >
                         <BarChart3 className="w-4 h-4" /> Dashboard
                       </button>
+                      {isApprovedUser && (
+                        <button
+                          onClick={() => { navigate("/invite-codes"); setProfileOpen(false); }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                        >
+                          <Gift className="w-4 h-4" /> Beta Invites
+                          {remainingInvites > 0 && (
+                            <span className="ml-auto min-w-[18px] h-[18px] rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center px-1">
+                              {remainingInvites}
+                            </span>
+                          )}
+                        </button>
+                      )}
                       <button
                         onClick={() => { navigate("/settings"); setProfileOpen(false); }}
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
