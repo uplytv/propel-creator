@@ -35,10 +35,11 @@ function timeAgo(d: string) {
 }
 
 export default function VideoPlayer() {
-  const { slug } = useParams<{ slug: string }>();
+  const { slug, id: videoId, username } = useParams<{ slug: string; id: string; username: string }>();
+  const resolvedSlug = slug || videoId; // /creator/:username/videos/:id uses 'id' param
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { data: video, isLoading } = useVideo(slug);
+  const { data: video, isLoading } = useVideo(resolvedSlug);
   const { data: comments } = useVideoComments(video?.id);
   const { isLiked, toggleLike } = useVideoLike(video?.id);
   const addComment = useAddComment(video?.id);
@@ -50,8 +51,8 @@ export default function VideoPlayer() {
   const { data: creator } = useQuery({
     queryKey: ["video-creator", video?.creator_id],
     queryFn: async () => {
-      const { data } = await (supabase as any)
-        .from("profiles_public")
+      const { data } = await supabase
+        .from("profiles")
         .select("user_id, display_name, username, avatar_url")
         .eq("user_id", video!.creator_id)
         .maybeSingle();
@@ -64,11 +65,11 @@ export default function VideoPlayer() {
   const { data: related } = useQuery({
     queryKey: ["related-videos", video?.category, video?.id],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("videos")
         .select("*")
         .eq("is_public", true)
-        .eq("category", video!.category)
+        .eq("category", video!.category!)
         .neq("id", video!.id)
         .order("trending_score", { ascending: false })
         .limit(6);
@@ -290,6 +291,7 @@ export default function VideoPlayer() {
         title={video.title}
         playbackId={video.playback_id}
         creatorUsername={creatorUsername}
+        contentSlug={video.slug || undefined}
       />
     </div>
   );
@@ -343,8 +345,8 @@ function RelatedVideoCard({ video }: { video: Video }) {
   const { data: creator } = useQuery({
     queryKey: ["video-creator-mini", video.creator_id],
     queryFn: async () => {
-      const { data } = await (supabase as any)
-        .from("profiles_public")
+      const { data } = await supabase
+        .from("profiles")
         .select("display_name, username, avatar_url")
         .eq("user_id", video.creator_id)
         .maybeSingle();

@@ -37,6 +37,7 @@ import FollowButton from "@/components/FollowButton";
 import ClipCreator from "@/components/clips/ClipCreator";
 import SharePanel from "@/components/share/SharePanel";
 import SEOHead from "@/components/SEOHead";
+import RecentRecordingsRow from "@/components/live/RecentRecordingsRow";
 
 function StreamEndedState({ streamId, status, creatorId, creatorName, creatorAvatar }: { streamId: string; status: string; creatorId: string; creatorName?: string; creatorAvatar?: string }) {
   const navigate = useNavigate();
@@ -112,7 +113,7 @@ function formatViewers(n: number) {
 }
 
 export default function Stream() {
-  const { id, username: routeUsername } = useParams<{ id: string; username: string }>();
+  const { id, username: routeUsername, slug: routeSlug } = useParams<{ id: string; username: string; slug: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -127,11 +128,13 @@ export default function Stream() {
   const [featuredProduct, setFeaturedProduct] = useState<any>(null);
   const [shareOpen, setShareOpen] = useState(false);
   const [memberAccess, setMemberAccess] = useState<boolean | null>(null);
+  const [creatorUsername, setCreatorUsername] = useState<string | null>(routeUsername || null);
 
   const searchParams = new URLSearchParams(window.location.search);
   const contentType = searchParams.get('type');
   const isFromCreatorRoute = !!routeUsername;
-  const isVod = contentType === 'vod' || contentType === 'recording' || isFromCreatorRoute;
+  const isFromSlugRoute = !!routeSlug;
+  const isVod = contentType === 'vod' || contentType === 'recording' || (isFromCreatorRoute && !isFromSlugRoute);
 
   // Viewer features
   const viewerRewards = useViewerRewards(!!dbStream && dbStream.status === 'active' && !isVod);
@@ -144,6 +147,37 @@ export default function Stream() {
 
   useEffect(() => {
     const fetchStream = async () => {
+      // Handle slug-based route: /:username/live/:slug
+      if (isFromSlugRoute && routeSlug) {
+        const { data: muxStream } = await supabase
+          .from('mux_live_streams')
+          .select('*')
+          .eq('slug', routeSlug)
+          .maybeSingle();
+
+        if (muxStream) {
+          setDbStream(muxStream);
+          setIsRealStream(true);
+          const { data: prof } = await supabase
+            .from('profiles')
+            .select('display_name, avatar_url, tier, tier_name, username')
+            .eq('user_id', muxStream.user_id)
+            .single();
+          setProfile(prof);
+          if (prof?.username) setCreatorUsername(prof.username);
+          if ((muxStream as any).featured_product_id) {
+            const { data: prod } = await supabase
+              .from('products')
+              .select('*')
+              .eq('id', (muxStream as any).featured_product_id)
+              .single();
+            if (prod) setFeaturedProduct(prod);
+          }
+        }
+        setLoading(false);
+        return;
+      }
+
       if (!id) return;
 
       if (contentType === 'recording' || (isFromCreatorRoute && !contentType)) {
@@ -163,10 +197,11 @@ export default function Stream() {
           setIsRealStream(true);
           const { data: prof } = await supabase
             .from('profiles')
-            .select('display_name, avatar_url, tier, tier_name')
+            .select('display_name, avatar_url, tier, tier_name, username')
             .eq('user_id', rec.creator_id)
             .single();
           setProfile(prof);
+          if (prof?.username) setCreatorUsername(prof.username);
           setLoading(false);
           return;
         }
@@ -184,10 +219,11 @@ export default function Stream() {
             setIsRealStream(true);
             const { data: prof } = await supabase
               .from('profiles')
-              .select('display_name, avatar_url, tier, tier_name')
+              .select('display_name, avatar_url, tier, tier_name, username')
               .eq('user_id', asset.user_id)
               .single();
             setProfile(prof);
+            if (prof?.username) setCreatorUsername(prof.username);
             setLoading(false);
             return;
           }
@@ -204,10 +240,11 @@ export default function Stream() {
             setIsRealStream(true);
             const { data: prof } = await supabase
               .from('profiles')
-              .select('display_name, avatar_url, tier, tier_name')
+              .select('display_name, avatar_url, tier, tier_name, username')
               .eq('user_id', muxStream.user_id)
               .single();
             setProfile(prof);
+            if (prof?.username) setCreatorUsername(prof.username);
             if ((muxStream as any).featured_product_id) {
               const { data: prod } = await supabase
                 .from('products')
@@ -239,10 +276,11 @@ export default function Stream() {
 
           const { data: prof } = await supabase
             .from('profiles')
-            .select('display_name, avatar_url, tier, tier_name')
+            .select('display_name, avatar_url, tier, tier_name, username')
             .eq('user_id', asset.user_id)
             .single();
           setProfile(prof);
+          if (prof?.username) setCreatorUsername(prof.username);
         }
       } else {
         // Try fetching from mux_live_streams first
@@ -258,10 +296,11 @@ export default function Stream() {
 
           const { data: prof } = await supabase
             .from('profiles')
-            .select('display_name, avatar_url, tier, tier_name')
+            .select('display_name, avatar_url, tier, tier_name, username')
             .eq('user_id', muxStream.user_id)
             .single();
           setProfile(prof);
+          if (prof?.username) setCreatorUsername(prof.username);
 
           // Fetch featured product if set
           if ((muxStream as any).featured_product_id) {
@@ -278,7 +317,7 @@ export default function Stream() {
     };
 
     fetchStream();
-  }, [id, isVod]);
+  }, [id, routeSlug, isVod]);
 
   // Realtime status updates + featured product changes
   useEffect(() => {
@@ -708,31 +747,44 @@ export default function Stream() {
                 </div>
               )}
             </div>
+
+            {/* Related recordings when stream is offline */}
+            {!isActive && !isVod && dbStream.user_id && (
+              <div className="px-4 sm:px-6 py-5">
+                <h3 className="text-sm font-bold text-foreground mb-3">More from this creator</h3>
+                <RecentRecordingsRow creatorId={dbStream.user_id} />
+              </div>
+            )}
           </div>
 
-          {/* Chat sidebar - desktop only */}
-          <div className="hidden lg:block w-80 flex-shrink-0">
-            <div className="fixed top-14 right-0 w-80 bottom-0">
-              <StreamChat
-                streamId={id}
-                creatorUserId={dbStream.user_id}
-                isLoggedIn={!!user}
-                onTipClick={() => setTipOpen(true)}
-                creditsBalance={creditsBalance}
-              />
+          {/* Chat sidebar - desktop only — hide when offline */}
+          {(isActive || isVod) && (
+            <div className="hidden lg:block w-80 flex-shrink-0">
+              <div className="fixed top-14 right-0 w-80 bottom-0">
+                <StreamChat
+                  streamId={id || routeSlug}
+                  creatorUserId={dbStream.user_id}
+                  isLoggedIn={!!user}
+                  onTipClick={() => setTipOpen(true)}
+                  creditsBalance={creditsBalance}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
-        <div className="lg:hidden">
-          <MobileChatDrawer
-            streamId={id}
-            creatorUserId={dbStream.user_id}
-            isLoggedIn={!!user}
-            onTipClick={() => setTipOpen(true)}
-            creditsBalance={creditsBalance}
-          />
-        </div>
+        {/* Mobile chat — hide when offline */}
+        {(isActive || isVod) && (
+          <div className="lg:hidden">
+            <MobileChatDrawer
+              streamId={id || routeSlug}
+              creatorUserId={dbStream.user_id}
+              isLoggedIn={!!user}
+              onTipClick={() => setTipOpen(true)}
+              creditsBalance={creditsBalance}
+            />
+          </div>
+        )}
 
         {isVod && (
           <SharePanel
@@ -743,7 +795,8 @@ export default function Stream() {
             title={dbStream.title || 'Recording'}
             playbackId={dbStream.mux_playback_id}
             muxAssetId={dbStream.mux_asset_id}
-            creatorUsername={profile?.display_name}
+            creatorUsername={creatorUsername || profile?.username}
+            contentSlug={dbStream.slug}
           />
         )}
       </div>

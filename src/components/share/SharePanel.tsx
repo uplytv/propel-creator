@@ -73,6 +73,8 @@ interface SharePanelProps {
   playbackId?: string | null;
   muxAssetId?: string | null;
   creatorUsername?: string | null;
+  contentSlug?: string | null;
+  url?: string;
 }
 
 function DownloadIcon() { return <Download className="w-6 h-6" />; }
@@ -100,6 +102,8 @@ export default function SharePanel({
   playbackId,
   muxAssetId,
   creatorUsername,
+  contentSlug: propSlug,
+  url: propUrl,
 }: SharePanelProps) {
   const isMobile = useIsMobile();
   const { user } = useAuth();
@@ -115,18 +119,16 @@ export default function SharePanel({
   const [showQR, setShowQR] = useState<string | null>(null);
   const [showEmbed, setShowEmbed] = useState(false);
 
-  const slugifyText = (text: string) =>
-    text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 60);
-
-  const contentSlug = title ? slugifyText(title) : contentId;
+  // Use the actual slug from the database, fall back to contentId
+  const resolvedSlug = propSlug || contentId;
 
   const baseUrl = getSiteUrl();
-  const contentUrl =
-    contentType === "stream"
-      ? `${baseUrl}/${encodeURIComponent(username)}/live/${contentSlug}`
+  const contentUrl = propUrl ? propUrl
+    : contentType === "stream"
+      ? `${baseUrl}/${encodeURIComponent(username)}/live/${resolvedSlug}`
       : contentType === "clip"
-        ? `${baseUrl}/${encodeURIComponent(username)}/clips/${contentSlug}`
-        : `${baseUrl}/${encodeURIComponent(username)}/videos/${contentSlug}`;
+        ? `${baseUrl}/${encodeURIComponent(username)}/clips/${resolvedSlug}`
+        : `${baseUrl}/${encodeURIComponent(username)}/videos/${resolvedSlug}`;
 
   const defaultCaption =
     contentType === "stream"
