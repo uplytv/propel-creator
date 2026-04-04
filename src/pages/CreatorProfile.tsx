@@ -547,6 +547,30 @@ export default function CreatorProfile() {
             </div>
           )}
 
+          {/* Beta invite banner for owner */}
+          {isOwner && remainingInvites > 0 && (
+            <div className="mt-4 max-w-[560px] mx-auto">
+              <button
+                onClick={() => navigate("/invite-codes")}
+                className="w-full flex items-center gap-3 p-4 rounded-xl border border-primary/25 bg-primary/5 cursor-pointer hover:bg-primary/10 transition-all group"
+              >
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Gift className="w-5 h-5 text-primary" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="text-sm font-semibold text-foreground">
+                    {remainingInvites} beta invite{remainingInvites !== 1 ? "s" : ""} to give
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Share with creators you want on UPLY — they skip the entire waitlist
+                  </p>
+                </div>
+                <span className="text-xs font-semibold text-primary group-hover:translate-x-0.5 transition-transform">
+                  Share →
+                </span>
+              </button>
+            </div>
+          )}
           {/* Bio */}
           {profile.bio && (
             <div className="text-center mt-4 max-w-[560px] mx-auto">
