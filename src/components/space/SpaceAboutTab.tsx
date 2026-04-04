@@ -286,7 +286,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
       if (insertError) throw insertError;
 
       await queryClient.invalidateQueries({ queryKey: ["space-media", creatorId] });
-      toast.success("isVideo ? "Video added 🎬" : "Photo added 📸"");
+      toast.success(isVideo ? "Video added 🎬" : "Photo added 📸");
     } catch (err: any) {
       const message = String(err?.message || "Upload failed");
       const friendly = message.toLowerCase().includes("row-level security") ? "Please sign in again, then retry." : message;
