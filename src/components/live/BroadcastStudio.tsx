@@ -625,7 +625,7 @@ export default function BroadcastStudio({
                     <ActionButton onClick={async () => {
                       const liveUrl = `${getSiteUrl()}/stream/${streamData.streamId}`;
                       const ok = await safeClipboardWrite(liveUrl);
-                      toast(ok ? { title: "Live link copied ✓", description: liveUrl } : { title: "Could not copy link", variant: "destructive" });
+                      ok ? toast.success("Live link copied ✓", { description: liveUrl }) : toast.error("Could not copy link");
                     }} icon={<Copy className="w-4.5 h-4.5 text-white" />} />
                     <ActionButton onClick={() => setShowSharePanel(true)} bg="rgba(0,255,133,0.25)" icon={<Share2 className="w-4.5 h-4.5 text-white" />} />
                     <ActionButton onClick={() => setShowAnalytics(!showAnalytics)} active={showAnalytics} icon={<BarChart3 className="w-4.5 h-4.5 text-white" />} />

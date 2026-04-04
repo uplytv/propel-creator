@@ -48,7 +48,7 @@ export default function AdminQuickActions() {
   };
 
   const handleExport = async (type: string) => {
-    toast.success("Exporting ${type}...", { description: "Download will start shortly." });
+    toast.success(`Exporting ${type}...`, { description: "Download will start shortly." });
     // In production, this would call an edge function to generate the CSV
   };
 

@@ -595,7 +595,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
                     const price = parseFloat(priceInput);
                     if (price > 0) {
                       updateSpace.mutate({ is_free: false, price }, {
-                        onSuccess: () => { toast.success("Set to $${price}/mo 💰"); setEditingPrice(false); },
+                        onSuccess: () => { toast.success(`Set to $${price}/mo 💰`); setEditingPrice(false); },
                         onError: () => { toast.error("Failed to update price"); },
                       });
                     } else { toast.error("Enter a price greater than 0"); }

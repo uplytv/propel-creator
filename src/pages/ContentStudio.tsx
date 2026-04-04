@@ -267,14 +267,14 @@ export default function ContentStudio() {
     if (selectedIds.size === 0) return;
     await bulkUpdate.mutateAsync({ contentIds: Array.from(selectedIds), status });
     setSelectedIds(new Set());
-    toast.success("${selectedIds.size} items ${status}");
+    toast.success(`${selectedIds.size} items ${status}`);
   };
 
   const handleApproveAll = async () => {
     const draftIds = (content || []).filter((c: any) => c.status === "draft").map((c: any) => c.id);
     if (draftIds.length === 0) return;
     await bulkUpdate.mutateAsync({ contentIds: draftIds, status: "approved" });
-    toast.success("${draftIds.length} items approved ✓");
+    toast.success(`${draftIds.length} items approved ✓`);
   };
 
   return (
