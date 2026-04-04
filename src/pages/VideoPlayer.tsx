@@ -65,11 +65,11 @@ export default function VideoPlayer() {
   const { data: related } = useQuery({
     queryKey: ["related-videos", video?.category, video?.id],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("videos")
         .select("*")
         .eq("is_public", true)
-        .eq("category", video!.category)
+        .eq("category", video!.category!)
         .neq("id", video!.id)
         .order("trending_score", { ascending: false })
         .limit(6);
