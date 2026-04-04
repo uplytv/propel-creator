@@ -64,10 +64,16 @@ export default function AdminUsers() {
 
       const userIds = (profiles || []).map((p: any) => p.user_id);
 
-      const [{ data: roles }, { data: referrals }] = await Promise.all([
+      const [{ data: roles }, { data: referrals }, { data: inviteCounts }] = await Promise.all([
         supabase.from("user_roles").select("user_id, role").in("user_id", userIds),
         supabase.from("referrals").select("referrer_id, referred_id") as any,
+        (supabase as any).from("invite_codes").select("owner_id").in("owner_id", userIds),
       ]);
+
+      const inviteCountMap: Record<string, number> = {};
+      ((inviteCounts || []) as any[]).forEach((ic: any) => {
+        inviteCountMap[ic.owner_id] = (inviteCountMap[ic.owner_id] || 0) + 1;
+      });
 
       const roleMap: Record<string, string[]> = {};
       (roles || []).forEach((r: any) => {
