@@ -112,7 +112,7 @@ function formatViewers(n: number) {
 }
 
 export default function Stream() {
-  const { id, username: routeUsername } = useParams<{ id: string; username: string }>();
+  const { id, username: routeUsername, slug: routeSlug } = useParams<{ id: string; username: string; slug: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -127,11 +127,13 @@ export default function Stream() {
   const [featuredProduct, setFeaturedProduct] = useState<any>(null);
   const [shareOpen, setShareOpen] = useState(false);
   const [memberAccess, setMemberAccess] = useState<boolean | null>(null);
+  const [creatorUsername, setCreatorUsername] = useState<string | null>(routeUsername || null);
 
   const searchParams = new URLSearchParams(window.location.search);
   const contentType = searchParams.get('type');
   const isFromCreatorRoute = !!routeUsername;
-  const isVod = contentType === 'vod' || contentType === 'recording' || isFromCreatorRoute;
+  const isFromSlugRoute = !!routeSlug;
+  const isVod = contentType === 'vod' || contentType === 'recording' || (isFromCreatorRoute && !isFromSlugRoute);
 
   // Viewer features
   const viewerRewards = useViewerRewards(!!dbStream && dbStream.status === 'active' && !isVod);

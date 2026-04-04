@@ -35,10 +35,11 @@ function timeAgo(d: string) {
 }
 
 export default function VideoPlayer() {
-  const { slug } = useParams<{ slug: string }>();
+  const { slug, id: videoId, username } = useParams<{ slug: string; id: string; username: string }>();
+  const resolvedSlug = slug || videoId; // /creator/:username/videos/:id uses 'id' param
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { data: video, isLoading } = useVideo(slug);
+  const { data: video, isLoading } = useVideo(resolvedSlug);
   const { data: comments } = useVideoComments(video?.id);
   const { isLiked, toggleLike } = useVideoLike(video?.id);
   const addComment = useAddComment(video?.id);

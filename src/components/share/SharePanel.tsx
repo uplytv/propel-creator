@@ -73,6 +73,8 @@ interface SharePanelProps {
   playbackId?: string | null;
   muxAssetId?: string | null;
   creatorUsername?: string | null;
+  contentSlug?: string | null;
+  url?: string;
 }
 
 function DownloadIcon() { return <Download className="w-6 h-6" />; }
