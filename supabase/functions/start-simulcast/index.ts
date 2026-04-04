@@ -6,8 +6,67 @@ const corsHeaders = {
 };
 
 function sanitizeError(msg: string): string {
-  // Remove anything that looks like a stream key
   return msg.replace(/[a-zA-Z0-9_-]{16,}/g, "[REDACTED]");
+}
+
+async function checkRateLimit(supabase: any, userId: string, fnName: string): Promise<boolean> {
+  const key = `ratelimit:${userId}:${fnName}`;
+  const now = new Date();
+  const windowMs = 60_000;
+  const maxCalls = 10;
+
+  const { data } = await supabase
+    .from("edge_function_rate_limits")
+    .select("call_count, window_start")
+    .eq("key", key)
+    .single();
+
+  if (data) {
+    const windowAge = now.getTime() - new Date(data.window_start).getTime();
+    if (windowAge < windowMs && data.call_count >= maxCalls) return false;
+    if (windowAge >= windowMs) {
+      await supabase.from("edge_function_rate_limits").upsert({ key, call_count: 1, window_start: now.toISOString(), updated_at: now.toISOString() });
+    } else {
+      await supabase.from("edge_function_rate_limits").update({ call_count: data.call_count + 1, updated_at: now.toISOString() }).eq("key", key);
+    }
+  } else {
+    await supabase.from("edge_function_rate_limits").upsert({ key, call_count: 1, window_start: now.toISOString(), updated_at: now.toISOString() });
+  }
+  return true;
+}
+
+async function decryptStreamKey(supabase: any, dest: any): Promise<string> {
+  // Try Vault first
+  if (dest.stream_key_vault_id) {
+    try {
+      const { data: vaultRows } = await supabase
+        .from("vault.decrypted_secrets")
+        .select("decrypted_secret")
+        .eq("id", dest.stream_key_vault_id)
+        .single();
+      if (vaultRows?.decrypted_secret) return vaultRows.decrypted_secret;
+    } catch { /* fall through */ }
+  }
+
+  // Check if stream_key_encrypted has vault prefix
+  if (dest.stream_key_encrypted?.startsWith("vault:")) {
+    const vaultId = dest.stream_key_encrypted.replace("vault:", "");
+    try {
+      const { data: vaultRows } = await supabase
+        .from("vault.decrypted_secrets")
+        .select("decrypted_secret")
+        .eq("id", vaultId)
+        .single();
+      if (vaultRows?.decrypted_secret) return vaultRows.decrypted_secret;
+    } catch { /* fall through */ }
+  }
+
+  // Try pgcrypto decrypt
+  const { data: decrypted } = await supabase.rpc("decrypt_stream_key", { encrypted_key: dest.stream_key_encrypted });
+  if (decrypted) return decrypted;
+
+  // Fallback: raw value
+  return dest.stream_key_encrypted;
 }
 
 async function addSimulcastTarget(
@@ -52,6 +111,12 @@ Deno.serve(async (req) => {
     const muxTokenSecret = Deno.env.get("MUX_TOKEN_SECRET")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
+    // Rate limit
+    const allowed = await checkRateLimit(supabase, creator_id, "start-simulcast");
+    if (!allowed) {
+      return new Response(JSON.stringify({ error: "Rate limit exceeded" }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     // Get enabled destinations
     let query = supabase
       .from("creator_stream_destinations")
@@ -72,16 +137,7 @@ Deno.serve(async (req) => {
     const results: Array<{ platform: string; success: boolean; error?: string }> = [];
 
     for (const dest of destinations) {
-      // Decrypt stream key server-side via pgcrypto
-      const { data: decrypted, error: decryptErr } = await supabase.rpc("decrypt_stream_key", { encrypted_key: dest.stream_key_encrypted });
-      
-      let streamKey: string;
-      if (decryptErr || !decrypted) {
-        // Fallback: the key might be stored as-is (for initial implementation without pgcrypto)
-        streamKey = dest.stream_key_encrypted;
-      } else {
-        streamKey = decrypted;
-      }
+      const streamKey = await decryptStreamKey(supabase, dest);
 
       let success = false;
       let errorMsg: string | null = null;
@@ -124,6 +180,16 @@ Deno.serve(async (req) => {
         started_at: success ? new Date().toISOString() : null,
         error_message: errorMsg,
       });
+
+      // If failed, create an alert
+      if (!success) {
+        await supabase.from("multistream_alerts").insert({
+          user_id: creator_id,
+          platform: dest.platform,
+          alert_type: "connection_lost",
+          message: `Failed to connect to ${dest.platform}: ${errorMsg || "Unknown error"}`,
+        });
+      }
 
       // Update last_used_at
       if (success) {
