@@ -469,9 +469,23 @@ export default function CreatorProfile() {
         <Link to="/" className="font-bold text-lg text-foreground tracking-tight">UPLY</Link>
         <div className="flex items-center gap-2">
           {isOwner ? (
-            <button onClick={() => setEditOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-foreground bg-secondary border border-border">
-              <Pencil className="w-3.5 h-3.5" /> Edit Profile
-            </button>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setEditOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-foreground bg-secondary border border-border">
+                <Pencil className="w-3.5 h-3.5" /> Edit Profile
+              </button>
+              {remainingInvites > 0 && (
+                <button
+                  onClick={() => navigate("/invite-codes")}
+                  className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold bg-primary/10 border border-primary/25 text-primary hover:bg-primary/20 transition-all"
+                  aria-label={`${remainingInvites} beta invites remaining`}
+                >
+                  <Gift className="w-3.5 h-3.5" />
+                  <span>
+                    {remainingInvites} Invite{remainingInvites !== 1 ? "s" : ""}
+                  </span>
+                </button>
+              )}
+            </div>
           ) : !user ? (
             <>
               <Link to="/auth" className="px-3 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Log In</Link>
