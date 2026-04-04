@@ -146,6 +146,37 @@ export default function Stream() {
 
   useEffect(() => {
     const fetchStream = async () => {
+      // Handle slug-based route: /:username/live/:slug
+      if (isFromSlugRoute && routeSlug) {
+        const { data: muxStream } = await supabase
+          .from('mux_live_streams')
+          .select('*')
+          .eq('slug', routeSlug)
+          .maybeSingle();
+
+        if (muxStream) {
+          setDbStream(muxStream);
+          setIsRealStream(true);
+          const { data: prof } = await supabase
+            .from('profiles')
+            .select('display_name, avatar_url, tier, tier_name, username')
+            .eq('user_id', muxStream.user_id)
+            .single();
+          setProfile(prof);
+          if (prof?.username) setCreatorUsername(prof.username);
+          if ((muxStream as any).featured_product_id) {
+            const { data: prod } = await supabase
+              .from('products')
+              .select('*')
+              .eq('id', (muxStream as any).featured_product_id)
+              .single();
+            if (prod) setFeaturedProduct(prod);
+          }
+        }
+        setLoading(false);
+        return;
+      }
+
       if (!id) return;
 
       if (contentType === 'recording' || (isFromCreatorRoute && !contentType)) {
@@ -165,10 +196,11 @@ export default function Stream() {
           setIsRealStream(true);
           const { data: prof } = await supabase
             .from('profiles')
-            .select('display_name, avatar_url, tier, tier_name')
+            .select('display_name, avatar_url, tier, tier_name, username')
             .eq('user_id', rec.creator_id)
             .single();
           setProfile(prof);
+          if (prof?.username) setCreatorUsername(prof.username);
           setLoading(false);
           return;
         }
@@ -186,10 +218,11 @@ export default function Stream() {
             setIsRealStream(true);
             const { data: prof } = await supabase
               .from('profiles')
-              .select('display_name, avatar_url, tier, tier_name')
+              .select('display_name, avatar_url, tier, tier_name, username')
               .eq('user_id', asset.user_id)
               .single();
             setProfile(prof);
+            if (prof?.username) setCreatorUsername(prof.username);
             setLoading(false);
             return;
           }
@@ -206,10 +239,11 @@ export default function Stream() {
             setIsRealStream(true);
             const { data: prof } = await supabase
               .from('profiles')
-              .select('display_name, avatar_url, tier, tier_name')
+              .select('display_name, avatar_url, tier, tier_name, username')
               .eq('user_id', muxStream.user_id)
               .single();
             setProfile(prof);
+            if (prof?.username) setCreatorUsername(prof.username);
             if ((muxStream as any).featured_product_id) {
               const { data: prod } = await supabase
                 .from('products')
@@ -241,10 +275,11 @@ export default function Stream() {
 
           const { data: prof } = await supabase
             .from('profiles')
-            .select('display_name, avatar_url, tier, tier_name')
+            .select('display_name, avatar_url, tier, tier_name, username')
             .eq('user_id', asset.user_id)
             .single();
           setProfile(prof);
+          if (prof?.username) setCreatorUsername(prof.username);
         }
       } else {
         // Try fetching from mux_live_streams first
@@ -260,10 +295,11 @@ export default function Stream() {
 
           const { data: prof } = await supabase
             .from('profiles')
-            .select('display_name, avatar_url, tier, tier_name')
+            .select('display_name, avatar_url, tier, tier_name, username')
             .eq('user_id', muxStream.user_id)
             .single();
           setProfile(prof);
+          if (prof?.username) setCreatorUsername(prof.username);
 
           // Fetch featured product if set
           if ((muxStream as any).featured_product_id) {
@@ -280,7 +316,7 @@ export default function Stream() {
     };
 
     fetchStream();
-  }, [id, isVod]);
+  }, [id, routeSlug, isVod]);
 
   // Realtime status updates + featured product changes
   useEffect(() => {
