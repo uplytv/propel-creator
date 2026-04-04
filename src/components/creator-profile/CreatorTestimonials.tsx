@@ -61,8 +61,8 @@ export default function CreatorTestimonials({ creatorId, isOwner }: { creatorId:
 
       // Fetch reviewer profiles
       const reviewerIds = data.map((r: any) => r.reviewer_id);
-      const { data: profiles } = await (supabase as any)
-        .from("profiles_public")
+      const { data: profiles } = await supabase
+        .from("profiles")
         .select("user_id, display_name, avatar_url")
         .in("user_id", reviewerIds);
 

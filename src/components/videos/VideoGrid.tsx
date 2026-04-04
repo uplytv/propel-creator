@@ -71,8 +71,8 @@ function VideoCard({ video, index }: { video: Video; index: number }) {
   const { data: creator } = useQuery({
     queryKey: ["video-card-creator", video.creator_id],
     queryFn: async () => {
-      const { data } = await (supabase as any)
-        .from("profiles_public")
+      const { data } = await supabase
+        .from("profiles")
         .select("display_name, username, avatar_url")
         .eq("user_id", video.creator_id)
         .maybeSingle();

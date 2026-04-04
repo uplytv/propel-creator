@@ -27,8 +27,8 @@ export default function FeaturedCarousel() {
       const items: FeaturedItem[] = [];
 
       const [creatorsRes, spacesRes, productsRes] = await Promise.all([
-        (supabase as any)
-          .from("profiles_public")
+        supabase
+          .from("profiles")
           .select("user_id, display_name, avatar_url, bio")
           .not("display_name", "is", null)
           .order("created_at", { ascending: false })

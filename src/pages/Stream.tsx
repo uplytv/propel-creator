@@ -400,11 +400,8 @@ export default function Stream() {
 
   const handleTip = useCallback((amount: number, message: string) => {
     setCreditsBalance((prev) => Math.max(0, prev - amount));
-    toast({
-      title: `Tip sent! 🎉`,
-      description: `You tipped ${amount} credits`,
-    });
-  }, [toast]);
+    toast.success(`Tip sent! 🎉`, { description: `You tipped ${amount} credits` });
+  }, []);
 
   if (loading) {
     return (

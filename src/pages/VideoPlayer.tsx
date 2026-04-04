@@ -78,12 +78,16 @@ export default function VideoPlayer() {
     enabled: !!video?.id && !!video?.category,
   });
 
-  // Track view
+  // Track view after 3s of playback
   useEffect(() => {
     if (!video?.id) return;
-    supabase.functions.invoke("mux-check-upload", {
-      body: { trackView: true, assetType: "video", assetId: video.id },
-    }).catch(() => {});
+    const timer = setTimeout(async () => {
+      await supabase
+        .from("videos")
+        .update({ view_count: (video.view_count || 0) + 1 })
+        .eq("id", video.id);
+    }, 3000);
+    return () => clearTimeout(timer);
   }, [video?.id]);
 
   const handleSubmitComment = async () => {

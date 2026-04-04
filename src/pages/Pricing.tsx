@@ -119,8 +119,7 @@ export default function Pricing() {
         throw new Error("No checkout URL returned");
       }
     } catch (err: any) {
-      console.error("[Pricing] Checkout error:", err);
-      toast({ title: "Error", description: err.message || "Failed to start checkout", variant: "destructive" });
+      toast.error(err.message || "Failed to start checkout");
       setCheckoutLoading(null);
     }
   };

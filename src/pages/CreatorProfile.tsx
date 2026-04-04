@@ -16,7 +16,7 @@ import CreatorProfileEditDrawer from "@/components/creator-profile/CreatorProfil
 import CreatorMilestones from "@/components/creator-profile/CreatorMilestones";
 import CreatorTestimonials from "@/components/creator-profile/CreatorTestimonials";
 import SEOHead from "@/components/SEOHead";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { CalendarDays } from "lucide-react";
 
 // Social platform icons as simple SVG components
