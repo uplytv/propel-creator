@@ -592,6 +592,32 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 </div>
               </div>
 
+              {isApprovedUser && (
+                <div className="px-4 py-2">
+                  <button
+                    onClick={() => { navigate("/invite-codes"); setMobileMenuOpen(false); }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/5 border border-primary/20 group"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Gift className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex-1 text-left min-w-0">
+                      <p className="text-sm font-semibold text-foreground">Beta Invites</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        {remainingInvites > 0
+                          ? `${remainingInvites} remaining — share with creators`
+                          : "All invites used 🎉"}
+                      </p>
+                    </div>
+                    {remainingInvites > 0 && (
+                      <span className="min-w-[22px] h-[22px] rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+                        {remainingInvites}
+                      </span>
+                    )}
+                  </button>
+                </div>
+              )}
+
               <nav aria-label="Mobile navigation" className="flex-1 py-2 px-3 overflow-y-auto">
                 {renderNavItem({ label: "Discover", icon: Search, path: "/discover", desc: "Find creators" }, false, () => setMobileMenuOpen(false))}
                 {renderNavItem({ label: "Home", icon: Home, path: "/dashboard", desc: "Overview" }, false, () => setMobileMenuOpen(false))}
