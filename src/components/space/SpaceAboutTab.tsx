@@ -290,7 +290,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
     } catch (err: any) {
       const message = String(err?.message || "Upload failed");
       const friendly = message.toLowerCase().includes("row-level security") ? "Please sign in again, then retry." : message;
-      toast.error("Upload failed", { description: "friendly" });
+      toast.error("Upload failed", { description: friendly });
     } finally {
       setUploadingMedia(false);
       if (mediaInputRef.current) mediaInputRef.current.value = "";
