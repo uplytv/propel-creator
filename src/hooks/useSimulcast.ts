@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
@@ -28,6 +28,17 @@ export interface SimulcastSession {
   started_at: string | null;
   ended_at: string | null;
   error_message: string | null;
+  created_at: string;
+}
+
+export interface MultistreamAlert {
+  id: string;
+  user_id: string;
+  session_id: string | null;
+  platform: string;
+  alert_type: string;
+  message: string;
+  resolved: boolean;
   created_at: string;
 }
 
@@ -65,7 +76,7 @@ export function useSimulcastDestinations() {
         platform,
         platform_label: label || null,
         rtmp_url: rtmpUrl || DEFAULT_RTMP[platform] || "",
-        stream_key_encrypted: streamKey, // In production, encrypt via pgcrypto
+        stream_key_encrypted: streamKey,
         stream_key_last_four: lastFour,
         is_verified: false,
         key_created_at: new Date().toISOString(),
@@ -73,6 +84,32 @@ export function useSimulcastDestinations() {
     
     if (error) throw error;
     await fetchDestinations();
+  };
+
+  const validateAndSave = async (platform: string, rtmpUrl: string, streamKey: string, label?: string): Promise<{ valid: boolean; message: string }> => {
+    if (!user) return { valid: false, message: "Not authenticated" };
+
+    const { data, error } = await supabase.functions.invoke("validate-rtmp", {
+      body: { user_id: user.id, rtmp_url: rtmpUrl, stream_key: streamKey, platform },
+    });
+
+    if (error) return { valid: false, message: error.message };
+    if (!data?.valid) return { valid: false, message: data?.message || "Validation failed" };
+
+    // Refresh destinations after validate-rtmp saved them
+    await fetchDestinations();
+
+    // Update label if provided
+    if (label) {
+      await supabase
+        .from("creator_stream_destinations")
+        .update({ platform_label: label })
+        .eq("creator_id", user.id)
+        .eq("platform", platform);
+      await fetchDestinations();
+    }
+
+    return { valid: true, message: data.message };
   };
 
   const toggleDestination = async (platform: string, enabled: boolean) => {
@@ -104,7 +141,7 @@ export function useSimulcastDestinations() {
     return data;
   };
 
-  return { destinations, loading, saveDestination, toggleDestination, deleteDestination, testConnection, refetch: fetchDestinations };
+  return { destinations, loading, saveDestination, validateAndSave, toggleDestination, deleteDestination, testConnection, refetch: fetchDestinations };
 }
 
 export function useSimulcastSessions(streamId: string | null) {
@@ -113,14 +150,12 @@ export function useSimulcastSessions(streamId: string | null) {
   useEffect(() => {
     if (!streamId) return;
 
-    // Initial fetch
     supabase
       .from("stream_simulcast_sessions")
       .select("*")
       .eq("stream_id", streamId)
       .then(({ data }) => setSessions((data as any[]) || []));
 
-    // Realtime subscription
     const channel = supabase
       .channel(`simulcast-${streamId}`)
       .on(
@@ -147,7 +182,6 @@ export function useSimulcastSessions(streamId: string | null) {
       toast.error("Failed to start simulcast");
       return;
     }
-    // Show per-platform toasts
     for (const r of data?.results || []) {
       if (r.success) {
         toast.success(`Connecting to ${r.platform}...`);
@@ -164,4 +198,89 @@ export function useSimulcastSessions(streamId: string | null) {
   };
 
   return { sessions, startSimulcast, stopSimulcast };
+}
+
+// Stream heartbeat — call every 30 minutes during active multistream
+export function useStreamHeartbeat(userId: string | undefined, sessionId: string | null, isStreaming: boolean) {
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (!userId || !isStreaming) {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      return;
+    }
+
+    const sendHeartbeat = async () => {
+      try {
+        await supabase.functions.invoke("stream-heartbeat", {
+          body: { user_id: userId, session_id: sessionId },
+        });
+      } catch { /* heartbeat failure is non-critical */ }
+    };
+
+    // Send initial heartbeat after 1 minute, then every 30 minutes
+    const timeout = setTimeout(() => {
+      sendHeartbeat();
+      intervalRef.current = setInterval(sendHeartbeat, 30 * 60 * 1000);
+    }, 60_000);
+
+    return () => {
+      clearTimeout(timeout);
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [userId, sessionId, isStreaming]);
+}
+
+// Realtime multistream alerts listener
+export function useMultistreamAlerts(userId: string | undefined) {
+  const [alerts, setAlerts] = useState<MultistreamAlert[]>([]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    // Fetch unresolved alerts
+    supabase
+      .from("multistream_alerts")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("resolved", false)
+      .order("created_at", { ascending: false })
+      .limit(10)
+      .then(({ data }) => setAlerts((data as any[]) || []));
+
+    // Realtime subscription
+    const channel = supabase
+      .channel(`multistream-alerts-${userId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "multistream_alerts", filter: `user_id=eq.${userId}` },
+        (payload: any) => {
+          const alert = payload.new as MultistreamAlert;
+          setAlerts((prev) => [alert, ...prev]);
+
+          // Show toast based on alert type
+          const icons: Record<string, string> = {
+            token_expired: "🔑",
+            refresh_failed: "🔄",
+            stream_dropped: "📡",
+            connection_lost: "⚠️",
+          };
+          const icon = icons[alert.alert_type] || "⚠️";
+          toast.error(`${icon} ${alert.platform}`, { description: alert.message, duration: 10000 });
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [userId]);
+
+  const resolveAlert = async (alertId: string) => {
+    await supabase
+      .from("multistream_alerts")
+      .update({ resolved: true })
+      .eq("id", alertId);
+    setAlerts((prev) => prev.filter((a) => a.id !== alertId));
+  };
+
+  return { alerts, resolveAlert };
 }
