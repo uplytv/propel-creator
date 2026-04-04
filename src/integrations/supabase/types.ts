@@ -4777,6 +4777,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          beta_access_granted_at: string | null
           beta_user: boolean
           bio: string | null
           business_category: string | null
@@ -4824,6 +4825,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          beta_access_granted_at?: string | null
           beta_user?: boolean
           bio?: string | null
           business_category?: string | null
@@ -4871,6 +4873,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          beta_access_granted_at?: string | null
           beta_user?: boolean
           bio?: string | null
           business_category?: string | null
@@ -6340,6 +6343,39 @@ export type Database = {
           user_type?: string | null
           username?: string | null
           website?: string | null
+        }
+        Relationships: []
+      }
+      unified_referral_leaderboard: {
+        Row: {
+          avatar_url: string | null
+          display_name: string | null
+          is_approved: boolean | null
+          origin_member: boolean | null
+          role_type: string | null
+          total_referrals: number | null
+          user_id: string | null
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          display_name?: string | null
+          is_approved?: boolean | null
+          origin_member?: boolean | null
+          role_type?: string | null
+          total_referrals?: never
+          user_id?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          display_name?: string | null
+          is_approved?: boolean | null
+          origin_member?: boolean | null
+          role_type?: string | null
+          total_referrals?: never
+          user_id?: string | null
+          username?: string | null
         }
         Relationships: []
       }
