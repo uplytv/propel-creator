@@ -49,6 +49,12 @@ export default function WaitlistPage() {
     setProfile(profRes.data);
     setConfig(configRes.data);
 
+    // Redirect approved users to discover
+    if (profRes.data?.is_approved) {
+      navigate("/discover", { replace: true });
+      return;
+    }
+
     // Get waitlist position
     const { data: wlEntry } = await supabase
       .from("waitlist")
