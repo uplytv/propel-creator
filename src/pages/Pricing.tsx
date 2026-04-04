@@ -6,7 +6,7 @@ import AppLayout from "@/components/layout/AppLayout";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { trackEvent } from "@/lib/posthog";
 import { useQuery } from "@tanstack/react-query";
 
@@ -69,7 +69,6 @@ type PlanKey = keyof typeof PLATFORM_PLANS;
 export default function Pricing() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
   const { data: currentPlan = "free", refetch } = useQuery({
@@ -120,8 +119,7 @@ export default function Pricing() {
         throw new Error("No checkout URL returned");
       }
     } catch (err: any) {
-      console.error("[Pricing] Checkout error:", err);
-      toast({ title: "Error", description: err.message || "Failed to start checkout", variant: "destructive" });
+      toast.error(err.message || "Failed to start checkout");
       setCheckoutLoading(null);
     }
   };

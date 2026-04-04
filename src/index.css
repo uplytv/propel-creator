@@ -15,7 +15,7 @@
     --secondary: 260 10% 94%;
     --secondary-foreground: 260 10% 15%;
     --muted: 260 8% 92%;
-    --muted-foreground: 0 0% 58%;
+    --muted-foreground: 0 0% 46%;
     --accent: 145 100% 50%;
     --accent-foreground: 0 0% 0%;
     --destructive: 0 84% 55%;
@@ -75,7 +75,7 @@
     --secondary: 0 0% 10%;
     --secondary-foreground: 0 0% 95%;
     --muted: 0 0% 14%;
-    --muted-foreground: 0 0% 58%;
+    --muted-foreground: 0 0% 63%;
     --accent: 145 100% 50%;
     --accent-foreground: 0 0% 0%;
     --destructive: 0 84% 60%;
@@ -166,6 +166,15 @@
     outline: 2px solid hsl(var(--primary));
     outline-offset: 2px;
     border-radius: 4px;
+  }
+
+  /* Prevent iOS Safari auto-zoom on input focus (triggered when font-size < 16px) */
+  @media (max-width: 768px) {
+    input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
   }
 }
 

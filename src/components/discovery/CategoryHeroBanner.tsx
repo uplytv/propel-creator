@@ -99,7 +99,7 @@ function useHeroStats(category: Exclude<FilterCategory, "all">) {
         }
         case "creator": {
           const { count } = await supabase
-            .from("profiles_public")
+            .from("profiles")
             .select("*", { count: "exact", head: true });
           return [
             { label: "Creators", value: count ?? 0 },

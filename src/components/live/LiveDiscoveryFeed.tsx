@@ -73,7 +73,7 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
     } else {
       const userIds = [...new Set(streams.map((s: any) => s.user_id))];
       const { data: profiles } = await supabase
-        .from('profiles_public' as any)
+        .from('profiles')
         .select('user_id, display_name, avatar_url, tier, tier_name')
         .in('user_id', userIds);
 
@@ -117,7 +117,7 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
     if (assets && assets.length > 0) {
       const userIds = [...new Set(assets.map((a: any) => a.user_id))];
       const { data: profiles } = await supabase
-        .from('profiles_public' as any)
+        .from('profiles')
         .select('user_id, display_name, avatar_url, tier, tier_name')
         .in('user_id', userIds);
 

@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { tables } from "@/lib/supabaseTyped";
 
 export interface Video {
@@ -124,7 +124,6 @@ export function useVideoLike(videoId: string | undefined) {
 
 export function useAddComment(videoId: string | undefined) {
   const { user } = useAuth();
-  const { toast } = useToast();
   const qc = useQueryClient();
 
   return useMutation({
@@ -139,14 +138,13 @@ export function useAddComment(videoId: string | undefined) {
       qc.invalidateQueries({ queryKey: ["video"] });
     },
     onError: (err: Error) => {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error("Failed to post comment", { description: err.message });
     },
   });
 }
 
 export function useCreateVideo() {
   const { user } = useAuth();
-  const { toast } = useToast();
   const qc = useQueryClient();
 
   return useMutation({
@@ -190,7 +188,7 @@ export function useCreateVideo() {
       qc.invalidateQueries({ queryKey: ["videos"] });
     },
     onError: (err: Error) => {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error("Failed to save video", { description: err.message });
     },
   });
 }

@@ -16,7 +16,7 @@ import CreatorProfileEditDrawer from "@/components/creator-profile/CreatorProfil
 import CreatorMilestones from "@/components/creator-profile/CreatorMilestones";
 import CreatorTestimonials from "@/components/creator-profile/CreatorTestimonials";
 import SEOHead from "@/components/SEOHead";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { CalendarDays } from "lucide-react";
 
 // Social platform icons as simple SVG components
@@ -329,7 +329,7 @@ export default function CreatorProfile() {
   const { username } = useParams<{ username: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { toast } = useToast();
+  
   const [bioExpanded, setBioExpanded] = useState(false);
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
   const [editOpen, setEditOpen] = useState(false);
@@ -401,18 +401,14 @@ export default function CreatorProfile() {
           window.location.href = data.url;
         }
       } catch (err: any) {
-        toast({ title: "Error", description: err.message, variant: "destructive" });
+        toast.error(err.message || "Something went wrong");
       }
       setJoinLoading(false);
       return;
     }
 
     if (requiresPaidJoin) {
-      toast({
-        title: "No live plan yet",
-        description: "This creator hasn't published a live paid tier yet.",
-        variant: "destructive",
-      });
+      toast.error("This creator hasn't published a live paid tier yet.");
       navigate(`/community/${profile?.user_id}/pricing`);
       return;
     }

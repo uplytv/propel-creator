@@ -32,8 +32,8 @@ export default function MyCommunities() {
         .in("creator_id", creatorIds);
 
       // Get profile info as fallback
-      const { data: profiles } = await (supabase as any)
-        .from("profiles_public")
+      const { data: profiles } = await supabase
+        .from("profiles")
         .select("user_id, display_name, avatar_url")
         .in("user_id", creatorIds);
 

@@ -28,7 +28,7 @@ import { LiveQuizOverlay } from "@/components/live/LiveQuizOverlay";
 import ViewerSentimentOverlay from "@/components/live/ViewerSentimentOverlay";
 
 import { useState, useCallback, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import UPLYMuxPlayer from "@/components/MuxPlayer";
 import WebRTCPlayer from "@/components/live/WebRTCPlayer";
@@ -116,7 +116,6 @@ export default function Stream() {
   const { id, username: routeUsername, slug: routeSlug } = useParams<{ id: string; username: string; slug: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { toast } = useToast();
   const [joinOpen, setJoinOpen] = useState(false);
   const [liked, setLiked] = useState(false);
   const [tipOpen, setTipOpen] = useState(false);
@@ -401,11 +400,8 @@ export default function Stream() {
 
   const handleTip = useCallback((amount: number, message: string) => {
     setCreditsBalance((prev) => Math.max(0, prev - amount));
-    toast({
-      title: `Tip sent! 🎉`,
-      description: `You tipped ${amount} credits`,
-    });
-  }, [toast]);
+    toast.success(`Tip sent! 🎉`, { description: `You tipped ${amount} credits` });
+  }, []);
 
   if (loading) {
     return (
