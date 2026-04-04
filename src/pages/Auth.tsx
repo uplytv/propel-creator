@@ -70,7 +70,7 @@ export default function Auth() {
     e.preventDefault();
     const pwError = validatePassword(password);
     if (pwError) {
-      toast({ title: "Weak password", description: pwError, variant: "destructive" });
+      toast.error("Weak password", { description: pwError });
       return;
     }
     setLoading(true);
