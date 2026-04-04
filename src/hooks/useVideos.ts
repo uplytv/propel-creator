@@ -124,7 +124,6 @@ export function useVideoLike(videoId: string | undefined) {
 
 export function useAddComment(videoId: string | undefined) {
   const { user } = useAuth();
-  const { toast } = useToast();
   const qc = useQueryClient();
 
   return useMutation({
@@ -139,7 +138,7 @@ export function useAddComment(videoId: string | undefined) {
       qc.invalidateQueries({ queryKey: ["video"] });
     },
     onError: (err: Error) => {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error("Failed to post comment", { description: err.message });
     },
   });
 }
