@@ -36,11 +36,11 @@ export default function ResetPassword() {
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 8) {
-      toast({ title: "Error", description: "Password must be at least 8 characters.", variant: "destructive" });
+      toast.error("Password must be at least 8 characters.");
       return;
     }
     if (password !== confirmPassword) {
-      toast({ title: "Error", description: "Passwords do not match.", variant: "destructive" });
+      toast.error("Passwords do not match.");
       return;
     }
 
@@ -49,9 +49,9 @@ export default function ResetPassword() {
     setLoading(false);
 
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast.error(error.message);
     } else {
-      toast({ title: "Password updated", description: "Your password has been reset successfully." });
+      toast.success("Your password has been reset successfully.");
       navigate("/dashboard", { replace: true });
     }
   };
