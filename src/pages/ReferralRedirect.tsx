@@ -57,6 +57,16 @@ export default function ReferralRedirect() {
           try { localStorage.setItem("uply_referrer_avatar", referrerData.avatar_url); } catch {}
         }
 
+        // Store invite type
+        if (isBetaInvite) {
+          try {
+            document.cookie = `uply_invite_code=${actualCode}; path=/; max-age=86400; SameSite=Lax`;
+            sessionStorage.setItem("uply_invite_type", "beta");
+          } catch {}
+        } else {
+          sessionStorage.setItem("uply_invite_type", "waitlist");
+        }
+
         
 
         // Track click via edge function (fire and forget)
