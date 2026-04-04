@@ -192,7 +192,7 @@ export default function Auth() {
 
     if (result.error) {
       setLoading(false);
-      toast({ title: "Google sign in failed", description: String(result.error), variant: "destructive" });
+      toast.error("Google sign in failed", { description: String(result.error) });
       return;
     }
 
