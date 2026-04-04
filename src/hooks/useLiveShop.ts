@@ -160,7 +160,7 @@ export function useLiveShop(streamId: string | undefined) {
       toast.error("Bid failed", { description: data?.error || error?.message });
       return false;
     }
-    toast.success("Bid placed!", { description: `Your bid of $${amount });
+    toast.success("Bid placed!", { description: `Your bid of $${amount} was submitted` });
     return true;
   }, [toast]);
 
