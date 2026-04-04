@@ -56,7 +56,7 @@ export default function AdIntegrations() {
   const handleConnect = async (platform: Platform) => {
     const pixelId = platform === "meta" ? metaPixelInput.trim() : googleTagInput.trim();
     if (!pixelId) {
-      toast.error("Please enter your ${platform === "meta" ? "Meta Pixel ID" : "Google Tag ID"}");
+      toast.error(`Please enter your ${platform === "meta" ? "Meta Pixel ID" : "Google Tag ID"}`);
       return;
     }
 
