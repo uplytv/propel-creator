@@ -18,9 +18,9 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 
-const mockToast = vi.fn();
-vi.mock("@/hooks/use-toast", () => ({
-  useToast: () => ({ toast: mockToast }),
+const mockToastError = vi.fn();
+vi.mock("sonner", () => ({
+  toast: Object.assign(vi.fn(), { error: (...args: any[]) => mockToastError(...args), success: vi.fn() }),
 }));
 
 let mockSession: any = null;
