@@ -74,7 +74,7 @@ export default function AdIntegrations() {
     setter(true);
     try {
       await saveIntegration(platform, pixelId);
-      toast.success("${platform === "meta" ? "Meta Pixel" : "Google Tag"} connected!", { description: `Tracking script has been installed and is now firing events.` });
+      toast.success(`${platform === "meta" ? "Meta Pixel" : "Google Tag"} connected!`, { description: "Tracking script has been installed and is now firing events." });
       if (platform === "meta") setMetaPixelInput("");
       else setGoogleTagInput("");
     } catch (err) {
