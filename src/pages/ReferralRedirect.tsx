@@ -169,7 +169,12 @@ export default function ReferralRedirect() {
           style={{ background: "hsl(var(--primary) / 0.08)", border: "1px solid hsl(var(--primary) / 0.2)" }}
         >
           <Clock className="w-3 h-3 text-primary" />
-          <span className="text-muted-foreground">Invite-only access · <span className="text-primary font-semibold">Limited spots</span></span>
+          <span className="text-muted-foreground">
+            {isBetaInvite
+              ? <>Beta access · <span className="text-primary font-semibold">Skips the waitlist entirely</span></>
+              : <>Invite-only access · <span className="text-primary font-semibold">Limited spots</span></>
+            }
+          </span>
         </motion.div>
 
         {/* Avatar + name */}
