@@ -95,7 +95,7 @@ export default function AdIntegrations() {
   const handleCampaignLaunch = async (campaign: LaunchedCampaign) => {
     try {
       await launchCampaign(campaign);
-      toast.success("Campaign launched!", { description: `"Boost: ${campaign.streamTitle });
+      toast.success("Campaign launched!", { description: `"Boost: ${campaign.streamTitle}" is now running` });
     } catch {
       toast.error("Failed to launch campaign");
     }
@@ -276,7 +276,7 @@ export default function AdIntegrations() {
             onDelete={deleteCampaign}
             onDuplicate={async (source) => {
               await duplicateCampaign(source);
-              toast.success("Campaign duplicated", { description: `A copy of "${source.stream_title });
+              toast.success("Campaign duplicated", { description: `A copy of "${source.stream_title}" has been created` });
             }}
           />
         </div>

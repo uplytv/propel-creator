@@ -102,7 +102,7 @@ export default function Podcast() {
       is_published: publish, published_at: publish ? new Date().toISOString() : null,
     });
     if (error) { toast.error("Error", { description: error.message }); return; }
-    toast.success("publish ? "Episode published!" : "Draft saved"");
+    toast.success(publish ? "Episode published!" : "Draft saved");
     setEpisodeDialogOpen(false);
     qc.invalidateQueries({ queryKey: ["podcast-episodes"] });
   };

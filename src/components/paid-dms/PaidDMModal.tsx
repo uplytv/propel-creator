@@ -62,7 +62,7 @@ export default function PaidDMModal({ open, onClose, creatorId, creatorName, pri
           actor_id: user.id,
         });
 
-        toast.success("Message sent! 💬", { description: `Your message to ${creatorName });
+        toast.success("Message sent! 💬", { description: `Your message to ${creatorName} has been delivered` });
         onClose();
         setMessage("");
       }

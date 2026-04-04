@@ -111,7 +111,7 @@ export default function YouTubeImport({ creatorId }: { creatorId: string }) {
       }
 
       queryClient.invalidateQueries({ queryKey: ["classroom-lessons"] });
-      toast.success("YouTube video added! 🎬", { description: `"${lessonTitle });
+      toast.success("YouTube video added! 🎬", { description: `"${lessonTitle}" added to your classroom` });
 
       // Reset
       setUrl("");

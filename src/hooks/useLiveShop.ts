@@ -139,7 +139,7 @@ export function useLiveShop(streamId: string | undefined) {
       });
     }
 
-    toast.success("Product activated!", { description: `${product.title });
+    toast.success("Product activated!", { description: `${product.title} is now live` });
   }, [products, streamId, toast]);
 
   const deactivateProduct = useCallback(async (productId: string) => {

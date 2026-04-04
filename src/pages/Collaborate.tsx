@@ -177,7 +177,7 @@ export default function Collaborate() {
       },
       {
         onSuccess: () => {
-          toast.success("Proposal Sent! 🎉", { description: `Your collaboration proposal has been sent to ${selectedCreator.name });
+          toast.success("Proposal Sent! 🎉", { description: `Your collaboration proposal has been sent to ${selectedCreator.name}` });
           setProposalOpen(false);
           setSelectedCreator(null);
           setProposalMessage("");

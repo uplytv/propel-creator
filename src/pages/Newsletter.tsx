@@ -101,7 +101,7 @@ export default function Newsletter() {
       return data;
     },
     onSuccess: (data) => {
-      toast.success("Newsletter sent!", { description: `Sent to ${data.sent });
+      toast.success("Newsletter sent!", { description: `Sent to ${data.sent} subscribers` });
       qc.invalidateQueries({ queryKey: ["newsletters"] });
       setConfirmSend(false);
     },

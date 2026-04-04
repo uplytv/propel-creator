@@ -71,7 +71,7 @@ export default function LiveShopSetup({ streamId, products, onProductsChange }: 
     if (error) {
       toast.error("Error", { description: error.message });
     } else {
-      toast.success("Product added!", { description: `${form.title });
+      toast.success("Product added!", { description: `${form.title} is ready to sell` });
       setForm({ title: "", description: "", price: 10, type: "sell", quantity: 1, auction_duration: 5, image_url: null });
       setShowForm(false);
       onProductsChange();
