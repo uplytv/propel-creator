@@ -11,7 +11,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useNotificationPreferences } from "@/hooks/useNotificationPreferences";
 import { useProfile, useUpdateProfile, useUploadAvatar } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
@@ -101,7 +101,6 @@ export default function Settings() {
   const { profile: appProfile, refreshProfile } = useApp();
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
-  const { toast } = useToast();
   const { prefs: campaignPrefs, updatePrefs } = useNotificationPreferences();
   const { data: dbProfile } = useProfile();
   const updateProfile = useUpdateProfile();
@@ -132,16 +131,16 @@ export default function Settings() {
 
   const handleProfileSave = async () => {
     if (!name.trim()) {
-      toast({ title: "Name is required", variant: "destructive" });
+      toast.error("Name is required");
       return;
     }
     setSaving(true);
     try {
       await updateProfile.mutateAsync({ display_name: name, bio, website });
       refreshProfile();
-      toast({ title: "Profile saved ✓" });
+      toast.success("Profile saved ✓");
     } catch {
-      toast({ title: "Failed to save", variant: "destructive" });
+      toast.error("Failed to save");
     }
     setSaving(false);
   };
@@ -152,22 +151,22 @@ export default function Settings() {
     try {
       await uploadAvatar.mutateAsync(file);
       refreshProfile();
-      toast({ title: "Avatar updated ✓" });
+      toast.success("Avatar updated ✓");
     } catch {
-      toast({ title: "Upload failed", variant: "destructive" });
+      toast.error("Upload failed");
     }
   };
 
   const handleChangePassword = async () => {
     if (newPassword.length < 8) {
-      toast({ title: "Password must be at least 8 characters", variant: "destructive" });
+      toast.error("Password must be at least 8 characters");
       return;
     }
     setSaving(true);
     const { error } = await supabase.auth.updateUser({ password: newPassword });
-    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    if (error) toast.error("Error", { description: error.message });
     else {
-      toast({ title: "Password updated ✓" });
+      toast.success("Password updated ✓");
       setNewPassword("");
     }
     setSaving(false);
@@ -179,8 +178,8 @@ export default function Settings() {
     const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
-    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
-    else toast({ title: "Reset link sent to your email" });
+    if (error) toast.error("Error", { description: error.message });
+    else toast.success("Reset link sent to your email");
     setForgotLoading(false);
   };
 

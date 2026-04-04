@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { useStreamEngagement } from "@/hooks/useStreamEngagement";
 import SharePanel from "@/components/share/SharePanel";
@@ -54,6 +54,7 @@ import ModeSelectionScreen from "./ModeSelectionScreen";
 import PreRecordingSetup from "./PreRecordingSetup";
 import ExternalEncoderView from "./ExternalEncoderView";
 import type { Product } from "./FeaturedProductPicker";
+import { Sentry } from "@/lib/sentry";
 
 interface BroadcastStudioProps {
   streamData: {
@@ -84,7 +85,6 @@ export default function BroadcastStudio({
   creatorUsername,
 }: BroadcastStudioProps) {
   const { user } = useAuth();
-  const { toast } = useToast();
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const animFrameRef = useRef<number>(0);
@@ -339,7 +339,7 @@ export default function BroadcastStudio({
         .update({ status: active ? 'active' : 'idle', stream_type: 'browser', updated_at: now, ...(active ? { started_at: now } : { ended_at: now }) })
         .eq('id', streamData.streamId);
     } catch (err) {
-      console.error('Failed to update stream status:', err);
+      Sentry.captureException(err, { tags: { context: "broadcast_studio" } });
     }
   };
 
@@ -399,7 +399,7 @@ export default function BroadcastStudio({
     const { mimeType, videoBitsPerSecond } = getRecorderOptions();
     const recorder = new MediaRecorder(streamRef.current, { mimeType, videoBitsPerSecond });
     recorder.ondataavailable = (e) => {
-      if (e.data.size > 0) appendChunk(e.data).catch((err) => console.error("[Recording] Failed to persist chunk:", err));
+      if (e.data.size > 0) appendChunk(e.data).catch((err) => Sentry.captureException(err, { tags: { context: "broadcast_studio" } }));
     };
     recorder.onstop = () => {};
     recorder.start(5000);
@@ -439,7 +439,7 @@ export default function BroadcastStudio({
         userId: user.id, title: `${title} (Recording)`, description: "Browser recording",
         isPublic: true, file: blob, onProgress: (pct) => setUploadProgress(pct),
       });
-      toast({ title: "Recording saved! 🎬", description: "Your video is processing." });
+      toast.success("Recording saved! 🎬", { description: "Your video is processing." });
       await clearChunks();
       chunksRef.current = [];
       setIsUploading(false);
@@ -447,7 +447,7 @@ export default function BroadcastStudio({
     } catch (err: any) {
       setUploadFailed(true);
       setUploadErrorMsg(err.message || "Upload failed");
-      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+      toast.error("Upload failed", { description: err.message });
       setIsUploading(false);
       onEndStream({ durationSeconds: duration });
     }

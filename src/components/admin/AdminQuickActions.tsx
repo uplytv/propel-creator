@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Mail, Target, Zap, Pause, Search, RefreshCw, Download, Send } from "lucide-react";
 
 export default function AdminQuickActions() {
@@ -31,8 +31,8 @@ export default function AdminQuickActions() {
   const executeLaunch = async () => {
     setLaunching(true);
     const { error } = await supabase.from("launch_config").update({ is_launched: true }).neq("id", "");
-    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
-    else toast({ title: "🚀 Platform Launched!", description: "UPLY is now live." });
+    if (error) toast.error("Error", { description: error.message });
+    else toast.success("🚀 Platform Launched!", { description: "UPLY is now live." });
     setLaunching(false);
     setLaunchDialog(false);
     setLaunchInput("");
@@ -42,21 +42,21 @@ export default function AdminQuickActions() {
   const handlePause = async () => {
     setPausing(true);
     const { error } = await supabase.from("launch_config").update({ is_launched: false }).neq("id", "");
-    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
-    else toast({ title: "⏸️ Platform Paused", description: "Waitlist mode re-enabled." });
+    if (error) toast.error("Error", { description: error.message });
+    else toast.success("⏸️ Platform Paused", { description: "Waitlist mode re-enabled." });
     setPausing(false);
   };
 
   const handleExport = async (type: string) => {
-    toast({ title: `Exporting ${type}...`, description: "Download will start shortly." });
+    toast.success("Exporting ${type}...", { description: "Download will start shortly." });
     // In production, this would call an edge function to generate the CSV
   };
 
   const actions = [
-    { icon: Target, label: "Grant Early Access", emoji: "🎯", onClick: () => toast({ title: "Search waitlist to grant access" }) },
+    { icon: Target, label: "Grant Early Access", emoji: "🎯", onClick: () => toast.success("Search waitlist to grant access") },
     { icon: Zap, label: "Launch Platform", emoji: "⚡", onClick: () => setLaunchDialog(true) },
     { icon: Pause, label: "Emergency Pause", emoji: "⏸️", onClick: handlePause, variant: "destructive" as const },
-    { icon: Search, label: "View User", emoji: "👤", onClick: () => toast({ title: "Search users by email or username" }) },
+    { icon: Search, label: "View User", emoji: "👤", onClick: () => toast.success("Search users by email or username") },
     { icon: Download, label: "Export Data", emoji: "📊", onClick: () => handleExport("Waitlist CSV") },
   ];
 

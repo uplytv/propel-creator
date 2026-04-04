@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ICE_SERVERS } from '@/lib/webrtcConfig';
+import { Sentry } from "@/lib/sentry";
 
 export interface GuestState {
   guestId: string | null;
@@ -91,7 +92,7 @@ export function useGuestCoStream(streamId: string | undefined, isHost: boolean) 
             payload: { targetUserId: userId, answer: pc.localDescription?.toJSON() },
           });
         } catch (err) {
-          console.error('Co-stream: failed to handle guest offer:', err);
+          Sentry.captureException(err, { tags: { context: "guest_costream" } });
         }
       })
       .on('broadcast', { event: 'guest-ice' }, async (payload: any) => {

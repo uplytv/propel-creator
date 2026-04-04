@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/context/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import SEOHead from "@/components/SEOHead";
 import { format } from "date-fns";
@@ -28,7 +28,6 @@ const statusConfig: Record<string, { color: string; icon: typeof Check }> = {
 export default function Newsletter() {
   const { user } = useAuth();
   const { data: profile } = useProfile();
-  const { toast } = useToast();
   const qc = useQueryClient();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [subject, setSubject] = useState("");
@@ -102,11 +101,11 @@ export default function Newsletter() {
       return data;
     },
     onSuccess: (data) => {
-      toast({ title: "Newsletter sent!", description: `Sent to ${data.sent} members` });
+      toast.success("Newsletter sent!", { description: `Sent to ${data.sent });
       qc.invalidateQueries({ queryKey: ["newsletters"] });
       setConfirmSend(false);
     },
-    onError: (err: any) => toast({ title: "Send failed", description: err.message, variant: "destructive" }),
+    onError: (err: any) => toast.error("Send failed", { description: err.message }),
   });
 
   return (

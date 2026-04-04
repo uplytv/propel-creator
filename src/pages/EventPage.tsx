@@ -15,7 +15,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useEvent, useMyTicketForEvent, useClaimFreeTicket, useSetEventReminder } from "@/hooks/useEvents";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { format, formatDistanceToNow, isBefore, differenceInMinutes } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 
@@ -40,7 +40,6 @@ export default function EventPage() {
   const { username, slug } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { toast } = useToast();
   const { data: event, isLoading } = useEvent(slug);
   const { data: myTicket } = useMyTicketForEvent(event?.id);
   const claimFree = useClaimFreeTicket();
@@ -95,7 +94,7 @@ export default function EventPage() {
       if (error) throw error;
       if (data?.url) window.location.href = data.url;
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error("Error", { description: err.message });
     } finally {
       setPurchasing(false);
     }

@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { createUpload } from "@mux/upchunk";
+import { Sentry } from "@/lib/sentry";
 
 interface UploadOptions {
   userId: string;
@@ -84,7 +85,7 @@ export async function uploadToMuxWithRetry(opts: UploadOptions): Promise<string>
         });
 
         upload.on("error", (err: { detail: { message: string } }) => {
-          console.error(`[MuxUpload] UpChunk upload ERROR`, err.detail);
+          Sentry.captureException(err.detail, { tags: { context: "mux_upload" } });
           reject(new Error(err.detail?.message || "Chunked upload failed"));
         });
 
@@ -110,7 +111,7 @@ export async function uploadToMuxWithRetry(opts: UploadOptions): Promise<string>
     }
   }
 
-  console.error(`[MuxUpload] All ${maxRetries + 1} attempts failed. Last error: ${lastError?.message}`);
+  Sentry.captureMessage(`[MuxUpload] All ${maxRetries + 1} attempts failed. Last error: ${lastError?.message}`, { tags: { context: "mux_upload" } });
   throw new Error(
     `Upload failed after ${maxRetries + 1} attempts: ${lastError?.message}`
   );

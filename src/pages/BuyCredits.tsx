@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import AppLayout from "@/components/layout/AppLayout";
 import { useCreditPackages } from "@/hooks/useStripeAccount";
 import { useWallet } from "@/hooks/useWallet";
@@ -32,13 +32,12 @@ const BuyCredits = () => {
   const [selectedPkg, setSelectedPkg] = useState<string | null>(null);
   const [purchaseState, setPurchaseState] = useState<PurchaseState>("idle");
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { data: packages = [], isLoading } = useCreditPackages();
   const { data: wallet } = useWallet();
 
   const handlePurchase = async (pkg: any) => {
     if (!pkg.stripe_price_id) {
-      toast({ title: "Not configured", description: "This package needs a Stripe price ID.", variant: "destructive" });
+      toast.error("Not configured", { description: "This package needs a Stripe price ID." });
       return;
     }
     setSelectedPkg(pkg.id);
@@ -54,7 +53,7 @@ const BuyCredits = () => {
       if (error) throw error;
       if (data?.url) window.location.href = data.url;
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error("Error", { description: err.message });
       setPurchaseState("idle");
       setSelectedPkg(null);
     }

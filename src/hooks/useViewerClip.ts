@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { Sentry } from "@/lib/sentry";
 
 interface ViewerClipState {
   isClipping: boolean;
@@ -62,7 +63,7 @@ export function useViewerClip(videoRef: React.RefObject<HTMLVideoElement | null>
       recorderRef.current = recorder;
       isRecordingRef.current = true;
     } catch (err) {
-      console.error('Failed to start clip buffer:', err);
+      Sentry.captureException(err, { tags: { context: "viewer_clip" } });
     }
   }, [videoRef, bufferSeconds]);
 

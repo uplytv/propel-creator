@@ -15,7 +15,7 @@ import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import AppLayout from "@/components/layout/AppLayout";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -118,7 +118,6 @@ function timeAgo(dateStr: string) {
 // ── Component ──────────────────────────────────────────────────────────────────
 export default function Collaborate() {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { user } = useAuth();
 
   // DB hooks
@@ -178,7 +177,7 @@ export default function Collaborate() {
       },
       {
         onSuccess: () => {
-          toast({ title: "Proposal Sent! 🎉", description: `Your collaboration proposal has been sent to ${selectedCreator.name}. They'll be notified.` });
+          toast.success("Proposal Sent! 🎉", { description: `Your collaboration proposal has been sent to ${selectedCreator.name });
           setProposalOpen(false);
           setSelectedCreator(null);
           setProposalMessage("");
@@ -186,7 +185,7 @@ export default function Collaborate() {
           setSplitValue([50]);
         },
         onError: (err) => {
-          toast({ title: "Error", description: err.message, variant: "destructive" });
+          toast.error("Error", { description: err.message });
         },
       }
     );

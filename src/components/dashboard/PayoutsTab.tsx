@@ -9,14 +9,13 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useWallet } from "@/hooks/useWallet";
 import { useReauthGuard } from "@/hooks/useReauthGuard";
 import ReauthDialog from "@/components/ReauthDialog";
 
 export function PayoutsTab() {
   const { user } = useAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [connecting, setConnecting] = useState(false);
   const { showReauth, reauthLoading, requireReauth, confirmReauth, cancelReauth } = useReauthGuard();
@@ -83,7 +82,7 @@ export function PayoutsTab() {
       if (error) throw error;
       if (data?.url) window.location.href = data.url;
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error("Error", { description: err.message });
     }
     setConnecting(false);
   };
@@ -96,7 +95,7 @@ export function PayoutsTab() {
       if (error) throw error;
       if (data?.url) window.open(data.url, "_blank");
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error("Error", { description: err.message });
     }
   };
 

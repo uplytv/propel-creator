@@ -22,7 +22,7 @@ import { useSubscriptionTiers } from "@/hooks/useStripeAccount";
 import TierSelectionModal from "@/components/TierSelectionModal";
 import { Button } from "@/components/ui/button";
 import { Users, Loader2, Sparkles } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { usePaymentReturn, useMemberSubscriptionStatus } from "@/hooks/usePaymentReturn";
 
 const VALID_TABS = ["community", "classroom", "calendar", "members", "leaderboard", "pricing", "earn", "blasts", "about"] as const;
@@ -52,7 +52,6 @@ export default function CreatorSpace() {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const creatorId = rawCreatorId === "me" ? user?.id : rawCreatorId;
 
   const searchParams = new URLSearchParams(location.search);
@@ -76,7 +75,7 @@ export default function CreatorSpace() {
 
   useEffect(() => {
     if (justJoined) {
-      toast({ title: "Welcome! 🎉", description: "You've joined this community." });
+      toast.success("Welcome! 🎉", { description: "You've joined this community." });
       queryClient.invalidateQueries({ queryKey: ["is-member"] });
       queryClient.invalidateQueries({ queryKey: ["member-subscription"] });
       // Clean URL
@@ -146,11 +145,7 @@ export default function CreatorSpace() {
     }
     if (requiresPaidJoin) {
       navigate(`/community/${rawCreatorId}/pricing`, { replace: true });
-      toast({
-        title: "No live plan yet",
-        description: "This creator hasn't published a live paid tier yet.",
-        variant: "destructive",
-      });
+      toast.error("No live plan yet", { description: "This creator hasn't published a live paid tier yet." });
       return;
     }
 
@@ -161,9 +156,9 @@ export default function CreatorSpace() {
     }, { onConflict: "user_id,creator_id" });
     setFreeJoining(false);
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast.error("Error", { description: error.message });
     } else {
-      toast({ title: "Welcome! 🎉", description: "You've joined this community." });
+      toast.success("Welcome! 🎉", { description: "You've joined this community." });
       queryClient.invalidateQueries({ queryKey: ["is-member"] });
     }
   };

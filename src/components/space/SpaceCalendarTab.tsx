@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface Props {
   creatorId: string;
@@ -17,8 +17,6 @@ export default function SpaceCalendarTab({ creatorId, isOwner }: Props) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showAddEvent, setShowAddEvent] = useState(false);
   const { data: events = [] } = useCommunityEvents(creatorId);
-  const { toast } = useToast();
-
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
@@ -132,14 +130,12 @@ function AddEventDialog({ open, onClose, creatorId }: { open: boolean; onClose: 
   const [eventTime, setEventTime] = useState("");
   const [link, setLink] = useState("");
   const createEvent = useCreateEvent();
-  const { toast } = useToast();
-
   const handleSubmit = async () => {
     if (!title.trim() || !eventDate) return;
     await createEvent.mutateAsync({ creator_id: creatorId, title, description, event_date: eventDate, event_time: eventTime || undefined, link: link || undefined });
     setTitle(""); setDescription(""); setEventDate(""); setEventTime(""); setLink("");
     onClose();
-    toast({ title: "Event added!" });
+    toast.success("Event added!");
   };
 
   return (

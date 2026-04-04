@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useRef, useCallback, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Sentry } from "@/lib/sentry";
 
 interface NetworkData {
   liveStreams: any[];
@@ -49,7 +50,7 @@ export function NetworkProvider({ children }: { children: ReactNode }) {
         setLiveCount(d.liveStreams?.length || 0);
       }
     } catch (error) {
-      console.error("Network data fetch failed:", error);
+      Sentry.captureException(error, { tags: { context: "network_context" } });
     } finally {
       setIsLoading(false);
     }

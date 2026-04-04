@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useStreamRecordings } from "@/hooks/useStreamRecordings";
 import { useClips } from "@/hooks/useClips";
 import RecordingsGrid from "@/components/recordings/RecordingsGrid";
@@ -32,7 +32,6 @@ interface MuxAsset {
 
 export default function ContentLibrary() {
   const { user } = useAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const [assets, setAssets] = useState<MuxAsset[]>([]);
   const [loading, setLoading] = useState(true);
@@ -102,18 +101,15 @@ export default function ContentLibrary() {
       .update({ is_public: !asset.is_public })
       .eq("id", asset.id);
     fetchAssets();
-    toast({
-      title: asset.is_public ? "Video set to private" : "Video set to public",
-      description: asset.is_public
+    toast.success("asset.is_public ? "Video set to private" : "Video set to public"", { description: asset.is_public
         ? "This video is no longer visible in discovery."
-        : "This video is now visible in the discovery feed.",
-    });
+        : "This video is now visible in the discovery feed." });
   };
 
   const deleteAsset = async (asset: MuxAsset) => {
     await supabase.from("mux_assets").delete().eq("id", asset.id);
     fetchAssets();
-    toast({ title: "Video deleted", description: "The video has been removed from your library." });
+    toast.success("Video deleted", { description: "The video has been removed from your library." });
   };
 
   const getThumbnail = (asset: MuxAsset) => {
@@ -143,10 +139,10 @@ export default function ContentLibrary() {
         description: asset.description || "",
         file,
       });
-      toast({ title: "Re-upload started! 🎬", description: "Your video is processing and will appear shortly." });
+      toast.success("Re-upload started! 🎬", { description: "Your video is processing and will appear shortly." });
       fetchAssets();
     } catch (err: any) {
-      toast({ title: "Re-upload failed", description: err.message, variant: "destructive" });
+      toast.error("Re-upload failed", { description: err.message });
     } finally {
       setReuploadingId(null);
       reuploadAssetRef.current = null;

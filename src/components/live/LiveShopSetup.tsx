@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Trash2, GripVertical, Upload, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 
 interface LiveProductForm {
@@ -26,7 +26,6 @@ const DURATIONS = [1, 2, 3, 5, 10];
 
 export default function LiveShopSetup({ streamId, products, onProductsChange }: Props) {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -42,7 +41,7 @@ export default function LiveShopSetup({ streamId, products, onProductsChange }: 
     const path = `${user.id}/shop-${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from("covers").upload(path, file);
     if (error) {
-      toast({ title: "Upload failed", description: error.message, variant: "destructive" });
+      toast.error("Upload failed", { description: error.message });
       setUploading(false);
       return;
     }
@@ -70,9 +69,9 @@ export default function LiveShopSetup({ streamId, products, onProductsChange }: 
     });
 
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast.error("Error", { description: error.message });
     } else {
-      toast({ title: "Product added!", description: `${form.title} added to your shop.` });
+      toast.success("Product added!", { description: `${form.title });
       setForm({ title: "", description: "", price: 10, type: "sell", quantity: 1, auction_duration: 5, image_url: null });
       setShowForm(false);
       onProductsChange();

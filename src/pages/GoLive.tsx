@@ -17,7 +17,7 @@ const categories = [
 ];
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import BroadcastStudio from "@/components/live/BroadcastStudio";
 import { useProducts } from "@/hooks/useProducts";
 import { useProfile } from "@/hooks/useProfile";
@@ -32,7 +32,6 @@ import { useSimulcastDestinations, useSimulcastSessions } from "@/hooks/useSimul
 export default function GoLive() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { toast } = useToast();
   const [mode, setMode] = useState<"public" | "private">("public");
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState(categories[0]);
@@ -115,14 +114,14 @@ export default function GoLive() {
       setStreamStatus("idle");
       setStreamStartTime(Date.now());
       trackEvent("stream_created", { mode, category, has_featured_product: !!featuredProductId, simulcast: simulcastEnabled });
-      toast({ title: "Stream created!", description: "Your broadcast studio is ready." });
+      toast.success("Stream created!", { description: "Your broadcast studio is ready." });
 
       // Start simulcast non-blocking
       if (simulcastEnabled && enabledPlatforms.length > 0 && data?.streamId) {
         startSimulcast(data.streamId, user.id).catch(() => {});
       }
     } catch (e: any) {
-      toast({ title: "Error", description: e.message || "Failed to create stream", variant: "destructive" });
+      toast.error("Error", { description: e.message || "Failed to create stream" });
     } finally {
       setIsSettingUp(false);
     }

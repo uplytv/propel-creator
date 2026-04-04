@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
+import { Sentry } from "@/lib/sentry";
 
 interface Props {
   open: boolean;
@@ -30,7 +31,6 @@ export default function CourseEnrollSheet({
   lessonCount = 0, moduleCount = 0,
 }: Props) {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
   // Check if already purchased
@@ -81,7 +81,7 @@ export default function CourseEnrollSheet({
       });
       if (error) throw error;
       if (data?.already_purchased) {
-        toast({ title: "Already enrolled! ✅" });
+        toast.success("Already enrolled! ✅");
         onClose();
         return;
       }
@@ -93,8 +93,8 @@ export default function CourseEnrollSheet({
         window.location.href = data.url;
       }
     } catch (err: any) {
-      toast({ title: "Payment couldn't start — please try again", variant: "destructive" });
-      console.error("Checkout error:", err);
+      toast.error("Payment couldn't start — please try again");
+      Sentry.captureException(err, { tags: { context: "course_checkout" } });
     }
     setLoading(false);
   };

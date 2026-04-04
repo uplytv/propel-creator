@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 /**
  * Hook to handle mobile return from Stripe checkout.
@@ -11,7 +11,6 @@ import { useToast } from "@/hooks/use-toast";
  */
 export function usePaymentReturn(creatorId?: string) {
   const { user } = useAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [checking, setChecking] = useState(false);
 
@@ -79,10 +78,10 @@ export function usePaymentReturn(creatorId?: string) {
           await new Promise(r => setTimeout(r, 3000));
         }
         if (found) {
-          toast({ title: "Access granted! 🎉" });
+          toast.success("Access granted! 🎉");
           queryClient.invalidateQueries({ queryKey: ["access"] });
         } else {
-          toast({ title: "Payment received", description: "Access is being activated. Refresh in a moment." });
+          toast.success("Payment received", { description: "Access is being activated. Refresh in a moment." });
         }
         const url = new URL(window.location.href);
         url.searchParams.delete("access_granted");
@@ -94,11 +93,11 @@ export function usePaymentReturn(creatorId?: string) {
         sessionStorage.removeItem("uply_pending_purchase");
         const found = await pollForPurchase(productId);
         if (found) {
-          toast({ title: "You're enrolled! 🎉", description: "Start learning →" });
+          toast.success("You're enrolled! 🎉", { description: "Start learning →" });
           queryClient.invalidateQueries({ queryKey: ["product-purchase"] });
           queryClient.invalidateQueries({ queryKey: ["access"] });
         } else {
-          toast({ title: "Your payment was received", description: "Access is being activated. Refresh in a moment." });
+          toast.success("Your payment was received", { description: "Access is being activated. Refresh in a moment." });
         }
         const url = new URL(window.location.href);
         url.searchParams.delete("enrolled");
@@ -110,12 +109,12 @@ export function usePaymentReturn(creatorId?: string) {
         sessionStorage.removeItem("uply_pending_join");
         const found = await pollForSubscription(joinCreatorId);
         if (found) {
-          toast({ title: "Welcome! 🎉", description: "You now have full access." });
+          toast.success("Welcome! 🎉", { description: "You now have full access." });
           queryClient.invalidateQueries({ queryKey: ["is-member"] });
           queryClient.invalidateQueries({ queryKey: ["member-subscription"] });
           queryClient.invalidateQueries({ queryKey: ["access"] });
         } else {
-          toast({ title: "Your payment was received", description: "Access is being activated. Refresh in a moment." });
+          toast.success("Your payment was received", { description: "Access is being activated. Refresh in a moment." });
         }
         const url = new URL(window.location.href);
         url.searchParams.delete("joined");
@@ -130,7 +129,7 @@ export function usePaymentReturn(creatorId?: string) {
           sessionStorage.removeItem("uply_pending_purchase");
           const found = await pollForPurchase(product_id);
           if (found) {
-            toast({ title: "You're enrolled! 🎉" });
+            toast.success("You're enrolled! 🎉");
             queryClient.invalidateQueries({ queryKey: ["product-purchase"] });
             queryClient.invalidateQueries({ queryKey: ["access"] });
           }
@@ -143,7 +142,7 @@ export function usePaymentReturn(creatorId?: string) {
           sessionStorage.removeItem("uply_pending_join");
           const found = await pollForSubscription(creator_id);
           if (found) {
-            toast({ title: "Welcome! 🎉" });
+            toast.success("Welcome! 🎉");
             queryClient.invalidateQueries({ queryKey: ["is-member"] });
             queryClient.invalidateQueries({ queryKey: ["member-subscription"] });
             queryClient.invalidateQueries({ queryKey: ["access"] });
@@ -170,7 +169,7 @@ export function usePaymentReturn(creatorId?: string) {
             await new Promise(r => setTimeout(r, 3000));
           }
           if (found) {
-            toast({ title: "Access granted! 🎉" });
+            toast.success("Access granted! 🎉");
             queryClient.invalidateQueries({ queryKey: ["access"] });
           }
         } catch {}

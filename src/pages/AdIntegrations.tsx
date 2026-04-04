@@ -11,7 +11,7 @@ import AppLayout from "@/components/layout/AppLayout";
 import AudienceTemplates from "@/components/ads/AudienceTemplates";
 import CampaignPerformance from "@/components/ads/CampaignPerformance";
 import BoostCampaignBuilder, { type LaunchedCampaign } from "@/components/ads/BoostCampaignBuilder";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { useAdIntegrations } from "@/hooks/useAdIntegrations";
 
@@ -41,7 +41,6 @@ const googleEvents: PixelEvent[] = [
 
 /* ─────── component ─────── */
 export default function AdIntegrations() {
-  const { toast } = useToast();
   const { campaigns, launchCampaign, updateStatus, deleteCampaign, duplicateCampaign } = useCampaigns();
   const { getIntegration, saveIntegration, disconnectIntegration, loading } = useAdIntegrations();
 
@@ -57,17 +56,17 @@ export default function AdIntegrations() {
   const handleConnect = async (platform: Platform) => {
     const pixelId = platform === "meta" ? metaPixelInput.trim() : googleTagInput.trim();
     if (!pixelId) {
-      toast({ title: `Please enter your ${platform === "meta" ? "Meta Pixel ID" : "Google Tag ID"}`, variant: "destructive" });
+      toast.error("Please enter your ${platform === "meta" ? "Meta Pixel ID" : "Google Tag ID"}");
       return;
     }
 
     // Basic validation
     if (platform === "meta" && !/^\d{10,20}$/.test(pixelId)) {
-      toast({ title: "Invalid Pixel ID", description: "Meta Pixel IDs are numeric, typically 15-16 digits.", variant: "destructive" });
+      toast.error("Invalid Pixel ID", { description: "Meta Pixel IDs are numeric });
       return;
     }
     if (platform === "google" && !/^(AW-|G-|GT-)[A-Z0-9]+$/i.test(pixelId)) {
-      toast({ title: "Invalid Tag ID", description: "Google Tag IDs start with AW-, G-, or GT- followed by alphanumeric characters.", variant: "destructive" });
+      toast.error("Invalid Tag ID", { description: "Google Tag IDs start with AW- });
       return;
     }
 
@@ -75,14 +74,11 @@ export default function AdIntegrations() {
     setter(true);
     try {
       await saveIntegration(platform, pixelId);
-      toast({
-        title: `${platform === "meta" ? "Meta Pixel" : "Google Tag"} connected!`,
-        description: `Tracking script has been installed and is now firing events.`,
-      });
+      toast.success("${platform === "meta" ? "Meta Pixel" : "Google Tag"} connected!", { description: `Tracking script has been installed and is now firing events.` });
       if (platform === "meta") setMetaPixelInput("");
       else setGoogleTagInput("");
     } catch (err) {
-      toast({ title: "Failed to save integration", variant: "destructive" });
+      toast.error("Failed to save integration");
     }
     setter(false);
   };
@@ -90,21 +86,18 @@ export default function AdIntegrations() {
   const handleDisconnect = async (platform: Platform) => {
     try {
       await disconnectIntegration(platform);
-      toast({ title: `${platform === "meta" ? "Meta Pixel" : "Google Tag"} disconnected` });
+      toast.success("${platform === "meta" ? "Meta Pixel" : "Google Tag"} disconnected");
     } catch {
-      toast({ title: "Failed to disconnect", variant: "destructive" });
+      toast.error("Failed to disconnect");
     }
   };
 
   const handleCampaignLaunch = async (campaign: LaunchedCampaign) => {
     try {
       await launchCampaign(campaign);
-      toast({
-        title: "Campaign launched!",
-        description: `"Boost: ${campaign.streamTitle}" is now active on ${campaign.platform === "meta" ? "Meta" : "Google"}.`,
-      });
+      toast.success("Campaign launched!", { description: `"Boost: ${campaign.streamTitle });
     } catch {
-      toast({ title: "Failed to launch campaign", variant: "destructive" });
+      toast.error("Failed to launch campaign");
     }
   };
 
@@ -283,7 +276,7 @@ export default function AdIntegrations() {
             onDelete={deleteCampaign}
             onDuplicate={async (source) => {
               await duplicateCampaign(source);
-              toast({ title: "Campaign duplicated", description: `A copy of "${source.stream_title}" has been created.` });
+              toast.success("Campaign duplicated", { description: `A copy of "${source.stream_title });
             }}
           />
         </div>

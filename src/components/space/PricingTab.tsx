@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Loader2, Trash2, DollarSign, Tag, AlertTriangle, Check, Sparkles, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import EmptyState from "@/components/ui/EmptyState";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
@@ -19,7 +19,6 @@ const MAX_TIERS = 5;
 
 export function PricingTab({ creatorId }: PricingTabProps) {
   const { user } = useAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const isOwner = user?.id === creatorId;
@@ -110,7 +109,7 @@ export function PricingTab({ creatorId }: PricingTabProps) {
   const handleCreate = async () => {
     if (!name || !price) return;
     if ((tiers?.length || 0) >= MAX_TIERS) {
-      toast({ title: "Limit reached", description: `You can create up to ${MAX_TIERS} tiers.`, variant: "destructive" });
+      toast.error("Limit reached", { description: `You can create up to ${MAX_TIERS });
       return;
     }
     setCreating(true);
@@ -119,14 +118,14 @@ export function PricingTab({ creatorId }: PricingTabProps) {
         body: { name, description, price_monthly: parseFloat(price) },
       });
       if (error) throw error;
-      toast({ title: "Tier created", description: `${name} is now live.` });
+      toast.success("Tier created", { description: `${name });
       queryClient.invalidateQueries({ queryKey: ["subscription-tiers"] });
       setShowForm(false);
       setName("");
       setDescription("");
       setPrice("");
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error("Error", { description: err.message });
     }
     setCreating(false);
   };
@@ -137,9 +136,9 @@ export function PricingTab({ creatorId }: PricingTabProps) {
       .update({ is_active: false })
       .eq("id", tierId);
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast.error("Error", { description: error.message });
     } else {
-      toast({ title: "Tier deactivated", description: `${tierName} has been hidden from new members.` });
+      toast.success("Tier deactivated", { description: `${tierName });
       queryClient.invalidateQueries({ queryKey: ["subscription-tiers"] });
     }
   };
@@ -158,7 +157,7 @@ export function PricingTab({ creatorId }: PricingTabProps) {
       if (error) throw error;
       if (data?.url) window.location.href = data.url;
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error("Error", { description: err.message });
     }
     setCheckoutLoading(false);
     setSelectedTier(null);

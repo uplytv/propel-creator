@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { Sentry } from "@/lib/sentry";
 
 export function useClassroomModules(creatorId: string | undefined) {
   return useQuery({
@@ -96,7 +97,7 @@ export function useCreateModule() {
         .select()
         .maybeSingle();
       if (error) {
-        console.error("Create module error:", JSON.stringify(error));
+        Sentry.captureException(JSON.stringify(error, { tags: { context: "classroom" } }));
         throw error;
       }
       if (!data) throw new Error("Module was created but could not be retrieved");

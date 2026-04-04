@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import AppLayout from "@/components/layout/AppLayout";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { format, differenceInMinutes, isBefore } from "date-fns";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
@@ -20,7 +20,6 @@ export default function TicketDetail() {
   const { token } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { toast } = useToast();
   const qc = useQueryClient();
   const [refunding, setRefunding] = useState(false);
 
@@ -74,10 +73,10 @@ export default function TicketDetail() {
         body: { ticket_id: ticket.id },
       });
       if (error) throw error;
-      toast({ title: "Ticket refunded ✓", description: "Your refund has been processed." });
+      toast.success("Ticket refunded ✓", { description: "Your refund has been processed." });
       qc.invalidateQueries({ queryKey: ["ticket-detail"] });
     } catch (err: any) {
-      toast({ title: "Refund failed", description: err.message, variant: "destructive" });
+      toast.error("Refund failed", { description: err.message });
     } finally {
       setRefunding(false);
     }

@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import BackNav from "@/components/BackNav";
 import OriginBadge from "@/components/OriginBadge";
+import { Sentry } from "@/lib/sentry";
 
 type StatusFilter = "all" | "pending" | "approved" | "revoked" | "beta" | "origin";
 
@@ -157,7 +158,7 @@ export default function AdminUsers() {
     try {
       await supabase.functions.invoke("notify-user-approved", { body: { userIds } });
     } catch (e) {
-      console.error("Failed to send approval emails:", e);
+      Sentry.captureException(e, { tags: { context: "admin_users" } });
     }
   };
 

@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Star, Send, MessageSquareQuote } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 
@@ -41,7 +41,6 @@ function StarRating({ rating, onChange, interactive = false }: { rating: number;
 
 export default function CreatorTestimonials({ creatorId, isOwner }: { creatorId: string; isOwner: boolean }) {
   const { user } = useAuth();
-  const { toast } = useToast();
   const qc = useQueryClient();
   const [rating, setRating] = useState(5);
   const [body, setBody] = useState("");
@@ -90,13 +89,13 @@ export default function CreatorTestimonials({ creatorId, isOwner }: { creatorId:
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: "Review submitted!", description: "Thanks for your feedback." });
+      toast.success("Review submitted!", { description: "Thanks for your feedback." });
       setBody("");
       setShowForm(false);
       qc.invalidateQueries({ queryKey: ["creator-reviews", creatorId] });
     },
     onError: (e: any) => {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast.error("Error", { description: e.message });
     },
   });
 

@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { GraduationCap, X, ChevronDown, Plus, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useClassroomModules, useCreateModule, useCreateLesson } from "@/hooks/useClassroom";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
+import { Sentry } from "@/lib/sentry";
 
 interface StreamToCourseDialogProps {
   open: boolean;
@@ -24,7 +25,6 @@ export default function StreamToCourseDialog({
   videoUrl,
   durationSeconds,
 }: StreamToCourseDialogProps) {
-  const { toast } = useToast();
   const { data: modules, isLoading: modulesLoading } = useClassroomModules(creatorId);
   const createModule = useCreateModule();
   const createLesson = useCreateLesson();
@@ -48,15 +48,15 @@ export default function StreamToCourseDialog({
         });
         moduleId = newModule?.id || null;
       } catch (err: any) {
-        console.error("[StreamToCourse] Module creation failed:", err);
-        toast({ title: "Failed to create module", description: err?.message || "Unknown error", variant: "destructive" });
+        Sentry.captureException(err, { tags: { context: "stream_to_course" } });
+        toast.error("Failed to create module", { description: err?.message || "Unknown error" });
         setIsSaving(false);
         return;
       }
     }
 
     if (!moduleId) {
-      toast({ title: "Select or create a module first", variant: "destructive" });
+      toast.error("Select or create a module first");
       return;
     }
 
@@ -72,10 +72,10 @@ export default function StreamToCourseDialog({
         duration_seconds: durationSeconds,
         is_free: false,
       });
-      toast({ title: "Lesson created! 🎓", description: "Your stream is now a course lesson." });
+      toast.success("Lesson created! 🎓", { description: "Your stream is now a course lesson." });
       onClose();
     } catch (err: any) {
-      toast({ title: "Failed to create lesson", description: err.message, variant: "destructive" });
+      toast.error("Failed to create lesson", { description: err.message });
     } finally {
       setIsSaving(false);
     }

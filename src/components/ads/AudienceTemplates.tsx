@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Users, Eye, ShoppingCart, UserMinus, Sparkles, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface AudienceTemplatesProps {
   metaConnected: boolean;
@@ -46,7 +46,6 @@ const templates = [
 
 export default function AudienceTemplates({ metaConnected, googleConnected }: AudienceTemplatesProps) {
   const anyConnected = metaConnected || googleConnected;
-  const { toast } = useToast();
   const [activating, setActivating] = useState<string | null>(null);
   const [activated, setActivated] = useState<Set<string>>(new Set());
 
@@ -55,7 +54,7 @@ export default function AudienceTemplates({ metaConnected, googleConnected }: Au
     setTimeout(() => {
       setActivating(null);
       setActivated((prev) => new Set(prev).add(id));
-      toast({ title: "Audience created ✨", description: "Your audience template is now building." });
+      toast.success("Audience created ✨", { description: "Your audience template is now building." });
     }, 1500);
   };
 

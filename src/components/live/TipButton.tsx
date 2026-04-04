@@ -4,7 +4,7 @@ import { Coins, X, Sparkles, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const tipPresets = [
   { amount: 5, emoji: "☕", label: "Coffee" },
@@ -25,7 +25,6 @@ interface TipButtonProps {
 export default function TipButton({ creatorId, creatorName, streamId, creditsBalance, isLoggedIn, onTip }: TipButtonProps) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [selected, setSelected] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState("");
   const [message, setMessage] = useState("");
@@ -53,7 +52,7 @@ export default function TipButton({ creatorId, creatorName, streamId, creditsBal
         return;
       }
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error("Error", { description: err.message });
     }
     setSending(false);
   };

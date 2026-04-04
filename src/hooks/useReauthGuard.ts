@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const SENSITIVE_ACTION_MAX_AGE_MS = 10 * 60 * 1000; // 10 minutes
 
@@ -11,7 +11,6 @@ const SENSITIVE_ACTION_MAX_AGE_MS = 10 * 60 * 1000; // 10 minutes
  */
 export function useReauthGuard() {
   const { session } = useAuth();
-  const { toast } = useToast();
   const [showReauth, setShowReauth] = useState(false);
   const [reauthLoading, setReauthLoading] = useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
@@ -51,11 +50,7 @@ export function useReauthGuard() {
       setReauthLoading(false);
 
       if (error) {
-        toast({
-          title: "Authentication failed",
-          description: "Incorrect password. Please try again.",
-          variant: "destructive",
-        });
+        toast.error("Authentication failed", { description: "Incorrect password. Please try again." });
         return false;
       }
 

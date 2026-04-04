@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { Sentry } from "@/lib/sentry";
 
 export default function PushNotificationPermission() {
   const { user } = useAuth();
@@ -42,7 +43,7 @@ export default function PushNotificationPermission() {
         }, { onConflict: "user_id,endpoint" });
       }
     } catch (e) {
-      console.error("Push subscription failed:", e);
+      Sentry.captureException(e, { tags: { context: "push_notifications" } });
     }
     setShow(false);
   };

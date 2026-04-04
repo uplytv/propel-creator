@@ -15,7 +15,7 @@ import { useStreamDownload } from "@/hooks/useStreamDownload";
 import { useAutoClipAI } from "@/hooks/useAutoClipAI";
 import { useStreamAchievements } from "@/hooks/useStreamAchievements";
 import StreamAchievements from "./StreamAchievements";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { getSiteUrl } from "@/lib/siteUrl";
 
 interface EndOfStreamScreenProps {
@@ -50,7 +50,6 @@ export default function EndOfStreamScreen({
   highlights = [],
   chaptersDescription,
 }: EndOfStreamScreenProps) {
-  const { toast } = useToast();
   const [stats, setStats] = useState<StreamStats>({
     peakViewers: 0,
     totalReactions: 0,
@@ -136,7 +135,7 @@ export default function EndOfStreamScreen({
     const copyText = `${shareText}\n${streamUrl}`;
     try {
       await navigator.clipboard.writeText(copyText);
-      toast({ title: "Copied to clipboard!" });
+      toast.success("Copied to clipboard!");
     } catch {
       const ta = document.createElement("textarea");
       ta.value = copyText;
@@ -146,7 +145,7 @@ export default function EndOfStreamScreen({
       ta.select();
       document.execCommand("copy");
       document.body.removeChild(ta);
-      toast({ title: "Copied to clipboard!" });
+      toast.success("Copied to clipboard!");
     }
   };
 
@@ -161,12 +160,12 @@ export default function EndOfStreamScreen({
 
       if (asset?.mux_asset_id) {
         if (asset.status === 'preparing') {
-          toast({ title: "Recording is still processing", description: "Try again in a few minutes" });
+          toast.success("Recording is still processing", { description: "Try again in a few minutes" });
         } else {
           downloadRecording(asset.mux_asset_id, streamTitle);
         }
       } else {
-        toast({ title: "No recording found for this stream" });
+        toast.success("No recording found for this stream");
       }
     }
   };

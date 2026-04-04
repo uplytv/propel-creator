@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Settings, Shield, Rocket, Globe, Bell, Send } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import BackNav from "@/components/BackNav";
 import { useAdminNotifConfig } from "@/hooks/useAdminNotifications";
 import CriticalAlertBanner from "@/components/admin/CriticalAlertBanner";
@@ -60,9 +60,9 @@ export default function AdminSettings() {
       .update({ is_launched: !launchConfig.is_launched })
       .eq("id", launchConfig.id);
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast.error("Error", { description: error.message });
     } else {
-      toast({ title: launchConfig.is_launched ? "Platform set to pre-launch" : "Platform launched!" });
+      toast.success("launchConfig.is_launched ? "Platform set to pre-launch" : "Platform launched!"");
       queryClient.invalidateQueries({ queryKey: ["launch-config"] });
     }
     setSaving(false);
@@ -88,7 +88,7 @@ export default function AdminSettings() {
       p_message: `This is a test notification for ${desc?.label || eventType}`,
       p_link: "/admin/settings",
     });
-    toast({ title: "Test notification sent!" });
+    toast.success("Test notification sent!");
   };
 
   return (
