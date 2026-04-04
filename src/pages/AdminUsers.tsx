@@ -316,7 +316,16 @@ export default function AdminUsers() {
                         <td className="py-3 px-3">
                           <Badge variant="outline" className="text-xs capitalize">{u.role_type || "member"}</Badge>
                         </td>
-                        <td className="py-3 px-3">{statusBadge(u)}</td>
+                        <td className="py-3 px-3">
+                          <div className="flex items-center gap-1.5">
+                            {statusBadge(u)}
+                            {u.is_approved && (
+                              <span className="text-[10px] text-muted-foreground">
+                                {u.invite_codes_count ?? 0}/5
+                              </span>
+                            )}
+                          </div>
+                        </td>
                         <td className="py-3 px-3 font-mono">{u.referral_count}</td>
                         <td className="py-3 px-3 text-xs text-muted-foreground">{u.referred_by_name || "—"}</td>
                         <td className="py-3 px-3 text-xs text-muted-foreground">{format(new Date(u.created_at), "MMM d, yyyy")}</td>
