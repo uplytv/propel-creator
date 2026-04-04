@@ -25,6 +25,7 @@ import VideoUploadSheet from "@/components/videos/VideoUploadSheet";
 import { RevenueGoalTracker } from "@/components/dashboard/RevenueGoalTracker";
 import ReferralRewardsCard from "@/components/affiliates/ReferralRewardsCard";
 import ScheduleFirstShowCard from "@/components/scheduled/ScheduleFirstShowCard";
+import { useInviteCodes } from "@/hooks/useInviteCodes";
 
 function PlatformUpgradeBanner() {
   const { user } = useAuth();
