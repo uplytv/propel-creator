@@ -113,6 +113,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { data: jobUnreadCount = 0 } = useUnreadJobMessageCount();
   const { unreadCount: notifUnreadCount } = useNotifications();
   const { data: wallet } = useWallet();
+  const { data: inviteData } = useInviteCodes();
+  const remainingInvites = inviteData?.remaining ?? 0;
+  const isApprovedUser = profile.isApproved;
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
