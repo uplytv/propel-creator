@@ -292,7 +292,10 @@ export default function ReferralRedirect() {
             />
           </Button>
           <p className="text-[11px] text-muted-foreground text-center">
-            ✓ Free to apply · ✓ No credit card · ✓ {firstName}'s invite skips the line
+            {isBetaInvite
+              ? "✓ Immediate beta access · ✓ No waitlist · ✓ No credit card required"
+              : `✓ Free to apply · ✓ No credit card · ✓ ${firstName}'s invite skips the line`
+            }
           </p>
         </motion.div>
 

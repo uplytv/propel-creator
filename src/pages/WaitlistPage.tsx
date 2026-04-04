@@ -79,23 +79,23 @@ export default function WaitlistPage() {
       setShowPostApp(true);
     }
 
-    // Leaderboard from waitlist table
-    const { data: topReferrers } = await supabase
-      .from("waitlist")
-      .select("id, full_name, referral_count")
-      .gt("referral_count", 0)
-      .order("referral_count", { ascending: false })
-      .limit(20) as any;
+    // Unified leaderboard
+    const { data: topReferrers } = await (supabase as any)
+      .from("unified_referral_leaderboard")
+      .select("user_id, display_name, username, avatar_url, total_referrals, is_approved, origin_member, role_type")
+      .gt("total_referrals", 0)
+      .order("total_referrals", { ascending: false })
+      .limit(20);
 
     if (topReferrers) {
       const entries: LeaderboardEntry[] = topReferrers.map((r: any) => ({
-        user_id: r.id,
-        first_name: r.full_name?.split(" ")[0] || null,
-        last_name: r.full_name?.split(" ")[1] || null,
-        display_name: r.full_name,
-        referral_count: r.referral_count,
-        role_type: null,
-        origin_member: false,
+        user_id: r.user_id,
+        first_name: r.display_name?.split(" ")[0] || null,
+        last_name: r.display_name?.split(" ")[1] || null,
+        display_name: r.display_name,
+        referral_count: r.total_referrals,
+        role_type: r.role_type,
+        origin_member: r.origin_member || false,
       }));
       setLeaderboard(entries);
     }
