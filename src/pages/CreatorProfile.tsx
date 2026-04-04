@@ -401,7 +401,7 @@ export default function CreatorProfile() {
           window.location.href = data.url;
         }
       } catch (err: any) {
-        toast({ title: "Error", description: err.message, variant: "destructive" });
+        toast.error(err.message || "Something went wrong");
       }
       setJoinLoading(false);
       return;
