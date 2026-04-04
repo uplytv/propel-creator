@@ -11,7 +11,7 @@ import { Lock, ArrowLeft } from "lucide-react";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
