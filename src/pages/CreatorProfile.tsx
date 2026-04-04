@@ -344,6 +344,9 @@ export default function CreatorProfile() {
     memberCount, posts, modules, totalLessons, isMember, space, tiers, products,
   } = useCreatorProfileData(username);
 
+  const { data: inviteData } = useInviteCodes();
+  const remainingInvites = inviteData?.remaining ?? 0;
+
   useCreatorSEO(profile);
 
   const isOwner = user && profile && user.id === profile.user_id;
