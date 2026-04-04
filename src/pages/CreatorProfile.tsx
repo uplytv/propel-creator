@@ -408,11 +408,7 @@ export default function CreatorProfile() {
     }
 
     if (requiresPaidJoin) {
-      toast({
-        title: "No live plan yet",
-        description: "This creator hasn't published a live paid tier yet.",
-        variant: "destructive",
-      });
+      toast.error("This creator hasn't published a live paid tier yet.");
       navigate(`/community/${profile?.user_id}/pricing`);
       return;
     }
