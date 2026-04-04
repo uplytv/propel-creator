@@ -41,6 +41,7 @@ interface UserRow {
   referral_count: number;
   referred_by_name: string | null;
   roles: string[];
+  invite_codes_count?: number;
 }
 
 export default function AdminUsers() {
