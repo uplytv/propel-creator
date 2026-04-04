@@ -79,6 +79,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         healthScore: data.health_score || 0,
         name: data.display_name || "Creator",
         avatarUrl: data.avatar_url || null,
+        isApproved: !!(data as any).is_approved,
       });
       setIsOnboarded(!!data.creator_type);
     }
