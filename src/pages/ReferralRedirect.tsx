@@ -245,8 +245,6 @@ export default function ReferralRedirect() {
               : `${firstName} thinks you belong on UPLY.`
             }
           </h1>
-            {firstName} thinks you belong on UPLY.
-          </h1>
           <p className="text-[15px] text-muted-foreground leading-relaxed mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             UPLY is the creator platform where you go live, build your community, host courses, and get paid directly — all in one place.
             You keep <span className="text-primary font-semibold">95%</span> of everything you earn.
