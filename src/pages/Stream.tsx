@@ -746,31 +746,44 @@ export default function Stream() {
                 </div>
               )}
             </div>
+
+            {/* Related recordings when stream is offline */}
+            {!isActive && !isVod && dbStream.user_id && (
+              <div className="px-4 sm:px-6 py-5">
+                <h3 className="text-sm font-bold text-foreground mb-3">More from this creator</h3>
+                <RecentRecordingsRow creatorId={dbStream.user_id} />
+              </div>
+            )}
           </div>
 
-          {/* Chat sidebar - desktop only */}
-          <div className="hidden lg:block w-80 flex-shrink-0">
-            <div className="fixed top-14 right-0 w-80 bottom-0">
-              <StreamChat
-                streamId={id}
-                creatorUserId={dbStream.user_id}
-                isLoggedIn={!!user}
-                onTipClick={() => setTipOpen(true)}
-                creditsBalance={creditsBalance}
-              />
+          {/* Chat sidebar - desktop only — hide when offline */}
+          {(isActive || isVod) && (
+            <div className="hidden lg:block w-80 flex-shrink-0">
+              <div className="fixed top-14 right-0 w-80 bottom-0">
+                <StreamChat
+                  streamId={id || routeSlug}
+                  creatorUserId={dbStream.user_id}
+                  isLoggedIn={!!user}
+                  onTipClick={() => setTipOpen(true)}
+                  creditsBalance={creditsBalance}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
-        <div className="lg:hidden">
-          <MobileChatDrawer
-            streamId={id}
-            creatorUserId={dbStream.user_id}
-            isLoggedIn={!!user}
-            onTipClick={() => setTipOpen(true)}
-            creditsBalance={creditsBalance}
-          />
-        </div>
+        {/* Mobile chat — hide when offline */}
+        {(isActive || isVod) && (
+          <div className="lg:hidden">
+            <MobileChatDrawer
+              streamId={id || routeSlug}
+              creatorUserId={dbStream.user_id}
+              isLoggedIn={!!user}
+              onTipClick={() => setTipOpen(true)}
+              creditsBalance={creditsBalance}
+            />
+          </div>
+        )}
 
         {isVod && (
           <SharePanel
@@ -781,7 +794,8 @@ export default function Stream() {
             title={dbStream.title || 'Recording'}
             playbackId={dbStream.mux_playback_id}
             muxAssetId={dbStream.mux_asset_id}
-            creatorUsername={profile?.display_name}
+            creatorUsername={creatorUsername || profile?.username}
+            contentSlug={dbStream.slug}
           />
         )}
       </div>

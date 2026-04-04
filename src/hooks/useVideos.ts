@@ -52,18 +52,25 @@ export function useVideos(creatorId?: string) {
   });
 }
 
-export function useVideo(slug: string | undefined) {
+export function useVideo(slugOrId: string | undefined) {
   return useQuery({
-    queryKey: ["video", slug],
+    queryKey: ["video", slugOrId],
     queryFn: async () => {
-      const { data, error } = await tables.videos()
+      if (!slugOrId) return null;
+      // Try by slug first
+      const { data: bySlug } = await tables.videos()
         .select("*")
-        .eq("slug", slug)
+        .eq("slug", slugOrId)
         .maybeSingle();
-      if (error) throw error;
-      return data as Video | null;
+      if (bySlug) return bySlug as Video;
+      // Fall back to ID lookup
+      const { data: byId } = await tables.videos()
+        .select("*")
+        .eq("id", slugOrId)
+        .maybeSingle();
+      return (byId as Video) || null;
     },
-    enabled: !!slug,
+    enabled: !!slugOrId,
   });
 }
 
