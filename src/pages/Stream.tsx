@@ -28,7 +28,7 @@ import { LiveQuizOverlay } from "@/components/live/LiveQuizOverlay";
 import ViewerSentimentOverlay from "@/components/live/ViewerSentimentOverlay";
 
 import { useState, useCallback, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import UPLYMuxPlayer from "@/components/MuxPlayer";
 import WebRTCPlayer from "@/components/live/WebRTCPlayer";
