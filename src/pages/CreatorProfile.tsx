@@ -18,6 +18,7 @@ import CreatorTestimonials from "@/components/creator-profile/CreatorTestimonial
 import SEOHead from "@/components/SEOHead";
 import { toast } from "sonner";
 import { CalendarDays } from "lucide-react";
+import { useInviteCodes } from "@/hooks/useInviteCodes";
 
 // Social platform icons as simple SVG components
 const socialIcons: Record<string, React.FC<{ className?: string }>> = {
