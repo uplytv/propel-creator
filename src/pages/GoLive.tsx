@@ -55,6 +55,7 @@ export default function GoLive() {
     localStorage.setItem("uply_draft_session_id", newId);
     return newId;
   });
+  const [activeTab, setActiveTab] = useState("setup");
 
   const { data: profileData } = useProfile();
   const { data: products } = useProducts();
