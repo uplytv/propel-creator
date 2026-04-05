@@ -56,6 +56,21 @@ export default function GoLive() {
   const { startSimulcast, stopSimulcast } = useSimulcastSessions(streamData?.streamId || null);
   const [simulcastEnabled, setSimulcastEnabled] = useState(true);
   const [enabledPlatforms, setEnabledPlatforms] = useState<string[]>([]);
+  const [liveProducts, setLiveProducts] = useState<any[]>([]);
+
+  const fetchLiveProducts = useCallback(async () => {
+    if (!streamData?.streamId) return;
+    const { data } = await supabase
+      .from("live_products")
+      .select("*")
+      .eq("stream_id", streamData.streamId)
+      .order("position");
+    setLiveProducts(data || []);
+  }, [streamData?.streamId]);
+
+  useEffect(() => {
+    fetchLiveProducts();
+  }, [fetchLiveProducts]);
 
   // Initialize enabled platforms from saved destinations
   useEffect(() => {
