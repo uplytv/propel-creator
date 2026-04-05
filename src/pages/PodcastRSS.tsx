@@ -35,8 +35,9 @@ export default function PodcastRSS() {
   const [copied, setCopied] = useState(false);
 
   const username = (profile as any)?.username || (profile as any)?.name;
-  const feedUrl = username
-    ? `https://uply.tv/functions/v1/podcast-rss?username=${username}`
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const feedUrl = username && supabaseUrl
+    ? `${supabaseUrl}/functions/v1/podcast-rss?username=${username}`
     : null;
 
   const handleCopy = async () => {

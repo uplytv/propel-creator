@@ -36,7 +36,8 @@ export default function Distribution() {
   const [tab, setTab] = useState<"platforms" | "rules">("platforms");
 
   const username = (profile as any)?.username;
-  const rssUrl = username ? `https://uply.tv/functions/v1/podcast-rss?username=${username}` : null;
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const rssUrl = username && supabaseUrl ? `${supabaseUrl}/functions/v1/podcast-rss?username=${username}` : null;
 
   useEffect(() => {
     if (!user) return;

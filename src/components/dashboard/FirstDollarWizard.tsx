@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { DollarSign, ShoppingBag, Users, BookOpen, Zap, ArrowRight, X, Copy, Check, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { SITE_URL } from "@/lib/siteUrl";
 
@@ -14,6 +15,7 @@ const MODES = [
 ];
 
 export default function FirstDollarWizard({ onDismiss, username }: { onDismiss: () => void; username: string | null }) {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [mode, setMode] = useState<string | null>(null);
@@ -26,7 +28,7 @@ export default function FirstDollarWizard({ onDismiss, username }: { onDismiss: 
   };
 
   const go = () => {
-    if (mode === "community") navigate("__space__");
+    if (mode === "community") navigate(user ? `/community/${user.id}` : "/auth");
     else if (mode === "course") navigate("/products");
     else navigate("/go-live");
     onDismiss();
