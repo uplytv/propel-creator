@@ -97,6 +97,8 @@ export function usePaymentReturn(creatorId?: string) {
         const found = await pollForPurchase(productId);
         if (found) {
           toast.success("You're enrolled! 🎉", { description: "Start learning →" });
+          fireMetaEvent("Purchase", { content_type: "product", content_ids: [productId], value: 0, currency: "USD" });
+          fireGoogleEvent("purchase", { transaction_id: productId, currency: "USD" });
           queryClient.invalidateQueries({ queryKey: ["product-purchase"] });
           queryClient.invalidateQueries({ queryKey: ["access"] });
         } else {
