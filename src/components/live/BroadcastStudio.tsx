@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Mic, MicOff, Copy, Eye, Square, Upload, Send,
-  RotateCcw, Zap, Share2, X,
+  RotateCcw, Zap, Share2, X, ShoppingBag,
   Activity, ArrowUpCircle, Signal, SignalHigh, SignalLow, SignalMedium,
   BarChart3, MessageCircleQuestion, Sparkles, Subtitles, Swords,
   Gamepad2, PenTool, Palette,
