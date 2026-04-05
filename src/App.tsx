@@ -244,6 +244,8 @@ const App = () => (
                     <Route path="/marketplace/deal/:dealId" element={<ProtectedRoute><BrandDeal /></ProtectedRoute>} />
                     <Route path="/podcast" element={<ProtectedRoute><Podcast /></ProtectedRoute>} />
                     <Route path="/podcast-rss" element={<ProtectedRoute><PodcastRSS /></ProtectedRoute>} />
+                    <Route path="/network" element={<ProtectedRoute><NetworkFeed /></ProtectedRoute>} />
+                    <Route path="/distribution" element={<ProtectedRoute><Distribution /></ProtectedRoute>} />
 
                     {/* Admin routes */}
                     <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
