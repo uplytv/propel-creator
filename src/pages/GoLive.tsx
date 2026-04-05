@@ -48,6 +48,7 @@ export default function GoLive() {
   const [streamDuration, setStreamDuration] = useState(0);
   const [streamMuxAssetId, setStreamMuxAssetId] = useState<string | null>(null);
   const [streamStartTime, setStreamStartTime] = useState<number | null>(null);
+  const [draftSessionId] = useState(() => crypto.randomUUID());
 
   const { data: profileData } = useProfile();
   const { data: products } = useProducts();
