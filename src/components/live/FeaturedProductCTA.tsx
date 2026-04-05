@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { fireMetaEvent, fireGoogleEvent } from "@/lib/adTracking";
 
 interface Product {
   id: string;
@@ -101,7 +102,11 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
         },
       });
       if (error) throw error;
-      if (data?.url) window.location.href = data.url;
+      if (data?.url) {
+        fireMetaEvent("InitiateCheckout", { content_type: "live_product", content_ids: [product.id], value: product.price, currency: "USD" });
+        fireGoogleEvent("begin_checkout", { currency: "USD", value: product.price, items: [{ item_id: product.id, item_name: product.name }] });
+        window.location.href = data.url;
+      }
     } catch (e: any) {
       toast.error(e.message || "Payment couldn't start — please try again");
     } finally {

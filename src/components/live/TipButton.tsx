@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { fireMetaEvent, fireGoogleEvent } from "@/lib/adTracking";
 
 const tipPresets = [
   { amount: 5, emoji: "☕", label: "Coffee" },
@@ -47,7 +48,8 @@ export default function TipButton({ creatorId, creatorName, streamId, creditsBal
       });
       if (error) throw error;
       if (data?.url) {
-        // Redirect to Stripe checkout for real payment
+        fireMetaEvent("Donate", { value: amount, currency: "USD" });
+        fireGoogleEvent("spend_virtual_currency", { value: amount, virtual_currency_name: "tip" });
         window.location.href = data.url;
         return;
       }

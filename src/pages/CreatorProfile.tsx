@@ -19,6 +19,7 @@ import SEOHead from "@/components/SEOHead";
 import { toast } from "sonner";
 import { CalendarDays } from "lucide-react";
 import { useInviteCodes } from "@/hooks/useInviteCodes";
+import { fireMetaEvent, fireGoogleEvent } from "@/lib/adTracking";
 
 // Social platform icons as simple SVG components
 const socialIcons: Record<string, React.FC<{ className?: string }>> = {
@@ -402,6 +403,8 @@ export default function CreatorProfile() {
             creator_id: profile?.user_id,
             return_path: window.location.pathname,
           }));
+          fireMetaEvent("InitiateCheckout", { content_type: "subscription", content_ids: [profile?.user_id], currency: "USD" });
+          fireGoogleEvent("begin_checkout", { currency: "USD", items: [{ item_id: profile?.user_id, item_name: creatorName }] });
           window.location.href = data.url;
         }
       } catch (err: any) {

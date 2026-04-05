@@ -88,6 +88,7 @@ const BioPage = lazy(() => import("./pages/BioPage"));
 const PodcastRSS = lazy(() => import("./pages/PodcastRSS"));
 const NetworkFeed = lazy(() => import("./pages/NetworkFeed"));
 const Distribution = lazy(() => import("./pages/Distribution"));
+const DeveloperAPI = lazy(() => import("./pages/DeveloperAPI"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -246,6 +247,7 @@ const App = () => (
                     <Route path="/podcast-rss" element={<ProtectedRoute><PodcastRSS /></ProtectedRoute>} />
                     <Route path="/network" element={<ProtectedRoute><NetworkFeed /></ProtectedRoute>} />
                     <Route path="/distribution" element={<ProtectedRoute><Distribution /></ProtectedRoute>} />
+                    <Route path="/developer" element={<ProtectedRoute><DeveloperAPI /></ProtectedRoute>} />
 
                     {/* Admin routes */}
                     <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />

@@ -3,6 +3,7 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { fireMetaEvent, fireGoogleEvent } from "@/lib/adTracking";
 
 /**
  * Hook to handle mobile return from Stripe checkout.
@@ -79,6 +80,8 @@ export function usePaymentReturn(creatorId?: string) {
         }
         if (found) {
           toast.success("Access granted! 🎉");
+          fireMetaEvent("Purchase", { content_type: "access", content_ids: [resourceId], currency: "USD" });
+          fireGoogleEvent("purchase", { transaction_id: resourceId, currency: "USD" });
           queryClient.invalidateQueries({ queryKey: ["access"] });
         } else {
           toast.success("Payment received", { description: "Access is being activated. Refresh in a moment." });
@@ -94,6 +97,8 @@ export function usePaymentReturn(creatorId?: string) {
         const found = await pollForPurchase(productId);
         if (found) {
           toast.success("You're enrolled! 🎉", { description: "Start learning →" });
+          fireMetaEvent("Purchase", { content_type: "product", content_ids: [productId], value: 0, currency: "USD" });
+          fireGoogleEvent("purchase", { transaction_id: productId, currency: "USD" });
           queryClient.invalidateQueries({ queryKey: ["product-purchase"] });
           queryClient.invalidateQueries({ queryKey: ["access"] });
         } else {
@@ -110,6 +115,8 @@ export function usePaymentReturn(creatorId?: string) {
         const found = await pollForSubscription(joinCreatorId);
         if (found) {
           toast.success("Welcome! 🎉", { description: "You now have full access." });
+          fireMetaEvent("Subscribe", { content_type: "subscription" });
+          fireGoogleEvent("sign_up", { method: "subscription" });
           queryClient.invalidateQueries({ queryKey: ["is-member"] });
           queryClient.invalidateQueries({ queryKey: ["member-subscription"] });
           queryClient.invalidateQueries({ queryKey: ["access"] });

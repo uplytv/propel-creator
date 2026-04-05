@@ -9,7 +9,7 @@ import {
   Zap, Crown, Sparkles, BarChart3, Radio, Menu, X, Wallet, LayoutGrid, ChevronDown,
   GraduationCap, DollarSign, Bot, Briefcase, Handshake, Share2, Film,
   Trophy, Plug, MessageSquare, Bell as BellIcon, UserCheck, Search, Rocket,
-  Video, CreditCard, UserPlus, User, Globe, Mail, Mic, Gift, Rss, Tv
+  Video, CreditCard, UserPlus, User, Globe, Mail, Mic, Gift, Rss, Tv, Code
 } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import { useApp, tierNames } from "@/context/AppContext";
@@ -64,6 +64,7 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
       { label: "Newsletter", icon: Mail, path: "/newsletter", desc: "Email your members", featureKey: "newsletter" },
       { label: "My Page", icon: Globe, path: "/my-page", desc: "Bio link & funnel pages" },
       { label: "Brand Deals", icon: Briefcase, path: "/marketplace", desc: "Sponsored opportunities" },
+      { label: "Developer API", icon: Code, path: "/developer", desc: "API keys & webhooks" },
     ],
   },
   {
