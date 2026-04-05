@@ -381,12 +381,26 @@ export default function Stream() {
         const oldProductId = payload.old?.featured_product_id;
         if (newProductId !== oldProductId) {
           if (newProductId) {
-            const { data: prod } = await supabase
-              .from('products')
-              .select('*')
-              .eq('id', newProductId)
-              .single();
-            setFeaturedProduct(prod || null);
+            const newSource = payload.new.featured_product_source || "digital";
+            if (newSource === "live_shop") {
+              const { data: liveProd } = await supabase
+                .from('live_products').select('*')
+                .eq('id', newProductId).single();
+              if (liveProd) {
+                setFeaturedProduct({
+                  id: liveProd.id, name: (liveProd as any).title,
+                  type: (liveProd as any).type === "auction" ? "auction" : "product",
+                  price: (liveProd as any).type === "auction" ? ((liveProd as any).starting_bid || 0) : (liveProd as any).price,
+                  description: (liveProd as any).description, image_url: (liveProd as any).image_url,
+                  source: "live_shop", live_product_data: liveProd,
+                });
+              }
+            } else {
+              const { data: prod } = await supabase
+                .from('products').select('*')
+                .eq('id', newProductId).single();
+              setFeaturedProduct(prod ? { ...prod, source: "digital" } : null);
+            }
           } else {
             setFeaturedProduct(null);
           }

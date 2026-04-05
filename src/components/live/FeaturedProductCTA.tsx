@@ -13,6 +13,8 @@ interface Product {
   price: number;
   description?: string | null;
   image_url?: string | null;
+  source?: "digital" | "live_shop";
+  live_product_data?: any;
 }
 
 interface Props {
@@ -29,6 +31,8 @@ const TYPE_LABELS: Record<string, string> = {
   pdf: "PDF",
   download: "Download",
   coaching: "Coaching",
+  auction: "Auction",
+  product: "Shop Item",
 };
 
 function getTypeLabel(type: string) {
@@ -37,7 +41,8 @@ function getTypeLabel(type: string) {
 
 function getTypeEmoji(type: string) {
   const map: Record<string, string> = {
-    course: "📚", community: "🤝", coaching: "🎯", classroom: "🎓", pdf: "📄", download: "📦",
+    course: "📚", community: "🤝", coaching: "🎯", classroom: "🎓",
+    pdf: "📄", download: "📦", auction: "🔨", product: "🛍️",
   };
   return map[type] || "📦";
 }
@@ -50,11 +55,12 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
   const [loading, setLoading] = useState(false);
   const [enrollCount, setEnrollCount] = useState(0);
 
-  const isFree = product.price === 0;
+  const isLiveShop = product.source === "live_shop";
+  const isFree = product.price === 0 && !isLiveShop;
 
-  // Check enrollment
+  // Check enrollment (only for digital products)
   useEffect(() => {
-    if (!user) { setEnrolled(false); return; }
+    if (!user || isLiveShop) { setEnrolled(false); return; }
     supabase
       .from("product_purchases")
       .select("id")
@@ -62,7 +68,7 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
       .eq("buyer_id", user.id)
       .limit(1)
       .then(({ data }) => setEnrolled((data?.length || 0) > 0));
-  }, [user, product.id]);
+  }, [user, product.id, isLiveShop]);
 
   // Realtime enrollment count for creator view
   useEffect(() => {
@@ -83,9 +89,34 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
     return () => { supabase.removeChannel(channel); };
   }, [isCreatorView, streamId]);
 
+  const handleLiveShopPurchase = async () => {
+    if (!user) { setModalOpen(true); return; }
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("stripe-create-live-purchase", {
+        body: {
+          live_product_id: product.id,
+          variant_selected: null,
+          buyer_message: null,
+        },
+      });
+      if (error) throw error;
+      if (data?.url) window.location.href = data.url;
+    } catch (e: any) {
+      toast.error(e.message || "Payment couldn't start — please try again");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCTAClick = () => {
-    if (!user) {
-      setModalOpen(true);
+    if (!user) { setModalOpen(true); return; }
+    if (isLiveShop) {
+      if (product.type === "auction") {
+        setModalOpen(true);
+        return;
+      }
+      handleLiveShopPurchase();
       return;
     }
     if (enrolled) {
@@ -192,11 +223,13 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
   }
 
   // Viewer sticky card
-  const ctaLabel = enrolled
-    ? "Access Now →"
-    : isFree
-    ? "Join Free"
-    : `Get Access · $${product.price}`;
+  const ctaLabel = isLiveShop
+    ? (product.type === "auction" ? "Place Bid" : `Buy Now · $${product.price}`)
+    : enrolled
+      ? "Access Now →"
+      : isFree
+        ? "Join Free"
+        : `Get Access · $${product.price}`;
 
   return (
     <>
@@ -224,21 +257,30 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
                 <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--primary))" }}>
                   {getTypeLabel(product.type)}
                 </span>
+                {isLiveShop && product.live_product_data?.free_shipping && (
+                  <span className="text-[9px] text-primary/70">· Free Ship</span>
+                )}
               </div>
               <p className="text-sm font-bold text-white truncate">{product.name}</p>
-              <p className="text-xs text-white/40">{isFree ? "Free" : `$${product.price}`}</p>
+              <p className="text-xs text-white/40">
+                {isLiveShop && product.type === "auction"
+                  ? `Starting $${product.price}`
+                  : isFree ? "Free" : `$${product.price}`}
+              </p>
             </div>
             <button
               onClick={handleCTAClick}
               disabled={loading}
               className="px-4 py-2.5 rounded-xl text-xs font-bold flex-shrink-0 transition-all"
               style={
-                enrolled
+                enrolled && !isLiveShop
                   ? { backgroundColor: "rgba(0,255,133,0.1)", color: "hsl(var(--primary))", border: "1px solid rgba(0,255,133,0.3)" }
-                  : { backgroundColor: "hsl(var(--primary))", color: "hsl(var(--background))" }
+                  : isLiveShop && product.type === "auction"
+                    ? { backgroundColor: "hsl(var(--warning))", color: "hsl(var(--background))" }
+                    : { backgroundColor: "hsl(var(--primary))", color: "hsl(var(--background))" }
               }
             >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : enrolled ? (
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : enrolled && !isLiveShop ? (
                 <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Access</span>
               ) : ctaLabel}
             </button>
@@ -303,6 +345,38 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
                       <LogIn className="w-4 h-4" /> Sign In
                     </button>
                   </>
+                ) : isLiveShop ? (
+                  <>
+                    <div className="text-center mb-4">
+                      <p className="text-3xl font-extrabold text-white">
+                        {product.type === "auction" ? `Starting $${product.price}` : `$${product.price}`}
+                      </p>
+                      <p className="text-xs text-white/40 mt-1">
+                        {product.type === "auction" ? "Live auction · Highest bid wins" : "Ships to you · Secure checkout"}
+                      </p>
+                    </div>
+                    {product.live_product_data?.free_shipping && (
+                      <p className="text-xs text-primary text-center mb-3">✓ Free Shipping</p>
+                    )}
+                    <button
+                      onClick={product.type === "auction" ? undefined : handleLiveShopPurchase}
+                      disabled={loading || product.type === "auction"}
+                      className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2"
+                      style={{
+                        backgroundColor: product.type === "auction" ? "hsl(var(--warning))" : "hsl(var(--primary))",
+                        color: "hsl(var(--background))",
+                      }}
+                    >
+                      {loading ? <Loader2 className="w-4 h-4 animate-spin" />
+                        : product.type === "auction" ? "🔨 Bid via live stream chat" : `Buy Now · $${product.price}`}
+                    </button>
+                    {product.type === "auction" && (
+                      <p className="text-[10px] text-white/40 text-center mt-2">
+                        Use the bid buttons in the stream to place your bid
+                      </p>
+                    )}
+                    <p className="text-[10px] text-white/30 text-center mt-2">🔒 Secure payment powered by Stripe</p>
+                  </>
                 ) : isFree ? (
                   <>
                     <div className="text-center mb-4">
@@ -338,7 +412,7 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
               </div>
 
               {/* Success state */}
-              {enrolled && (
+              {enrolled && !isLiveShop && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
