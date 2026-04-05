@@ -3792,6 +3792,7 @@ export type Database = {
       live_products: {
         Row: {
           additional_images: string[] | null
+          ai_pitch: string | null
           auction_duration_minutes: number | null
           auto_end_auction: boolean | null
           buy_now_price: number | null
@@ -3825,9 +3826,11 @@ export type Database = {
           stripe_price_id: string | null
           title: string
           type: string
+          urgency_message: string | null
         }
         Insert: {
           additional_images?: string[] | null
+          ai_pitch?: string | null
           auction_duration_minutes?: number | null
           auto_end_auction?: boolean | null
           buy_now_price?: number | null
@@ -3861,9 +3864,11 @@ export type Database = {
           stripe_price_id?: string | null
           title: string
           type?: string
+          urgency_message?: string | null
         }
         Update: {
           additional_images?: string[] | null
+          ai_pitch?: string | null
           auction_duration_minutes?: number | null
           auto_end_auction?: boolean | null
           buy_now_price?: number | null
@@ -3897,6 +3902,7 @@ export type Database = {
           stripe_price_id?: string | null
           title?: string
           type?: string
+          urgency_message?: string | null
         }
         Relationships: [
           {
