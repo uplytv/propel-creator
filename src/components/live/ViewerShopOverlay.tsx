@@ -36,11 +36,16 @@ function AuctionCountdown({ endsAt, onEnd }: { endsAt: string; onEnd?: () => voi
 }
 
 // Bottom persistent product card - Whatnot style
-function ProductCard({ product, auction, onBuy, onBid }: {
+function ProductCard({ product, auction, onBuy, onBid, isWishlisted, onWishlist, variants: productVariants, selectedVariants, onVariantChange }: {
   product: LiveProduct;
   auction?: LiveAuction;
   onBuy: () => void;
   onBid: (amount: number) => void;
+  isWishlisted?: boolean;
+  onWishlist?: () => void;
+  variants?: LiveProductVariant[];
+  selectedVariants?: Record<string, string>;
+  onVariantChange?: (label: string, option: string) => void;
 }) {
   const [customBidOpen, setCustomBidOpen] = useState(false);
   const [customAmount, setCustomAmount] = useState("");
