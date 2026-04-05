@@ -142,4 +142,8 @@ const RecordingsGrid = memo(function RecordingsGrid({ recordings, isOwner, onTog
       )}
     </div>
   );
-}
+});
+
+RecordingsGrid.displayName = "RecordingsGrid";
+
+export default RecordingsGrid;
