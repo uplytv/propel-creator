@@ -91,9 +91,25 @@ const FeedCard = memo(function FeedCard({ item, index, isLiveSection }: FeedCard
     if (now - lastTapRef.current < 300) {
       setDoubleTapHeart(true);
       setTimeout(() => setDoubleTapHeart(false), 600);
+
+      if (user) {
+        const likeTableMap: Partial<Record<FeedItemType, { table: string; idCol: string }>> = {
+          video: { table: "video_likes", idCol: "video_id" },
+          clip: { table: "clip_likes", idCol: "clip_id" },
+          recording: { table: "recording_likes", idCol: "recording_id" },
+        };
+        const likeTarget = likeTableMap[item.type as FeedItemType];
+        if (likeTarget) {
+          (supabase as any)
+            .from(likeTarget.table)
+            .insert({ [likeTarget.idCol]: item.id, user_id: user.id })
+            .then(() => {})
+            .catch(() => {});
+        }
+      }
     }
     lastTapRef.current = now;
-  }, []);
+  }, [item.type, item.id, user]);
 
   const handleMouseEnter = useCallback(() => {
     if (hasPlaybackId && !isLive) {
