@@ -38,10 +38,15 @@ function NotificationItem({
   const socialNotifIcon: Record<string, { icon: any; color: string }> = {
     community_comment: { icon: MessageSquare, color: "bg-primary/10 text-primary" },
     community_like: { icon: Heart, color: "bg-destructive/10 text-destructive" },
+    community_blast: { icon: Megaphone, color: "bg-primary/15 text-primary" },
     new_follower: { icon: UserPlus, color: "bg-primary/10 text-primary" },
     tip_received: { icon: Coins, color: "bg-primary/15 text-primary" },
+    live_sale: { icon: Coins, color: "bg-primary/15 text-primary" },
+    auction_won: { icon: Trophy, color: "bg-amber-500/15 text-amber-400" },
+    subscription_confirmed: { icon: CheckCircle2, color: "bg-primary/10 text-primary" },
     member_joined: { icon: Users, color: "bg-primary/10 text-primary" },
-    community_blast: { icon: Megaphone, color: "bg-primary/15 text-primary" },
+    order_shipped: { icon: Package, color: "bg-blue-500/15 text-blue-400" },
+    giveaway_winner: { icon: Gift, color: "bg-amber-500/15 text-amber-400" },
   };
 
   const getIcon = () => {
