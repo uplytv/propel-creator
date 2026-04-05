@@ -116,7 +116,7 @@ export default function NetworkFeed() {
         const enrichedLive = await enrich((live || []).map((s: any) => ({ ...s, playback_id: s.mux_playback_id, type: "live" })), "user_id", "user_id");
         if (tab === "live") { setItems(enrichedLive); setLoading(false); return; }
         const { data: recs } = await supabase.from("stream_recordings").select("id, title, playback_id, duration_seconds, view_count, creator_id").eq("is_published", true).order("view_count", { ascending: false }).limit(16);
-        const enrichedRecs = await enrich((recs || []).map((r: any) => ({ ...r, type: "recording" })), "creator_id", "creator_id");
+        const enrichedRecs = await enrich((recs || []).map((r: any) => ({ ...r, type: "recording" })), "creator_id", "id");
         setItems([...enrichedLive, ...enrichedRecs]);
       } else if (tab === "trending") {
         const { data: vids } = await supabase.from("videos").select("id, title, playback_id, thumbnail_url, duration_seconds, view_count, like_count, creator_id").eq("is_public", true).order("trending_score", { ascending: false }).limit(24);
