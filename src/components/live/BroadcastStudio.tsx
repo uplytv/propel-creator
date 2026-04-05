@@ -71,6 +71,7 @@ interface BroadcastStudioProps {
   featuredProductId?: string | null;
   onFeaturedProductChange?: (productId: string | null) => void;
   creatorUsername?: string | null;
+  hasQueuedShopProducts?: boolean;
 }
 
 type StudioMode = "select" | "browser-record" | "external-encoder";
@@ -84,6 +85,7 @@ export default function BroadcastStudio({
   featuredProductId,
   onFeaturedProductChange,
   creatorUsername,
+  hasQueuedShopProducts = false,
 }: BroadcastStudioProps) {
   const { user } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -121,7 +123,7 @@ export default function BroadcastStudio({
   const [showThemePicker, setShowThemePicker] = useState(false);
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [showQuizCreator, setShowQuizCreator] = useState(false);
-  const [showShopPanel, setShowShopPanel] = useState(false);
+  const [showShopPanel, setShowShopPanel] = useState(hasQueuedShopProducts);
   const [predQuestion, setPredQuestion] = useState("");
   const [predOptions, setPredOptions] = useState(["", ""]);
 

@@ -68,14 +68,37 @@ export default function GoLive() {
 
   const fetchLiveProducts = useCallback(async (sessionId?: string) => {
     const id = sessionId || streamData?.streamId || draftSessionId;
-    if (!id) return;
+    if (!id || !user) return;
+
+    // Try fetching by stream_id first
     const { data } = await supabase
       .from("live_products")
       .select("*")
       .eq("stream_id", id)
       .order("position");
-    setLiveProducts(data || []);
-  }, [streamData?.streamId, draftSessionId]);
+
+    if (data && data.length > 0) {
+      setLiveProducts(data);
+      return;
+    }
+
+    // Fallback: fetch recent draft products by creator_id
+    // (catches orphaned drafts from previous sessions where localStorage was cleared)
+    if (!streamData) {
+      const { data: drafts } = await supabase
+        .from("live_products")
+        .select("*")
+        .eq("creator_id", user.id)
+        .eq("is_sold_out", false)
+        .eq("is_active", false)
+        .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .order("created_at", { ascending: false })
+        .limit(20);
+      setLiveProducts(drafts || []);
+    } else {
+      setLiveProducts([]);
+    }
+  }, [streamData?.streamId, draftSessionId, user]);
 
   useEffect(() => {
     fetchLiveProducts();
@@ -134,14 +157,36 @@ export default function GoLive() {
           .eq('id', data.streamId);
       }
 
-      // Migrate any products queued before stream was created
-      if (draftSessionId && data?.streamId) {
-        await supabase
+      // Migrate any draft products to the real stream
+      if (data?.streamId && user) {
+        // Migrate by draftSessionId
+        if (draftSessionId) {
+          await supabase
+            .from("live_products")
+            .update({ stream_id: data.streamId })
+            .eq("stream_id", draftSessionId);
+        }
+        // Also migrate any orphaned drafts by this creator (from previous sessions)
+        const { data: orphans } = await supabase
           .from("live_products")
-          .update({ stream_id: data.streamId })
-          .eq("stream_id", draftSessionId);
+          .select("id, stream_id")
+          .eq("creator_id", user.id)
+          .eq("is_sold_out", false)
+          .eq("is_active", false)
+          .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+        if (orphans && orphans.length > 0) {
+          const orphanIds = orphans
+            .filter((o: any) => o.stream_id !== data.streamId)
+            .map((o: any) => o.id);
+          if (orphanIds.length > 0) {
+            await supabase
+              .from("live_products")
+              .update({ stream_id: data.streamId })
+              .in("id", orphanIds);
+          }
+        }
         fetchLiveProducts(data.streamId);
-        localStorage.removeItem("uply_draft_session_id");
+        try { localStorage.removeItem("uply_draft_session_id"); } catch {}
       }
 
       setStreamData(data);
@@ -391,6 +436,7 @@ export default function GoLive() {
               products={activeProducts}
               featuredProductId={featuredProductId}
               creatorUsername={profileData?.display_name}
+              hasQueuedShopProducts={liveProducts.length > 0}
               onFeaturedProductChange={async (productId) => {
                 setFeaturedProductId(productId);
                 if (streamData) {
