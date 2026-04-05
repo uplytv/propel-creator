@@ -32,6 +32,7 @@ export interface LiveProduct {
   sku: string | null;
   category: string | null;
   auto_end_auction: boolean;
+  low_stock_alert_sent: boolean;
   created_at: string;
 }
 
