@@ -10,6 +10,7 @@ export interface LiveProduct {
   title: string;
   description: string | null;
   image_url: string | null;
+  additional_images: string[];
   price: number;
   quantity_total: number;
   quantity_remaining: number;
@@ -19,7 +20,18 @@ export interface LiveProduct {
   type: string;
   auction_duration_minutes: number | null;
   starting_bid: number | null;
+  reserve_price: number | null;
+  buy_now_price: number | null;
   position: number;
+  condition: string;
+  shipping_price: number;
+  free_shipping: boolean;
+  shopify_product_id: string | null;
+  shopify_variant_id: string | null;
+  shopify_checkout_url: string | null;
+  sku: string | null;
+  category: string | null;
+  auto_end_auction: boolean;
   created_at: string;
 }
 
@@ -51,45 +63,90 @@ export interface LiveGiveaway {
   created_at: string;
 }
 
+export interface LiveFlashSale {
+  id: string;
+  live_product_id: string;
+  discount_percent: number;
+  original_price: number;
+  sale_price: number;
+  duration_seconds: number;
+  ends_at: string;
+  is_active: boolean;
+}
+
+export interface LiveProductVariant {
+  id: string;
+  live_product_id: string;
+  label: string;
+  options: string[];
+}
+
 export function useLiveShop(streamId: string | undefined) {
   const { user } = useAuth();
+
   const [products, setProducts] = useState<LiveProduct[]>([]);
   const [auctions, setAuctions] = useState<LiveAuction[]>([]);
   const [giveaways, setGiveaways] = useState<LiveGiveaway[]>([]);
+  const [flashSales, setFlashSales] = useState<LiveFlashSale[]>([]);
+  const [variants, setVariants] = useState<LiveProductVariant[]>([]);
+  const [wishlistedIds, setWishlistedIds] = useState<Set<string>>(new Set());
   const [giveawayEntered, setGiveawayEntered] = useState(false);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [unitsSold, setUnitsSold] = useState(0);
 
-  // Fetch initial data
   useEffect(() => {
     if (!streamId) return;
 
     const fetchData = async () => {
-      const [prodRes, auctionRes, giveRes] = await Promise.all([
+      const [prodRes, auctionRes, giveRes, flashRes] = await Promise.all([
         supabase.from("live_products").select("*").eq("stream_id", streamId).order("position"),
         supabase.from("live_auctions").select("*").eq("stream_id", streamId),
         supabase.from("live_giveaways").select("*").eq("stream_id", streamId).order("created_at", { ascending: false }),
+        supabase.from("live_flash_sales").select("*").eq("stream_id", streamId).eq("is_active", true),
       ]);
-      if (prodRes.data) setProducts(prodRes.data as any);
-      if (auctionRes.data) setAuctions(auctionRes.data as any);
-      if (giveRes.data) setGiveaways(giveRes.data as any);
 
-      // Fetch revenue stats
-      const { data: purchases } = await supabase
-        .from("live_purchases")
-        .select("amount, status")
-        .eq("creator_id", user?.id || "")
-        .in("live_product_id", (prodRes.data || []).map((p: any) => p.id));
-      if (purchases) {
-        const completed = purchases.filter(p => p.status === "completed");
-        setTotalRevenue(completed.reduce((s, p) => s + Number(p.amount), 0));
-        setUnitsSold(completed.length);
+      if (prodRes.data) {
+        setProducts(prodRes.data as unknown as LiveProduct[]);
+        const productIds = (prodRes.data as any[]).map((p) => p.id);
+
+        if (productIds.length > 0) {
+          const { data: variantData } = await supabase
+            .from("live_product_variants")
+            .select("*")
+            .in("live_product_id", productIds);
+          if (variantData) setVariants(variantData as unknown as LiveProductVariant[]);
+        }
+
+        if (user && productIds.length > 0) {
+          const { data: purchases } = await supabase
+            .from("live_purchases")
+            .select("amount, status")
+            .eq("creator_id", user.id)
+            .in("live_product_id", productIds);
+          if (purchases) {
+            const completed = (purchases as any[]).filter(p => p.status === "completed");
+            setTotalRevenue(completed.reduce((s, p) => s + Number(p.amount), 0));
+            setUnitsSold(completed.length);
+          }
+        }
+      }
+
+      if (auctionRes.data) setAuctions(auctionRes.data as unknown as LiveAuction[]);
+      if (giveRes.data) setGiveaways(giveRes.data as unknown as LiveGiveaway[]);
+      if (flashRes.data) setFlashSales(flashRes.data as unknown as LiveFlashSale[]);
+
+      if (user) {
+        const { data: wishlist } = await supabase
+          .from("live_product_wishlist")
+          .select("live_product_id")
+          .eq("user_id", user.id);
+        if (wishlist) setWishlistedIds(new Set((wishlist as any[]).map(w => w.live_product_id)));
       }
     };
+
     fetchData();
   }, [streamId, user?.id]);
 
-  // Realtime subscriptions
   useEffect(() => {
     if (!streamId) return;
 
@@ -97,19 +154,24 @@ export function useLiveShop(streamId: string | undefined) {
       .channel(`live-shop-${streamId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "live_products", filter: `stream_id=eq.${streamId}` },
         (payload: any) => {
-          if (payload.eventType === "INSERT") setProducts(prev => [...prev, payload.new]);
-          else if (payload.eventType === "UPDATE") setProducts(prev => prev.map(p => p.id === payload.new.id ? payload.new : p));
+          if (payload.eventType === "INSERT") setProducts(prev => [...prev, payload.new as LiveProduct]);
+          else if (payload.eventType === "UPDATE") setProducts(prev => prev.map(p => p.id === payload.new.id ? payload.new as LiveProduct : p));
           else if (payload.eventType === "DELETE") setProducts(prev => prev.filter(p => p.id !== payload.old.id));
         })
       .on("postgres_changes", { event: "*", schema: "public", table: "live_auctions", filter: `stream_id=eq.${streamId}` },
         (payload: any) => {
-          if (payload.eventType === "INSERT") setAuctions(prev => [...prev, payload.new]);
-          else if (payload.eventType === "UPDATE") setAuctions(prev => prev.map(a => a.id === payload.new.id ? payload.new : a));
+          if (payload.eventType === "INSERT") setAuctions(prev => [...prev, payload.new as LiveAuction]);
+          else if (payload.eventType === "UPDATE") setAuctions(prev => prev.map(a => a.id === payload.new.id ? payload.new as LiveAuction : a));
         })
       .on("postgres_changes", { event: "*", schema: "public", table: "live_giveaways", filter: `stream_id=eq.${streamId}` },
         (payload: any) => {
-          if (payload.eventType === "INSERT") setGiveaways(prev => [payload.new, ...prev]);
-          else if (payload.eventType === "UPDATE") setGiveaways(prev => prev.map(g => g.id === payload.new.id ? payload.new : g));
+          if (payload.eventType === "INSERT") setGiveaways(prev => [payload.new as LiveGiveaway, ...prev]);
+          else if (payload.eventType === "UPDATE") setGiveaways(prev => prev.map(g => g.id === payload.new.id ? payload.new as LiveGiveaway : g));
+        })
+      .on("postgres_changes", { event: "*", schema: "public", table: "live_flash_sales", filter: `stream_id=eq.${streamId}` },
+        (payload: any) => {
+          if (payload.eventType === "INSERT") setFlashSales(prev => [...prev, payload.new as LiveFlashSale]);
+          else if (payload.eventType === "UPDATE") setFlashSales(prev => prev.map(f => f.id === payload.new.id ? payload.new as LiveFlashSale : f));
         })
       .subscribe();
 
@@ -117,35 +179,30 @@ export function useLiveShop(streamId: string | undefined) {
   }, [streamId]);
 
   const activeProducts = products.filter(p => p.is_active && !p.is_sold_out);
-  const queuedProducts = products.filter(p => !p.is_active);
+  const queuedProducts = products.filter(p => !p.is_active && !p.is_sold_out);
+  const soldProducts = products.filter(p => p.is_sold_out);
   const activeGiveaway = giveaways.find(g => g.status === "active");
+  const activeFlashSales = flashSales.filter(f => f.is_active);
 
   const activateProduct = useCallback(async (productId: string) => {
     const product = products.find(p => p.id === productId);
     if (!product) return;
-
     await supabase.from("live_products").update({ is_active: true }).eq("id", productId);
-
-    // If auction type, create auction record
     if (product.type === "auction") {
       const durationMs = (product.auction_duration_minutes || 5) * 60 * 1000;
-      const endsAt = new Date(Date.now() + durationMs).toISOString();
       await supabase.from("live_auctions").insert({
         live_product_id: productId,
         stream_id: streamId!,
         creator_id: product.creator_id,
         starting_bid: product.starting_bid || product.price,
-        ends_at: endsAt,
+        ends_at: new Date(Date.now() + durationMs).toISOString(),
       });
     }
-
     toast.success("Product activated!", { description: `${product.title} is now live` });
-  }, [products, streamId, toast]);
+  }, [products, streamId]);
 
   const deactivateProduct = useCallback(async (productId: string) => {
     await supabase.from("live_products").update({ is_active: false }).eq("id", productId);
-
-    // End related auction
     const auction = auctions.find(a => a.live_product_id === productId && a.status === "active");
     if (auction) {
       await supabase.functions.invoke("end-live-auction", { body: { auction_id: auction.id } });
@@ -160,96 +217,109 @@ export function useLiveShop(streamId: string | undefined) {
       toast.error("Bid failed", { description: data?.error || error?.message });
       return false;
     }
-    toast.success("Bid placed!", { description: `Your bid of $${amount} was submitted` });
+    toast.success(`Bid of $${amount} placed!`);
     return true;
-  }, [toast]);
+  }, []);
 
-  const buyProduct = useCallback(async (productId: string) => {
+  const buyProduct = useCallback(async (productId: string, variantSelected?: string, buyerMessage?: string) => {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+
+    if (product.shopify_checkout_url) {
+      window.open(product.shopify_checkout_url, "_blank");
+      return;
+    }
+
     const { data, error } = await supabase.functions.invoke("stripe-create-live-purchase", {
-      body: { live_product_id: productId },
+      body: { live_product_id: productId, variant_selected: variantSelected || null, buyer_message: buyerMessage || null },
     });
     if (error || data?.error) {
       toast.error("Purchase failed", { description: data?.error || error?.message });
       return;
     }
-    if (data?.url) {
-      window.open(data.url, "_blank");
-    }
-  }, [toast]);
+    if (data?.url) window.open(data.url, "_blank");
+  }, [products]);
 
   const startGiveaway = useCallback(async (title: string) => {
     if (!streamId || !user) return;
-    await supabase.from("live_giveaways").insert({
-      stream_id: streamId,
-      creator_id: user.id,
-      title,
-    });
+    await supabase.from("live_giveaways").insert({ stream_id: streamId, creator_id: user.id, title });
     toast.success("Giveaway started!", { description: `"${title}" is now live` });
-  }, [streamId, user, toast]);
+  }, [streamId, user]);
 
   const endGiveaway = useCallback(async (giveawayId: string) => {
-    const { data, error } = await supabase.functions.invoke("end-live-giveaway", {
-      body: { giveaway_id: giveawayId },
-    });
+    const { data, error } = await supabase.functions.invoke("end-live-giveaway", { body: { giveaway_id: giveawayId } });
     if (data?.winner_username) {
-      toast.success("🎉 Winner!", { description: `${data.winner_username} won the giveaway!` });
+      toast.success("🎉 Winner!", { description: `${data.winner_username} won!` });
     } else {
-      toast.success("Giveaway ended", { description: "No entries were submitted." });
+      toast("Giveaway ended", { description: "No entries were submitted." });
     }
     return data;
-  }, [toast]);
+  }, []);
 
   const enterGiveaway = useCallback(async (giveawayId: string) => {
     if (!user) return;
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("display_name")
-      .eq("user_id", user.id)
-      .single();
-
+    const { data: profile } = await supabase.from("profiles").select("display_name").eq("user_id", user.id).single();
     const { error } = await supabase.from("live_giveaway_entries").insert({
       giveaway_id: giveawayId,
       user_id: user.id,
-      username: profile?.display_name || "Anonymous",
+      username: (profile as any)?.display_name || "Anonymous",
     });
-
     if (error) {
-      if (error.code === "23505") {
-        toast.success("Already entered!", { description: "You've already entered this giveaway." });
-      } else {
-        toast.error("Error", { description: error.message });
-      }
+      if (error.code === "23505") toast("Already entered!");
+      else toast.error("Error", { description: error.message });
       return;
     }
-
-    // Increment entry count
     const giveaway = giveaways.find(g => g.id === giveawayId);
     if (giveaway) {
-      await supabase.from("live_giveaways").update({
-        entry_count: giveaway.entry_count + 1,
-      }).eq("id", giveawayId);
+      await supabase.from("live_giveaways").update({ entry_count: giveaway.entry_count + 1 }).eq("id", giveawayId);
     }
-
     setGiveawayEntered(true);
-    toast.success("🎁 Entered!", { description: "You're in the giveaway! Good luck!" });
-  }, [user, giveaways, toast]);
+    toast.success("🎁 Entered! Good luck!");
+  }, [user, giveaways]);
+
+  const toggleWishlist = useCallback(async (productId: string) => {
+    if (!user) { toast.error("Sign in to save products"); return; }
+    const isWishlisted = wishlistedIds.has(productId);
+    if (isWishlisted) {
+      await supabase.from("live_product_wishlist").delete().eq("live_product_id", productId).eq("user_id", user.id);
+      setWishlistedIds(prev => { const n = new Set(prev); n.delete(productId); return n; });
+    } else {
+      await supabase.from("live_product_wishlist").insert({ live_product_id: productId, user_id: user.id });
+      setWishlistedIds(prev => new Set([...prev, productId]));
+    }
+  }, [user, wishlistedIds]);
+
+  const startFlashSale = useCallback(async (productId: string, discountPercent: number, durationSeconds: number) => {
+    const product = products.find(p => p.id === productId);
+    if (!product || !user || !streamId) return;
+    const salePrice = parseFloat((product.price * (1 - discountPercent / 100)).toFixed(2));
+    const { error } = await supabase.from("live_flash_sales").insert({
+      live_product_id: productId,
+      stream_id: streamId,
+      creator_id: user.id,
+      discount_percent: discountPercent,
+      original_price: product.price,
+      sale_price: salePrice,
+      duration_seconds: durationSeconds,
+      ends_at: new Date(Date.now() + durationSeconds * 1000).toISOString(),
+    });
+    if (error) { toast.error("Flash sale failed", { description: error.message }); return; }
+    toast.success("⚡ Flash sale started!", { description: `${discountPercent}% off for ${durationSeconds < 60 ? durationSeconds + "s" : Math.round(durationSeconds / 60) + "m"}` });
+  }, [products, user, streamId]);
+
+  const getVariantsForProduct = useCallback((productId: string): LiveProductVariant[] => {
+    return variants.filter(v => v.live_product_id === productId);
+  }, [variants]);
 
   return {
-    products,
-    activeProducts,
-    queuedProducts,
-    auctions,
-    giveaways,
-    activeGiveaway,
-    giveawayEntered,
-    totalRevenue,
-    unitsSold,
-    activateProduct,
-    deactivateProduct,
-    placeBid,
-    buyProduct,
-    startGiveaway,
-    endGiveaway,
-    enterGiveaway,
+    products, activeProducts, queuedProducts, soldProducts,
+    auctions, giveaways, activeGiveaway,
+    flashSales, activeFlashSales,
+    variants, wishlistedIds,
+    giveawayEntered, totalRevenue, unitsSold,
+    activateProduct, deactivateProduct,
+    placeBid, buyProduct,
+    startGiveaway, endGiveaway, enterGiveaway,
+    toggleWishlist, startFlashSale, getVariantsForProduct,
   };
 }
