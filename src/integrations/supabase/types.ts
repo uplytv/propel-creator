@@ -233,6 +233,78 @@ export type Database = {
         }
         Relationships: []
       }
+      api_keys: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          key_hash: string
+          key_prefix: string
+          last_used_at: string | null
+          name: string
+          requests_today: number | null
+          requests_total: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          key_hash: string
+          key_prefix: string
+          last_used_at?: string | null
+          name?: string
+          requests_today?: number | null
+          requests_total?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          key_hash?: string
+          key_prefix?: string
+          last_used_at?: string | null
+          name?: string
+          requests_today?: number | null
+          requests_total?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      api_webhooks: {
+        Row: {
+          created_at: string | null
+          events: string[]
+          id: string
+          is_active: boolean | null
+          secret: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          events?: string[]
+          id?: string
+          is_active?: boolean | null
+          secret: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          events?: string[]
+          id?: string
+          is_active?: boolean | null
+          secret?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       aria_agent_handoffs: {
         Row: {
           created_at: string | null
