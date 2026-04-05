@@ -34,13 +34,13 @@ serve(async (req) => {
     // Update stream_recordings
     const { data: recordings } = await supabase
       .from('stream_recordings')
-      .select('id, view_count, created_at')
+      .select('id, like_count, view_count, created_at')
       .gte('created_at', new Date(Date.now() - 30 * 86400000).toISOString())
 
     if (recordings) {
       for (const r of recordings) {
         const hoursSince = (Date.now() - new Date(r.created_at).getTime()) / 3600000
-        const score = (r.view_count || 0) / (1 + hoursSince / 24)
+        const score = ((r.like_count || 0) * 3 + (r.view_count || 0)) / (1 + hoursSince / 24)
         await supabase.from('stream_recordings').update({ trending_score: Math.round(score * 100) / 100 }).eq('id', r.id)
       }
     }

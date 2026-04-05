@@ -338,21 +338,6 @@ export default function PostApplicationScreen({ position, referralCode, referral
           </AlertDialog>
         </div>
 
-        {/* Explore UPLY */}
-        <div
-          className="rounded-lg p-4"
-          style={{ background: "hsl(var(--background))", border: "1px solid hsl(var(--border))" }}
-        >
-          <p className="text-sm font-semibold text-foreground mb-1">Explore what's waiting for you</p>
-          <p className="text-xs text-muted-foreground mb-3">See the platform, watch live streams, and browse communities</p>
-          <Button
-            variant="outline"
-            className="w-full border-primary text-primary hover:bg-primary/10"
-            onClick={() => navigate("/discover")}
-          >
-            Explore UPLY →
-          </Button>
-        </div>
 
         {/* Sign out */}
         {user && (

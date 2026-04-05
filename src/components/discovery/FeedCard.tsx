@@ -1,10 +1,12 @@
 import { memo, useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, Users, BookOpen, MoreVertical, Flag, Bookmark, Share2, EyeOff, Heart } from "lucide-react";
-import { type FeedItem } from "@/hooks/useDiscoveryFeed";
+import { type FeedItem, type FeedItemType } from "@/hooks/useDiscoveryFeed";
 import { timeAgo } from "@/lib/slugs";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/AuthContext";
 
 function formatCount(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -34,6 +36,7 @@ interface FeedCardProps {
 
 const FeedCard = memo(function FeedCard({ item, index, isLiveSection }: FeedCardProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [imgLoaded, setImgLoaded] = useState(false);
   const [imgError, setImgError] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -88,9 +91,25 @@ const FeedCard = memo(function FeedCard({ item, index, isLiveSection }: FeedCard
     if (now - lastTapRef.current < 300) {
       setDoubleTapHeart(true);
       setTimeout(() => setDoubleTapHeart(false), 600);
+
+      if (user) {
+        const likeTableMap: Partial<Record<FeedItemType, { table: string; idCol: string }>> = {
+          video: { table: "video_likes", idCol: "video_id" },
+          clip: { table: "clip_likes", idCol: "clip_id" },
+          recording: { table: "recording_likes", idCol: "recording_id" },
+        };
+        const likeTarget = likeTableMap[item.type as FeedItemType];
+        if (likeTarget) {
+          (supabase as any)
+            .from(likeTarget.table)
+            .insert({ [likeTarget.idCol]: item.id, user_id: user.id })
+            .then(() => {})
+            .catch(() => {});
+        }
+      }
     }
     lastTapRef.current = now;
-  }, []);
+  }, [item.type, item.id, user]);
 
   const handleMouseEnter = useCallback(() => {
     if (hasPlaybackId && !isLive) {

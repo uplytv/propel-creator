@@ -1662,6 +1662,8 @@ export type Database = {
           id: string
           is_auto_short: boolean
           is_public: boolean
+          like_count: number
+          share_count: number
           slug: string | null
           source_asset_id: string | null
           source_type: string
@@ -1679,6 +1681,8 @@ export type Database = {
           id?: string
           is_auto_short?: boolean
           is_public?: boolean
+          like_count?: number
+          share_count?: number
           slug?: string | null
           source_asset_id?: string | null
           source_type?: string
@@ -1696,6 +1700,8 @@ export type Database = {
           id?: string
           is_auto_short?: boolean
           is_public?: boolean
+          like_count?: number
+          share_count?: number
           slug?: string | null
           source_asset_id?: string | null
           source_type?: string
@@ -5255,6 +5261,35 @@ export type Database = {
         }
         Relationships: []
       }
+      recording_likes: {
+        Row: {
+          created_at: string
+          id: string
+          recording_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          recording_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          recording_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recording_likes_recording_id_fkey"
+            columns: ["recording_id"]
+            isOneToOne: false
+            referencedRelation: "stream_recordings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       referrals: {
         Row: {
           created_at: string
@@ -5502,8 +5537,10 @@ export type Database = {
           id: string
           is_free: boolean
           is_published: boolean
+          like_count: number
           mux_asset_id: string | null
           playback_id: string | null
+          share_count: number
           slug: string | null
           title: string
           trending_score: number | null
@@ -5518,8 +5555,10 @@ export type Database = {
           id?: string
           is_free?: boolean
           is_published?: boolean
+          like_count?: number
           mux_asset_id?: string | null
           playback_id?: string | null
+          share_count?: number
           slug?: string | null
           title?: string
           trending_score?: number | null
@@ -5534,8 +5573,10 @@ export type Database = {
           id?: string
           is_free?: boolean
           is_published?: boolean
+          like_count?: number
           mux_asset_id?: string | null
           playback_id?: string | null
+          share_count?: number
           slug?: string | null
           title?: string
           trending_score?: number | null
