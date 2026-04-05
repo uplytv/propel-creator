@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { motion } from "framer-motion";
 import { Eye, Shield, TrendingUp, Zap, Crown, Rocket } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
