@@ -302,6 +302,12 @@ export default function ViewerShopOverlay({ streamId, creatorUserId }: Props) {
 
   const [winnerOverlay, setWinnerOverlay] = useState<{ username: string; title: string } | null>(null);
   const [shopDrawerOpen, setShopDrawerOpen] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [disliked, setDisliked] = useState(false);
+  const { user } = useAuth();
+  const { isFollowing, follow, unfollow } = useFollows();
+  const isFollowingCreator = isFollowing(creatorUserId);
   const [selectedVariants, setSelectedVariants] = useState<Record<string, Record<string, string>>>({});
 
   // Watch for giveaway winner
