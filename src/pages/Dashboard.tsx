@@ -26,6 +26,7 @@ import { RevenueGoalTracker } from "@/components/dashboard/RevenueGoalTracker";
 import ReferralRewardsCard from "@/components/affiliates/ReferralRewardsCard";
 import ScheduleFirstShowCard from "@/components/scheduled/ScheduleFirstShowCard";
 import { useInviteCodes } from "@/hooks/useInviteCodes";
+import FirstDollarWizard from "@/components/dashboard/FirstDollarWizard";
 
 function PlatformUpgradeBanner() {
   const { user } = useAuth();
