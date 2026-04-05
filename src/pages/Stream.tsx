@@ -165,12 +165,28 @@ export default function Stream() {
           setProfile(prof);
           if (prof?.username) setCreatorUsername(prof.username);
           if ((muxStream as any).featured_product_id) {
-            const { data: prod } = await supabase
-              .from('products')
-              .select('*')
-              .eq('id', (muxStream as any).featured_product_id)
-              .single();
-            if (prod) setFeaturedProduct(prod);
+            const source = (muxStream as any).featured_product_source || "digital";
+            if (source === "live_shop") {
+              const { data: liveProd } = await supabase
+                .from('live_products')
+                .select('*')
+                .eq('id', (muxStream as any).featured_product_id)
+                .single();
+              if (liveProd) {
+                setFeaturedProduct({
+                  id: liveProd.id, name: (liveProd as any).title,
+                  type: (liveProd as any).type === "auction" ? "auction" : "product",
+                  price: (liveProd as any).type === "auction" ? ((liveProd as any).starting_bid || 0) : (liveProd as any).price,
+                  description: (liveProd as any).description, image_url: (liveProd as any).image_url,
+                  source: "live_shop", live_product_data: liveProd,
+                });
+              }
+            } else {
+              const { data: prod } = await supabase
+                .from('products').select('*')
+                .eq('id', (muxStream as any).featured_product_id).single();
+              if (prod) setFeaturedProduct({ ...prod, source: "digital" });
+            }
           }
         }
         setLoading(false);
