@@ -426,7 +426,14 @@ export default function ViewerShopOverlay({ streamId, creatorUserId }: Props) {
                         {auction && ` · Current $${auction.current_bid}`}
                       </p>
                     </div>
-                    {!p.is_active && <span className="text-[10px] text-white/30">Upcoming</span>}
+                    {!p.is_active && !p.is_sold_out && (
+                      <button onClick={() => { buyProduct(p.id); setShopDrawerOpen(false); }}
+                        className="px-3 py-1.5 rounded-lg text-xs font-bold shrink-0"
+                        style={{ backgroundColor: "hsl(var(--warning))", color: "hsl(var(--background))" }}>
+                        {p.type === "auction" ? `Bid $${p.starting_bid}` : `$${p.price}`}
+                      </button>
+                    )}
+                    {p.is_sold_out && <span className="text-[10px] text-white/30">Sold Out</span>}
                   </div>
                 );
               })}
