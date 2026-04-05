@@ -140,6 +140,7 @@ export default function GoLive() {
           .update({ stream_id: data.streamId })
           .eq("stream_id", draftSessionId);
         fetchLiveProducts(data.streamId);
+        localStorage.removeItem("uply_draft_session_id");
       }
 
       setStreamData(data);
