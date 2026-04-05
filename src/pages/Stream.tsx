@@ -261,12 +261,26 @@ export default function Stream() {
             setProfile(prof);
             if (prof?.username) setCreatorUsername(prof.username);
             if ((muxStream as any).featured_product_id) {
-              const { data: prod } = await supabase
-                .from('products')
-                .select('*')
-                .eq('id', (muxStream as any).featured_product_id)
-                .single();
-              if (prod) setFeaturedProduct(prod);
+              const source2 = (muxStream as any).featured_product_source || "digital";
+              if (source2 === "live_shop") {
+                const { data: liveProd2 } = await supabase
+                  .from('live_products').select('*')
+                  .eq('id', (muxStream as any).featured_product_id).single();
+                if (liveProd2) {
+                  setFeaturedProduct({
+                    id: liveProd2.id, name: (liveProd2 as any).title,
+                    type: (liveProd2 as any).type === "auction" ? "auction" : "product",
+                    price: (liveProd2 as any).type === "auction" ? ((liveProd2 as any).starting_bid || 0) : (liveProd2 as any).price,
+                    description: (liveProd2 as any).description, image_url: (liveProd2 as any).image_url,
+                    source: "live_shop", live_product_data: liveProd2,
+                  });
+                }
+              } else {
+                const { data: prod } = await supabase
+                  .from('products').select('*')
+                  .eq('id', (muxStream as any).featured_product_id).single();
+                if (prod) setFeaturedProduct({ ...prod, source: "digital" });
+              }
             }
           }
           setLoading(false);
