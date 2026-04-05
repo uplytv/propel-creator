@@ -86,6 +86,8 @@ const BrandDeal = lazy(() => import("./pages/BrandDeal"));
 const Podcast = lazy(() => import("./pages/Podcast"));
 const BioPage = lazy(() => import("./pages/BioPage"));
 const PodcastRSS = lazy(() => import("./pages/PodcastRSS"));
+const NetworkFeed = lazy(() => import("./pages/NetworkFeed"));
+const Distribution = lazy(() => import("./pages/Distribution"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
