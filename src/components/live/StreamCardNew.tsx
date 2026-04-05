@@ -40,6 +40,8 @@ const StreamCardNew = memo(function StreamCardNew({ stream, index = 0 }: { strea
       transition={{ delay: index * 0.05, duration: 0.35, ease: "easeOut" }}
       className="group cursor-pointer"
       onClick={() => navigate(`/stream/${stream.id}`)}
+      role="article"
+      aria-label={`${stream.title} by ${stream.creatorName}`}
     >
       {/* Thumbnail 16:9 */}
       <div className="relative aspect-video rounded-lg overflow-hidden bg-card border-2 border-transparent group-hover:border-primary transition-all duration-200 group-hover:scale-[1.02]">
