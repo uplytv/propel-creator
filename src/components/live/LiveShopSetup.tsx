@@ -427,18 +427,21 @@ export default function LiveShopSetup({ streamId, products, onProductsChange, is
                     </p>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => activateProduct(p.id)}
-                      disabled={!isStreamActive}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
-                        isStreamActive
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-secondary text-muted-foreground cursor-not-allowed"
-                      }`}
-                      title={isStreamActive ? "Activate product" : "Start your stream first"}
-                    >
-                      {isStreamActive ? "Go Live" : "Stream first"}
-                    </button>
+                    {isStreamActive ? (
+                      <button
+                        onClick={() => activateProduct(p.id)}
+                        className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-primary text-primary-foreground"
+                      >
+                        Go Live
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => onGoToStreamSetup?.()}
+                        className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-primary/20 text-primary border border-primary/40 hover:bg-primary/30 transition-all"
+                      >
+                        → Set Up Stream
+                      </button>
+                    )}
                     <button onClick={async () => { await supabase.from("live_products").delete().eq("id", p.id); onProductsChange(); }}
                       className="p-1 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
                       aria-label="Delete product">
