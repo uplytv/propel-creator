@@ -88,6 +88,7 @@ const BioPage = lazy(() => import("./pages/BioPage"));
 const PodcastRSS = lazy(() => import("./pages/PodcastRSS"));
 const NetworkFeed = lazy(() => import("./pages/NetworkFeed"));
 const Distribution = lazy(() => import("./pages/Distribution"));
+const DeveloperAPI = lazy(() => import("./pages/DeveloperAPI"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
