@@ -68,14 +68,37 @@ export default function GoLive() {
 
   const fetchLiveProducts = useCallback(async (sessionId?: string) => {
     const id = sessionId || streamData?.streamId || draftSessionId;
-    if (!id) return;
+    if (!id || !user) return;
+
+    // Try fetching by stream_id first
     const { data } = await supabase
       .from("live_products")
       .select("*")
       .eq("stream_id", id)
       .order("position");
-    setLiveProducts(data || []);
-  }, [streamData?.streamId, draftSessionId]);
+
+    if (data && data.length > 0) {
+      setLiveProducts(data);
+      return;
+    }
+
+    // Fallback: fetch recent draft products by creator_id
+    // (catches orphaned drafts from previous sessions where localStorage was cleared)
+    if (!streamData) {
+      const { data: drafts } = await supabase
+        .from("live_products")
+        .select("*")
+        .eq("creator_id", user.id)
+        .eq("is_sold_out", false)
+        .eq("is_active", false)
+        .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .order("created_at", { ascending: false })
+        .limit(20);
+      setLiveProducts(drafts || []);
+    } else {
+      setLiveProducts([]);
+    }
+  }, [streamData?.streamId, draftSessionId, user]);
 
   useEffect(() => {
     fetchLiveProducts();
