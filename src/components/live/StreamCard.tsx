@@ -18,7 +18,7 @@ function formatViewers(n: number) {
   return n >= 1000 ? `${(n / 1000).toFixed(1)}K` : n.toString();
 }
 
-export default function StreamCard({ stream, index = 0 }: { stream: StreamCardData; index?: number }) {
+const StreamCard = memo(function StreamCard({ stream, index = 0 }: { stream: StreamCardData; index?: number }) {
   const navigate = useNavigate();
   const TierIcon = tierIcons[stream.creatorTier - 1] || Shield;
   const [boostOpen, setBoostOpen] = useState(false);
