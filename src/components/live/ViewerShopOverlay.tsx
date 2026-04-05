@@ -9,6 +9,17 @@ interface Props {
   creatorUserId: string;
 }
 
+function FlashSaleCountdown({ endsAt }: { endsAt: string }) {
+  const [secs, setSecs] = useState(0);
+  useEffect(() => {
+    const tick = () => setSecs(Math.max(0, Math.ceil((new Date(endsAt).getTime() - Date.now()) / 1000)));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [endsAt]);
+  return <span className="text-white font-black text-sm font-mono tabular-nums">{secs}s</span>;
+}
+
 function AuctionCountdown({ endsAt, onEnd }: { endsAt: string; onEnd?: () => void }) {
   const [remaining, setRemaining] = useState(0);
 
