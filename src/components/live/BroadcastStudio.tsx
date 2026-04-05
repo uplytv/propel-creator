@@ -123,7 +123,7 @@ export default function BroadcastStudio({
   const [showThemePicker, setShowThemePicker] = useState(false);
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [showQuizCreator, setShowQuizCreator] = useState(false);
-  const [showShopPanel, setShowShopPanel] = useState(false);
+  const [showShopPanel, setShowShopPanel] = useState(hasQueuedShopProducts);
   const [predQuestion, setPredQuestion] = useState("");
   const [predOptions, setPredOptions] = useState(["", ""]);
 
