@@ -129,6 +129,35 @@ function ProductCard({ product, auction, onBuy, onBid, isWishlisted, onWishlist,
           </div>
         </div>
 
+        {/* Variant picker */}
+        {productVariants && productVariants.length > 0 && (
+          <div className="mt-2 space-y-1.5">
+            {productVariants.map(v => (
+              <div key={v.id}>
+                <p className="text-[10px] text-white/40 mb-1">{v.label}</p>
+                <div className="flex gap-1.5 flex-wrap">
+                  {v.options.map(opt => (
+                    <button key={opt} onClick={() => onVariantChange?.(v.label, opt)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
+                        selectedVariants?.[v.label] === opt
+                          ? "border-primary bg-primary/20 text-primary"
+                          : "border-white/20 bg-white/5 text-white/60"
+                      }`}>{opt}</button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Shipping info */}
+        {(product.free_shipping || (product as any).shipping_price > 0 || ((product as any).condition && (product as any).condition !== "new")) && (
+          <p className="text-[10px] text-white/40 mt-1.5">
+            {product.free_shipping ? "✓ Free Shipping" : (product as any).shipping_price > 0 ? `+ $${(product as any).shipping_price} shipping` : ""}
+            {(product as any).condition && (product as any).condition !== "new" ? ` · ${(product as any).condition.replace(/_/g, " ")}` : ""}
+          </p>
+        )}
+
         {/* Action buttons */}
         <div className="mt-3">
           {isAuction ? (
@@ -167,6 +196,12 @@ function ProductCard({ product, auction, onBuy, onBid, isWishlisted, onWishlist,
                     Bid: ${nextBid} <span className="text-xs">»</span>
                   </button>
                 </div>
+              )}
+              {(product as any).buy_now_price > 0 && (
+                <button onClick={onBuy}
+                  className="w-full mt-2 py-2 rounded-xl text-xs font-bold border border-white/20 text-white hover:bg-white/5 transition-colors">
+                  Buy Now · ${(product as any).buy_now_price}
+                </button>
               )}
             </>
           ) : product.is_sold_out ? (
