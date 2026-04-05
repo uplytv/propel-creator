@@ -127,6 +127,15 @@ export default function GoLive() {
           .eq('id', data.streamId);
       }
 
+      // Migrate any products queued before stream was created
+      if (draftSessionId && data?.streamId) {
+        await supabase
+          .from("live_products")
+          .update({ stream_id: data.streamId })
+          .eq("stream_id", draftSessionId);
+        fetchLiveProducts(data.streamId);
+      }
+
       setStreamData(data);
       setStreamStatus("idle");
       setStreamStartTime(Date.now());
