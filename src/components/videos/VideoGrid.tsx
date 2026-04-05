@@ -143,4 +143,6 @@ const VideoCard = memo(function VideoCard({ video, index }: { video: Video; inde
       </div>
     </motion.div>
   );
-}
+});
+
+VideoCard.displayName = "VideoCard";

@@ -130,4 +130,8 @@ const StreamCard = memo(function StreamCard({ stream, index = 0 }: { stream: Str
       />
     </>
   );
-}
+});
+
+StreamCard.displayName = "StreamCard";
+
+export default StreamCard;

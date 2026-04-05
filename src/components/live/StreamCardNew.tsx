@@ -110,4 +110,8 @@ const StreamCardNew = memo(function StreamCardNew({ stream, index = 0 }: { strea
       </div>
     </motion.div>
   );
-}
+});
+
+StreamCardNew.displayName = "StreamCardNew";
+
+export default StreamCardNew;
