@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Eye, Clock, Film } from "lucide-react";
@@ -65,7 +66,7 @@ export default function VideoGrid({ videos, loading, emptyMessage }: VideoGridPr
   );
 }
 
-function VideoCard({ video, index }: { video: Video; index: number }) {
+const VideoCard = memo(function VideoCard({ video, index }: { video: Video; index: number }) {
   const navigate = useNavigate();
 
   const { data: creator } = useQuery({
@@ -120,7 +121,7 @@ function VideoCard({ video, index }: { video: Video; index: number }) {
             className="shrink-0"
           >
             {creator?.avatar_url ? (
-              <img src={creator.avatar_url} alt="" className="w-9 h-9 rounded-full object-cover ring-2 ring-border" loading="lazy" />
+              <img src={creator.avatar_url} alt={`${creator.display_name || 'Creator'}'s avatar`} className="w-9 h-9 rounded-full object-cover ring-2 ring-border" loading="lazy" />
             ) : (
               <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary ring-2 ring-border">
                 {(creator?.display_name || "C").charAt(0)}
@@ -142,4 +143,6 @@ function VideoCard({ video, index }: { video: Video; index: number }) {
       </div>
     </motion.div>
   );
-}
+});
+
+VideoCard.displayName = "VideoCard";

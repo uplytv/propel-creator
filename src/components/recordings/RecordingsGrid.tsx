@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { motion } from "framer-motion";
 import { Play, Clock, Eye, Trash2, Globe, Lock, Film, Share2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,7 @@ function formatDuration(seconds: number) {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-export default function RecordingsGrid({ recordings, isOwner, onTogglePublish, onDelete }: Props) {
+const RecordingsGrid = memo(function RecordingsGrid({ recordings, isOwner, onTogglePublish, onDelete }: Props) {
   const navigate = useNavigate();
   const [shareRec, setShareRec] = useState<StreamRecording | null>(null);
 
@@ -142,4 +142,8 @@ export default function RecordingsGrid({ recordings, isOwner, onTogglePublish, o
       )}
     </div>
   );
-}
+});
+
+RecordingsGrid.displayName = "RecordingsGrid";
+
+export default RecordingsGrid;

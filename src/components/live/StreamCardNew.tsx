@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo } from "react";
 import { motion } from "framer-motion";
 import { Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -25,7 +25,7 @@ function formatViewers(n: number) {
   return n >= 1000 ? `${(n / 1000).toFixed(1)}K` : n.toString();
 }
 
-export default function StreamCardNew({ stream, index = 0 }: { stream: StreamCardData; index?: number }) {
+const StreamCardNew = memo(function StreamCardNew({ stream, index = 0 }: { stream: StreamCardData; index?: number }) {
   const navigate = useNavigate();
 
   const thumbnailUrl = stream.muxPlaybackId
@@ -40,6 +40,8 @@ export default function StreamCardNew({ stream, index = 0 }: { stream: StreamCar
       transition={{ delay: index * 0.05, duration: 0.35, ease: "easeOut" }}
       className="group cursor-pointer"
       onClick={() => navigate(`/stream/${stream.id}`)}
+      role="article"
+      aria-label={`${stream.title} by ${stream.creatorName}`}
     >
       {/* Thumbnail 16:9 */}
       <div className="relative aspect-video rounded-lg overflow-hidden bg-card border-2 border-transparent group-hover:border-primary transition-all duration-200 group-hover:scale-[1.02]">
@@ -83,7 +85,7 @@ export default function StreamCardNew({ stream, index = 0 }: { stream: StreamCar
         {/* Creator avatar */}
         <div className="flex-shrink-0 w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-[11px] font-bold text-muted-foreground overflow-hidden">
           {stream.creatorAvatar && stream.creatorAvatar.startsWith('http') ? (
-            <img src={stream.creatorAvatar} alt="" className="w-full h-full object-cover" />
+            <img src={stream.creatorAvatar} alt={`${stream.creatorName}'s avatar`} className="w-full h-full object-cover" />
           ) : (
             stream.creatorAvatar || stream.creatorName.slice(0, 2).toUpperCase()
           )}
@@ -108,4 +110,8 @@ export default function StreamCardNew({ stream, index = 0 }: { stream: StreamCar
       </div>
     </motion.div>
   );
-}
+});
+
+StreamCardNew.displayName = "StreamCardNew";
+
+export default StreamCardNew;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { motion } from "framer-motion";
 import { Eye, Shield, TrendingUp, Zap, Crown, Rocket } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +18,7 @@ function formatViewers(n: number) {
   return n >= 1000 ? `${(n / 1000).toFixed(1)}K` : n.toString();
 }
 
-export default function StreamCard({ stream, index = 0 }: { stream: StreamCardData; index?: number }) {
+const StreamCard = memo(function StreamCard({ stream, index = 0 }: { stream: StreamCardData; index?: number }) {
   const navigate = useNavigate();
   const TierIcon = tierIcons[stream.creatorTier - 1] || Shield;
   const [boostOpen, setBoostOpen] = useState(false);
@@ -80,6 +80,7 @@ export default function StreamCard({ stream, index = 0 }: { stream: StreamCardDa
               e.stopPropagation();
               setBoostOpen(true);
             }}
+            aria-label={`Boost ${stream.title}`}
             className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-primary/90 hover:bg-primary backdrop-blur-sm text-primary-foreground px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all opacity-0 group-hover:opacity-100 sm:opacity-100"
           >
             <Rocket className="w-3 h-3" />
@@ -97,7 +98,7 @@ export default function StreamCard({ stream, index = 0 }: { stream: StreamCardDa
             className="flex-shrink-0 w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary cursor-pointer overflow-hidden"
           >
             {stream.creatorAvatar && stream.creatorAvatar.startsWith('http') ? (
-              <img src={stream.creatorAvatar} alt="" className="w-full h-full object-cover" />
+              <img src={stream.creatorAvatar} alt={`${stream.creatorName}'s avatar`} className="w-full h-full object-cover" />
             ) : (
               stream.creatorAvatar || stream.creatorName.slice(0, 2).toUpperCase()
             )}
@@ -129,4 +130,8 @@ export default function StreamCard({ stream, index = 0 }: { stream: StreamCardDa
       />
     </>
   );
-}
+});
+
+StreamCard.displayName = "StreamCard";
+
+export default StreamCard;
