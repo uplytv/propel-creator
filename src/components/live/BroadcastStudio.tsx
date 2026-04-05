@@ -48,6 +48,7 @@ import OverlayThemePicker from "./OverlayThemePicker";
 import ViewerHeatmapPanel from "./ViewerHeatmapPanel";
 import ViewerSentimentOverlay from "./ViewerSentimentOverlay";
 import { LiveQuizOverlay, QuizCreatorPanel } from "./LiveQuizOverlay";
+import CreatorShopPanel from "./CreatorShopPanel";
 
 // Extracted sub-components
 import ModeSelectionScreen from "./ModeSelectionScreen";
