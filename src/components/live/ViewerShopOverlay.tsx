@@ -349,6 +349,24 @@ export default function ViewerShopOverlay({ streamId, creatorUserId }: Props) {
 
       {/* Bottom product card - persistent */}
       <div className="absolute bottom-0 left-0 right-0 z-30">
+        {/* Flash sale banner */}
+        {mainProduct && activeFlashSales?.filter(f => f.live_product_id === mainProduct.id).map(flash => (
+          <div key={flash.id} className="mx-3 mb-1 rounded-xl p-2.5 border border-amber-500/40" style={{ backgroundColor: "rgba(245,158,11,0.15)", backdropFilter: "blur(12px)" }}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">⚡</span>
+                <div>
+                  <p className="text-xs font-black text-amber-400">FLASH SALE — {flash.discount_percent}% OFF</p>
+                  <p className="text-[10px] text-white/60">
+                    <span className="line-through">${flash.original_price}</span>
+                    {" → "}<span className="text-amber-400 font-bold">${flash.sale_price}</span>
+                  </p>
+                </div>
+              </div>
+              <FlashSaleCountdown endsAt={flash.ends_at} />
+            </div>
+          </div>
+        ))}
         <AnimatePresence>
           {mainProduct && (
             <ProductCard
