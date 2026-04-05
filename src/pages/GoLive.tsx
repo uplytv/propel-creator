@@ -313,7 +313,7 @@ export default function GoLive() {
               </TabsContent>
               <TabsContent value="shop">
                 {streamData ? (
-                  <LiveShopSetup streamId={streamData.streamId} products={[]} onProductsChange={() => {}} />
+                  <LiveShopSetup streamId={streamData.streamId} products={liveProducts} onProductsChange={fetchLiveProducts} />
                 ) : (
                   <div className="text-center py-8">
                     <p className="text-sm text-muted-foreground">Set up your stream first, then add products to sell live.</p>
