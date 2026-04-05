@@ -32,6 +32,7 @@ export interface LiveProduct {
   sku: string | null;
   category: string | null;
   auto_end_auction: boolean;
+  low_stock_alert_sent: boolean;
   created_at: string;
 }
 
@@ -310,6 +311,28 @@ export function useLiveShop(streamId: string | undefined) {
   const getVariantsForProduct = useCallback((productId: string): LiveProductVariant[] => {
     return variants.filter(v => v.live_product_id === productId);
   }, [variants]);
+
+  // Competitive advantage: low stock alert — fire chat message when qty drops to 3
+  useEffect(() => {
+    if (!streamId) return;
+    const lowStockProducts = activeProducts.filter(
+      p => p.quantity_remaining <= 3 && p.quantity_remaining > 0 && !p.low_stock_alert_sent
+    );
+    const sendAlerts = async () => {
+      for (const p of lowStockProducts) {
+        try {
+          await (supabase as any).from("live_chat_messages").insert({
+            stream_id: streamId, user_id: p.creator_id,
+            username: "UPLY Shop",
+            message: `🔥 Only ${p.quantity_remaining} left of "${p.title}"!`,
+            is_pinned: false,
+          });
+          await (supabase as any).from("live_products").update({ low_stock_alert_sent: true }).eq("id", p.id);
+        } catch { /* best effort */ }
+      }
+    };
+    if (lowStockProducts.length > 0) sendAlerts();
+  }, [activeProducts.map(p => `${p.id}:${p.quantity_remaining}:${p.low_stock_alert_sent}`).join(","), streamId]);
 
   return {
     products, activeProducts, queuedProducts, soldProducts,

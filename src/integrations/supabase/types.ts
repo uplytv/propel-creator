@@ -3696,6 +3696,38 @@ export type Database = {
           },
         ]
       }
+      live_product_ai_descriptions: {
+        Row: {
+          ai_pitch: string
+          created_at: string | null
+          id: string
+          live_product_id: string
+          urgency_message: string | null
+        }
+        Insert: {
+          ai_pitch: string
+          created_at?: string | null
+          id?: string
+          live_product_id: string
+          urgency_message?: string | null
+        }
+        Update: {
+          ai_pitch?: string
+          created_at?: string | null
+          id?: string
+          live_product_id?: string
+          urgency_message?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_product_ai_descriptions_live_product_id_fkey"
+            columns: ["live_product_id"]
+            isOneToOne: true
+            referencedRelation: "live_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       live_product_variants: {
         Row: {
           created_at: string | null
@@ -3776,6 +3808,7 @@ export type Database = {
           is_active: boolean
           is_pinned: boolean | null
           is_sold_out: boolean
+          low_stock_alert_sent: boolean | null
           pinned_at: string | null
           position: number
           price: number
@@ -3811,6 +3844,7 @@ export type Database = {
           is_active?: boolean
           is_pinned?: boolean | null
           is_sold_out?: boolean
+          low_stock_alert_sent?: boolean | null
           pinned_at?: string | null
           position?: number
           price?: number
@@ -3846,6 +3880,7 @@ export type Database = {
           is_active?: boolean
           is_pinned?: boolean | null
           is_sold_out?: boolean
+          low_stock_alert_sent?: boolean | null
           pinned_at?: string | null
           position?: number
           price?: number
@@ -3988,6 +4023,7 @@ export type Database = {
       }
       live_purchases: {
         Row: {
+          affiliate_code: string | null
           amount: number
           buyer_id: string
           buyer_message: string | null
@@ -4004,6 +4040,7 @@ export type Database = {
           variant_selected: string | null
         }
         Insert: {
+          affiliate_code?: string | null
           amount?: number
           buyer_id: string
           buyer_message?: string | null
@@ -4020,6 +4057,7 @@ export type Database = {
           variant_selected?: string | null
         }
         Update: {
+          affiliate_code?: string | null
           amount?: number
           buyer_id?: string
           buyer_message?: string | null

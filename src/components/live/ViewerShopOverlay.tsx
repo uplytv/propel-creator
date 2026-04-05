@@ -9,6 +9,17 @@ interface Props {
   creatorUserId: string;
 }
 
+function FlashSaleCountdown({ endsAt }: { endsAt: string }) {
+  const [secs, setSecs] = useState(0);
+  useEffect(() => {
+    const tick = () => setSecs(Math.max(0, Math.ceil((new Date(endsAt).getTime() - Date.now()) / 1000)));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [endsAt]);
+  return <span className="text-white font-black text-sm font-mono tabular-nums">{secs}s</span>;
+}
+
 function AuctionCountdown({ endsAt, onEnd }: { endsAt: string; onEnd?: () => void }) {
   const [remaining, setRemaining] = useState(0);
 
@@ -118,6 +129,35 @@ function ProductCard({ product, auction, onBuy, onBid, isWishlisted, onWishlist,
           </div>
         </div>
 
+        {/* Variant picker */}
+        {productVariants && productVariants.length > 0 && (
+          <div className="mt-2 space-y-1.5">
+            {productVariants.map(v => (
+              <div key={v.id}>
+                <p className="text-[10px] text-white/40 mb-1">{v.label}</p>
+                <div className="flex gap-1.5 flex-wrap">
+                  {v.options.map(opt => (
+                    <button key={opt} onClick={() => onVariantChange?.(v.label, opt)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
+                        selectedVariants?.[v.label] === opt
+                          ? "border-primary bg-primary/20 text-primary"
+                          : "border-white/20 bg-white/5 text-white/60"
+                      }`}>{opt}</button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Shipping info */}
+        {(product.free_shipping || (product as any).shipping_price > 0 || ((product as any).condition && (product as any).condition !== "new")) && (
+          <p className="text-[10px] text-white/40 mt-1.5">
+            {product.free_shipping ? "✓ Free Shipping" : (product as any).shipping_price > 0 ? `+ $${(product as any).shipping_price} shipping` : ""}
+            {(product as any).condition && (product as any).condition !== "new" ? ` · ${(product as any).condition.replace(/_/g, " ")}` : ""}
+          </p>
+        )}
+
         {/* Action buttons */}
         <div className="mt-3">
           {isAuction ? (
@@ -156,6 +196,12 @@ function ProductCard({ product, auction, onBuy, onBid, isWishlisted, onWishlist,
                     Bid: ${nextBid} <span className="text-xs">»</span>
                   </button>
                 </div>
+              )}
+              {(product as any).buy_now_price > 0 && (
+                <button onClick={onBuy}
+                  className="w-full mt-2 py-2 rounded-xl text-xs font-bold border border-white/20 text-white hover:bg-white/5 transition-colors">
+                  Buy Now · ${(product as any).buy_now_price}
+                </button>
               )}
             </>
           ) : product.is_sold_out ? (
@@ -303,6 +349,24 @@ export default function ViewerShopOverlay({ streamId, creatorUserId }: Props) {
 
       {/* Bottom product card - persistent */}
       <div className="absolute bottom-0 left-0 right-0 z-30">
+        {/* Flash sale banner */}
+        {mainProduct && activeFlashSales?.filter(f => f.live_product_id === mainProduct.id).map(flash => (
+          <div key={flash.id} className="mx-3 mb-1 rounded-xl p-2.5 border border-amber-500/40" style={{ backgroundColor: "rgba(245,158,11,0.15)", backdropFilter: "blur(12px)" }}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">⚡</span>
+                <div>
+                  <p className="text-xs font-black text-amber-400">FLASH SALE — {flash.discount_percent}% OFF</p>
+                  <p className="text-[10px] text-white/60">
+                    <span className="line-through">${flash.original_price}</span>
+                    {" → "}<span className="text-amber-400 font-bold">${flash.sale_price}</span>
+                  </p>
+                </div>
+              </div>
+              <FlashSaleCountdown endsAt={flash.ends_at} />
+            </div>
+          </div>
+        ))}
         <AnimatePresence>
           {mainProduct && (
             <ProductCard

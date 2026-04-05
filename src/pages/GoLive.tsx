@@ -48,6 +48,7 @@ export default function GoLive() {
   const [streamDuration, setStreamDuration] = useState(0);
   const [streamMuxAssetId, setStreamMuxAssetId] = useState<string | null>(null);
   const [streamStartTime, setStreamStartTime] = useState<number | null>(null);
+  const [draftSessionId] = useState(() => crypto.randomUUID());
 
   const { data: profileData } = useProfile();
   const { data: products } = useProducts();
@@ -58,15 +59,16 @@ export default function GoLive() {
   const [enabledPlatforms, setEnabledPlatforms] = useState<string[]>([]);
   const [liveProducts, setLiveProducts] = useState<any[]>([]);
 
-  const fetchLiveProducts = useCallback(async () => {
-    if (!streamData?.streamId) return;
+  const fetchLiveProducts = useCallback(async (sessionId?: string) => {
+    const id = sessionId || streamData?.streamId || draftSessionId;
+    if (!id) return;
     const { data } = await supabase
       .from("live_products")
       .select("*")
-      .eq("stream_id", streamData.streamId)
+      .eq("stream_id", id)
       .order("position");
     setLiveProducts(data || []);
-  }, [streamData?.streamId]);
+  }, [streamData?.streamId, draftSessionId]);
 
   useEffect(() => {
     fetchLiveProducts();
@@ -123,6 +125,15 @@ export default function GoLive() {
           .from('mux_live_streams')
           .update({ featured_product_id: featuredProductId })
           .eq('id', data.streamId);
+      }
+
+      // Migrate any products queued before stream was created
+      if (draftSessionId && data?.streamId) {
+        await supabase
+          .from("live_products")
+          .update({ stream_id: data.streamId })
+          .eq("stream_id", draftSessionId);
+        fetchLiveProducts(data.streamId);
       }
 
       setStreamData(data);
@@ -327,13 +338,11 @@ export default function GoLive() {
                 <ScheduleStreamTab />
               </TabsContent>
               <TabsContent value="shop">
-                {streamData ? (
-                  <LiveShopSetup streamId={streamData.streamId} products={liveProducts} onProductsChange={fetchLiveProducts} />
-                ) : (
-                  <div className="text-center py-8">
-                    <p className="text-sm text-muted-foreground">Set up your stream first, then add products to sell live.</p>
-                  </div>
-                )}
+                <LiveShopSetup
+                  streamId={streamData?.streamId || draftSessionId}
+                  products={liveProducts}
+                  onProductsChange={() => fetchLiveProducts(streamData?.streamId || draftSessionId)}
+                />
               </TabsContent>
             </Tabs>
           ) : showEndScreen && streamData ? (
