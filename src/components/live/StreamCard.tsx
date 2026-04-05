@@ -98,7 +98,7 @@ const StreamCard = memo(function StreamCard({ stream, index = 0 }: { stream: Str
             className="flex-shrink-0 w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary cursor-pointer overflow-hidden"
           >
             {stream.creatorAvatar && stream.creatorAvatar.startsWith('http') ? (
-              <img src={stream.creatorAvatar} alt="" className="w-full h-full object-cover" />
+              <img src={stream.creatorAvatar} alt={`${stream.creatorName}'s avatar`} className="w-full h-full object-cover" />
             ) : (
               stream.creatorAvatar || stream.creatorName.slice(0, 2).toUpperCase()
             )}
