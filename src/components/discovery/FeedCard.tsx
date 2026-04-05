@@ -1,10 +1,12 @@
 import { memo, useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, Users, BookOpen, MoreVertical, Flag, Bookmark, Share2, EyeOff, Heart } from "lucide-react";
-import { type FeedItem } from "@/hooks/useDiscoveryFeed";
+import { type FeedItem, type FeedItemType } from "@/hooks/useDiscoveryFeed";
 import { timeAgo } from "@/lib/slugs";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/AuthContext";
 
 function formatCount(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
