@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Bell, Check, CheckCheck, AlertTriangle, Flag, Briefcase,
   CheckCircle2, XCircle, Eye, Star, Filter, Trash2,
-  MessageSquare, Heart, UserPlus, Coins, Users, Megaphone
+  MessageSquare, Heart, UserPlus, Coins, Users, Megaphone,
+  Trophy, Package, Gift
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useNotifications, AppNotification } from "@/hooks/useNotifications";
@@ -37,10 +38,15 @@ function NotificationItem({
   const socialNotifIcon: Record<string, { icon: any; color: string }> = {
     community_comment: { icon: MessageSquare, color: "bg-primary/10 text-primary" },
     community_like: { icon: Heart, color: "bg-destructive/10 text-destructive" },
+    community_blast: { icon: Megaphone, color: "bg-primary/15 text-primary" },
     new_follower: { icon: UserPlus, color: "bg-primary/10 text-primary" },
     tip_received: { icon: Coins, color: "bg-primary/15 text-primary" },
+    live_sale: { icon: Coins, color: "bg-primary/15 text-primary" },
+    auction_won: { icon: Trophy, color: "bg-amber-500/15 text-amber-400" },
+    subscription_confirmed: { icon: CheckCircle2, color: "bg-primary/10 text-primary" },
     member_joined: { icon: Users, color: "bg-primary/10 text-primary" },
-    community_blast: { icon: Megaphone, color: "bg-primary/15 text-primary" },
+    order_shipped: { icon: Package, color: "bg-blue-500/15 text-blue-400" },
+    giveaway_winner: { icon: Gift, color: "bg-amber-500/15 text-amber-400" },
   };
 
   const getIcon = () => {
@@ -142,6 +148,8 @@ export default function Notifications() {
     if (!n.read) markRead(n.id, n.source);
     if (n.source === "job" && n.job_id) {
       navigate(`/jobs/${n.job_id}`);
+    } else if (n.link) {
+      navigate(n.link);
     }
   };
 
