@@ -468,6 +468,69 @@ Deno.serve(async (req) => {
 
             logStep("Subscription checkout completed", { member_id, creator_id });
           }
+        } else if (purchaseType === "live_product") {
+          const { live_product_id, buyer_id, creator_id } = metadata;
+          if (!live_product_id || !buyer_id || !creator_id) {
+            logStep("Missing live_product metadata", metadata);
+            break;
+          }
+
+          // Mark purchase completed
+          await supabase.from("live_purchases")
+            .update({ status: "completed" })
+            .eq("stripe_payment_intent_id", session.id)
+            .eq("live_product_id", live_product_id);
+
+          // Get the purchase record for address/fulfillment
+          const { data: purchase } = await supabase
+            .from("live_purchases")
+            .select("id")
+            .eq("stripe_payment_intent_id", session.id)
+            .maybeSingle();
+
+          if (purchase) {
+            // Save shipping address if collected by Stripe
+            if ((session as any).shipping_details?.address) {
+              const addr = (session as any).shipping_details.address;
+              await supabase.from("live_purchase_addresses").insert({
+                purchase_id: purchase.id,
+                buyer_id,
+                full_name: (session as any).shipping_details.name || "Buyer",
+                address_line1: addr.line1 || "",
+                address_line2: addr.line2 || null,
+                city: addr.city || "",
+                state: addr.state || "",
+                zip: addr.postal_code || "",
+                country: addr.country || "US",
+              });
+            }
+
+            // Auto-create unfulfilled fulfillment record
+            await supabase.from("live_purchase_fulfillments").insert({
+              purchase_id: purchase.id,
+              creator_id,
+              status: "unfulfilled",
+            });
+          }
+
+          // Credit creator wallet (95% of sale amount)
+          const lpAmount = (session.amount_total || 0) / 100;
+          const lpFee = Math.round(lpAmount * 0.05 * 100) / 100;
+          await updateWallet(supabase, creator_id, lpAmount, lpFee, "Live product sale", session.payment_intent as string);
+
+          // Notify creator of sale
+          const { data: lpBuyerProfile } = await supabase.from("profiles").select("display_name").eq("user_id", buyer_id).maybeSingle();
+          const { data: liveProduct } = await supabase.from("live_products").select("title").eq("id", live_product_id).maybeSingle();
+
+          await supabase.from("notifications").insert({
+            user_id: creator_id,
+            type: "live_sale",
+            title: "🛍️ Live sale!",
+            message: `${lpBuyerProfile?.display_name || "Someone"} bought "${liveProduct?.title || "a product"}" for $${lpAmount.toFixed(2)}`,
+            link: "/dashboard",
+          });
+
+          logStep("Live product purchase completed", { live_product_id, buyer_id, lpAmount });
         } else {
           // Fallback: treat as subscription for backwards compat
           const { member_id, creator_id, tier_id } = metadata;

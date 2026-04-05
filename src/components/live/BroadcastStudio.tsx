@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Mic, MicOff, Copy, Eye, Square, Upload, Send,
-  RotateCcw, Zap, Share2, X,
+  RotateCcw, Zap, Share2, X, ShoppingBag,
   Activity, ArrowUpCircle, Signal, SignalHigh, SignalLow, SignalMedium,
   BarChart3, MessageCircleQuestion, Sparkles, Subtitles, Swords,
   Gamepad2, PenTool, Palette,
@@ -48,6 +48,7 @@ import OverlayThemePicker from "./OverlayThemePicker";
 import ViewerHeatmapPanel from "./ViewerHeatmapPanel";
 import ViewerSentimentOverlay from "./ViewerSentimentOverlay";
 import { LiveQuizOverlay, QuizCreatorPanel } from "./LiveQuizOverlay";
+import CreatorShopPanel from "./CreatorShopPanel";
 
 // Extracted sub-components
 import ModeSelectionScreen from "./ModeSelectionScreen";
@@ -120,6 +121,7 @@ export default function BroadcastStudio({
   const [showThemePicker, setShowThemePicker] = useState(false);
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [showQuizCreator, setShowQuizCreator] = useState(false);
+  const [showShopPanel, setShowShopPanel] = useState(false);
   const [predQuestion, setPredQuestion] = useState("");
   const [predOptions, setPredOptions] = useState(["", ""]);
 
@@ -622,6 +624,7 @@ export default function BroadcastStudio({
 
                   {/* Right-side action buttons */}
                   <div className="absolute right-3 bottom-28 z-20 flex flex-col gap-3 items-center">
+                    <ActionButton onClick={() => setShowShopPanel(!showShopPanel)} active={showShopPanel} activeBg="rgba(0,255,133,0.3)" icon={<ShoppingBag className="w-4.5 h-4.5 text-white" />} />
                     <ActionButton onClick={async () => {
                       const liveUrl = `${getSiteUrl()}/stream/${streamData.streamId}`;
                       const ok = await safeClipboardWrite(liveUrl);
@@ -719,6 +722,24 @@ export default function BroadcastStudio({
                   </div>
 
                   <DonationGoalOverlay streamId={streamData.streamId} isHost={true} creatorId={user?.id} />
+
+                  {/* Shop Panel */}
+                  <AnimatePresence>
+                    {showShopPanel && (
+                      <motion.div initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 50 }}
+                        className="absolute bottom-32 left-3 right-16 z-[15]">
+                        <div className="rounded-xl p-3 space-y-2 bg-background/95 backdrop-blur-md border border-border max-h-[50vh] overflow-y-auto">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-foreground">🛍️ Live Shop</span>
+                            <button onClick={() => setShowShopPanel(false)} className="text-muted-foreground hover:text-foreground">
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <CreatorShopPanel streamId={streamData.streamId} />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
                   {/* Raid Picker */}
                   <AnimatePresence>

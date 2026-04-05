@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag, Gift, X } from "lucide-react";
-import { useLiveShop, type LiveProduct, type LiveAuction } from "@/hooks/useLiveShop";
+import { useLiveShop, type LiveProduct, type LiveAuction, type LiveProductVariant } from "@/hooks/useLiveShop";
 import { Drawer } from "vaul";
 
 interface Props {
@@ -36,11 +36,16 @@ function AuctionCountdown({ endsAt, onEnd }: { endsAt: string; onEnd?: () => voi
 }
 
 // Bottom persistent product card - Whatnot style
-function ProductCard({ product, auction, onBuy, onBid }: {
+function ProductCard({ product, auction, onBuy, onBid, isWishlisted, onWishlist, variants: productVariants, selectedVariants, onVariantChange }: {
   product: LiveProduct;
   auction?: LiveAuction;
   onBuy: () => void;
   onBid: (amount: number) => void;
+  isWishlisted?: boolean;
+  onWishlist?: () => void;
+  variants?: LiveProductVariant[];
+  selectedVariants?: Record<string, string>;
+  onVariantChange?: (label: string, option: string) => void;
 }) {
   const [customBidOpen, setCustomBidOpen] = useState(false);
   const [customAmount, setCustomAmount] = useState("");
@@ -58,11 +63,20 @@ function ProductCard({ product, auction, onBuy, onBid }: {
       <div className="p-3">
         <div className="flex gap-3">
           {/* Product image */}
-          {product.image_url ? (
-            <img src={product.image_url} alt="" className="w-20 h-20 rounded-xl object-cover flex-shrink-0" />
-          ) : (
-            <div className="w-20 h-20 rounded-xl flex items-center justify-center text-2xl flex-shrink-0" style={{ backgroundColor: "hsl(var(--card))" }}>🛍️</div>
-          )}
+          <div className="relative w-20 h-20 flex-shrink-0">
+            {product.image_url ? (
+              <img src={product.image_url} alt={product.title} className="w-20 h-20 rounded-xl object-cover" />
+            ) : (
+              <div className="w-20 h-20 rounded-xl flex items-center justify-center text-2xl" style={{ backgroundColor: "hsl(var(--card))" }}>🛍️</div>
+            )}
+            {onWishlist && (
+              <button onClick={(e) => { e.stopPropagation(); onWishlist(); }}
+                className="absolute top-1 right-1 w-6 h-6 rounded-full flex items-center justify-center bg-black/60"
+                aria-label={isWishlisted ? "Remove from wishlist" : "Save for later"}>
+                {isWishlisted ? "❤️" : "🤍"}
+              </button>
+            )}
+          </div>
 
           {/* Product info */}
           <div className="flex-1 min-w-0">
@@ -233,11 +247,13 @@ function WinnerOverlay({ username, title, onDismiss }: { username: string; title
 export default function ViewerShopOverlay({ streamId, creatorUserId }: Props) {
   const {
     activeProducts, products, auctions, activeGiveaway, giveawayEntered, giveaways,
-    placeBid, buyProduct, enterGiveaway,
+    activeFlashSales, wishlistedIds, getVariantsForProduct,
+    placeBid, buyProduct, enterGiveaway, toggleWishlist,
   } = useLiveShop(streamId);
 
   const [winnerOverlay, setWinnerOverlay] = useState<{ username: string; title: string } | null>(null);
   const [shopDrawerOpen, setShopDrawerOpen] = useState(false);
+  const [selectedVariants, setSelectedVariants] = useState<Record<string, Record<string, string>>>({});
 
   // Watch for giveaway winner
   useEffect(() => {
@@ -292,7 +308,20 @@ export default function ViewerShopOverlay({ streamId, creatorUserId }: Props) {
             <ProductCard
               product={mainProduct}
               auction={mainAuction}
-              onBuy={() => buyProduct(mainProduct.id)}
+              isWishlisted={wishlistedIds.has(mainProduct.id)}
+              onWishlist={() => toggleWishlist(mainProduct.id)}
+              variants={getVariantsForProduct(mainProduct.id)}
+              selectedVariants={selectedVariants[mainProduct.id] || {}}
+              onVariantChange={(label, opt) => setSelectedVariants(prev => ({
+                ...prev,
+                [mainProduct.id]: { ...(prev[mainProduct.id] || {}), [label]: opt }
+              }))}
+              onBuy={() => {
+                const variantStr = Object.entries(selectedVariants[mainProduct.id] || {})
+                  .map(([k, v]) => `${k}: ${v}`)
+                  .join(", ");
+                buyProduct(mainProduct.id, variantStr || undefined);
+              }}
               onBid={(amount) => placeBid(mainProduct.id, amount)}
             />
           )}

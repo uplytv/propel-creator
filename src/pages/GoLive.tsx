@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Radio, Globe, Lock, Loader2, ShoppingBag, X, CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -56,6 +56,21 @@ export default function GoLive() {
   const { startSimulcast, stopSimulcast } = useSimulcastSessions(streamData?.streamId || null);
   const [simulcastEnabled, setSimulcastEnabled] = useState(true);
   const [enabledPlatforms, setEnabledPlatforms] = useState<string[]>([]);
+  const [liveProducts, setLiveProducts] = useState<any[]>([]);
+
+  const fetchLiveProducts = useCallback(async () => {
+    if (!streamData?.streamId) return;
+    const { data } = await supabase
+      .from("live_products")
+      .select("*")
+      .eq("stream_id", streamData.streamId)
+      .order("position");
+    setLiveProducts(data || []);
+  }, [streamData?.streamId]);
+
+  useEffect(() => {
+    fetchLiveProducts();
+  }, [fetchLiveProducts]);
 
   // Initialize enabled platforms from saved destinations
   useEffect(() => {
@@ -313,7 +328,7 @@ export default function GoLive() {
               </TabsContent>
               <TabsContent value="shop">
                 {streamData ? (
-                  <LiveShopSetup streamId={streamData.streamId} products={[]} onProductsChange={() => {}} />
+                  <LiveShopSetup streamId={streamData.streamId} products={liveProducts} onProductsChange={fetchLiveProducts} />
                 ) : (
                   <div className="text-center py-8">
                     <p className="text-sm text-muted-foreground">Set up your stream first, then add products to sell live.</p>

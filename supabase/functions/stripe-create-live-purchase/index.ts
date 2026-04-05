@@ -28,7 +28,7 @@ serve(async (req) => {
     const userId = userData.user.id;
     const email = userData.user.email;
 
-    const { live_product_id } = await req.json();
+    const { live_product_id, variant_selected, buyer_message } = await req.json();
     if (!live_product_id) throw new Error("live_product_id required");
 
     // Get product
@@ -95,6 +95,27 @@ serve(async (req) => {
       sessionParams.customer_email = email;
     }
 
+    // Shipping collection if product has shipping
+    if (product.free_shipping || (product.shipping_price && product.shipping_price > 0)) {
+      sessionParams.shipping_address_collection = {
+        allowed_countries: ["US", "CA", "GB", "AU", "DE", "FR", "JP"],
+      };
+      sessionParams.shipping_options = [{
+        shipping_rate_data: {
+          type: "fixed_amount",
+          fixed_amount: {
+            amount: product.free_shipping ? 0 : Math.round((product.shipping_price || 0) * 100),
+            currency: "usd",
+          },
+          display_name: product.free_shipping ? "Free Shipping" : "Standard Shipping",
+          delivery_estimate: {
+            minimum: { unit: "business_day", value: 3 },
+            maximum: { unit: "business_day", value: 7 },
+          },
+        },
+      }];
+    }
+
     const session = await stripe.checkout.sessions.create(sessionParams);
 
     // Optimistically insert pending purchase  
@@ -107,6 +128,10 @@ serve(async (req) => {
       creator_earnings: parseFloat((product.price * 0.95).toFixed(2)),
       status: "pending",
       stripe_payment_intent_id: session.id,
+      variant_selected: variant_selected || null,
+      buyer_message: buyer_message || null,
+      shipping_price: product.shipping_price || 0,
+      total_amount: product.price + (product.shipping_price || 0),
     });
 
     // Decrement quantity
