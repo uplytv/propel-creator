@@ -247,11 +247,13 @@ function WinnerOverlay({ username, title, onDismiss }: { username: string; title
 export default function ViewerShopOverlay({ streamId, creatorUserId }: Props) {
   const {
     activeProducts, products, auctions, activeGiveaway, giveawayEntered, giveaways,
-    placeBid, buyProduct, enterGiveaway,
+    activeFlashSales, wishlistedIds, getVariantsForProduct,
+    placeBid, buyProduct, enterGiveaway, toggleWishlist,
   } = useLiveShop(streamId);
 
   const [winnerOverlay, setWinnerOverlay] = useState<{ username: string; title: string } | null>(null);
   const [shopDrawerOpen, setShopDrawerOpen] = useState(false);
+  const [selectedVariants, setSelectedVariants] = useState<Record<string, Record<string, string>>>({});
 
   // Watch for giveaway winner
   useEffect(() => {
