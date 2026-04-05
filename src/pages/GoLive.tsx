@@ -151,9 +151,13 @@ export default function GoLive() {
       if (error) throw error;
 
       if (featuredProductId && data?.streamId) {
+        const isLiveShop = liveProducts.some((p: any) => p.id === featuredProductId);
         await supabase
           .from('mux_live_streams')
-          .update({ featured_product_id: featuredProductId })
+          .update({
+            featured_product_id: featuredProductId,
+            featured_product_source: isLiveShop ? "live_shop" : "digital",
+          } as any)
           .eq('id', data.streamId);
       }
 
