@@ -325,7 +325,7 @@ export function useLiveShop(streamId: string | undefined) {
         message: `🔥 Only ${p.quantity_remaining} left of "${p.title}"!`,
         is_pinned: false,
       } as any).catch(() => {});
-      supabase.from("live_products").update({ low_stock_alert_sent: true } as any).eq("id", p.id).then(() => {});
+      supabase.from("live_products").update({ low_stock_alert_sent: true } as any).eq("id", p.id).then(() => {}).catch(() => {});
     }
   }, [activeProducts.map(p => `${p.id}:${p.quantity_remaining}:${p.low_stock_alert_sent}`).join(","), streamId]);
 
