@@ -19,7 +19,7 @@ interface FeaturedProductPickerProps {
 }
 
 function ProductEmoji(type: string) {
-  return type === 'course' ? '📚' : type === 'community' ? '🤝' : type === 'coaching' ? '🎯' : '📦';
+  return type === 'course' ? '📚' : type === 'community' ? '🤝' : type === 'coaching' ? '🎯' : type === 'auction' ? '🔨' : type === 'product' ? '🛍️' : '📦';
 }
 
 export default function FeaturedProductPicker({
