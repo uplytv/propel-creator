@@ -342,6 +342,7 @@ export default function GoLive() {
                   streamId={streamData?.streamId || draftSessionId}
                   products={liveProducts}
                   onProductsChange={() => fetchLiveProducts(streamData?.streamId || draftSessionId)}
+                  isStreamActive={!!streamData}
                 />
               </TabsContent>
             </Tabs>
