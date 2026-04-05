@@ -120,7 +120,7 @@ export default function NetworkFeed() {
         setItems([...enrichedLive, ...enrichedRecs]);
       } else if (tab === "trending") {
         const { data: vids } = await supabase.from("videos").select("id, title, playback_id, thumbnail_url, duration_seconds, view_count, like_count, creator_id").eq("is_public", true).order("trending_score", { ascending: false }).limit(24);
-        setItems(await enrich((vids || []).map((v: any) => ({ ...v, type: "video" })), "creator_id", "id"));
+        setItems(await enrich((vids || []).map((v: any) => ({ ...v, type: "video" })), "creator_id", "user_id"));
       } else if (tab === "shop") {
         const { data: p } = await supabase.from("live_products").select("id, title, price, image_url, stream_id, creator_id").eq("is_active", true).eq("is_sold_out", false).limit(24);
         setItems(p || []);
