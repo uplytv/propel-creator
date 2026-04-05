@@ -623,6 +623,7 @@ export default function BroadcastStudio({
 
                   {/* Right-side action buttons */}
                   <div className="absolute right-3 bottom-28 z-20 flex flex-col gap-3 items-center">
+                    <ActionButton onClick={() => setShowShopPanel(!showShopPanel)} active={showShopPanel} activeBg="rgba(0,255,133,0.3)" icon={<ShoppingBag className="w-4.5 h-4.5 text-white" />} />
                     <ActionButton onClick={async () => {
                       const liveUrl = `${getSiteUrl()}/stream/${streamData.streamId}`;
                       const ok = await safeClipboardWrite(liveUrl);
