@@ -36,6 +36,7 @@ interface FeedCardProps {
 
 const FeedCard = memo(function FeedCard({ item, index, isLiveSection }: FeedCardProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [imgLoaded, setImgLoaded] = useState(false);
   const [imgError, setImgError] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
