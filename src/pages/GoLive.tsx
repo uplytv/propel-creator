@@ -328,8 +328,8 @@ export default function GoLive() {
               {(() => {
                 // Merge digital products + live shop products for the picker
                 const allFeaturableProducts = [
-                  ...activeProducts.map(p => ({ id: p.id, name: p.name, price: p.price, type: p.type, image_url: (p as any).image_url })),
-                  ...liveProducts.map(p => ({ id: `shop_${p.id}`, name: p.title, price: p.price || p.starting_bid || 0, type: p.type === "auction" ? "auction" : "shop", image_url: p.image_url })),
+                  ...activeProducts.map(p => ({ id: p.id, name: p.name, price: p.price, type: p.type, image_url: (p as any).image_url, source: "digital" as const })),
+                  ...liveProducts.map(p => ({ id: p.id, name: p.title, price: p.price || p.starting_bid || 0, type: p.type === "auction" ? "auction" : "shop", image_url: p.image_url, source: "live_shop" as const })),
                 ];
                 const selectedItem = allFeaturableProducts.find(p => p.id === featuredProductId);
                 const getIcon = (type: string) => type === 'course' ? '📚' : type === 'community' ? '🤝' : type === 'coaching' ? '🎯' : type === 'auction' ? '🔨' : type === 'shop' ? '🛍️' : '📦';
@@ -343,7 +343,7 @@ export default function GoLive() {
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-foreground truncate">{selectedItem.name}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{selectedItem.type} · ${selectedItem.price}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{selectedItem.type} · ${selectedItem.price}{selectedItem.source === "live_shop" && <span className="text-primary font-semibold"> · Shop</span>}</p>
                     </div>
                     <button onClick={() => setFeaturedProductId(null)} className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
                       <X className="w-4 h-4" />
@@ -362,7 +362,7 @@ export default function GoLive() {
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
-                          <p className="text-xs text-muted-foreground capitalize">{p.type} · ${p.price}</p>
+                          <p className="text-xs text-muted-foreground capitalize">{p.type} · ${p.price}{p.source === "live_shop" && <span className="text-primary font-semibold"> · Shop</span>}</p>
                         </div>
                       </button>
                     ))}
