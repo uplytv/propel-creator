@@ -71,6 +71,7 @@ interface BroadcastStudioProps {
   featuredProductId?: string | null;
   onFeaturedProductChange?: (productId: string | null) => void;
   creatorUsername?: string | null;
+  hasQueuedShopProducts?: boolean;
 }
 
 type StudioMode = "select" | "browser-record" | "external-encoder";
