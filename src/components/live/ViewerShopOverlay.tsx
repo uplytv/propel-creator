@@ -336,25 +336,104 @@ export default function ViewerShopOverlay({ streamId, creatorUserId }: Props) {
         )}
       </AnimatePresence>
 
-      {/* Shop button in action bar */}
-      {products.length > 0 && (
-        <div className="absolute right-3 z-40" style={{ bottom: mainProduct ? "200px" : "80px" }}>
+      {/* Right-side action bar — YouTube Shorts / TikTok style */}
+      <div className="absolute right-3 z-40 flex flex-col items-center gap-4" style={{ bottom: mainProduct ? "230px" : "100px" }}>
+        {/* Like */}
+        <button
+          onClick={() => {
+            if (!user) { toast.error("Sign in to like"); return; }
+            setLiked(l => !l);
+            setDisliked(false);
+            setLikeCount(c => liked ? c - 1 : c + 1);
+          }}
+          className="flex flex-col items-center gap-1"
+        >
+          <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(10,10,10,0.85)", backdropFilter: "blur(12px)" }}>
+            <Heart className={`w-5 h-5 transition-colors ${liked ? "fill-red-500 text-red-500" : "text-white"}`} />
+          </div>
+          <span className="text-[10px] text-white/60 font-semibold">{likeCount > 0 ? likeCount.toLocaleString() : "Like"}</span>
+        </button>
+
+        {/* Dislike */}
+        <button
+          onClick={() => {
+            if (!user) { toast.error("Sign in to react"); return; }
+            setDisliked(d => !d);
+            if (liked) { setLiked(false); setLikeCount(c => c - 1); }
+          }}
+          className="flex flex-col items-center gap-1"
+        >
+          <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(10,10,10,0.85)", backdropFilter: "blur(12px)" }}>
+            <ThumbsDown className={`w-5 h-5 transition-colors ${disliked ? "text-primary" : "text-white"}`} />
+          </div>
+          <span className="text-[10px] text-white/60 font-semibold">Dislike</span>
+        </button>
+
+        {/* Subscribe / Follow */}
+        {user && user.id !== creatorUserId && (
           <button
-            onClick={() => setShopDrawerOpen(true)}
-            className="w-11 h-11 rounded-full flex items-center justify-center relative"
-            style={{ backgroundColor: "rgba(10,10,10,0.85)", backdropFilter: "blur(12px)" }}
+            onClick={async () => {
+              if (isFollowingCreator) await unfollow(creatorUserId);
+              else { await follow(creatorUserId); toast.success("Subscribed!"); }
+            }}
+            className="flex flex-col items-center gap-1"
           >
-            <ShoppingBag className="w-5 h-5 text-white" />
-            {activeProducts.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center"
-                style={{ backgroundColor: "hsl(var(--destructive))", color: "white" }}>
-                {activeProducts.length}
-              </span>
-            )}
+            <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ backgroundColor: isFollowingCreator ? "rgba(0,255,133,0.15)" : "rgba(10,10,10,0.85)", backdropFilter: "blur(12px)" }}>
+              {isFollowingCreator
+                ? <UserCheck className="w-5 h-5" style={{ color: "hsl(var(--primary))" }} />
+                : <UserPlus className="w-5 h-5 text-white" />}
+            </div>
+            <span className={`text-[10px] font-semibold ${isFollowingCreator ? "text-primary" : "text-white/60"}`}>
+              {isFollowingCreator ? "Subscribed" : "Subscribe"}
+            </span>
           </button>
-          <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[10px] text-white/60 font-semibold">Shop</span>
-        </div>
-      )}
+        )}
+
+        {/* Share */}
+        <button
+          onClick={() => {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => toast.success("Link copied!")).catch(() => {});
+          }}
+          className="flex flex-col items-center gap-1"
+        >
+          <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(10,10,10,0.85)", backdropFilter: "blur(12px)" }}>
+            <Share2 className="w-5 h-5 text-white" />
+          </div>
+          <span className="text-[10px] text-white/60 font-semibold">Share</span>
+        </button>
+
+        {/* Remix */}
+        <button
+          onClick={() => {
+            if (!user) { toast.error("Sign in to remix"); return; }
+            toast("Remix coming soon 🎬", { description: "Clip & remix will be available shortly." });
+          }}
+          className="flex flex-col items-center gap-1"
+        >
+          <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(10,10,10,0.85)", backdropFilter: "blur(12px)" }}>
+            <Repeat2 className="w-5 h-5 text-white" />
+          </div>
+          <span className="text-[10px] text-white/60 font-semibold">Remix</span>
+        </button>
+
+        {/* Shop */}
+        {products.length > 0 && (
+          <button onClick={() => setShopDrawerOpen(true)} className="flex flex-col items-center gap-1">
+            <div className="w-11 h-11 rounded-full flex items-center justify-center relative" style={{ backgroundColor: "rgba(10,10,10,0.85)", backdropFilter: "blur(12px)" }}>
+              <ShoppingBag className="w-5 h-5 text-white" />
+              {activeProducts.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center" style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--background))" }}>
+                  {activeProducts.length}
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] text-white/60 font-semibold">
+              {products.length} {products.length === 1 ? "product" : "products"}
+            </span>
+          </button>
+        )}
+      </div>
 
       {/* Bottom product card - persistent */}
       <div className="absolute bottom-0 left-0 right-0 z-30">
