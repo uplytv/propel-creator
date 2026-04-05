@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { DollarSign, ShoppingBag, Users, BookOpen, Zap, ArrowRight, X, Copy, Check, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { SITE_URL } from "@/lib/siteUrl";
 
