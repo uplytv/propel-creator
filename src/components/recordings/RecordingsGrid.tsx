@@ -20,7 +20,7 @@ function formatDuration(seconds: number) {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-export default function RecordingsGrid({ recordings, isOwner, onTogglePublish, onDelete }: Props) {
+const RecordingsGrid = memo(function RecordingsGrid({ recordings, isOwner, onTogglePublish, onDelete }: Props) {
   const navigate = useNavigate();
   const [shareRec, setShareRec] = useState<StreamRecording | null>(null);
 
