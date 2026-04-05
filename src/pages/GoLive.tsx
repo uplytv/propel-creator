@@ -437,16 +437,38 @@ export default function GoLive() {
               streamStatus={streamStatus}
               title={title}
               onEndStream={handleEndStream}
-              products={activeProducts}
+              products={[
+                ...activeProducts.map((p: any) => ({
+                  id: p.id, name: p.name, type: p.type, price: p.price,
+                  image_url: (p as any).image_url || null, status: p.status,
+                  source: "digital" as const,
+                })),
+                ...liveProducts.map((p: any) => ({
+                  id: p.id, name: p.title,
+                  type: p.type === "auction" ? "auction" : "product",
+                  price: p.type === "auction" ? (p.starting_bid || 0) : p.price,
+                  image_url: p.image_url || null, status: "active",
+                  source: "live_shop" as const,
+                })),
+              ]}
               featuredProductId={featuredProductId}
               creatorUsername={profileData?.display_name}
               hasQueuedShopProducts={liveProducts.length > 0}
               onFeaturedProductChange={async (productId) => {
                 setFeaturedProductId(productId);
-                if (streamData) {
+                if (streamData && productId) {
+                  const isLiveShopProduct = liveProducts.some((p: any) => p.id === productId);
                   await supabase
                     .from('mux_live_streams')
-                    .update({ featured_product_id: productId })
+                    .update({
+                      featured_product_id: productId,
+                      featured_product_source: isLiveShopProduct ? "live_shop" : "digital",
+                    } as any)
+                    .eq('id', streamData.streamId);
+                } else if (streamData && !productId) {
+                  await supabase
+                    .from('mux_live_streams')
+                    .update({ featured_product_id: null, featured_product_source: null } as any)
                     .eq('id', streamData.streamId);
                 }
               }}

@@ -49,7 +49,12 @@ export default function FeaturedProductPicker({
           )}
           <div className="flex-1 min-w-0">
             <p className="text-xs font-semibold text-foreground truncate">{p.name}</p>
-            <p className="text-[10px] text-muted-foreground capitalize">{p.type} · ${p.price}</p>
+            <p className="text-[10px] text-muted-foreground capitalize">
+              {p.type} · ${p.price}
+              {(p as any).source === "live_shop" && (
+                <span className="ml-1 text-primary font-semibold">· Shop</span>
+              )}
+            </p>
           </div>
         </button>
       ))}
