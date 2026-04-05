@@ -16,9 +16,10 @@ interface Props {
   streamId: string;
   products: any[];
   onProductsChange: () => void;
+  isStreamActive?: boolean;
 }
 
-export default function LiveShopSetup({ streamId, products, onProductsChange }: Props) {
+export default function LiveShopSetup({ streamId, products, onProductsChange, isStreamActive = false }: Props) {
   const { user } = useAuth();
   const { activateProduct, deactivateProduct, startFlashSale, auctions } = useLiveShop(streamId);
   const [tab, setTab] = useState<"products" | "shopify" | "flash">("products");
