@@ -9,6 +9,7 @@ interface Product {
   price: number;
   image_url?: string | null;
   status: string;
+  source?: "digital" | "live_shop";
 }
 
 interface FeaturedProductPickerProps {
