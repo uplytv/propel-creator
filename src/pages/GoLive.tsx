@@ -191,11 +191,23 @@ export default function GoLive() {
           </div>
 
           {!streamData ? (
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <Tabs value={activeTab} onValueChange={(val) => {
+              setActiveTab(val);
+              if (val === "shop") {
+                fetchLiveProducts(streamData?.streamId || draftSessionId);
+              }
+            }} className="space-y-6">
               <TabsList className="w-full">
                 <TabsTrigger value="setup" className="flex-1">Stream Setup</TabsTrigger>
                 <TabsTrigger value="schedule" className="flex-1">📅 Schedule</TabsTrigger>
-                <TabsTrigger value="shop" className="flex-1">🛍️ Shop</TabsTrigger>
+                <TabsTrigger value="shop" className="flex-1 relative">
+                  🛍️ Shop
+                  {liveProducts.length > 0 && (
+                    <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-bold">
+                      {liveProducts.length}
+                    </span>
+                  )}
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="setup" className="space-y-6">
               {/* Stream Mode */}
