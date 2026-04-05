@@ -208,6 +208,7 @@ const App = () => (
                     <Route path="/grow" element={<ProtectedRoute><Grow /></ProtectedRoute>} />
                     <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
                     <Route path="/affiliates" element={<ProtectedRoute><Affiliates /></ProtectedRoute>} />
+                    <Route path="/creator-affiliate" element={<ProtectedRoute><CreatorAffiliate /></ProtectedRoute>} />
                     <Route path="/collaborate" element={<ProtectedRoute><Collaborate /></ProtectedRoute>} />
                     <Route path="/collaborate/product" element={<ProtectedRoute><JointProduct /></ProtectedRoute>} />
                     <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
