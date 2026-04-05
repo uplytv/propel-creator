@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag, Gift, X } from "lucide-react";
-import { useLiveShop, type LiveProduct, type LiveAuction } from "@/hooks/useLiveShop";
+import { useLiveShop, type LiveProduct, type LiveAuction, type LiveProductVariant } from "@/hooks/useLiveShop";
 import { Drawer } from "vaul";
 
 interface Props {
