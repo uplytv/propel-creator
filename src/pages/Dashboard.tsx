@@ -76,6 +76,20 @@ export default function Dashboard() {
   const { data: dashStats, isLoading: statsLoading } = useDashboardStats();
   const { data: inviteData } = useInviteCodes();
   const remainingInvites = inviteData?.remaining ?? 0;
+  const [showWizard, setShowWizard] = useState(false);
+  const [wizardDone, setWizardDone] = useState(() => localStorage.getItem("uply_fdw") === "1");
+  const [creatorUsername, setCreatorUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user || wizardDone) return;
+    supabase.from("profiles").select("username, total_revenue").eq("user_id", user.id).single()
+      .then(({ data }) => {
+        if (data) {
+          setCreatorUsername((data as any).username);
+          if (Number((data as any).total_revenue || 0) === 0) setShowWizard(true);
+        }
+      });
+  }, [user, wizardDone]);
 
   useEffect(() => {
     if (!user) return;
