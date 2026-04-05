@@ -98,6 +98,11 @@ export function useNotifications() {
       if (!initialLoadDone.current) return;
       const row = payload.new;
       if (row) {
+        // Skip admin system events from triggering personal toasts
+        const rowType = row.type as string;
+        if (source === "social" && (rowType?.startsWith("admin_") || ["stream_started", "new_user", "new_creator", "new_subscription"].includes(rowType))) {
+          return;
+        }
         const icon = source === "job" ? "💼" : source === "social" ? "💬" : "📢";
         toast(row.title as string, {
           description: row.message as string,
