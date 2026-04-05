@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Radio, Globe, Lock, Loader2, ShoppingBag, X, CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
