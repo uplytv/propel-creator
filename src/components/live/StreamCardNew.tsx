@@ -25,7 +25,7 @@ function formatViewers(n: number) {
   return n >= 1000 ? `${(n / 1000).toFixed(1)}K` : n.toString();
 }
 
-export default function StreamCardNew({ stream, index = 0 }: { stream: StreamCardData; index?: number }) {
+const StreamCardNew = memo(function StreamCardNew({ stream, index = 0 }: { stream: StreamCardData; index?: number }) {
   const navigate = useNavigate();
 
   const thumbnailUrl = stream.muxPlaybackId
