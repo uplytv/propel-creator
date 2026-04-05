@@ -308,7 +308,20 @@ export default function ViewerShopOverlay({ streamId, creatorUserId }: Props) {
             <ProductCard
               product={mainProduct}
               auction={mainAuction}
-              onBuy={() => buyProduct(mainProduct.id)}
+              isWishlisted={wishlistedIds.has(mainProduct.id)}
+              onWishlist={() => toggleWishlist(mainProduct.id)}
+              variants={getVariantsForProduct(mainProduct.id)}
+              selectedVariants={selectedVariants[mainProduct.id] || {}}
+              onVariantChange={(label, opt) => setSelectedVariants(prev => ({
+                ...prev,
+                [mainProduct.id]: { ...(prev[mainProduct.id] || {}), [label]: opt }
+              }))}
+              onBuy={() => {
+                const variantStr = Object.entries(selectedVariants[mainProduct.id] || {})
+                  .map(([k, v]) => `${k}: ${v}`)
+                  .join(", ");
+                buyProduct(mainProduct.id, variantStr || undefined);
+              }}
               onBid={(amount) => placeBid(mainProduct.id, amount)}
             />
           )}
