@@ -81,9 +81,9 @@ function CreatorRow({ c }: { c: any }) {
   );
 }
 
-async function enrich(items: any[], idField: string, profileField: "user_id" | "id" | "creator_id") {
+async function enrich(items: any[], idField: string, lookupField: "user_id" | "id") {
   return Promise.all((items || []).map(async (item: any) => {
-    const { data: p } = await supabase.from("profiles").select("display_name, username, avatar_url").eq(profileField === "creator_id" ? "id" : profileField, item[idField]).maybeSingle();
+    const { data: p } = await supabase.from("profiles").select("display_name, username, avatar_url").eq(lookupField, item[idField]).maybeSingle();
     return { ...item, creator_name: (p as any)?.display_name, username: (p as any)?.username, avatar_url: (p as any)?.avatar_url };
   }));
 }
