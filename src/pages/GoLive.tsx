@@ -55,6 +55,7 @@ export default function GoLive() {
     localStorage.setItem("uply_draft_session_id", newId);
     return newId;
   });
+  const [activeTab, setActiveTab] = useState("setup");
 
   const { data: profileData } = useProfile();
   const { data: products } = useProducts();
@@ -190,7 +191,7 @@ export default function GoLive() {
           </div>
 
           {!streamData ? (
-            <Tabs defaultValue="setup" className="space-y-6">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
               <TabsList className="w-full">
                 <TabsTrigger value="setup" className="flex-1">Stream Setup</TabsTrigger>
                 <TabsTrigger value="schedule" className="flex-1">📅 Schedule</TabsTrigger>
@@ -350,6 +351,7 @@ export default function GoLive() {
                   products={liveProducts}
                   onProductsChange={() => fetchLiveProducts(streamData?.streamId || draftSessionId)}
                   isStreamActive={!!streamData}
+                  onGoToStreamSetup={() => setActiveTab("setup")}
                 />
               </TabsContent>
             </Tabs>
