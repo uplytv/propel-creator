@@ -1,0 +1,1 @@
+ALTER TABLE public.live_products DROP CONSTRAINT IF EXISTS live_products_stream_id_fkey;

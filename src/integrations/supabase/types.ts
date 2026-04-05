@@ -3904,22 +3904,7 @@ export type Database = {
           type?: string
           urgency_message?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "live_products_stream_id_fkey"
-            columns: ["stream_id"]
-            isOneToOne: false
-            referencedRelation: "mux_live_streams"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "live_products_stream_id_fkey"
-            columns: ["stream_id"]
-            isOneToOne: false
-            referencedRelation: "mux_live_streams_public"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       live_purchase_addresses: {
         Row: {
