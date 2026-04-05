@@ -247,6 +247,7 @@ const App = () => (
                     <Route path="/podcast-rss" element={<ProtectedRoute><PodcastRSS /></ProtectedRoute>} />
                     <Route path="/network" element={<ProtectedRoute><NetworkFeed /></ProtectedRoute>} />
                     <Route path="/distribution" element={<ProtectedRoute><Distribution /></ProtectedRoute>} />
+                    <Route path="/developer" element={<ProtectedRoute><DeveloperAPI /></ProtectedRoute>} />
 
                     {/* Admin routes */}
                     <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
