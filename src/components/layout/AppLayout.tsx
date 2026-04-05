@@ -34,6 +34,7 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
     icon: LayoutGrid,
     items: [
       { label: "My Community", icon: LayoutGrid, path: "__space__", desc: "Your community hub" },
+      { label: "Network Feed", icon: Tv, path: "/network", desc: "Live · Trending · Shop" },
       { label: "Leaderboard", icon: Trophy, path: "/leaderboard", desc: "Top members", featureKey: "leaderboard" },
     ],
   },
