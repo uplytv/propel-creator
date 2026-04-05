@@ -80,6 +80,7 @@ const StreamCard = memo(function StreamCard({ stream, index = 0 }: { stream: Str
               e.stopPropagation();
               setBoostOpen(true);
             }}
+            aria-label={`Boost ${stream.title}`}
             className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-primary/90 hover:bg-primary backdrop-blur-sm text-primary-foreground px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all opacity-0 group-hover:opacity-100 sm:opacity-100"
           >
             <Rocket className="w-3 h-3" />
