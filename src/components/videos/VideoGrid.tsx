@@ -66,7 +66,7 @@ export default function VideoGrid({ videos, loading, emptyMessage }: VideoGridPr
   );
 }
 
-function VideoCard({ video, index }: { video: Video; index: number }) {
+const VideoCard = memo(function VideoCard({ video, index }: { video: Video; index: number }) {
   const navigate = useNavigate();
 
   const { data: creator } = useQuery({
