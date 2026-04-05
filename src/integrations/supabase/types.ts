@@ -2329,6 +2329,42 @@ export type Database = {
         }
         Relationships: []
       }
+      creator_shopify_stores: {
+        Row: {
+          access_token: string
+          created_at: string | null
+          creator_id: string
+          currency: string | null
+          id: string
+          is_active: boolean | null
+          shop_domain: string
+          shop_name: string | null
+          synced_at: string | null
+        }
+        Insert: {
+          access_token: string
+          created_at?: string | null
+          creator_id: string
+          currency?: string | null
+          id?: string
+          is_active?: boolean | null
+          shop_domain: string
+          shop_name?: string | null
+          synced_at?: string | null
+        }
+        Update: {
+          access_token?: string
+          created_at?: string | null
+          creator_id?: string
+          currency?: string | null
+          id?: string
+          is_active?: boolean | null
+          shop_domain?: string
+          shop_name?: string | null
+          synced_at?: string | null
+        }
+        Relationships: []
+      }
       creator_spaces: {
         Row: {
           avatar_url: string | null
@@ -3515,6 +3551,59 @@ export type Database = {
         }
         Relationships: []
       }
+      live_flash_sales: {
+        Row: {
+          created_at: string | null
+          creator_id: string
+          discount_percent: number
+          duration_seconds: number
+          ends_at: string
+          id: string
+          is_active: boolean | null
+          live_product_id: string
+          original_price: number
+          sale_price: number
+          starts_at: string
+          stream_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          creator_id: string
+          discount_percent?: number
+          duration_seconds?: number
+          ends_at: string
+          id?: string
+          is_active?: boolean | null
+          live_product_id: string
+          original_price: number
+          sale_price: number
+          starts_at?: string
+          stream_id: string
+        }
+        Update: {
+          created_at?: string | null
+          creator_id?: string
+          discount_percent?: number
+          duration_seconds?: number
+          ends_at?: string
+          id?: string
+          is_active?: boolean | null
+          live_product_id?: string
+          original_price?: number
+          sale_price?: number
+          starts_at?: string
+          stream_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_flash_sales_live_product_id_fkey"
+            columns: ["live_product_id"]
+            isOneToOne: false
+            referencedRelation: "live_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       live_giveaway_entries: {
         Row: {
           created_at: string
@@ -3601,13 +3690,80 @@ export type Database = {
           },
         ]
       }
+      live_product_variants: {
+        Row: {
+          created_at: string | null
+          id: string
+          label: string
+          live_product_id: string
+          options: string[]
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          label: string
+          live_product_id: string
+          options?: string[]
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          label?: string
+          live_product_id?: string
+          options?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_product_variants_live_product_id_fkey"
+            columns: ["live_product_id"]
+            isOneToOne: false
+            referencedRelation: "live_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_product_wishlist: {
+        Row: {
+          created_at: string | null
+          id: string
+          live_product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          live_product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          live_product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_product_wishlist_live_product_id_fkey"
+            columns: ["live_product_id"]
+            isOneToOne: false
+            referencedRelation: "live_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       live_products: {
         Row: {
+          additional_images: string[] | null
           auction_duration_minutes: number | null
+          auto_end_auction: boolean | null
+          buy_now_price: number | null
+          category: string | null
           click_count: number | null
+          condition: string | null
           created_at: string
           creator_id: string
           description: string | null
+          free_shipping: boolean | null
           id: string
           image_url: string | null
           impression_count: number | null
@@ -3619,6 +3775,12 @@ export type Database = {
           price: number
           quantity_remaining: number
           quantity_total: number
+          reserve_price: number | null
+          shipping_price: number | null
+          shopify_checkout_url: string | null
+          shopify_product_id: string | null
+          shopify_variant_id: string | null
+          sku: string | null
           starting_bid: number | null
           stream_id: string
           stripe_price_id: string | null
@@ -3626,11 +3788,17 @@ export type Database = {
           type: string
         }
         Insert: {
+          additional_images?: string[] | null
           auction_duration_minutes?: number | null
+          auto_end_auction?: boolean | null
+          buy_now_price?: number | null
+          category?: string | null
           click_count?: number | null
+          condition?: string | null
           created_at?: string
           creator_id: string
           description?: string | null
+          free_shipping?: boolean | null
           id?: string
           image_url?: string | null
           impression_count?: number | null
@@ -3642,6 +3810,12 @@ export type Database = {
           price?: number
           quantity_remaining?: number
           quantity_total?: number
+          reserve_price?: number | null
+          shipping_price?: number | null
+          shopify_checkout_url?: string | null
+          shopify_product_id?: string | null
+          shopify_variant_id?: string | null
+          sku?: string | null
           starting_bid?: number | null
           stream_id: string
           stripe_price_id?: string | null
@@ -3649,11 +3823,17 @@ export type Database = {
           type?: string
         }
         Update: {
+          additional_images?: string[] | null
           auction_duration_minutes?: number | null
+          auto_end_auction?: boolean | null
+          buy_now_price?: number | null
+          category?: string | null
           click_count?: number | null
+          condition?: string | null
           created_at?: string
           creator_id?: string
           description?: string | null
+          free_shipping?: boolean | null
           id?: string
           image_url?: string | null
           impression_count?: number | null
@@ -3665,6 +3845,12 @@ export type Database = {
           price?: number
           quantity_remaining?: number
           quantity_total?: number
+          reserve_price?: number | null
+          shipping_price?: number | null
+          shopify_checkout_url?: string | null
+          shopify_product_id?: string | null
+          shopify_variant_id?: string | null
+          sku?: string | null
           starting_bid?: number | null
           stream_id?: string
           stripe_price_id?: string | null
@@ -3688,42 +3874,160 @@ export type Database = {
           },
         ]
       }
+      live_purchase_addresses: {
+        Row: {
+          address_line1: string
+          address_line2: string | null
+          buyer_id: string
+          city: string
+          country: string
+          created_at: string | null
+          full_name: string
+          id: string
+          phone: string | null
+          purchase_id: string
+          state: string
+          zip: string
+        }
+        Insert: {
+          address_line1?: string
+          address_line2?: string | null
+          buyer_id: string
+          city?: string
+          country?: string
+          created_at?: string | null
+          full_name?: string
+          id?: string
+          phone?: string | null
+          purchase_id: string
+          state?: string
+          zip?: string
+        }
+        Update: {
+          address_line1?: string
+          address_line2?: string | null
+          buyer_id?: string
+          city?: string
+          country?: string
+          created_at?: string | null
+          full_name?: string
+          id?: string
+          phone?: string | null
+          purchase_id?: string
+          state?: string
+          zip?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_purchase_addresses_purchase_id_fkey"
+            columns: ["purchase_id"]
+            isOneToOne: false
+            referencedRelation: "live_purchases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_purchase_fulfillments: {
+        Row: {
+          carrier: string | null
+          created_at: string | null
+          creator_id: string
+          delivered_at: string | null
+          id: string
+          notes: string | null
+          purchase_id: string
+          shipped_at: string | null
+          status: string
+          tracking_number: string | null
+          tracking_url: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          carrier?: string | null
+          created_at?: string | null
+          creator_id: string
+          delivered_at?: string | null
+          id?: string
+          notes?: string | null
+          purchase_id: string
+          shipped_at?: string | null
+          status?: string
+          tracking_number?: string | null
+          tracking_url?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          carrier?: string | null
+          created_at?: string | null
+          creator_id?: string
+          delivered_at?: string | null
+          id?: string
+          notes?: string | null
+          purchase_id?: string
+          shipped_at?: string | null
+          status?: string
+          tracking_number?: string | null
+          tracking_url?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_purchase_fulfillments_purchase_id_fkey"
+            columns: ["purchase_id"]
+            isOneToOne: false
+            referencedRelation: "live_purchases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       live_purchases: {
         Row: {
           amount: number
           buyer_id: string
+          buyer_message: string | null
           created_at: string
           creator_earnings: number
           creator_id: string
           id: string
           live_product_id: string
           platform_fee: number
+          shipping_price: number | null
           status: string
           stripe_payment_intent_id: string | null
+          total_amount: number | null
+          variant_selected: string | null
         }
         Insert: {
           amount?: number
           buyer_id: string
+          buyer_message?: string | null
           created_at?: string
           creator_earnings?: number
           creator_id: string
           id?: string
           live_product_id: string
           platform_fee?: number
+          shipping_price?: number | null
           status?: string
           stripe_payment_intent_id?: string | null
+          total_amount?: number | null
+          variant_selected?: string | null
         }
         Update: {
           amount?: number
           buyer_id?: string
+          buyer_message?: string | null
           created_at?: string
           creator_earnings?: number
           creator_id?: string
           id?: string
           live_product_id?: string
           platform_fee?: number
+          shipping_price?: number | null
           status?: string
           stripe_payment_intent_id?: string | null
+          total_amount?: number | null
+          variant_selected?: string | null
         }
         Relationships: [
           {
