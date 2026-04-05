@@ -85,6 +85,7 @@ export default function BroadcastStudio({
   featuredProductId,
   onFeaturedProductChange,
   creatorUsername,
+  hasQueuedShopProducts = false,
 }: BroadcastStudioProps) {
   const { user } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
