@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
@@ -26,6 +26,7 @@ import { RevenueGoalTracker } from "@/components/dashboard/RevenueGoalTracker";
 import ReferralRewardsCard from "@/components/affiliates/ReferralRewardsCard";
 import ScheduleFirstShowCard from "@/components/scheduled/ScheduleFirstShowCard";
 import { useInviteCodes } from "@/hooks/useInviteCodes";
+import FirstDollarWizard from "@/components/dashboard/FirstDollarWizard";
 
 function PlatformUpgradeBanner() {
   const { user } = useAuth();
@@ -75,6 +76,20 @@ export default function Dashboard() {
   const { data: dashStats, isLoading: statsLoading } = useDashboardStats();
   const { data: inviteData } = useInviteCodes();
   const remainingInvites = inviteData?.remaining ?? 0;
+  const [showWizard, setShowWizard] = useState(false);
+  const [wizardDone, setWizardDone] = useState(() => localStorage.getItem("uply_fdw") === "1");
+  const [creatorUsername, setCreatorUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user || wizardDone) return;
+    supabase.from("profiles").select("username, total_revenue").eq("user_id", user.id).single()
+      .then(({ data }) => {
+        if (data) {
+          setCreatorUsername((data as any).username);
+          if (Number((data as any).total_revenue || 0) === 0) setShowWizard(true);
+        }
+      });
+  }, [user, wizardDone]);
 
   useEffect(() => {
     if (!user) return;
@@ -99,6 +114,15 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <div className="max-w-5xl mx-auto pb-20 md:pb-8">
+        {/* First Dollar Wizard */}
+        {showWizard && !wizardDone && (
+          <div className="px-4 md:px-8 pt-4">
+            <FirstDollarWizard
+              onDismiss={() => { setShowWizard(false); setWizardDone(true); localStorage.setItem("uply_fdw", "1"); }}
+              username={creatorUsername}
+            />
+          </div>
+        )}
         {/* Welcome + Mode Toggle */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="px-4 md:px-8 pt-4 md:pt-8 pb-2">
           <div className="flex items-center justify-between gap-3 mb-2">

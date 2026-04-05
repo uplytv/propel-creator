@@ -2251,6 +2251,33 @@ export type Database = {
         }
         Relationships: []
       }
+      creator_platform_connections: {
+        Row: {
+          connected_at: string | null
+          creator_id: string
+          handle: string | null
+          id: string
+          is_active: boolean | null
+          platform_id: string
+        }
+        Insert: {
+          connected_at?: string | null
+          creator_id: string
+          handle?: string | null
+          id?: string
+          is_active?: boolean | null
+          platform_id: string
+        }
+        Update: {
+          connected_at?: string | null
+          creator_id?: string
+          handle?: string | null
+          id?: string
+          is_active?: boolean | null
+          platform_id?: string
+        }
+        Relationships: []
+      }
       creator_podcasts: {
         Row: {
           apple_podcasts_url: string | null

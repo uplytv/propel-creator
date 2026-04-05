@@ -86,6 +86,8 @@ const BrandDeal = lazy(() => import("./pages/BrandDeal"));
 const Podcast = lazy(() => import("./pages/Podcast"));
 const BioPage = lazy(() => import("./pages/BioPage"));
 const PodcastRSS = lazy(() => import("./pages/PodcastRSS"));
+const NetworkFeed = lazy(() => import("./pages/NetworkFeed"));
+const Distribution = lazy(() => import("./pages/Distribution"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -242,6 +244,8 @@ const App = () => (
                     <Route path="/marketplace/deal/:dealId" element={<ProtectedRoute><BrandDeal /></ProtectedRoute>} />
                     <Route path="/podcast" element={<ProtectedRoute><Podcast /></ProtectedRoute>} />
                     <Route path="/podcast-rss" element={<ProtectedRoute><PodcastRSS /></ProtectedRoute>} />
+                    <Route path="/network" element={<ProtectedRoute><NetworkFeed /></ProtectedRoute>} />
+                    <Route path="/distribution" element={<ProtectedRoute><Distribution /></ProtectedRoute>} />
 
                     {/* Admin routes */}
                     <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
