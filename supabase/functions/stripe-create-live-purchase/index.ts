@@ -95,6 +95,27 @@ serve(async (req) => {
       sessionParams.customer_email = email;
     }
 
+    // Shipping collection if product has shipping
+    if (product.free_shipping || (product.shipping_price && product.shipping_price > 0)) {
+      sessionParams.shipping_address_collection = {
+        allowed_countries: ["US", "CA", "GB", "AU", "DE", "FR", "JP"],
+      };
+      sessionParams.shipping_options = [{
+        shipping_rate_data: {
+          type: "fixed_amount",
+          fixed_amount: {
+            amount: product.free_shipping ? 0 : Math.round((product.shipping_price || 0) * 100),
+            currency: "usd",
+          },
+          display_name: product.free_shipping ? "Free Shipping" : "Standard Shipping",
+          delivery_estimate: {
+            minimum: { unit: "business_day", value: 3 },
+            maximum: { unit: "business_day", value: 7 },
+          },
+        },
+      }];
+    }
+
     const session = await stripe.checkout.sessions.create(sessionParams);
 
     // Optimistically insert pending purchase  
