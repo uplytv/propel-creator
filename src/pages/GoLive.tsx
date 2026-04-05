@@ -325,37 +325,40 @@ export default function GoLive() {
                   Feature a Product
                   <span className="text-xs text-muted-foreground font-normal">(optional)</span>
                 </label>
-                {selectedProduct ? (
+              {(() => {
+                // Merge digital products + live shop products for the picker
+                const allFeaturableProducts = [
+                  ...activeProducts.map(p => ({ id: p.id, name: p.name, price: p.price, type: p.type, image_url: (p as any).image_url })),
+                  ...liveProducts.map(p => ({ id: `shop_${p.id}`, name: p.title, price: p.price || p.starting_bid || 0, type: p.type === "auction" ? "auction" : "shop", image_url: p.image_url })),
+                ];
+                const selectedItem = allFeaturableProducts.find(p => p.id === featuredProductId);
+                const getIcon = (type: string) => type === 'course' ? '📚' : type === 'community' ? '🤝' : type === 'coaching' ? '🎯' : type === 'auction' ? '🔨' : type === 'shop' ? '🛍️' : '📦';
+
+                if (selectedItem) return (
                   <div className="glass-card p-3 flex items-center gap-3">
-                    {(selectedProduct as any).image_url ? (
-                      <img src={(selectedProduct as any).image_url} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                    {selectedItem.image_url ? (
+                      <img src={selectedItem.image_url} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
                     ) : (
-                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 text-lg">
-                        {selectedProduct.type === 'course' ? '📚' : selectedProduct.type === 'community' ? '🤝' : selectedProduct.type === 'coaching' ? '🎯' : '📦'}
-                      </div>
+                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 text-lg">{getIcon(selectedItem.type)}</div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-foreground truncate">{selectedProduct.name}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{selectedProduct.type} · ${selectedProduct.price}</p>
+                      <p className="text-sm font-semibold text-foreground truncate">{selectedItem.name}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{selectedItem.type} · ${selectedItem.price}</p>
                     </div>
                     <button onClick={() => setFeaturedProductId(null)} className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
                       <X className="w-4 h-4" />
                     </button>
                   </div>
-                ) : activeProducts.length > 0 ? (
+                );
+
+                if (allFeaturableProducts.length > 0) return (
                   <div className="space-y-2 max-h-48 overflow-y-auto">
-                    {activeProducts.map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => setFeaturedProductId(p.id)}
-                        className="glass-card-hover p-3 w-full text-left flex items-center gap-3"
-                      >
-                        {(p as any).image_url ? (
-                          <img src={(p as any).image_url} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                    {allFeaturableProducts.map((p) => (
+                      <button key={p.id} onClick={() => setFeaturedProductId(p.id)} className="glass-card-hover p-3 w-full text-left flex items-center gap-3">
+                        {p.image_url ? (
+                          <img src={p.image_url} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
                         ) : (
-                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                            {p.type === 'course' ? '📚' : p.type === 'community' ? '🤝' : p.type === 'coaching' ? '🎯' : '📦'}
-                          </div>
+                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">{getIcon(p.type)}</div>
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
@@ -364,9 +367,10 @@ export default function GoLive() {
                       </button>
                     ))}
                   </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground py-2">No active products yet. Create one in the Products page.</p>
-                )}
+                );
+
+                return <p className="text-xs text-muted-foreground py-2">No products yet. Add one in the Shop tab or Products page.</p>;
+              })()}
               </div>
 
               {/* Simulcast Panel */}

@@ -560,8 +560,8 @@ export default function LiveShopSetup({ streamId, products, onProductsChange, is
                 style={{ fontSize: 16 }}
                 className="w-full bg-secondary/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary/50">
                 <option value="">Select a product…</option>
-                {products.filter((p: any) => p.is_active && !p.is_sold_out).map((p: any) => (
-                  <option key={p.id} value={p.id}>{p.title} — ${p.price}</option>
+                {products.filter((p: any) => !p.is_sold_out).map((p: any) => (
+                  <option key={p.id} value={p.id}>{p.title} — ${p.type === "auction" ? `Auction $${p.starting_bid}` : `$${p.price}`}</option>
                 ))}
               </select>
             </div>
