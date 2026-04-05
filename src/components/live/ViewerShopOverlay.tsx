@@ -63,11 +63,20 @@ function ProductCard({ product, auction, onBuy, onBid, isWishlisted, onWishlist,
       <div className="p-3">
         <div className="flex gap-3">
           {/* Product image */}
-          {product.image_url ? (
-            <img src={product.image_url} alt="" className="w-20 h-20 rounded-xl object-cover flex-shrink-0" />
-          ) : (
-            <div className="w-20 h-20 rounded-xl flex items-center justify-center text-2xl flex-shrink-0" style={{ backgroundColor: "hsl(var(--card))" }}>🛍️</div>
-          )}
+          <div className="relative w-20 h-20 flex-shrink-0">
+            {product.image_url ? (
+              <img src={product.image_url} alt={product.title} className="w-20 h-20 rounded-xl object-cover" />
+            ) : (
+              <div className="w-20 h-20 rounded-xl flex items-center justify-center text-2xl" style={{ backgroundColor: "hsl(var(--card))" }}>🛍️</div>
+            )}
+            {onWishlist && (
+              <button onClick={(e) => { e.stopPropagation(); onWishlist(); }}
+                className="absolute top-1 right-1 w-6 h-6 rounded-full flex items-center justify-center bg-black/60"
+                aria-label={isWishlisted ? "Remove from wishlist" : "Save for later"}>
+                {isWishlisted ? "❤️" : "🤍"}
+              </button>
+            )}
+          </div>
 
           {/* Product info */}
           <div className="flex-1 min-w-0">
