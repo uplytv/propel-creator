@@ -48,7 +48,13 @@ export default function GoLive() {
   const [streamDuration, setStreamDuration] = useState(0);
   const [streamMuxAssetId, setStreamMuxAssetId] = useState<string | null>(null);
   const [streamStartTime, setStreamStartTime] = useState<number | null>(null);
-  const [draftSessionId] = useState(() => crypto.randomUUID());
+  const [draftSessionId] = useState<string>(() => {
+    const stored = localStorage.getItem("uply_draft_session_id");
+    if (stored) return stored;
+    const newId = crypto.randomUUID();
+    localStorage.setItem("uply_draft_session_id", newId);
+    return newId;
+  });
 
   const { data: profileData } = useProfile();
   const { data: products } = useProducts();
@@ -134,6 +140,7 @@ export default function GoLive() {
           .update({ stream_id: data.streamId })
           .eq("stream_id", draftSessionId);
         fetchLiveProducts(data.streamId);
+        localStorage.removeItem("uply_draft_session_id");
       }
 
       setStreamData(data);
