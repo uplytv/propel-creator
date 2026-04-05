@@ -60,10 +60,22 @@ export function useNotifications() {
         source: "job" as const,
       }));
 
-      const socialNotifs: AppNotification[] = (socialRes.data ?? []).map((n: any) => ({
-        ...n,
-        source: "social" as const,
-      }));
+      // Admin-only event types — never show in personal notification bell
+      const ADMIN_EVENT_TYPES = new Set([
+        "admin_new_user", "admin_new_creator", "admin_new_subscription",
+        "admin_stream_started", "admin_new_tip", "admin_new_payment",
+        "admin_budget_warning", "admin_new_transaction", "admin_stripe_failure",
+        "admin_stripe_verified", "admin_new_waitlist", "admin_ticket_sold",
+        "admin_subscription_canceled", "simulcast_key_rotation",
+        "stream_started", "new_user", "new_creator", "new_subscription",
+      ]);
+
+      const socialNotifs: AppNotification[] = (socialRes.data ?? [])
+        .filter((n: any) => !ADMIN_EVENT_TYPES.has(n.type) && !n.type?.startsWith("admin_"))
+        .map((n: any) => ({
+          ...n,
+          source: "social" as const,
+        }));
 
       return [...campaignNotifs, ...jobNotifs, ...socialNotifs]
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())

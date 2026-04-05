@@ -148,6 +148,8 @@ export default function Notifications() {
     if (!n.read) markRead(n.id, n.source);
     if (n.source === "job" && n.job_id) {
       navigate(`/jobs/${n.job_id}`);
+    } else if (n.link) {
+      navigate(n.link);
     }
   };
 
