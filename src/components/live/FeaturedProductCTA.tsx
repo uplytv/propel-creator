@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { fireMetaEvent, fireGoogleEvent } from "@/lib/adTracking";
 
 interface Product {
   id: string;
