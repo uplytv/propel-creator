@@ -436,6 +436,7 @@ export default function GoLive() {
               products={activeProducts}
               featuredProductId={featuredProductId}
               creatorUsername={profileData?.display_name}
+              hasQueuedShopProducts={liveProducts.length > 0}
               onFeaturedProductChange={async (productId) => {
                 setFeaturedProductId(productId);
                 if (streamData) {
