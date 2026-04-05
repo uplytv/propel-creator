@@ -403,6 +403,8 @@ export default function CreatorProfile() {
             creator_id: profile?.user_id,
             return_path: window.location.pathname,
           }));
+          fireMetaEvent("InitiateCheckout", { content_type: "subscription", content_ids: [profile?.user_id], currency: "USD" });
+          fireGoogleEvent("begin_checkout", { currency: "USD", items: [{ item_id: profile?.user_id, item_name: creatorName }] });
           window.location.href = data.url;
         }
       } catch (err: any) {

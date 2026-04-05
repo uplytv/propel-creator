@@ -115,6 +115,8 @@ export function usePaymentReturn(creatorId?: string) {
         const found = await pollForSubscription(joinCreatorId);
         if (found) {
           toast.success("Welcome! 🎉", { description: "You now have full access." });
+          fireMetaEvent("Subscribe", { content_type: "subscription" });
+          fireGoogleEvent("sign_up", { method: "subscription" });
           queryClient.invalidateQueries({ queryKey: ["is-member"] });
           queryClient.invalidateQueries({ queryKey: ["member-subscription"] });
           queryClient.invalidateQueries({ queryKey: ["access"] });
