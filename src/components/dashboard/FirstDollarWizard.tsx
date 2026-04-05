@@ -15,6 +15,7 @@ const MODES = [
 ];
 
 export default function FirstDollarWizard({ onDismiss, username }: { onDismiss: () => void; username: string | null }) {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [mode, setMode] = useState<string | null>(null);
