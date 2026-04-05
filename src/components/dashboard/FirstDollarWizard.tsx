@@ -26,8 +26,11 @@ export default function FirstDollarWizard({ onDismiss, username }: { onDismiss: 
   };
 
   const go = () => {
-    if (mode === "community") navigate("__space__");
-    else if (mode === "course") navigate("/products");
+    if (mode === "community") {
+      // Resolve __space__ the same way AppLayout does
+      const { user } = require("@/context/AuthContext");
+      navigate(`/community/${username || "me"}`);
+    } else if (mode === "course") navigate("/products");
     else navigate("/go-live");
     onDismiss();
   };
