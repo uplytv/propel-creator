@@ -28,7 +28,7 @@ serve(async (req) => {
     const userId = userData.user.id;
     const email = userData.user.email;
 
-    const { live_product_id } = await req.json();
+    const { live_product_id, variant_selected, buyer_message } = await req.json();
     if (!live_product_id) throw new Error("live_product_id required");
 
     // Get product
