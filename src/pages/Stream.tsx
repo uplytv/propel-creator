@@ -165,12 +165,28 @@ export default function Stream() {
           setProfile(prof);
           if (prof?.username) setCreatorUsername(prof.username);
           if ((muxStream as any).featured_product_id) {
-            const { data: prod } = await supabase
-              .from('products')
-              .select('*')
-              .eq('id', (muxStream as any).featured_product_id)
-              .single();
-            if (prod) setFeaturedProduct(prod);
+            const source = (muxStream as any).featured_product_source || "digital";
+            if (source === "live_shop") {
+              const { data: liveProd } = await supabase
+                .from('live_products')
+                .select('*')
+                .eq('id', (muxStream as any).featured_product_id)
+                .single();
+              if (liveProd) {
+                setFeaturedProduct({
+                  id: liveProd.id, name: (liveProd as any).title,
+                  type: (liveProd as any).type === "auction" ? "auction" : "product",
+                  price: (liveProd as any).type === "auction" ? ((liveProd as any).starting_bid || 0) : (liveProd as any).price,
+                  description: (liveProd as any).description, image_url: (liveProd as any).image_url,
+                  source: "live_shop", live_product_data: liveProd,
+                });
+              }
+            } else {
+              const { data: prod } = await supabase
+                .from('products').select('*')
+                .eq('id', (muxStream as any).featured_product_id).single();
+              if (prod) setFeaturedProduct({ ...prod, source: "digital" });
+            }
           }
         }
         setLoading(false);
@@ -245,12 +261,26 @@ export default function Stream() {
             setProfile(prof);
             if (prof?.username) setCreatorUsername(prof.username);
             if ((muxStream as any).featured_product_id) {
-              const { data: prod } = await supabase
-                .from('products')
-                .select('*')
-                .eq('id', (muxStream as any).featured_product_id)
-                .single();
-              if (prod) setFeaturedProduct(prod);
+              const source2 = (muxStream as any).featured_product_source || "digital";
+              if (source2 === "live_shop") {
+                const { data: liveProd2 } = await supabase
+                  .from('live_products').select('*')
+                  .eq('id', (muxStream as any).featured_product_id).single();
+                if (liveProd2) {
+                  setFeaturedProduct({
+                    id: liveProd2.id, name: (liveProd2 as any).title,
+                    type: (liveProd2 as any).type === "auction" ? "auction" : "product",
+                    price: (liveProd2 as any).type === "auction" ? ((liveProd2 as any).starting_bid || 0) : (liveProd2 as any).price,
+                    description: (liveProd2 as any).description, image_url: (liveProd2 as any).image_url,
+                    source: "live_shop", live_product_data: liveProd2,
+                  });
+                }
+              } else {
+                const { data: prod } = await supabase
+                  .from('products').select('*')
+                  .eq('id', (muxStream as any).featured_product_id).single();
+                if (prod) setFeaturedProduct({ ...prod, source: "digital" });
+              }
             }
           }
           setLoading(false);
@@ -303,12 +333,26 @@ export default function Stream() {
 
           // Fetch featured product if set
           if ((muxStream as any).featured_product_id) {
-            const { data: prod } = await supabase
-              .from('products')
-              .select('*')
-              .eq('id', (muxStream as any).featured_product_id)
-              .single();
-            if (prod) setFeaturedProduct(prod);
+            const source3 = (muxStream as any).featured_product_source || "digital";
+            if (source3 === "live_shop") {
+              const { data: liveProd3 } = await supabase
+                .from('live_products').select('*')
+                .eq('id', (muxStream as any).featured_product_id).single();
+              if (liveProd3) {
+                setFeaturedProduct({
+                  id: liveProd3.id, name: (liveProd3 as any).title,
+                  type: (liveProd3 as any).type === "auction" ? "auction" : "product",
+                  price: (liveProd3 as any).type === "auction" ? ((liveProd3 as any).starting_bid || 0) : (liveProd3 as any).price,
+                  description: (liveProd3 as any).description, image_url: (liveProd3 as any).image_url,
+                  source: "live_shop", live_product_data: liveProd3,
+                });
+              }
+            } else {
+              const { data: prod } = await supabase
+                .from('products').select('*')
+                .eq('id', (muxStream as any).featured_product_id).single();
+              if (prod) setFeaturedProduct({ ...prod, source: "digital" });
+            }
           }
         }
       }
@@ -337,12 +381,26 @@ export default function Stream() {
         const oldProductId = payload.old?.featured_product_id;
         if (newProductId !== oldProductId) {
           if (newProductId) {
-            const { data: prod } = await supabase
-              .from('products')
-              .select('*')
-              .eq('id', newProductId)
-              .single();
-            setFeaturedProduct(prod || null);
+            const newSource = payload.new.featured_product_source || "digital";
+            if (newSource === "live_shop") {
+              const { data: liveProd } = await supabase
+                .from('live_products').select('*')
+                .eq('id', newProductId).single();
+              if (liveProd) {
+                setFeaturedProduct({
+                  id: liveProd.id, name: (liveProd as any).title,
+                  type: (liveProd as any).type === "auction" ? "auction" : "product",
+                  price: (liveProd as any).type === "auction" ? ((liveProd as any).starting_bid || 0) : (liveProd as any).price,
+                  description: (liveProd as any).description, image_url: (liveProd as any).image_url,
+                  source: "live_shop", live_product_data: liveProd,
+                });
+              }
+            } else {
+              const { data: prod } = await supabase
+                .from('products').select('*')
+                .eq('id', newProductId).single();
+              setFeaturedProduct(prod ? { ...prod, source: "digital" } : null);
+            }
           } else {
             setFeaturedProduct(null);
           }

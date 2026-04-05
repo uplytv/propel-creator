@@ -4503,6 +4503,7 @@ export type Database = {
           ended_at: string | null
           energy_score: number
           featured_product_id: string | null
+          featured_product_source: string | null
           id: string
           is_public: boolean | null
           mux_playback_id: string | null
@@ -4525,6 +4526,7 @@ export type Database = {
           ended_at?: string | null
           energy_score?: number
           featured_product_id?: string | null
+          featured_product_source?: string | null
           id?: string
           is_public?: boolean | null
           mux_playback_id?: string | null
@@ -4547,6 +4549,7 @@ export type Database = {
           ended_at?: string | null
           energy_score?: number
           featured_product_id?: string | null
+          featured_product_source?: string | null
           id?: string
           is_public?: boolean | null
           mux_playback_id?: string | null

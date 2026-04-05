@@ -1,0 +1,1 @@
+ALTER TABLE public.mux_live_streams ADD COLUMN IF NOT EXISTS featured_product_source text DEFAULT 'digital';
