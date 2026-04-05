@@ -59,15 +59,16 @@ export default function GoLive() {
   const [enabledPlatforms, setEnabledPlatforms] = useState<string[]>([]);
   const [liveProducts, setLiveProducts] = useState<any[]>([]);
 
-  const fetchLiveProducts = useCallback(async () => {
-    if (!streamData?.streamId) return;
+  const fetchLiveProducts = useCallback(async (sessionId?: string) => {
+    const id = sessionId || streamData?.streamId || draftSessionId;
+    if (!id) return;
     const { data } = await supabase
       .from("live_products")
       .select("*")
-      .eq("stream_id", streamData.streamId)
+      .eq("stream_id", id)
       .order("position");
     setLiveProducts(data || []);
-  }, [streamData?.streamId]);
+  }, [streamData?.streamId, draftSessionId]);
 
   useEffect(() => {
     fetchLiveProducts();
