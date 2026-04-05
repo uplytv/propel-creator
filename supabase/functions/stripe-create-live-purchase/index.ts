@@ -107,6 +107,10 @@ serve(async (req) => {
       creator_earnings: parseFloat((product.price * 0.95).toFixed(2)),
       status: "pending",
       stripe_payment_intent_id: session.id,
+      variant_selected: variant_selected || null,
+      buyer_message: buyer_message || null,
+      shipping_price: product.shipping_price || 0,
+      total_amount: product.price + (product.shipping_price || 0),
     });
 
     // Decrement quantity
