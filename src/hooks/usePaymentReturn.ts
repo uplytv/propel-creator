@@ -80,6 +80,8 @@ export function usePaymentReturn(creatorId?: string) {
         }
         if (found) {
           toast.success("Access granted! 🎉");
+          fireMetaEvent("Purchase", { content_type: "access", content_ids: [resourceId], currency: "USD" });
+          fireGoogleEvent("purchase", { transaction_id: resourceId, currency: "USD" });
           queryClient.invalidateQueries({ queryKey: ["access"] });
         } else {
           toast.success("Payment received", { description: "Access is being activated. Refresh in a moment." });
