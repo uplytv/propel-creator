@@ -333,12 +333,26 @@ export default function Stream() {
 
           // Fetch featured product if set
           if ((muxStream as any).featured_product_id) {
-            const { data: prod } = await supabase
-              .from('products')
-              .select('*')
-              .eq('id', (muxStream as any).featured_product_id)
-              .single();
-            if (prod) setFeaturedProduct(prod);
+            const source3 = (muxStream as any).featured_product_source || "digital";
+            if (source3 === "live_shop") {
+              const { data: liveProd3 } = await supabase
+                .from('live_products').select('*')
+                .eq('id', (muxStream as any).featured_product_id).single();
+              if (liveProd3) {
+                setFeaturedProduct({
+                  id: liveProd3.id, name: (liveProd3 as any).title,
+                  type: (liveProd3 as any).type === "auction" ? "auction" : "product",
+                  price: (liveProd3 as any).type === "auction" ? ((liveProd3 as any).starting_bid || 0) : (liveProd3 as any).price,
+                  description: (liveProd3 as any).description, image_url: (liveProd3 as any).image_url,
+                  source: "live_shop", live_product_data: liveProd3,
+                });
+              }
+            } else {
+              const { data: prod } = await supabase
+                .from('products').select('*')
+                .eq('id', (muxStream as any).featured_product_id).single();
+              if (prod) setFeaturedProduct({ ...prod, source: "digital" });
+            }
           }
         }
       }
