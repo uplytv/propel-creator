@@ -356,7 +356,72 @@ export default function VideoPlayer() {
   );
 }
 
-function VideoAnalyticsCard({ videoId, viewCount, likeCount, commentCount, createdAt, durationSeconds }: {
+function ActionBtn({ icon, label, count, active, onClick }: { icon: React.ReactNode; label: string; count?: number; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex flex-col items-center justify-center min-w-[56px] px-2 py-2 rounded-xl transition-all hover:bg-secondary/60 active:scale-95"
+    >
+      <span className={active ? "text-primary" : "text-muted-foreground"}>{icon}</span>
+      {count !== undefined && <span className={`text-[11px] font-semibold mt-0.5 ${active ? "text-primary" : "text-foreground"}`}>{count}</span>}
+      <span className="text-[10px] text-muted-foreground mt-0.5 font-medium whitespace-nowrap">{label}</span>
+    </button>
+  );
+}
+
+function TipModal({ onClose, creatorName }: { onClose: () => void; creatorName: string }) {
+  const amounts = [1, 3, 5, 10];
+  const [selected, setSelected] = useState<number | null>(null);
+  const [custom, setCustom] = useState("");
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <motion.div initial={{ y: 80 }} animate={{ y: 0 }} onClick={e => e.stopPropagation()} className="bg-card border border-border rounded-t-2xl sm:rounded-2xl w-full max-w-sm p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-bold text-foreground flex items-center gap-2"><Zap className="w-5 h-5 text-primary" /> Send Energy</h3>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-lg">✕</button>
+        </div>
+        <p className="text-sm text-muted-foreground">Support <span className="text-foreground font-semibold">{creatorName}</span> with a tip</p>
+        <div className="grid grid-cols-4 gap-2">
+          {amounts.map(a => (
+            <button key={a} onClick={() => { setSelected(a); setCustom(""); }}
+              className={`py-2.5 rounded-xl text-sm font-bold transition-all border ${selected === a ? "border-primary bg-primary/10 text-primary" : "border-border text-foreground hover:border-primary/30"}`}>
+              ${a}
+            </button>
+          ))}
+        </div>
+        <input
+          type="number" placeholder="Custom amount" value={custom}
+          onChange={e => { setCustom(e.target.value); setSelected(null); }}
+          className="w-full bg-secondary/50 border border-border rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+          style={{ fontSize: 16 }}
+        />
+        <Button className="w-full" onClick={() => { toast.success(`$${selected || custom || 0} tip sent to ${creatorName}!`); onClose(); }}
+          disabled={!selected && !custom}>
+          <Zap className="w-4 h-4" /> Send ${selected || custom || "0"}
+        </Button>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function RemixModal({ onClose }: { onClose: () => void }) {
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <motion.div initial={{ y: 80 }} animate={{ y: 0 }} onClick={e => e.stopPropagation()} className="bg-card border border-border rounded-t-2xl sm:rounded-2xl w-full max-w-sm p-6 text-center space-y-4">
+        <Repeat2 className="w-10 h-10 text-primary mx-auto" />
+        <h3 className="text-lg font-bold text-foreground">Remix</h3>
+        <p className="text-sm text-muted-foreground">Record or upload your own response video referencing this content.</p>
+        <div className="px-4 py-3 rounded-xl bg-primary/5 border border-primary/20">
+          <p className="text-xs text-primary font-semibold">Coming Soon</p>
+          <p className="text-[11px] text-muted-foreground mt-1">Remix is launching soon. Stay tuned!</p>
+        </div>
+        <Button variant="outline" onClick={onClose} className="w-full">Close</Button>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+
   videoId: string; viewCount: number; likeCount: number; commentCount: number; createdAt: string; durationSeconds: number;
 }) {
   const daysSincePublish = Math.max(1, Math.floor((Date.now() - new Date(createdAt).getTime()) / 86400000));
