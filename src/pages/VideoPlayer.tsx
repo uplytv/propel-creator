@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart, Share2, ChevronDown, ChevronUp, MessageCircle, Eye, Clock, Send, BarChart3, TrendingUp } from "lucide-react";
+import { Heart, ThumbsDown, UserPlus, Check, Zap, Share2, ShoppingBag, Repeat2, ChevronDown, ChevronUp, MessageCircle, Eye, Clock, Send, BarChart3, TrendingUp } from "lucide-react";
 import { UPLYMuxPlayer } from "@/components/MuxPlayer";
+import { useFollows } from "@/hooks/useFollows";
+import { toast } from "sonner";
 import SEOHead from "@/components/SEOHead";
 import FollowButton from "@/components/FollowButton";
 import SharePanel from "@/components/share/SharePanel";
