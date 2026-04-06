@@ -48,6 +48,13 @@ export default function VideoPlayer() {
   const [descExpanded, setDescExpanded] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [commentText, setCommentText] = useState("");
+  const [disliked, setDisliked] = useState(false);
+  const [dislikeCount, setDislikeCount] = useState(0);
+  const [tipOpen, setTipOpen] = useState(false);
+  const [remixOpen, setRemixOpen] = useState(false);
+  const { isFollowing, follow, unfollow } = useFollows();
+  const isOwner = user?.id === video?.creator_id;
+  const subscribed = video?.creator_id ? isFollowing(video.creator_id) : false;
 
   // Fetch creator profile
   const { data: creator } = useQuery({
