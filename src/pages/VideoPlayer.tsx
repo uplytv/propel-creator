@@ -421,7 +421,7 @@ function RemixModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-
+function VideoAnalyticsCard({ videoId, viewCount, likeCount, commentCount, createdAt, durationSeconds }: {
   videoId: string; viewCount: number; likeCount: number; commentCount: number; createdAt: string; durationSeconds: number;
 }) {
   const daysSincePublish = Math.max(1, Math.floor((Date.now() - new Date(createdAt).getTime()) / 86400000));
