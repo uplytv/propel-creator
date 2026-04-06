@@ -163,21 +163,67 @@ export default function VideoPlayer() {
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-2">
-            <Button
-              variant={isLiked ? "default" : "outline"}
-              size="sm"
+          {/* Action Bar */}
+          <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
+            {/* Like */}
+            <ActionBtn
+              icon={<Heart className={`w-5 h-5 ${isLiked ? "fill-current text-primary" : ""}`} />}
+              label="Like"
+              count={video.like_count}
+              active={isLiked}
               onClick={toggleLike}
-              className="gap-1.5"
-            >
-              <Heart className={`w-4 h-4 ${isLiked ? "fill-current" : ""}`} />
-              {video.like_count}
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setShareOpen(true)} className="gap-1.5">
-              <Share2 className="w-4 h-4" /> Share
-            </Button>
+            />
+            {/* Dislike */}
+            <ActionBtn
+              icon={<ThumbsDown className={`w-5 h-5 ${disliked ? "fill-current text-primary" : ""}`} />}
+              label="Dislike"
+              count={dislikeCount}
+              active={disliked}
+              onClick={() => { setDisliked(d => !d); setDislikeCount(c => disliked ? c - 1 : c + 1); }}
+            />
+            {/* Subscribe */}
+            {!isOwner && video.creator_id && (
+              <ActionBtn
+                icon={subscribed ? <Check className="w-5 h-5 text-primary" /> : <UserPlus className="w-5 h-5" />}
+                label={subscribed ? "Subscribed" : "Subscribe"}
+                active={subscribed}
+                onClick={() => subscribed ? unfollow(video.creator_id) : follow(video.creator_id)}
+              />
+            )}
+            {/* Energy / Tip */}
+            <ActionBtn
+              icon={<Zap className="w-5 h-5" />}
+              label="Energy"
+              active={false}
+              onClick={() => setTipOpen(true)}
+            />
+            {/* Share */}
+            <ActionBtn
+              icon={<Share2 className="w-5 h-5" />}
+              label="Share"
+              active={false}
+              onClick={() => setShareOpen(true)}
+            />
+            {/* Shop */}
+            <ActionBtn
+              icon={<ShoppingBag className="w-5 h-5" />}
+              label="Shop"
+              active={false}
+              onClick={() => toast("No shop items for this video")}
+            />
+            {/* Remix */}
+            <ActionBtn
+              icon={<Repeat2 className="w-5 h-5" />}
+              label="Remix"
+              active={false}
+              onClick={() => setRemixOpen(true)}
+            />
           </div>
+
+          {/* Tip Modal */}
+          {tipOpen && <TipModal onClose={() => setTipOpen(false)} creatorName={creatorName} />}
+          {/* Remix Modal */}
+          {remixOpen && <RemixModal onClose={() => setRemixOpen(false)} />}
 
           {/* Creator */}
           <div className="flex items-center gap-3 py-3 border-y border-border">
