@@ -6273,6 +6273,8 @@ export type Database = {
           description: string | null
           download_url: string | null
           duration_seconds: number | null
+          featured_product_id: string | null
+          featured_product_price: number | null
           id: string
           is_featured: boolean | null
           is_public: boolean | null
@@ -6296,6 +6298,8 @@ export type Database = {
           description?: string | null
           download_url?: string | null
           duration_seconds?: number | null
+          featured_product_id?: string | null
+          featured_product_price?: number | null
           id?: string
           is_featured?: boolean | null
           is_public?: boolean | null
@@ -6319,6 +6323,8 @@ export type Database = {
           description?: string | null
           download_url?: string | null
           duration_seconds?: number | null
+          featured_product_id?: string | null
+          featured_product_price?: number | null
           id?: string
           is_featured?: boolean | null
           is_public?: boolean | null
@@ -6334,7 +6340,22 @@ export type Database = {
           view_count?: number | null
           visibility?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "videos_featured_product_id_fkey"
+            columns: ["featured_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "videos_featured_product_id_fkey"
+            columns: ["featured_product_id"]
+            isOneToOne: false
+            referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       views_log: {
         Row: {
