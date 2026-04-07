@@ -230,6 +230,51 @@ export default function Stream() {
           const { data: muxStream } = await streamQuery.maybeSingle();
 
         if (muxStream) {
+          const isStreamActive = muxStream.status === 'active';
+          const hasPlaybackId = !!muxStream.mux_playback_id;
+
+          // If stream is ended/idle with no playback, try to find its recording
+          if (!isStreamActive && !hasPlaybackId) {
+            // Look up recording via live_stream_sessions
+            const { data: session } = await supabase
+              .from('live_stream_sessions')
+              .select('mux_asset_id')
+              .eq('stream_id', muxStream.id)
+              .not('mux_asset_id', 'is', null)
+              .order('started_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+
+            if (session?.mux_asset_id) {
+              const { data: rec } = await supabase
+                .from('stream_recordings')
+                .select('*')
+                .eq('mux_asset_id', session.mux_asset_id)
+                .maybeSingle();
+
+              if (rec) {
+                setDbStream({
+                  ...rec,
+                  mux_playback_id: rec.playback_id,
+                  user_id: rec.creator_id,
+                  title: rec.title || muxStream.title,
+                  _isRecording: true,
+                });
+                setIsRealStream(true);
+                const prof = routeProfile || (await supabase
+                  .from('profiles')
+                  .select('display_name, avatar_url, tier, tier_name, username')
+                  .eq('user_id', rec.creator_id)
+                  .single()).data;
+                setProfile(prof);
+                if (prof?.username) setCreatorUsername(prof.username);
+                setLoading(false);
+                return;
+              }
+            }
+          }
+
+          // Normal: stream found with playback
           setDbStream(muxStream);
           setIsRealStream(true);
             const prof = routeProfile || (await supabase
@@ -262,6 +307,36 @@ export default function Stream() {
                 .eq('id', (muxStream as any).featured_product_id).single();
               if (prod) setFeaturedProduct({ ...prod, source: "digital" });
             }
+          }
+        } else {
+          // No mux_live_streams found — try stream_recordings by slug
+          let recQuery = supabase
+            .from('stream_recordings')
+            .select('*')
+            .eq('slug', routeSlug)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+          if (routeProfile?.user_id) {
+            recQuery = recQuery.eq('creator_id', routeProfile.user_id);
+          }
+
+          const { data: rec } = await recQuery.maybeSingle();
+          if (rec) {
+            setDbStream({
+              ...rec,
+              mux_playback_id: rec.playback_id,
+              user_id: rec.creator_id,
+              _isRecording: true,
+            });
+            setIsRealStream(true);
+            const prof = routeProfile || (await supabase
+              .from('profiles')
+              .select('display_name, avatar_url, tier, tier_name, username')
+              .eq('user_id', rec.creator_id)
+              .single()).data;
+            setProfile(prof);
+            if (prof?.username) setCreatorUsername(prof.username);
           }
         }
         setLoading(false);
