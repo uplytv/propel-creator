@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Eye, Heart, Share2, Shield, TrendingUp, Zap, Crown, Radio, Coins, Loader2, ShoppingBag, Scissors } from "lucide-react";
+import { ArrowLeft, Eye, Heart, ThumbsDown, UserPlus, Check, Share2, Shield, TrendingUp, Zap, Crown, Radio, Coins, Loader2, ShoppingBag, Scissors, Repeat2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import StreamChat from "@/components/live/StreamChat";
@@ -34,10 +34,24 @@ import UPLYMuxPlayer from "@/components/MuxPlayer";
 import WebRTCPlayer from "@/components/live/WebRTCPlayer";
 import { Skeleton } from "@/components/ui/skeleton";
 import FollowButton from "@/components/FollowButton";
+import { useFollows } from "@/hooks/useFollows";
 import ClipCreator from "@/components/clips/ClipCreator";
 import SharePanel from "@/components/share/SharePanel";
 import SEOHead from "@/components/SEOHead";
 import RecentRecordingsRow from "@/components/live/RecentRecordingsRow";
+
+function StreamActionBtn({ icon, label, count, active, onClick }: { icon: React.ReactNode; label: string; count?: number; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex flex-col items-center justify-center min-w-[56px] px-2 py-2 rounded-xl transition-all hover:bg-secondary/60 active:scale-95"
+    >
+      <span className={active ? "text-primary" : "text-muted-foreground"}>{icon}</span>
+      {count !== undefined && <span className={`text-[11px] font-semibold mt-0.5 ${active ? "text-primary" : "text-foreground"}`}>{count}</span>}
+      <span className="text-[10px] text-muted-foreground mt-0.5 font-medium whitespace-nowrap">{label}</span>
+    </button>
+  );
+}
 
 function StreamEndedState({ streamId, status, creatorId, creatorName, creatorAvatar, creatorUsername }: { streamId: string; status: string; creatorId: string; creatorName?: string; creatorAvatar?: string; creatorUsername?: string | null }) {
   const navigate = useNavigate();
@@ -164,6 +178,9 @@ export default function Stream() {
   const { user } = useAuth();
   const [joinOpen, setJoinOpen] = useState(false);
   const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [disliked, setDisliked] = useState(false);
+  const [dislikeCount, setDislikeCount] = useState(0);
   const [tipOpen, setTipOpen] = useState(false);
   const [creditsBalance, setCreditsBalance] = useState(100);
   const [dbStream, setDbStream] = useState<any>(null);
@@ -174,12 +191,13 @@ export default function Stream() {
   const [shareOpen, setShareOpen] = useState(false);
   const [memberAccess, setMemberAccess] = useState<boolean | null>(null);
   const [creatorUsername, setCreatorUsername] = useState<string | null>(routeUsername || null);
+  const { isFollowing, follow, unfollow } = useFollows();
 
   const searchParams = new URLSearchParams(window.location.search);
   const contentType = searchParams.get('type');
   const isFromCreatorRoute = !!routeUsername;
   const isFromSlugRoute = !!routeSlug;
-  const isVod = contentType === 'vod' || contentType === 'recording' || (isFromCreatorRoute && !isFromSlugRoute);
+  const isVod = contentType === 'vod' || contentType === 'recording' || (isFromCreatorRoute && !isFromSlugRoute) || dbStream?._isRecording;
 
   // Viewer features
   const viewerRewards = useViewerRewards(!!dbStream && dbStream.status === 'active' && !isVod);
@@ -216,6 +234,51 @@ export default function Stream() {
           const { data: muxStream } = await streamQuery.maybeSingle();
 
         if (muxStream) {
+          const isStreamActive = muxStream.status === 'active';
+          const hasPlaybackId = !!muxStream.mux_playback_id;
+
+          // If stream is ended/idle with no playback, try to find its recording
+          if (!isStreamActive && !hasPlaybackId) {
+            // Look up recording via live_stream_sessions
+            const { data: session } = await supabase
+              .from('live_stream_sessions')
+              .select('mux_asset_id')
+              .eq('stream_id', muxStream.id)
+              .not('mux_asset_id', 'is', null)
+              .order('started_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+
+            if (session?.mux_asset_id) {
+              const { data: rec } = await supabase
+                .from('stream_recordings')
+                .select('*')
+                .eq('mux_asset_id', session.mux_asset_id)
+                .maybeSingle();
+
+              if (rec) {
+                setDbStream({
+                  ...rec,
+                  mux_playback_id: rec.playback_id,
+                  user_id: rec.creator_id,
+                  title: rec.title || muxStream.title,
+                  _isRecording: true,
+                });
+                setIsRealStream(true);
+                const prof = routeProfile || (await supabase
+                  .from('profiles')
+                  .select('display_name, avatar_url, tier, tier_name, username')
+                  .eq('user_id', rec.creator_id)
+                  .single()).data;
+                setProfile(prof);
+                if (prof?.username) setCreatorUsername(prof.username);
+                setLoading(false);
+                return;
+              }
+            }
+          }
+
+          // Normal: stream found with playback
           setDbStream(muxStream);
           setIsRealStream(true);
             const prof = routeProfile || (await supabase
@@ -248,6 +311,36 @@ export default function Stream() {
                 .eq('id', (muxStream as any).featured_product_id).single();
               if (prod) setFeaturedProduct({ ...prod, source: "digital" });
             }
+          }
+        } else {
+          // No mux_live_streams found — try stream_recordings by slug
+          let recQuery = supabase
+            .from('stream_recordings')
+            .select('*')
+            .eq('slug', routeSlug)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+          if (routeProfile?.user_id) {
+            recQuery = recQuery.eq('creator_id', routeProfile.user_id);
+          }
+
+          const { data: rec } = await recQuery.maybeSingle();
+          if (rec) {
+            setDbStream({
+              ...rec,
+              mux_playback_id: rec.playback_id,
+              user_id: rec.creator_id,
+              _isRecording: true,
+            });
+            setIsRealStream(true);
+            const prof = routeProfile || (await supabase
+              .from('profiles')
+              .select('display_name, avatar_url, tier, tier_name, username')
+              .eq('user_id', rec.creator_id)
+              .single()).data;
+            setProfile(prof);
+            if (prof?.username) setCreatorUsername(prof.username);
           }
         }
         setLoading(false);
@@ -547,6 +640,8 @@ export default function Stream() {
     const TierIcon = tierIcons[creatorTier - 1] || Shield;
     const playbackId = dbStream.mux_playback_id;
     const isPrivateStream = dbStream.is_public === false;
+    const isOwner = user?.id === dbStream.user_id;
+    const subscribed = dbStream.user_id ? isFollowing(dbStream.user_id) : false;
 
     // Guard: no playback ID available
     if (!playbackId) {
@@ -793,6 +888,59 @@ export default function Stream() {
             {/* Stream info */}
             <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-border">
               <h1 className="text-lg sm:text-xl font-bold text-foreground mb-2 sm:mb-3">{dbStream.title || 'Untitled Stream'}</h1>
+
+              {/* YouTube-style Action Bar — VOD / Recording */}
+              {(isVod || !isActive) && (
+                <div className="flex items-center gap-1 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1 mb-3">
+                  <StreamActionBtn
+                    icon={<Heart className={`w-5 h-5 ${liked ? "fill-current text-primary" : ""}`} />}
+                    label="Like"
+                    count={likeCount}
+                    active={liked}
+                    onClick={() => { setLiked(l => !l); setLikeCount(c => liked ? c - 1 : c + 1); if (disliked) { setDisliked(false); setDislikeCount(c => c - 1); } }}
+                  />
+                  <StreamActionBtn
+                    icon={<ThumbsDown className={`w-5 h-5 ${disliked ? "fill-current text-primary" : ""}`} />}
+                    label="Dislike"
+                    count={dislikeCount}
+                    active={disliked}
+                    onClick={() => { setDisliked(d => !d); setDislikeCount(c => disliked ? c - 1 : c + 1); if (liked) { setLiked(false); setLikeCount(c => c - 1); } }}
+                  />
+                  {!isOwner && dbStream.user_id && (
+                    <StreamActionBtn
+                      icon={subscribed ? <Check className="w-5 h-5 text-primary" /> : <UserPlus className="w-5 h-5" />}
+                      label={subscribed ? "Subscribed" : "Subscribe"}
+                      active={subscribed}
+                      onClick={() => subscribed ? unfollow(dbStream.user_id) : follow(dbStream.user_id)}
+                    />
+                  )}
+                  <StreamActionBtn
+                    icon={<Zap className="w-5 h-5" />}
+                    label="Energy"
+                    active={false}
+                    onClick={() => setTipOpen(true)}
+                  />
+                  <StreamActionBtn
+                    icon={<Share2 className="w-5 h-5" />}
+                    label="Share"
+                    active={false}
+                    onClick={() => setShareOpen(true)}
+                  />
+                  <StreamActionBtn
+                    icon={<ShoppingBag className="w-5 h-5" />}
+                    label="Shop"
+                    active={false}
+                    onClick={() => toast("No shop items for this recording")}
+                  />
+                  <StreamActionBtn
+                    icon={<Repeat2 className="w-5 h-5" />}
+                    label="Remix"
+                    active={false}
+                    onClick={() => toast("Remix coming soon")}
+                  />
+                </div>
+              )}
+
               <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">
@@ -809,7 +957,7 @@ export default function Stream() {
                     <p className="text-xs text-muted-foreground">{dbStream.category || 'General'}</p>
                   </div>
                 </div>
-                <FollowButton targetUserId={dbStream.user_id} />
+                {!isOwner && <FollowButton targetUserId={dbStream.user_id} />}
               </div>
               {dbStream.description && (
                 <p className="text-sm text-muted-foreground mt-3 hidden sm:block">{dbStream.description}</p>
