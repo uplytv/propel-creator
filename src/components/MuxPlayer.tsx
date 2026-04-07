@@ -50,7 +50,6 @@ export const UPLYMuxPlayer = ({
         backBufferLength: 120,
         enableWorker: true,
         // Never give up on network issues — orientation/tab switch resilience
-        abandonLoadTimeout: 30000,
         fragLoadingTimeOut: 30000,
         manifestLoadingTimeOut: 30000,
         levelLoadingTimeOut: 30000,
