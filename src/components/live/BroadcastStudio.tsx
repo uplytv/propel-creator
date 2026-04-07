@@ -661,14 +661,17 @@ export default function BroadcastStudio({
                   </div>
 
                   {/* Right-side action buttons */}
-                  <div className="absolute right-3 bottom-28 z-20 flex flex-col gap-3 items-center">
+                  <div
+                    className="absolute right-3 top-24 bottom-28 z-20 flex flex-col gap-3 items-center overflow-y-auto overscroll-contain pb-1 pr-1"
+                    style={{ WebkitOverflowScrolling: "touch" }}
+                  >
                     <ActionButton onClick={() => setShowShopPanel(!showShopPanel)} active={showShopPanel} activeBg="rgba(0,255,133,0.3)" icon={<ShoppingBag className="w-4.5 h-4.5 text-white" />} />
+                    <ActionButton onClick={() => setShowSharePanel(true)} bg="rgba(0,255,133,0.25)" icon={<Share2 className="w-4.5 h-4.5 text-white" />} />
                     <ActionButton onClick={async () => {
                       const liveUrl = `${getSiteUrl()}/stream/${streamData.streamId}`;
                       const ok = await safeClipboardWrite(liveUrl);
                       ok ? toast.success("Live link copied ✓", { description: liveUrl }) : toast.error("Could not copy link");
                     }} icon={<Copy className="w-4.5 h-4.5 text-white" />} />
-                    <ActionButton onClick={() => setShowSharePanel(true)} bg="rgba(0,255,133,0.25)" icon={<Share2 className="w-4.5 h-4.5 text-white" />} />
                     <ActionButton onClick={() => setShowAnalytics(!showAnalytics)} active={showAnalytics} icon={<BarChart3 className="w-4.5 h-4.5 text-white" />} />
                     <ActionButton onClick={() => setShowPollCreator(true)} icon={<MessageCircleQuestion className="w-4.5 h-4.5 text-white" />} />
                     <ActionButton onClick={() => captions.toggle()} active={captions.isActive} icon={<Subtitles className="w-4.5 h-4.5 text-white" />} />
