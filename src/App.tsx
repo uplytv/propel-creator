@@ -1,9 +1,9 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AppProvider } from "@/context/AppContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
@@ -109,6 +109,18 @@ const PageLoader = () => (
   </div>
 );
 
+function ScrollToTop() {
+  const location = useLocation();
+
+  useLayoutEffect(() => {
+    const mainContent = document.getElementById("main-content");
+    mainContent?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [location.pathname, location.search]);
+
+  return null;
+}
+
 function NativeShell({ children }: { children: React.ReactNode }) {
   useNativeInit();
   useKeyboardState();
@@ -168,6 +180,7 @@ const App = () => (
               <PushNotificationPermission />
               <AppWithSplash>
               <BrowserRouter>
+                <ScrollToTop />
                 <ErrorBoundary>
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
@@ -201,6 +214,7 @@ const App = () => (
                     <Route path="/:username/events/:slug" element={<EventPage />} />
                     <Route path="/creator/:username/events/:slug" element={<EventPage />} />
                     <Route path="/tickets/:token" element={<TicketDetail />} />
+                    <Route path="/:username" element={<BioPage />} />
                     <Route path="/:username/page" element={<BioPage />} />
 
                     {/* Onboarding & Waitlist (auth required but no approval needed) */}
