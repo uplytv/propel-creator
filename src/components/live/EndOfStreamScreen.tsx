@@ -112,9 +112,7 @@ export default function EndOfStreamScreen({
     let cancelled = false;
 
     const resolveShareTarget = async () => {
-      const liveFallbackUrl = username && streamSlug
-        ? `${getSiteUrl()}/${encodeURIComponent(username)}/live/${streamSlug}`
-        : `${getSiteUrl()}/stream/${streamId}`;
+      const liveFallbackUrl = `${getSiteUrl()}/stream/${streamId}`;
 
       const { data: session } = await supabase
         .from("live_stream_sessions")
@@ -143,7 +141,7 @@ export default function EndOfStreamScreen({
 
       if (recording) {
         setRecordingTarget(recording);
-        setShareUrl(`${getSiteUrl()}/${encodeURIComponent(username)}/videos/${recording.slug || recording.id}`);
+        setShareUrl(`${getSiteUrl()}/stream/${recording.id}?type=recording`);
         return;
       }
 

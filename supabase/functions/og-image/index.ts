@@ -63,15 +63,18 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const url = new URL(req.url);
-    const path = url.searchParams.get("path") || "/";
+    const requestUrl = new URL(req.url);
+    const requestedPath = requestUrl.searchParams.get("path") || "/";
+    const requestedUrl = new URL(requestedPath, SITE_URL);
+    const path = requestedUrl.pathname;
+    const canonicalUrl = `${SITE_URL}${requestedUrl.pathname}${requestedUrl.search}`;
     const userAgent = req.headers.get("user-agent") || "";
 
     // Only serve OG HTML to bots — real users get redirected
     if (!BOT_UA.test(userAgent)) {
       return new Response(null, {
         status: 302,
-        headers: { ...corsHeaders, Location: `${SITE_URL}${path}` },
+          headers: { ...corsHeaders, Location: canonicalUrl },
       });
     }
 
@@ -79,6 +82,119 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
+
+    const streamRouteMatch = path.match(/^\/stream\/([^/]+)$/);
+    if (streamRouteMatch) {
+      const [, id] = streamRouteMatch;
+      const isRecordingRoute = requestedUrl.searchParams.get("type") === "recording";
+
+      if (isRecordingRoute) {
+        const { data: recording } = await supabase
+          .from("stream_recordings")
+          .select("title, description, playback_id, creator_id")
+          .eq("id", id)
+          .maybeSingle();
+
+        if (recording) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("display_name")
+            .eq("user_id", recording.creator_id)
+            .maybeSingle();
+
+          const creatorName = profile?.display_name || "Creator";
+          const image = recording.playback_id
+            ? `https://image.mux.com/${recording.playback_id}/thumbnail.jpg?width=1200&height=630&fit_mode=smartcrop`
+            : DEFAULT_IMAGE;
+
+          return new Response(
+            buildHtml({
+              title: `${recording.title} — ${creatorName} on UPLY`,
+              description: recording.description || `Watch ${recording.title} by ${creatorName} on UPLY`,
+              image,
+              url: canonicalUrl,
+              type: "video.other",
+              twitterCard: "summary_large_image",
+              siteName: "Uply",
+            }),
+            {
+              headers: {
+                ...corsHeaders,
+                "Content-Type": "text/html; charset=utf-8",
+                "Cache-Control": "public, max-age=3600, s-maxage=86400",
+              },
+            }
+          );
+        }
+      }
+
+      const { data: stream } = await supabase
+        .from("mux_live_streams")
+        .select("id, title, description, mux_playback_id, thumbnail_url, user_id, status")
+        .eq("id", id)
+        .maybeSingle();
+
+      if (stream) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("user_id", stream.user_id)
+          .maybeSingle();
+
+        const creatorName = profile?.display_name || "Creator";
+        let title = stream.title || "Live Stream";
+        let description = stream.description || `Watch ${creatorName} live on UPLY`;
+        let image = stream.mux_playback_id
+          ? `https://image.mux.com/${stream.mux_playback_id}/thumbnail.jpg?width=1200&height=630&fit_mode=smartcrop`
+          : stream.thumbnail_url || DEFAULT_IMAGE;
+
+        if (stream.status !== "active") {
+          const { data: session } = await supabase
+            .from("live_stream_sessions")
+            .select("mux_asset_id")
+            .eq("stream_id", stream.id)
+            .not("mux_asset_id", "is", null)
+            .order("started_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (session?.mux_asset_id) {
+            const { data: recording } = await supabase
+              .from("stream_recordings")
+              .select("title, description, playback_id")
+              .eq("mux_asset_id", session.mux_asset_id)
+              .maybeSingle();
+
+            if (recording) {
+              title = recording.title || title;
+              description = recording.description || `Watch ${title} by ${creatorName} on UPLY`;
+              if (recording.playback_id) {
+                image = `https://image.mux.com/${recording.playback_id}/thumbnail.jpg?width=1200&height=630&fit_mode=smartcrop`;
+              }
+            }
+          }
+        }
+
+        return new Response(
+          buildHtml({
+            title: `${title} — ${creatorName} on UPLY`,
+            description,
+            image,
+            url: canonicalUrl,
+            type: "video.other",
+            twitterCard: "summary_large_image",
+            siteName: "Uply",
+          }),
+          {
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "text/html; charset=utf-8",
+              "Cache-Control": "public, max-age=300",
+            },
+          }
+        );
+      }
+    }
 
     // Match referral/invite links: /r/:code, /join/:code, /join/:username/:code, /invite/:code
     const refMatch =
@@ -108,7 +224,7 @@ Deno.serve(async (req) => {
           title: ogTitle,
           description: ogDesc,
           image: DEFAULT_IMAGE,
-          url: `${SITE_URL}${path}`,
+          url: canonicalUrl,
           type: "website",
           twitterCard: "summary_large_image",
           siteName: "Uply",
@@ -172,23 +288,38 @@ Deno.serve(async (req) => {
     const liveMatch = path.match(/^\/([^/]+)\/live\/([^/]+)$/);
     if (liveMatch) {
       const [, username, slug] = liveMatch;
-      const { data: stream } = await supabase
-        .from("mux_live_streams")
-        .select("title, description, playback_id, thumbnail_url, user_id")
-        .eq("slug", slug)
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("user_id, display_name")
+        .eq("username", decodeURIComponent(username))
         .maybeSingle();
 
-      if (stream) {
-        let creatorName = username;
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("display_name")
-          .eq("user_id", stream.user_id)
-          .maybeSingle();
-        if (profile?.display_name) creatorName = profile.display_name;
+      let liveQuery = supabase
+        .from("mux_live_streams")
+        .select("title, description, mux_playback_id, thumbnail_url, user_id")
+        .eq("slug", slug)
+        .order("created_at", { ascending: false })
+        .limit(1);
 
-        const image = stream.playback_id
-          ? `https://image.mux.com/${stream.playback_id}/thumbnail.jpg?width=1200&height=630&fit_mode=smartcrop`
+      if (profile?.user_id) {
+        liveQuery = liveQuery.eq("user_id", profile.user_id);
+      }
+
+      const { data: stream } = await liveQuery.maybeSingle();
+
+      if (stream) {
+        let creatorName = profile?.display_name || username;
+        if (!profile?.display_name) {
+          const { data: fallbackProfile } = await supabase
+            .from("profiles")
+            .select("display_name")
+            .eq("user_id", stream.user_id)
+            .maybeSingle();
+          if (fallbackProfile?.display_name) creatorName = fallbackProfile.display_name;
+        }
+
+        const image = stream.mux_playback_id
+          ? `https://image.mux.com/${stream.mux_playback_id}/thumbnail.jpg?width=1200&height=630&fit_mode=smartcrop`
           : stream.thumbnail_url || DEFAULT_IMAGE;
 
         return new Response(
@@ -196,7 +327,7 @@ Deno.serve(async (req) => {
             title: `${stream.title} — ${creatorName} Live on UPLY`,
             description: stream.description || `Watch ${creatorName} live on UPLY`,
             image,
-            url: `${SITE_URL}${path}`,
+            url: canonicalUrl,
             type: "video.other",
             twitterCard: "summary_large_image",
             siteName: "Uply",
@@ -241,7 +372,7 @@ Deno.serve(async (req) => {
             title: `${clip.caption || "Clip"} — ${creatorName} on UPLY`,
             description: `Watch this clip by ${creatorName} on UPLY`,
             image,
-            url: `${SITE_URL}${path}`,
+            url: canonicalUrl,
             type: "video.other",
             twitterCard: "summary_large_image",
             siteName: "Uply",
@@ -276,7 +407,7 @@ Deno.serve(async (req) => {
             title: `${profile.display_name || username}${creatorType} — UPLY`,
             description: spaceBio.length > 160 ? spaceBio.slice(0, 157) + "…" : spaceBio,
             image: profile.avatar_url || DEFAULT_IMAGE,
-            url: `${SITE_URL}/creator/${encodeURIComponent(profile.username || username)}`,
+            url: canonicalUrl,
             type: "profile",
             twitterCard: "summary_large_image",
             siteName: "Uply",
@@ -298,7 +429,7 @@ Deno.serve(async (req) => {
         title: DEFAULT_TITLE,
         description: DEFAULT_DESC,
         image: DEFAULT_IMAGE,
-        url: `${SITE_URL}${path}`,
+        url: canonicalUrl,
         type: "website",
         twitterCard: "summary_large_image",
         siteName: "Uply",
