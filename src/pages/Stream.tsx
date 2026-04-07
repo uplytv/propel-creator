@@ -39,34 +39,63 @@ import SharePanel from "@/components/share/SharePanel";
 import SEOHead from "@/components/SEOHead";
 import RecentRecordingsRow from "@/components/live/RecentRecordingsRow";
 
-function StreamEndedState({ streamId, status, creatorId, creatorName, creatorAvatar }: { streamId: string; status: string; creatorId: string; creatorName?: string; creatorAvatar?: string }) {
+function StreamEndedState({ streamId, status, creatorId, creatorName, creatorAvatar, creatorUsername }: { streamId: string; status: string; creatorId: string; creatorName?: string; creatorAvatar?: string; creatorUsername?: string | null }) {
   const navigate = useNavigate();
-  const [vodId, setVodId] = useState<string | null>(null);
-  const [creatorUsername, setCreatorUsername] = useState<string | null>(null);
+  const [recordingTarget, setRecordingTarget] = useState<{ id: string; slug: string | null } | null>(null);
+  const [resolvedCreatorUsername, setResolvedCreatorUsername] = useState<string | null>(creatorUsername || null);
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
     const checkVod = async () => {
-      const [{ data: rec }, { data: prof }] = await Promise.all([
-        supabase
-          .from('stream_recordings')
-          .select('id')
-          .eq('creator_id', creatorId)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single(),
-        supabase
-          .from('profiles')
-          .select('username')
-          .eq('user_id', creatorId)
-          .single(),
+      const [{ data: session }, { data: prof }] = await Promise.all([
+        streamId
+          ? supabase
+              .from('live_stream_sessions')
+              .select('mux_asset_id')
+              .eq('stream_id', streamId)
+              .not('mux_asset_id', 'is', null)
+              .order('started_at', { ascending: false })
+              .limit(1)
+              .maybeSingle()
+          : Promise.resolve({ data: null }),
+        creatorUsername
+          ? Promise.resolve({ data: { username: creatorUsername } })
+          : supabase
+              .from('profiles')
+              .select('username')
+              .eq('user_id', creatorId)
+              .maybeSingle(),
       ]);
-      if (rec) setVodId(rec.id);
-      if (prof?.username) setCreatorUsername(prof.username);
+
+      if (prof?.username) setResolvedCreatorUsername(prof.username);
+
+      if (session?.mux_asset_id) {
+        const { data: exactRecording } = await supabase
+          .from('stream_recordings')
+          .select('id, slug')
+          .eq('mux_asset_id', session.mux_asset_id)
+          .maybeSingle();
+
+        if (exactRecording) {
+          setRecordingTarget(exactRecording);
+          setChecking(false);
+          return;
+        }
+      }
+
+      const { data: fallbackRecording } = await supabase
+        .from('stream_recordings')
+        .select('id, slug')
+        .eq('creator_id', creatorId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (fallbackRecording) setRecordingTarget(fallbackRecording);
       setChecking(false);
     };
     checkVod();
-  }, [creatorId]);
+  }, [creatorId, creatorUsername, streamId]);
 
   return (
     <div className="w-full aspect-video bg-muted/50 flex items-center justify-center border-b border-border">
@@ -81,13 +110,21 @@ function StreamEndedState({ streamId, status, creatorId, creatorName, creatorAva
             : `This stream is no longer live.${creatorName ? ` Check out ${creatorName}'s profile for more content.` : ""}`}
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3">
-          {vodId && (
-            <Button variant="default" size="sm" onClick={() => navigate(`/stream/${vodId}?type=recording`)}>
+          {recordingTarget && (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => navigate(
+                resolvedCreatorUsername
+                  ? `/${encodeURIComponent(resolvedCreatorUsername)}/videos/${recordingTarget.slug || recordingTarget.id}`
+                  : `/stream/${recordingTarget.id}?type=recording`
+              )}
+            >
               Watch Recording
             </Button>
           )}
-          {creatorUsername && (
-            <Button variant="outline" size="sm" onClick={() => navigate(`/creator/${creatorUsername}`)}>
+          {resolvedCreatorUsername && (
+            <Button variant="outline" size="sm" onClick={() => navigate(`/creator/${encodeURIComponent(resolvedCreatorUsername)}`)}>
               View Creator Profile
             </Button>
           )}
@@ -637,11 +674,12 @@ export default function Stream() {
                   streamType="ll-live"
                 />
               ) : (
-                <StreamEndedState 
-                  streamId={id || ''} 
+              <StreamEndedState 
+                  streamId={dbStream.id} 
                   status={dbStream.status} 
                   creatorId={dbStream.user_id}
                   creatorName={creatorName}
+                  creatorUsername={creatorUsername || profile?.username || null}
                 />
               )}
 

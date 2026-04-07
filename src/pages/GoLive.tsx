@@ -457,7 +457,8 @@ export default function GoLive() {
                 setStreamData(null);
                 navigate("/dashboard");
               }}
-              username={profileData?.display_name}
+              username={profileData?.username || null}
+              streamSlug={streamData.slug}
             />
           ) : (
             <BroadcastStudio
@@ -480,7 +481,7 @@ export default function GoLive() {
                 })),
               ]}
               featuredProductId={featuredProductId}
-              creatorUsername={profileData?.display_name}
+              creatorUsername={profileData?.username || null}
               hasQueuedShopProducts={liveProducts.length > 0}
               onFeaturedProductChange={async (productId) => {
                 setFeaturedProductId(productId);

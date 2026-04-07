@@ -108,7 +108,7 @@ export default function SharePanel({
   const isMobile = useIsMobile();
   const { user } = useAuth();
   const { data: profile } = useProfile();
-  const username = creatorUsername || profile?.display_name || "creator";
+  const username = creatorUsername || profile?.username || profile?.display_name || "creator";
   const { totalShares, platformBreakdown, trackShare } = useContentShares(contentType, contentId);
   const [caption, setCaption] = useState("");
   const [copied, setCopied] = useState(false);
