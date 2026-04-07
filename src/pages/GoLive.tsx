@@ -307,21 +307,7 @@ export default function GoLive() {
               {/* Category */}
               <div>
                 <label className="text-sm font-medium text-foreground mb-2 block">Category</label>
-                <div className="flex gap-2 flex-wrap">
-                  {categories.map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setCategory(cat)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
-                        category === cat
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-secondary/50 text-muted-foreground border-border hover:border-primary/30"
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
+                <CategoryDropdown value={category} onChange={setCategory} />
               </div>
 
               {/* Featured Product Selector */}
