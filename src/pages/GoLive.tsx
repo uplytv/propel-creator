@@ -31,6 +31,58 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SimulcastGoLivePanel from "@/components/live/SimulcastGoLivePanel";
 import { useSimulcastDestinations, useSimulcastSessions } from "@/hooks/useSimulcast";
 
+function CategoryDropdown({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const filtered = categories.filter(c => c.toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          className="w-full flex items-center justify-between bg-secondary/50 border border-border rounded-xl px-4 py-3 text-sm text-foreground hover:border-primary/30 transition-colors"
+          onClick={() => setOpen(!open)}
+        >
+          <span>{value}</span>
+          <ChevronsUpDown className="w-4 h-4 text-muted-foreground" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
+          <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search categories..."
+            className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+            autoFocus
+          />
+        </div>
+        <div className="max-h-56 overflow-y-auto p-1">
+          {filtered.length === 0 && (
+            <p className="text-xs text-muted-foreground text-center py-4">No categories found</p>
+          )}
+          {filtered.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => { onChange(cat); setOpen(false); setSearch(""); }}
+              className={cn(
+                "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors text-left",
+                value === cat
+                  ? "bg-primary/10 text-primary font-medium"
+                  : "text-foreground hover:bg-secondary/50"
+              )}
+            >
+              {value === cat && <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />}
+              <span className={value === cat ? "" : "ml-5.5"}>{cat}</span>
+            </button>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 export default function GoLive() {
   const navigate = useNavigate();
   const { user } = useAuth();
