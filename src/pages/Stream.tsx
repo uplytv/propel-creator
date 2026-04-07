@@ -193,7 +193,7 @@ export default function Stream() {
   const contentType = searchParams.get('type');
   const isFromCreatorRoute = !!routeUsername;
   const isFromSlugRoute = !!routeSlug;
-  const isVod = contentType === 'vod' || contentType === 'recording' || (isFromCreatorRoute && !isFromSlugRoute);
+  const isVod = contentType === 'vod' || contentType === 'recording' || (isFromCreatorRoute && !isFromSlugRoute) || dbStream?._isRecording;
 
   // Viewer features
   const viewerRewards = useViewerRewards(!!dbStream && dbStream.status === 'active' && !isVod);
