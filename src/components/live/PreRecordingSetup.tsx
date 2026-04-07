@@ -60,7 +60,7 @@ export default function PreRecordingSetup({
   onGoBack,
 }: PreRecordingSetupProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 mobile-safe-content">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <button onClick={onGoBack} className="text-muted-foreground hover:text-foreground transition-colors">
@@ -76,8 +76,9 @@ export default function PreRecordingSetup({
       {/* Preview Window */}
       <div
         ref={videoContainerRef}
-        className="relative overflow-hidden bg-black rounded-2xl border border-border w-full"
-        style={{ aspectRatio: 'auto', minHeight: '200px', maxHeight: '70vh' }}
+        className={`relative overflow-hidden bg-black rounded-2xl border border-border w-full min-h-[14rem] max-h-[52dvh] sm:max-h-[60vh] ${
+          screenShare ? "aspect-video" : "mx-auto max-w-sm aspect-[9/14]"
+        }`}
       >
         <video
           ref={videoRef}
@@ -142,23 +143,23 @@ export default function PreRecordingSetup({
       </div>
 
       {/* Controls */}
-      <div className="flex items-center justify-center gap-2">
-        <Button variant={cameraOn ? "default" : "outline"} size="icon" onClick={onToggleCamera} className="rounded-full w-11 h-11">
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        <Button variant={cameraOn ? "default" : "outline"} size="icon" onClick={onToggleCamera} className="rounded-full w-10 h-10 sm:w-11 sm:h-11">
           {cameraOn ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
         </Button>
-        <Button variant={micOn ? "default" : "outline"} size="icon" onClick={onToggleMic} disabled={!cameraOn && !screenShare} className="rounded-full w-11 h-11">
+        <Button variant={micOn ? "default" : "outline"} size="icon" onClick={onToggleMic} disabled={!cameraOn && !screenShare} className="rounded-full w-10 h-10 sm:w-11 sm:h-11">
           {micOn ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
         </Button>
         <Button
           variant={screenShare ? "default" : "outline"}
           size="icon"
           onClick={screenShare ? onStopScreenShare : onStartScreenShare}
-          className="rounded-full w-11 h-11"
+          className="rounded-full w-10 h-10 sm:w-11 sm:h-11"
         >
           <Monitor className="w-4 h-4" />
         </Button>
         {cameraOn && (
-          <Button variant="outline" size="icon" onClick={onFlipCamera} className="rounded-full w-11 h-11">
+          <Button variant="outline" size="icon" onClick={onFlipCamera} className="rounded-full w-10 h-10 sm:w-11 sm:h-11">
             <RotateCcw className="w-4 h-4" />
           </Button>
         )}

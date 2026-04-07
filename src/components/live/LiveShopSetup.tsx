@@ -175,7 +175,7 @@ export default function LiveShopSetup({ streamId, products, onProductsChange, is
   const queued = products.filter((p: any) => !p.is_active && !p.is_sold_out);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 mobile-safe-content">
       {/* Tab bar */}
       <div className="flex gap-1 p-1 rounded-xl bg-secondary/50 border border-border">
         {([

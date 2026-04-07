@@ -338,7 +338,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   );
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-dvh bg-background flex">
       {/* Skip to content */}
       <a
         href="#main-content"
@@ -439,7 +439,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Main Content */}
-      <div className={`flex-1 transition-all duration-300 ${collapsed ? "md:ml-[68px]" : "md:ml-60"}`}>
+      <div className={`flex-1 min-w-0 transition-all duration-300 ${collapsed ? "md:ml-[68px]" : "md:ml-60"}`}>
         {/* Top Bar */}
         <header role="banner" className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl safe-area-top">
           <div className="flex items-center justify-between px-4 md:px-8 h-14">
@@ -549,7 +549,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main id="main-content" role="main" aria-label="Page content" className="pb-16 md:pb-0" tabIndex={-1}>{children}</main>
+        <main id="main-content" role="main" aria-label="Page content" className="pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-0" tabIndex={-1}>{children}</main>
       </div>
 
       {/* Mobile Tab Bar */}

@@ -13,8 +13,8 @@ export default function ModeSelectionScreen({
   onGoBack,
 }: ModeSelectionScreenProps) {
   return (
-    <div className="space-y-4">
-      <div className="glass-card p-5 text-center">
+    <div className="space-y-4 mobile-safe-content">
+      <div className="glass-card p-4 md:p-5 text-center">
         <Radio className="w-8 h-8 text-primary mx-auto mb-3" />
         <h3 className="text-base font-bold text-foreground mb-1">Choose Your Broadcast Method</h3>
         <p className="text-xs text-muted-foreground">How would you like to create content?</p>
@@ -22,9 +22,9 @@ export default function ModeSelectionScreen({
 
       <button
         onClick={onSelectBrowserRecord}
-        className="glass-card p-5 w-full text-left hover:border-primary/40 transition-all group"
+        className="glass-card p-4 md:p-5 w-full text-left hover:border-primary/40 transition-all group"
       >
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-3 md:gap-4">
           <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
             <Camera className="w-6 h-6 text-primary" />
           </div>
@@ -43,9 +43,9 @@ export default function ModeSelectionScreen({
 
       <button
         onClick={onSelectExternalEncoder}
-        className="glass-card p-5 w-full text-left hover:border-primary/40 transition-all group"
+        className="glass-card p-4 md:p-5 w-full text-left hover:border-primary/40 transition-all group"
       >
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-3 md:gap-4">
           <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0 group-hover:bg-accent/20 transition-colors">
             <Wifi className="w-6 h-6 text-accent-foreground" />
           </div>
