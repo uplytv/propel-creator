@@ -178,6 +178,9 @@ export default function Stream() {
   const { user } = useAuth();
   const [joinOpen, setJoinOpen] = useState(false);
   const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [disliked, setDisliked] = useState(false);
+  const [dislikeCount, setDislikeCount] = useState(0);
   const [tipOpen, setTipOpen] = useState(false);
   const [creditsBalance, setCreditsBalance] = useState(100);
   const [dbStream, setDbStream] = useState<any>(null);
@@ -188,6 +191,7 @@ export default function Stream() {
   const [shareOpen, setShareOpen] = useState(false);
   const [memberAccess, setMemberAccess] = useState<boolean | null>(null);
   const [creatorUsername, setCreatorUsername] = useState<string | null>(routeUsername || null);
+  const { isFollowing, follow, unfollow } = useFollows();
 
   const searchParams = new URLSearchParams(window.location.search);
   const contentType = searchParams.get('type');
