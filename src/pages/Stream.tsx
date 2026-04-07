@@ -130,9 +130,15 @@ function StreamEndedState({ streamId, status, creatorId, creatorName, creatorAva
             Browse Streams
           </Button>
         </div>
+        {checking && status !== 'idle' && (
+          <div className="mt-3 flex items-center justify-center gap-2">
+            <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
+            <p className="text-xs text-muted-foreground">Looking for recording...</p>
+          </div>
+        )}
         {!checking && !recordingTarget && status !== 'idle' && (
           <p className="mt-3 text-xs text-muted-foreground">
-            This recording is still processing for this stream.
+            Recording is still processing. Check back in a few minutes.
           </p>
         )}
       </div>
