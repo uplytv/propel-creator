@@ -296,7 +296,7 @@ Deno.serve(async (req) => {
 
       let liveQuery = supabase
         .from("mux_live_streams")
-        .select("title, description, mux_playback_id, thumbnail_url, user_id")
+        .select("id, title, description, mux_playback_id, thumbnail_url, user_id, status")
         .eq("slug", slug)
         .order("created_at", { ascending: false })
         .limit(1);
@@ -318,14 +318,44 @@ Deno.serve(async (req) => {
           if (fallbackProfile?.display_name) creatorName = fallbackProfile.display_name;
         }
 
-        const image = stream.mux_playback_id
+        let title = stream.title || "Live Stream";
+        let description = stream.description || `Watch ${creatorName} live on UPLY`;
+        let image = stream.mux_playback_id
           ? `https://image.mux.com/${stream.mux_playback_id}/thumbnail.jpg?width=1200&height=630&fit_mode=smartcrop`
           : stream.thumbnail_url || DEFAULT_IMAGE;
 
+        // If stream is no longer active, resolve to the recording thumbnail
+        if (stream.status !== "active") {
+          const { data: session } = await supabase
+            .from("live_stream_sessions")
+            .select("mux_asset_id")
+            .eq("stream_id", stream.id)
+            .not("mux_asset_id", "is", null)
+            .order("started_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (session?.mux_asset_id) {
+            const { data: recording } = await supabase
+              .from("stream_recordings")
+              .select("title, description, playback_id")
+              .eq("mux_asset_id", session.mux_asset_id)
+              .maybeSingle();
+
+            if (recording) {
+              title = recording.title || title;
+              description = recording.description || description;
+              if (recording.playback_id) {
+                image = `https://image.mux.com/${recording.playback_id}/thumbnail.jpg?width=1200&height=630&fit_mode=smartcrop`;
+              }
+            }
+          }
+        }
+
         return new Response(
           buildHtml({
-            title: `${stream.title} — ${creatorName} Live on UPLY`,
-            description: stream.description || `Watch ${creatorName} live on UPLY`,
+            title: `${title} — ${creatorName} on UPLY`,
+            description,
             image,
             url: canonicalUrl,
             type: "video.other",
