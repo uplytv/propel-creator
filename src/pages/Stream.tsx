@@ -888,6 +888,59 @@ export default function Stream() {
             {/* Stream info */}
             <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-border">
               <h1 className="text-lg sm:text-xl font-bold text-foreground mb-2 sm:mb-3">{dbStream.title || 'Untitled Stream'}</h1>
+
+              {/* YouTube-style Action Bar — VOD / Recording */}
+              {(isVod || !isActive) && (
+                <div className="flex items-center gap-1 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1 mb-3">
+                  <StreamActionBtn
+                    icon={<Heart className={`w-5 h-5 ${liked ? "fill-current text-primary" : ""}`} />}
+                    label="Like"
+                    count={likeCount}
+                    active={liked}
+                    onClick={() => { setLiked(l => !l); setLikeCount(c => liked ? c - 1 : c + 1); if (disliked) { setDisliked(false); setDislikeCount(c => c - 1); } }}
+                  />
+                  <StreamActionBtn
+                    icon={<ThumbsDown className={`w-5 h-5 ${disliked ? "fill-current text-primary" : ""}`} />}
+                    label="Dislike"
+                    count={dislikeCount}
+                    active={disliked}
+                    onClick={() => { setDisliked(d => !d); setDislikeCount(c => disliked ? c - 1 : c + 1); if (liked) { setLiked(false); setLikeCount(c => c - 1); } }}
+                  />
+                  {!isOwner && dbStream.user_id && (
+                    <StreamActionBtn
+                      icon={subscribed ? <Check className="w-5 h-5 text-primary" /> : <UserPlus className="w-5 h-5" />}
+                      label={subscribed ? "Subscribed" : "Subscribe"}
+                      active={subscribed}
+                      onClick={() => subscribed ? unfollow(dbStream.user_id) : follow(dbStream.user_id)}
+                    />
+                  )}
+                  <StreamActionBtn
+                    icon={<Zap className="w-5 h-5" />}
+                    label="Energy"
+                    active={false}
+                    onClick={() => setTipOpen(true)}
+                  />
+                  <StreamActionBtn
+                    icon={<Share2 className="w-5 h-5" />}
+                    label="Share"
+                    active={false}
+                    onClick={() => setShareOpen(true)}
+                  />
+                  <StreamActionBtn
+                    icon={<ShoppingBag className="w-5 h-5" />}
+                    label="Shop"
+                    active={false}
+                    onClick={() => toast("No shop items for this recording")}
+                  />
+                  <StreamActionBtn
+                    icon={<Repeat2 className="w-5 h-5" />}
+                    label="Remix"
+                    active={false}
+                    onClick={() => toast("Remix coming soon")}
+                  />
+                </div>
+              )}
+
               <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">
@@ -904,7 +957,7 @@ export default function Stream() {
                     <p className="text-xs text-muted-foreground">{dbStream.category || 'General'}</p>
                   </div>
                 </div>
-                <FollowButton targetUserId={dbStream.user_id} />
+                {!isOwner && <FollowButton targetUserId={dbStream.user_id} />}
               </div>
               {dbStream.description && (
                 <p className="text-sm text-muted-foreground mt-3 hidden sm:block">{dbStream.description}</p>
