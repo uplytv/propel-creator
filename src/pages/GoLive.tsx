@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Radio, Globe, Lock, Loader2, ShoppingBag, X, CalendarIcon } from "lucide-react";
+import { Radio, Globe, Lock, Loader2, ShoppingBag, X, CalendarIcon, Check, ChevronsUpDown, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
 const categories = [
