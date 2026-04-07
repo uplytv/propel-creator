@@ -97,10 +97,11 @@ export function getCameraConstraints(facingMode: 'user' | 'environment'): MediaS
   return {
     video: {
       facingMode,
-      width: { ideal: 1280, max: 1920 },
-      height: { ideal: 720, max: 1080 },
+      // Do NOT specify fixed width/height — they cause track renegotiation
+      // when device rotates, which severs the WebRTC connection mid-stream.
+      // Let the browser handle dimensions natively across orientations.
+      aspectRatio: { ideal: 16 / 9 },
       frameRate: { ideal: 30, max: 30 },
-      // Reduce latency on supported browsers
       ...(typeof window !== 'undefined' && { latency: { ideal: 0 } }),
     },
     audio: {
