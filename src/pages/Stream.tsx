@@ -116,7 +116,7 @@ function StreamEndedState({ streamId, status, creatorId, creatorName, creatorAva
             <Button
               variant="default"
               size="sm"
-              onClick={() => navigate(exactRecordingUrl || `/stream/${recordingTarget.id}?type=recording`)}
+              onClick={() => navigate(`/stream/${recordingTarget.id}?type=recording`)}
             >
               Watch Recording
             </Button>
