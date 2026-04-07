@@ -76,7 +76,8 @@ serve(async (req) => {
       streamId: stream.id,
       streamKey: muxData.data.stream_key,
       playbackId: muxData.data.playback_ids[0].id,
-      rtmpUrl: 'rtmps://global-live.mux.com:443/app'
+      rtmpUrl: 'rtmps://global-live.mux.com:443/app',
+      slug: stream.slug || stream.id,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })

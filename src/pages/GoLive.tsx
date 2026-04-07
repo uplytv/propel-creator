@@ -96,6 +96,7 @@ export default function GoLive() {
     streamKey: string;
     playbackId: string;
     rtmpUrl: string;
+    slug: string;
   } | null>(null);
   const [streamStatus, setStreamStatus] = useState<string>("idle");
   const [showEndScreen, setShowEndScreen] = useState(false);

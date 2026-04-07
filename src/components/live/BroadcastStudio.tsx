@@ -63,6 +63,7 @@ interface BroadcastStudioProps {
     streamKey: string;
     playbackId: string;
     rtmpUrl: string;
+    slug?: string;
   };
   streamStatus: string;
   title: string;
@@ -845,7 +846,7 @@ export default function BroadcastStudio({
             )}
           </div>
 
-          <SharePanel open={showSharePanel} onClose={() => setShowSharePanel(false)} contentType="stream" contentId={streamData.streamId} title={title} playbackId={streamData.playbackId} creatorUsername={creatorUsername} />
+          <SharePanel open={showSharePanel} onClose={() => setShowSharePanel(false)} contentType="stream" contentId={streamData.streamId} title={title} playbackId={streamData.playbackId} creatorUsername={creatorUsername} contentSlug={streamData.slug || streamData.streamId} />
         </>
       );
     }
