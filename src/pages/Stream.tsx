@@ -44,9 +44,10 @@ function StreamEndedState({ streamId, status, creatorId, creatorName, creatorAva
   const [recordingTarget, setRecordingTarget] = useState<{ id: string; slug: string | null } | null>(null);
   const [resolvedCreatorUsername, setResolvedCreatorUsername] = useState<string | null>(creatorUsername || null);
   const [checking, setChecking] = useState(true);
-  const exactRecordingUrl = recordingTarget ? `/stream/${recordingTarget.id}?type=recording` : null;
+  const [pollCount, setPollCount] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
     const checkVod = async () => {
       const [{ data: session }, { data: prof }] = await Promise.all([
         streamId
@@ -68,6 +69,7 @@ function StreamEndedState({ streamId, status, creatorId, creatorName, creatorAva
               .maybeSingle(),
       ]);
 
+      if (cancelled) return;
       if (prof?.username) setResolvedCreatorUsername(prof.username);
 
       if (session?.mux_asset_id) {
@@ -77,22 +79,25 @@ function StreamEndedState({ streamId, status, creatorId, creatorName, creatorAva
           .eq('mux_asset_id', session.mux_asset_id)
           .maybeSingle();
 
-        if (exactRecording) {
+        if (!cancelled && exactRecording) {
           setRecordingTarget(exactRecording);
           setChecking(false);
           return;
         }
       }
-      setChecking(false);
+
+      // Recording not ready yet — poll up to 6 times (30s total)
+      if (!cancelled && pollCount < 6) {
+        setTimeout(() => {
+          if (!cancelled) setPollCount(c => c + 1);
+        }, 5000);
+      } else if (!cancelled) {
+        setChecking(false);
+      }
     };
     checkVod();
-  }, [creatorId, creatorUsername, streamId]);
-
-  useEffect(() => {
-    if (!checking && exactRecordingUrl) {
-      navigate(exactRecordingUrl, { replace: true });
-    }
-  }, [checking, exactRecordingUrl, navigate]);
+    return () => { cancelled = true; };
+  }, [creatorId, creatorUsername, streamId, pollCount]);
 
   return (
     <div className="w-full aspect-video bg-muted/50 flex items-center justify-center border-b border-border">
