@@ -640,6 +640,8 @@ export default function Stream() {
     const TierIcon = tierIcons[creatorTier - 1] || Shield;
     const playbackId = dbStream.mux_playback_id;
     const isPrivateStream = dbStream.is_public === false;
+    const isOwner = user?.id === dbStream.user_id;
+    const subscribed = dbStream.user_id ? isFollowing(dbStream.user_id) : false;
 
     // Guard: no playback ID available
     if (!playbackId) {
