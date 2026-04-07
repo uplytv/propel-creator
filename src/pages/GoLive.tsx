@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Radio, Globe, Lock, Loader2, ShoppingBag, X, CalendarIcon, Check, ChevronsUpDown, Search } from "lucide-react";
+import { Radio, Globe, Lock, Loader2, ShoppingBag, Check, ChevronsUpDown, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -25,6 +25,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { useProfile } from "@/hooks/useProfile";
 import EndOfStreamScreen from "@/components/live/EndOfStreamScreen";
 import LiveShopSetup from "@/components/live/LiveShopSetup";
+import FeaturedProductPicker, { type Product as FeaturedProductOption } from "@/components/live/FeaturedProductPicker";
 import ScheduleStreamTab from "@/components/scheduled/ScheduleStreamTab";
 import { trackEvent } from "@/lib/posthog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -120,6 +121,27 @@ export default function GoLive() {
   const [simulcastEnabled, setSimulcastEnabled] = useState(true);
   const [enabledPlatforms, setEnabledPlatforms] = useState<string[]>([]);
   const [liveProducts, setLiveProducts] = useState<any[]>([]);
+
+  const allFeaturableProducts: FeaturedProductOption[] = [
+    ...activeProducts.map((product: any) => ({
+      id: product.id,
+      name: product.name,
+      type: product.type,
+      price: Number(product.price ?? 0),
+      image_url: product.image_url ?? null,
+      status: product.status ?? "active",
+      source: "digital" as const,
+    })),
+    ...liveProducts.map((product: any) => ({
+      id: product.id,
+      name: product.title,
+      type: product.type === "auction" ? "auction" : "product",
+      price: Number((product.type === "auction" ? product.starting_bid : product.price) ?? 0),
+      image_url: product.image_url ?? null,
+      status: product.is_active ? "active" : "queued",
+      source: "live_shop" as const,
+    })),
+  ];
 
   const fetchLiveProducts = useCallback(async (sessionId?: string) => {
     const id = sessionId || streamData?.streamId || draftSessionId;
@@ -276,13 +298,11 @@ export default function GoLive() {
     }
   };
 
-  const selectedProduct = activeProducts.find(p => p.id === featuredProductId);
-
   return (
     <AppLayout>
-      <div className="px-4 md:px-8 py-8 max-w-3xl mx-auto">
+      <div className="px-4 md:px-8 py-6 md:py-8 max-w-3xl mx-auto mobile-safe-content">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="flex items-center gap-3 mb-8">
+          <div className="flex items-center gap-3 mb-6 md:mb-8">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
               <Radio className="w-5 h-5 text-primary" />
             </div>
@@ -370,52 +390,15 @@ export default function GoLive() {
                   Feature a Product
                   <span className="text-xs text-muted-foreground font-normal">(optional)</span>
                 </label>
-              {(() => {
-                // Merge digital products + live shop products for the picker
-                const allFeaturableProducts = [
-                  ...activeProducts.map(p => ({ id: p.id, name: p.name, price: p.price, type: p.type, image_url: (p as any).image_url, source: "digital" as const })),
-                  ...liveProducts.map(p => ({ id: p.id, name: p.title, price: p.price || p.starting_bid || 0, type: p.type === "auction" ? "auction" : "shop", image_url: p.image_url, source: "live_shop" as const })),
-                ];
-                const selectedItem = allFeaturableProducts.find(p => p.id === featuredProductId);
-                const getIcon = (type: string) => type === 'course' ? '📚' : type === 'community' ? '🤝' : type === 'coaching' ? '🎯' : type === 'auction' ? '🔨' : type === 'shop' ? '🛍️' : '📦';
-
-                if (selectedItem) return (
-                  <div className="glass-card p-3 flex items-center gap-3">
-                    {selectedItem.image_url ? (
-                      <img src={selectedItem.image_url} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
-                    ) : (
-                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 text-lg">{getIcon(selectedItem.type)}</div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-foreground truncate">{selectedItem.name}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{selectedItem.type} · ${selectedItem.price}{selectedItem.source === "live_shop" && <span className="text-primary font-semibold"> · Shop</span>}</p>
-                    </div>
-                    <button onClick={() => setFeaturedProductId(null)} className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                );
-
-                if (allFeaturableProducts.length > 0) return (
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
-                    {allFeaturableProducts.map((p) => (
-                      <button key={p.id} onClick={() => setFeaturedProductId(p.id)} className="glass-card-hover p-3 w-full text-left flex items-center gap-3">
-                        {p.image_url ? (
-                          <img src={p.image_url} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
-                        ) : (
-                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">{getIcon(p.type)}</div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
-                          <p className="text-xs text-muted-foreground capitalize">{p.type} · ${p.price}{p.source === "live_shop" && <span className="text-primary font-semibold"> · Shop</span>}</p>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                );
-
-                return <p className="text-xs text-muted-foreground py-2">No products yet. Add one in the Shop tab or Products page.</p>;
-              })()}
+                {allFeaturableProducts.length > 0 ? (
+                  <FeaturedProductPicker
+                    products={allFeaturableProducts}
+                    featuredProductId={featuredProductId}
+                    onSelect={setFeaturedProductId}
+                  />
+                ) : (
+                  <p className="text-xs text-muted-foreground py-2">No products yet. Add one in the Shop tab or Products page.</p>
+                )}
               </div>
 
               {/* Simulcast Panel */}
