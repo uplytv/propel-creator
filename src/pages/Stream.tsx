@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Eye, Heart, Share2, Shield, TrendingUp, Zap, Crown, Radio, Coins, Loader2, ShoppingBag, Scissors } from "lucide-react";
+import { ArrowLeft, Eye, Heart, ThumbsDown, UserPlus, Check, Share2, Shield, TrendingUp, Zap, Crown, Radio, Coins, Loader2, ShoppingBag, Scissors, Repeat2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import StreamChat from "@/components/live/StreamChat";
@@ -34,10 +34,24 @@ import UPLYMuxPlayer from "@/components/MuxPlayer";
 import WebRTCPlayer from "@/components/live/WebRTCPlayer";
 import { Skeleton } from "@/components/ui/skeleton";
 import FollowButton from "@/components/FollowButton";
+import { useFollows } from "@/hooks/useFollows";
 import ClipCreator from "@/components/clips/ClipCreator";
 import SharePanel from "@/components/share/SharePanel";
 import SEOHead from "@/components/SEOHead";
 import RecentRecordingsRow from "@/components/live/RecentRecordingsRow";
+
+function StreamActionBtn({ icon, label, count, active, onClick }: { icon: React.ReactNode; label: string; count?: number; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex flex-col items-center justify-center min-w-[56px] px-2 py-2 rounded-xl transition-all hover:bg-secondary/60 active:scale-95"
+    >
+      <span className={active ? "text-primary" : "text-muted-foreground"}>{icon}</span>
+      {count !== undefined && <span className={`text-[11px] font-semibold mt-0.5 ${active ? "text-primary" : "text-foreground"}`}>{count}</span>}
+      <span className="text-[10px] text-muted-foreground mt-0.5 font-medium whitespace-nowrap">{label}</span>
+    </button>
+  );
+}
 
 function StreamEndedState({ streamId, status, creatorId, creatorName, creatorAvatar, creatorUsername }: { streamId: string; status: string; creatorId: string; creatorName?: string; creatorAvatar?: string; creatorUsername?: string | null }) {
   const navigate = useNavigate();
