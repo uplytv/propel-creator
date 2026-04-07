@@ -8,13 +8,13 @@ const corsHeaders = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  try {
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-      { auth: { persistSession: false } }
-    );
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    { auth: { persistSession: false } }
+  );
 
+  try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -41,7 +41,8 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Product not found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const sale_price = Math.round(product.price * (1 - discount_percent / 100) * 100) / 100;
+    const original_price = (product as any).price;
+    const sale_price = Math.round(original_price * (1 - discount_percent / 100) * 100) / 100;
     const ends_at = new Date(Date.now() + duration_seconds * 1000).toISOString();
 
     // Deactivate any existing flash sale for this product
@@ -51,14 +52,14 @@ Deno.serve(async (req) => {
       .eq("live_product_id", live_product_id)
       .eq("is_active", true);
 
-    const { data: flashSale } = await supabase
+    const { data: flashSale, error: fsErr } = await supabase
       .from("live_flash_sales")
       .insert({
         live_product_id,
-        stream_id: product.stream_id,
-        creator_id: product.creator_id,
+        stream_id: (product as any).stream_id,
+        creator_id: (product as any).creator_id,
         discount_percent,
-        original_price: product.price,
+        original_price,
         sale_price,
         duration_seconds,
         ends_at,
@@ -67,6 +68,8 @@ Deno.serve(async (req) => {
       .select()
       .single();
 
+    if (fsErr) throw fsErr;
+
     // Temporarily update product price to sale price
     await supabase
       .from("live_products")
@@ -74,13 +77,14 @@ Deno.serve(async (req) => {
       .eq("id", live_product_id);
 
     // Post announcement in live chat
+    const label = duration_seconds < 60 ? `${duration_seconds}s` : `${Math.round(duration_seconds / 60)}m`;
     await supabase
       .from("live_chat_messages")
       .insert({
-        stream_id: product.stream_id,
-        user_id: product.creator_id,
+        stream_id: (product as any).stream_id,
+        user_id: (product as any).creator_id,
         username: "UPLY Shop",
-        message: `⚡ FLASH SALE: ${product.title} — ${discount_percent}% OFF! $${sale_price} for ${duration_seconds < 60 ? duration_seconds + "s" : Math.round(duration_seconds / 60) + "m"}!`,
+        message: `⚡ FLASH SALE: "${(product as any).title}" — ${discount_percent}% OFF! Now $${sale_price} for ${label}!`,
         is_pinned: false,
       })
       .catch(() => {});
