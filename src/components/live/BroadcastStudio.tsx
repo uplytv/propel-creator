@@ -63,6 +63,7 @@ interface BroadcastStudioProps {
     streamKey: string;
     playbackId: string;
     rtmpUrl: string;
+    slug?: string;
   };
   streamStatus: string;
   title: string;
