@@ -3,7 +3,6 @@ import Hls from 'hls.js';
 import { Loader2, RefreshCw, WifiOff, PictureInPicture2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAutoPip } from '@/hooks/useAutoPip';
-import { Sentry } from "@/lib/sentry";
 
 interface MuxPlayerProps {
   playbackId: string;
@@ -28,35 +27,37 @@ export const UPLYMuxPlayer = ({
   const [retryCount, setRetryCount] = useState(0);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const maxRetries = 5;
-
-  const hlsUrl = `https://stream.mux.com/${playbackId}.m3u8`;
   const isLive = streamType === 'live' || streamType === 'll-live';
+  const hlsUrl = `https://stream.mux.com/${playbackId}.m3u8`;
 
   const destroyHls = useCallback(() => {
-    if (retryTimerRef.current) {
-      clearTimeout(retryTimerRef.current);
-      retryTimerRef.current = null;
-    }
-    if (hlsRef.current) {
-      hlsRef.current.destroy();
-      hlsRef.current = null;
-    }
+    if (retryTimerRef.current) { clearTimeout(retryTimerRef.current); retryTimerRef.current = null; }
+    if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
   }, []);
 
   const initHls = useCallback(() => {
     const video = videoRef.current;
     if (!video || !playbackId) return;
-
     destroyHls();
     setStatus('loading');
 
     if (Hls.isSupported()) {
       const hls = new Hls({
+        // Low latency live settings
         liveSyncDurationCount: 3,
-        liveMaxLatencyDurationCount: 6,
+        liveMaxLatencyDurationCount: 10,
         lowLatencyMode: true,
-        backBufferLength: 90,
-        ...(isLive ? { enableWorker: true } : {}),
+        backBufferLength: 120,
+        enableWorker: true,
+        // Never give up on network issues — orientation/tab switch resilience
+        fragLoadingTimeOut: 30000,
+        manifestLoadingTimeOut: 30000,
+        levelLoadingTimeOut: 30000,
+        fragLoadingMaxRetry: isLive ? 999 : 5,
+        manifestLoadingMaxRetry: isLive ? 999 : 5,
+        levelLoadingMaxRetry: isLive ? 999 : 5,
+        fragLoadingRetryDelay: 1000,
+        manifestLoadingRetryDelay: 1000,
       });
 
       hlsRef.current = hls;
@@ -68,55 +69,59 @@ export const UPLYMuxPlayer = ({
       });
 
       hls.on(Hls.Events.ERROR, (_event, data) => {
-        if (data.fatal) {
-          Sentry.captureException(data.details, { tags: { context: "hls_player" } });
-          
-          if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-            // Auto-retry for network errors (stream starting up)
+        if (!data.fatal) return;
+        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+          if (isLive) {
+            // Live streams never fail — silently resume
+            setStatus('retrying');
+            retryTimerRef.current = setTimeout(() => {
+              hls.loadSource(hlsUrl);
+              hls.startLoad();
+            }, 2000);
+          } else {
             setRetryCount(prev => {
               const next = prev + 1;
               if (next <= maxRetries) {
                 setStatus('retrying');
-                retryTimerRef.current = setTimeout(() => {
-                  hls.loadSource(hlsUrl);
-                  hls.attachMedia(video);
-                }, 5000);
-              } else {
-                setStatus('failed');
-              }
+                retryTimerRef.current = setTimeout(() => { hls.loadSource(hlsUrl); hls.attachMedia(video); }, 5000);
+              } else { setStatus('failed'); }
               return next;
             });
-          } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-            hls.recoverMediaError();
-          } else {
-            setStatus('failed');
           }
+        } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+          hls.recoverMediaError();
+        } else if (!isLive) {
+          setStatus('failed');
+        } else {
+          // Live: always try to recover
+          retryTimerRef.current = setTimeout(() => initHls(), 3000);
         }
       });
 
       hls.loadSource(hlsUrl);
       hls.attachMedia(video);
+
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      // Native HLS (Safari)
+      // Native HLS (Safari / iOS)
       video.src = hlsUrl;
       video.addEventListener('loadedmetadata', () => {
         setStatus('playing');
         if (autoPlay) video.play().catch(() => {});
       });
       video.addEventListener('error', () => {
-        setRetryCount(prev => {
-          const next = prev + 1;
-          if (next <= maxRetries) {
-            setStatus('retrying');
-            retryTimerRef.current = setTimeout(() => {
-              video.src = hlsUrl;
-              video.load();
-            }, 5000);
-          } else {
-            setStatus('failed');
-          }
-          return next;
-        });
+        if (isLive) {
+          // iOS Safari live: reload silently after rotation or interruption
+          setTimeout(() => { video.src = hlsUrl; video.load(); video.play().catch(() => {}); }, 2000);
+        } else {
+          setRetryCount(prev => {
+            const next = prev + 1;
+            if (next <= maxRetries) {
+              setStatus('retrying');
+              retryTimerRef.current = setTimeout(() => { video.src = hlsUrl; video.load(); }, 5000);
+            } else { setStatus('failed'); }
+            return next;
+          });
+        }
       });
     } else {
       setStatus('failed');
@@ -128,12 +133,31 @@ export const UPLYMuxPlayer = ({
     return destroyHls;
   }, [initHls, destroyHls]);
 
-  const { isPip, togglePip, containerRef } = useAutoPip(videoRef, status === 'playing');
+  // Survive orientation change and tab switch — never drop a live stream
+  useEffect(() => {
+    if (!isLive) return;
 
-  const handleManualRetry = () => {
-    setRetryCount(0);
-    initHls();
-  };
+    const resume = () => {
+      setTimeout(() => {
+        if (!hlsRef.current || !videoRef.current) return;
+        try { hlsRef.current.startLoad(); videoRef.current.play().catch(() => {}); } catch {}
+      }, 300);
+    };
+
+    const onVisibility = () => { if (!document.hidden) resume(); };
+
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('orientationchange', resume);
+    try { screen.orientation?.addEventListener('change', resume); } catch {}
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('orientationchange', resume);
+      try { screen.orientation?.removeEventListener('change', resume); } catch {}
+    };
+  }, [isLive]);
+
+  const { isPip, togglePip, containerRef } = useAutoPip(videoRef, status === 'playing');
 
   return (
     <div ref={containerRef} className={`relative w-full aspect-video bg-black ${className || ''}`}>
@@ -143,14 +167,14 @@ export const UPLYMuxPlayer = ({
         autoPlay={autoPlay}
         muted={muted}
         playsInline
-        // @ts-ignore — webkit attribute needed for iOS inline playback
+        // @ts-ignore
         webkit-playsinline=""
         controls={status === 'playing'}
         className="w-full h-full object-contain"
         style={{ display: status === 'playing' ? 'block' : 'none' }}
       />
 
-      {status === 'loading' && (
+      {(status === 'loading') && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
           <Loader2 className="w-10 h-10 text-primary animate-spin" />
           <p className="text-sm text-muted-foreground">Connecting to stream...</p>
@@ -160,24 +184,20 @@ export const UPLYMuxPlayer = ({
       {status === 'retrying' && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
           <Loader2 className="w-10 h-10 text-primary animate-spin" />
-          <p className="text-sm text-white font-medium">
-            {isLive ? 'Stream is starting... hang tight.' : 'Reconnecting...'}
+          <p className="text-sm text-foreground font-medium">
+            {isLive ? 'Reconnecting...' : `Retrying (${retryCount}/${maxRetries})`}
           </p>
-          <p className="text-xs text-white/60">Attempt {retryCount} of {maxRetries}</p>
         </div>
       )}
 
       {status === 'failed' && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
           <WifiOff className="w-10 h-10 text-muted-foreground" />
-          <p className="text-sm text-white font-medium">
-            {isLive
-              ? 'This stream may have ended. Refresh to check.'
-              : 'Stream interrupted. Tap to reconnect.'}
+          <p className="text-sm text-foreground font-medium">
+            {isLive ? 'Stream interrupted. Tap to reconnect.' : 'Playback failed.'}
           </p>
-          <Button variant="outline" size="sm" onClick={handleManualRetry} className="gap-2">
-            <RefreshCw className="w-4 h-4" />
-            Retry
+          <Button variant="outline" size="sm" onClick={() => { setRetryCount(0); initHls(); }} className="gap-2">
+            <RefreshCw className="w-4 h-4" /> Retry
           </Button>
         </div>
       )}

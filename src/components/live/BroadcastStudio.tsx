@@ -221,6 +221,42 @@ export default function BroadcastStudio({
     }
   }, [isRecording, engagement.startEnergyBroadcast, autoRecovery.startMonitoring, autoRecovery.stopMonitoring, facingMode]);
 
+  // Survive orientation change without killing the stream
+  useEffect(() => {
+    if (!isRecording) return;
+
+    const handleRotation = () => {
+      setTimeout(async () => {
+        if (!streamRef.current || !videoRef.current) return;
+        const videoTrack = streamRef.current.getVideoTracks()[0];
+        // Only recover if the track actually died — don't interrupt a healthy stream
+        if (!videoTrack || videoTrack.readyState === 'live') return;
+        try {
+          const constraints = getCameraConstraints(facingMode);
+          const newStream = await navigator.mediaDevices.getUserMedia(constraints);
+          const newTrack = newStream.getVideoTracks()[0];
+          streamRef.current.removeTrack(videoTrack);
+          streamRef.current.addTrack(newTrack);
+          videoRef.current!.srcObject = streamRef.current;
+          // Hot-swap track in every active peer connection — stream continues uninterrupted
+          peerConnectionsRef.current.forEach((pc) => {
+            const sender = pc.getSenders().find(s => s.track?.kind === 'video');
+            if (sender) sender.replaceTrack(newTrack).catch(() => {});
+          });
+        } catch {
+          // Camera couldn't restart — stream audio continues, video will recover on next flip
+        }
+      }, 400);
+    };
+
+    window.addEventListener('orientationchange', handleRotation);
+    try { screen.orientation?.addEventListener('change', handleRotation); } catch {}
+    return () => {
+      window.removeEventListener('orientationchange', handleRotation);
+      try { screen.orientation?.removeEventListener('change', handleRotation); } catch {}
+    };
+  }, [isRecording, facingMode]);
+
   useEffect(() => {
     const score = engagement.energyScore;
     if (score >= 100 && prevEnergyRef.current < 100) {
