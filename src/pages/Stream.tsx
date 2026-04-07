@@ -44,6 +44,7 @@ function StreamEndedState({ streamId, status, creatorId, creatorName, creatorAva
   const [recordingTarget, setRecordingTarget] = useState<{ id: string; slug: string | null } | null>(null);
   const [resolvedCreatorUsername, setResolvedCreatorUsername] = useState<string | null>(creatorUsername || null);
   const [checking, setChecking] = useState(true);
+  const exactRecordingUrl = recordingTarget ? `/stream/${recordingTarget.id}?type=recording` : null;
 
   useEffect(() => {
     const checkVod = async () => {
@@ -82,20 +83,16 @@ function StreamEndedState({ streamId, status, creatorId, creatorName, creatorAva
           return;
         }
       }
-
-      const { data: fallbackRecording } = await supabase
-        .from('stream_recordings')
-        .select('id, slug')
-        .eq('creator_id', creatorId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (fallbackRecording) setRecordingTarget(fallbackRecording);
       setChecking(false);
     };
     checkVod();
   }, [creatorId, creatorUsername, streamId]);
+
+  useEffect(() => {
+    if (!checking && exactRecordingUrl) {
+      navigate(exactRecordingUrl, { replace: true });
+    }
+  }, [checking, exactRecordingUrl, navigate]);
 
   return (
     <div className="w-full aspect-video bg-muted/50 flex items-center justify-center border-b border-border">
@@ -114,11 +111,7 @@ function StreamEndedState({ streamId, status, creatorId, creatorName, creatorAva
             <Button
               variant="default"
               size="sm"
-              onClick={() => navigate(
-                resolvedCreatorUsername
-                  ? `/${encodeURIComponent(resolvedCreatorUsername)}/videos/${recordingTarget.slug || recordingTarget.id}`
-                  : `/stream/${recordingTarget.id}?type=recording`
-              )}
+              onClick={() => navigate(exactRecordingUrl || `/stream/${recordingTarget.id}?type=recording`)}
             >
               Watch Recording
             </Button>
@@ -132,6 +125,11 @@ function StreamEndedState({ streamId, status, creatorId, creatorName, creatorAva
             Browse Streams
           </Button>
         </div>
+        {!checking && !recordingTarget && status !== 'idle' && (
+          <p className="mt-3 text-xs text-muted-foreground">
+            This recording is still processing for this stream.
+          </p>
+        )}
       </div>
     </div>
   );
@@ -185,20 +183,35 @@ export default function Stream() {
     const fetchStream = async () => {
       // Handle slug-based route: /:username/live/:slug
       if (isFromSlugRoute && routeSlug) {
-        const { data: muxStream } = await supabase
-          .from('mux_live_streams')
-          .select('*')
-          .eq('slug', routeSlug)
-          .maybeSingle();
+          const { data: routeProfile } = routeUsername
+            ? await supabase
+                .from('profiles')
+                .select('user_id, display_name, avatar_url, tier, tier_name, username')
+                .eq('username', decodeURIComponent(routeUsername))
+                .maybeSingle()
+            : { data: null };
+
+          let streamQuery = supabase
+            .from('mux_live_streams')
+            .select('*')
+            .eq('slug', routeSlug)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+          if (routeProfile?.user_id) {
+            streamQuery = streamQuery.eq('user_id', routeProfile.user_id);
+          }
+
+          const { data: muxStream } = await streamQuery.maybeSingle();
 
         if (muxStream) {
           setDbStream(muxStream);
           setIsRealStream(true);
-          const { data: prof } = await supabase
-            .from('profiles')
-            .select('display_name, avatar_url, tier, tier_name, username')
-            .eq('user_id', muxStream.user_id)
-            .single();
+            const prof = routeProfile || (await supabase
+              .from('profiles')
+              .select('display_name, avatar_url, tier, tier_name, username')
+              .eq('user_id', muxStream.user_id)
+              .single()).data;
           setProfile(prof);
           if (prof?.username) setCreatorUsername(prof.username);
           if ((muxStream as any).featured_product_id) {

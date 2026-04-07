@@ -117,16 +117,16 @@ export default function SharePanel({
   const [showQR, setShowQR] = useState<string | null>(null);
   const [showEmbed, setShowEmbed] = useState(false);
 
-  // Use the actual slug from the database, fall back to contentId
+  // Use stable canonical routes so shared links always resolve to the exact content.
   const resolvedSlug = propSlug || contentId;
 
   const baseUrl = getSiteUrl();
   const contentUrl = propUrl ? propUrl
     : contentType === "stream"
-      ? `${baseUrl}/${encodeURIComponent(username)}/live/${resolvedSlug}`
-      : contentType === "clip"
-        ? `${baseUrl}/${encodeURIComponent(username)}/clips/${resolvedSlug}`
-        : `${baseUrl}/${encodeURIComponent(username)}/videos/${resolvedSlug}`;
+      ? `${baseUrl}/stream/${contentId}`
+      : contentType === "recording"
+        ? `${baseUrl}/stream/${contentId}?type=recording`
+        : `${baseUrl}/${encodeURIComponent(username)}/clips/${resolvedSlug}`;
 
   const defaultCaption =
     contentType === "stream"

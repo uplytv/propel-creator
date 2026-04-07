@@ -199,12 +199,36 @@ serve(async (req) => {
               } catch (ariaErr) { console.error('ARIA trigger failed (non-blocking):', ariaErr) }
             }
 
-            await supabase.from('live_stream_sessions').insert({
-              stream_id: stream.id,
-              user_id: stream.user_id,
-              mux_asset_id: data.id,
-              started_at: new Date().toISOString(),
-            })
+            const sessionTimestamp = new Date().toISOString()
+            const { data: latestSession } = await supabase
+              .from('live_stream_sessions')
+              .select('id')
+              .eq('stream_id', stream.id)
+              .order('started_at', { ascending: false })
+              .limit(1)
+              .maybeSingle()
+
+            if (latestSession?.id) {
+              const { error: sessionUpdateError } = await supabase
+                .from('live_stream_sessions')
+                .update({
+                  mux_asset_id: data.id,
+                  ended_at: sessionTimestamp,
+                })
+                .eq('id', latestSession.id)
+
+              if (sessionUpdateError) {
+                console.error('❌ Failed to link recording to live_stream_session:', JSON.stringify(sessionUpdateError))
+              }
+            } else {
+              await supabase.from('live_stream_sessions').insert({
+                stream_id: stream.id,
+                user_id: stream.user_id,
+                mux_asset_id: data.id,
+                started_at: sessionTimestamp,
+                ended_at: sessionTimestamp,
+              })
+            }
 
             // Get creator profile for SEO URL
             const { data: creatorProfile } = await supabase
