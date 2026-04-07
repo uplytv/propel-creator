@@ -530,6 +530,9 @@ export default function BroadcastStudio({
   }, [streamData.streamId]);
 
   const isLive = streamStatus === "active";
+  const liveShareUrl = creatorUsername && streamData.slug
+    ? `${getSiteUrl()}/${encodeURIComponent(creatorUsername)}/live/${streamData.slug}`
+    : `${getSiteUrl()}/stream/${streamData.streamId}`;
 
   // Re-attach stream to video element after state-driven re-renders
   useEffect(() => {
@@ -669,9 +672,8 @@ export default function BroadcastStudio({
                     <ActionButton onClick={() => setShowShopPanel(!showShopPanel)} active={showShopPanel} activeBg="rgba(0,255,133,0.3)" icon={<ShoppingBag className="w-4.5 h-4.5 text-white" />} />
                     <ActionButton onClick={() => setShowSharePanel(true)} bg="rgba(0,255,133,0.25)" icon={<Share2 className="w-4.5 h-4.5 text-white" />} />
                     <ActionButton onClick={async () => {
-                      const liveUrl = `${getSiteUrl()}/stream/${streamData.streamId}`;
-                      const ok = await safeClipboardWrite(liveUrl);
-                      ok ? toast.success("Live link copied ✓", { description: liveUrl }) : toast.error("Could not copy link");
+                      const ok = await safeClipboardWrite(liveShareUrl);
+                      ok ? toast.success("Live link copied ✓", { description: liveShareUrl }) : toast.error("Could not copy link");
                     }} icon={<Copy className="w-4.5 h-4.5 text-white" />} />
                     <ActionButton onClick={() => setShowAnalytics(!showAnalytics)} active={showAnalytics} icon={<BarChart3 className="w-4.5 h-4.5 text-white" />} />
                     <ActionButton onClick={() => setShowPollCreator(true)} icon={<MessageCircleQuestion className="w-4.5 h-4.5 text-white" />} />

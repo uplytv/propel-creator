@@ -27,6 +27,7 @@ interface EndOfStreamScreenProps {
   durationSeconds: number;
   onClose: () => void;
   username?: string | null;
+  streamSlug?: string | null;
   highlights?: HighlightMoment[];
   chaptersDescription?: string;
 }
@@ -47,6 +48,7 @@ export default function EndOfStreamScreen({
   durationSeconds,
   onClose,
   username,
+  streamSlug,
   highlights = [],
   chaptersDescription,
 }: EndOfStreamScreenProps) {
@@ -58,6 +60,8 @@ export default function EndOfStreamScreen({
   });
   const [shareOpen, setShareOpen] = useState(false);
   const [courseOpen, setCourseOpen] = useState(false);
+  const [recordingTarget, setRecordingTarget] = useState<{ id: string; slug: string | null } | null>(null);
+  const [shareUrl, setShareUrl] = useState<string>(`${getSiteUrl()}/stream/${streamId}`);
   const { downloadRecording, downloading, progress: downloadProgress } = useStreamDownload();
   const autoClips = useAutoClipAI(streamId, creatorId);
   const streamAchievements = useStreamAchievements();
@@ -104,6 +108,56 @@ export default function EndOfStreamScreen({
     fetchStats();
   }, [streamId, creatorId, durationSeconds]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const resolveShareTarget = async () => {
+      const liveFallbackUrl = username && streamSlug
+        ? `${getSiteUrl()}/${encodeURIComponent(username)}/live/${streamSlug}`
+        : `${getSiteUrl()}/stream/${streamId}`;
+
+      const { data: session } = await supabase
+        .from("live_stream_sessions")
+        .select("mux_asset_id")
+        .eq("stream_id", streamId)
+        .not("mux_asset_id", "is", null)
+        .order("started_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!session?.mux_asset_id || !username) {
+        if (!cancelled) {
+          setRecordingTarget(null);
+          setShareUrl(liveFallbackUrl);
+        }
+        return;
+      }
+
+      const { data: recording } = await supabase
+        .from("stream_recordings")
+        .select("id, slug")
+        .eq("mux_asset_id", session.mux_asset_id)
+        .maybeSingle();
+
+      if (cancelled) return;
+
+      if (recording) {
+        setRecordingTarget(recording);
+        setShareUrl(`${getSiteUrl()}/${encodeURIComponent(username)}/videos/${recording.slug || recording.id}`);
+        return;
+      }
+
+      setRecordingTarget(null);
+      setShareUrl(liveFallbackUrl);
+    };
+
+    resolveShareTarget();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [streamId, streamSlug, username]);
+
   const formatDuration = (s: number) => {
     const h = Math.floor(s / 3600);
     const m = Math.floor((s % 3600) / 60);
@@ -114,12 +168,13 @@ export default function EndOfStreamScreen({
   };
 
   const handleShareStream = async () => {
-    const streamUrl = `${getSiteUrl()}/stream/${streamId}`;
-    const shareText = `Check out my stream "${streamTitle}" on UPLY!`;
+    const shareText = recordingTarget
+      ? `Watch my recording "${streamTitle}" on UPLY!`
+      : `Check out my stream "${streamTitle}" on UPLY!`;
     const shareData = {
       title: streamTitle,
       text: shareText,
-      url: streamUrl,
+      url: shareUrl,
     };
 
     if (navigator.share) {
@@ -132,7 +187,7 @@ export default function EndOfStreamScreen({
     }
 
     // Fallback: copy to clipboard
-    const copyText = `${shareText}\n${streamUrl}`;
+    const copyText = `${shareText}\n${shareUrl}`;
     try {
       await navigator.clipboard.writeText(copyText);
       toast.success("Copied to clipboard!");
@@ -312,12 +367,14 @@ export default function EndOfStreamScreen({
       <SharePanel
         open={shareOpen}
         onClose={() => setShareOpen(false)}
-        contentType="stream"
-        contentId={streamId}
+        contentType={recordingTarget ? "recording" : "stream"}
+        contentId={recordingTarget?.id || streamId}
         title={streamTitle}
         playbackId={playbackId}
         muxAssetId={muxAssetId}
         creatorUsername={username}
+        contentSlug={recordingTarget?.slug || streamSlug}
+        url={shareUrl}
       />
 
       <StreamToCourseDialog
