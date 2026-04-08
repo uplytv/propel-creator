@@ -3,8 +3,9 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Copy, Check, Trophy, Crown, Shield, MessageCircle, Twitter, LogOut, ArrowLeft } from "lucide-react";
+import { Copy, Check, Trophy, Crown, Shield, MessageCircle, Twitter, LogOut, ArrowLeft, Ticket, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 import OriginBadge from "@/components/OriginBadge";
@@ -38,6 +39,38 @@ export default function WaitlistPage() {
   const [config, setConfig] = useState<any>(null);
   const [waitlistPosition, setWaitlistPosition] = useState(0);
   const [showPostApp, setShowPostApp] = useState(false);
+  const [inviteInput, setInviteInput] = useState("");
+  const [redeemingCode, setRedeemingCode] = useState(false);
+
+  const redeemInviteCode = async () => {
+    if (!user || !inviteInput.trim()) return;
+    setRedeemingCode(true);
+    try {
+      const { data: inviteResult } = await supabase.rpc("validate_invite_code", { p_code: inviteInput.trim().toUpperCase() }) as any;
+      const invite = inviteResult && inviteResult.id && !inviteResult.is_used ? inviteResult : null;
+      if (!invite) {
+        toast.error("Invalid or already used invite code");
+        setRedeemingCode(false);
+        return;
+      }
+      // Mark code as used
+      await (supabase as any)
+        .from("invite_codes")
+        .update({ is_used: true, used_by: user.id, used_at: new Date().toISOString() })
+        .eq("id", invite.id);
+      // Create referral link
+      if (invite.owner_id !== user.id) {
+        await supabase.from("referrals").insert({ referrer_id: invite.owner_id, referred_id: user.id } as any);
+      }
+      // Approve the user
+      await supabase.from("profiles").update({ is_approved: true, beta_access_granted_at: new Date().toISOString() } as any).eq("user_id", user.id);
+      toast.success("🎉 You're in! Beta access granted.");
+      navigate("/discover", { replace: true });
+    } catch (e: any) {
+      toast.error(e.message || "Something went wrong");
+    }
+    setRedeemingCode(false);
+  };
 
   const fetchData = async () => {
     if (!user) return;
@@ -253,7 +286,40 @@ export default function WaitlistPage() {
           </motion.div>
         )}
 
-        {/* Prize Hero */}
+        {/* Have an invite code? */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="rounded-xl p-5 mb-6 bg-card border border-primary/20"
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <Ticket className="w-5 h-5 text-primary" />
+            <h3 className="text-sm font-semibold text-foreground">Have an invite code?</h3>
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">
+            Enter a beta invite code to skip the waitlist and get instant access.
+          </p>
+          <div className="flex gap-2">
+            <Input
+              value={inviteInput}
+              onChange={(e) => setInviteInput(e.target.value.toUpperCase())}
+              placeholder="Enter code (e.g. 201362BF)"
+              className="flex-1 font-mono text-sm uppercase tracking-wider bg-background border-border"
+              maxLength={12}
+              onKeyDown={(e) => e.key === "Enter" && redeemInviteCode()}
+            />
+            <Button
+              onClick={redeemInviteCode}
+              disabled={!inviteInput.trim() || redeemingCode}
+              className="shrink-0 bg-primary text-primary-foreground font-bold"
+            >
+              {redeemingCode ? <Loader2 className="w-4 h-4 animate-spin" /> : "Redeem"}
+            </Button>
+          </div>
+        </motion.div>
+
+
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
