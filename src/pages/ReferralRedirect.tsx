@@ -34,47 +34,75 @@ export default function ReferralRedirect() {
       return;
     }
 
-    
-
     const fetchReferrer = async () => {
-      const { data, error } = await supabase.rpc("lookup_referrer_by_code", {
-        ref_code: actualCode,
-      });
+      let referrerData: ReferrerInfo | null = null;
 
-      if (data && !error) {
-        const referrerData = data as unknown as ReferrerInfo;
+      if (isBetaInvite) {
+        // For /invite/ paths, look up via invite_codes table
+        const { data: inviteRow } = await (supabase as any)
+          .from("invite_codes")
+          .select("owner_id, is_used")
+          .eq("code", actualCode)
+          .maybeSingle();
+
+        if (inviteRow && !inviteRow.is_used) {
+          // Get the owner's profile
+          const { data: ownerProfile } = await supabase
+            .from("profiles")
+            .select("display_name, avatar_url, creator_type, username")
+            .eq("user_id", inviteRow.owner_id)
+            .single();
+
+          if (ownerProfile) {
+            referrerData = ownerProfile as unknown as ReferrerInfo;
+          }
+
+          // Store the invite code in cookie for onboarding to pick up
+          try {
+            document.cookie = `uply_invite_code=${actualCode}; path=/; max-age=86400; SameSite=Lax`;
+            sessionStorage.setItem("uply_invite_type", "beta");
+          } catch {}
+        } else if (inviteRow?.is_used) {
+          // Code already used
+          setNotFound(true);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Fallback: try standard referral code lookup
+      if (!referrerData) {
+        const { data, error } = await supabase.rpc("lookup_referrer_by_code", {
+          ref_code: actualCode,
+        });
+
+        if (data && !error) {
+          referrerData = data as unknown as ReferrerInfo;
+          if (!isBetaInvite) {
+            sessionStorage.setItem("uply_invite_type", "waitlist");
+          }
+        }
+      }
+
+      if (referrerData) {
         setReferrer(referrerData);
 
-        // STEP 1: Write to ALL THREE storage methods simultaneously
+        // Write to ALL THREE storage methods simultaneously
         setReferralData(
           actualCode,
           referrerData.username || username || null,
           referrerData.display_name || null
         );
 
-        // Also store avatar in localStorage
         if (referrerData.avatar_url) {
           try { localStorage.setItem("uply_referrer_avatar", referrerData.avatar_url); } catch {}
         }
 
-        // Store invite type
-        if (isBetaInvite) {
-          try {
-            document.cookie = `uply_invite_code=${actualCode}; path=/; max-age=86400; SameSite=Lax`;
-            sessionStorage.setItem("uply_invite_type", "beta");
-          } catch {}
-        } else {
-          sessionStorage.setItem("uply_invite_type", "waitlist");
-        }
-
-        
-
-        // Track click via edge function (fire and forget)
+        // Track click (fire and forget)
         supabase.functions.invoke("track-referral-click", {
           body: { code: actualCode },
         }).catch(() => {});
       } else {
-        // Even if referrer not found, store the code
         setReferralData(actualCode, username || null, null);
         setNotFound(true);
       }
