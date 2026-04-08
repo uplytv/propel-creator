@@ -260,13 +260,21 @@ export default function Auth() {
               <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
                 <CheckCircle2 className="w-6 h-6 text-primary" />
               </div>
-              <CardTitle className="text-2xl font-bold">Check your email</CardTitle>
+               <CardTitle className="text-2xl font-bold">Check your email</CardTitle>
               <CardDescription className="mt-2">
-                We've sent a verification link to <strong>{email}</strong>. Please check your inbox and click the link to verify your account before signing in.
+                We've sent a verification link to <strong>{email}</strong>. Please check your inbox (and spam folder) and click the link to verify your account before signing in.
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <Button variant="outline" className="w-full" onClick={() => setSignUpSuccess(false)}>
+            <CardContent className="space-y-3">
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50 text-xs text-muted-foreground">
+                <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                <span>Didn't get the email? Check your spam/junk folder. It may take a minute to arrive.</span>
+              </div>
+              <Button variant="outline" className="w-full" onClick={handleResendConfirmation} disabled={resendLoading}>
+                <RefreshCw className={`w-4 h-4 mr-2 ${resendLoading ? "animate-spin" : ""}`} />
+                {resendLoading ? "Sending..." : "Resend Confirmation Email"}
+              </Button>
+              <Button variant="ghost" className="w-full" onClick={() => setSignUpSuccess(false)}>
                 Back to Sign In
               </Button>
             </CardContent>
