@@ -9,9 +9,9 @@ import {
   Head,
   Heading,
   Html,
-  Img,
   Link,
   Preview,
+  Section,
   Text,
 } from 'npm:@react-email/components@0.0.22'
 
@@ -21,24 +21,33 @@ interface InviteEmailProps {
   confirmationUrl: string
 }
 
-export const InviteEmail = ({ siteName, siteUrl, confirmationUrl }: InviteEmailProps) => (
+export const InviteEmail = ({
+  siteName,
+  siteUrl,
+  confirmationUrl,
+}: InviteEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>You've been invited to join UPLY</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src="https://propel-creator.lovable.app/logo.png" width="100" height="32" alt="UPLY" style={logo} />
-        <Heading style={h1}>You've been invited 🎉</Heading>
+        <Section style={logoSection}>
+          <Text style={logoText}>UPLY</Text>
+        </Section>
+        <Heading style={h1}>You're invited! 🎉</Heading>
         <Text style={text}>
-          Someone thinks you'd be a great fit on{' '}
-          <Link href={siteUrl} style={link}><strong>UPLY</strong></Link>
-          {' '}— the social network for creators who monetize. Accept the invite to create your account.
+          Someone invited you to join{' '}
+          <Link href={siteUrl} style={link}>
+            <strong>UPLY</strong>
+          </Link>
+          — the creator network where you keep 95% of what you earn. Accept
+          the invitation to create your account.
         </Text>
         <Button style={button} href={confirmationUrl}>
           Accept Invitation
         </Button>
         <Text style={footer}>
-          Wasn't expecting this? You can safely ignore this email.
+          If you weren't expecting this, you can safely ignore this email.
         </Text>
       </Container>
     </Body>
@@ -47,11 +56,28 @@ export const InviteEmail = ({ siteName, siteUrl, confirmationUrl }: InviteEmailP
 
 export default InviteEmail
 
-const main = { backgroundColor: 'hsl(0, 0%, 98%)', fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }
-const container = { padding: '32px 28px', maxWidth: '480px', margin: '0 auto' }
-const logo = { margin: '0 0 24px' }
-const h1 = { fontSize: '24px', fontWeight: 'bold' as const, color: 'hsl(260, 10%, 10%)', margin: '0 0 16px' }
-const text = { fontSize: '15px', color: 'hsl(260, 5%, 45%)', lineHeight: '1.6', margin: '0 0 20px' }
-const link = { color: 'hsl(265, 85%, 58%)', textDecoration: 'underline' }
-const button = { backgroundColor: 'hsl(265, 85%, 58%)', color: '#ffffff', fontSize: '15px', fontWeight: '600' as const, borderRadius: '0.75rem', padding: '14px 28px', textDecoration: 'none' }
+const main = { backgroundColor: '#ffffff', fontFamily: "'Plus Jakarta Sans', 'Helvetica Neue', Arial, sans-serif" }
+const container = { padding: '40px 25px', maxWidth: '480px', margin: '0 auto' }
+const logoSection = { marginBottom: '24px' }
+const logoText = { fontSize: '28px', fontWeight: 'bold' as const, color: '#0A0A0A', letterSpacing: '2px', margin: '0' }
+const h1 = {
+  fontSize: '24px',
+  fontWeight: 'bold' as const,
+  color: '#0A0A0A',
+  margin: '0 0 16px',
+  fontFamily: "'Space Grotesk', 'Plus Jakarta Sans', Arial, sans-serif",
+}
+const text = { fontSize: '15px', color: '#555555', lineHeight: '1.6', margin: '0 0 20px' }
+const link = { color: '#00CC6A', textDecoration: 'underline' }
+const button = {
+  backgroundColor: '#00FF85',
+  color: '#0A0A0A',
+  fontSize: '15px',
+  fontWeight: 'bold' as const,
+  borderRadius: '8px',
+  padding: '14px 28px',
+  textDecoration: 'none',
+  display: 'inline-block' as const,
+  marginBottom: '24px',
+}
 const footer = { fontSize: '12px', color: '#999999', margin: '24px 0 0', lineHeight: '1.5' }

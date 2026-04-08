@@ -17,12 +17,12 @@ const corsHeaders = {
 }
 
 const EMAIL_SUBJECTS: Record<string, string> = {
-  signup: 'Welcome to UPLY – verify your email 🚀',
-  invite: "You've been invited to UPLY 🎉",
-  magiclink: 'Your UPLY login link ✨',
-  recovery: 'Reset your UPLY password',
-  email_change: 'Confirm your new email for UPLY',
-  reauthentication: 'Your UPLY verification code',
+  signup: 'Confirm your email',
+  invite: "You've been invited",
+  magiclink: 'Your login link',
+  recovery: 'Reset your password',
+  email_change: 'Confirm your new email',
+  reauthentication: 'Your verification code',
 }
 
 // Template mapping
@@ -36,10 +36,10 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "UPLY"
-const SENDER_DOMAIN = "notify.uply.tv"
-const ROOT_DOMAIN = "uply.tv"
-const FROM_ADDRESS = `${SITE_NAME} <noreply@${SENDER_DOMAIN}>`
+const SITE_NAME = "propel-creator"
+const SENDER_DOMAIN = "notify.notify.uply.tv"
+const ROOT_DOMAIN = "notify.uply.tv"
+const FROM_DOMAIN = "notify.notify.uply.tv" // Domain shown in From address (may be root or sender subdomain)
 
 // Sample data for preview mode ONLY (not used in actual email sending).
 // URLs are baked in at scaffold time from the project's real data.
@@ -256,7 +256,7 @@ async function handleWebhook(req: Request): Promise<Response> {
       run_id,
       message_id: messageId,
       to: payload.data.email,
-      from: FROM_ADDRESS,
+      from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
       sender_domain: SENDER_DOMAIN,
       subject: EMAIL_SUBJECTS[emailType] || 'Notification',
       html,
