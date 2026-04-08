@@ -9,7 +9,6 @@ import {
   Head,
   Heading,
   Html,
-  Img,
   Link,
   Preview,
   Text,
@@ -22,26 +21,38 @@ interface EmailChangeEmailProps {
   confirmationUrl: string
 }
 
-export const EmailChangeEmail = ({ siteName, email, newEmail, confirmationUrl }: EmailChangeEmailProps) => (
+export const EmailChangeEmail = ({
+  siteName,
+  email,
+  newEmail,
+  confirmationUrl,
+}: EmailChangeEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Confirm your new email for UPLY</Preview>
+    <Preview>Confirm your email change for {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src="https://propel-creator.lovable.app/logo.png" width="100" height="32" alt="UPLY" style={logo} />
-        <Heading style={h1}>Confirm your new email</Heading>
+        <Heading style={h1}>Confirm your email change</Heading>
         <Text style={text}>
-          You requested to change your UPLY email from{' '}
-          <Link href={`mailto:${email}`} style={link}>{email}</Link>
-          {' '}to{' '}
-          <Link href={`mailto:${newEmail}`} style={link}>{newEmail}</Link>.
-          Tap below to confirm:
+          You requested to change your email address for {siteName} from{' '}
+          <Link href={`mailto:${email}`} style={link}>
+            {email}
+          </Link>{' '}
+          to{' '}
+          <Link href={`mailto:${newEmail}`} style={link}>
+            {newEmail}
+          </Link>
+          .
+        </Text>
+        <Text style={text}>
+          Click the button below to confirm this change:
         </Text>
         <Button style={button} href={confirmationUrl}>
           Confirm Email Change
         </Button>
         <Text style={footer}>
-          Didn't request this? Secure your account immediately.
+          If you didn't request this change, please secure your account
+          immediately.
         </Text>
       </Container>
     </Body>
@@ -50,11 +61,27 @@ export const EmailChangeEmail = ({ siteName, email, newEmail, confirmationUrl }:
 
 export default EmailChangeEmail
 
-const main = { backgroundColor: 'hsl(0, 0%, 98%)', fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }
-const container = { padding: '32px 28px', maxWidth: '480px', margin: '0 auto' }
-const logo = { margin: '0 0 24px' }
-const h1 = { fontSize: '24px', fontWeight: 'bold' as const, color: 'hsl(260, 10%, 10%)', margin: '0 0 16px' }
-const text = { fontSize: '15px', color: 'hsl(260, 5%, 45%)', lineHeight: '1.6', margin: '0 0 20px' }
-const link = { color: 'hsl(265, 85%, 58%)', textDecoration: 'underline' }
-const button = { backgroundColor: 'hsl(265, 85%, 58%)', color: '#ffffff', fontSize: '15px', fontWeight: '600' as const, borderRadius: '0.75rem', padding: '14px 28px', textDecoration: 'none' }
-const footer = { fontSize: '12px', color: '#999999', margin: '24px 0 0', lineHeight: '1.5' }
+const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
+const container = { padding: '20px 25px' }
+const h1 = {
+  fontSize: '22px',
+  fontWeight: 'bold' as const,
+  color: '#000000',
+  margin: '0 0 20px',
+}
+const text = {
+  fontSize: '14px',
+  color: '#55575d',
+  lineHeight: '1.5',
+  margin: '0 0 25px',
+}
+const link = { color: 'inherit', textDecoration: 'underline' }
+const button = {
+  backgroundColor: '#000000',
+  color: '#ffffff',
+  fontSize: '14px',
+  borderRadius: '8px',
+  padding: '12px 20px',
+  textDecoration: 'none',
+}
+const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
