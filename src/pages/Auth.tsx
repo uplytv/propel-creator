@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { Mail, Lock, User, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { Mail, Lock, User, ArrowLeft, CheckCircle2, RefreshCw, AlertCircle } from "lucide-react";
 import { getAffiliateCookie, clearAffiliateCookie, getReferralData } from "@/lib/affiliateCookies";
 import { trackEvent } from "@/lib/posthog";
 import { Sentry } from "@/lib/sentry";
