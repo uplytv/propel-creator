@@ -286,7 +286,40 @@ export default function WaitlistPage() {
           </motion.div>
         )}
 
-        {/* Prize Hero */}
+        {/* Have an invite code? */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="rounded-xl p-5 mb-6 bg-card border border-primary/20"
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <Ticket className="w-5 h-5 text-primary" />
+            <h3 className="text-sm font-semibold text-foreground">Have an invite code?</h3>
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">
+            Enter a beta invite code to skip the waitlist and get instant access.
+          </p>
+          <div className="flex gap-2">
+            <Input
+              value={inviteInput}
+              onChange={(e) => setInviteInput(e.target.value.toUpperCase())}
+              placeholder="Enter code (e.g. 201362BF)"
+              className="flex-1 font-mono text-sm uppercase tracking-wider bg-background border-border"
+              maxLength={12}
+              onKeyDown={(e) => e.key === "Enter" && redeemInviteCode()}
+            />
+            <Button
+              onClick={redeemInviteCode}
+              disabled={!inviteInput.trim() || redeemingCode}
+              className="shrink-0 bg-primary text-primary-foreground font-bold"
+            >
+              {redeemingCode ? <Loader2 className="w-4 h-4 animate-spin" /> : "Redeem"}
+            </Button>
+          </div>
+        </motion.div>
+
+
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
