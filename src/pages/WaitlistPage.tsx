@@ -60,7 +60,7 @@ export default function WaitlistPage() {
         .eq("id", invite.id);
       // Create referral link
       if (invite.owner_id !== user.id) {
-        await supabase.from("referrals").insert({ referrer_id: invite.owner_id, referred_id: user.id }).catch(() => {});
+        await supabase.from("referrals").insert({ referrer_id: invite.owner_id, referred_id: user.id } as any);
       }
       // Approve the user
       await supabase.from("profiles").update({ is_approved: true, beta_access_granted_at: new Date().toISOString() } as any).eq("user_id", user.id);
