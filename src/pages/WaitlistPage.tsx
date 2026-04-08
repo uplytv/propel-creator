@@ -39,6 +39,38 @@ export default function WaitlistPage() {
   const [config, setConfig] = useState<any>(null);
   const [waitlistPosition, setWaitlistPosition] = useState(0);
   const [showPostApp, setShowPostApp] = useState(false);
+  const [inviteInput, setInviteInput] = useState("");
+  const [redeemingCode, setRedeemingCode] = useState(false);
+
+  const redeemInviteCode = async () => {
+    if (!user || !inviteInput.trim()) return;
+    setRedeemingCode(true);
+    try {
+      const { data: inviteResult } = await supabase.rpc("validate_invite_code", { p_code: inviteInput.trim().toUpperCase() }) as any;
+      const invite = inviteResult && inviteResult.id && !inviteResult.is_used ? inviteResult : null;
+      if (!invite) {
+        toast.error("Invalid or already used invite code");
+        setRedeemingCode(false);
+        return;
+      }
+      // Mark code as used
+      await (supabase as any)
+        .from("invite_codes")
+        .update({ is_used: true, used_by: user.id, used_at: new Date().toISOString() })
+        .eq("id", invite.id);
+      // Create referral link
+      if (invite.owner_id !== user.id) {
+        await supabase.from("referrals").insert({ referrer_id: invite.owner_id, referred_id: user.id }).catch(() => {});
+      }
+      // Approve the user
+      await supabase.from("profiles").update({ is_approved: true, beta_access_granted_at: new Date().toISOString() } as any).eq("user_id", user.id);
+      toast.success("🎉 You're in! Beta access granted.");
+      navigate("/discover", { replace: true });
+    } catch (e: any) {
+      toast.error(e.message || "Something went wrong");
+    }
+    setRedeemingCode(false);
+  };
 
   const fetchData = async () => {
     if (!user) return;
