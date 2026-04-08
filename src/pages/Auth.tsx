@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { Mail, Lock, User, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { Mail, Lock, User, ArrowLeft, CheckCircle2, RefreshCw, AlertCircle } from "lucide-react";
 import { getAffiliateCookie, clearAffiliateCookie, getReferralData } from "@/lib/affiliateCookies";
 import { trackEvent } from "@/lib/posthog";
 import { Sentry } from "@/lib/sentry";
@@ -136,6 +136,8 @@ export default function Auth() {
 
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
+  const [showResendConfirm, setShowResendConfirm] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
 
   const checkServerRateLimit = async (actionType: string): Promise<boolean> => {
     try {
@@ -171,16 +173,38 @@ export default function Auth() {
     if (error) {
       const newAttempts = loginAttempts + 1;
       setLoginAttempts(newAttempts);
-      if (newAttempts >= 5) {
+      const isUnconfirmed = error.message?.toLowerCase().includes("email not confirmed");
+      const isInvalidCreds = error.message?.toLowerCase().includes("invalid login credentials") || error.message?.toLowerCase().includes("invalid credentials");
+      if (isUnconfirmed) {
+        toast.error("Email not verified", {
+          description: `Check your inbox at ${email} for a confirmation link. Don't forget to check spam.`,
+          duration: 8000,
+        });
+        setShowResendConfirm(true);
+      } else if (newAttempts >= 5) {
         const lockDuration = Math.min(30 * Math.pow(2, Math.floor((newAttempts - 5) / 3)), 300) * 1000;
         setLockoutUntil(Date.now() + lockDuration);
         toast.error("Account locked", { description: `Too many failed attempts. Try again in ${lockDuration / 1000}s.` });
       } else {
+        if (isInvalidCreds) setShowResendConfirm(true);
         toast.error("Sign in failed", { description: error.message });
       }
     } else {
       setLoginAttempts(0);
       setLockoutUntil(null);
+      setShowResendConfirm(false);
+    }
+  };
+
+  const handleResendConfirmation = async () => {
+    if (!email) { toast.error("Enter your email first"); return; }
+    setResendLoading(true);
+    const { error } = await supabase.auth.resend({ type: "signup", email, options: { emailRedirectTo: window.location.origin } });
+    setResendLoading(false);
+    if (error) {
+      toast.error("Could not resend", { description: error.message });
+    } else {
+      toast.success("Confirmation email sent", { description: `Check your inbox at ${email}. Don't forget to check spam.`, duration: 8000 });
     }
   };
 
@@ -236,13 +260,21 @@ export default function Auth() {
               <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
                 <CheckCircle2 className="w-6 h-6 text-primary" />
               </div>
-              <CardTitle className="text-2xl font-bold">Check your email</CardTitle>
+               <CardTitle className="text-2xl font-bold">Check your email</CardTitle>
               <CardDescription className="mt-2">
-                We've sent a verification link to <strong>{email}</strong>. Please check your inbox and click the link to verify your account before signing in.
+                We've sent a verification link to <strong>{email}</strong>. Please check your inbox (and spam folder) and click the link to verify your account before signing in.
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <Button variant="outline" className="w-full" onClick={() => setSignUpSuccess(false)}>
+            <CardContent className="space-y-3">
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50 text-xs text-muted-foreground">
+                <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                <span>Didn't get the email? Check your spam/junk folder. It may take a minute to arrive.</span>
+              </div>
+              <Button variant="outline" className="w-full" onClick={handleResendConfirmation} disabled={resendLoading}>
+                <RefreshCw className={`w-4 h-4 mr-2 ${resendLoading ? "animate-spin" : ""}`} />
+                {resendLoading ? "Sending..." : "Resend Confirmation Email"}
+              </Button>
+              <Button variant="ghost" className="w-full" onClick={() => setSignUpSuccess(false)}>
                 Back to Sign In
               </Button>
             </CardContent>
@@ -329,6 +361,15 @@ export default function Auth() {
                       <button type="button" onClick={() => setForgotMode(true)} className="w-full text-xs text-primary hover:underline text-center">
                         Forgot your password?
                       </button>
+                      {showResendConfirm && (
+                        <div className="mt-2 p-3 rounded-lg border border-primary/30 bg-primary/5 space-y-2">
+                          <p className="text-xs text-muted-foreground">Haven't verified your email yet? We can resend the confirmation link.</p>
+                          <Button type="button" variant="outline" size="sm" className="w-full" onClick={handleResendConfirmation} disabled={resendLoading}>
+                            <RefreshCw className={`w-3 h-3 mr-2 ${resendLoading ? "animate-spin" : ""}`} />
+                            {resendLoading ? "Sending..." : "Resend Confirmation Email"}
+                          </Button>
+                        </div>
+                      )}
                     </form>
                   </TabsContent>
 
