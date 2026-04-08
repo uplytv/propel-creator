@@ -89,6 +89,7 @@ const PodcastRSS = lazy(() => import("./pages/PodcastRSS"));
 const NetworkFeed = lazy(() => import("./pages/NetworkFeed"));
 const Distribution = lazy(() => import("./pages/Distribution"));
 const DeveloperAPI = lazy(() => import("./pages/DeveloperAPI"));
+const EmailUnsubscribe = lazy(() => import("./pages/EmailUnsubscribe"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -199,6 +200,7 @@ const App = () => (
                     <Route path="/:username/clips/:slug" element={<Stream />} />
                     <Route path="/leaderboard" element={<Leaderboard />} />
                     <Route path="/unsubscribe" element={<Unsubscribe />} />
+                    <Route path="/email-unsubscribe" element={<EmailUnsubscribe />} />
                     <Route path="/ref/:code" element={<ReferralRedirect />} />
                     <Route path="/join/:username/:code" element={<ReferralRedirect />} />
                     <Route path="/join/:code" element={<ReferralRedirect />} />
