@@ -361,6 +361,15 @@ export default function Auth() {
                       <button type="button" onClick={() => setForgotMode(true)} className="w-full text-xs text-primary hover:underline text-center">
                         Forgot your password?
                       </button>
+                      {showResendConfirm && (
+                        <div className="mt-2 p-3 rounded-lg border border-primary/30 bg-primary/5 space-y-2">
+                          <p className="text-xs text-muted-foreground">Haven't verified your email yet? We can resend the confirmation link.</p>
+                          <Button type="button" variant="outline" size="sm" className="w-full" onClick={handleResendConfirmation} disabled={resendLoading}>
+                            <RefreshCw className={`w-3 h-3 mr-2 ${resendLoading ? "animate-spin" : ""}`} />
+                            {resendLoading ? "Sending..." : "Resend Confirmation Email"}
+                          </Button>
+                        </div>
+                      )}
                     </form>
                   </TabsContent>
 
