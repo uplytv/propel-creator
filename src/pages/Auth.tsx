@@ -130,6 +130,12 @@ export default function Auth() {
         }
       }
       trackEvent("signup_completed", { method: "email", has_referral: !!(refCode || creatorRefCode) });
+      // Auto-confirm is enabled — if session exists, redirect immediately
+      if (signUpData?.session) {
+        toast.success("Account created!", { description: "Welcome to UPLY!" });
+        navigate("/onboarding", { replace: true });
+        return;
+      }
       setSignUpSuccess(true);
     }
   };
