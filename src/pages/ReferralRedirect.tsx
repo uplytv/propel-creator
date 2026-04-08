@@ -120,6 +120,9 @@ export default function ReferralRedirect() {
 
   useEffect(() => {
     if (!loading && notFound) {
+      if (isBetaInvite) {
+        toast.error("This invite code is invalid or has already been used.");
+      }
       navigate("/auth?mode=signup");
     }
   }, [loading, notFound, navigate]);
