@@ -173,16 +173,38 @@ export default function Auth() {
     if (error) {
       const newAttempts = loginAttempts + 1;
       setLoginAttempts(newAttempts);
-      if (newAttempts >= 5) {
+      const isUnconfirmed = error.message?.toLowerCase().includes("email not confirmed");
+      const isInvalidCreds = error.message?.toLowerCase().includes("invalid login credentials") || error.message?.toLowerCase().includes("invalid credentials");
+      if (isUnconfirmed) {
+        toast.error("Email not verified", {
+          description: `Check your inbox at ${email} for a confirmation link. Don't forget to check spam.`,
+          duration: 8000,
+        });
+        setShowResendConfirm(true);
+      } else if (newAttempts >= 5) {
         const lockDuration = Math.min(30 * Math.pow(2, Math.floor((newAttempts - 5) / 3)), 300) * 1000;
         setLockoutUntil(Date.now() + lockDuration);
         toast.error("Account locked", { description: `Too many failed attempts. Try again in ${lockDuration / 1000}s.` });
       } else {
+        if (isInvalidCreds) setShowResendConfirm(true);
         toast.error("Sign in failed", { description: error.message });
       }
     } else {
       setLoginAttempts(0);
       setLockoutUntil(null);
+      setShowResendConfirm(false);
+    }
+  };
+
+  const handleResendConfirmation = async () => {
+    if (!email) { toast.error("Enter your email first"); return; }
+    setResendLoading(true);
+    const { error } = await supabase.auth.resend({ type: "signup", email, options: { emailRedirectTo: window.location.origin } });
+    setResendLoading(false);
+    if (error) {
+      toast.error("Could not resend", { description: error.message });
+    } else {
+      toast.success("Confirmation email sent", { description: `Check your inbox at ${email}. Don't forget to check spam.`, duration: 8000 });
     }
   };
 
