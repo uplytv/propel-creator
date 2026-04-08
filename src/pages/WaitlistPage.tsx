@@ -13,10 +13,6 @@ import logoImg from "@/assets/logo.png";
 import { buildReferralUrl, buildReferralUrlDisplay, getFirstName, getShareMessages } from "@/lib/referralUrls";
 import { getReferralData } from "@/lib/affiliateCookies";
 import PostApplicationScreen from "@/components/waitlist/PostApplicationScreen";
-import logoImg from "@/assets/logo.png";
-import { buildReferralUrl, buildReferralUrlDisplay, getFirstName, getShareMessages } from "@/lib/referralUrls";
-import { getReferralData } from "@/lib/affiliateCookies";
-import PostApplicationScreen from "@/components/waitlist/PostApplicationScreen";
 
 interface LeaderboardEntry {
   user_id: string;
