@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { setReferralData, getReferralData } from "@/lib/affiliateCookies";
 import { useAuth } from "@/context/AuthContext";
 import { Loader2, Video, DollarSign, Bot, Shield, Clock } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import SEOHead from "@/components/SEOHead";
 import { motion } from "framer-motion";
