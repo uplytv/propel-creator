@@ -136,6 +136,8 @@ export default function Auth() {
 
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
+  const [showResendConfirm, setShowResendConfirm] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
 
   const checkServerRateLimit = async (actionType: string): Promise<boolean> => {
     try {
