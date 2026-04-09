@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import {
   User, Bell, Shield, CreditCard, Palette, Mail,
   Camera, Save, Eye, EyeOff, Trash2, Download, Megaphone, Loader2, Users, Ticket, Bot,
-  Sun, Moon, Monitor, Radio, Cast
+  Sun, Moon, Monitor, Radio, Cast, Share2
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useApp } from "@/context/AppContext";
@@ -23,10 +23,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 import { format, isBefore } from "date-fns";
 
-type SettingsTab = "profile" | "notifications" | "subscriptions" | "tickets" | "aria" | "ai-team" | "simulcast" | "account";
+type SettingsTab = "profile" | "notifications" | "subscriptions" | "tickets" | "aria" | "ai-team" | "simulcast" | "distribution" | "account";
 
 const AriaSettingsSection = lazy(() => import("@/components/aria/AriaSettingsSection"));
 const SimulcastSettings = lazy(() => import("@/components/settings/SimulcastSettings"));
+const DistributionSettings = lazy(() => import("@/components/settings/DistributionSettings"));
 
 const tabs = [
   { id: "profile" as const, label: "Profile", icon: User },
