@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { Lock, ArrowLeft } from "lucide-react";
+import { Lock, ArrowLeft, Loader2 } from "lucide-react";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -16,17 +16,51 @@ export default function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [isRecovery, setIsRecovery] = useState(false);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    // Check for recovery token in URL hash
+    let resolved = false;
+
+    const resolve = () => {
+      if (resolved) return;
+      resolved = true;
+      setIsRecovery(true);
+      setChecking(false);
+    };
+
+    // 1) Check URL hash for recovery token fragments
     const hash = window.location.hash;
     if (hash.includes("type=recovery")) {
-      setIsRecovery(true);
+      resolve();
     }
 
+    // 2) Check URL search params (some flows use ?type=recovery)
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("type") === "recovery") {
+      resolve();
+    }
+
+    // 3) Listen for PASSWORD_RECOVERY event from Supabase
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") {
-        setIsRecovery(true);
+        resolve();
+      }
+    });
+
+    // 4) Check if there's already a valid session (token was already exchanged)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session && !resolved) {
+        // User has a session — if they landed here, treat as recovery
+        // (Supabase already exchanged the recovery token into a session)
+        resolve();
+      }
+      if (!resolved) {
+        // Give the auth state change listener a moment to fire
+        setTimeout(() => {
+          if (!resolved) {
+            setChecking(false);
+          }
+        }, 2000);
       }
     });
 
@@ -56,6 +90,17 @@ export default function ResetPassword() {
     }
   };
 
+  if (checking) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Verifying reset link…</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!isRecovery) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -64,9 +109,12 @@ export default function ResetPassword() {
             <CardTitle>Invalid Link</CardTitle>
             <CardDescription>This password reset link is invalid or has expired.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
             <Button className="w-full" onClick={() => navigate("/auth")}>
               Back to Sign In
+            </Button>
+            <Button variant="outline" className="w-full" onClick={() => navigate("/auth?tab=forgot")}>
+              Request New Reset Link
             </Button>
           </CardContent>
         </Card>
