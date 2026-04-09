@@ -263,18 +263,18 @@ export default function DistributionSettings() {
                   <span className="text-sm font-semibold text-foreground">
                     {plat.name}
                   </span>
-                  {plat.badge && (
+                  {"badge" in plat && (plat as any).badge && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary font-medium">
-                      {plat.badge}
+                      {(plat as any).badge}
                     </span>
                   )}
-                  {"comingSoon" in plat && plat.comingSoon && (
+                  {"comingSoon" in plat && (plat as any).comingSoon && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
                       Coming Soon
                     </span>
                   )}
                   {isConnected && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-500/20 text-green-400 font-medium flex items-center gap-0.5">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary font-medium flex items-center gap-0.5">
                       <CheckCircle2 className="w-3 h-3" /> Connected
                     </span>
                   )}
