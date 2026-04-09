@@ -469,6 +469,13 @@ export default function Settings() {
           </Suspense>
         )}
 
+        {/* Distribution tab */}
+        {activeTab === "distribution" && (
+          <Suspense fallback={<div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>}>
+            <DistributionSettings />
+          </Suspense>
+        )}
+
         {/* AI Team tab */}
         {activeTab === "ai-team" && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
