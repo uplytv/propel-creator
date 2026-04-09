@@ -36,10 +36,10 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "propel-creator"
+const SITE_NAME = "UPLY"
 const SENDER_DOMAIN = "notify.notify.uply.tv"
-const ROOT_DOMAIN = "notify.uply.tv"
-const FROM_DOMAIN = "notify.notify.uply.tv" // Domain shown in From address (may be root or sender subdomain)
+const ROOT_DOMAIN = "uply.tv"
+const FROM_DOMAIN = "notify.uply.tv"
 
 // Sample data for preview mode ONLY (not used in actual email sending).
 // URLs are baked in at scaffold time from the project's real data.
