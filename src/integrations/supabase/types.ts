@@ -726,6 +726,8 @@ export type Database = {
       }
       aria_distribution_settings: {
         Row: {
+          auto_distribute_recordings: boolean | null
+          auto_distribute_videos: boolean | null
           auto_post_community: boolean | null
           auto_post_instagram: boolean | null
           auto_post_linkedin: boolean | null
@@ -741,11 +743,14 @@ export type Database = {
           max_clip_seconds: number | null
           max_clips_per_job: number | null
           min_clip_seconds: number | null
+          n8n_enabled: boolean | null
           posting_schedule: string | null
           primary_platform: string | null
           require_approval: boolean | null
         }
         Insert: {
+          auto_distribute_recordings?: boolean | null
+          auto_distribute_videos?: boolean | null
           auto_post_community?: boolean | null
           auto_post_instagram?: boolean | null
           auto_post_linkedin?: boolean | null
@@ -761,11 +766,14 @@ export type Database = {
           max_clip_seconds?: number | null
           max_clips_per_job?: number | null
           min_clip_seconds?: number | null
+          n8n_enabled?: boolean | null
           posting_schedule?: string | null
           primary_platform?: string | null
           require_approval?: boolean | null
         }
         Update: {
+          auto_distribute_recordings?: boolean | null
+          auto_distribute_videos?: boolean | null
           auto_post_community?: boolean | null
           auto_post_instagram?: boolean | null
           auto_post_linkedin?: boolean | null
@@ -781,6 +789,7 @@ export type Database = {
           max_clip_seconds?: number | null
           max_clips_per_job?: number | null
           min_clip_seconds?: number | null
+          n8n_enabled?: boolean | null
           posting_schedule?: string | null
           primary_platform?: string | null
           require_approval?: boolean | null
@@ -2087,6 +2096,60 @@ export type Database = {
         }
         Relationships: []
       }
+      content_distribution_jobs: {
+        Row: {
+          completed_at: string | null
+          content_id: string
+          content_type: string
+          created_at: string | null
+          creator_id: string
+          description: string | null
+          error_message: string | null
+          id: string
+          platform: string
+          platform_post_id: string | null
+          platform_url: string | null
+          queued_at: string | null
+          started_at: string | null
+          status: string
+          title: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          content_id: string
+          content_type?: string
+          created_at?: string | null
+          creator_id: string
+          description?: string | null
+          error_message?: string | null
+          id?: string
+          platform: string
+          platform_post_id?: string | null
+          platform_url?: string | null
+          queued_at?: string | null
+          started_at?: string | null
+          status?: string
+          title?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          content_id?: string
+          content_type?: string
+          created_at?: string | null
+          creator_id?: string
+          description?: string | null
+          error_message?: string | null
+          id?: string
+          platform?: string
+          platform_post_id?: string | null
+          platform_url?: string | null
+          queued_at?: string | null
+          started_at?: string | null
+          status?: string
+          title?: string | null
+        }
+        Relationships: []
+      }
       content_shares: {
         Row: {
           content_id: string
@@ -2347,6 +2410,54 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           platform_id?: string
+        }
+        Relationships: []
+      }
+      creator_platform_oauth: {
+        Row: {
+          access_token: string | null
+          connected_at: string | null
+          creator_id: string
+          id: string
+          is_active: boolean | null
+          last_used_at: string | null
+          platform: string
+          platform_channel_name: string | null
+          platform_user_id: string | null
+          platform_username: string | null
+          refresh_token: string | null
+          scopes: string[] | null
+          token_expires_at: string | null
+        }
+        Insert: {
+          access_token?: string | null
+          connected_at?: string | null
+          creator_id: string
+          id?: string
+          is_active?: boolean | null
+          last_used_at?: string | null
+          platform: string
+          platform_channel_name?: string | null
+          platform_user_id?: string | null
+          platform_username?: string | null
+          refresh_token?: string | null
+          scopes?: string[] | null
+          token_expires_at?: string | null
+        }
+        Update: {
+          access_token?: string | null
+          connected_at?: string | null
+          creator_id?: string
+          id?: string
+          is_active?: boolean | null
+          last_used_at?: string | null
+          platform?: string
+          platform_channel_name?: string | null
+          platform_user_id?: string | null
+          platform_username?: string | null
+          refresh_token?: string | null
+          scopes?: string[] | null
+          token_expires_at?: string | null
         }
         Relationships: []
       }

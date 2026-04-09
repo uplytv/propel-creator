@@ -199,6 +199,29 @@ serve(async (req) => {
               } catch (ariaErr) { console.error('ARIA trigger failed (non-blocking):', ariaErr) }
             }
 
+            // Fire n8n distribution webhook (non-blocking)
+            try {
+              const n8nUrl = Deno.env.get('N8N_WEBHOOK_URL')
+              if (n8nUrl && recording?.id) {
+                await fetch(n8nUrl, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    event: 'recording.ready',
+                    recording_id: recording.id,
+                    creator_id: stream.user_id,
+                    title: recordingTitle,
+                    playback_id: playbackId,
+                    download_url: downloadUrl,
+                    mux_asset_id: data.id,
+                    duration_seconds: Math.round(data.duration || 0),
+                    stream_id: stream.id,
+                    timestamp: new Date().toISOString(),
+                  }),
+                }).catch(() => {})
+              }
+            } catch (n8nErr) { console.error('n8n trigger failed (non-blocking):', n8nErr) }
+
             const sessionTimestamp = new Date().toISOString()
             const { data: latestSession } = await supabase
               .from('live_stream_sessions')
@@ -309,6 +332,24 @@ serve(async (req) => {
             console.warn(`No DB record found for upload_id ${data.upload_id} — asset ${data.id} with playback ${playbackId} was not linked`)
           } else {
             console.log(`Updated asset ${updateResult[0].id} to ready via upload_id ${data.upload_id}`)
+            // Fire n8n distribution webhook for uploaded videos (non-blocking)
+            try {
+              const n8nUrl = Deno.env.get('N8N_WEBHOOK_URL')
+              if (n8nUrl) {
+                await fetch(n8nUrl, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    event: 'video.ready',
+                    asset_id: updateResult[0].id,
+                    creator_id: updateResult[0].user_id,
+                    mux_asset_id: data.id,
+                    playback_id: playbackId,
+                    timestamp: new Date().toISOString(),
+                  }),
+                }).catch(() => {})
+              }
+            } catch (n8nErr) { console.error('n8n trigger failed (non-blocking):', n8nErr) }
           }
         }
         break
