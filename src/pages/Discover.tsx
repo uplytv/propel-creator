@@ -16,6 +16,9 @@ import NetworkBanner from "@/components/network/NetworkBanner";
 import PrimetimeSection from "@/components/network/PrimetimeSection";
 import TonightOnUPLY from "@/components/network/TonightOnUPLY";
 import UPLYChannels from "@/components/network/UPLYChannels";
+import SocialTopNav from "@/components/social/SocialTopNav";
+import StoriesRow from "@/components/social/StoriesRow";
+import GoingOutWeekCard from "@/components/social/GoingOutWeekCard";
 
 const PAGE_SIZE = 24;
 
@@ -158,8 +161,6 @@ export default function Discover() {
     return () => observer.disconnect();
   }, [loadMore]);
 
-  // Shimmer keyframes now in index.css
-
   const showEvents = category === "events";
   const showContent = !showEvents;
   const showSkeletons = isLoading || transitioning;
@@ -167,11 +168,19 @@ export default function Discover() {
   return (
     <AppLayout>
     <div className="min-h-screen bg-background">
-      {/* Shimmer keyframes in index.css */}
       <SEOHead
         title="Discover Creators"
         description="Explore top creators, communities, courses, and live streams on Uply."
       />
+
+      {/* === SOCIAL TOP NAV (injected) === */}
+      <SocialTopNav />
+
+      {/* === STORIES ROW (injected) === */}
+      <StoriesRow />
+
+      {/* === GOING OUT WEEK CARD (injected) === */}
+      <GoingOutWeekCard />
 
       {/* Followed creator live banner */}
       <AnimatePresence>
@@ -180,9 +189,9 @@ export default function Discover() {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="sticky top-0 z-40 overflow-hidden"
+            className="overflow-hidden"
           >
-            <div className="flex items-center justify-between px-4 py-2.5 bg-card border-l-2 border-l-[#FF3B3B]">
+            <div className="flex items-center justify-between px-4 py-2.5" style={{ background: "rgba(255,255,255,0.03)", borderLeft: "2px solid #FF3B3B" }}>
               <div className="flex items-center gap-2 min-w-0">
                 <span className="w-2 h-2 rounded-full bg-destructive animate-pulse shrink-0" />
                 <span className="text-sm font-semibold text-foreground truncate">
@@ -210,7 +219,7 @@ export default function Discover() {
       </AnimatePresence>
 
       {/* Sticky filter bar */}
-      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border">
+      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
         <div className="max-w-7xl mx-auto px-4 py-3 space-y-3">
           {/* Search */}
           <SearchSuggestions />
@@ -264,7 +273,7 @@ export default function Discover() {
                 {/* Main grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-6">
                   {visibleItems
-                    .filter(item => category !== "all" || !item.isLive) // Don't double-show live items in "all"
+                    .filter(item => category !== "all" || !item.isLive)
                     .map((item, i) => (
                       <FeedCard key={`${item.type}-${item.id}`} item={item} index={i} />
                     ))}
