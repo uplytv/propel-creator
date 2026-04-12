@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { format, isToday, isTomorrow } from "date-fns";
+import EventCountdown from "./EventCountdown";
+import EventHypeMeter from "./EventHypeMeter";
 
 interface EventDiscoveryCardProps {
   event: any;
@@ -100,6 +102,14 @@ export default function EventDiscoveryCard({ event }: EventDiscoveryCardProps) {
 
         {city && (
           <p className="text-[10px] text-white/40">{city}</p>
+        )}
+
+        {/* Countdown + Hype */}
+        {dateStr && (
+          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+            <EventCountdown startsAt={dateStr} compact />
+            <EventHypeMeter eventId={event.id} compact />
+          </div>
         )}
       </div>
     </div>
