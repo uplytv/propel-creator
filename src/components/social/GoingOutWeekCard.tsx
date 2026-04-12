@@ -2,7 +2,7 @@ import { useAttendance } from "@/hooks/useAttendance";
 import { addDays, format, isToday } from "date-fns";
 
 const EMOJIS: Record<string, string> = {
-  going: "🥳",
+  going: "😘",
   maybe: "🤔",
 };
 
@@ -26,82 +26,114 @@ export default function GoingOutWeekCard() {
     }
   };
 
-  const hasSelections = days.some((d) => getStatus(d));
+  const summaries = days
+    .map((d) => {
+      const s = getStatus(d);
+      if (!s) return null;
+      const label = format(d, "EEE");
+      return `${label}: ${s === "going" ? "going out" : "might go out"}`;
+    })
+    .filter(Boolean);
 
   return (
     <div
-      className="mx-4 my-3 rounded-2xl overflow-hidden"
+      className="mx-4 my-3"
       style={{
-        background: "linear-gradient(135deg, #E8956A 0%, #D4687B 50%, #C084FC 100%)",
-        padding: 1,
+        background: "rgba(255,255,255,0.03)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: 16,
+        padding: 16,
       }}
     >
-      <div
-        className="rounded-2xl p-4"
+      <h3
         style={{
-          background: "linear-gradient(135deg, rgba(232,149,106,0.95) 0%, rgba(212,104,123,0.95) 50%, rgba(192,132,252,0.9) 100%)",
+          fontSize: 15,
+          fontWeight: 700,
+          color: "#FFFFFF",
+          marginBottom: 12,
         }}
       >
-        <div className="flex items-center justify-between mb-1">
-          <h3 className="text-lg font-bold text-white">Going out this week?</h3>
-          <button
-            className="text-white/60 text-xl leading-none"
-            style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center" }}
-          >
-            ×
-          </button>
-        </div>
-        <p className="text-sm text-white/70 mb-4">Choose which days</p>
+        Going out this week?
+      </h3>
 
-        <div className="flex items-center justify-center gap-2 mb-4">
-          {days.slice(0, 5).map((date) => {
-            const status = getStatus(date);
-            const dayLabel = isToday(date) ? "today" : format(date, "EEE").toLowerCase();
-            const isSelected = !!status;
+      <div
+        className="flex gap-2 overflow-x-auto scrollbar-hide"
+        style={{ paddingBottom: 4 }}
+      >
+        {days.map((date) => {
+          const status = getStatus(date);
+          const dayLabel = isToday(date) ? "TODAY" : format(date, "EEE").toUpperCase();
+          const dateNum = format(date, "d");
 
-            return (
-              <button
-                key={date.toISOString()}
-                onClick={() => toggleStatus(date)}
-                className="flex flex-col items-center gap-0.5 rounded-xl px-3 py-2 transition-all"
+          const isGoing = status === "going";
+          const isMaybe = status === "maybe";
+
+          let bg = "rgba(255,255,255,0.03)";
+          let borderColor = "rgba(255,255,255,0.08)";
+          let numColor = "rgba(255,255,255,0.6)";
+
+          if (isGoing) {
+            bg = "rgba(0,255,133,0.08)";
+            borderColor = "rgba(0,255,133,0.4)";
+            numColor = "#00FF85";
+          } else if (isMaybe) {
+            bg = "rgba(255,200,0,0.06)";
+            borderColor = "rgba(255,200,0,0.4)";
+            numColor = "#FFD700";
+          }
+
+          return (
+            <button
+              key={date.toISOString()}
+              onClick={() => toggleStatus(date)}
+              className="flex flex-col items-center justify-center gap-0.5 flex-shrink-0"
+              style={{
+                minWidth: 48,
+                height: 64,
+                borderRadius: 12,
+                border: `1px solid ${borderColor}`,
+                background: bg,
+                cursor: "pointer",
+              }}
+            >
+              <span
                 style={{
-                  backgroundColor: isSelected ? "rgba(255,255,255,0.25)" : "transparent",
-                  minWidth: 52,
+                  fontSize: 10,
+                  fontWeight: 600,
+                  color: "rgba(255,255,255,0.4)",
                 }}
               >
-                {status && <span className="text-xl mb-0.5">{EMOJIS[status]}</span>}
+                {dayLabel}
+              </span>
+              {status ? (
+                <span style={{ fontSize: 16, lineHeight: 1 }}>{EMOJIS[status]}</span>
+              ) : (
                 <span
-                  className="text-sm font-bold"
-                  style={{ color: isSelected ? "#FFFFFF" : "rgba(255,255,255,0.45)" }}
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 800,
+                    color: numColor,
+                  }}
                 >
-                  {dayLabel}
+                  {dateNum}
                 </span>
-                <span
-                  className="text-xs"
-                  style={{ color: isSelected ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.35)" }}
-                >
-                  {format(date, "d")}
-                </span>
-                {status && (
-                  <span className="text-[9px] font-semibold text-white/80 mt-0.5">
-                    {status === "going" ? "going out" : "might go"}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
+              )}
+            </button>
+          );
+        })}
+      </div>
 
-        <button
-          className="w-full rounded-xl py-3 text-base font-bold transition-all"
+      {summaries.length > 0 && (
+        <p
           style={{
-            backgroundColor: hasSelections ? "#FFFFFF" : "rgba(255,255,255,0.9)",
-            color: "#1a1a1a",
+            fontSize: 11,
+            color: "rgba(255,255,255,0.4)",
+            marginTop: 8,
           }}
         >
-          Next
-        </button>
-      </div>
+          {summaries.join(" · ")}
+        </p>
+      )}
     </div>
   );
 }
