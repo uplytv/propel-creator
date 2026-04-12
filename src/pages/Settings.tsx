@@ -318,6 +318,13 @@ export default function Settings() {
           </motion.div>
         )}
 
+        {/* Social Profile tab */}
+        {activeTab === "social" && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+            <SocialProfileSection />
+          </motion.div>
+        )}
+
         {/* Notifications tab */}
         {activeTab === "notifications" && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
