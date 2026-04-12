@@ -32,7 +32,6 @@ export default function GoingOutWeekCard() {
     } else if (current === "maybe") {
       await markAttending({ date: dateStr, status: "going" });
     } else {
-      // Clear: going → none
       await clearAttendance({ date: dateStr });
     }
   };
@@ -79,6 +78,7 @@ export default function GoingOutWeekCard() {
           const isGoing = status === "going";
           const isMaybe = status === "maybe";
 
+          // Default: no status = plain white number, no highlight
           let bg = "rgba(255,255,255,0.03)";
           let borderColor = "rgba(255,255,255,0.08)";
           let numColor = "rgba(255,255,255,0.6)";

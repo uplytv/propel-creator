@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import {
   User, Bell, Shield, CreditCard, Palette, Mail,
   Camera, Save, Eye, EyeOff, Trash2, Download, Megaphone, Loader2, Users, Ticket, Bot,
-  Sun, Moon, Monitor, Radio, Cast, Share2
+  Sun, Moon, Monitor, Radio, Cast, Share2, Heart
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useApp } from "@/context/AppContext";
@@ -18,12 +18,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { SubscriptionsTab } from "@/components/settings/SubscriptionsTab";
 import YouTubeImport from "@/components/classroom/YouTubeImport";
 import { useMyTickets } from "@/hooks/useEvents";
+import SocialProfileSection from "@/components/settings/SocialProfileSection";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 import { format, isBefore } from "date-fns";
 
-type SettingsTab = "profile" | "notifications" | "subscriptions" | "tickets" | "aria" | "ai-team" | "simulcast" | "distribution" | "account";
+type SettingsTab = "profile" | "social" | "notifications" | "subscriptions" | "tickets" | "aria" | "ai-team" | "simulcast" | "distribution" | "account";
 
 const AriaSettingsSection = lazy(() => import("@/components/aria/AriaSettingsSection"));
 const SimulcastSettings = lazy(() => import("@/components/settings/SimulcastSettings"));
@@ -31,6 +32,7 @@ const DistributionSettings = lazy(() => import("@/components/settings/Distributi
 
 const tabs = [
   { id: "profile" as const, label: "Profile", icon: User },
+  { id: "social" as const, label: "Social", icon: Heart },
   { id: "notifications" as const, label: "Notifications", icon: Bell },
   { id: "subscriptions" as const, label: "Subscriptions", icon: Users },
   { id: "tickets" as const, label: "My Tickets", icon: Ticket },
@@ -313,6 +315,13 @@ export default function Settings() {
                 <YouTubeImport creatorId={user.id} />
               </div>
             )}
+          </motion.div>
+        )}
+
+        {/* Social Profile tab */}
+        {activeTab === "social" && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+            <SocialProfileSection />
           </motion.div>
         )}
 

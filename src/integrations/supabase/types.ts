@@ -1328,6 +1328,67 @@ export type Database = {
         }
         Relationships: []
       }
+      broadcast_messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          creator_id: string
+          event_id: string | null
+          id: string
+          media_url: string | null
+          message_type: string | null
+          poll_options: Json | null
+          poll_votes: Json | null
+          view_count: number | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          creator_id: string
+          event_id?: string | null
+          id?: string
+          media_url?: string | null
+          message_type?: string | null
+          poll_options?: Json | null
+          poll_votes?: Json | null
+          view_count?: number | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          creator_id?: string
+          event_id?: string | null
+          id?: string
+          media_url?: string | null
+          message_type?: string | null
+          poll_options?: Json | null
+          poll_votes?: Json | null
+          view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "broadcast_messages_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "broadcast_messages_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "broadcast_messages_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_categories: {
         Row: {
           created_at: string
@@ -3291,6 +3352,147 @@ export type Database = {
         }
         Relationships: []
       }
+      group_conversations: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          created_by: string | null
+          event_id: string | null
+          id: string
+          name: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          event_id?: string | null
+          id?: string
+          name?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          event_id?: string | null
+          id?: string
+          name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_conversations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_conversations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_conversations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_members: {
+        Row: {
+          conversation_id: string
+          joined_at: string | null
+          role: string | null
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          joined_at?: string | null
+          role?: string | null
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          joined_at?: string | null
+          role?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "group_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_messages: {
+        Row: {
+          content: string | null
+          conversation_id: string
+          created_at: string | null
+          id: string
+          media_url: string | null
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          conversation_id: string
+          created_at?: string | null
+          id?: string
+          media_url?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          conversation_id?: string
+          created_at?: string | null
+          id?: string
+          media_url?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "group_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       grow_progress: {
         Row: {
           completed_tasks: string[]
@@ -4714,6 +4916,45 @@ export type Database = {
           },
         ]
       }
+      message_reactions: {
+        Row: {
+          created_at: string | null
+          message_id: string
+          message_type: string
+          reaction: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          message_id: string
+          message_type: string
+          reaction: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          message_id?: string
+          message_type?: string
+          reaction?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       multistream_alerts: {
         Row: {
           alert_type: string | null
@@ -4811,6 +5052,8 @@ export type Database = {
           energy_score: number
           featured_product_id: string | null
           featured_product_source: string | null
+          hype_train_expires_at: string | null
+          hype_train_level: number | null
           id: string
           is_public: boolean | null
           mux_playback_id: string | null
@@ -4834,6 +5077,8 @@ export type Database = {
           energy_score?: number
           featured_product_id?: string | null
           featured_product_source?: string | null
+          hype_train_expires_at?: string | null
+          hype_train_level?: number | null
           id?: string
           is_public?: boolean | null
           mux_playback_id?: string | null
@@ -4857,6 +5102,8 @@ export type Database = {
           energy_score?: number
           featured_product_id?: string | null
           featured_product_source?: string | null
+          hype_train_expires_at?: string | null
+          hype_train_level?: number | null
           id?: string
           is_public?: boolean | null
           mux_playback_id?: string | null
@@ -5425,6 +5672,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          age: number | null
           avatar_url: string | null
           beta_access_granted_at: string | null
           beta_user: boolean
@@ -5435,8 +5683,10 @@ export type Database = {
           cover_image_url: string | null
           created_at: string
           creator_challenge: string | null
+          creator_level: number | null
           creator_stage: string | null
           creator_type: string | null
+          creator_xp: number | null
           credits_balance: number
           day14_email_sent_at: string | null
           day3_email_sent_at: string | null
@@ -5451,20 +5701,29 @@ export type Database = {
           interests: string[] | null
           is_approved: boolean
           is_producer: boolean | null
+          last_active_at: string | null
           last_name: string | null
           last_reengagement_email_sent_at: string | null
           last_revenue_milestone_amount: number | null
+          location_label: string | null
+          location_lat: number | null
+          location_lng: number | null
+          location_sharing_enabled: boolean | null
+          location_updated_at: string | null
           members: number
           mrr: number
           onboarding_complete: boolean
           origin_member: boolean
           paid_dm_price: number | null
           paid_dms_enabled: boolean | null
+          people_photos: string[] | null
           producer_type: string | null
           referral_code: string | null
           referred_by: string | null
           referred_by_username: string | null
           role_type: string | null
+          show_in_people: boolean | null
+          show_online_status: boolean | null
           tier: number
           tier_name: string
           total_revenue: number
@@ -5478,6 +5737,7 @@ export type Database = {
           welcome_email_sent_at: string | null
         }
         Insert: {
+          age?: number | null
           avatar_url?: string | null
           beta_access_granted_at?: string | null
           beta_user?: boolean
@@ -5488,8 +5748,10 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string
           creator_challenge?: string | null
+          creator_level?: number | null
           creator_stage?: string | null
           creator_type?: string | null
+          creator_xp?: number | null
           credits_balance?: number
           day14_email_sent_at?: string | null
           day3_email_sent_at?: string | null
@@ -5504,20 +5766,29 @@ export type Database = {
           interests?: string[] | null
           is_approved?: boolean
           is_producer?: boolean | null
+          last_active_at?: string | null
           last_name?: string | null
           last_reengagement_email_sent_at?: string | null
           last_revenue_milestone_amount?: number | null
+          location_label?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
+          location_sharing_enabled?: boolean | null
+          location_updated_at?: string | null
           members?: number
           mrr?: number
           onboarding_complete?: boolean
           origin_member?: boolean
           paid_dm_price?: number | null
           paid_dms_enabled?: boolean | null
+          people_photos?: string[] | null
           producer_type?: string | null
           referral_code?: string | null
           referred_by?: string | null
           referred_by_username?: string | null
           role_type?: string | null
+          show_in_people?: boolean | null
+          show_online_status?: boolean | null
           tier?: number
           tier_name?: string
           total_revenue?: number
@@ -5531,6 +5802,7 @@ export type Database = {
           welcome_email_sent_at?: string | null
         }
         Update: {
+          age?: number | null
           avatar_url?: string | null
           beta_access_granted_at?: string | null
           beta_user?: boolean
@@ -5541,8 +5813,10 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string
           creator_challenge?: string | null
+          creator_level?: number | null
           creator_stage?: string | null
           creator_type?: string | null
+          creator_xp?: number | null
           credits_balance?: number
           day14_email_sent_at?: string | null
           day3_email_sent_at?: string | null
@@ -5557,20 +5831,29 @@ export type Database = {
           interests?: string[] | null
           is_approved?: boolean
           is_producer?: boolean | null
+          last_active_at?: string | null
           last_name?: string | null
           last_reengagement_email_sent_at?: string | null
           last_revenue_milestone_amount?: number | null
+          location_label?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
+          location_sharing_enabled?: boolean | null
+          location_updated_at?: string | null
           members?: number
           mrr?: number
           onboarding_complete?: boolean
           origin_member?: boolean
           paid_dm_price?: number | null
           paid_dms_enabled?: boolean | null
+          people_photos?: string[] | null
           producer_type?: string | null
           referral_code?: string | null
           referred_by?: string | null
           referred_by_username?: string | null
           role_type?: string | null
+          show_in_people?: boolean | null
+          show_online_status?: boolean | null
           tier?: number
           tier_name?: string
           total_revenue?: number
@@ -6383,6 +6666,7 @@ export type Database = {
         Row: {
           amount_paid: number
           buyer_id: string
+          checked_in: boolean | null
           checked_in_at: string | null
           created_at: string
           creator_earnings: number
@@ -6390,14 +6674,17 @@ export type Database = {
           event_id: string
           id: string
           platform_fee: number
+          qr_code_data: string | null
           qr_code_token: string
           qr_code_url: string | null
           status: string
           stripe_payment_intent_id: string | null
+          ticket_number: string | null
         }
         Insert: {
           amount_paid?: number
           buyer_id: string
+          checked_in?: boolean | null
           checked_in_at?: string | null
           created_at?: string
           creator_earnings?: number
@@ -6405,14 +6692,17 @@ export type Database = {
           event_id: string
           id?: string
           platform_fee?: number
+          qr_code_data?: string | null
           qr_code_token?: string
           qr_code_url?: string | null
           status?: string
           stripe_payment_intent_id?: string | null
+          ticket_number?: string | null
         }
         Update: {
           amount_paid?: number
           buyer_id?: string
+          checked_in?: boolean | null
           checked_in_at?: string | null
           created_at?: string
           creator_earnings?: number
@@ -6420,10 +6710,12 @@ export type Database = {
           event_id?: string
           id?: string
           platform_fee?: number
+          qr_code_data?: string | null
           qr_code_token?: string
           qr_code_url?: string | null
           status?: string
           stripe_payment_intent_id?: string | null
+          ticket_number?: string | null
         }
         Relationships: [
           {
