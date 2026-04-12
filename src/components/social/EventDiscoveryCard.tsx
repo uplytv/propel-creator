@@ -8,19 +8,19 @@ interface EventDiscoveryCardProps {
 export default function EventDiscoveryCard({ event }: EventDiscoveryCardProps) {
   const navigate = useNavigate();
 
-  const formatEventDate = (dateStr: string) => {
-    const date = new Date(dateStr);
+  const dateStr = event.starts_at || event.event_date;
+
+  const formatEventDate = (d: string) => {
+    const date = new Date(d);
     if (isToday(date)) return "Today";
     if (isTomorrow(date)) return "Tomorrow";
     return format(date, "EEE M/d");
   };
 
-  // Mock distance and social data for now
-  const distance = event.distance || Math.floor(Math.random() * 20 + 1);
-  const joinedCount = event.joined_count || Math.floor(Math.random() * 500 + 50);
-  const friendsCount = event.friends_count || 0;
-  const chatActive = event.chat_active || null;
-  const tags = event.genre_tags || event.tags || [];
+  const tags: string[] = event.genre_tags || event.tags || [];
+  const venue = event.location_name || event.venue || event.location || "";
+  const city = event.location_city || "";
+  const price = event.ticket_price;
 
   return (
     <div
@@ -47,23 +47,23 @@ export default function EventDiscoveryCard({ event }: EventDiscoveryCardProps) {
             <span className="text-3xl">🎶</span>
           </div>
         )}
-        {/* Distance badge */}
+        {/* Price badge */}
         <span
-          className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-medium"
+          className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold"
           style={{
             backgroundColor: "rgba(0,0,0,0.6)",
-            color: "rgba(255,255,255,0.7)",
+            color: price && price > 0 ? "#FFFFFF" : "#00FF85",
             backdropFilter: "blur(4px)",
           }}
         >
-          {distance} mi away
+          {price && price > 0 ? `$${price}` : "Free"}
         </span>
       </div>
 
       {/* Content */}
       <div className="p-2.5">
         <h3
-          className="font-bold text-white leading-tight mb-1"
+          className="font-bold text-white leading-tight mb-1 line-clamp-2"
           style={{ fontSize: 15 }}
         >
           {event.title}
@@ -88,35 +88,18 @@ export default function EventDiscoveryCard({ event }: EventDiscoveryCardProps) {
         )}
 
         {/* Date + Venue */}
-        {event.event_date && (
+        {dateStr && (
           <p
             className="text-[11px] font-semibold leading-tight mb-1"
             style={{ color: "#00FF85" }}
           >
-            {formatEventDate(event.event_date)}
-            {(event.venue || event.location) && ` · ${event.venue || event.location}`}
+            {formatEventDate(dateStr)}
+            {venue && ` · ${venue}`}
           </p>
         )}
 
-        {/* Social proof */}
-        <div className="flex flex-col gap-0.5">
-          <p className="text-[11px] text-white/50">
-            <span className="font-bold text-white/70">{joinedCount}</span> joined
-            {friendsCount > 0 && (
-              <>
-                {" · "}
-                <span className="font-bold" style={{ color: "#00FF85" }}>{friendsCount} friends</span>
-              </>
-            )}
-          </p>
-          {chatActive && (
-            <p className="text-[10px] text-white/35">{chatActive} ago chat active</p>
-          )}
-        </div>
-
-        {/* Cover charge */}
-        {event.cover_charge && (
-          <p className="text-[10px] text-white/40 mt-0.5">${event.cover_charge} cover</p>
+        {city && (
+          <p className="text-[10px] text-white/40">{city}</p>
         )}
       </div>
     </div>
