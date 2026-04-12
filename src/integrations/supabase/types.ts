@@ -5050,11 +5050,13 @@ export type Database = {
           description: string | null
           ended_at: string | null
           energy_score: number
+          event_id: string | null
           featured_product_id: string | null
           featured_product_source: string | null
           hype_train_expires_at: string | null
           hype_train_level: number | null
           id: string
+          is_event_stream: boolean | null
           is_public: boolean | null
           mux_playback_id: string | null
           mux_stream_id: string
@@ -5063,9 +5065,11 @@ export type Database = {
           status: string | null
           stream_key: string | null
           stream_type: string
+          tickets_sold_during_stream: number | null
           title: string | null
           updated_at: string | null
           user_id: string
+          venue_attendance_count: number | null
           viewer_count: number | null
         }
         Insert: {
@@ -5075,11 +5079,13 @@ export type Database = {
           description?: string | null
           ended_at?: string | null
           energy_score?: number
+          event_id?: string | null
           featured_product_id?: string | null
           featured_product_source?: string | null
           hype_train_expires_at?: string | null
           hype_train_level?: number | null
           id?: string
+          is_event_stream?: boolean | null
           is_public?: boolean | null
           mux_playback_id?: string | null
           mux_stream_id: string
@@ -5088,9 +5094,11 @@ export type Database = {
           status?: string | null
           stream_key?: string | null
           stream_type?: string
+          tickets_sold_during_stream?: number | null
           title?: string | null
           updated_at?: string | null
           user_id: string
+          venue_attendance_count?: number | null
           viewer_count?: number | null
         }
         Update: {
@@ -5100,11 +5108,13 @@ export type Database = {
           description?: string | null
           ended_at?: string | null
           energy_score?: number
+          event_id?: string | null
           featured_product_id?: string | null
           featured_product_source?: string | null
           hype_train_expires_at?: string | null
           hype_train_level?: number | null
           id?: string
+          is_event_stream?: boolean | null
           is_public?: boolean | null
           mux_playback_id?: string | null
           mux_stream_id?: string
@@ -5113,12 +5123,21 @@ export type Database = {
           status?: string | null
           stream_key?: string | null
           stream_type?: string
+          tickets_sold_during_stream?: number | null
           title?: string | null
           updated_at?: string | null
           user_id?: string
+          venue_attendance_count?: number | null
           viewer_count?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "mux_live_streams_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "mux_live_streams_featured_product_id_fkey"
             columns: ["featured_product_id"]
@@ -6736,6 +6755,7 @@ export type Database = {
           event_id: string
           id: string
           platform_fee: number
+          purchased_from: string | null
           qr_code_data: string | null
           qr_code_token: string
           qr_code_url: string | null
@@ -6754,6 +6774,7 @@ export type Database = {
           event_id: string
           id?: string
           platform_fee?: number
+          purchased_from?: string | null
           qr_code_data?: string | null
           qr_code_token?: string
           qr_code_url?: string | null
@@ -6772,6 +6793,7 @@ export type Database = {
           event_id?: string
           id?: string
           platform_fee?: number
+          purchased_from?: string | null
           qr_code_data?: string | null
           qr_code_token?: string
           qr_code_url?: string | null
