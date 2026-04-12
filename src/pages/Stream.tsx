@@ -887,6 +887,11 @@ export default function Stream() {
               )}
             </div>
 
+            {/* Live Event Banner — when stream is linked to an event */}
+            {isActive && dbStream.is_event_stream && dbStream.event_id && (
+              <LiveEventBanner eventId={dbStream.event_id} streamId={dbStream.id} />
+            )}
+
             {/* Stream info */}
             <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-border">
               <h1 className="text-lg sm:text-xl font-bold text-foreground mb-2 sm:mb-3">{dbStream.title || 'Untitled Stream'}</h1>
