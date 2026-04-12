@@ -25,7 +25,7 @@ export function useStories() {
       if (!storiesData || storiesData.length === 0) return [];
 
       // Fetch profiles for story authors
-      const authorIds = [...new Set(storiesData.map((s: any) => s.user_id))];
+      const authorIds: string[] = [...new Set(storiesData.map((s: any) => s.user_id as string))];
       const { data: profiles } = await supabase
         .from("profiles")
         .select("user_id, display_name, avatar_url, username")
@@ -37,8 +37,6 @@ export function useStories() {
         ...s,
         profiles: profileMap.get(s.user_id) || null,
       }));
-      if (error) throw error;
-      return data || [];
     },
     enabled: !!user,
     staleTime: 30_000,
