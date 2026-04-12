@@ -21,7 +21,7 @@ export default function SocialLocal() {
           className="flex items-center px-4 pt-1 pb-0"
           style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
         >
-          <div className="flex items-center gap-0.5 flex-1">
+          <div className="flex items-center gap-1 flex-1">
             {subTabs.map((tab) => {
               const isActive = activeTab === tab;
               return (
@@ -43,7 +43,7 @@ export default function SocialLocal() {
             className="flex items-center justify-center"
             style={{ width: 36, height: 36 }}
           >
-            <Search className="w-4.5 h-4.5" style={{ color: "rgba(255,255,255,0.5)" }} />
+            <Search className="w-4 h-4" style={{ color: "rgba(255,255,255,0.5)" }} />
           </button>
         </div>
 

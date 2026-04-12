@@ -26,16 +26,58 @@ export function useAttendance() {
   const markAttending = useMutation({
     mutationFn: async (params: { eventId?: string; status: "going" | "maybe"; date: string }) => {
       if (!user) throw new Error("Not authenticated");
-      const { error } = await (supabase as any).from("attendance").upsert(
-        {
+
+      // For general "going out" without event, find existing record by date + null event
+      if (!params.eventId) {
+        // Delete any existing record for this date with no event
+        await (supabase as any)
+          .from("attendance")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("attend_date", params.date)
+          .is("event_id", null);
+
+        // Insert new record
+        const { error } = await (supabase as any).from("attendance").insert({
           user_id: user.id,
-          event_id: params.eventId || null,
+          event_id: null,
           status: params.status,
           attend_date: params.date,
-        },
-        { onConflict: "user_id,event_id" }
-      );
-      if (error) throw error;
+        });
+        if (error) throw error;
+      } else {
+        const { error } = await (supabase as any).from("attendance").upsert(
+          {
+            user_id: user.id,
+            event_id: params.eventId,
+            status: params.status,
+            attend_date: params.date,
+          },
+          { onConflict: "user_id,event_id" }
+        );
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["attendance"] });
+    },
+  });
+
+  const clearAttendance = useMutation({
+    mutationFn: async (params: { date: string; eventId?: string }) => {
+      if (!user) return;
+      let query = (supabase as any)
+        .from("attendance")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("attend_date", params.date);
+
+      if (params.eventId) {
+        query = query.eq("event_id", params.eventId);
+      } else {
+        query = query.is("event_id", null);
+      }
+      await query;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["attendance"] });
@@ -73,6 +115,7 @@ export function useAttendance() {
     myAttendance,
     isLoading,
     markAttending: markAttending.mutateAsync,
+    clearAttendance: clearAttendance.mutateAsync,
     removeAttendance: removeAttendance.mutate,
     getAttendees,
     getGoingOutCount,

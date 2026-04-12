@@ -1,5 +1,6 @@
 import { useAttendance } from "@/hooks/useAttendance";
 import { addDays, format, isToday } from "date-fns";
+import { useAuth } from "@/context/AuthContext";
 
 const EMOJIS: Record<string, string> = {
   going: "😘",
@@ -7,22 +8,32 @@ const EMOJIS: Record<string, string> = {
 };
 
 export default function GoingOutWeekCard() {
-  const { myAttendance, markAttending } = useAttendance();
+  const { user } = useAuth();
+  const { myAttendance, markAttending, clearAttendance, isLoading } = useAttendance();
   const today = new Date();
   const days = Array.from({ length: 7 }, (_, i) => addDays(today, i));
 
-  const getStatus = (date: Date) => {
+  const getStatus = (date: Date): "going" | "maybe" | undefined => {
     const dateStr = format(date, "yyyy-MM-dd");
-    const att = myAttendance.find((a: any) => a.attend_date === dateStr);
+    // Only look at general attendance (no event_id) for this card
+    const att = myAttendance.find(
+      (a: any) => a.attend_date === dateStr && !a.event_id
+    );
     return att?.status as "going" | "maybe" | undefined;
   };
 
   const toggleStatus = async (date: Date) => {
+    if (!user) return;
     const dateStr = format(date, "yyyy-MM-dd");
     const current = getStatus(date);
-    const next = current === undefined ? "maybe" : current === "maybe" ? "going" : undefined;
-    if (next) {
-      await markAttending({ date: dateStr, status: next });
+    // Cycle: none → maybe → going → clear
+    if (current === undefined) {
+      await markAttending({ date: dateStr, status: "maybe" });
+    } else if (current === "maybe") {
+      await markAttending({ date: dateStr, status: "going" });
+    } else {
+      // Clear: going → none
+      await clearAttendance({ date: dateStr });
     }
   };
 
@@ -86,7 +97,7 @@ export default function GoingOutWeekCard() {
             <button
               key={date.toISOString()}
               onClick={() => toggleStatus(date)}
-              className="flex flex-col items-center justify-center gap-0.5 flex-shrink-0"
+              className="flex flex-col items-center justify-center gap-0.5 flex-shrink-0 transition-transform active:scale-95"
               style={{
                 minWidth: 48,
                 height: 64,
@@ -105,19 +116,16 @@ export default function GoingOutWeekCard() {
               >
                 {dayLabel}
               </span>
-              {status ? (
-                <span style={{ fontSize: 16, lineHeight: 1 }}>{EMOJIS[status]}</span>
-              ) : (
-                <span
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 800,
-                    color: numColor,
-                  }}
-                >
-                  {dateNum}
-                </span>
-              )}
+              <span
+                style={{
+                  fontSize: status ? 16 : 18,
+                  fontWeight: status ? 400 : 800,
+                  color: numColor,
+                  lineHeight: 1,
+                }}
+              >
+                {status ? EMOJIS[status] : dateNum}
+              </span>
             </button>
           );
         })}
