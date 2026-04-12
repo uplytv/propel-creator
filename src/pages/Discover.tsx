@@ -16,6 +16,8 @@ import NetworkBanner from "@/components/network/NetworkBanner";
 import PrimetimeSection from "@/components/network/PrimetimeSection";
 import TonightOnUPLY from "@/components/network/TonightOnUPLY";
 import UPLYChannels from "@/components/network/UPLYChannels";
+import StoriesRow from "@/components/social/StoriesRow";
+import GoingOutWeekCard from "@/components/social/GoingOutWeekCard";
 
 const PAGE_SIZE = 24;
 
@@ -169,6 +171,14 @@ export default function Discover() {
         title="Discover Creators"
         description="Explore top creators, communities, courses, and live streams on Uply."
       />
+
+      {/* Social layer — stories + going out */}
+      {user && (
+        <>
+          <StoriesRow />
+          <GoingOutWeekCard />
+        </>
+      )}
 
 
       {/* Followed creator live banner */}

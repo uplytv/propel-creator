@@ -3126,6 +3126,7 @@ export type Database = {
       events: {
         Row: {
           age_restriction: string | null
+          capacity: number | null
           cover_charge: number | null
           cover_image_url: string | null
           created_at: string
@@ -3134,6 +3135,7 @@ export type Database = {
           dress_code: string | null
           ends_at: string
           event_type: string
+          genre_tags: string[] | null
           happy_hour_end: string | null
           happy_hour_start: string | null
           id: string
@@ -3162,6 +3164,7 @@ export type Database = {
         }
         Insert: {
           age_restriction?: string | null
+          capacity?: number | null
           cover_charge?: number | null
           cover_image_url?: string | null
           created_at?: string
@@ -3170,6 +3173,7 @@ export type Database = {
           dress_code?: string | null
           ends_at: string
           event_type?: string
+          genre_tags?: string[] | null
           happy_hour_end?: string | null
           happy_hour_start?: string | null
           id?: string
@@ -3198,6 +3202,7 @@ export type Database = {
         }
         Update: {
           age_restriction?: string | null
+          capacity?: number | null
           cover_charge?: number | null
           cover_image_url?: string | null
           created_at?: string
@@ -3206,6 +3211,7 @@ export type Database = {
           dress_code?: string | null
           ends_at?: string
           event_type?: string
+          genre_tags?: string[] | null
           happy_hour_end?: string | null
           happy_hour_start?: string | null
           id?: string
