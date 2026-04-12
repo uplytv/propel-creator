@@ -11,7 +11,7 @@ interface StickyBuyTicketBarProps {
     title: string;
     ticket_price: number;
     is_free: boolean;
-    capacity?: number | null;
+    ticket_quantity?: number | null;
     tickets_sold?: number;
   };
   streamId: string;
@@ -24,7 +24,7 @@ export default function StickyBuyTicketBar({ event, streamId }: StickyBuyTicketB
   const [soldCount, setSoldCount] = useState(event.tickets_sold || 0);
   const [hasTicket, setHasTicket] = useState(false);
 
-  const remaining = event.capacity ? event.capacity - soldCount : null;
+  const remaining = event.ticket_quantity ? event.ticket_quantity - soldCount : null;
   const isUrgent = remaining !== null && remaining < 20 && remaining > 0;
   const isSoldOut = remaining !== null && remaining <= 0;
 

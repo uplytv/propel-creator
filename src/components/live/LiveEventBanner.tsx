@@ -17,7 +17,7 @@ export default function LiveEventBanner({ eventId, streamId }: LiveEventBannerPr
     const fetchEvent = async () => {
       const { data } = await supabase
         .from("events")
-        .select("id, title, location_name, location_city, ticket_price, capacity, tickets_sold, is_free")
+        .select("id, title, location_name, location_city, ticket_price, ticket_quantity, tickets_sold, is_free")
         .eq("id", eventId)
         .single();
       if (data) {
@@ -76,7 +76,7 @@ export default function LiveEventBanner({ eventId, streamId }: LiveEventBannerPr
 
   if (!event) return null;
 
-  const remaining = event.capacity ? event.capacity - soldCount : null;
+  const remaining = event.ticket_quantity ? event.ticket_quantity - soldCount : null;
   const isUrgent = remaining !== null && remaining < 20 && remaining > 0;
   const isSoldOut = remaining !== null && remaining <= 0;
 

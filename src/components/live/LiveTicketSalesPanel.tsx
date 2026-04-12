@@ -20,7 +20,7 @@ export default function LiveTicketSalesPanel({ streamId, eventId, viewerCount }:
   useEffect(() => {
     const fetch = async () => {
       const [{ data: evt }, { data: stream }] = await Promise.all([
-        supabase.from("events").select("id, title, ticket_price, capacity, tickets_sold, is_free").eq("id", eventId).single(),
+        supabase.from("events").select("id, title, ticket_price, ticket_quantity, tickets_sold, is_free").eq("id", eventId).single(),
         (supabase as any).from("mux_live_streams").select("tickets_sold_during_stream, venue_attendance_count").eq("id", streamId).single(),
       ]);
       if (evt) setEvent(evt);
@@ -60,7 +60,7 @@ export default function LiveTicketSalesPanel({ streamId, eventId, viewerCount }:
   if (!event) return null;
 
   const totalSold = (event.tickets_sold || 0);
-  const remaining = event.capacity ? event.capacity - totalSold : null;
+  const remaining = event.ticket_quantity ? event.ticket_quantity - totalSold : null;
   const revenue = soldDuringStream * (event.ticket_price || 0);
   const conversion = viewerCount > 0 ? ((soldDuringStream / viewerCount) * 100).toFixed(1) : "0.0";
 
