@@ -49,8 +49,8 @@ import ViewerHeatmapPanel from "./ViewerHeatmapPanel";
 import ViewerSentimentOverlay from "./ViewerSentimentOverlay";
 import { LiveQuizOverlay, QuizCreatorPanel } from "./LiveQuizOverlay";
 import CreatorShopPanel from "./CreatorShopPanel";
+import LiveTicketSalesPanel from "./LiveTicketSalesPanel";
 
-// Extracted sub-components
 import ModeSelectionScreen from "./ModeSelectionScreen";
 import PreRecordingSetup from "./PreRecordingSetup";
 import ExternalEncoderView from "./ExternalEncoderView";
@@ -127,6 +127,10 @@ export default function BroadcastStudio({
   const [showShopPanel, setShowShopPanel] = useState(hasQueuedShopProducts);
   const [predQuestion, setPredQuestion] = useState("");
   const [predOptions, setPredOptions] = useState(["", ""]);
+  const [linkedEventId, setLinkedEventId] = useState<string | null>(null);
+  const [linkedEventData, setLinkedEventData] = useState<any>(null);
+  const [eventSkipped, setEventSkipped] = useState(false);
+  const [showTicketSales, setShowTicketSales] = useState(false);
 
   // Hooks
   const streamAnalytics = useStreamAnalytics(streamData.streamId, isRecording);
@@ -687,6 +691,15 @@ export default function BroadcastStudio({
                     <ActionButton onClick={toggleMic} bg={micOn ? undefined : "rgba(239,68,68,0.4)"} icon={micOn ? <Mic className="w-4.5 h-4.5 text-white" /> : <MicOff className="w-4.5 h-4.5 text-white" />} />
                   </div>
 
+                  {/* Live Ticket Sales Panel — event streams only */}
+                  <AnimatePresence>
+                    {linkedEventId && showTicketSales && (
+                      <motion.div initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 50 }} className="absolute top-20 left-3 z-[15] w-56">
+                        <LiveTicketSalesPanel streamId={streamData.streamId} eventId={linkedEventId} viewerCount={engagement.viewerCount} />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   {/* Overlays */}
                   <AnimatePresence>
                     {showAnalytics && (
@@ -871,6 +884,10 @@ export default function BroadcastStudio({
         products={products}
         featuredProductId={featuredProductId}
         onFeaturedProductChange={onFeaturedProductChange}
+        streamId={streamData.streamId}
+        linkedEventId={linkedEventId}
+        onEventLinked={(eventId, eventData) => { setLinkedEventId(eventId); setLinkedEventData(eventData); setShowTicketSales(true); }}
+        onEventSkipped={() => setEventSkipped(true)}
         onToggleCamera={toggleCamera}
         onToggleMic={toggleMic}
         onStartCamera={() => startCamera()}

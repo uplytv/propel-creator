@@ -8,6 +8,7 @@ import StoriesRow from "@/components/social/StoriesRow";
 import EventDiscoveryGrid from "@/components/social/EventDiscoveryGrid";
 import SocialFeed from "@/components/social/SocialFeed";
 import TrendingEventsWidget from "@/components/social/TrendingEventsWidget";
+import LiveEventStreamsSection from "@/components/social/LiveEventStreamsSection";
 import SEOHead from "@/components/SEOHead";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
@@ -44,6 +45,13 @@ export default function SocialHome() {
       <div className="pb-24">
         <StoriesRow />
         <GoingOutWeekCard />
+
+        {/* Going Off Right Now — followed users' live event streams */}
+        <LiveEventStreamsSection
+          title="Going Off Right Now"
+          filterFollowing
+          followingIds={followingIds}
+        />
 
         {/* Friends going out */}
         {friendsGoingOut.length > 0 && (
