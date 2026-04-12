@@ -875,6 +875,10 @@ export default function BroadcastStudio({
         products={products}
         featuredProductId={featuredProductId}
         onFeaturedProductChange={onFeaturedProductChange}
+        streamId={streamData.streamId}
+        linkedEventId={linkedEventId}
+        onEventLinked={(eventId, eventData) => { setLinkedEventId(eventId); setLinkedEventData(eventData); setShowTicketSales(true); }}
+        onEventSkipped={() => setEventSkipped(true)}
         onToggleCamera={toggleCamera}
         onToggleMic={toggleMic}
         onStartCamera={() => startCamera()}
