@@ -691,6 +691,15 @@ export default function BroadcastStudio({
                     <ActionButton onClick={toggleMic} bg={micOn ? undefined : "rgba(239,68,68,0.4)"} icon={micOn ? <Mic className="w-4.5 h-4.5 text-white" /> : <MicOff className="w-4.5 h-4.5 text-white" />} />
                   </div>
 
+                  {/* Live Ticket Sales Panel — event streams only */}
+                  <AnimatePresence>
+                    {linkedEventId && showTicketSales && (
+                      <motion.div initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 50 }} className="absolute top-20 left-3 z-[15] w-56">
+                        <LiveTicketSalesPanel streamId={streamData.streamId} eventId={linkedEventId} viewerCount={engagement.viewerCount} />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   {/* Overlays */}
                   <AnimatePresence>
                     {showAnalytics && (
