@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FeaturedProductPicker, { type Product } from "./FeaturedProductPicker";
+import LinkEventToStream from "./LinkEventToStream";
 
 interface PreRecordingSetupProps {
   title: string;

@@ -4,6 +4,7 @@ import HeydarBanner from "@/components/social/HeydarBanner";
 import EventDiscoveryGrid from "@/components/social/EventDiscoveryGrid";
 import SocialMarketplace from "@/components/social/SocialMarketplace";
 import TrendingEventsWidget from "@/components/social/TrendingEventsWidget";
+import LiveEventStreamsSection from "@/components/social/LiveEventStreamsSection";
 import SEOHead from "@/components/SEOHead";
 import { Search } from "lucide-react";
 
@@ -51,6 +52,8 @@ export default function SocialLocal() {
         {activeTab === "Active" && (
           <>
             <StoriesRow filterLocal />
+            {/* Live at Events Near You */}
+            <LiveEventStreamsSection title="Live at Events Near You" />
             <HeydarBanner />
             <TrendingEventsWidget />
             <EventDiscoveryGrid filter="active" title="Local Events" showSeeAll />
