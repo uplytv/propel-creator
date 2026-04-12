@@ -4,6 +4,7 @@ import { useStories } from "@/hooks/useStories";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
+import StoryReactions from "./StoryReactions";
 
 interface StoryViewerProps {
   userId: string;
@@ -111,9 +112,14 @@ export default function StoryViewer({ userId, stories, allUserIds, onClose, onNa
 
       {/* Caption */}
       {story.caption && (
-        <div className="px-4 py-3">
+        <div className="px-4 py-2">
           <p className="text-sm text-white">{story.caption}</p>
         </div>
+      )}
+
+      {/* Reactions & Reply */}
+      {user && story.user_id !== user.id && (
+        <StoryReactions storyId={story.id} storyOwnerId={story.user_id} />
       )}
     </div>
   );

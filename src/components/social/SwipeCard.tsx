@@ -1,5 +1,8 @@
 import { useState, useRef, useCallback } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useAuth } from "@/context/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import type { PersonCard } from "@/hooks/usePeopleSwipe";
 
 interface SwipeCardProps {
@@ -12,10 +15,35 @@ interface SwipeCardProps {
 }
 
 export default function SwipeCard({ person, index, onSwipeRight, onSwipeLeft, onSwipeUp, isTop }: SwipeCardProps) {
+  const { user } = useAuth();
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [exiting, setExiting] = useState<"left" | "right" | "up" | null>(null);
   const startRef = useRef({ x: 0, y: 0 });
+
+  // Fetch current user's interests for music match
+  const { data: myInterests } = useQuery({
+    queryKey: ["my-interests", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data } = await (supabase as any)
+        .from("profiles")
+        .select("interests")
+        .eq("user_id", user.id)
+        .single();
+      return (data?.interests as string[]) || [];
+    },
+    enabled: !!user,
+    staleTime: 300_000,
+  });
+
+  const musicMatch = (() => {
+    if (!myInterests?.length || !person.interests?.length) return null;
+    const mySet = new Set(myInterests.map((i) => i.toLowerCase()));
+    const overlap = person.interests.filter((i) => mySet.has(i.toLowerCase())).length;
+    const total = new Set([...myInterests, ...person.interests]).size;
+    return total > 0 ? Math.round((overlap / total) * 100) : null;
+  })();
 
   const handleStart = useCallback((clientX: number, clientY: number) => {
     if (!isTop) return;
@@ -174,6 +202,16 @@ export default function SwipeCard({ person, index, onSwipeRight, onSwipeLeft, on
               style={{ backgroundColor: "rgba(0,255,133,0.15)", color: "#00FF85" }}
             >
               📅 Going to {person.shared_event}
+            </span>
+          )}
+
+          {/* Music match */}
+          {musicMatch !== null && musicMatch > 0 && (
+            <span
+              className="inline-block px-2.5 py-1 rounded-lg text-xs font-semibold mb-2 ml-1"
+              style={{ backgroundColor: "rgba(168,85,247,0.15)", color: "#A855F7" }}
+            >
+              🎵 {musicMatch}% match
             </span>
           )}
 
