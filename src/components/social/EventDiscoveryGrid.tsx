@@ -19,7 +19,17 @@ export default function EventDiscoveryGrid({
   showSeeAll = true,
   limit = 20,
 }: EventDiscoveryGridProps) {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
+  const { data: profile } = useQuery({
+    queryKey: ["profile-location", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await (supabase as any).from("profiles").select("location").eq("user_id", user.id).single();
+      return data as { location: string | null } | null;
+    },
+    enabled: !!user,
+    staleTime: 60_000,
+  });
   const navigate = useNavigate();
 
   const { data: events = [], isLoading } = useQuery({
@@ -28,13 +38,13 @@ export default function EventDiscoveryGrid({
       let query = supabase
         .from("events")
         .select("*")
-        .gte("event_date", new Date().toISOString().split("T")[0])
-        .order("event_date", { ascending: true })
+        .gte("starts_at", new Date().toISOString())
+        .order("starts_at", { ascending: true })
         .limit(limit);
 
       // Filter by user's city if available
       if (profile?.location && (filter === "active" || !filter)) {
-        query = query.ilike("location", `%${profile.location}%`);
+        query = query.ilike("location_city", `%${profile.location}%`);
       }
 
       if (filter === "new") {
@@ -50,8 +60,8 @@ export default function EventDiscoveryGrid({
         const { data: allData } = await supabase
           .from("events")
           .select("*")
-          .gte("event_date", new Date().toISOString().split("T")[0])
-          .order("event_date", { ascending: true })
+          .gte("starts_at", new Date().toISOString())
+          .order("starts_at", { ascending: true })
           .limit(limit);
         return allData || [];
       }

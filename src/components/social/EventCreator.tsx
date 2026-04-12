@@ -49,19 +49,21 @@ export default function EventCreator({ onClose }: EventCreatorProps) {
     if (!user || !title.trim() || !eventDate) return;
     setLoading(true);
     try {
+      const startsAt = eventDate && startTime ? `${eventDate}T${startTime}:00` : `${eventDate}T00:00:00`;
+      const endsAt = eventDate && endTime ? `${eventDate}T${endTime}:00` : `${eventDate}T23:59:59`;
       const { error } = await supabase.from("events").insert({
         title: title.trim(),
         event_type: eventType,
-        event_date: eventDate,
-        start_time: startTime || null,
-        end_time: endTime || null,
-        venue: venue.trim() || null,
-        location: city.trim() || null,
+        starts_at: startsAt,
+        ends_at: endsAt,
+        location_name: venue.trim() || null,
+        location_city: city.trim() || null,
         ticket_price: isFree ? 0 : parseFloat(ticketPrice) || 0,
         cover_charge: parseFloat(coverCharge) || null,
         age_restriction: ageRestriction !== "All Ages" ? ageRestriction : null,
         dress_code: dressCode || null,
-        genre_tags: genres,
+        happy_hour_start: isHappyHour && hhStart ? hhStart : null,
+        happy_hour_end: isHappyHour && hhEnd ? hhEnd : null,
         description: description.trim() || null,
         creator_id: user.id,
         is_free: isFree,
