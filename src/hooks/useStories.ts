@@ -26,7 +26,7 @@ export function useStories() {
 
       // Fetch profiles for story authors
       const authorIds = Array.from(new Set(storiesData.map((s: any) => String(s.user_id))));
-      const { data: profiles } = await supabase
+      const { data: profiles } = await (supabase as any)
         .from("profiles")
         .select("user_id, display_name, avatar_url, username")
         .in("user_id", authorIds);
