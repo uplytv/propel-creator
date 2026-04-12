@@ -3,6 +3,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useFollows } from "@/hooks/useFollows";
 import { tables } from "@/lib/supabaseTyped";
 import { defaultQueryOptions } from "@/lib/queryUtils";
+import GoingOutWeekCard from "@/components/social/GoingOutWeekCard";
 import StoriesRow from "@/components/social/StoriesRow";
 import EventDiscoveryGrid from "@/components/social/EventDiscoveryGrid";
 import SocialFeed from "@/components/social/SocialFeed";
