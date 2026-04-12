@@ -6,6 +6,7 @@ const tabs = [
   { label: "Home", path: "/social" },
   { label: "Local", path: "/social/local" },
   { label: "Friends", path: "/social/friends" },
+  { label: "Producers", path: "/social/producers" },
   { label: "People", path: "/social/people" },
 ];
 
@@ -21,7 +22,7 @@ export default function SocialTopNav() {
   const unreadTotal = (notifications || []).filter((n) => !n.read).length;
 
   const isActive = (path: string) => {
-    if (path === "/social") return location.pathname === "/social";
+    if (path === "/social") return location.pathname === "/social" || location.pathname === "/discover";
     return location.pathname.startsWith(path);
   };
 
@@ -31,11 +32,11 @@ export default function SocialTopNav() {
       style={{
         backgroundColor: "#0A0A0A",
         borderBottom: "1px solid rgba(255,255,255,0.08)",
-        height: 48,
+        height: 44,
         paddingRight: 8,
       }}
     >
-      <div className="flex items-stretch flex-1" style={{ height: 48 }}>
+      <div className="flex items-stretch flex-1" style={{ height: 44 }}>
         {tabs.map((tab) => (
           <button
             key={tab.path}
@@ -43,7 +44,7 @@ export default function SocialTopNav() {
             className="relative flex-1 flex items-center justify-center"
             style={{
               fontFamily: "'Plus Jakarta Sans', sans-serif",
-              fontSize: 15,
+              fontSize: 13,
               fontWeight: 600,
               color: isActive(tab.path) ? "#FFFFFF" : "rgba(255,255,255,0.35)",
               background: "transparent",
