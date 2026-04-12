@@ -127,6 +127,10 @@ export default function BroadcastStudio({
   const [showShopPanel, setShowShopPanel] = useState(hasQueuedShopProducts);
   const [predQuestion, setPredQuestion] = useState("");
   const [predOptions, setPredOptions] = useState(["", ""]);
+  const [linkedEventId, setLinkedEventId] = useState<string | null>(null);
+  const [linkedEventData, setLinkedEventData] = useState<any>(null);
+  const [eventSkipped, setEventSkipped] = useState(false);
+  const [showTicketSales, setShowTicketSales] = useState(false);
 
   // Hooks
   const streamAnalytics = useStreamAnalytics(streamData.streamId, isRecording);
