@@ -170,14 +170,6 @@ export default function Discover() {
         description="Explore top creators, communities, courses, and live streams on Uply."
       />
 
-      {/* === SOCIAL TOP NAV (injected) === */}
-      <SocialTopNav />
-
-      {/* === STORIES ROW (injected) === */}
-      <StoriesRow />
-
-      {/* === GOING OUT WEEK CARD (injected) === */}
-      <GoingOutWeekCard />
 
       {/* Followed creator live banner */}
       <AnimatePresence>
