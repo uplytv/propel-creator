@@ -4,7 +4,7 @@ import {
   Bell, Check, CheckCheck, AlertTriangle, Flag, Briefcase,
   CheckCircle2, XCircle, Eye, Star, Filter, Trash2,
   MessageSquare, Heart, UserPlus, Coins, Users, Megaphone,
-  Trophy, Package, Gift
+  Trophy, Package, Gift, Zap, Calendar, Ticket, MapPin
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useNotifications, AppNotification } from "@/hooks/useNotifications";
@@ -14,7 +14,33 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-type FilterTab = "all" | "unread" | "job" | "campaign" | "social";
+type FilterTab = "all" | "activity" | "matches" | "events" | "purchases";
+
+const MATCH_TYPES = new Set(["hey", "super_hey", "hey_mutual"]);
+const EVENT_TYPES = new Set(["event_reminder", "going_out", "waitlist_available"]);
+const PURCHASE_TYPES = new Set(["ticket_confirmed", "subscription_confirmed", "order_shipped", "live_sale", "tip_received"]);
+
+const socialNotifIcon: Record<string, { icon: any; color: string }> = {
+  community_comment: { icon: MessageSquare, color: "bg-primary/10 text-primary" },
+  community_like: { icon: Heart, color: "bg-destructive/10 text-destructive" },
+  community_blast: { icon: Megaphone, color: "bg-primary/15 text-primary" },
+  new_follower: { icon: UserPlus, color: "bg-primary/10 text-primary" },
+  tip_received: { icon: Coins, color: "bg-primary/15 text-primary" },
+  live_sale: { icon: Coins, color: "bg-primary/15 text-primary" },
+  auction_won: { icon: Trophy, color: "bg-amber-500/15 text-amber-400" },
+  subscription_confirmed: { icon: CheckCircle2, color: "bg-primary/10 text-primary" },
+  member_joined: { icon: Users, color: "bg-primary/10 text-primary" },
+  order_shipped: { icon: Package, color: "bg-blue-500/15 text-blue-400" },
+  giveaway_winner: { icon: Gift, color: "bg-amber-500/15 text-amber-400" },
+  hey: { icon: UserPlus, color: "bg-primary/10 text-primary" },
+  super_hey: { icon: Zap, color: "bg-amber-500/15 text-amber-400" },
+  hey_mutual: { icon: Heart, color: "bg-primary/15 text-primary" },
+  story_view: { icon: Eye, color: "bg-primary/10 text-primary" },
+  event_reminder: { icon: Calendar, color: "bg-primary/10 text-primary" },
+  ticket_confirmed: { icon: Ticket, color: "bg-primary/15 text-primary" },
+  waitlist_available: { icon: Ticket, color: "bg-primary/10 text-primary" },
+  going_out: { icon: MapPin, color: "bg-primary/10 text-primary" },
+};
 
 const jobNotifIcon: Record<string, { icon: any; color: string; label: string }> = {
   new_application: { icon: Briefcase, color: "bg-primary/10 text-primary", label: "New Application" },
@@ -25,30 +51,10 @@ const jobNotifIcon: Record<string, { icon: any; color: string; label: string }> 
 };
 
 function NotificationItem({
-  n,
-  onRead,
-  onNavigate,
-  onDelete,
+  n, onRead, onNavigate, onDelete,
 }: {
-  n: AppNotification;
-  onRead: () => void;
-  onNavigate: () => void;
-  onDelete: () => void;
+  n: AppNotification; onRead: () => void; onNavigate: () => void; onDelete: () => void;
 }) {
-  const socialNotifIcon: Record<string, { icon: any; color: string }> = {
-    community_comment: { icon: MessageSquare, color: "bg-primary/10 text-primary" },
-    community_like: { icon: Heart, color: "bg-destructive/10 text-destructive" },
-    community_blast: { icon: Megaphone, color: "bg-primary/15 text-primary" },
-    new_follower: { icon: UserPlus, color: "bg-primary/10 text-primary" },
-    tip_received: { icon: Coins, color: "bg-primary/15 text-primary" },
-    live_sale: { icon: Coins, color: "bg-primary/15 text-primary" },
-    auction_won: { icon: Trophy, color: "bg-amber-500/15 text-amber-400" },
-    subscription_confirmed: { icon: CheckCircle2, color: "bg-primary/10 text-primary" },
-    member_joined: { icon: Users, color: "bg-primary/10 text-primary" },
-    order_shipped: { icon: Package, color: "bg-blue-500/15 text-blue-400" },
-    giveaway_winner: { icon: Gift, color: "bg-amber-500/15 text-amber-400" },
-  };
-
   const getIcon = () => {
     if (n.source === "social") {
       const config = socialNotifIcon[n.type] || { icon: Bell, color: "bg-secondary text-muted-foreground" };
@@ -70,15 +76,9 @@ function NotificationItem({
     }
     return (
       <div className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center ${
-        n.type === "budget_warning"
-          ? "bg-warning/10 text-warning"
-          : "bg-primary/10 text-primary"
+        n.type === "budget_warning" ? "bg-warning/10 text-warning" : "bg-primary/10 text-primary"
       }`}>
-        {n.type === "budget_warning" ? (
-          <AlertTriangle className="w-5 h-5" />
-        ) : (
-          <Flag className="w-5 h-5" />
-        )}
+        {n.type === "budget_warning" ? <AlertTriangle className="w-5 h-5" /> : <Flag className="w-5 h-5" />}
       </div>
     );
   };
@@ -97,12 +97,7 @@ function NotificationItem({
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
           <span className="text-sm font-semibold truncate">{n.title}</span>
-          {!n.read && (
-            <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
-          )}
-          <Badge variant="outline" className="ml-auto text-[10px] capitalize flex-shrink-0">
-            {n.source}
-          </Badge>
+          {!n.read && <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />}
         </div>
         <p className="text-xs text-muted-foreground leading-relaxed">{n.message}</p>
         <p className="text-[11px] text-muted-foreground/50 mt-1.5">
@@ -137,26 +132,24 @@ export default function Notifications() {
   const navigate = useNavigate();
 
   const filtered = notifications.filter((n) => {
-    if (filter === "unread") return !n.read;
-    if (filter === "job") return n.source === "job";
-    if (filter === "campaign") return n.source === "campaign";
-    if (filter === "social") return n.source === "social";
+    if (filter === "activity") return !MATCH_TYPES.has(n.type) && !EVENT_TYPES.has(n.type) && !PURCHASE_TYPES.has(n.type);
+    if (filter === "matches") return MATCH_TYPES.has(n.type);
+    if (filter === "events") return EVENT_TYPES.has(n.type);
+    if (filter === "purchases") return PURCHASE_TYPES.has(n.type);
     return true;
   });
 
   const handleNavigate = (n: AppNotification) => {
     if (!n.read) markRead(n.id, n.source);
-    if (n.source === "job" && n.job_id) {
-      navigate(`/jobs/${n.job_id}`);
-    } else if (n.link) {
-      navigate(n.link);
-    }
+    if (n.source === "job" && n.job_id) navigate(`/jobs/${n.job_id}`);
+    else if (n.link) navigate(n.link);
+    else if (MATCH_TYPES.has(n.type)) navigate("/social/people");
+    else if (EVENT_TYPES.has(n.type)) navigate("/social/local");
   };
 
   return (
     <AppLayout>
       <div className="max-w-3xl mx-auto px-4 md:px-8 py-8">
-        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -170,40 +163,23 @@ export default function Notifications() {
             </div>
           </div>
           {unreadCount > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => markAllRead()}
-              className="gap-2"
-            >
+            <Button variant="outline" size="sm" onClick={() => markAllRead()} className="gap-2">
               <CheckCheck className="w-4 h-4" />
               Mark all read
             </Button>
           )}
         </div>
 
-        {/* Filters */}
         <Tabs value={filter} onValueChange={(v) => setFilter(v as FilterTab)} className="mb-4">
-          <TabsList className="bg-secondary/50">
-            <TabsTrigger value="all" className="text-xs gap-1.5">
-              All
-              {notifications.length > 0 && (
-                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">{notifications.length}</Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="unread" className="text-xs gap-1.5">
-              Unread
-              {unreadCount > 0 && (
-                <Badge className="text-[10px] px-1.5 py-0 h-4 bg-primary text-primary-foreground">{unreadCount}</Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="job" className="text-xs">💼 Jobs</TabsTrigger>
-            <TabsTrigger value="campaign" className="text-xs">📢 Campaigns</TabsTrigger>
-            <TabsTrigger value="social" className="text-xs">💬 Social</TabsTrigger>
+          <TabsList className="bg-secondary/50 w-full flex overflow-x-auto">
+            <TabsTrigger value="all" className="text-xs flex-1">All</TabsTrigger>
+            <TabsTrigger value="activity" className="text-xs flex-1">Activity</TabsTrigger>
+            <TabsTrigger value="matches" className="text-xs flex-1">Matches</TabsTrigger>
+            <TabsTrigger value="events" className="text-xs flex-1">Events</TabsTrigger>
+            <TabsTrigger value="purchases" className="text-xs flex-1">Purchases</TabsTrigger>
           </TabsList>
         </Tabs>
 
-        {/* Notification List */}
         <div className="rounded-xl border border-border bg-card overflow-hidden">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
@@ -217,9 +193,7 @@ export default function Notifications() {
                 {filter === "all" ? "No notifications yet" : `No ${filter} notifications`}
               </p>
               <p className="text-xs mt-1 opacity-60">
-                {filter === "unread"
-                  ? "You're all caught up!"
-                  : "Notifications will appear here as activity happens."}
+                Notifications will appear here as activity happens.
               </p>
             </div>
           ) : (

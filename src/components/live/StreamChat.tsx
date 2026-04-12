@@ -5,6 +5,7 @@ import ChatEmotePicker from "./ChatEmoteSystem";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useStreamEngagement, type LiveChatMessage } from "@/hooks/useStreamEngagement";
+import HypeTrainBanner from "./HypeTrainBanner";
 
 interface StreamChatProps {
   streamId?: string;
@@ -72,6 +73,9 @@ export default function StreamChat({
         <h3 className="text-sm font-semibold text-foreground">Live Chat</h3>
         <span className="text-[10px] text-muted-foreground">{viewerCount} watching</span>
       </div>
+
+      {/* Hype Train */}
+      <HypeTrainBanner chatMessages={chatMessages} />
 
       {/* Pinned messages */}
       {pinnedMessages.length > 0 && (
