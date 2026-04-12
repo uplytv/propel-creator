@@ -4,10 +4,10 @@ import HeydarBanner from "@/components/social/HeydarBanner";
 import EventDiscoveryGrid from "@/components/social/EventDiscoveryGrid";
 import SocialMarketplace from "@/components/social/SocialMarketplace";
 import SEOHead from "@/components/SEOHead";
-import { cn } from "@/lib/utils";
+import { Search } from "lucide-react";
 
 const subTabs = ["Active", "New", "Marketplace"] as const;
-type SubTab = typeof subTabs[number];
+type SubTab = (typeof subTabs)[number];
 
 export default function SocialLocal() {
   const [activeTab, setActiveTab] = useState<SubTab>("Active");
@@ -15,34 +15,48 @@ export default function SocialLocal() {
   return (
     <>
       <SEOHead title="Local — UPLY" description="Discover what's happening near you" />
-      <div className="pb-20">
+      <div className="pb-24">
         {/* Sub-tab bar */}
-        <div className="flex items-center gap-1 border-b px-4" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-          {subTabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={cn(
-                "relative whitespace-nowrap px-3 py-2.5 text-xs font-semibold transition-colors",
-                activeTab === tab ? "text-white" : "text-white/40"
-              )}
-            >
-              {tab}
-              {activeTab === tab && (
-                <span className="absolute bottom-0 left-3 right-3 h-[2px] rounded-sm" style={{ backgroundColor: "#00FF85" }} />
-              )}
-            </button>
-          ))}
+        <div
+          className="flex items-center px-4 pt-1 pb-0"
+          style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+        >
+          <div className="flex items-center gap-0.5 flex-1">
+            {subTabs.map((tab) => {
+              const isActive = activeTab === tab;
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className="relative px-4 py-2.5 text-[13px] font-semibold transition-colors rounded-lg"
+                  style={{
+                    color: isActive ? "#FFFFFF" : "rgba(255,255,255,0.35)",
+                    backgroundColor: isActive ? "rgba(255,255,255,0.08)" : "transparent",
+                  }}
+                >
+                  {tab}
+                </button>
+              );
+            })}
+          </div>
+          <button
+            className="flex items-center justify-center"
+            style={{ width: 36, height: 36 }}
+          >
+            <Search className="w-4.5 h-4.5" style={{ color: "rgba(255,255,255,0.5)" }} />
+          </button>
         </div>
 
         {activeTab === "Active" && (
           <>
-            <HeydarBanner />
             <StoriesRow filterLocal />
-            <EventDiscoveryGrid filter="active" />
+            <HeydarBanner />
+            <EventDiscoveryGrid filter="active" title="Local Events" showSeeAll />
           </>
         )}
-        {activeTab === "New" && <EventDiscoveryGrid filter="new" />}
+        {activeTab === "New" && (
+          <EventDiscoveryGrid filter="new" title="Recently Added" showSeeAll />
+        )}
         {activeTab === "Marketplace" && <SocialMarketplace />}
       </div>
     </>
