@@ -1044,6 +1044,44 @@ export type Database = {
         }
         Relationships: []
       }
+      attendance: {
+        Row: {
+          attend_date: string
+          created_at: string | null
+          event_id: string | null
+          id: string
+          status: string | null
+          user_id: string
+          visibility: string | null
+        }
+        Insert: {
+          attend_date: string
+          created_at?: string | null
+          event_id?: string | null
+          id?: string
+          status?: string | null
+          user_id: string
+          visibility?: string | null
+        }
+        Update: {
+          attend_date?: string
+          created_at?: string | null
+          event_id?: string | null
+          id?: string
+          status?: string | null
+          user_id?: string
+          visibility?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       auth_rate_limits: {
         Row: {
           action_type: string
@@ -3026,13 +3064,19 @@ export type Database = {
       }
       events: {
         Row: {
+          age_restriction: string | null
+          cover_charge: number | null
           cover_image_url: string | null
           created_at: string
           creator_id: string
           description: string | null
+          dress_code: string | null
           ends_at: string
           event_type: string
+          happy_hour_end: string | null
+          happy_hour_start: string | null
           id: string
+          is_boosted: boolean | null
           is_free: boolean
           is_sold_out: boolean
           location_address: string | null
@@ -3056,13 +3100,19 @@ export type Database = {
           virtual_link_unlocked_at: string | null
         }
         Insert: {
+          age_restriction?: string | null
+          cover_charge?: number | null
           cover_image_url?: string | null
           created_at?: string
           creator_id: string
           description?: string | null
+          dress_code?: string | null
           ends_at: string
           event_type?: string
+          happy_hour_end?: string | null
+          happy_hour_start?: string | null
           id?: string
+          is_boosted?: boolean | null
           is_free?: boolean
           is_sold_out?: boolean
           location_address?: string | null
@@ -3086,13 +3136,19 @@ export type Database = {
           virtual_link_unlocked_at?: string | null
         }
         Update: {
+          age_restriction?: string | null
+          cover_charge?: number | null
           cover_image_url?: string | null
           created_at?: string
           creator_id?: string
           description?: string | null
+          dress_code?: string | null
           ends_at?: string
           event_type?: string
+          happy_hour_end?: string | null
+          happy_hour_start?: string | null
           id?: string
+          is_boosted?: boolean | null
           is_free?: boolean
           is_sold_out?: boolean
           location_address?: string | null
@@ -3264,6 +3320,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      heys: {
+        Row: {
+          created_at: string | null
+          event_id: string | null
+          hey_type: string | null
+          id: string
+          is_mutual: boolean | null
+          recipient_id: string
+          sender_id: string
+          sender_revealed: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_id?: string | null
+          hey_type?: string | null
+          id?: string
+          is_mutual?: boolean | null
+          recipient_id: string
+          sender_id: string
+          sender_revealed?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: string | null
+          hey_type?: string | null
+          id?: string
+          is_mutual?: boolean | null
+          recipient_id?: string
+          sender_id?: string
+          sender_revealed?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "heys_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invite_codes: {
         Row: {
@@ -5349,9 +5446,11 @@ export type Database = {
           first_payment_email_sent_at: string | null
           first_stream_email_sent_at: string | null
           health_score: number
+          heydar_active_until: string | null
           id: string
           interests: string[] | null
           is_approved: boolean
+          is_producer: boolean | null
           last_name: string | null
           last_reengagement_email_sent_at: string | null
           last_revenue_milestone_amount: number | null
@@ -5361,6 +5460,7 @@ export type Database = {
           origin_member: boolean
           paid_dm_price: number | null
           paid_dms_enabled: boolean | null
+          producer_type: string | null
           referral_code: string | null
           referred_by: string | null
           referred_by_username: string | null
@@ -5368,6 +5468,8 @@ export type Database = {
           tier: number
           tier_name: string
           total_revenue: number
+          travel_city: string | null
+          traveling: boolean | null
           updated_at: string
           user_id: string
           user_type: string | null
@@ -5397,9 +5499,11 @@ export type Database = {
           first_payment_email_sent_at?: string | null
           first_stream_email_sent_at?: string | null
           health_score?: number
+          heydar_active_until?: string | null
           id?: string
           interests?: string[] | null
           is_approved?: boolean
+          is_producer?: boolean | null
           last_name?: string | null
           last_reengagement_email_sent_at?: string | null
           last_revenue_milestone_amount?: number | null
@@ -5409,6 +5513,7 @@ export type Database = {
           origin_member?: boolean
           paid_dm_price?: number | null
           paid_dms_enabled?: boolean | null
+          producer_type?: string | null
           referral_code?: string | null
           referred_by?: string | null
           referred_by_username?: string | null
@@ -5416,6 +5521,8 @@ export type Database = {
           tier?: number
           tier_name?: string
           total_revenue?: number
+          travel_city?: string | null
+          traveling?: boolean | null
           updated_at?: string
           user_id: string
           user_type?: string | null
@@ -5445,9 +5552,11 @@ export type Database = {
           first_payment_email_sent_at?: string | null
           first_stream_email_sent_at?: string | null
           health_score?: number
+          heydar_active_until?: string | null
           id?: string
           interests?: string[] | null
           is_approved?: boolean
+          is_producer?: boolean | null
           last_name?: string | null
           last_reengagement_email_sent_at?: string | null
           last_revenue_milestone_amount?: number | null
@@ -5457,6 +5566,7 @@ export type Database = {
           origin_member?: boolean
           paid_dm_price?: number | null
           paid_dms_enabled?: boolean | null
+          producer_type?: string | null
           referral_code?: string | null
           referred_by?: string | null
           referred_by_username?: string | null
@@ -5464,6 +5574,8 @@ export type Database = {
           tier?: number
           tier_name?: string
           total_revenue?: number
+          travel_city?: string | null
+          traveling?: boolean | null
           updated_at?: string
           user_id?: string
           user_type?: string | null
@@ -5730,6 +5842,111 @@ export type Database = {
         }
         Relationships: []
       }
+      social_post_comments: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "social_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_post_reactions: {
+        Row: {
+          created_at: string | null
+          post_id: string
+          reaction: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          post_id: string
+          reaction?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          post_id?: string
+          reaction?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_post_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "social_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_posts: {
+        Row: {
+          comment_count: number | null
+          content: string | null
+          created_at: string | null
+          event_id: string | null
+          id: string
+          media_urls: string[] | null
+          post_type: string | null
+          reaction_counts: Json | null
+          user_id: string
+        }
+        Insert: {
+          comment_count?: number | null
+          content?: string | null
+          created_at?: string | null
+          event_id?: string | null
+          id?: string
+          media_urls?: string[] | null
+          post_type?: string | null
+          reaction_counts?: Json | null
+          user_id: string
+        }
+        Update: {
+          comment_count?: number | null
+          content?: string | null
+          created_at?: string | null
+          event_id?: string | null
+          id?: string
+          media_urls?: string[] | null
+          post_type?: string | null
+          reaction_counts?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_posts_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       space_media: {
         Row: {
           created_at: string
@@ -5768,6 +5985,76 @@ export type Database = {
           url?: string
         }
         Relationships: []
+      }
+      stories: {
+        Row: {
+          caption: string | null
+          created_at: string | null
+          event_id: string | null
+          expires_at: string | null
+          id: string
+          location_label: string | null
+          media_type: string | null
+          media_url: string
+          user_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string | null
+          event_id?: string | null
+          expires_at?: string | null
+          id?: string
+          location_label?: string | null
+          media_type?: string | null
+          media_url: string
+          user_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string | null
+          event_id?: string | null
+          expires_at?: string | null
+          id?: string
+          location_label?: string | null
+          media_type?: string | null
+          media_url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stories_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      story_views: {
+        Row: {
+          story_id: string
+          viewed_at: string | null
+          viewer_id: string
+        }
+        Insert: {
+          story_id: string
+          viewed_at?: string | null
+          viewer_id: string
+        }
+        Update: {
+          story_id?: string
+          viewed_at?: string | null
+          viewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_views_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       stream_recordings: {
         Row: {
