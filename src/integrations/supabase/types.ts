@@ -6005,6 +6005,68 @@ export type Database = {
           },
         ]
       }
+      shared_plan_members: {
+        Row: {
+          created_at: string
+          id: string
+          member_id: string
+          plan_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          member_id: string
+          plan_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          member_id?: string
+          plan_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_plan_members_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "shared_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shared_plans: {
+        Row: {
+          created_at: string
+          description: string | null
+          event_id: string | null
+          id: string
+          owner_id: string
+          plan_date: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          event_id?: string | null
+          id?: string
+          owner_id: string
+          plan_date?: string
+          title?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          event_id?: string | null
+          id?: string
+          owner_id?: string
+          plan_date?: string
+          title?: string
+        }
+        Relationships: []
+      }
       shorts: {
         Row: {
           caption: string
