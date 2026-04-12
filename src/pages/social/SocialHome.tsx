@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useFollows } from "@/hooks/useFollows";
+import { tables } from "@/lib/supabaseTyped";
+import { defaultQueryOptions } from "@/lib/queryUtils";
 import StoriesRow from "@/components/social/StoriesRow";
-import GoingOutWeekCard from "@/components/social/GoingOutWeekCard";
 import EventDiscoveryGrid from "@/components/social/EventDiscoveryGrid";
 import SocialFeed from "@/components/social/SocialFeed";
 import TrendingEventsWidget from "@/components/social/TrendingEventsWidget";
@@ -22,8 +22,7 @@ export default function SocialHome() {
       if (!user || followingIds.length === 0) return [];
       const today = new Date().toISOString().split("T")[0];
       const weekEnd = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
-      const { data } = await (supabase as any)
-        .from("attendance")
+      const { data } = await tables.attendance()
         .select("*, profiles:user_id(display_name, avatar_url, username), events:event_id(title)")
         .in("user_id", followingIds)
         .gte("attend_date", today)
