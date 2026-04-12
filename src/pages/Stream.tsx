@@ -39,6 +39,8 @@ import ClipCreator from "@/components/clips/ClipCreator";
 import SharePanel from "@/components/share/SharePanel";
 import SEOHead from "@/components/SEOHead";
 import RecentRecordingsRow from "@/components/live/RecentRecordingsRow";
+import LiveEventBanner from "@/components/live/LiveEventBanner";
+import StickyBuyTicketBar from "@/components/live/StickyBuyTicketBar";
 
 function StreamActionBtn({ icon, label, count, active, onClick }: { icon: React.ReactNode; label: string; count?: number; active: boolean; onClick: () => void }) {
   return (
