@@ -5910,8 +5910,10 @@ export type Database = {
           created_at: string | null
           event_id: string | null
           id: string
+          marketplace_category: string | null
           media_urls: string[] | null
           post_type: string | null
+          price: number | null
           reaction_counts: Json | null
           user_id: string
         }
@@ -5921,8 +5923,10 @@ export type Database = {
           created_at?: string | null
           event_id?: string | null
           id?: string
+          marketplace_category?: string | null
           media_urls?: string[] | null
           post_type?: string | null
+          price?: number | null
           reaction_counts?: Json | null
           user_id: string
         }
@@ -5932,8 +5936,10 @@ export type Database = {
           created_at?: string | null
           event_id?: string | null
           id?: string
+          marketplace_category?: string | null
           media_urls?: string[] | null
           post_type?: string | null
+          price?: number | null
           reaction_counts?: Json | null
           user_id?: string
         }
