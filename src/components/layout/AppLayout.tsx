@@ -550,7 +550,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        {user && location.pathname.startsWith("/social") && <SocialTopNav />}
         <main id="main-content" role="main" aria-label="Page content" className="pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-0" tabIndex={-1}>{children}</main>
       </div>
 
