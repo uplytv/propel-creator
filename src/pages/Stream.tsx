@@ -39,6 +39,8 @@ import ClipCreator from "@/components/clips/ClipCreator";
 import SharePanel from "@/components/share/SharePanel";
 import SEOHead from "@/components/SEOHead";
 import RecentRecordingsRow from "@/components/live/RecentRecordingsRow";
+import LiveEventBanner from "@/components/live/LiveEventBanner";
+import StickyBuyTicketBar from "@/components/live/StickyBuyTicketBar";
 
 function StreamActionBtn({ icon, label, count, active, onClick }: { icon: React.ReactNode; label: string; count?: number; active: boolean; onClick: () => void }) {
   return (
@@ -885,6 +887,11 @@ export default function Stream() {
               )}
             </div>
 
+            {/* Live Event Banner — when stream is linked to an event */}
+            {isActive && dbStream.is_event_stream && dbStream.event_id && (
+              <LiveEventBanner eventId={dbStream.event_id} streamId={dbStream.id} />
+            )}
+
             {/* Stream info */}
             <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-border">
               <h1 className="text-lg sm:text-xl font-bold text-foreground mb-2 sm:mb-3">{dbStream.title || 'Untitled Stream'}</h1>
@@ -1045,6 +1052,20 @@ export default function Stream() {
             muxAssetId={dbStream.mux_asset_id}
             creatorUsername={creatorUsername || profile?.username}
             contentSlug={dbStream.slug}
+          />
+        )}
+
+        {/* Sticky Buy Ticket Bar — event streams only */}
+        {isActive && dbStream.is_event_stream && dbStream.event_id && (
+          <StickyBuyTicketBar
+            event={{
+              id: dbStream.event_id,
+              title: dbStream.title || 'Event',
+              ticket_price: 0,
+              is_free: false,
+              tickets_sold: 0,
+            }}
+            streamId={dbStream.id}
           />
         )}
       </div>
