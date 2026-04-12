@@ -6,6 +6,7 @@ import StoriesRow from "@/components/social/StoriesRow";
 import GoingOutWeekCard from "@/components/social/GoingOutWeekCard";
 import EventDiscoveryGrid from "@/components/social/EventDiscoveryGrid";
 import SocialFeed from "@/components/social/SocialFeed";
+import TrendingEventsWidget from "@/components/social/TrendingEventsWidget";
 import SEOHead from "@/components/SEOHead";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
@@ -67,6 +68,7 @@ export default function SocialHome() {
           </div>
         )}
 
+        <TrendingEventsWidget />
         <EventDiscoveryGrid title="Events Near You" showSeeAll limit={6} />
         <SocialFeed />
       </div>
