@@ -12,18 +12,78 @@ function untypedFrom(table: string) {
 
 // ── Typed table accessors ──────────────────────────────────────────────
 export const tables = {
+  // Content
   videos: () => untypedFrom("videos"),
   videoLikes: () => untypedFrom("video_likes"),
   videoComments: () => untypedFrom("video_comments"),
+  shorts: () => untypedFrom("shorts"),
+  clips: () => untypedFrom("clips"),
+
+  // Events & Tickets
   tickets: () => untypedFrom("tickets"),
   events: () => untypedFrom("events"),
   eventReminders: () => untypedFrom("event_reminders"),
-  memberPoints: () => untypedFrom("member_points"),
-  socialLinks: () => untypedFrom("social_links"),
+  eventWaitlist: () => untypedFrom("event_waitlist"),
+  eventReviews: () => untypedFrom("event_reviews"),
+  eventCheckins: () => untypedFrom("event_checkins"),
+  attendance: () => untypedFrom("attendance"),
+
+  // Social
+  heys: () => untypedFrom("heys"),
+  stories: () => untypedFrom("stories"),
+  storyReactions: () => untypedFrom("story_reactions"),
+  sharedPlans: () => untypedFrom("shared_plans"),
+  sharedPlanMembers: () => untypedFrom("shared_plan_members"),
+  follows: () => untypedFrom("follows"),
+  channelFollows: () => untypedFrom("channel_follows"),
+  socialPosts: () => untypedFrom("social_posts"),
+  socialPostReactions: () => untypedFrom("social_post_reactions"),
+  socialPostComments: () => untypedFrom("social_post_comments"),
+
+  // Profiles & Users
+  profiles: () => untypedFrom("profiles"),
   profilesPublic: () => untypedFrom("profiles_public"),
-  webhookEventLog: () => untypedFrom("webhook_event_log"),
+  socialLinks: () => untypedFrom("social_links"),
+  bioLinks: () => untypedFrom("bio_links"),
+
+  // Community
+  communityMembers: () => untypedFrom("community_members"),
+  communityPosts: () => untypedFrom("community_posts"),
+  communityComments: () => untypedFrom("community_comments"),
+  communityPostLikes: () => untypedFrom("community_post_likes"),
+  communityBlasts: () => untypedFrom("community_blasts"),
+
+  // Commerce
+  products: () => untypedFrom("products"),
+  memberSubscriptions: () => untypedFrom("member_subscriptions"),
+  subscriptionTiers: () => untypedFrom("subscription_tiers"),
+  memberPoints: () => untypedFrom("member_points"),
+  creatorStripeAccounts: () => untypedFrom("creator_stripe_accounts"),
+
+  // Streaming
+  muxLiveStreams: () => untypedFrom("mux_live_streams"),
+  liveChatMessages: () => untypedFrom("live_chat_messages"),
+  streamRecordings: () => untypedFrom("stream_recordings"),
+  scheduledStreams: () => untypedFrom("scheduled_streams"),
+
+  // Notifications
+  notifications: () => untypedFrom("notifications"),
+  notificationPreferences: () => untypedFrom("notification_preferences"),
+  pushSubscriptions: () => untypedFrom("push_subscriptions"),
+
+  // Jobs & Collabs
+  jobs: () => untypedFrom("jobs"),
+  jobApplications: () => untypedFrom("job_applications"),
+  collaborations: () => untypedFrom("collaborations"),
+
+  // Misc
+  inviteCodes: () => untypedFrom("invite_codes"),
+  referrals: () => untypedFrom("referrals"),
   waitlist: () => untypedFrom("waitlist"),
   uplyChannels: () => untypedFrom("uply_channels"),
+  webhookEventLog: () => untypedFrom("webhook_event_log"),
+  creatorSpaces: () => untypedFrom("creator_spaces"),
+  creatorPages: () => untypedFrom("creator_pages"),
 } as const;
 
 // ── Profile map helper (used across many hooks) ────────────────────────

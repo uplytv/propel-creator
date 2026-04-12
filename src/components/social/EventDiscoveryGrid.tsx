@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import EventDiscoveryCard from "./EventDiscoveryCard";
+import { tables } from "@/lib/supabaseTyped";
 import { ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 

@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import { tables } from "@/lib/supabaseTyped";
+import { defaultQueryOptions } from "@/lib/queryUtils";
 
 const DAILY_FREE_LIMIT = 5;
 
@@ -13,17 +14,14 @@ export function useHeys() {
     queryKey: ["heys", "received", user?.id],
     queryFn: async () => {
       if (!user) return [];
-      const { data } = await (supabase as any)
-        .from("heys")
+      const { data } = await tables.heys()
         .select("*, sender:sender_id(display_name, avatar_url, username)")
         .eq("recipient_id", user.id)
         .order("created_at", { ascending: false });
       return data || [];
     },
     enabled: !!user,
-    staleTime: 30_000,
-    retry: 2,
-    refetchOnWindowFocus: false,
+    ...defaultQueryOptions,
   });
 
   const { data: sentTodayCount = 0 } = useQuery({
@@ -32,8 +30,7 @@ export function useHeys() {
       if (!user) return 0;
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
-      const { count } = await (supabase as any)
-        .from("heys")
+      const { count } = await tables.heys()
         .select("*", { count: "exact", head: true })
         .eq("sender_id", user.id)
         .eq("hey_type", "free")
@@ -41,7 +38,7 @@ export function useHeys() {
       return count || 0;
     },
     enabled: !!user,
-    staleTime: 30_000,
+    ...defaultQueryOptions,
   });
 
   const sendHey = useMutation({
@@ -50,7 +47,7 @@ export function useHeys() {
       if (sentTodayCount >= DAILY_FREE_LIMIT) {
         throw new Error("Daily Hey limit reached");
       }
-      const { error } = await (supabase as any).from("heys").insert({
+      const { error } = await tables.heys().insert({
         sender_id: user.id,
         recipient_id: params.recipientId,
         event_id: params.eventId || null,
@@ -60,8 +57,7 @@ export function useHeys() {
         if (error.code === "23505") throw new Error("Already sent Hey");
         throw error;
       }
-      // Create notification
-      await (supabase as any).from("notifications").insert({
+      await tables.notifications().insert({
         user_id: params.recipientId,
         type: "hey",
         title: "Someone Heyed you 👋",
@@ -81,13 +77,12 @@ export function useHeys() {
   const markMutual = useMutation({
     mutationFn: async (heyId: string) => {
       if (!user) throw new Error("Not authenticated");
-      const { data: hey } = await (supabase as any).from("heys").select("*").eq("id", heyId).single();
+      const { data: hey } = await tables.heys().select("*").eq("id", heyId).single();
       if (!hey) throw new Error("Hey not found");
 
-      await (supabase as any).from("heys").update({ is_mutual: true, sender_revealed: true }).eq("id", heyId);
+      await tables.heys().update({ is_mutual: true, sender_revealed: true }).eq("id", heyId);
 
-      // Notify original sender of mutual match
-      await (supabase as any).from("notifications").insert({
+      await tables.notifications().insert({
         user_id: hey.sender_id,
         type: "hey_mutual",
         title: "It's a match! 👋",
