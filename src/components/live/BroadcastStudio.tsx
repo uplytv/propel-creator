@@ -916,6 +916,8 @@ export default function BroadcastStudio({
         onStartRecording={startRecording}
         onDismissError={() => setMediaError(null)}
         onGoBack={() => { stopCurrentStream(); setStudioMode("select"); setCameraOn(false); setMicOn(false); }}
+        autoDownload={autoDownload}
+        onAutoDownloadChange={setAutoDownload}
       />
     );
   }
