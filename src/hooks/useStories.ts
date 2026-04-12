@@ -14,14 +14,29 @@ export function useStories() {
     queryFn: async () => {
       if (!user) return [];
       const userIds = [user.id, ...followingIds];
-      const { data, error } = await (supabase as any)
+      // Fetch stories first
+      const { data: storiesData, error } = await (supabase as any)
         .from("stories")
-        .select("*, profiles:user_id(display_name, avatar_url, username)")
+        .select("*")
         .in("user_id", userIds)
         .gt("expires_at", new Date().toISOString())
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data || [];
+      if (!storiesData || storiesData.length === 0) return [];
+
+      // Fetch profiles for story authors
+      const authorIds = Array.from(new Set(storiesData.map((s: any) => String(s.user_id))));
+      const { data: profiles } = await (supabase as any)
+        .from("profiles")
+        .select("user_id, display_name, avatar_url, username")
+        .in("user_id", authorIds);
+      const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
+
+      // Attach profile data to each story
+      return storiesData.map((s: any) => ({
+        ...s,
+        profiles: profileMap.get(s.user_id) || null,
+      }));
     },
     enabled: !!user,
     staleTime: 30_000,
