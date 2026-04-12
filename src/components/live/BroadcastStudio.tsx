@@ -131,6 +131,7 @@ export default function BroadcastStudio({
   const [linkedEventData, setLinkedEventData] = useState<any>(null);
   const [eventSkipped, setEventSkipped] = useState(false);
   const [showTicketSales, setShowTicketSales] = useState(false);
+  const [autoDownload, setAutoDownload] = useState(false);
 
   // Hooks
   const streamAnalytics = useStreamAnalytics(streamData.streamId, isRecording);
