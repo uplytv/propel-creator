@@ -221,6 +221,16 @@ const App = () => (
                     <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
                     <Route path="/shorts" element={<Shorts />} />
                     <Route path="/pricing" element={<Pricing />} />
+
+                    {/* Social routes — MUST be before /:username catch-all */}
+                    <Route path="/social" element={<ProtectedRoute><SocialLayout /></ProtectedRoute>}>
+                      <Route index element={<SocialHome />} />
+                      <Route path="local" element={<SocialLocal />} />
+                      <Route path="friends" element={<SocialFriends />} />
+                      <Route path="producers" element={<SocialProducers />} />
+                      <Route path="people" element={<SocialPeople />} />
+                    </Route>
+
                     <Route path="/:username/events/:slug" element={<EventPage />} />
                     <Route path="/creator/:username/events/:slug" element={<EventPage />} />
                     <Route path="/tickets/:token" element={<TicketDetail />} />
