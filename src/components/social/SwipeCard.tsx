@@ -214,13 +214,6 @@ export default function SwipeCard({ person, index, onSwipeRight, onSwipeLeft, on
               🎵 {musicMatch}% match
             </span>
           )}
-            <span
-              className="inline-block px-2.5 py-1 rounded-lg text-xs font-semibold mb-2"
-              style={{ backgroundColor: "rgba(0,255,133,0.15)", color: "#00FF85" }}
-            >
-              📅 Going to {person.shared_event}
-            </span>
-          )}
 
           {person.interests.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
