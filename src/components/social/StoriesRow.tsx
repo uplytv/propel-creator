@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useStories } from "@/hooks/useStories";
 import { useAuth } from "@/context/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Plus } from "lucide-react";
 import StoryViewer from "./StoryViewer";
 import StoryCreator from "./StoryCreator";
@@ -16,6 +18,22 @@ export default function StoriesRow({ filterLocal, filterFriends }: StoriesRowPro
   const { groupedStories, isLoading } = useStories();
   const [viewingUserId, setViewingUserId] = useState<string | null>(null);
   const [showCreator, setShowCreator] = useState(false);
+
+  // Fetch user's own avatar
+  const { data: myProfile } = useQuery({
+    queryKey: ["my-avatar", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await (supabase as any)
+        .from("profiles")
+        .select("avatar_url, display_name")
+        .eq("user_id", user.id)
+        .single();
+      return data as { avatar_url: string | null; display_name: string | null } | null;
+    },
+    enabled: !!user,
+    staleTime: 60_000,
+  });
 
   const userIds = Object.keys(groupedStories);
   const myStories = user ? groupedStories[user.id] : undefined;
@@ -45,15 +63,9 @@ export default function StoriesRow({ filterLocal, filterFriends }: StoriesRowPro
         >
           <div className="relative w-16 h-16">
             {myStories ? (
-              <div
-                className="w-full h-full rounded-full"
-                style={{
-                  padding: 2.5,
-                  background: "linear-gradient(135deg, #00FF85, #00E5FF)",
-                }}
-              >
+              <div className="w-full h-full rounded-full" style={{ boxShadow: "0 0 0 2.5px #00FF85" }}>
                 <Avatar className="w-full h-full border-2 border-[#0A0A0A]">
-                  <AvatarImage src={undefined} />
+                  <AvatarImage src={myProfile?.avatar_url || undefined} />
                   <AvatarFallback className="bg-white/10 text-white text-xs">You</AvatarFallback>
                 </Avatar>
               </div>
