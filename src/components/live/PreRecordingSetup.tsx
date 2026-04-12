@@ -183,7 +183,23 @@ export default function PreRecordingSetup({
         />
       )}
 
-      {/* Start Recording */}
+      {/* Link Event to Stream */}
+      {streamId && !linkedEventId && onEventLinked && onEventSkipped && (
+        <LinkEventToStream
+          streamId={streamId}
+          onEventLinked={onEventLinked}
+          onSkip={onEventSkipped}
+        />
+      )}
+
+      {linkedEventId && (
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 flex items-center gap-2">
+          <span className="text-primary text-lg">🎟️</span>
+          <span className="text-sm font-semibold text-foreground">Event linked — tickets will be live during stream</span>
+        </div>
+      )}
+
+
       {(cameraOn || screenShare) && (
         <Button variant="hero" size="lg" onClick={onStartRecording} className="w-full">
           <Circle className="w-4 h-4 mr-2 fill-current" /> Start Recording
