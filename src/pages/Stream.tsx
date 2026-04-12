@@ -1054,6 +1054,20 @@ export default function Stream() {
             contentSlug={dbStream.slug}
           />
         )}
+
+        {/* Sticky Buy Ticket Bar — event streams only */}
+        {isActive && dbStream.is_event_stream && dbStream.event_id && (
+          <StickyBuyTicketBar
+            event={{
+              id: dbStream.event_id,
+              title: dbStream.title || 'Event',
+              ticket_price: 0,
+              is_free: false,
+              tickets_sold: 0,
+            }}
+            streamId={dbStream.id}
+          />
+        )}
       </div>
     );
   }

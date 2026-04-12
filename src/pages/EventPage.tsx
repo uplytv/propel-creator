@@ -6,6 +6,7 @@ import {
   Download, Check, Clock, Loader2, Share2, ExternalLink
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import EventLiveNowBanner from "@/components/live/EventLiveNowBanner";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import SEOHead from "@/components/SEOHead";
@@ -197,6 +198,9 @@ END:VCALENDAR`;
         </div>
 
         <div className="px-4 pt-4 space-y-4">
+          {/* Live Now Banner */}
+          <EventLiveNowBanner eventId={event.id} />
+
           {/* Badges */}
           <div className="flex items-center gap-2 flex-wrap">
             {badge && (
