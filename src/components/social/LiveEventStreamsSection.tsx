@@ -67,7 +67,7 @@ export default function LiveEventStreamsSection({ title, filterFollowing, follow
 
       // Fetch events and profiles
       const eventIds = streamData.map((s: any) => s.event_id).filter(Boolean);
-      const userIds = [...new Set(streamData.map((s: any) => s.user_id))];
+      const userIds = [...new Set(streamData.map((s: any) => s.user_id))] as string[];
 
       const [{ data: events }, { data: profiles }] = await Promise.all([
         supabase.from("events").select("id, title, location_name, location_city, ticket_price, is_free, ticket_quantity, tickets_sold").in("id", eventIds),
