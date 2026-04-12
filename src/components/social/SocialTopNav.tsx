@@ -1,6 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useNotifications } from "@/hooks/useNotifications";
-import { cn } from "@/lib/utils";
 
 const tabs = [
   { label: "Home", path: "/social" },
@@ -25,38 +24,72 @@ export default function SocialTopNav() {
   };
 
   return (
-    <div className="sticky top-0 z-40 flex items-center gap-1 border-b px-4 overflow-x-auto scrollbar-hide"
+    <div
+      className="sticky top-0 z-40 w-full"
       style={{
         backgroundColor: "#0A0A0A",
-        borderColor: "rgba(255,255,255,0.08)",
+        borderBottom: "1px solid rgba(255,255,255,0.08)",
+        padding: "0 4px",
       }}
     >
-      {tabs.map((tab) => (
-        <button
-          key={tab.path}
-          onClick={() => navigate(tab.path)}
-          className={cn(
-            "relative whitespace-nowrap px-3 py-3 text-[13px] font-semibold transition-colors",
-            isActive(tab.path)
-              ? "text-white"
-              : "text-white/40 hover:text-white/60"
-          )}
-          style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-        >
-          {tab.label}
-          {tab.label === "People" && unreadSocialCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-              {unreadSocialCount > 99 ? "99+" : unreadSocialCount}
-            </span>
-          )}
-          {isActive(tab.path) && (
-            <span
-              className="absolute bottom-0 left-3 right-3 h-[3px] rounded-sm"
-              style={{ backgroundColor: "#00FF85" }}
-            />
-          )}
-        </button>
-      ))}
+      <div className="flex items-stretch" style={{ height: 44 }}>
+        {tabs.map((tab) => (
+          <button
+            key={tab.path}
+            onClick={() => navigate(tab.path)}
+            className="relative flex-1 flex items-center justify-center cursor-pointer transition-colors duration-150"
+            style={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 13,
+              fontWeight: 600,
+              color: isActive(tab.path)
+                ? "#FFFFFF"
+                : "rgba(255,255,255,0.4)",
+              background: "transparent",
+              border: "none",
+            }}
+          >
+            {tab.label}
+
+            {/* Notification badge on People tab */}
+            {tab.label === "People" && unreadSocialCount > 0 && (
+              <span
+                className="absolute flex items-center justify-center"
+                style={{
+                  top: 8,
+                  right: "calc(50% - 22px)",
+                  minWidth: 16,
+                  height: 16,
+                  backgroundColor: "#FF3B30",
+                  borderRadius: 8,
+                  fontSize: 9,
+                  fontWeight: 800,
+                  color: "#FFFFFF",
+                  padding: "0 4px",
+                }}
+              >
+                {unreadSocialCount > 9 ? "9+" : unreadSocialCount}
+              </span>
+            )}
+
+            {/* Active indicator */}
+            {isActive(tab.path) && (
+              <span
+                className="absolute"
+                style={{
+                  bottom: 0,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  width: 24,
+                  height: 3,
+                  backgroundColor: "#00FF85",
+                  borderRadius: "2px 2px 0 0",
+                }}
+              />
+            )}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
