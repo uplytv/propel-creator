@@ -1,9 +1,10 @@
-import { RefObject } from "react";
+import { RefObject, useState } from "react";
 import {
   Video, VideoOff, Mic, MicOff, Monitor, Camera,
-  RotateCcw, Volume2, Circle, AlertCircle,
+  RotateCcw, Volume2, Circle, AlertCircle, Download, HardDrive,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import FeaturedProductPicker, { type Product } from "./FeaturedProductPicker";
 import LinkEventToStream from "./LinkEventToStream";
 
@@ -36,6 +37,8 @@ interface PreRecordingSetupProps {
   onStartRecording: () => void;
   onDismissError: () => void;
   onGoBack: () => void;
+  autoDownload?: boolean;
+  onAutoDownloadChange?: (val: boolean) => void;
 }
 
 export default function PreRecordingSetup({
@@ -67,6 +70,8 @@ export default function PreRecordingSetup({
   onStartRecording,
   onDismissError,
   onGoBack,
+  autoDownload = false,
+  onAutoDownloadChange,
 }: PreRecordingSetupProps) {
   return (
     <div className="space-y-4 mobile-safe-content">
@@ -173,6 +178,22 @@ export default function PreRecordingSetup({
           </Button>
         )}
       </div>
+
+      {/* Auto-Record & Download Option */}
+      {(cameraOn || screenShare) && onAutoDownloadChange && (
+        <div className="rounded-xl border border-border bg-card/50 p-3 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Download className="w-4 h-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-foreground">Auto-download copy</p>
+              <p className="text-[10px] text-muted-foreground">Save a local .webm file when recording ends</p>
+            </div>
+          </div>
+          <Switch checked={autoDownload} onCheckedChange={onAutoDownloadChange} />
+        </div>
+      )}
 
       {/* Featured Product Picker */}
       {products.length > 0 && (

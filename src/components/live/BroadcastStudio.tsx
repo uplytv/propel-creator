@@ -131,6 +131,7 @@ export default function BroadcastStudio({
   const [linkedEventData, setLinkedEventData] = useState<any>(null);
   const [eventSkipped, setEventSkipped] = useState(false);
   const [showTicketSales, setShowTicketSales] = useState(false);
+  const [autoDownload, setAutoDownload] = useState(false);
 
   // Hooks
   const streamAnalytics = useStreamAnalytics(streamData.streamId, isRecording);
@@ -479,6 +480,24 @@ export default function BroadcastStudio({
     setIsUploading(true); setUploadProgress(0); setUploadFailed(false);
     try {
       const blob = new Blob(persistedChunks, { type: "video/webm" });
+
+      // Auto-download local copy if enabled
+      if (autoDownload) {
+        try {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${title.replace(/[^a-zA-Z0-9 ]/g, "").trim() || "recording"}_${new Date().toISOString().slice(0, 10)}.webm`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          toast.success("Local copy downloaded! 📥");
+        } catch (dlErr) {
+          console.warn("[AutoDownload] Failed:", dlErr);
+        }
+      }
+
       const { uploadToMuxWithRetry } = await import("@/lib/muxUpload");
       const uploadId = await uploadToMuxWithRetry({
         userId: user.id, title: `${title} (Recording)`, description: "Browser recording",
@@ -496,7 +515,7 @@ export default function BroadcastStudio({
       setIsUploading(false);
       onEndStream({ durationSeconds: duration });
     }
-  }, [recordingDuration, stopWebRTCHost, stopCurrentStream, user, title, onEndStream, toast]);
+  }, [recordingDuration, stopWebRTCHost, stopCurrentStream, user, title, onEndStream, toast, autoDownload]);
 
   const formatDuration = (seconds: number) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, "0");
@@ -897,6 +916,8 @@ export default function BroadcastStudio({
         onStartRecording={startRecording}
         onDismissError={() => setMediaError(null)}
         onGoBack={() => { stopCurrentStream(); setStudioMode("select"); setCameraOn(false); setMicOn(false); }}
+        autoDownload={autoDownload}
+        onAutoDownloadChange={setAutoDownload}
       />
     );
   }

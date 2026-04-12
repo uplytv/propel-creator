@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Film, Play, Clock, Upload, Trash2, Loader2, RotateCcw, AlertTriangle, Scissors, Video } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
@@ -14,6 +14,7 @@ import RecordingsGrid from "@/components/recordings/RecordingsGrid";
 import ClipsGrid from "@/components/clips/ClipsGrid";
 import ClipPlayerModal from "@/components/clips/ClipPlayerModal";
 import type { Clip } from "@/hooks/useClips";
+import { useAutoRecoverUploads } from "@/hooks/useAutoRecoverUploads";
 
 interface MuxAsset {
   id: string;
@@ -40,10 +41,13 @@ export default function ContentLibrary() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const reuploadAssetRef = useRef<MuxAsset | null>(null);
 
+  // Auto-recover orphaned recordings + stuck processing assets
+  useAutoRecoverUploads();
+
   const { recordings, loading: recLoading, togglePublish, deleteRecording } = useStreamRecordings();
   const { clips, loading: clipsLoading, deleteClip } = useClips({ creatorId: user?.id });
 
-  const fetchAssets = async () => {
+  const fetchAssets = useCallback(async () => {
     if (!user) return;
     const { data, error } = await supabase
       .from("mux_assets")
@@ -55,7 +59,27 @@ export default function ContentLibrary() {
       setAssets(data);
     }
     setLoading(false);
-  };
+  }, [user]);
+
+  // Aggressively poll stuck assets via mux-check-upload
+  const checkStuckAssets = useCallback(async (currentAssets: MuxAsset[]) => {
+    const stuck = currentAssets.filter(
+      (a) => a.status !== "ready" && a.status !== "errored" && a.upload_id
+    );
+    if (stuck.length === 0) return;
+
+    for (const asset of stuck) {
+      try {
+        await supabase.functions.invoke("mux-check-upload", {
+          body: { uploadId: asset.upload_id },
+        });
+      } catch {
+        // silent
+      }
+    }
+    // Refetch after checks
+    fetchAssets();
+  }, [fetchAssets]);
 
   useEffect(() => {
     fetchAssets();
@@ -67,19 +91,20 @@ export default function ContentLibrary() {
       })
       .subscribe();
 
+    // Poll stuck assets every 10 seconds (faster than before)
     const interval = setInterval(() => {
       setAssets((current) => {
         const hasPreparing = current.some((a) => a.status !== "ready" && a.status !== "errored");
-        if (hasPreparing) fetchAssets();
+        if (hasPreparing) checkStuckAssets(current);
         return current;
       });
-    }, 30000);
+    }, 10000);
 
     return () => {
       supabase.removeChannel(channel);
       clearInterval(interval);
     };
-  }, [user]);
+  }, [user, fetchAssets, checkStuckAssets]);
 
   const formatDuration = (seconds: number | null) => {
     if (!seconds) return "--:--";
