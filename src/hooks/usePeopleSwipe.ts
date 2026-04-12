@@ -33,7 +33,7 @@ export function usePeopleSwipe() {
       const heyedIds = new Set((sentHeys || []).map((h: any) => h.recipient_id));
 
       // Get profiles
-      const { data: profiles } = await supabase
+      const { data: profiles } = await (supabase as any)
         .from("profiles")
         .select("user_id, display_name, avatar_url, age, location, interests, username, people_photos, show_in_people")
         .eq("show_in_people", true)

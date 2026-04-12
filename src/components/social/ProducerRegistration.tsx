@@ -16,11 +16,11 @@ const PRODUCER_TYPES = [
 ];
 
 export default function ProducerRegistration({ onClose }: ProducerRegistrationProps) {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [name, setName] = useState(profile?.display_name || "");
+  const [name, setName] = useState("");
   const [type, setType] = useState("venue");
-  const [city, setCity] = useState(profile?.location || "");
+  const [city, setCity] = useState("");
   const [link, setLink] = useState("");
   const [bio, setBio] = useState("");
   const [loading, setLoading] = useState(false);

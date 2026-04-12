@@ -10,11 +10,21 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function SocialProducers() {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [showRegister, setShowRegister] = useState(false);
   const [showEventCreator, setShowEventCreator] = useState(false);
 
-  const isProducer = profile?.is_producer === true;
+  const { data: profileData } = useQuery({
+    queryKey: ["profile-producer", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await supabase.from("profiles").select("is_producer, producer_type").eq("user_id", user.id).single();
+      return data as { is_producer: boolean | null; producer_type: string | null } | null;
+    },
+    enabled: !!user,
+    staleTime: 30_000,
+  });
+  const isProducer = profileData?.is_producer === true;
 
   const { data: myEventCount = 0 } = useQuery({
     queryKey: ["my-event-count", user?.id],
