@@ -3,6 +3,7 @@ import StoriesRow from "@/components/social/StoriesRow";
 import HeydarBanner from "@/components/social/HeydarBanner";
 import EventDiscoveryGrid from "@/components/social/EventDiscoveryGrid";
 import SocialMarketplace from "@/components/social/SocialMarketplace";
+import TrendingEventsWidget from "@/components/social/TrendingEventsWidget";
 import SEOHead from "@/components/SEOHead";
 import { Search } from "lucide-react";
 
@@ -51,6 +52,7 @@ export default function SocialLocal() {
           <>
             <StoriesRow filterLocal />
             <HeydarBanner />
+            <TrendingEventsWidget />
             <EventDiscoveryGrid filter="active" title="Local Events" showSeeAll />
           </>
         )}
