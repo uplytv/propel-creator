@@ -91,6 +91,14 @@ const Distribution = lazy(() => import("./pages/Distribution"));
 const DeveloperAPI = lazy(() => import("./pages/DeveloperAPI"));
 const EmailUnsubscribe = lazy(() => import("./pages/EmailUnsubscribe"));
 
+// Social pages
+const SocialHome = lazy(() => import("./pages/social/SocialHome"));
+const SocialLocal = lazy(() => import("./pages/social/SocialLocal"));
+const SocialFriends = lazy(() => import("./pages/social/SocialFriends"));
+const SocialProducers = lazy(() => import("./pages/social/SocialProducers"));
+const SocialPeople = lazy(() => import("./pages/social/SocialPeople"));
+import SocialLayout from "./components/social/SocialLayout";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -213,6 +221,16 @@ const App = () => (
                     <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
                     <Route path="/shorts" element={<Shorts />} />
                     <Route path="/pricing" element={<Pricing />} />
+
+                    {/* Social routes — MUST be before /:username catch-all */}
+                    <Route path="/social" element={<ProtectedRoute><SocialLayout /></ProtectedRoute>}>
+                      <Route index element={<SocialHome />} />
+                      <Route path="local" element={<SocialLocal />} />
+                      <Route path="friends" element={<SocialFriends />} />
+                      <Route path="producers" element={<SocialProducers />} />
+                      <Route path="people" element={<SocialPeople />} />
+                    </Route>
+
                     <Route path="/:username/events/:slug" element={<EventPage />} />
                     <Route path="/creator/:username/events/:slug" element={<EventPage />} />
                     <Route path="/tickets/:token" element={<TicketDetail />} />
