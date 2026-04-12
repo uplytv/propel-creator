@@ -23,6 +23,10 @@ interface PreRecordingSetupProps {
   products: Product[];
   featuredProductId?: string | null;
   onFeaturedProductChange?: (id: string | null) => void;
+  streamId?: string;
+  linkedEventId?: string | null;
+  onEventLinked?: (eventId: string, eventData: any) => void;
+  onEventSkipped?: () => void;
   onToggleCamera: () => void;
   onToggleMic: () => void;
   onStartCamera: () => void;
@@ -50,6 +54,10 @@ export default function PreRecordingSetup({
   products,
   featuredProductId,
   onFeaturedProductChange,
+  streamId,
+  linkedEventId,
+  onEventLinked,
+  onEventSkipped,
   onToggleCamera,
   onToggleMic,
   onStartCamera,
