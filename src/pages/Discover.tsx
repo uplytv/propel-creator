@@ -16,9 +16,6 @@ import NetworkBanner from "@/components/network/NetworkBanner";
 import PrimetimeSection from "@/components/network/PrimetimeSection";
 import TonightOnUPLY from "@/components/network/TonightOnUPLY";
 import UPLYChannels from "@/components/network/UPLYChannels";
-import SocialTopNav from "@/components/social/SocialTopNav";
-import StoriesRow from "@/components/social/StoriesRow";
-import GoingOutWeekCard from "@/components/social/GoingOutWeekCard";
 
 const PAGE_SIZE = 24;
 

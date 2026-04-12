@@ -28,7 +28,7 @@ export default function SocialTopNav() {
 
   return (
     <div
-      className="sticky top-0 z-40 w-full flex items-center"
+      className="sticky top-14 z-30 w-full flex items-center"
       style={{
         backgroundColor: "#0A0A0A",
         borderBottom: "1px solid rgba(255,255,255,0.08)",
