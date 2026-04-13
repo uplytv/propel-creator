@@ -1,4 +1,5 @@
 import { ReactNode, useState, useRef, useEffect } from "react";
+import { UploadProgressBar } from "@/components/upload/UploadProgressBar";
 import { useLocation, useNavigate } from "react-router-dom";
 import MobileTabBar from "./MobileTabBar";
 import SocialTopNav from "@/components/social/SocialTopNav";
@@ -555,6 +556,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <SocialTopNav />
         )}
 
+        <UploadProgressBar />
         <main id="main-content" role="main" aria-label="Page content" className="pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-0" tabIndex={-1}>{children}</main>
       </div>
 
