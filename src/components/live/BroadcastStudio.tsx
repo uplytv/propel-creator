@@ -448,7 +448,7 @@ export default function BroadcastStudio({
     const recorder = new MediaRecorder(streamRef.current, { mimeType, videoBitsPerSecond });
     recorder.ondataavailable = (e) => {
       if (e.data.size > 0) {
-        const p = appendChunk(e.data).catch((err) => Sentry.captureException(err, { tags: { context: "broadcast_studio" } }));
+        const p = appendChunk(e.data).then(() => {}).catch((err) => Sentry.captureException(err, { tags: { context: "broadcast_studio" } }));
         pendingWritesRef.current.push(p);
       }
     };
