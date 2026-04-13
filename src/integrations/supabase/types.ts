@@ -5698,6 +5698,7 @@ export type Database = {
       profiles: {
         Row: {
           age: number | null
+          auto_download_recordings: boolean | null
           avatar_url: string | null
           beta_access_granted_at: string | null
           beta_user: boolean
@@ -5763,6 +5764,7 @@ export type Database = {
         }
         Insert: {
           age?: number | null
+          auto_download_recordings?: boolean | null
           avatar_url?: string | null
           beta_access_granted_at?: string | null
           beta_user?: boolean
@@ -5828,6 +5830,7 @@ export type Database = {
         }
         Update: {
           age?: number | null
+          auto_download_recordings?: boolean | null
           avatar_url?: string | null
           beta_access_granted_at?: string | null
           beta_user?: boolean
@@ -6899,6 +6902,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      upload_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          file_name: string
+          file_size_bytes: number | null
+          id: string
+          mux_asset_id: string | null
+          mux_upload_id: string | null
+          progress_percent: number | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          file_name: string
+          file_size_bytes?: number | null
+          id?: string
+          mux_asset_id?: string | null
+          mux_upload_id?: string | null
+          progress_percent?: number | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          file_name?: string
+          file_size_bytes?: number | null
+          id?: string
+          mux_asset_id?: string | null
+          mux_upload_id?: string | null
+          progress_percent?: number | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       uply_channels: {
         Row: {
