@@ -417,10 +417,35 @@ export default function Stream() {
           .single();
 
         if (rec) {
+          // Look up original stream for event linkage
+          let evId: string | null = null;
+          let evStream = false;
+          if (rec.mux_asset_id) {
+            const { data: sess } = await supabase
+              .from('live_stream_sessions')
+              .select('stream_id')
+              .eq('mux_asset_id', rec.mux_asset_id)
+              .limit(1)
+              .maybeSingle();
+            if (sess?.stream_id) {
+              const { data: orig } = await supabase
+                .from('mux_live_streams')
+                .select('event_id, is_event_stream')
+                .eq('id', sess.stream_id)
+                .maybeSingle();
+              if (orig) {
+                evId = orig.event_id;
+                evStream = orig.is_event_stream || false;
+              }
+            }
+          }
           setDbStream({
             ...rec,
             mux_playback_id: rec.playback_id,
             user_id: rec.creator_id,
+            _isRecording: true,
+            event_id: evId,
+            is_event_stream: evStream,
           });
           setIsRealStream(true);
           const { data: prof } = await supabase
