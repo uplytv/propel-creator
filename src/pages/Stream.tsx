@@ -96,8 +96,8 @@ function StreamEndedState({ streamId, status, creatorId, creatorName, creatorAva
           .maybeSingle();
 
         if (!cancelled && exactRecording) {
-          setRecordingTarget(exactRecording);
-          setChecking(false);
+          // Auto-redirect to the recording instead of showing dead-end
+          navigate(`/stream/${exactRecording.id}?type=recording`, { replace: true });
           return;
         }
       }
