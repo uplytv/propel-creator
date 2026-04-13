@@ -31,6 +31,7 @@ export function PricingTab({ creatorId }: PricingTabProps) {
   const [creating, setCreating] = useState(false);
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [purchaseOverlayTier, setPurchaseOverlayTier] = useState<any>(null);
 
   const { data: stripeAccount } = useQuery({
     queryKey: ["stripe-account", creatorId],
