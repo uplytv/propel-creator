@@ -29,7 +29,7 @@ serve(async (req) => {
     if (userError || !userData.user) throw new Error("Unauthorized");
 
     const user = userData.user;
-    const { event_id, success_url, cancel_url } = await req.json();
+    const { event_id, success_url, cancel_url, embedded } = await req.json();
 
     if (!event_id) throw new Error("event_id required");
 
@@ -92,7 +92,20 @@ serve(async (req) => {
       };
     }
 
+    if (embedded) {
+      sessionConfig.ui_mode = 'embedded';
+      sessionConfig.return_url = `${req.headers.get("origin")}/tickets/success?event=${event.id}&session_id={CHECKOUT_SESSION_ID}`;
+      delete sessionConfig.success_url;
+      delete sessionConfig.cancel_url;
+    }
+
     const session = await stripe.checkout.sessions.create(sessionConfig);
+
+    if (embedded) {
+      return new Response(JSON.stringify({ client_secret: session.client_secret }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

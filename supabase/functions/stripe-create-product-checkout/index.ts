@@ -32,7 +32,7 @@ serve(async (req) => {
     const { data: userData, error: userError } = await supabase.auth.getUser(token);
     if (userError || !userData.user) throw new Error("Unauthorized");
 
-    const { product_id, creator_id, purchase_type, success_url, cancel_url } = await req.json();
+    const { product_id, creator_id, purchase_type, success_url, cancel_url, embedded } = await req.json();
     if (!product_id) throw new Error("product_id required");
 
     // Check if already purchased
@@ -143,8 +143,22 @@ serve(async (req) => {
       sessionConfig.cancel_url = `${origin}/buy-credits`;
     }
 
+    if (embedded) {
+      sessionConfig.ui_mode = 'embedded';
+      sessionConfig.return_url = `${origin}/products?purchased=true&product_id=${product_id}&session_id={CHECKOUT_SESSION_ID}`;
+      delete sessionConfig.success_url;
+      delete sessionConfig.cancel_url;
+    }
+
     const session = await stripe.checkout.sessions.create(sessionConfig);
     logStep("Checkout session created", { sessionId: session.id });
+
+    if (embedded) {
+      return new Response(JSON.stringify({ client_secret: session.client_secret }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
