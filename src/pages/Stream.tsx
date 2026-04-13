@@ -296,6 +296,8 @@ export default function Stream() {
                   user_id: rec.creator_id,
                   title: rec.title || muxStream.title,
                   _isRecording: true,
+                  event_id: (muxStream as any).event_id || null,
+                  is_event_stream: (muxStream as any).is_event_stream || false,
                 });
                 setIsRealStream(true);
                 const prof = routeProfile || (await supabase
@@ -360,11 +362,35 @@ export default function Stream() {
 
           const { data: rec } = await recQuery.maybeSingle();
           if (rec) {
+            // Look up original stream for event linkage
+            let recEventId: string | null = null;
+            let recIsEventStream = false;
+            if (rec.mux_asset_id) {
+              const { data: recSession } = await supabase
+                .from('live_stream_sessions')
+                .select('stream_id')
+                .eq('mux_asset_id', rec.mux_asset_id)
+                .limit(1)
+                .maybeSingle();
+              if (recSession?.stream_id) {
+                const { data: origS } = await supabase
+                  .from('mux_live_streams')
+                  .select('event_id, is_event_stream')
+                  .eq('id', recSession.stream_id)
+                  .maybeSingle();
+                if (origS) {
+                  recEventId = origS.event_id;
+                  recIsEventStream = origS.is_event_stream || false;
+                }
+              }
+            }
             setDbStream({
               ...rec,
               mux_playback_id: rec.playback_id,
               user_id: rec.creator_id,
               _isRecording: true,
+              event_id: recEventId,
+              is_event_stream: recIsEventStream,
             });
             setIsRealStream(true);
             const prof = routeProfile || (await supabase
@@ -507,11 +533,35 @@ export default function Stream() {
           .maybeSingle();
 
         if (rec) {
+          // Look up the original stream to get event linkage
+          let eventId: string | null = null;
+          let isEventStream = false;
+          if (rec.mux_asset_id) {
+            const { data: session } = await supabase
+              .from('live_stream_sessions')
+              .select('stream_id')
+              .eq('mux_asset_id', rec.mux_asset_id)
+              .limit(1)
+              .maybeSingle();
+            if (session?.stream_id) {
+              const { data: origStream } = await supabase
+                .from('mux_live_streams')
+                .select('event_id, is_event_stream')
+                .eq('id', session.stream_id)
+                .maybeSingle();
+              if (origStream) {
+                eventId = origStream.event_id;
+                isEventStream = origStream.is_event_stream || false;
+              }
+            }
+          }
           setDbStream({
             ...rec,
             mux_playback_id: rec.playback_id,
             user_id: rec.creator_id,
             _isRecording: true,
+            event_id: eventId,
+            is_event_stream: isEventStream,
           });
           setIsRealStream(true);
           const { data: prof } = await supabase
