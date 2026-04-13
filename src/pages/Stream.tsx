@@ -470,12 +470,38 @@ export default function Stream() {
           if (prof?.username) setCreatorUsername(prof.username);
         }
       } else {
-        // Try fetching from mux_live_streams first
+        // Try stream_recordings first (handles shared recording links)
+        const { data: rec } = await supabase
+          .from('stream_recordings')
+          .select('*')
+          .eq('id', id)
+          .maybeSingle();
+
+        if (rec) {
+          setDbStream({
+            ...rec,
+            mux_playback_id: rec.playback_id,
+            user_id: rec.creator_id,
+            _isRecording: true,
+          });
+          setIsRealStream(true);
+          const { data: prof } = await supabase
+            .from('profiles')
+            .select('display_name, avatar_url, tier, tier_name, username')
+            .eq('user_id', rec.creator_id)
+            .maybeSingle();
+          setProfile(prof);
+          if (prof?.username) setCreatorUsername(prof.username);
+          setLoading(false);
+          return;
+        }
+
+        // Then try mux_live_streams
         const { data: muxStream } = await supabase
           .from('mux_live_streams')
           .select('*')
           .eq('id', id)
-          .single();
+          .maybeSingle();
 
         if (muxStream) {
           setDbStream(muxStream);
