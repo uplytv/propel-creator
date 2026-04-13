@@ -199,7 +199,9 @@ export default function Stream() {
   const contentType = searchParams.get('type');
   const isFromCreatorRoute = !!routeUsername;
   const isFromSlugRoute = !!routeSlug;
-  const isVod = contentType === 'vod' || contentType === 'recording' || (isFromCreatorRoute && !isFromSlugRoute) || dbStream?._isRecording;
+  // Treat as VOD if: explicit type, creator route, recording flag, OR stream ended/idle with playback available
+  const isStreamEnded = dbStream && dbStream.status !== 'active' && !dbStream._isRecording && dbStream.mux_playback_id;
+  const isVod = contentType === 'vod' || contentType === 'recording' || (isFromCreatorRoute && !isFromSlugRoute) || dbStream?._isRecording || !!isStreamEnded;
 
   // Viewer features
   const viewerRewards = useViewerRewards(!!dbStream && dbStream.status === 'active' && !isVod);
