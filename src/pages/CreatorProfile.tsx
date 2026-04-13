@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useMemo } from "react";
 import { usePaymentReturn, useProductPurchaseCheck, useMemberSubscriptionStatus } from "@/hooks/usePaymentReturn";
 import CourseEnrollSheet from "@/components/payments/CourseEnrollSheet";
+import { PurchaseOverlay } from "@/components/payments/PurchaseOverlay";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
@@ -339,6 +340,7 @@ export default function CreatorProfile() {
   const [joinLoading, setJoinLoading] = useState(false);
   const [buyingProductId, setBuyingProductId] = useState<string | null>(null);
   const [enrollProduct, setEnrollProduct] = useState<any>(null);
+  const [purchaseOverlayTier, setPurchaseOverlayTier] = useState<any>(null);
 
   const {
     profile, profileLoading, socialLinks, liveStream,
@@ -388,29 +390,8 @@ export default function CreatorProfile() {
     }
 
     if (tiers.length === 1) {
-      setJoinLoading(true);
-      try {
-        const { data, error } = await supabase.functions.invoke("stripe-create-checkout", {
-          body: {
-            tier_id: tiers[0].id,
-            creator_id: profile?.user_id,
-            creator_username: username,
-          },
-        });
-        if (error) throw error;
-        if (data?.url) {
-          sessionStorage.setItem("uply_pending_join", JSON.stringify({
-            creator_id: profile?.user_id,
-            return_path: window.location.pathname,
-          }));
-          fireMetaEvent("InitiateCheckout", { content_type: "subscription", content_ids: [profile?.user_id], currency: "USD" });
-          fireGoogleEvent("begin_checkout", { currency: "USD", items: [{ item_id: profile?.user_id, item_name: creatorName }] });
-          window.location.href = data.url;
-        }
-      } catch (err: any) {
-        toast.error(err.message || "Something went wrong");
-      }
-      setJoinLoading(false);
+      // Use PurchaseOverlay for seamless in-page checkout
+      setPurchaseOverlayTier(tiers[0]);
       return;
     }
 
@@ -976,6 +957,23 @@ export default function CreatorProfile() {
           creatorUsername={username}
           lessonCount={totalLessons}
           moduleCount={modules.length}
+        />
+      )}
+
+      {/* SUBSCRIPTION PURCHASE OVERLAY */}
+      {purchaseOverlayTier && (
+        <PurchaseOverlay
+          isOpen={!!purchaseOverlayTier}
+          onClose={() => setPurchaseOverlayTier(null)}
+          onSuccess={() => {
+            setPurchaseOverlayTier(null);
+            toast.success("Welcome to the community! 🎉");
+          }}
+          purchaseType="subscription"
+          purchaseParams={{ tier_id: purchaseOverlayTier.id, creator_id: profile?.user_id, creator_username: username }}
+          title={`Join ${creatorName}'s Community`}
+          description={purchaseOverlayTier.description || undefined}
+          price={purchaseOverlayTier.price_monthly}
         />
       )}
     </div>

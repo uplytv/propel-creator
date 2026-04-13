@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import EmptyState from "@/components/ui/EmptyState";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { PurchaseOverlay } from "@/components/payments/PurchaseOverlay";
 
 interface PricingTabProps {
   creatorId: string;
@@ -30,6 +31,7 @@ export function PricingTab({ creatorId }: PricingTabProps) {
   const [creating, setCreating] = useState(false);
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [purchaseOverlayTier, setPurchaseOverlayTier] = useState<any>(null);
 
   const { data: stripeAccount } = useQuery({
     queryKey: ["stripe-account", creatorId],
@@ -148,19 +150,25 @@ export function PricingTab({ creatorId }: PricingTabProps) {
       navigate("/auth");
       return;
     }
-    setSelectedTier(tierId);
-    setCheckoutLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("stripe-create-checkout", {
-        body: { tier_id: tierId, creator_id: creatorId },
-      });
-      if (error) throw error;
-      if (data?.url) window.location.href = data.url;
-    } catch (err: any) {
-      toast.error("Error", { description: err.message });
+    const tier = tiers?.find((t: any) => t.id === tierId);
+    if (tier) {
+      setPurchaseOverlayTier(tier);
+    } else {
+      // Fallback to redirect
+      setSelectedTier(tierId);
+      setCheckoutLoading(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("stripe-create-checkout", {
+          body: { tier_id: tierId, creator_id: creatorId },
+        });
+        if (error) throw error;
+        if (data?.url) window.location.href = data.url;
+      } catch (err: any) {
+        toast.error("Error", { description: err.message });
+      }
+      setCheckoutLoading(false);
+      setSelectedTier(null);
     }
-    setCheckoutLoading(false);
-    setSelectedTier(null);
   };
 
   const requiresPaidJoin = (tiers?.length || 0) > 0 || space?.is_free === false || Number(space?.price || 0) > 0;
@@ -284,6 +292,24 @@ export function PricingTab({ creatorId }: PricingTabProps) {
         <p className="text-[10px] text-center text-muted-foreground pt-1">
           Cancel anytime. Secure payments via Stripe.
         </p>
+
+        {purchaseOverlayTier && (
+          <PurchaseOverlay
+            isOpen={!!purchaseOverlayTier}
+            onClose={() => setPurchaseOverlayTier(null)}
+            onSuccess={() => {
+              setPurchaseOverlayTier(null);
+              queryClient.invalidateQueries({ queryKey: ["subscription-tiers"] });
+              queryClient.invalidateQueries({ queryKey: ["member-subscription"] });
+              toast.success("Welcome to the community! 🎉");
+            }}
+            purchaseType="subscription"
+            purchaseParams={{ tier_id: purchaseOverlayTier.id, creator_id: creatorId }}
+            title={`Subscribe to ${purchaseOverlayTier.name}`}
+            description={purchaseOverlayTier.description || undefined}
+            price={purchaseOverlayTier.price_monthly}
+          />
+        )}
       </div>
     );
   }
