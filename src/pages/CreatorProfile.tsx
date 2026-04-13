@@ -340,6 +340,7 @@ export default function CreatorProfile() {
   const [joinLoading, setJoinLoading] = useState(false);
   const [buyingProductId, setBuyingProductId] = useState<string | null>(null);
   const [enrollProduct, setEnrollProduct] = useState<any>(null);
+  const [purchaseOverlayTier, setPurchaseOverlayTier] = useState<any>(null);
 
   const {
     profile, profileLoading, socialLinks, liveStream,
