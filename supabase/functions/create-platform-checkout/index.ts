@@ -42,7 +42,7 @@ serve(async (req) => {
     const user = userData.user;
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { price_id } = await req.json();
+    const { price_id, embedded } = await req.json();
     if (!price_id) throw new Error("price_id required");
     logStep("Price ID", { price_id });
 
@@ -59,7 +59,7 @@ serve(async (req) => {
     const origin = req.headers.get("origin") || "https://uply.tv";
     logStep("Origin", { origin });
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionConfig: any = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email!,
       line_items: [{ price: price_id, quantity: 1 }],
@@ -70,9 +70,25 @@ serve(async (req) => {
         user_id: user.id,
         plan_type: "platform",
       },
-    });
+    };
+
+    if (embedded) {
+      sessionConfig.ui_mode = 'embedded';
+      sessionConfig.return_url = `${origin}/dashboard?upgraded=true&session_id={CHECKOUT_SESSION_ID}`;
+      delete sessionConfig.success_url;
+      delete sessionConfig.cancel_url;
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
 
     logStep("Checkout session created", { sessionId: session.id, url: session.url ? "present" : "missing" });
+
+    if (embedded) {
+      return new Response(JSON.stringify({ client_secret: session.client_secret }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

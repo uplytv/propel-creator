@@ -34,7 +34,7 @@ serve(async (req) => {
 
     const user = userData.user;
     const body = await req.json();
-    const { tier_id, creator_id, creator_username, space_id, success_url, cancel_url } = body;
+    const { tier_id, creator_id, creator_username, space_id, success_url, cancel_url, embedded } = body;
 
     logStep("Request received", { tier_id, creator_id, userId: user.id });
 
@@ -149,9 +149,23 @@ serve(async (req) => {
       logStep("Using Stripe Connect flow", { destination: stripeAccount!.stripe_account_id });
     }
 
+    if (embedded) {
+      sessionConfig.ui_mode = 'embedded';
+      sessionConfig.return_url = `${origin}${creatorPath}/community?joined=true&creator_id=${creator_id}&session_id={CHECKOUT_SESSION_ID}`;
+      delete sessionConfig.success_url;
+      delete sessionConfig.cancel_url;
+    }
+
     const session = await stripe.checkout.sessions.create(sessionConfig);
 
     logStep("Checkout session created", { sessionId: session.id });
+
+    if (embedded) {
+      return new Response(JSON.stringify({ client_secret: session.client_secret }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
