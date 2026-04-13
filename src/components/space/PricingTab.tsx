@@ -150,19 +150,25 @@ export function PricingTab({ creatorId }: PricingTabProps) {
       navigate("/auth");
       return;
     }
-    setSelectedTier(tierId);
-    setCheckoutLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("stripe-create-checkout", {
-        body: { tier_id: tierId, creator_id: creatorId },
-      });
-      if (error) throw error;
-      if (data?.url) window.location.href = data.url;
-    } catch (err: any) {
-      toast.error("Error", { description: err.message });
+    const tier = tiers?.find((t: any) => t.id === tierId);
+    if (tier) {
+      setPurchaseOverlayTier(tier);
+    } else {
+      // Fallback to redirect
+      setSelectedTier(tierId);
+      setCheckoutLoading(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("stripe-create-checkout", {
+          body: { tier_id: tierId, creator_id: creatorId },
+        });
+        if (error) throw error;
+        if (data?.url) window.location.href = data.url;
+      } catch (err: any) {
+        toast.error("Error", { description: err.message });
+      }
+      setCheckoutLoading(false);
+      setSelectedTier(null);
     }
-    setCheckoutLoading(false);
-    setSelectedTier(null);
   };
 
   const requiresPaidJoin = (tiers?.length || 0) > 0 || space?.is_free === false || Number(space?.price || 0) > 0;
