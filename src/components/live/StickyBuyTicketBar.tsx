@@ -71,9 +71,18 @@ export default function StickyBuyTicketBar({ event, streamId }: StickyBuyTicketB
         },
       });
       if (error) throw error;
-      if (data?.url) window.location.href = data.url;
+      if (data?.url) {
+        // Try window.open first for better mobile Safari support, fallback to redirect
+        const popup = window.open(data.url, "_blank");
+        if (!popup || popup.closed) {
+          window.location.href = data.url;
+        }
+      } else {
+        throw new Error("No checkout URL returned");
+      }
     } catch (err: any) {
-      toast.error("Could not start checkout. Try again.");
+      console.error("Ticket checkout error:", err);
+      toast.error(err?.message || "Could not start checkout. Try again.");
     } finally {
       setIsPurchasing(false);
     }
