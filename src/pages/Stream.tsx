@@ -647,8 +647,49 @@ export default function Stream() {
     const isOwner = user?.id === dbStream.user_id;
     const subscribed = dbStream.user_id ? isFollowing(dbStream.user_id) : false;
 
-    // Guard: no playback ID available
+    // Guard: no playback ID available — try to resolve recording before giving up
     if (!playbackId) {
+      // For non-active streams, attempt to find the recording
+      if (!isActive && dbStream.id) {
+        const tryResolveRecording = async () => {
+          // Check live_stream_sessions for a linked recording
+          const { data: session } = await supabase
+            .from('live_stream_sessions')
+            .select('mux_asset_id')
+            .eq('stream_id', dbStream.id)
+            .not('mux_asset_id', 'is', null)
+            .order('started_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (session?.mux_asset_id) {
+            const { data: rec } = await supabase
+              .from('stream_recordings')
+              .select('id')
+              .eq('mux_asset_id', session.mux_asset_id)
+              .maybeSingle();
+            if (rec) {
+              navigate(`/stream/${rec.id}?type=recording`, { replace: true });
+              return;
+            }
+          }
+
+          // Also try finding any recording by this creator with matching title
+          const { data: recByCreator } = await supabase
+            .from('stream_recordings')
+            .select('id')
+            .eq('creator_id', dbStream.user_id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (recByCreator) {
+            navigate(`/stream/${recByCreator.id}?type=recording`, { replace: true });
+            return;
+          }
+        };
+        tryResolveRecording();
+      }
+
       return (
         <div className="min-h-screen bg-background flex items-center justify-center">
           <div className="text-center">
