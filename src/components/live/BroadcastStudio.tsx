@@ -94,6 +94,7 @@ export default function BroadcastStudio({
   const animFrameRef = useRef<number>(0);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const pendingWritesRef = useRef<Promise<void>[]>([]);
   const webrtcChannelRef = useRef<any>(null);
   const peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
 
@@ -442,10 +443,14 @@ export default function BroadcastStudio({
     if (!streamRef.current) return;
     await clearChunks();
     chunksRef.current = [];
+    pendingWritesRef.current = [];
     const { mimeType, videoBitsPerSecond } = getRecorderOptions();
     const recorder = new MediaRecorder(streamRef.current, { mimeType, videoBitsPerSecond });
     recorder.ondataavailable = (e) => {
-      if (e.data.size > 0) appendChunk(e.data).catch((err) => Sentry.captureException(err, { tags: { context: "broadcast_studio" } }));
+      if (e.data.size > 0) {
+        const p: Promise<void> = appendChunk(e.data).then(() => undefined).catch((err) => { Sentry.captureException(err, { tags: { context: "broadcast_studio" } }); });
+        pendingWritesRef.current.push(p);
+      }
     };
     recorder.onstop = () => {};
     recorder.start(5000);
@@ -472,6 +477,11 @@ export default function BroadcastStudio({
     await setStreamActive(false);
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       await new Promise<void>((resolve) => { mediaRecorderRef.current!.onstop = () => resolve(); mediaRecorderRef.current!.stop(); });
+    }
+    // Wait for ALL pending IndexedDB writes to finish before reading chunks
+    if (pendingWritesRef.current.length > 0) {
+      await Promise.allSettled(pendingWritesRef.current);
+      pendingWritesRef.current = [];
     }
     stopCurrentStream();
     const persistedChunks = await getAllChunks();
