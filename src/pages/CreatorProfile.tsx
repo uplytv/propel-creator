@@ -959,6 +959,23 @@ export default function CreatorProfile() {
           moduleCount={modules.length}
         />
       )}
+
+      {/* SUBSCRIPTION PURCHASE OVERLAY */}
+      {purchaseOverlayTier && (
+        <PurchaseOverlay
+          isOpen={!!purchaseOverlayTier}
+          onClose={() => setPurchaseOverlayTier(null)}
+          onSuccess={() => {
+            setPurchaseOverlayTier(null);
+            toast.success("Welcome to the community! 🎉");
+          }}
+          purchaseType="subscription"
+          purchaseParams={{ tier_id: purchaseOverlayTier.id, creator_id: profile?.user_id, creator_username: username }}
+          title={`Join ${creatorName}'s Community`}
+          description={purchaseOverlayTier.description || undefined}
+          price={purchaseOverlayTier.price_monthly}
+        />
+      )}
     </div>
   );
 }
