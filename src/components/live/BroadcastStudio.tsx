@@ -890,7 +890,9 @@ export default function BroadcastStudio({
             )}
           </div>
 
-          <SharePanel open={showSharePanel} onClose={() => setShowSharePanel(false)} contentType="stream" contentId={streamData.streamId} title={title} playbackId={streamData.playbackId} creatorUsername={creatorUsername} contentSlug={streamData.slug || streamData.streamId} />
+          <div className="relative z-[9999]">
+            <SharePanel open={showSharePanel} onClose={() => setShowSharePanel(false)} contentType="stream" contentId={streamData.streamId} title={title} playbackId={streamData.playbackId} creatorUsername={creatorUsername} contentSlug={streamData.slug || streamData.streamId} />
+          </div>
         </>
       );
     }

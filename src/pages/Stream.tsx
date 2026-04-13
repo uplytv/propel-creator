@@ -1124,18 +1124,9 @@ export default function Stream() {
           />
         )}
 
-        {/* Sticky Buy Ticket Bar — event streams only */}
-        {isActive && dbStream.is_event_stream && dbStream.event_id && (
-          <StickyBuyTicketBar
-            event={{
-              id: dbStream.event_id,
-              title: dbStream.title || 'Event',
-              ticket_price: 0,
-              is_free: false,
-              tickets_sold: 0,
-            }}
-            streamId={dbStream.id}
-          />
+        {/* Sticky Buy Ticket Bar — event streams (live, VOD, or recording) */}
+        {dbStream.is_event_stream && dbStream.event_id && (
+          <StickyBuyTicketBarWithEvent eventId={dbStream.event_id} streamId={dbStream.id} fallbackTitle={dbStream.title || 'Event'} />
         )}
       </div>
     );
