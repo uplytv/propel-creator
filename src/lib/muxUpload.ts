@@ -73,6 +73,8 @@ export async function uploadToMuxWithRetry(opts: UploadOptions): Promise<string>
           file,
           chunkSize: opts.chunkSize ?? 5120, // 5 MB chunks (in KB)
           maxFileSize: undefined as any, // no limit
+          attempts: 5,            // retry each chunk up to 5 times
+          delayBeforeAttempt: 3,  // wait 3 seconds between retries
         });
 
         upload.on("progress", (detail: { detail: number }) => {

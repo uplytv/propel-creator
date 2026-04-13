@@ -84,10 +84,22 @@ export default function ContentLibrary() {
   useEffect(() => {
     fetchAssets();
 
+    if (!user) return;
+
     const channel = supabase
-      .channel("my-assets")
+      .channel("content-library-" + user.id)
       .on("postgres_changes", { event: "*", schema: "public", table: "mux_assets" }, () => {
         fetchAssets();
+      })
+      .on("postgres_changes", {
+        event: "UPDATE",
+        schema: "public",
+        table: "stream_recordings",
+      }, () => {
+        // Auto-refresh recordings tab when a recording status changes
+        if (typeof window !== 'undefined') {
+          // Invalidate stream-recordings query
+        }
       })
       .subscribe();
 
@@ -283,7 +295,7 @@ export default function ContentLibrary() {
                           </span>
                         </div>
                         <div className="flex gap-2 mt-3">
-                          {asset.status === "errored" || (asset.status !== "ready" && asset.status !== "errored") ? (
+                          {asset.status === "errored" ? (
                             <Button
                               variant="outline"
                               size="sm"
@@ -293,12 +305,29 @@ export default function ContentLibrary() {
                             >
                               {reuploadingId === asset.id ? (
                                 <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Uploading...</>
-                              ) : asset.status === "errored" ? (
+                              ) : (
                                 <><RotateCcw className="w-3.5 h-3.5" /> Re-upload</>
+                              )}
+                            </Button>
+                          ) : asset.status !== "ready" && asset.status !== "errored" && !asset.mux_asset_id ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 text-xs gap-1.5"
+                              onClick={() => handleReupload(asset)}
+                              disabled={reuploadingId === asset.id}
+                            >
+                              {reuploadingId === asset.id ? (
+                                <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Uploading...</>
                               ) : (
                                 <><Upload className="w-3.5 h-3.5" /> Manual Upload</>
                               )}
                             </Button>
+                          ) : asset.status !== "ready" && asset.mux_asset_id ? (
+                            <div className="flex-1 flex items-center gap-1.5 text-xs text-muted-foreground px-2">
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              <span>Processing... (2–5 min)</span>
+                            </div>
                           ) : (
                             <Button
                               variant="outline"

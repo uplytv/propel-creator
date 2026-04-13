@@ -491,21 +491,38 @@ export default function BroadcastStudio({
     try {
       const blob = new Blob(persistedChunks, { type: "video/webm" });
 
-      // Auto-download local copy if enabled
+      // Auto-download: subscribe to realtime and download full MP4 from Mux when ready
       if (autoDownload) {
-        try {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `${title.replace(/[^a-zA-Z0-9 ]/g, "").trim() || "recording"}_${new Date().toISOString().slice(0, 10)}.webm`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-          toast.success("Local copy downloaded! 📥");
-        } catch (dlErr) {
-          console.warn("[AutoDownload] Failed:", dlErr);
-        }
+        toast.info("Recording being processed for download...", { duration: 8000 });
+        const dlChannel = supabase
+          .channel('auto-download-' + streamData.streamId)
+          .on('postgres_changes', {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'stream_recordings',
+          }, async (payload: any) => {
+            if (payload.new.status === 'ready' && payload.new.mux_asset_id) {
+              try {
+                const { data: dlData, error: dlErr } = await supabase.functions.invoke('download-asset', {
+                  body: { asset_id: payload.new.mux_asset_id, recording_id: payload.new.id },
+                });
+                if (dlErr) throw dlErr;
+                if (dlData?.url) {
+                  const a = document.createElement('a');
+                  a.href = dlData.url;
+                  a.download = (payload.new.title || title || 'recording') + '.mp4';
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  toast.success('Recording downloaded ✓');
+                }
+              } catch {
+                toast.error('Auto-download failed — download from Content Library');
+              }
+              supabase.removeChannel(dlChannel);
+            }
+          })
+          .subscribe();
       }
 
       const { uploadToMuxWithRetry } = await import("@/lib/muxUpload");

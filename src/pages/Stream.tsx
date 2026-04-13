@@ -28,6 +28,7 @@ import { LiveQuizOverlay } from "@/components/live/LiveQuizOverlay";
 import ViewerSentimentOverlay from "@/components/live/ViewerSentimentOverlay";
 
 import { useState, useCallback, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import UPLYMuxPlayer from "@/components/MuxPlayer";
@@ -694,6 +695,22 @@ export default function Stream() {
           }
         }
       })
+      // Realtime for stream_recordings — auto-update when recording becomes ready
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'stream_recordings',
+        filter: `id=eq.${id}`,
+      }, (payload: any) => {
+        if (payload.new.status === 'ready' && payload.new.playback_id) {
+          setDbStream((prev: any) => ({
+            ...prev,
+            ...payload.new,
+            mux_playback_id: payload.new.playback_id,
+            status: 'ready',
+          }));
+        }
+      })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
@@ -934,15 +951,12 @@ export default function Stream() {
           <div className="flex-1 flex flex-col min-w-0">
             {/* Video player with engagement overlay */}
             <div className="relative">
-              {isVod && !playbackId ? (
+              {isVod && (!playbackId || (dbStream._isRecording && dbStream.status !== 'ready' && !playbackId)) ? (
                 <div className="w-full aspect-video bg-muted/50 flex items-center justify-center border-b border-border">
                   <div className="text-center">
                     <Loader2 className="w-10 h-10 text-primary mx-auto mb-3 animate-spin" />
-                    <h2 className="text-lg font-bold text-foreground mb-1">Still processing</h2>
-                    <p className="text-sm text-muted-foreground">This recording is being prepared. Check back shortly.</p>
-                    <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate(-1)}>
-                      Go Back
-                    </Button>
+                    <h2 className="text-lg font-bold text-foreground mb-1">Processing your recording...</h2>
+                    <p className="text-sm text-muted-foreground">This usually takes 2–5 minutes. This page will update automatically.</p>
                   </div>
                 </div>
               ) : (isVod && playbackId) ? (
