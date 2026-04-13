@@ -443,10 +443,14 @@ export default function BroadcastStudio({
     if (!streamRef.current) return;
     await clearChunks();
     chunksRef.current = [];
+    pendingWritesRef.current = [];
     const { mimeType, videoBitsPerSecond } = getRecorderOptions();
     const recorder = new MediaRecorder(streamRef.current, { mimeType, videoBitsPerSecond });
     recorder.ondataavailable = (e) => {
-      if (e.data.size > 0) appendChunk(e.data).catch((err) => Sentry.captureException(err, { tags: { context: "broadcast_studio" } }));
+      if (e.data.size > 0) {
+        const p = appendChunk(e.data).catch((err) => Sentry.captureException(err, { tags: { context: "broadcast_studio" } }));
+        pendingWritesRef.current.push(p);
+      }
     };
     recorder.onstop = () => {};
     recorder.start(5000);
