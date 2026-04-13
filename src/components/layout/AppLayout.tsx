@@ -1,5 +1,5 @@
 import { ReactNode, useState, useRef, useEffect } from "react";
-import { UploadProgressBar } from "@/components/upload/UploadProgressBar";
+import UploadProgressBar from "@/components/upload/UploadProgressBar";
 import { useLocation, useNavigate } from "react-router-dom";
 import MobileTabBar from "./MobileTabBar";
 import SocialTopNav from "@/components/social/SocialTopNav";
