@@ -390,29 +390,8 @@ export default function CreatorProfile() {
     }
 
     if (tiers.length === 1) {
-      setJoinLoading(true);
-      try {
-        const { data, error } = await supabase.functions.invoke("stripe-create-checkout", {
-          body: {
-            tier_id: tiers[0].id,
-            creator_id: profile?.user_id,
-            creator_username: username,
-          },
-        });
-        if (error) throw error;
-        if (data?.url) {
-          sessionStorage.setItem("uply_pending_join", JSON.stringify({
-            creator_id: profile?.user_id,
-            return_path: window.location.pathname,
-          }));
-          fireMetaEvent("InitiateCheckout", { content_type: "subscription", content_ids: [profile?.user_id], currency: "USD" });
-          fireGoogleEvent("begin_checkout", { currency: "USD", items: [{ item_id: profile?.user_id, item_name: creatorName }] });
-          window.location.href = data.url;
-        }
-      } catch (err: any) {
-        toast.error(err.message || "Something went wrong");
-      }
-      setJoinLoading(false);
+      // Use PurchaseOverlay for seamless in-page checkout
+      setPurchaseOverlayTier(tiers[0]);
       return;
     }
 
