@@ -95,6 +95,19 @@ export default function VideoUploadSheet({ open, onClose }: VideoUploadSheetProp
     if (pollRef.current) clearInterval(pollRef.current);
   };
 
+  // Block page navigation during active upload
+  useEffect(() => {
+    if (uploadPhase === "uploading" && uploadProgress > 0 && uploadProgress < 100) {
+      const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+        e.preventDefault();
+        e.returnValue = 'Your video is still uploading. Leaving now will stop the upload.';
+        return e.returnValue;
+      };
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }
+  }, [uploadPhase, uploadProgress]);
+
   const handleClose = () => {
     if (uploading && uploadPhase === "uploading") {
       if (!confirm("Upload in progress. Close anyway?")) return;
