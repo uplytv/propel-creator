@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { PurchaseOverlay } from "@/components/payments/PurchaseOverlay";
 
 interface Product {
   id: string;
@@ -85,25 +86,12 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
     setLoading(false);
   };
 
+  const [showPurchaseOverlay, setShowPurchaseOverlay] = useState(false);
+
   const handlePaidPurchase = async () => {
     if (!user) return;
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("stripe-create-product-checkout", {
-        body: {
-          product_id: product.id, buyer_id: user.id, creator_id: creatorId, purchase_type: "course",
-          success_url: `${window.location.origin}/stream/${streamId}?enrolled=true&product_id=${product.id}`,
-          cancel_url: window.location.href,
-          metadata: { buyer_id: user.id, creator_id: creatorId, product_id: product.id, stream_id: streamId, source: "live_stream", purchase_type: "course" },
-        },
-      });
-      if (error) throw error;
-      if (data?.url) {
-        sessionStorage.setItem("uply_pending_purchase", JSON.stringify({ product_id: product.id, return_path: window.location.pathname }));
-        window.location.href = data.url;
-      }
-    } catch (e: any) { toast.error(e.message || "Payment couldn't start"); }
-    setLoading(false);
+    // Open embedded overlay instead of navigating away
+    setShowPurchaseOverlay(true);
   };
 
   const handleCTAClick = () => {
