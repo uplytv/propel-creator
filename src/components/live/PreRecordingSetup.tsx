@@ -74,7 +74,7 @@ export default function PreRecordingSetup({
   onAutoDownloadChange,
 }: PreRecordingSetupProps) {
   return (
-    <div className="space-y-4 mobile-safe-content">
+    <div className="space-y-4 mobile-safe-content overflow-y-auto max-h-[calc(100dvh-4rem)] pb-32">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <button onClick={onGoBack} className="text-muted-foreground hover:text-foreground transition-colors">

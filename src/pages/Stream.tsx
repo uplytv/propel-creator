@@ -42,6 +42,35 @@ import RecentRecordingsRow from "@/components/live/RecentRecordingsRow";
 import LiveEventBanner from "@/components/live/LiveEventBanner";
 import StickyBuyTicketBar from "@/components/live/StickyBuyTicketBar";
 
+// Wrapper that fetches real event data for the ticket bar
+function StickyBuyTicketBarWithEvent({ eventId, streamId, fallbackTitle }: { eventId: string; streamId: string; fallbackTitle: string }) {
+  const [eventData, setEventData] = useState<any>(null);
+  useEffect(() => {
+    supabase.from("events").select("id, title, ticket_price, is_free, ticket_quantity, is_sold_out, status").eq("id", eventId).maybeSingle()
+      .then(({ data }) => { if (data) setEventData(data); });
+  }, [eventId]);
+  // Also get tickets sold count
+  const [ticketsSold, setTicketsSold] = useState(0);
+  useEffect(() => {
+    supabase.from("tickets").select("id", { count: "exact", head: true }).eq("event_id", eventId).eq("status", "active")
+      .then(({ count }) => setTicketsSold(count || 0));
+  }, [eventId]);
+  if (!eventData || eventData.is_sold_out) return null;
+  return (
+    <StickyBuyTicketBar
+      event={{
+        id: eventData.id,
+        title: eventData.title || fallbackTitle,
+        ticket_price: eventData.ticket_price || 0,
+        is_free: eventData.is_free || false,
+        ticket_quantity: eventData.ticket_quantity,
+        tickets_sold: ticketsSold,
+      }}
+      streamId={streamId}
+    />
+  );
+}
+
 function StreamActionBtn({ icon, label, count, active, onClick }: { icon: React.ReactNode; label: string; count?: number; active: boolean; onClick: () => void }) {
   return (
     <button
@@ -1124,18 +1153,9 @@ export default function Stream() {
           />
         )}
 
-        {/* Sticky Buy Ticket Bar — event streams only */}
-        {isActive && dbStream.is_event_stream && dbStream.event_id && (
-          <StickyBuyTicketBar
-            event={{
-              id: dbStream.event_id,
-              title: dbStream.title || 'Event',
-              ticket_price: 0,
-              is_free: false,
-              tickets_sold: 0,
-            }}
-            streamId={dbStream.id}
-          />
+        {/* Sticky Buy Ticket Bar — event streams (live, VOD, or recording) */}
+        {dbStream.is_event_stream && dbStream.event_id && (
+          <StickyBuyTicketBarWithEvent eventId={dbStream.event_id} streamId={dbStream.id} fallbackTitle={dbStream.title || 'Event'} />
         )}
       </div>
     );
