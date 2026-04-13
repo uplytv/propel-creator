@@ -478,6 +478,11 @@ export default function BroadcastStudio({
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       await new Promise<void>((resolve) => { mediaRecorderRef.current!.onstop = () => resolve(); mediaRecorderRef.current!.stop(); });
     }
+    // Wait for ALL pending IndexedDB writes to finish before reading chunks
+    if (pendingWritesRef.current.length > 0) {
+      await Promise.allSettled(pendingWritesRef.current);
+      pendingWritesRef.current = [];
+    }
     stopCurrentStream();
     const persistedChunks = await getAllChunks();
     if (persistedChunks.length === 0) { onEndStream({ durationSeconds: duration }); return; }
