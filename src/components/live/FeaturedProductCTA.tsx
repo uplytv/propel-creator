@@ -228,6 +228,27 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
           </motion.div>
         )}
       </AnimatePresence>
+
+      <PurchaseOverlay
+        isOpen={showPurchaseOverlay}
+        onClose={() => setShowPurchaseOverlay(false)}
+        onSuccess={() => {
+          setEnrolled(true);
+          setShowPurchaseOverlay(false);
+          toast.success(`You're in! Access ${product.name} now`);
+        }}
+        purchaseType="product"
+        purchaseParams={{
+          product_id: product.id,
+          buyer_id: user?.id,
+          creator_id: creatorId,
+          purchase_type: "course",
+          metadata: { buyer_id: user?.id, creator_id: creatorId, product_id: product.id, stream_id: streamId, source: "live_stream", purchase_type: "course" },
+        }}
+        title={product.name}
+        description={product.description || undefined}
+        price={product.price}
+      />
     </>
   );
 }

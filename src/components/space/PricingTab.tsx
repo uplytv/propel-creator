@@ -292,6 +292,24 @@ export function PricingTab({ creatorId }: PricingTabProps) {
         <p className="text-[10px] text-center text-muted-foreground pt-1">
           Cancel anytime. Secure payments via Stripe.
         </p>
+
+        {purchaseOverlayTier && (
+          <PurchaseOverlay
+            isOpen={!!purchaseOverlayTier}
+            onClose={() => setPurchaseOverlayTier(null)}
+            onSuccess={() => {
+              setPurchaseOverlayTier(null);
+              queryClient.invalidateQueries({ queryKey: ["subscription-tiers"] });
+              queryClient.invalidateQueries({ queryKey: ["member-subscription"] });
+              toast.success("Welcome to the community! 🎉");
+            }}
+            purchaseType="subscription"
+            purchaseParams={{ tier_id: purchaseOverlayTier.id, creator_id: creatorId }}
+            title={`Subscribe to ${purchaseOverlayTier.name}`}
+            description={purchaseOverlayTier.description || undefined}
+            price={purchaseOverlayTier.price_monthly}
+          />
+        )}
       </div>
     );
   }
