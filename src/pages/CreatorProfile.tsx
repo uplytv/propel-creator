@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useMemo } from "react";
 import { usePaymentReturn, useProductPurchaseCheck, useMemberSubscriptionStatus } from "@/hooks/usePaymentReturn";
 import CourseEnrollSheet from "@/components/payments/CourseEnrollSheet";
+import { PurchaseOverlay } from "@/components/payments/PurchaseOverlay";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
