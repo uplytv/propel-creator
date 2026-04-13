@@ -96,8 +96,8 @@ function StreamEndedState({ streamId, status, creatorId, creatorName, creatorAva
           .maybeSingle();
 
         if (!cancelled && exactRecording) {
-          setRecordingTarget(exactRecording);
-          setChecking(false);
+          // Auto-redirect to the recording instead of showing dead-end
+          navigate(`/stream/${exactRecording.id}?type=recording`, { replace: true });
           return;
         }
       }
@@ -199,7 +199,9 @@ export default function Stream() {
   const contentType = searchParams.get('type');
   const isFromCreatorRoute = !!routeUsername;
   const isFromSlugRoute = !!routeSlug;
-  const isVod = contentType === 'vod' || contentType === 'recording' || (isFromCreatorRoute && !isFromSlugRoute) || dbStream?._isRecording;
+  // Treat as VOD if: explicit type, creator route, recording flag, OR stream ended/idle with playback available
+  const isStreamEnded = dbStream && dbStream.status !== 'active' && !dbStream._isRecording && dbStream.mux_playback_id;
+  const isVod = contentType === 'vod' || contentType === 'recording' || (isFromCreatorRoute && !isFromSlugRoute) || dbStream?._isRecording || !!isStreamEnded;
 
   // Viewer features
   const viewerRewards = useViewerRewards(!!dbStream && dbStream.status === 'active' && !isVod);
@@ -468,12 +470,38 @@ export default function Stream() {
           if (prof?.username) setCreatorUsername(prof.username);
         }
       } else {
-        // Try fetching from mux_live_streams first
+        // Try stream_recordings first (handles shared recording links)
+        const { data: rec } = await supabase
+          .from('stream_recordings')
+          .select('*')
+          .eq('id', id)
+          .maybeSingle();
+
+        if (rec) {
+          setDbStream({
+            ...rec,
+            mux_playback_id: rec.playback_id,
+            user_id: rec.creator_id,
+            _isRecording: true,
+          });
+          setIsRealStream(true);
+          const { data: prof } = await supabase
+            .from('profiles')
+            .select('display_name, avatar_url, tier, tier_name, username')
+            .eq('user_id', rec.creator_id)
+            .maybeSingle();
+          setProfile(prof);
+          if (prof?.username) setCreatorUsername(prof.username);
+          setLoading(false);
+          return;
+        }
+
+        // Then try mux_live_streams
         const { data: muxStream } = await supabase
           .from('mux_live_streams')
           .select('*')
           .eq('id', id)
-          .single();
+          .maybeSingle();
 
         if (muxStream) {
           setDbStream(muxStream);
@@ -645,8 +673,49 @@ export default function Stream() {
     const isOwner = user?.id === dbStream.user_id;
     const subscribed = dbStream.user_id ? isFollowing(dbStream.user_id) : false;
 
-    // Guard: no playback ID available
+    // Guard: no playback ID available — try to resolve recording before giving up
     if (!playbackId) {
+      // For non-active streams, attempt to find the recording
+      if (!isActive && dbStream.id) {
+        const tryResolveRecording = async () => {
+          // Check live_stream_sessions for a linked recording
+          const { data: session } = await supabase
+            .from('live_stream_sessions')
+            .select('mux_asset_id')
+            .eq('stream_id', dbStream.id)
+            .not('mux_asset_id', 'is', null)
+            .order('started_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (session?.mux_asset_id) {
+            const { data: rec } = await supabase
+              .from('stream_recordings')
+              .select('id')
+              .eq('mux_asset_id', session.mux_asset_id)
+              .maybeSingle();
+            if (rec) {
+              navigate(`/stream/${rec.id}?type=recording`, { replace: true });
+              return;
+            }
+          }
+
+          // Also try finding any recording by this creator with matching title
+          const { data: recByCreator } = await supabase
+            .from('stream_recordings')
+            .select('id')
+            .eq('creator_id', dbStream.user_id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (recByCreator) {
+            navigate(`/stream/${recByCreator.id}?type=recording`, { replace: true });
+            return;
+          }
+        };
+        tryResolveRecording();
+      }
+
       return (
         <div className="min-h-screen bg-background flex items-center justify-center">
           <div className="text-center">
