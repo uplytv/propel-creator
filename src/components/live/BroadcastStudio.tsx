@@ -94,6 +94,7 @@ export default function BroadcastStudio({
   const animFrameRef = useRef<number>(0);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const pendingWritesRef = useRef<Promise<void>[]>([]);
   const webrtcChannelRef = useRef<any>(null);
   const peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
 
