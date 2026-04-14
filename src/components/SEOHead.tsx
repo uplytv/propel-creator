@@ -23,7 +23,7 @@ export default function SEOHead({
   twitterCard = "summary_large_image",
 }: SEOHeadProps) {
   const { pathname } = useLocation();
-  const fullTitle = title ? `${title} | UPLY` : DEFAULT_TITLE;
+  const fullTitle = title ? `${title} | Uply` : DEFAULT_TITLE;
   const desc = description || DEFAULT_DESCRIPTION;
   const img = image || DEFAULT_IMAGE;
   const canonical = `${BASE_URL}${pathname === "/" ? "" : pathname}`;
@@ -61,7 +61,7 @@ export default function SEOHead({
     setMeta("property", "og:type", type);
     setMeta("property", "og:url", canonical);
     setMeta("property", "og:image", img);
-    setMeta("property", "og:site_name", "UPLY");
+    setMeta("property", "og:site_name", "Uply");
 
     // Twitter
     setMeta("name", "twitter:title", fullTitle);
