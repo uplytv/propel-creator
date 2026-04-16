@@ -324,7 +324,20 @@ export default function EmailBroadcast() {
                 </div>
               )}
 
-              {/* Subject */}
+              {/* Merge Tags */}
+              <MergeTagHelper />
+
+              {/* Smart Send Time */}
+              <SmartSendTime
+                subscribers={subscribersForSendTime}
+                onSelectHour={(hour) => {
+                  setScheduleEnabled(true);
+                  if (!scheduledDate) setScheduledDate(new Date().toISOString().split("T")[0]);
+                  setScheduledTime(`${hour.toString().padStart(2, "0")}:00`);
+                }}
+              />
+
+
               <div>
                 <label className="text-xs font-medium text-muted-foreground mb-1 block">
                   Subject {abEnabled && "(Variant A)"}
