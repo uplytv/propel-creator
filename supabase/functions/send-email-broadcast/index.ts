@@ -4,6 +4,19 @@ const corsHeaders = {
 }
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4'
 
+function wrapLinksForTracking(html: string, broadcastId: string, email: string, trackBaseUrl: string): string {
+  // Wrap <a href="..."> links with click tracking redirect
+  return html.replace(
+    /(<a\s[^>]*href=["'])([^"']+)(["'][^>]*>)/gi,
+    (match, prefix, url, suffix) => {
+      // Don't track unsubscribe links or mailto
+      if (url.includes('unsubscribe') || url.startsWith('mailto:')) return match
+      const trackUrl = `${trackBaseUrl}?bid=${broadcastId}&e=${encodeURIComponent(email)}&t=click&url=${encodeURIComponent(url)}`
+      return `${prefix}${trackUrl}${suffix}`
+    }
+  )
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -23,6 +36,8 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
+
+    const trackBaseUrl = `${supabaseUrl}/functions/v1/track-email`
 
     // Check suppression list
     const emails = recipients.map((r: any) => r.email)
@@ -55,6 +70,10 @@ Deno.serve(async (req) => {
         batch.map(async (recipient: any) => {
           try {
             const unsubUrl = `https://uply.tv/unsubscribe?email=${encodeURIComponent(recipient.email)}`
+            const openPixelUrl = `${trackBaseUrl}?bid=${broadcastId}&e=${encodeURIComponent(recipient.email)}&t=open`
+
+            // Wrap links for click tracking
+            const trackedBody = wrapLinksForTracking(htmlBody, broadcastId, recipient.email, trackBaseUrl)
 
             const emailHtml = `
 <!DOCTYPE html>
@@ -70,7 +89,7 @@ Deno.serve(async (req) => {
       <h1 style="color:white;font-size:22px;margin:0;">${subject}</h1>
     </div>
     <div style="background:#111111;border:1px solid #1E1E1E;border-radius:12px;padding:24px;color:#ffffff;font-size:14px;line-height:1.6;">
-      ${htmlBody.replace(/\n/g, '<br/>')}
+      ${trackedBody.replace(/\n/g, '<br/>')}
     </div>
     <div style="text-align:center;margin-top:24px;padding-top:16px;border-top:1px solid #1E1E1E;">
       <p style="color:#666;font-size:11px;">
@@ -78,6 +97,7 @@ Deno.serve(async (req) => {
       </p>
     </div>
   </div>
+  <img src="${openPixelUrl}" width="1" height="1" style="display:none;" alt="" />
 </body>
 </html>`
 
@@ -114,7 +134,19 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Update broadcast record
+    // Update broadcast record with tracking counts
+    const { count: openCount } = await supabase
+      .from('broadcast_tracking_events')
+      .select('*', { count: 'exact', head: true })
+      .eq('broadcast_id', broadcastId)
+      .eq('event_type', 'open')
+
+    const { count: clickCount } = await supabase
+      .from('broadcast_tracking_events')
+      .select('*', { count: 'exact', head: true })
+      .eq('broadcast_id', broadcastId)
+      .eq('event_type', 'click')
+
     await supabase
       .from('email_broadcasts')
       .update({
@@ -123,6 +155,8 @@ Deno.serve(async (req) => {
         delivered_count: delivered,
         failed_count: failed,
         total_recipients: validRecipients.length,
+        open_count: openCount || 0,
+        click_count: clickCount || 0,
       })
       .eq('id', broadcastId)
 
