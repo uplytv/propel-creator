@@ -45,6 +45,7 @@ export default function EmailBroadcast() {
       return data || [];
     },
     enabled: !!user,
+    refetchInterval: 10000, // Poll every 10s for delivery updates
   });
 
   const { data: subCount = 0 } = useQuery({

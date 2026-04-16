@@ -16,6 +16,11 @@ export default function Unsubscribe() {
           { onConflict: "email" }
         );
         if (error) throw error;
+        // Also mark all subscriber records for this email as unsubscribed
+        await supabase.from("subscribers").update({
+          unsubscribed: true,
+          unsubscribed_at: new Date().toISOString(),
+        }).eq("email", email).eq("unsubscribed", false);
         setStatus("done");
       } catch {
         setStatus("error");

@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useMemo } from "react";
+import LinkEmailGate from "@/components/shared/LinkEmailGate";
 import { usePaymentReturn, useProductPurchaseCheck, useMemberSubscriptionStatus } from "@/hooks/usePaymentReturn";
 import CourseEnrollSheet from "@/components/payments/CourseEnrollSheet";
 import { PurchaseOverlay } from "@/components/payments/PurchaseOverlay";
@@ -356,6 +357,10 @@ export default function CreatorProfile() {
   const isLive = !!liveStream;
   const creatorName = profile?.display_name || "Creator";
 
+  // Email gate for anonymous visitors coming from shared links
+  const [emailGateDismissed, setEmailGateDismissed] = useState(false);
+  const showEmailGate = !user && !isOwner && profile && !emailGateDismissed && !sessionStorage.getItem(`email_gate_${profile.user_id}`);
+
   // Subscription status check for button states
   const { data: memberSubStatus } = useMemberSubscriptionStatus(profile?.user_id);
 
@@ -443,6 +448,17 @@ export default function CreatorProfile() {
 
   return (
     <div className="min-h-screen bg-background">
+      {showEmailGate && (
+        <LinkEmailGate
+          creatorId={profile.user_id}
+          creatorName={creatorName}
+          source="link"
+          onComplete={() => {
+            setEmailGateDismissed(true);
+            sessionStorage.setItem(`email_gate_${profile.user_id}`, "1");
+          }}
+        />
+      )}
       <SEOHead
         title={profile.display_name || profile.username || "Creator"}
         description={profile.bio || `Check out ${profile.display_name || profile.username}'s community, courses, and live streams on Uply.`}
