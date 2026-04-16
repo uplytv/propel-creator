@@ -2965,6 +2965,157 @@ export type Database = {
           },
         ]
       }
+      drip_sequence_enrollments: {
+        Row: {
+          completed_at: string | null
+          current_step: number
+          enrolled_at: string
+          id: string
+          last_step_sent_at: string | null
+          sequence_id: string
+          status: string
+          subscriber_email: string
+        }
+        Insert: {
+          completed_at?: string | null
+          current_step?: number
+          enrolled_at?: string
+          id?: string
+          last_step_sent_at?: string | null
+          sequence_id: string
+          status?: string
+          subscriber_email: string
+        }
+        Update: {
+          completed_at?: string | null
+          current_step?: number
+          enrolled_at?: string
+          id?: string
+          last_step_sent_at?: string | null
+          sequence_id?: string
+          status?: string
+          subscriber_email?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drip_sequence_enrollments_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "drip_sequences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      drip_sequence_sends: {
+        Row: {
+          enrollment_id: string
+          id: string
+          sent_at: string
+          status: string
+          step_id: string
+        }
+        Insert: {
+          enrollment_id: string
+          id?: string
+          sent_at?: string
+          status?: string
+          step_id: string
+        }
+        Update: {
+          enrollment_id?: string
+          id?: string
+          sent_at?: string
+          status?: string
+          step_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drip_sequence_sends_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "drip_sequence_enrollments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "drip_sequence_sends_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "drip_sequence_steps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      drip_sequence_steps: {
+        Row: {
+          body: string
+          created_at: string
+          delay_hours: number
+          id: string
+          sequence_id: string
+          step_number: number
+          subject: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          delay_hours?: number
+          id?: string
+          sequence_id: string
+          step_number?: number
+          subject?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          delay_hours?: number
+          id?: string
+          sequence_id?: string
+          step_number?: number
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drip_sequence_steps_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "drip_sequences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      drip_sequences: {
+        Row: {
+          created_at: string
+          creator_id: string
+          id: string
+          name: string
+          status: string
+          trigger_event: string
+          trigger_tag: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          id?: string
+          name?: string
+          status?: string
+          trigger_event?: string
+          trigger_tag?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          id?: string
+          name?: string
+          status?: string
+          trigger_event?: string
+          trigger_tag?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       edge_function_rate_limits: {
         Row: {
           call_count: number | null
@@ -2993,6 +3144,7 @@ export type Database = {
           ab_variant_a: string | null
           ab_variant_b: string | null
           ab_winner: string | null
+          ab_winner_sent: boolean | null
           body: string
           click_count: number | null
           created_at: string
@@ -3014,6 +3166,7 @@ export type Database = {
           ab_variant_a?: string | null
           ab_variant_b?: string | null
           ab_winner?: string | null
+          ab_winner_sent?: boolean | null
           body: string
           click_count?: number | null
           created_at?: string
@@ -3035,6 +3188,7 @@ export type Database = {
           ab_variant_a?: string | null
           ab_variant_b?: string | null
           ab_winner?: string | null
+          ab_winner_sent?: boolean | null
           body?: string
           click_count?: number | null
           created_at?: string
