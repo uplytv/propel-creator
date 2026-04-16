@@ -7,12 +7,11 @@ Deno.serve(async (req) => {
   const url = new URL(req.url)
   const broadcastId = url.searchParams.get('bid')
   const email = url.searchParams.get('e')
-  const eventType = url.searchParams.get('t') || 'open' // open or click
+  const eventType = url.searchParams.get('t') || 'open'
   const linkUrl = url.searchParams.get('url')
   const userAgent = req.headers.get('user-agent') || null
 
   if (!broadcastId || !email) {
-    // Still return pixel for opens so email renders properly
     if (eventType === 'open') {
       return new Response(PIXEL, { headers: { 'Content-Type': 'image/gif', 'Cache-Control': 'no-store' } })
     }
@@ -25,10 +24,12 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
+    const decodedEmail = decodeURIComponent(email)
+
     // Record tracking event
     await supabase.from('broadcast_tracking_events').insert({
       broadcast_id: broadcastId,
-      subscriber_email: decodeURIComponent(email),
+      subscriber_email: decodedEmail,
       event_type: eventType,
       link_url: linkUrl ? decodeURIComponent(linkUrl) : null,
       user_agent: userAgent,
@@ -36,14 +37,42 @@ Deno.serve(async (req) => {
 
     // Update aggregate counts on broadcast
     if (eventType === 'open') {
-      await supabase.rpc('increment_broadcast_open', { bid: broadcastId }).catch(() => {
+      const { count } = await supabase
+        .from('broadcast_tracking_events')
+        .select('*', { count: 'exact', head: true })
+        .eq('broadcast_id', broadcastId)
+        .eq('event_type', 'open')
+      
+      await supabase.from('email_broadcasts')
+        .update({ open_count: count || 0 })
+        .eq('id', broadcastId)
+
+      // Increment subscriber's total_opens and recalc lead score
+      await supabase.rpc('increment_subscriber_engagement', {
+        p_email: decodedEmail,
+        p_field: 'total_opens'
+      }).catch(() => {
         // Fallback: direct update
-        return supabase.from('email_broadcasts')
-          .update({ open_count: supabase.rpc ? undefined : 1 })
-          .eq('id', broadcastId)
+        supabase.from('subscribers')
+          .update({ total_opens: 1 }) // will be fixed by score recalc
+          .eq('email', decodedEmail)
       })
     } else if (eventType === 'click') {
-      // Just record, click_count updated via count query
+      const { count } = await supabase
+        .from('broadcast_tracking_events')
+        .select('*', { count: 'exact', head: true })
+        .eq('broadcast_id', broadcastId)
+        .eq('event_type', 'click')
+      
+      await supabase.from('email_broadcasts')
+        .update({ click_count: count || 0 })
+        .eq('id', broadcastId)
+
+      // Increment subscriber's total_clicks
+      await supabase.rpc('increment_subscriber_engagement', {
+        p_email: decodedEmail,
+        p_field: 'total_clicks'
+      }).catch(() => {})
     }
 
     // For clicks, redirect to the actual URL
@@ -54,7 +83,6 @@ Deno.serve(async (req) => {
       })
     }
 
-    // For opens, return tracking pixel
     return new Response(PIXEL, {
       headers: { 'Content-Type': 'image/gif', 'Cache-Control': 'no-store' },
     })
