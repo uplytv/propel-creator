@@ -128,7 +128,7 @@ export default function Subscribers() {
     const { error } = await supabase.rpc("recalculate_subscriber_lead_scores", { p_creator_id: user.id });
     if (error) { toast.error("Failed to recalculate"); return; }
     // Also recalculate lifecycle stages
-    await supabase.rpc("recalculate_subscriber_lifecycle", { p_creator_id: user.id }).catch(() => {});
+    try { await supabase.rpc("recalculate_subscriber_lifecycle" as any, { p_creator_id: user.id }); } catch {}
     toast.success("Lead scores & lifecycle stages updated");
     qc.invalidateQueries({ queryKey: ["subscribers"] });
   };
