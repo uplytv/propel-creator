@@ -49,7 +49,8 @@ export default function EmailBroadcast() {
   // A/B Testing
   const [abEnabled, setAbEnabled] = useState(false);
   const [subjectB, setSubjectB] = useState("");
-  const [abTestSize, setAbTestSize] = useState(20); // % of list for test
+  const [abTestSize, setAbTestSize] = useState(20);
+  const [bodyB, setBodyB] = useState("");
 
   const { data: broadcasts = [], isLoading } = useQuery({
     queryKey: ["email-broadcasts", user?.id],
@@ -125,6 +126,7 @@ export default function EmailBroadcast() {
             scheduled_at: scheduledAt,
             ab_variant_a: subject,
             ab_variant_b: subjectB,
+            ab_body_b: bodyB.trim() || null,
             ab_test_size: abTestSize,
           })
           .select()
@@ -170,13 +172,14 @@ export default function EmailBroadcast() {
           });
 
           // Send variant B
+          const variantBBody = bodyB.trim() || body;
           const { data: bB } = await supabase.from("email_broadcasts")
-            .insert({ creator_id: user!.id, subject: subjectB, body, segment, status: "sending", total_recipients: groupB.length, ab_parent_id: parentBroadcast.id })
+            .insert({ creator_id: user!.id, subject: subjectB, body: variantBBody, segment, status: "sending", total_recipients: groupB.length, ab_parent_id: parentBroadcast.id })
             .select().single();
 
           await supabase.functions.invoke("send-email-broadcast", {
             body: {
-              broadcastId: bB!.id, subject: subjectB, htmlBody: body,
+              broadcastId: bB!.id, subject: subjectB, htmlBody: variantBBody,
               recipients: groupB.map(r => ({ email: r.email, name: r.name })),
               creatorName: profile?.display_name || "Creator", creatorAvatar: profile?.avatar_url,
             },
@@ -240,6 +243,7 @@ export default function EmailBroadcast() {
       setComposing(false);
       setSubject("");
       setSubjectB("");
+      setBodyB("");
       setBody("");
       setConfirmSend(false);
       setScheduleEnabled(false);
@@ -315,33 +319,6 @@ export default function EmailBroadcast() {
                 />
               </div>
 
-              {/* A/B Subject B */}
-              {abEnabled && (
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Subject (Variant B)</label>
-                  <Input
-                    value={subjectB}
-                    onChange={e => setSubjectB(e.target.value)}
-                    placeholder="Alternative subject line..."
-                    className="rounded-xl"
-                  />
-                  <div className="flex items-center gap-2 mt-2">
-                    <label className="text-xs text-muted-foreground">Test size:</label>
-                    <Select value={abTestSize.toString()} onValueChange={v => setAbTestSize(Number(v))}>
-                      <SelectTrigger className="w-24 h-8 rounded-lg text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="10">10%</SelectItem>
-                        <SelectItem value="20">20%</SelectItem>
-                        <SelectItem value="30">30%</SelectItem>
-                        <SelectItem value="50">50%</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <span className="text-[10px] text-muted-foreground">of list gets test, winner goes to rest</span>
-                  </div>
-                </div>
-              )}
 
               {/* Template Library Toggle */}
               <Button
@@ -407,10 +384,47 @@ export default function EmailBroadcast() {
               <div className="flex items-center justify-between p-3 rounded-xl border border-border bg-card">
                 <div className="flex items-center gap-2">
                   <Beaker className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm text-foreground">A/B test subject line</span>
+                  <span className="text-sm text-foreground">A/B test</span>
                 </div>
                 <Switch checked={abEnabled} onCheckedChange={setAbEnabled} />
               </div>
+
+              {abEnabled && (
+                <div className="space-y-3 p-3 rounded-xl border border-purple-500/20 bg-purple-500/5">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Subject (Variant B)</label>
+                    <Input
+                      value={subjectB}
+                      onChange={e => setSubjectB(e.target.value)}
+                      placeholder="Alternative subject line..."
+                      className="rounded-xl"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Body (Variant B) — optional</label>
+                    <RichTextEditor
+                      value={bodyB}
+                      onChange={setBodyB}
+                      placeholder="Leave empty to use same body as A..."
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs text-muted-foreground">Test size:</label>
+                    <Select value={abTestSize.toString()} onValueChange={v => setAbTestSize(Number(v))}>
+                      <SelectTrigger className="w-24 h-8 rounded-lg text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="10">10%</SelectItem>
+                        <SelectItem value="20">20%</SelectItem>
+                        <SelectItem value="30">30%</SelectItem>
+                        <SelectItem value="50">50%</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <span className="text-[10px] text-muted-foreground">of list gets test, winner goes to rest</span>
+                  </div>
+                </div>
+              )}
 
               {/* Actions */}
               <div className="flex gap-2">
