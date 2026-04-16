@@ -243,6 +243,7 @@ export default function EmailBroadcast() {
       setComposing(false);
       setSubject("");
       setSubjectB("");
+      setBodyB("");
       setBody("");
       setConfirmSend(false);
       setScheduleEnabled(false);

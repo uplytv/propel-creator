@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Play, Pause, Trash2, Mail, Clock, ArrowLeft, Users, Zap, ChevronRight, GitBranch } from "lucide-react";
+import { Plus, Play, Pause, Trash2, Mail, Clock, ArrowLeft, Users, Zap, ChevronRight, GitBranch, BarChart3 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import BackNav from "@/components/BackNav";
 import SEOHead from "@/components/SEOHead";
@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import RichTextEditor from "@/components/email/RichTextEditor";
+import DripAnalytics from "@/components/drip/DripAnalytics";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
