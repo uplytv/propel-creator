@@ -1047,6 +1047,13 @@ export default function Stream() {
                     streamTitle={dbStream.title || 'Live Stream'}
                     creatorUserId={dbStream.user_id}
                   />
+                  {!user && (
+                    <StreamEmailCapture
+                      creatorId={dbStream.user_id}
+                      creatorName={creatorName}
+                      streamId={id}
+                    />
+                  )}
                   <ViewerShopOverlay
                     streamId={id}
                     creatorUserId={dbStream.user_id}
