@@ -1,6 +1,7 @@
-import { useState, useMemo } from "react";
-import { Users, Download, Search, Mail, TrendingUp, UserPlus, Radio, Ticket, Link2, Filter, Tag, Plus, X, Upload, RefreshCw, Flame } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
+import { Users, Download, Search, Mail, TrendingUp, UserPlus, Radio, Ticket, Link2, Filter, Tag, Plus, X, Upload, RefreshCw, Flame, SlidersHorizontal } from "lucide-react";
 import CSVImport from "@/components/subscribers/CSVImport";
+import SegmentBuilder, { type SegmentRule } from "@/components/subscribers/SegmentBuilder";
 import SubscriberGrowthChart from "@/components/subscribers/SubscriberGrowthChart";
 import LeadScoreBadge from "@/components/subscribers/LeadScoreBadge";
 import AppLayout from "@/components/layout/AppLayout";
@@ -39,14 +40,87 @@ export default function Subscribers() {
   const [newTag, setNewTag] = useState("");
   const [tagTarget, setTagTarget] = useState<string | null>(null);
   const [showImport, setShowImport] = useState(false);
+  const [showSegment, setShowSegment] = useState(false);
+  const [segmentRules, setSegmentRules] = useState<SegmentRule[]>([]);
+
+  // Get all unique tags for segment builder
+  const availableTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    subscribers.forEach(s => ((s as any).tags || []).forEach((t: string) => tagSet.add(t)));
+    return Array.from(tagSet).sort();
+  }, [subscribers]);
 
   const activeSubscribers = useMemo(() => {
-    const active = subscribers.filter(s => !s.unsubscribed);
+    let active = subscribers.filter(s => !s.unsubscribed);
+
+    // Apply segment rules
+    if (segmentRules.length > 0) {
+      active = active.filter(sub => {
+        return segmentRules.every(rule => {
+          const val = Number(rule.value);
+          const subAny = sub as any;
+          switch (rule.field) {
+            case "lead_score": {
+              const score = subAny.lead_score || 0;
+              if (rule.operator === "gte") return score >= val;
+              if (rule.operator === "lte") return score <= val;
+              if (rule.operator === "gt") return score > val;
+              if (rule.operator === "lt") return score < val;
+              if (rule.operator === "eq") return score === val;
+              return true;
+            }
+            case "total_opens":
+            case "total_clicks": {
+              const count = subAny[rule.field] || 0;
+              if (rule.operator === "gte") return count >= val;
+              if (rule.operator === "lte") return count <= val;
+              if (rule.operator === "gt") return count > val;
+              if (rule.operator === "lt") return count < val;
+              if (rule.operator === "eq") return count === val;
+              return true;
+            }
+            case "tags": {
+              const tags = subAny.tags || [];
+              if (rule.operator === "contains") return tags.includes(rule.value);
+              if (rule.operator === "not_contains") return !tags.includes(rule.value);
+              return true;
+            }
+            case "source": {
+              if (rule.operator === "eq") return sub.source === rule.value;
+              if (rule.operator === "neq") return sub.source !== rule.value;
+              return true;
+            }
+            case "days_since_signup": {
+              const days = (Date.now() - new Date(sub.created_at).getTime()) / (1000 * 60 * 60 * 24);
+              if (rule.operator === "gte") return days >= val;
+              if (rule.operator === "lte") return days <= val;
+              return true;
+            }
+            case "last_open_days": {
+              if (!subAny.last_open_at) return rule.operator === "gte"; // never opened = infinite days
+              const days = (Date.now() - new Date(subAny.last_open_at).getTime()) / (1000 * 60 * 60 * 24);
+              if (rule.operator === "gte") return days >= val;
+              if (rule.operator === "lte") return days <= val;
+              return true;
+            }
+            case "last_click_days": {
+              if (!subAny.last_click_at) return rule.operator === "gte";
+              const days = (Date.now() - new Date(subAny.last_click_at).getTime()) / (1000 * 60 * 60 * 24);
+              if (rule.operator === "gte") return days >= val;
+              if (rule.operator === "lte") return days <= val;
+              return true;
+            }
+            default: return true;
+          }
+        });
+      });
+    }
+
     if (sortBy === "score") {
       return [...active].sort((a, b) => ((b as any).lead_score || 0) - ((a as any).lead_score || 0));
     }
     return active;
-  }, [subscribers, sortBy]);
+  }, [subscribers, sortBy, segmentRules]);
 
   const recalcScores = async () => {
     if (!user) return;
