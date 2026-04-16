@@ -7004,8 +7004,11 @@ export type Database = {
           last_open_at: string | null
           last_seen_at: string | null
           lead_score: number
+          lifecycle_stage: string | null
           metadata: Json | null
           name: string | null
+          optimal_send_hour: number | null
+          send_hour_data: Json | null
           source: string
           tags: string[] | null
           total_clicks: number
@@ -7023,8 +7026,11 @@ export type Database = {
           last_open_at?: string | null
           last_seen_at?: string | null
           lead_score?: number
+          lifecycle_stage?: string | null
           metadata?: Json | null
           name?: string | null
+          optimal_send_hour?: number | null
+          send_hour_data?: Json | null
           source?: string
           tags?: string[] | null
           total_clicks?: number
@@ -7042,8 +7048,11 @@ export type Database = {
           last_open_at?: string | null
           last_seen_at?: string | null
           lead_score?: number
+          lifecycle_stage?: string | null
           metadata?: Json | null
           name?: string | null
+          optimal_send_hour?: number | null
+          send_hour_data?: Json | null
           source?: string
           tags?: string[] | null
           total_clicks?: number
@@ -8215,9 +8224,17 @@ export type Database = {
         Args: { p_creator_id: string }
         Returns: undefined
       }
+      recalculate_subscriber_lifecycle: {
+        Args: { p_creator_id: string }
+        Returns: undefined
+      }
       recalculate_waitlist_positions: { Args: never; Returns: undefined }
       send_creator_lifecycle_emails_batch: { Args: never; Returns: undefined }
       send_member_lifecycle_emails_batch: { Args: never; Returns: undefined }
+      update_subscriber_send_hour: {
+        Args: { p_email: string; p_hour: number }
+        Returns: undefined
+      }
       validate_invite_code: { Args: { p_code: string }; Returns: Json }
     }
     Enums: {
