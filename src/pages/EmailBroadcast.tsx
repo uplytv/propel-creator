@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Send, Mail, Users, Loader2, Check, AlertCircle, ArrowLeft, Clock, Eye, MousePointerClick, Beaker, Tag, CalendarClock, FileText } from "lucide-react";
+import { Send, Mail, Users, Loader2, Check, AlertCircle, ArrowLeft, Clock, Eye, MousePointerClick, Beaker, Tag, CalendarClock, FileText, Calendar } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import BackNav from "@/components/BackNav";
 import SEOHead from "@/components/SEOHead";
@@ -8,6 +8,9 @@ import { Input } from "@/components/ui/input";
 import RichTextEditor from "@/components/email/RichTextEditor";
 import EmailPreview from "@/components/email/EmailPreview";
 import EmailTemplateLibrary from "@/components/email/EmailTemplateLibrary";
+import MergeTagHelper from "@/components/email/MergeTagHelper";
+import BroadcastCalendar from "@/components/email/BroadcastCalendar";
+import SmartSendTime from "@/components/email/SmartSendTime";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -40,6 +43,7 @@ export default function EmailBroadcast() {
   const [composing, setComposing] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
 
   // Scheduling
   const [scheduleEnabled, setScheduleEnabled] = useState(false);
@@ -80,6 +84,20 @@ export default function EmailBroadcast() {
         (s.tags || []).forEach((t: string) => tagSet.add(t));
       });
       return Array.from(tagSet).sort();
+    },
+    enabled: !!user,
+  });
+
+  // Subscribers for smart send-time
+  const { data: subscribersForSendTime = [] } = useQuery({
+    queryKey: ["subscribers-send-time", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("subscribers")
+        .select("optimal_send_hour, send_hour_data")
+        .eq("creator_id", user!.id)
+        .eq("unsubscribed", false);
+      return (data || []) as Array<{ optimal_send_hour?: number | null; send_hour_data?: any }>;
     },
     enabled: !!user,
   });
@@ -306,7 +324,20 @@ export default function EmailBroadcast() {
                 </div>
               )}
 
-              {/* Subject */}
+              {/* Merge Tags */}
+              <MergeTagHelper />
+
+              {/* Smart Send Time */}
+              <SmartSendTime
+                subscribers={subscribersForSendTime}
+                onSelectHour={(hour) => {
+                  setScheduleEnabled(true);
+                  if (!scheduledDate) setScheduledDate(new Date().toISOString().split("T")[0]);
+                  setScheduledTime(`${hour.toString().padStart(2, "0")}:00`);
+                }}
+              />
+
+
               <div>
                 <label className="text-xs font-medium text-muted-foreground mb-1 block">
                   Subject {abEnabled && "(Variant A)"}
@@ -488,9 +519,22 @@ export default function EmailBroadcast() {
           </div>
         ) : (
           <div className="px-4 space-y-4">
-            <Button onClick={() => setComposing(true)} className="w-full rounded-xl gap-2" style={{ background: "#00FF85", color: "#0A0A0A" }}>
-              <Mail className="w-4 h-4" /> New Broadcast
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={() => setComposing(true)} className="flex-1 rounded-xl gap-2" style={{ background: "#00FF85", color: "#0A0A0A" }}>
+                <Mail className="w-4 h-4" /> New Broadcast
+              </Button>
+              <Button
+                variant={showCalendar ? "default" : "outline"}
+                onClick={() => setShowCalendar(!showCalendar)}
+                className="rounded-xl gap-1.5"
+              >
+                <Calendar className="w-4 h-4" /> {showCalendar ? "List" : "Calendar"}
+              </Button>
+            </div>
+
+            {showCalendar && broadcasts.length > 0 && (
+              <BroadcastCalendar broadcasts={broadcasts as any} />
+            )}
 
             {isLoading ? (
               Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)

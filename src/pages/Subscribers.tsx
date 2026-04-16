@@ -1,9 +1,10 @@
 import { useState, useMemo, useCallback } from "react";
-import { Users, Download, Search, Mail, TrendingUp, UserPlus, Radio, Ticket, Link2, Filter, Tag, Plus, X, Upload, RefreshCw, Flame, SlidersHorizontal } from "lucide-react";
+import { Users, Download, Search, Mail, TrendingUp, UserPlus, Radio, Ticket, Link2, Filter, Tag, Plus, X, Upload, RefreshCw, Flame, SlidersHorizontal, Zap } from "lucide-react";
 import CSVImport from "@/components/subscribers/CSVImport";
 import SegmentBuilder, { type SegmentRule } from "@/components/subscribers/SegmentBuilder";
 import SubscriberGrowthChart from "@/components/subscribers/SubscriberGrowthChart";
 import LeadScoreBadge from "@/components/subscribers/LeadScoreBadge";
+import LifecycleStageBadge from "@/components/subscribers/LifecycleStageBadge";
 import AppLayout from "@/components/layout/AppLayout";
 import BackNav from "@/components/BackNav";
 import SEOHead from "@/components/SEOHead";
@@ -126,7 +127,9 @@ export default function Subscribers() {
     if (!user) return;
     const { error } = await supabase.rpc("recalculate_subscriber_lead_scores", { p_creator_id: user.id });
     if (error) { toast.error("Failed to recalculate"); return; }
-    toast.success("Lead scores updated");
+    // Also recalculate lifecycle stages
+    try { await supabase.rpc("recalculate_subscriber_lifecycle" as any, { p_creator_id: user.id }); } catch {}
+    toast.success("Lead scores & lifecycle stages updated");
     qc.invalidateQueries({ queryKey: ["subscribers"] });
   };
 
@@ -285,6 +288,7 @@ export default function Subscribers() {
                     </div>
                     <div className="text-right shrink-0 space-y-0.5">
                       <LeadScoreBadge score={leadScore} />
+                      <LifecycleStageBadge stage={(sub as any).lifecycle_stage || "new"} />
                       <p className="text-[10px] text-muted-foreground">{format(new Date(sub.created_at), "MMM d")}</p>
                     </div>
                   </div>
