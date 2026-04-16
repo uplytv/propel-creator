@@ -172,13 +172,14 @@ export default function EmailBroadcast() {
           });
 
           // Send variant B
+          const variantBBody = bodyB.trim() || body;
           const { data: bB } = await supabase.from("email_broadcasts")
-            .insert({ creator_id: user!.id, subject: subjectB, body, segment, status: "sending", total_recipients: groupB.length, ab_parent_id: parentBroadcast.id })
+            .insert({ creator_id: user!.id, subject: subjectB, body: variantBBody, segment, status: "sending", total_recipients: groupB.length, ab_parent_id: parentBroadcast.id })
             .select().single();
 
           await supabase.functions.invoke("send-email-broadcast", {
             body: {
-              broadcastId: bB!.id, subject: subjectB, htmlBody: body,
+              broadcastId: bB!.id, subject: subjectB, htmlBody: variantBBody,
               recipients: groupB.map(r => ({ email: r.email, name: r.name })),
               creatorName: profile?.display_name || "Creator", creatorAvatar: profile?.avatar_url,
             },
