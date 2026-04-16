@@ -14,7 +14,6 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
     const resendKey = Deno.env.get('RESEND_API_KEY')!
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 
     // Get all active enrollments that need processing
     const { data: enrollments } = await supabase
@@ -48,7 +47,6 @@ Deno.serve(async (req) => {
         .single()
 
       if (!step) {
-        // No more steps — mark as completed
         await supabase.from('drip_sequence_enrollments')
           .update({ status: 'completed', completed_at: new Date().toISOString() })
           .eq('id', enrollment.id)
@@ -59,7 +57,6 @@ Deno.serve(async (req) => {
       // Check delay
       const referenceTime = enrollment.last_step_sent_at || enrollment.enrolled_at
       const hoursSince = (Date.now() - new Date(referenceTime).getTime()) / (1000 * 60 * 60)
-
       if (hoursSince < step.delay_hours) continue
 
       // Check suppression
@@ -79,7 +76,7 @@ Deno.serve(async (req) => {
       // Check unsubscribed
       const { data: unsubbed } = await supabase
         .from('subscribers')
-        .select('unsubscribed')
+        .select('unsubscribed, tags, total_opens, total_clicks')
         .eq('email', enrollment.subscriber_email)
         .eq('creator_id', sequence.creator_id)
         .single()
@@ -89,6 +86,43 @@ Deno.serve(async (req) => {
           .update({ status: 'cancelled' })
           .eq('id', enrollment.id)
         continue
+      }
+
+      // Handle branching conditions
+      if (step.condition_type) {
+        let conditionMet = false
+
+        if (step.condition_type === 'opened_previous') {
+          // Check if subscriber opened any email from this sequence
+          const { count } = await supabase
+            .from('broadcast_tracking_events')
+            .select('*', { count: 'exact', head: true })
+            .eq('subscriber_email', enrollment.subscriber_email)
+            .eq('event_type', 'open')
+          conditionMet = (count || 0) > 0
+        } else if (step.condition_type === 'clicked_previous') {
+          const { count } = await supabase
+            .from('broadcast_tracking_events')
+            .select('*', { count: 'exact', head: true })
+            .eq('subscriber_email', enrollment.subscriber_email)
+            .eq('event_type', 'click')
+          conditionMet = (count || 0) > 0
+        } else if (step.condition_type === 'has_tag') {
+          const subTags = unsubbed?.tags || []
+          conditionMet = subTags.includes(step.condition_value)
+        }
+
+        // Jump to the appropriate step based on condition
+        const jumpToStep = conditionMet ? step.on_true_step : step.on_false_step
+        if (jumpToStep && jumpToStep !== nextStepNumber) {
+          await supabase.from('drip_sequence_enrollments')
+            .update({
+              current_step: jumpToStep - 1, // will be incremented on next process
+              last_step_sent_at: new Date().toISOString(),
+            })
+            .eq('id', enrollment.id)
+          continue
+        }
       }
 
       // Get creator profile
@@ -126,7 +160,6 @@ Deno.serve(async (req) => {
 </body>
 </html>`
 
-      // Send email
       const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -143,14 +176,12 @@ Deno.serve(async (req) => {
 
       const sendStatus = res.ok ? 'sent' : 'failed'
 
-      // Record send
       await supabase.from('drip_sequence_sends').insert({
         enrollment_id: enrollment.id,
         step_id: step.id,
         status: sendStatus,
       })
 
-      // Update enrollment
       await supabase.from('drip_sequence_enrollments')
         .update({
           current_step: nextStepNumber,

@@ -3,6 +3,7 @@ import { BarChart3, Eye, MousePointerClick, Users, TrendingUp, Mail } from "luci
 import AppLayout from "@/components/layout/AppLayout";
 import BackNav from "@/components/BackNav";
 import SEOHead from "@/components/SEOHead";
+import DeliverabilityDashboard from "@/components/email/DeliverabilityDashboard";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -18,7 +19,7 @@ export default function EmailAnalytics() {
     queryFn: async () => {
       const { data } = await supabase
         .from("email_broadcasts")
-        .select("id, subject, status, sent_at, created_at, total_recipients, delivered_count, failed_count, open_count, click_count, ab_variant_a, ab_variant_b, ab_parent_id")
+        .select("id, subject, status, sent_at, created_at, total_recipients, delivered_count, failed_count, open_count, click_count, bounce_count, complaint_count, ab_variant_a, ab_variant_b, ab_parent_id")
         .eq("creator_id", user!.id)
         .in("status", ["sent", "sending"])
         .order("sent_at", { ascending: false })
@@ -29,7 +30,6 @@ export default function EmailAnalytics() {
     refetchInterval: 30000,
   });
 
-  // Aggregate stats
   const stats = useMemo(() => {
     const sent = broadcasts.filter(b => !b.ab_parent_id);
     const totalSent = sent.reduce((a, b) => a + (b.delivered_count || 0), 0);
@@ -41,7 +41,6 @@ export default function EmailAnalytics() {
     return { totalSent, totalOpens, totalClicks, avgOpenRate, avgClickRate, broadcastCount: sent.length };
   }, [broadcasts]);
 
-  // Chart data: last 30 days
   const chartData = useMemo(() => {
     const days: { date: string; sends: number; opens: number; clicks: number }[] = [];
     for (let i = 29; i >= 0; i--) {
@@ -62,7 +61,6 @@ export default function EmailAnalytics() {
     return days;
   }, [broadcasts]);
 
-  // Per-broadcast performance
   const broadcastPerf = useMemo(() => {
     return broadcasts
       .filter(b => !b.ab_parent_id && b.total_recipients)
@@ -88,6 +86,9 @@ export default function EmailAnalytics() {
           </div>
         ) : (
           <>
+            {/* Deliverability Health */}
+            <DeliverabilityDashboard />
+
             {/* Summary Stats */}
             <div className="px-4 py-3 grid grid-cols-2 gap-3">
               <StatCard icon={Mail} label="Broadcasts" value={stats.broadcastCount} />

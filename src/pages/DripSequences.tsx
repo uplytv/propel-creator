@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Play, Pause, Trash2, Mail, Clock, ArrowLeft, Users, Zap, ChevronRight } from "lucide-react";
+import { Plus, Play, Pause, Trash2, Mail, Clock, ArrowLeft, Users, Zap, ChevronRight, GitBranch } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import BackNav from "@/components/BackNav";
 import SEOHead from "@/components/SEOHead";
@@ -35,6 +35,10 @@ export default function DripSequences() {
   const [stepSubject, setStepSubject] = useState("");
   const [stepBody, setStepBody] = useState("");
   const [stepDelay, setStepDelay] = useState(24);
+  const [stepConditionType, setStepConditionType] = useState<string>("");
+  const [stepConditionValue, setStepConditionValue] = useState("");
+  const [stepOnTrueStep, setStepOnTrueStep] = useState<number | null>(null);
+  const [stepOnFalseStep, setStepOnFalseStep] = useState<number | null>(null);
 
   const { data: sequences = [], isLoading } = useQuery({
     queryKey: ["drip-sequences", user?.id],
@@ -135,6 +139,10 @@ export default function DripSequences() {
         subject: stepSubject,
         body: stepBody,
         delay_hours: stepDelay,
+        condition_type: stepConditionType || null,
+        condition_value: stepConditionValue || null,
+        on_true_step: stepOnTrueStep,
+        on_false_step: stepOnFalseStep,
       });
       if (error) throw error;
     },
@@ -144,6 +152,10 @@ export default function DripSequences() {
       setStepSubject("");
       setStepBody("");
       setStepDelay(24);
+      setStepConditionType("");
+      setStepConditionValue("");
+      setStepOnTrueStep(null);
+      setStepOnFalseStep(null);
       qc.invalidateQueries({ queryKey: ["drip-steps"] });
     },
     onError: (err: any) => toast.error(err.message),
@@ -202,6 +214,14 @@ export default function DripSequences() {
                   <Clock className="w-3 h-3" />
                   {i === 0 ? `${step.delay_hours}h after enrollment` : `${step.delay_hours}h after step ${step.step_number - 1}`}
                 </div>
+                {step.condition_type && (
+                  <div className="flex items-center gap-2 text-[10px] pl-8 text-purple-400">
+                    <GitBranch className="w-3 h-3" />
+                    If {step.condition_type === "opened_previous" ? "opened previous email" : step.condition_type === "clicked_previous" ? "clicked previous email" : `has tag "${step.condition_value}"`}
+                    {step.on_true_step && <span className="text-primary">→ step {step.on_true_step}</span>}
+                    {step.on_false_step && <span className="text-muted-foreground">else → step {step.on_false_step}</span>}
+                  </div>
+                )}
               </div>
             ))}
 
@@ -230,6 +250,58 @@ export default function DripSequences() {
                       <SelectItem value="168">7 days</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+                {/* Branching condition */}
+                <div className="p-3 rounded-xl border border-border bg-card/50 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <GitBranch className="w-3.5 h-3.5 text-purple-400" />
+                    <span className="text-xs font-medium text-muted-foreground">Branching (optional)</span>
+                  </div>
+                  <Select value={stepConditionType} onValueChange={setStepConditionType}>
+                    <SelectTrigger className="h-8 rounded-lg text-xs">
+                      <SelectValue placeholder="No condition" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">No condition</SelectItem>
+                      <SelectItem value="opened_previous">Opened previous email</SelectItem>
+                      <SelectItem value="clicked_previous">Clicked previous email</SelectItem>
+                      <SelectItem value="has_tag">Has tag</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {stepConditionType === "has_tag" && (
+                    <Input
+                      value={stepConditionValue}
+                      onChange={e => setStepConditionValue(e.target.value)}
+                      placeholder="Tag name..."
+                      className="h-8 text-xs rounded-lg"
+                    />
+                  )}
+                  {stepConditionType && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[10px] text-primary mb-0.5 block">If TRUE → go to step</label>
+                        <Input
+                          type="number"
+                          min={1}
+                          value={stepOnTrueStep ?? ""}
+                          onChange={e => setStepOnTrueStep(e.target.value ? Number(e.target.value) : null)}
+                          className="h-7 text-xs rounded-lg"
+                          placeholder="Next"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-muted-foreground mb-0.5 block">If FALSE → go to step</label>
+                        <Input
+                          type="number"
+                          min={1}
+                          value={stepOnFalseStep ?? ""}
+                          onChange={e => setStepOnFalseStep(e.target.value ? Number(e.target.value) : null)}
+                          className="h-7 text-xs rounded-lg"
+                          placeholder="Next"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-2">
                   <Button variant="outline" onClick={() => setAddingStep(false)} className="rounded-xl flex-1">Cancel</Button>

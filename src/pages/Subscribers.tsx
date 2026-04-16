@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
-import { Users, Download, Search, Mail, TrendingUp, UserPlus, Radio, Ticket, Link2, Filter, Tag, Plus, X, Upload } from "lucide-react";
+import { Users, Download, Search, Mail, TrendingUp, UserPlus, Radio, Ticket, Link2, Filter, Tag, Plus, X, Upload, RefreshCw, Flame } from "lucide-react";
 import CSVImport from "@/components/subscribers/CSVImport";
 import SubscriberGrowthChart from "@/components/subscribers/SubscriberGrowthChart";
+import LeadScoreBadge from "@/components/subscribers/LeadScoreBadge";
 import AppLayout from "@/components/layout/AppLayout";
 import BackNav from "@/components/BackNav";
 import SEOHead from "@/components/SEOHead";
@@ -12,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useSubscribers, useSubscriberStats, useExportSubscribersCSV } from "@/hooks/useSubscribers";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,8 +28,10 @@ const sourceConfig: Record<string, { label: string; icon: typeof Radio; color: s
 };
 
 export default function Subscribers() {
+  const { user } = useAuth();
   const [search, setSearch] = useState("");
   const [sourceFilter, setSourceFilter] = useState("all");
+  const [sortBy, setSortBy] = useState<"date" | "score">("date");
   const { data: subscribers = [], isLoading } = useSubscribers({ source: sourceFilter, search });
   const { data: stats } = useSubscriberStats();
   const exportCSV = useExportSubscribersCSV();
@@ -36,10 +40,21 @@ export default function Subscribers() {
   const [tagTarget, setTagTarget] = useState<string | null>(null);
   const [showImport, setShowImport] = useState(false);
 
-  const activeSubscribers = useMemo(
-    () => subscribers.filter(s => !s.unsubscribed),
-    [subscribers]
-  );
+  const activeSubscribers = useMemo(() => {
+    const active = subscribers.filter(s => !s.unsubscribed);
+    if (sortBy === "score") {
+      return [...active].sort((a, b) => ((b as any).lead_score || 0) - ((a as any).lead_score || 0));
+    }
+    return active;
+  }, [subscribers, sortBy]);
+
+  const recalcScores = async () => {
+    if (!user) return;
+    const { error } = await supabase.rpc("recalculate_subscriber_lead_scores", { p_creator_id: user.id });
+    if (error) { toast.error("Failed to recalculate"); return; }
+    toast.success("Lead scores updated");
+    qc.invalidateQueries({ queryKey: ["subscribers"] });
+  };
 
   const addTag = async (subscriberId: string, currentTags: string[]) => {
     if (!newTag.trim()) return;
@@ -115,7 +130,7 @@ export default function Subscribers() {
             />
           </div>
           <Select value={sourceFilter} onValueChange={setSourceFilter}>
-            <SelectTrigger className="w-[130px] h-10 rounded-xl text-sm">
+            <SelectTrigger className="w-[110px] h-10 rounded-xl text-sm">
               <Filter className="w-3.5 h-3.5 mr-1" />
               <SelectValue />
             </SelectTrigger>
@@ -129,13 +144,25 @@ export default function Subscribers() {
           </Select>
         </div>
 
-        {/* Export */}
-        <div className="px-4 pb-3 flex gap-2">
+        {/* Sort & Actions */}
+        <div className="px-4 pb-3 flex gap-2 flex-wrap">
+          <Button
+            variant={sortBy === "score" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setSortBy(sortBy === "score" ? "date" : "score")}
+            className="rounded-xl text-xs gap-1.5"
+            style={sortBy === "score" ? { background: "#00FF85", color: "#0A0A0A" } : undefined}
+          >
+            <Flame className="w-3.5 h-3.5" /> {sortBy === "score" ? "By Score" : "Sort by Score"}
+          </Button>
+          <Button variant="outline" size="sm" onClick={recalcScores} className="rounded-xl text-xs gap-1.5">
+            <RefreshCw className="w-3.5 h-3.5" /> Recalc Scores
+          </Button>
           <Button variant="outline" size="sm" onClick={exportCSV} className="rounded-xl text-xs gap-1.5">
-            <Download className="w-3.5 h-3.5" /> Export CSV
+            <Download className="w-3.5 h-3.5" /> Export
           </Button>
           <Button variant="outline" size="sm" onClick={() => setShowImport(true)} className="rounded-xl text-xs gap-1.5">
-            <Upload className="w-3.5 h-3.5" /> Import CSV
+            <Upload className="w-3.5 h-3.5" /> Import
           </Button>
         </div>
 
@@ -154,6 +181,7 @@ export default function Subscribers() {
               const cfg = sourceConfig[sub.source] || sourceConfig.manual;
               const Icon = cfg.icon;
               const subTags = (sub as any).tags || [];
+              const leadScore = (sub as any).lead_score || 0;
               return (
                 <div key={sub.id} className="p-3 rounded-xl border border-border bg-card space-y-2">
                   <div className="flex items-center gap-3">
@@ -171,13 +199,20 @@ export default function Subscribers() {
                         <p className="text-xs text-muted-foreground truncate">{sub.email}</p>
                       )}
                     </div>
-                    <div className="text-right shrink-0">
+                    <div className="text-right shrink-0 space-y-0.5">
+                      <LeadScoreBadge score={leadScore} />
                       <p className="text-[10px] text-muted-foreground">{format(new Date(sub.created_at), "MMM d")}</p>
-                      {sub.total_purchases > 0 && (
-                        <p className="text-[10px] font-medium" style={{ color: "#00FF85" }}>{sub.total_purchases} purchases</p>
-                      )}
                     </div>
                   </div>
+
+                  {/* Engagement mini-stats */}
+                  {((sub as any).total_opens > 0 || (sub as any).total_clicks > 0 || sub.total_purchases > 0) && (
+                    <div className="flex gap-3 pl-12 text-[10px] text-muted-foreground">
+                      {(sub as any).total_opens > 0 && <span>📬 {(sub as any).total_opens} opens</span>}
+                      {(sub as any).total_clicks > 0 && <span>🔗 {(sub as any).total_clicks} clicks</span>}
+                      {sub.total_purchases > 0 && <span style={{ color: "#00FF85" }}>💰 {sub.total_purchases} purchases</span>}
+                    </div>
+                  )}
 
                   {/* Tags */}
                   <div className="flex items-center gap-1.5 flex-wrap pl-12">

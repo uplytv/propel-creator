@@ -3048,27 +3048,39 @@ export type Database = {
       drip_sequence_steps: {
         Row: {
           body: string
+          condition_type: string | null
+          condition_value: string | null
           created_at: string
           delay_hours: number
           id: string
+          on_false_step: number | null
+          on_true_step: number | null
           sequence_id: string
           step_number: number
           subject: string
         }
         Insert: {
           body?: string
+          condition_type?: string | null
+          condition_value?: string | null
           created_at?: string
           delay_hours?: number
           id?: string
+          on_false_step?: number | null
+          on_true_step?: number | null
           sequence_id: string
           step_number?: number
           subject?: string
         }
         Update: {
           body?: string
+          condition_type?: string | null
+          condition_value?: string | null
           created_at?: string
           delay_hours?: number
           id?: string
+          on_false_step?: number | null
+          on_true_step?: number | null
           sequence_id?: string
           step_number?: number
           subject?: string
@@ -3146,7 +3158,9 @@ export type Database = {
           ab_winner: string | null
           ab_winner_sent: boolean | null
           body: string
+          bounce_count: number
           click_count: number | null
+          complaint_count: number
           created_at: string
           creator_id: string
           delivered_count: number | null
@@ -3168,7 +3182,9 @@ export type Database = {
           ab_winner?: string | null
           ab_winner_sent?: boolean | null
           body: string
+          bounce_count?: number
           click_count?: number | null
+          complaint_count?: number
           created_at?: string
           creator_id: string
           delivered_count?: number | null
@@ -3190,7 +3206,9 @@ export type Database = {
           ab_winner?: string | null
           ab_winner_sent?: boolean | null
           body?: string
+          bounce_count?: number
           click_count?: number | null
+          complaint_count?: number
           created_at?: string
           creator_id?: string
           delivered_count?: number | null
@@ -3265,6 +3283,42 @@ export type Database = {
           retry_after_until?: string | null
           send_delay_ms?: number
           transactional_email_ttl_minutes?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      email_templates: {
+        Row: {
+          body: string
+          category: string
+          created_at: string
+          creator_id: string | null
+          id: string
+          is_system: boolean
+          name: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string
+          category?: string
+          created_at?: string
+          creator_id?: string | null
+          id?: string
+          is_system?: boolean
+          name: string
+          subject?: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          category?: string
+          created_at?: string
+          creator_id?: string | null
+          id?: string
+          is_system?: boolean
+          name?: string
+          subject?: string
           updated_at?: string
         }
         Relationships: []
@@ -6938,10 +6992,13 @@ export type Database = {
           email: string
           id: string
           last_seen_at: string | null
+          lead_score: number
           metadata: Json | null
           name: string | null
           source: string
           tags: string[] | null
+          total_clicks: number
+          total_opens: number
           total_purchases: number | null
           unsubscribed: boolean
           unsubscribed_at: string | null
@@ -6952,10 +7009,13 @@ export type Database = {
           email: string
           id?: string
           last_seen_at?: string | null
+          lead_score?: number
           metadata?: Json | null
           name?: string | null
           source?: string
           tags?: string[] | null
+          total_clicks?: number
+          total_opens?: number
           total_purchases?: number | null
           unsubscribed?: boolean
           unsubscribed_at?: string | null
@@ -6966,10 +7026,13 @@ export type Database = {
           email?: string
           id?: string
           last_seen_at?: string | null
+          lead_score?: number
           metadata?: Json | null
           name?: string | null
           source?: string
           tags?: string[] | null
+          total_clicks?: number
+          total_opens?: number
           total_purchases?: number | null
           unsubscribed?: boolean
           unsubscribed_at?: string | null
@@ -8128,6 +8191,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      recalculate_subscriber_lead_scores: {
+        Args: { p_creator_id: string }
+        Returns: undefined
       }
       recalculate_waitlist_positions: { Args: never; Returns: undefined }
       send_creator_lifecycle_emails_batch: { Args: never; Returns: undefined }
