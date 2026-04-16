@@ -6,7 +6,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 type SendRow = { step_id: string; status: string; opened_at: string | null; clicked_at: string | null };
 type EnrollRow = { status: string; current_step: number };
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface Props {
   sequenceId: string;
