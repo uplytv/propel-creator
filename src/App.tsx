@@ -93,6 +93,8 @@ const DeveloperAPI = lazy(() => import("./pages/DeveloperAPI"));
 const EmailUnsubscribe = lazy(() => import("./pages/EmailUnsubscribe"));
 const Subscribers = lazy(() => import("./pages/Subscribers"));
 const EmailBroadcast = lazy(() => import("./pages/EmailBroadcast"));
+const EmailAnalytics = lazy(() => import("./pages/EmailAnalytics"));
+const DripSequences = lazy(() => import("./pages/DripSequences"));
 const EventRSVP = lazy(() => import("./pages/EventRSVP"));
 
 // Social pages
@@ -290,6 +292,8 @@ const App = () => (
                     <Route path="/developer" element={<ProtectedRoute><DeveloperAPI /></ProtectedRoute>} />
                     <Route path="/dashboard/subscribers" element={<ProtectedRoute><Subscribers /></ProtectedRoute>} />
                     <Route path="/dashboard/broadcast" element={<ProtectedRoute><EmailBroadcast /></ProtectedRoute>} />
+                    <Route path="/dashboard/email-analytics" element={<ProtectedRoute><EmailAnalytics /></ProtectedRoute>} />
+                    <Route path="/dashboard/drip-sequences" element={<ProtectedRoute><DripSequences /></ProtectedRoute>} />
 
                     {/* Admin routes */}
                     <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />

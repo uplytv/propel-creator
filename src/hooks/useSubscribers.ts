@@ -88,6 +88,24 @@ export function useAddSubscriber() {
         { onConflict: "creator_id,email" }
       );
       if (error) throw error;
+
+      // Auto-enroll in active drip sequences matching trigger
+      const triggerEvent = source === "rsvp" ? "rsvp" : "new_subscriber";
+      const { data: sequences } = await supabase
+        .from("drip_sequences")
+        .select("id")
+        .eq("creator_id", creatorId)
+        .eq("status", "active")
+        .eq("trigger_event", triggerEvent);
+
+      if (sequences?.length) {
+        const enrollments = sequences.map(seq => ({
+          sequence_id: seq.id,
+          subscriber_email: email,
+        }));
+        await supabase.from("drip_sequence_enrollments")
+          .upsert(enrollments, { onConflict: "sequence_id,subscriber_email", ignoreDuplicates: true });
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["subscribers"] });
