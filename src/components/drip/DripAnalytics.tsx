@@ -1,7 +1,11 @@
 import { useMemo } from "react";
-import { Eye, MousePointerClick, Users, CheckCircle, TrendingUp } from "lucide-react";
+import { Eye, MousePointerClick, CheckCircle, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
+
+type SendRow = { step_id: string; status: string; opened_at: string | null; clicked_at: string | null };
+type EnrollRow = { status: string; current_step: number };
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface Props {
@@ -10,26 +14,26 @@ interface Props {
 }
 
 export default function DripAnalytics({ sequenceId, steps }: Props) {
-  const { data: sends = [], isLoading } = useQuery({
+  const { data: sends = [], isLoading } = useQuery<SendRow[]>({
     queryKey: ["drip-sends-analytics", sequenceId],
     queryFn: async () => {
-      const { data } = await (supabase
+      const res: any = await supabase
         .from("drip_sequence_sends")
         .select("step_id, status, opened_at, clicked_at")
-        .eq("sequence_id", sequenceId) as any);
-      return (data || []) as { step_id: string; status: string; opened_at: string | null; clicked_at: string | null }[];
+        .eq("sequence_id", sequenceId);
+      return (res.data || []) as SendRow[];
     },
     enabled: !!sequenceId,
   });
 
-  const { data: enrollments = [] } = useQuery({
+  const { data: enrollments = [] } = useQuery<EnrollRow[]>({
     queryKey: ["drip-enrollments-analytics", sequenceId],
     queryFn: async () => {
-      const { data } = await (supabase
+      const res: any = await supabase
         .from("drip_sequence_enrollments")
         .select("status, current_step")
-        .eq("sequence_id", sequenceId) as any);
-      return (data || []) as { status: string; current_step: number }[];
+        .eq("sequence_id", sequenceId);
+      return (res.data || []) as EnrollRow[];
     },
     enabled: !!sequenceId,
   });
