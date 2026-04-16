@@ -5,7 +5,8 @@ import BackNav from "@/components/BackNav";
 import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import RichTextEditor from "@/components/email/RichTextEditor";
+import EmailPreview from "@/components/email/EmailPreview";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -33,6 +34,7 @@ export default function EmailBroadcast() {
   const [segment, setSegment] = useState("all");
   const [confirmSend, setConfirmSend] = useState(false);
   const [composing, setComposing] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   const { data: broadcasts = [], isLoading } = useQuery({
     queryKey: ["email-broadcasts", user?.id],
@@ -169,23 +171,40 @@ export default function EmailBroadcast() {
 
               <div>
                 <label className="text-xs font-medium text-muted-foreground mb-1 block">Body</label>
-                <Textarea
+                <RichTextEditor
                   value={body}
-                  onChange={e => setBody(e.target.value)}
+                  onChange={setBody}
                   placeholder="Write your email content..."
-                  rows={10}
-                  className="rounded-xl"
                 />
               </div>
 
-              <Button
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowPreview(true)}
+                  disabled={!subject.trim() && !body.trim()}
+                  className="rounded-xl gap-2 flex-1"
+                >
+                  <Mail className="w-4 h-4" /> Preview
+                </Button>
+                <Button
                 onClick={() => setConfirmSend(true)}
                 disabled={!subject.trim() || !body.trim() || subCount === 0}
                 className="w-full rounded-xl gap-2"
                 style={{ background: "#00FF85", color: "#0A0A0A" }}
               >
-                <Send className="w-4 h-4" /> Send to {subCount} subscriber{subCount !== 1 ? "s" : ""}
-              </Button>
+                  <Send className="w-4 h-4" /> Send to {subCount}
+                </Button>
+              </div>
+
+              <EmailPreview
+                open={showPreview}
+                onOpenChange={setShowPreview}
+                subject={subject}
+                htmlBody={body}
+                creatorName={profile?.display_name || "Creator"}
+                creatorAvatar={profile?.avatar_url}
+              />
             </div>
 
             <Dialog open={confirmSend} onOpenChange={setConfirmSend}>

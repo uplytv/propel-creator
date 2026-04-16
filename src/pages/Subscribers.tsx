@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { Users, Download, Search, Mail, TrendingUp, UserPlus, Radio, Ticket, Link2, Filter } from "lucide-react";
+import SubscriberGrowthChart from "@/components/subscribers/SubscriberGrowthChart";
 import AppLayout from "@/components/layout/AppLayout";
 import BackNav from "@/components/BackNav";
 import SEOHead from "@/components/SEOHead";
@@ -66,6 +67,9 @@ export default function Subscribers() {
             })}
           </div>
         )}
+
+        {/* Growth Chart */}
+        <SubscriberGrowthChart subscribers={subscribers} />
 
         {/* Filters */}
         <div className="px-4 pb-3 flex gap-2">
