@@ -323,24 +323,48 @@ export default function BroadcastStudio({
   }, [facingMode, stopCurrentStream]);
 
   const startScreenShare = useCallback(async () => {
-    stopCurrentStream();
     setMediaError(null);
     try {
-      const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
-      try {
-        const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        micStream.getAudioTracks().forEach((t) => screenStream.addTrack(t));
-      } catch { /* mic optional */ }
-      streamRef.current = screenStream;
-      if (videoRef.current) videoRef.current.srcObject = screenStream;
-      setCameraOn(false); setMicOn(true); setScreenShare(true);
-      setupAudioAnalyser(screenStream);
-      screenStream.getVideoTracks()[0].onended = () => handleEndStream();
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({
+        video: { frameRate: { ideal: 30 } },
+        audio: true,
+      });
+
+      // Preserve camera audio track on screen share
+      if (streamRef.current) {
+        const cameraAudioTrack = streamRef.current.getAudioTracks()[0];
+        if (cameraAudioTrack) screenStream.addTrack(cameraAudioTrack);
+      }
+
+      const newVideoTrack = screenStream.getVideoTracks()[0];
+
+      if (streamRef.current && (isRecording || peerConnectionsRef.current.size > 0)) {
+        // Hot-swap video track in active peer connections
+        peerConnectionsRef.current.forEach((pc) => {
+          const sender = pc.getSenders().find(s => s.track?.kind === 'video');
+          if (sender) sender.replaceTrack(newVideoTrack).catch(() => {});
+        });
+        const oldVideoTrack = streamRef.current.getVideoTracks()[0];
+        if (oldVideoTrack) { streamRef.current.removeTrack(oldVideoTrack); oldVideoTrack.stop(); }
+        streamRef.current.addTrack(newVideoTrack);
+      } else {
+        stopCurrentStream();
+        streamRef.current = screenStream;
+      }
+
+      if (videoRef.current) videoRef.current.srcObject = streamRef.current || screenStream;
+      setScreenShare(true);
+      setupAudioAnalyser(streamRef.current || screenStream);
+
+      newVideoTrack.onended = async () => {
+        setScreenShare(false);
+        if (cameraOn) await startCamera(facingMode);
+      };
     } catch {
-      setMediaError("Screen share cancelled or not supported.");
+      setMediaError('Screen share cancelled or not supported.');
       setScreenShare(false);
     }
-  }, [stopCurrentStream]);
+  }, [stopCurrentStream, isRecording, cameraOn, facingMode, startCamera]);
 
   const toggleMic = () => {
     if (!streamRef.current) return;

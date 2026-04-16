@@ -222,6 +222,9 @@ export default function Stream() {
   const [featuredProduct, setFeaturedProduct] = useState<any>(null);
   const [shareOpen, setShareOpen] = useState(false);
   const [memberAccess, setMemberAccess] = useState<boolean | null>(null);
+  const [joinRequested, setJoinRequested] = useState(false);
+  const [joinStream, setJoinStream] = useState<MediaStream | null>(null);
+  const [joinStatus, setJoinStatus] = useState<'idle' | 'requesting' | 'accepted' | 'rejected'>('idle');
   const [creatorUsername, setCreatorUsername] = useState<string | null>(routeUsername || null);
   const { isFollowing, follow, unfollow } = useFollows();
 
@@ -989,6 +992,50 @@ export default function Stream() {
                   creatorName={creatorName}
                   creatorUsername={creatorUsername || profile?.username || null}
                 />
+              )}
+
+              {/* Guest Join Panel */}
+              {isActive && new URLSearchParams(window.location.search).get('join') === '1' && user && (
+                <div className="absolute inset-0 z-40 flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)' }}>
+                  <div className="w-80 rounded-2xl p-6 text-center" style={{ backgroundColor: 'rgba(20,20,20,0.95)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    {joinStatus === 'idle' && (
+                      <>
+                        <p className="text-lg font-bold text-white mb-1">You've been invited to go live</p>
+                        <p className="text-xs text-white/50 mb-4">Your camera and mic will be visible to all viewers</p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={async () => {
+                              setJoinStatus('requesting');
+                              try {
+                                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                                setJoinStream(stream);
+                                // requestToJoin would be called via the costream hook on viewer side
+                              } catch { setJoinStatus('idle'); }
+                            }}
+                            className="flex-1 py-2.5 rounded-xl text-sm font-bold"
+                            style={{ backgroundColor: '#00FF85', color: '#0A0A0A' }}
+                          >
+                            Join Live 🎙️
+                          </button>
+                          <button
+                            onClick={() => {
+                              const url = new URL(window.location.href);
+                              url.searchParams.delete('join');
+                              window.history.replaceState({}, '', url.toString());
+                              setJoinStatus('idle');
+                            }}
+                            className="px-4 py-2.5 rounded-xl text-sm text-white/50 border border-white/10"
+                          >
+                            Decline
+                          </button>
+                        </div>
+                      </>
+                    )}
+                    {joinStatus === 'requesting' && <p className="text-white text-sm">⏳ Waiting for host to accept…</p>}
+                    {joinStatus === 'accepted' && <p className="text-sm" style={{ color: '#00FF85' }}>✅ You're live!</p>}
+                    {joinStatus === 'rejected' && <p className="text-red-400 text-sm">The host declined your request</p>}
+                  </div>
+                </div>
               )}
 
               {/* Viewer Engagement Overlay — only on active live streams */}
