@@ -126,6 +126,7 @@ export default function EmailBroadcast() {
             scheduled_at: scheduledAt,
             ab_variant_a: subject,
             ab_variant_b: subjectB,
+            ab_body_b: bodyB.trim() || null,
             ab_test_size: abTestSize,
           })
           .select()
