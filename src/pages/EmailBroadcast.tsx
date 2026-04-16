@@ -519,9 +519,22 @@ export default function EmailBroadcast() {
           </div>
         ) : (
           <div className="px-4 space-y-4">
-            <Button onClick={() => setComposing(true)} className="w-full rounded-xl gap-2" style={{ background: "#00FF85", color: "#0A0A0A" }}>
-              <Mail className="w-4 h-4" /> New Broadcast
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={() => setComposing(true)} className="flex-1 rounded-xl gap-2" style={{ background: "#00FF85", color: "#0A0A0A" }}>
+                <Mail className="w-4 h-4" /> New Broadcast
+              </Button>
+              <Button
+                variant={showCalendar ? "default" : "outline"}
+                onClick={() => setShowCalendar(!showCalendar)}
+                className="rounded-xl gap-1.5"
+              >
+                <Calendar className="w-4 h-4" /> {showCalendar ? "List" : "Calendar"}
+              </Button>
+            </div>
+
+            {showCalendar && broadcasts.length > 0 && (
+              <BroadcastCalendar broadcasts={broadcasts as any} />
+            )}
 
             {isLoading ? (
               Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)
