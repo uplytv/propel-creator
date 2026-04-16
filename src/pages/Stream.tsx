@@ -42,6 +42,7 @@ import SEOHead from "@/components/SEOHead";
 import RecentRecordingsRow from "@/components/live/RecentRecordingsRow";
 import LiveEventBanner from "@/components/live/LiveEventBanner";
 import StickyBuyTicketBar from "@/components/live/StickyBuyTicketBar";
+import StreamEmailCapture from "@/components/live/StreamEmailCapture";
 
 // Wrapper that fetches real event data for the ticket bar
 function StickyBuyTicketBarWithEvent({ eventId, streamId, fallbackTitle }: { eventId: string; streamId: string; fallbackTitle: string }) {
@@ -1046,6 +1047,13 @@ export default function Stream() {
                     streamTitle={dbStream.title || 'Live Stream'}
                     creatorUserId={dbStream.user_id}
                   />
+                  {!user && (
+                    <StreamEmailCapture
+                      creatorId={dbStream.user_id}
+                      creatorName={creatorName}
+                      streamId={id}
+                    />
+                  )}
                   <ViewerShopOverlay
                     streamId={id}
                     creatorUserId={dbStream.user_id}
