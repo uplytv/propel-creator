@@ -13,10 +13,10 @@ export default function DripAnalytics({ sequenceId, steps }: Props) {
   const { data: sends = [], isLoading } = useQuery({
     queryKey: ["drip-sends-analytics", sequenceId],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data } = await (supabase
         .from("drip_sequence_sends")
         .select("step_id, status, opened_at, clicked_at")
-        .eq("sequence_id", sequenceId) as any;
+        .eq("sequence_id", sequenceId) as any);
       return (data || []) as { step_id: string; status: string; opened_at: string | null; clicked_at: string | null }[];
     },
     enabled: !!sequenceId,
@@ -25,11 +25,11 @@ export default function DripAnalytics({ sequenceId, steps }: Props) {
   const { data: enrollments = [] } = useQuery({
     queryKey: ["drip-enrollments-analytics", sequenceId],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data } = await (supabase
         .from("drip_sequence_enrollments")
         .select("status, current_step")
-        .eq("sequence_id", sequenceId);
-      return data || [];
+        .eq("sequence_id", sequenceId) as any);
+      return (data || []) as { status: string; current_step: number }[];
     },
     enabled: !!sequenceId,
   });
