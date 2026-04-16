@@ -198,6 +198,9 @@ export default function DripSequences() {
               </p>
             </div>
 
+            {/* Analytics */}
+            <DripAnalytics sequenceId={editingSeq} steps={steps} />
+
             <h3 className="text-sm font-semibold text-foreground">Steps ({steps.length})</h3>
 
             {steps.map((step, i) => (
