@@ -288,6 +288,7 @@ export default function Subscribers() {
                     </div>
                     <div className="text-right shrink-0 space-y-0.5">
                       <LeadScoreBadge score={leadScore} />
+                      <LifecycleStageBadge stage={(sub as any).lifecycle_stage || "new"} />
                       <p className="text-[10px] text-muted-foreground">{format(new Date(sub.created_at), "MMM d")}</p>
                     </div>
                   </div>
