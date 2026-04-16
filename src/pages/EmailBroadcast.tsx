@@ -88,7 +88,21 @@ export default function EmailBroadcast() {
     enabled: !!user,
   });
 
-  const { data: subCount = 0 } = useQuery({
+  // Subscribers for smart send-time
+  const { data: subscribersForSendTime = [] } = useQuery({
+    queryKey: ["subscribers-send-time", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("subscribers")
+        .select("optimal_send_hour, send_hour_data")
+        .eq("creator_id", user!.id)
+        .eq("unsubscribed", false);
+      return (data || []) as Array<{ optimal_send_hour?: number | null; send_hour_data?: any }>;
+    },
+    enabled: !!user,
+  });
+
+
     queryKey: ["subscriber-count-for-broadcast", user?.id, segment, tagFilter],
     queryFn: async () => {
       let query = supabase
