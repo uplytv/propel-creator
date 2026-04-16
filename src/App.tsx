@@ -91,6 +91,9 @@ const NetworkFeed = lazy(() => import("./pages/NetworkFeed"));
 const Distribution = lazy(() => import("./pages/Distribution"));
 const DeveloperAPI = lazy(() => import("./pages/DeveloperAPI"));
 const EmailUnsubscribe = lazy(() => import("./pages/EmailUnsubscribe"));
+const Subscribers = lazy(() => import("./pages/Subscribers"));
+const EmailBroadcast = lazy(() => import("./pages/EmailBroadcast"));
+const EventRSVP = lazy(() => import("./pages/EventRSVP"));
 
 // Social pages
 const SocialHome = lazy(() => import("./pages/social/SocialHome"));
@@ -223,6 +226,7 @@ const App = () => (
                     <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
                     <Route path="/shorts" element={<Shorts />} />
                     <Route path="/pricing" element={<Pricing />} />
+                    <Route path="/event/rsvp/:eventId" element={<EventRSVP />} />
 
                     {/* Social routes — MUST be before /:username catch-all */}
                     <Route path="/social" element={<ProtectedRoute><SocialLayout /></ProtectedRoute>}>
@@ -284,6 +288,8 @@ const App = () => (
                     <Route path="/network" element={<ProtectedRoute><NetworkFeed /></ProtectedRoute>} />
                     <Route path="/distribution" element={<ProtectedRoute><Distribution /></ProtectedRoute>} />
                     <Route path="/developer" element={<ProtectedRoute><DeveloperAPI /></ProtectedRoute>} />
+                    <Route path="/dashboard/subscribers" element={<ProtectedRoute><Subscribers /></ProtectedRoute>} />
+                    <Route path="/dashboard/broadcast" element={<ProtectedRoute><EmailBroadcast /></ProtectedRoute>} />
 
                     {/* Admin routes */}
                     <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
