@@ -51,12 +51,14 @@ Deno.serve(async (req) => {
       await supabase.rpc('increment_subscriber_engagement', {
         p_email: decodedEmail,
         p_field: 'total_opens'
-      }).catch(() => {
-        // Fallback: direct update
-        supabase.from('subscribers')
-          .update({ total_opens: 1 }) // will be fixed by score recalc
-          .eq('email', decodedEmail)
-      })
+      }).catch(() => {})
+
+      // Track open hour for smart send-time optimization
+      const openHour = new Date().getUTCHours()
+      await supabase.rpc('update_subscriber_send_hour', {
+        p_email: decodedEmail,
+        p_hour: openHour
+      }).catch(() => {})
     } else if (eventType === 'click') {
       const { count } = await supabase
         .from('broadcast_tracking_events')
