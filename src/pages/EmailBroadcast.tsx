@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Send, Mail, Users, Loader2, Check, AlertCircle, ArrowLeft, Clock, Eye, MousePointerClick, Beaker, Tag, CalendarClock, FileText } from "lucide-react";
+import { Send, Mail, Users, Loader2, Check, AlertCircle, ArrowLeft, Clock, Eye, MousePointerClick, Beaker, Tag, CalendarClock, FileText, Calendar } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import BackNav from "@/components/BackNav";
 import SEOHead from "@/components/SEOHead";
@@ -8,6 +8,9 @@ import { Input } from "@/components/ui/input";
 import RichTextEditor from "@/components/email/RichTextEditor";
 import EmailPreview from "@/components/email/EmailPreview";
 import EmailTemplateLibrary from "@/components/email/EmailTemplateLibrary";
+import MergeTagHelper from "@/components/email/MergeTagHelper";
+import BroadcastCalendar from "@/components/email/BroadcastCalendar";
+import SmartSendTime from "@/components/email/SmartSendTime";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -40,6 +43,7 @@ export default function EmailBroadcast() {
   const [composing, setComposing] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
 
   // Scheduling
   const [scheduleEnabled, setScheduleEnabled] = useState(false);
