@@ -160,16 +160,6 @@ export default function DripSequences() {
     },
     onError: (err: any) => toast.error(err.message),
   });
-    onSuccess: () => {
-      toast.success("Step added");
-      setAddingStep(false);
-      setStepSubject("");
-      setStepBody("");
-      setStepDelay(24);
-      qc.invalidateQueries({ queryKey: ["drip-steps"] });
-    },
-    onError: (err: any) => toast.error(err.message),
-  });
 
   const deleteStep = useMutation({
     mutationFn: async (id: string) => {
