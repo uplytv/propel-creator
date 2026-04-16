@@ -316,33 +316,6 @@ export default function EmailBroadcast() {
                 />
               </div>
 
-              {/* A/B Subject B */}
-              {abEnabled && (
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Subject (Variant B)</label>
-                  <Input
-                    value={subjectB}
-                    onChange={e => setSubjectB(e.target.value)}
-                    placeholder="Alternative subject line..."
-                    className="rounded-xl"
-                  />
-                  <div className="flex items-center gap-2 mt-2">
-                    <label className="text-xs text-muted-foreground">Test size:</label>
-                    <Select value={abTestSize.toString()} onValueChange={v => setAbTestSize(Number(v))}>
-                      <SelectTrigger className="w-24 h-8 rounded-lg text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="10">10%</SelectItem>
-                        <SelectItem value="20">20%</SelectItem>
-                        <SelectItem value="30">30%</SelectItem>
-                        <SelectItem value="50">50%</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <span className="text-[10px] text-muted-foreground">of list gets test, winner goes to rest</span>
-                  </div>
-                </div>
-              )}
 
               {/* Template Library Toggle */}
               <Button
