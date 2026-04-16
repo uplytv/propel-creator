@@ -66,17 +66,14 @@ export default function EventRSVP() {
       }
 
       // Send confirmation email
-      await supabase.functions.invoke("send-transactional-email", {
+      await supabase.functions.invoke("send-rsvp-email", {
         body: {
-          templateName: "event-rsvp-confirmation",
           recipientEmail: email.trim().toLowerCase(),
-          idempotencyKey: `rsvp-confirm-${eventId}-${email.trim().toLowerCase()}`,
-          templateData: {
-            name: name.trim() || undefined,
-            eventTitle: event?.title,
-            eventDate: event?.starts_at ? format(new Date(event.starts_at), "EEEE, MMMM d, yyyy 'at' h:mm a") : "TBD",
-            creatorName: creator?.display_name || "Creator",
-          },
+          recipientName: name.trim() || undefined,
+          eventTitle: event?.title,
+          eventDate: event?.starts_at ? format(new Date(event.starts_at), "EEEE, MMMM d, yyyy 'at' h:mm a") : "TBD",
+          creatorName: creator?.display_name || "Creator",
+          eventId,
         },
       });
 
