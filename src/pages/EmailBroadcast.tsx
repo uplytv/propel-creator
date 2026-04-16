@@ -49,7 +49,8 @@ export default function EmailBroadcast() {
   // A/B Testing
   const [abEnabled, setAbEnabled] = useState(false);
   const [subjectB, setSubjectB] = useState("");
-  const [abTestSize, setAbTestSize] = useState(20); // % of list for test
+  const [abTestSize, setAbTestSize] = useState(20);
+  const [bodyB, setBodyB] = useState("");
 
   const { data: broadcasts = [], isLoading } = useQuery({
     queryKey: ["email-broadcasts", user?.id],
