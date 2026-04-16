@@ -3008,22 +3008,28 @@ export type Database = {
       }
       drip_sequence_sends: {
         Row: {
+          clicked_at: string | null
           enrollment_id: string
           id: string
+          opened_at: string | null
           sent_at: string
           status: string
           step_id: string
         }
         Insert: {
+          clicked_at?: string | null
           enrollment_id: string
           id?: string
+          opened_at?: string | null
           sent_at?: string
           status?: string
           step_id: string
         }
         Update: {
+          clicked_at?: string | null
           enrollment_id?: string
           id?: string
+          opened_at?: string | null
           sent_at?: string
           status?: string
           step_id?: string
@@ -3151,6 +3157,7 @@ export type Database = {
       }
       email_broadcasts: {
         Row: {
+          ab_body_b: string | null
           ab_parent_id: string | null
           ab_test_size: number | null
           ab_variant_a: string | null
@@ -3175,6 +3182,7 @@ export type Database = {
           total_recipients: number | null
         }
         Insert: {
+          ab_body_b?: string | null
           ab_parent_id?: string | null
           ab_test_size?: number | null
           ab_variant_a?: string | null
@@ -3199,6 +3207,7 @@ export type Database = {
           total_recipients?: number | null
         }
         Update: {
+          ab_body_b?: string | null
           ab_parent_id?: string | null
           ab_test_size?: number | null
           ab_variant_a?: string | null
@@ -6991,6 +7000,8 @@ export type Database = {
           creator_id: string
           email: string
           id: string
+          last_click_at: string | null
+          last_open_at: string | null
           last_seen_at: string | null
           lead_score: number
           metadata: Json | null
@@ -7008,6 +7019,8 @@ export type Database = {
           creator_id: string
           email: string
           id?: string
+          last_click_at?: string | null
+          last_open_at?: string | null
           last_seen_at?: string | null
           lead_score?: number
           metadata?: Json | null
@@ -7025,6 +7038,8 @@ export type Database = {
           creator_id?: string
           email?: string
           id?: string
+          last_click_at?: string | null
+          last_open_at?: string | null
           last_seen_at?: string | null
           lead_score?: number
           metadata?: Json | null
