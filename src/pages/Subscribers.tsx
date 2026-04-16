@@ -343,6 +343,12 @@ export default function Subscribers() {
         </div>
 
         <CSVImport open={showImport} onOpenChange={setShowImport} />
+        <SegmentBuilder
+          open={showSegment}
+          onOpenChange={setShowSegment}
+          onApply={setSegmentRules}
+          availableTags={availableTags}
+        />
       </div>
     </AppLayout>
   );

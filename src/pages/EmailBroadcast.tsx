@@ -407,10 +407,47 @@ export default function EmailBroadcast() {
               <div className="flex items-center justify-between p-3 rounded-xl border border-border bg-card">
                 <div className="flex items-center gap-2">
                   <Beaker className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm text-foreground">A/B test subject line</span>
+                  <span className="text-sm text-foreground">A/B test</span>
                 </div>
                 <Switch checked={abEnabled} onCheckedChange={setAbEnabled} />
               </div>
+
+              {abEnabled && (
+                <div className="space-y-3 p-3 rounded-xl border border-purple-500/20 bg-purple-500/5">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Subject (Variant B)</label>
+                    <Input
+                      value={subjectB}
+                      onChange={e => setSubjectB(e.target.value)}
+                      placeholder="Alternative subject line..."
+                      className="rounded-xl"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Body (Variant B) — optional</label>
+                    <RichTextEditor
+                      value={bodyB}
+                      onChange={setBodyB}
+                      placeholder="Leave empty to use same body as A..."
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs text-muted-foreground">Test size:</label>
+                    <Select value={abTestSize.toString()} onValueChange={v => setAbTestSize(Number(v))}>
+                      <SelectTrigger className="w-24 h-8 rounded-lg text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="10">10%</SelectItem>
+                        <SelectItem value="20">20%</SelectItem>
+                        <SelectItem value="30">30%</SelectItem>
+                        <SelectItem value="50">50%</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <span className="text-[10px] text-muted-foreground">of list gets test, winner goes to rest</span>
+                  </div>
+                </div>
+              )}
 
               {/* Actions */}
               <div className="flex gap-2">
