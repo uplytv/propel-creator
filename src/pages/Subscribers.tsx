@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
-import { Users, Download, Search, Mail, TrendingUp, UserPlus, Radio, Ticket, Link2, Filter, Tag, Plus, X } from "lucide-react";
+import { Users, Download, Search, Mail, TrendingUp, UserPlus, Radio, Ticket, Link2, Filter, Tag, Plus, X, Upload } from "lucide-react";
+import CSVImport from "@/components/subscribers/CSVImport";
 import SubscriberGrowthChart from "@/components/subscribers/SubscriberGrowthChart";
 import AppLayout from "@/components/layout/AppLayout";
 import BackNav from "@/components/BackNav";
@@ -33,6 +34,7 @@ export default function Subscribers() {
   const qc = useQueryClient();
   const [newTag, setNewTag] = useState("");
   const [tagTarget, setTagTarget] = useState<string | null>(null);
+  const [showImport, setShowImport] = useState(false);
 
   const activeSubscribers = useMemo(
     () => subscribers.filter(s => !s.unsubscribed),
@@ -128,9 +130,12 @@ export default function Subscribers() {
         </div>
 
         {/* Export */}
-        <div className="px-4 pb-3">
+        <div className="px-4 pb-3 flex gap-2">
           <Button variant="outline" size="sm" onClick={exportCSV} className="rounded-xl text-xs gap-1.5">
             <Download className="w-3.5 h-3.5" /> Export CSV
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setShowImport(true)} className="rounded-xl text-xs gap-1.5">
+            <Upload className="w-3.5 h-3.5" /> Import CSV
           </Button>
         </div>
 
@@ -217,6 +222,8 @@ export default function Subscribers() {
             })
           )}
         </div>
+
+        <CSVImport open={showImport} onOpenChange={setShowImport} />
       </div>
     </AppLayout>
   );

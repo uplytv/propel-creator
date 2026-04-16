@@ -66,6 +66,8 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
       { label: "Newsletter", icon: Mail, path: "/newsletter", desc: "Email your members", featureKey: "newsletter" },
       { label: "Subscribers", icon: UserPlus, path: "/dashboard/subscribers", desc: "Email capture & leads" },
       { label: "Broadcast", icon: Radio, path: "/dashboard/broadcast", desc: "Email your list" },
+      { label: "Email Analytics", icon: BarChart3, path: "/dashboard/email-analytics", desc: "Open & click rates" },
+      { label: "Drip Sequences", icon: Zap, path: "/dashboard/drip-sequences", desc: "Automated emails" },
       { label: "My Page", icon: Globe, path: "/my-page", desc: "Bio link & funnel pages" },
       { label: "Brand Deals", icon: Briefcase, path: "/marketplace", desc: "Sponsored opportunities" },
       { label: "Developer API", icon: Code, path: "/developer", desc: "API keys & webhooks" },
