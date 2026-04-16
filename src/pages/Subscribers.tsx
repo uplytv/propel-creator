@@ -221,6 +221,16 @@ export default function Subscribers() {
         {/* Sort & Actions */}
         <div className="px-4 pb-3 flex gap-2 flex-wrap">
           <Button
+            variant={segmentRules.length > 0 ? "default" : "outline"}
+            size="sm"
+            onClick={() => setShowSegment(true)}
+            className="rounded-xl text-xs gap-1.5"
+            style={segmentRules.length > 0 ? { background: "#3b82f6", color: "white" } : undefined}
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            {segmentRules.length > 0 ? `${segmentRules.length} rules · ${activeSubscribers.length} match` : "Segment"}
+          </Button>
+          <Button
             variant={sortBy === "score" ? "default" : "outline"}
             size="sm"
             onClick={() => setSortBy(sortBy === "score" ? "date" : "score")}
