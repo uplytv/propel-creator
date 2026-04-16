@@ -16,8 +16,8 @@ export default function DripAnalytics({ sequenceId, steps }: Props) {
       const { data } = await supabase
         .from("drip_sequence_sends")
         .select("step_id, status, opened_at, clicked_at")
-        .eq("sequence_id", sequenceId);
-      return data || [];
+        .eq("sequence_id", sequenceId) as any;
+      return (data || []) as { step_id: string; status: string; opened_at: string | null; clicked_at: string | null }[];
     },
     enabled: !!sequenceId,
   });
