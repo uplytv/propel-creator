@@ -102,7 +102,7 @@ export default function EmailBroadcast() {
     enabled: !!user,
   });
 
-
+  const { data: subCount = 0 } = useQuery({
     queryKey: ["subscriber-count-for-broadcast", user?.id, segment, tagFilter],
     queryFn: async () => {
       let query = supabase
