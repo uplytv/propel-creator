@@ -2948,6 +2948,48 @@ export type Database = {
         }
         Relationships: []
       }
+      email_broadcasts: {
+        Row: {
+          body: string
+          created_at: string
+          creator_id: string
+          delivered_count: number | null
+          failed_count: number | null
+          id: string
+          segment: string
+          sent_at: string | null
+          status: string
+          subject: string
+          total_recipients: number | null
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          creator_id: string
+          delivered_count?: number | null
+          failed_count?: number | null
+          id?: string
+          segment?: string
+          sent_at?: string | null
+          status?: string
+          subject: string
+          total_recipients?: number | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          creator_id?: string
+          delivered_count?: number | null
+          failed_count?: number | null
+          id?: string
+          segment?: string
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          total_recipients?: number | null
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -3078,6 +3120,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "event_reminders_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_rsvps: {
+        Row: {
+          confirmation_sent: boolean
+          created_at: string
+          email: string
+          event_id: string
+          id: string
+          name: string | null
+          reminder_sent: boolean
+          user_id: string | null
+        }
+        Insert: {
+          confirmation_sent?: boolean
+          created_at?: string
+          email: string
+          event_id: string
+          id?: string
+          name?: string | null
+          reminder_sent?: boolean
+          user_id?: string | null
+        }
+        Update: {
+          confirmation_sent?: boolean
+          created_at?: string
+          email?: string
+          event_id?: string
+          id?: string
+          name?: string | null
+          reminder_sent?: boolean
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_rsvps_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
@@ -6629,6 +6712,48 @@ export type Database = {
           payload?: Json
           status?: string
           stripe_event_id?: string
+        }
+        Relationships: []
+      }
+      subscribers: {
+        Row: {
+          created_at: string
+          creator_id: string
+          email: string
+          id: string
+          last_seen_at: string | null
+          metadata: Json | null
+          name: string | null
+          source: string
+          total_purchases: number | null
+          unsubscribed: boolean
+          unsubscribed_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          email: string
+          id?: string
+          last_seen_at?: string | null
+          metadata?: Json | null
+          name?: string | null
+          source?: string
+          total_purchases?: number | null
+          unsubscribed?: boolean
+          unsubscribed_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          email?: string
+          id?: string
+          last_seen_at?: string | null
+          metadata?: Json | null
+          name?: string | null
+          source?: string
+          total_purchases?: number | null
+          unsubscribed?: boolean
+          unsubscribed_at?: string | null
         }
         Relationships: []
       }
