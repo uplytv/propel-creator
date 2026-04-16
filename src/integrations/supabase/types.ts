@@ -1389,6 +1389,44 @@ export type Database = {
           },
         ]
       }
+      broadcast_tracking_events: {
+        Row: {
+          broadcast_id: string
+          created_at: string
+          event_type: string
+          id: string
+          link_url: string | null
+          subscriber_email: string
+          user_agent: string | null
+        }
+        Insert: {
+          broadcast_id: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          link_url?: string | null
+          subscriber_email: string
+          user_agent?: string | null
+        }
+        Update: {
+          broadcast_id?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          link_url?: string | null
+          subscriber_email?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "broadcast_tracking_events_broadcast_id_fkey"
+            columns: ["broadcast_id"]
+            isOneToOne: false
+            referencedRelation: "email_broadcasts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_categories: {
         Row: {
           created_at: string
@@ -2950,12 +2988,20 @@ export type Database = {
       }
       email_broadcasts: {
         Row: {
+          ab_parent_id: string | null
+          ab_test_size: number | null
+          ab_variant_a: string | null
+          ab_variant_b: string | null
+          ab_winner: string | null
           body: string
+          click_count: number | null
           created_at: string
           creator_id: string
           delivered_count: number | null
           failed_count: number | null
           id: string
+          open_count: number | null
+          scheduled_at: string | null
           segment: string
           sent_at: string | null
           status: string
@@ -2963,12 +3009,20 @@ export type Database = {
           total_recipients: number | null
         }
         Insert: {
+          ab_parent_id?: string | null
+          ab_test_size?: number | null
+          ab_variant_a?: string | null
+          ab_variant_b?: string | null
+          ab_winner?: string | null
           body: string
+          click_count?: number | null
           created_at?: string
           creator_id: string
           delivered_count?: number | null
           failed_count?: number | null
           id?: string
+          open_count?: number | null
+          scheduled_at?: string | null
           segment?: string
           sent_at?: string | null
           status?: string
@@ -2976,12 +3030,20 @@ export type Database = {
           total_recipients?: number | null
         }
         Update: {
+          ab_parent_id?: string | null
+          ab_test_size?: number | null
+          ab_variant_a?: string | null
+          ab_variant_b?: string | null
+          ab_winner?: string | null
           body?: string
+          click_count?: number | null
           created_at?: string
           creator_id?: string
           delivered_count?: number | null
           failed_count?: number | null
           id?: string
+          open_count?: number | null
+          scheduled_at?: string | null
           segment?: string
           sent_at?: string | null
           status?: string
@@ -6725,6 +6787,7 @@ export type Database = {
           metadata: Json | null
           name: string | null
           source: string
+          tags: string[] | null
           total_purchases: number | null
           unsubscribed: boolean
           unsubscribed_at: string | null
@@ -6738,6 +6801,7 @@ export type Database = {
           metadata?: Json | null
           name?: string | null
           source?: string
+          tags?: string[] | null
           total_purchases?: number | null
           unsubscribed?: boolean
           unsubscribed_at?: string | null
@@ -6751,6 +6815,7 @@ export type Database = {
           metadata?: Json | null
           name?: string | null
           source?: string
+          tags?: string[] | null
           total_purchases?: number | null
           unsubscribed?: boolean
           unsubscribed_at?: string | null

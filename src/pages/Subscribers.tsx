@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Users, Download, Search, Mail, TrendingUp, UserPlus, Radio, Ticket, Link2, Filter } from "lucide-react";
+import { Users, Download, Search, Mail, TrendingUp, UserPlus, Radio, Ticket, Link2, Filter, Tag, Plus, X } from "lucide-react";
 import SubscriberGrowthChart from "@/components/subscribers/SubscriberGrowthChart";
 import AppLayout from "@/components/layout/AppLayout";
 import BackNav from "@/components/BackNav";
@@ -8,9 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useSubscribers, useSubscriberStats, useExportSubscribersCSV } from "@/hooks/useSubscribers";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 const sourceConfig: Record<string, { label: string; icon: typeof Radio; color: string }> = {
   stream_join: { label: "Live Stream", icon: Radio, color: "bg-red-500/10 text-red-400" },
@@ -26,11 +30,37 @@ export default function Subscribers() {
   const { data: subscribers = [], isLoading } = useSubscribers({ source: sourceFilter, search });
   const { data: stats } = useSubscriberStats();
   const exportCSV = useExportSubscribersCSV();
+  const qc = useQueryClient();
+  const [newTag, setNewTag] = useState("");
+  const [tagTarget, setTagTarget] = useState<string | null>(null);
 
   const activeSubscribers = useMemo(
     () => subscribers.filter(s => !s.unsubscribed),
     [subscribers]
   );
+
+  const addTag = async (subscriberId: string, currentTags: string[]) => {
+    if (!newTag.trim()) return;
+    const tag = newTag.trim().toLowerCase();
+    if (currentTags.includes(tag)) { setNewTag(""); return; }
+    const { error } = await supabase
+      .from("subscribers")
+      .update({ tags: [...currentTags, tag] })
+      .eq("id", subscriberId);
+    if (error) { toast.error("Failed to add tag"); return; }
+    setNewTag("");
+    qc.invalidateQueries({ queryKey: ["subscribers"] });
+    toast.success(`Tag "${tag}" added`);
+  };
+
+  const removeTag = async (subscriberId: string, currentTags: string[], tagToRemove: string) => {
+    const { error } = await supabase
+      .from("subscribers")
+      .update({ tags: currentTags.filter(t => t !== tagToRemove) })
+      .eq("id", subscriberId);
+    if (error) { toast.error("Failed to remove tag"); return; }
+    qc.invalidateQueries({ queryKey: ["subscribers"] });
+  };
 
   return (
     <AppLayout>
@@ -118,27 +148,69 @@ export default function Subscribers() {
             activeSubscribers.map(sub => {
               const cfg = sourceConfig[sub.source] || sourceConfig.manual;
               const Icon = cfg.icon;
+              const subTags = (sub as any).tags || [];
               return (
-                <div key={sub.id} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card">
-                  <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-sm font-bold text-muted-foreground">
-                    {(sub.name || sub.email)[0].toUpperCase()}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-foreground truncate">{sub.name || sub.email}</span>
-                      <Badge variant="outline" className={`${cfg.color} text-[9px] px-1.5 py-0 shrink-0`}>
-                        <Icon className="w-2.5 h-2.5 mr-0.5" />{cfg.label}
-                      </Badge>
+                <div key={sub.id} className="p-3 rounded-xl border border-border bg-card space-y-2">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-sm font-bold text-muted-foreground shrink-0">
+                      {(sub.name || sub.email)[0].toUpperCase()}
                     </div>
-                    {sub.name && (
-                      <p className="text-xs text-muted-foreground truncate">{sub.email}</p>
-                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-foreground truncate">{sub.name || sub.email}</span>
+                        <Badge variant="outline" className={`${cfg.color} text-[9px] px-1.5 py-0 shrink-0`}>
+                          <Icon className="w-2.5 h-2.5 mr-0.5" />{cfg.label}
+                        </Badge>
+                      </div>
+                      {sub.name && (
+                        <p className="text-xs text-muted-foreground truncate">{sub.email}</p>
+                      )}
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-[10px] text-muted-foreground">{format(new Date(sub.created_at), "MMM d")}</p>
+                      {sub.total_purchases > 0 && (
+                        <p className="text-[10px] font-medium" style={{ color: "#00FF85" }}>{sub.total_purchases} purchases</p>
+                      )}
+                    </div>
                   </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-[10px] text-muted-foreground">{format(new Date(sub.created_at), "MMM d")}</p>
-                    {sub.total_purchases > 0 && (
-                      <p className="text-[10px] font-medium" style={{ color: "#00FF85" }}>{sub.total_purchases} purchases</p>
-                    )}
+
+                  {/* Tags */}
+                  <div className="flex items-center gap-1.5 flex-wrap pl-12">
+                    {subTags.map((tag: string) => (
+                      <Badge
+                        key={tag}
+                        variant="outline"
+                        className="text-[9px] px-1.5 py-0 bg-accent/50 text-accent-foreground gap-0.5 cursor-pointer hover:bg-destructive/10"
+                        onClick={() => removeTag(sub.id, subTags, tag)}
+                      >
+                        <Tag className="w-2.5 h-2.5" />{tag}
+                        <X className="w-2 h-2 ml-0.5" />
+                      </Badge>
+                    ))}
+                    <Popover open={tagTarget === sub.id} onOpenChange={open => { setTagTarget(open ? sub.id : null); setNewTag(""); }}>
+                      <PopoverTrigger asChild>
+                        <button className="w-5 h-5 rounded-full border border-dashed border-border flex items-center justify-center hover:border-primary transition-colors">
+                          <Plus className="w-3 h-3 text-muted-foreground" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-48 p-2" side="top">
+                        <form
+                          onSubmit={e => { e.preventDefault(); addTag(sub.id, subTags); }}
+                          className="flex gap-1"
+                        >
+                          <Input
+                            value={newTag}
+                            onChange={e => setNewTag(e.target.value)}
+                            placeholder="Add tag..."
+                            className="h-7 text-xs rounded-lg"
+                            autoFocus
+                          />
+                          <Button type="submit" size="sm" className="h-7 px-2 text-xs rounded-lg">
+                            Add
+                          </Button>
+                        </form>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 </div>
               );

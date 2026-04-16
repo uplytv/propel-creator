@@ -9,6 +9,7 @@ export interface Subscriber {
   name: string | null;
   source: string;
   metadata: any;
+  tags: string[];
   unsubscribed: boolean;
   unsubscribed_at: string | null;
   total_purchases: number;
