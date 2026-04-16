@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Send, Mail, Users, Loader2, Check, AlertCircle, ArrowLeft, Clock, Eye, MousePointerClick, Beaker, Tag, CalendarClock } from "lucide-react";
+import { Send, Mail, Users, Loader2, Check, AlertCircle, ArrowLeft, Clock, Eye, MousePointerClick, Beaker, Tag, CalendarClock, FileText } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import BackNav from "@/components/BackNav";
 import SEOHead from "@/components/SEOHead";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import RichTextEditor from "@/components/email/RichTextEditor";
 import EmailPreview from "@/components/email/EmailPreview";
+import EmailTemplateLibrary from "@/components/email/EmailTemplateLibrary";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -38,6 +39,7 @@ export default function EmailBroadcast() {
   const [confirmSend, setConfirmSend] = useState(false);
   const [composing, setComposing] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
 
   // Scheduling
   const [scheduleEnabled, setScheduleEnabled] = useState(false);
@@ -338,6 +340,29 @@ export default function EmailBroadcast() {
                     </Select>
                     <span className="text-[10px] text-muted-foreground">of list gets test, winner goes to rest</span>
                   </div>
+                </div>
+              )}
+
+              {/* Template Library Toggle */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowTemplates(!showTemplates)}
+                className="w-full rounded-xl gap-2 text-xs"
+              >
+                <FileText className="w-3.5 h-3.5" /> {showTemplates ? "Hide Templates" : "Use a Template"}
+              </Button>
+
+              {showTemplates && (
+                <div className="p-3 rounded-xl border border-border bg-card/50">
+                  <EmailTemplateLibrary
+                    onUseTemplate={(tmplSubject, tmplBody) => {
+                      setSubject(tmplSubject);
+                      setBody(tmplBody);
+                      setShowTemplates(false);
+                      toast.success("Template applied");
+                    }}
+                  />
                 </div>
               )}
 
