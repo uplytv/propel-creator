@@ -1,35 +1,51 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ICE_SERVERS } from '@/lib/webrtcConfig';
-import { Sentry } from "@/lib/sentry";
 
-export interface GuestState {
-  guestId: string | null;
-  guestName: string | null;
-  guestStream: MediaStream | null;
+export type GuestLayout = 'pip' | 'side-by-side' | 'grid';
+
+export interface Guest {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  stream: MediaStream | null;
   isConnected: boolean;
-  isPending: boolean;
-  pendingRequests: { userId: string; name: string; avatarUrl: string | null }[];
+  isMuted: boolean;
+  pc: RTCPeerConnection;
 }
 
-/**
- * Guest co-streaming hook.
- * Allows a host to invite/accept a guest who joins via WebRTC.
- * The guest's audio+video is received and can be composited.
- */
+export interface PendingRequest {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+}
+
+const MAX_GUESTS = 4;
+
 export function useGuestCoStream(streamId: string | undefined, isHost: boolean) {
-  const [state, setState] = useState<GuestState>({
-    guestId: null,
-    guestName: null,
-    guestStream: null,
-    isConnected: false,
-    isPending: false,
-    pendingRequests: [],
-  });
-  const guestPcRef = useRef<RTCPeerConnection | null>(null);
+  const [guests, setGuests] = useState<Map<string, Guest>>(new Map());
+  const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
+  const [layout, setLayout] = useState<GuestLayout>('pip');
   const channelRef = useRef<any>(null);
 
-  // Listen for guest join requests (host side)
+  const getInviteLink = useCallback(() => {
+    if (!streamId) return '';
+    return `${window.location.origin}/stream/${streamId}?join=1`;
+  }, [streamId]);
+
+  const removeGuest = useCallback((userId: string) => {
+    setGuests(prev => {
+      const next = new Map(prev);
+      const g = next.get(userId);
+      if (g?.pc) g.pc.close();
+      next.delete(userId);
+      return next;
+    });
+    if (channelRef.current) {
+      channelRef.current.send({ type: 'broadcast', event: 'guest-removed', payload: { userId } });
+    }
+  }, []);
+
   useEffect(() => {
     if (!streamId || !isHost) return;
 
@@ -41,28 +57,31 @@ export function useGuestCoStream(streamId: string | undefined, isHost: boolean) 
     channel
       .on('broadcast', { event: 'guest-request' }, (payload: any) => {
         const { userId, name, avatarUrl } = payload.payload;
-        setState(prev => ({
-          ...prev,
-          pendingRequests: [...prev.pendingRequests.filter(r => r.userId !== userId), { userId, name, avatarUrl }],
-        }));
+        setGuests(currentGuests => {
+          if (currentGuests.size >= MAX_GUESTS) {
+            channel.send({ type: 'broadcast', event: 'guest-rejected', payload: { userId, reason: 'full' } });
+            return currentGuests;
+          }
+          setPendingRequests(prev => [
+            ...prev.filter(r => r.userId !== userId),
+            { userId, name, avatarUrl },
+          ]);
+          return currentGuests;
+        });
       })
       .on('broadcast', { event: 'guest-offer' }, async (payload: any) => {
-        const { userId, offer, name } = payload.payload;
-        if (state.guestId && state.guestId !== userId) return; // already have a guest
+        const { userId, offer, name, avatarUrl } = payload.payload;
 
         const pc = new RTCPeerConnection(ICE_SERVERS);
-        guestPcRef.current = pc;
 
         pc.ontrack = (event) => {
           if (event.streams[0]) {
-            setState(prev => ({
-              ...prev,
-              guestStream: event.streams[0],
-              guestId: userId,
-              guestName: name,
-              isConnected: true,
-              isPending: false,
-            }));
+            setGuests(prev => {
+              const next = new Map(prev);
+              const g = next.get(userId);
+              if (g) next.set(userId, { ...g, stream: event.streams[0], isConnected: true });
+              return next;
+            });
           }
         };
 
@@ -78,7 +97,7 @@ export function useGuestCoStream(streamId: string | undefined, isHost: boolean) 
 
         pc.oniceconnectionstatechange = () => {
           if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
-            removeGuest();
+            removeGuest(userId);
           }
         };
 
@@ -91,132 +110,103 @@ export function useGuestCoStream(streamId: string | undefined, isHost: boolean) 
             event: 'host-answer',
             payload: { targetUserId: userId, answer: pc.localDescription?.toJSON() },
           });
+
+          setGuests(prev => {
+            const next = new Map(prev);
+            next.set(userId, { userId, name, avatarUrl, stream: null, isConnected: false, isMuted: false, pc });
+            return next;
+          });
         } catch (err) {
-          Sentry.captureException(err, { tags: { context: "guest_costream" } });
+          console.error('Co-stream offer error:', err);
         }
       })
       .on('broadcast', { event: 'guest-ice' }, async (payload: any) => {
-        const { candidate } = payload.payload;
-        if (guestPcRef.current?.remoteDescription) {
-          try {
-            await guestPcRef.current.addIceCandidate(new RTCIceCandidate(candidate));
-          } catch {}
-        }
+        const { userId, candidate } = payload.payload;
+        setGuests(prev => {
+          const guest = prev.get(userId);
+          if (guest?.pc?.remoteDescription) {
+            try { guest.pc.addIceCandidate(new RTCIceCandidate(candidate)); } catch {}
+          }
+          return prev;
+        });
       })
-      .on('broadcast', { event: 'guest-leave' }, () => {
-        removeGuest();
+      .on('broadcast', { event: 'guest-leave' }, (payload: any) => {
+        removeGuest(payload.payload.userId);
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [streamId, isHost]);
+  }, [streamId, isHost, removeGuest]);
 
   const acceptGuest = useCallback((userId: string) => {
     if (!channelRef.current) return;
-    setState(prev => ({
-      ...prev,
-      isPending: true,
-      pendingRequests: prev.pendingRequests.filter(r => r.userId !== userId),
-    }));
-    channelRef.current.send({
-      type: 'broadcast',
-      event: 'guest-accepted',
-      payload: { userId },
+    setGuests(prev => {
+      if (prev.size >= MAX_GUESTS) return prev;
+      setPendingRequests(p => p.filter(r => r.userId !== userId));
+      channelRef.current.send({ type: 'broadcast', event: 'guest-accepted', payload: { userId } });
+      return prev;
     });
   }, []);
 
   const rejectGuest = useCallback((userId: string) => {
     if (!channelRef.current) return;
-    setState(prev => ({
-      ...prev,
-      pendingRequests: prev.pendingRequests.filter(r => r.userId !== userId),
-    }));
-    channelRef.current.send({
-      type: 'broadcast',
-      event: 'guest-rejected',
-      payload: { userId },
+    setPendingRequests(prev => prev.filter(r => r.userId !== userId));
+    channelRef.current.send({ type: 'broadcast', event: 'guest-rejected', payload: { userId, reason: 'rejected' } });
+  }, []);
+
+  const toggleGuestMute = useCallback((userId: string) => {
+    setGuests(prev => {
+      const next = new Map(prev);
+      const g = next.get(userId);
+      if (g) {
+        g.stream?.getAudioTracks().forEach(t => { t.enabled = !t.enabled; });
+        next.set(userId, { ...g, isMuted: !g.isMuted });
+      }
+      return next;
     });
   }, []);
 
-  const removeGuest = useCallback(() => {
-    if (guestPcRef.current) {
-      guestPcRef.current.close();
-      guestPcRef.current = null;
-    }
-    if (channelRef.current) {
-      channelRef.current.send({
-        type: 'broadcast',
-        event: 'guest-removed',
-        payload: {},
-      });
-    }
-    setState(prev => ({
-      ...prev,
-      guestId: null,
-      guestName: null,
-      guestStream: null,
-      isConnected: false,
-      isPending: false,
-    }));
-  }, []);
-
-  // Guest side: request to join
   const requestToJoin = useCallback(async (userId: string, name: string, avatarUrl: string | null) => {
     if (!streamId) return;
     const channel = supabase.channel(`costream-${streamId}`, {
       config: { broadcast: { self: false } },
     });
-
     channel.subscribe(async (status) => {
       if (status === 'SUBSCRIBED') {
-        channel.send({
-          type: 'broadcast',
-          event: 'guest-request',
-          payload: { userId, name, avatarUrl },
-        });
+        channel.send({ type: 'broadcast', event: 'guest-request', payload: { userId, name, avatarUrl } });
       }
     });
+    return channel;
   }, [streamId]);
 
-  // Guest side: send offer after being accepted
-  const sendGuestOffer = useCallback(async (userId: string, name: string, localStream: MediaStream) => {
+  const sendGuestOffer = useCallback(async (userId: string, name: string, avatarUrl: string | null, localStream: MediaStream) => {
     if (!streamId) return;
     const channel = supabase.channel(`costream-${streamId}`, {
       config: { broadcast: { self: false } },
     });
 
     const pc = new RTCPeerConnection(ICE_SERVERS);
-    guestPcRef.current = pc;
-
-    localStream.getTracks().forEach(track => {
-      pc.addTrack(track, localStream);
-    });
+    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
 
     pc.onicecandidate = (event) => {
       if (event.candidate) {
-        channel.send({
-          type: 'broadcast',
-          event: 'guest-ice',
-          payload: { candidate: event.candidate.toJSON() },
-        });
+        channel.send({ type: 'broadcast', event: 'guest-ice', payload: { userId, candidate: event.candidate.toJSON() } });
       }
     };
 
     channel
       .on('broadcast', { event: 'host-answer' }, async (payload: any) => {
         if (payload.payload.targetUserId !== userId) return;
-        try {
-          await pc.setRemoteDescription(new RTCSessionDescription(payload.payload.answer));
-          setState(prev => ({ ...prev, isConnected: true }));
-        } catch {}
+        try { await pc.setRemoteDescription(new RTCSessionDescription(payload.payload.answer)); } catch {}
       })
       .on('broadcast', { event: 'host-ice' }, async (payload: any) => {
         if (payload.payload.targetUserId !== userId) return;
-        try {
-          await pc.addIceCandidate(new RTCIceCandidate(payload.payload.candidate));
-        } catch {}
+        try { await pc.addIceCandidate(new RTCIceCandidate(payload.payload.candidate)); } catch {}
+      })
+      .on('broadcast', { event: 'guest-removed' }, (payload: any) => {
+        if (payload.payload.userId === userId) { pc.close(); }
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
@@ -225,18 +215,31 @@ export function useGuestCoStream(streamId: string | undefined, isHost: boolean) 
           channel.send({
             type: 'broadcast',
             event: 'guest-offer',
-            payload: { userId, name, offer: pc.localDescription?.toJSON() },
+            payload: { userId, name, avatarUrl, offer: pc.localDescription?.toJSON() },
           });
         }
       });
+
+    return { pc, channel };
   }, [streamId]);
 
+  const guestArray = Array.from(guests.values());
+  const connectedGuests = guestArray.filter(g => g.isConnected);
+
   return {
-    ...state,
+    guests: guestArray,
+    connectedGuests,
+    pendingRequests,
+    layout,
+    setLayout,
     acceptGuest,
     rejectGuest,
     removeGuest,
+    toggleGuestMute,
     requestToJoin,
     sendGuestOffer,
+    getInviteLink,
+    guestCount: guests.size,
+    isFull: guests.size >= MAX_GUESTS,
   };
 }
