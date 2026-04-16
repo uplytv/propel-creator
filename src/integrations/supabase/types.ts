@@ -8150,6 +8150,10 @@ export type Database = {
         Args: { p_amount?: number; p_id: string }
         Returns: undefined
       }
+      increment_subscriber_engagement: {
+        Args: { p_email: string; p_field: string }
+        Returns: undefined
+      }
       insert_admin_notification: {
         Args: {
           p_link?: string
