@@ -335,6 +335,24 @@ Deno.serve(async (req) => {
               creator_id,
             }, { onConflict: "creator_id,user_id" });
 
+            // Auto-capture subscriber email from membership
+            try {
+              const { data: memberAuth } = await supabase.auth.admin.getUserById(member_id);
+              if (memberAuth?.user?.email) {
+                const { data: memberProfile } = await supabase
+                  .from("profiles").select("display_name").eq("user_id", member_id).maybeSingle();
+                await supabase.from("subscribers").upsert({
+                  creator_id,
+                  email: memberAuth.user.email,
+                  name: memberProfile?.display_name || null,
+                  source: "membership",
+                  metadata: { tier_id, subscription_id: session.subscription },
+                }, { onConflict: "creator_id,email" });
+              }
+            } catch (subErr) {
+              console.warn("Subscriber capture from membership failed:", subErr);
+            }
+
             // Write access_grants for community + tier
             const subId = session.subscription as string;
             const custId = session.customer as string;
