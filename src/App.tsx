@@ -15,6 +15,7 @@ import AdminRoute from "./components/AdminRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import InstallPrompt from "@/components/InstallPrompt";
 import PushNotificationPermission from "@/components/PushNotificationPermission";
+import UploadRecovery from "@/components/UploadRecovery";
 import OfflineScreen from "@/components/OfflineScreen";
 import SplashScreen from "@/components/SplashScreen";
 import { useNativeInit, useKeyboardState } from "@/hooks/useNativePlatform";
@@ -194,6 +195,7 @@ const App = () => (
               <InstallPrompt />
               <PushNotificationPermission />
               <AppWithSplash>
+              <UploadRecovery />
               <BrowserRouter>
                 <ScrollToTop />
                 <ErrorBoundary>

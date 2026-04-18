@@ -331,7 +331,40 @@ serve(async (req) => {
           } else if (!updateResult || updateResult.length === 0) {
             console.warn(`No DB record found for upload_id ${data.upload_id} — asset ${data.id} with playback ${playbackId} was not linked`)
           } else {
-            console.log(`Updated asset ${updateResult[0].id} to ready via upload_id ${data.upload_id}`)
+            const asset = updateResult[0]
+            console.log(`Updated asset ${asset.id} to ready via upload_id ${data.upload_id}`)
+
+            // If this is a browser-recorded stream (title contains "(Recording)"),
+            // also create a stream_recordings row so it shows in the recordings library.
+            const isStreamRecording = (asset.title || '').includes('(Recording)')
+            if (isStreamRecording) {
+              try {
+                const { data: existing } = await supabase
+                  .from('stream_recordings')
+                  .select('id')
+                  .eq('mux_asset_id', data.id)
+                  .maybeSingle()
+
+                if (!existing) {
+                  const { data: rec, error: recErr } = await supabase.from('stream_recordings').insert({
+                    creator_id: asset.user_id,
+                    title: asset.title,
+                    description: asset.description || '',
+                    mux_asset_id: data.id,
+                    playback_id: playbackId,
+                    duration_seconds: Math.round(data.duration || 0),
+                    is_published: true,
+                    is_free: true,
+                  }).select('id').single()
+
+                  if (recErr) console.error('Failed to create stream_recording from browser upload:', recErr)
+                  else console.log(`✅ Auto-created stream_recording ${rec?.id} from browser upload ${asset.id}`)
+                }
+              } catch (e) {
+                console.error('stream_recording auto-create failed:', e)
+              }
+            }
+
             // Fire n8n distribution webhook for uploaded videos (non-blocking)
             try {
               const n8nUrl = Deno.env.get('N8N_WEBHOOK_URL')
@@ -341,8 +374,8 @@ serve(async (req) => {
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
                     event: 'video.ready',
-                    asset_id: updateResult[0].id,
-                    creator_id: updateResult[0].user_id,
+                    asset_id: asset.id,
+                    creator_id: asset.user_id,
                     mux_asset_id: data.id,
                     playback_id: playbackId,
                     timestamp: new Date().toISOString(),

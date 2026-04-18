@@ -512,44 +512,88 @@ export default function BroadcastStudio({
     if (persistedChunks.length === 0) { onEndStream({ durationSeconds: duration }); return; }
     if (!user) { onEndStream({ durationSeconds: duration }); return; }
     setIsUploading(true); setUploadProgress(0); setUploadFailed(false);
+
+    // ─── Acquire Wake Lock so mobile browsers don't kill the upload when the
+    // screen sleeps or the user switches tabs. Without this, MediaRecorder /
+    // chunked uploads on iOS Safari are paused, causing 5%-stuck uploads.
+    let wakeLock: any = null;
+    try {
+      // @ts-ignore — Wake Lock API
+      if (navigator.wakeLock?.request) {
+        // @ts-ignore
+        wakeLock = await navigator.wakeLock.request("screen");
+      }
+    } catch (e) {
+      console.warn("[BroadcastStudio] Wake Lock unavailable:", e);
+    }
+    const reacquireWakeLock = async () => {
+      if (document.visibilityState === "visible" && !wakeLock) {
+        try {
+          // @ts-ignore
+          if (navigator.wakeLock?.request) {
+            // @ts-ignore
+            wakeLock = await navigator.wakeLock.request("screen");
+          }
+        } catch {}
+      }
+    };
+    document.addEventListener("visibilitychange", reacquireWakeLock);
+
     try {
       const blob = new Blob(persistedChunks, { type: "video/webm" });
 
-      // Auto-download: subscribe to realtime and download full MP4 from Mux when ready
+      // Auto-download: subscribe BEFORE starting the upload so we never miss
+      // the asset.ready event. Listen on mux_assets (not stream_recordings)
+      // because browser uploads land there first.
+      let dlChannel: any = null;
+      let downloadFired = false;
+      const fireDownload = async (assetId: string, recTitle: string) => {
+        if (downloadFired) return;
+        downloadFired = true;
+        try {
+          const { data: dlData, error: dlErr } = await supabase.functions.invoke('download-asset', {
+            body: { asset_id: assetId },
+          });
+          if (dlErr) throw dlErr;
+          if (dlData?.url) {
+            const a = document.createElement('a');
+            a.href = dlData.url;
+            a.download = (recTitle || title || 'recording') + '.mp4';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            toast.success('Recording downloaded ✓');
+          }
+        } catch {
+          toast.error('Auto-download failed — download from Content Library');
+        }
+        if (dlChannel) supabase.removeChannel(dlChannel);
+      };
+
+      const { uploadToMuxWithRetry } = await import("@/lib/muxUpload");
+
+      // Wrap onProgress so we can capture the uploadId BEFORE upload completes
+      // (we need it to subscribe to the correct row). uploadToMuxWithRetry
+      // returns the uploadId only after success — but mux-create-upload already
+      // inserted the mux_assets row, so we listen by user_id and match later.
       if (autoDownload) {
-        toast.info("Recording being processed for download...", { duration: 8000 });
-        const dlChannel = supabase
-          .channel('auto-download-' + streamData.streamId)
+        toast.info("Recording will auto-download when ready…", { duration: 6000 });
+        dlChannel = supabase
+          .channel('auto-dl-' + user.id + '-' + Date.now())
           .on('postgres_changes', {
-            event: 'UPDATE',
+            event: '*',
             schema: 'public',
-            table: 'stream_recordings',
+            table: 'mux_assets',
+            filter: `user_id=eq.${user.id}`,
           }, async (payload: any) => {
-            if (payload.new.status === 'ready' && payload.new.mux_asset_id) {
-              try {
-                const { data: dlData, error: dlErr } = await supabase.functions.invoke('download-asset', {
-                  body: { asset_id: payload.new.mux_asset_id, recording_id: payload.new.id },
-                });
-                if (dlErr) throw dlErr;
-                if (dlData?.url) {
-                  const a = document.createElement('a');
-                  a.href = dlData.url;
-                  a.download = (payload.new.title || title || 'recording') + '.mp4';
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                  toast.success('Recording downloaded ✓');
-                }
-              } catch {
-                toast.error('Auto-download failed — download from Content Library');
-              }
-              supabase.removeChannel(dlChannel);
+            const row = payload.new || payload.record;
+            if (row?.status === 'ready' && row?.mux_asset_id && row?.mux_asset_id !== 'pending') {
+              await fireDownload(row.mux_asset_id, row.title);
             }
           })
           .subscribe();
       }
 
-      const { uploadToMuxWithRetry } = await import("@/lib/muxUpload");
       const uploadId = await uploadToMuxWithRetry({
         userId: user.id, title: `${title} (Recording)`, description: "Browser recording",
         isPublic: true, file: blob, onProgress: (pct) => setUploadProgress(pct),
@@ -558,15 +602,39 @@ export default function BroadcastStudio({
       await clearChunks();
       chunksRef.current = [];
       setIsUploading(false);
+
+      // Safety net: if realtime didn't fire within 90s, poll once.
+      if (autoDownload) {
+        setTimeout(async () => {
+          if (downloadFired) return;
+          try {
+            const { data } = await supabase
+              .from('mux_assets')
+              .select('mux_asset_id, status, title')
+              .eq('upload_id', uploadId)
+              .maybeSingle();
+            if (data?.status === 'ready' && data.mux_asset_id && data.mux_asset_id !== 'pending') {
+              await fireDownload(data.mux_asset_id, data.title || title);
+            }
+          } catch {}
+        }, 90000);
+      }
+
       onEndStream({ muxAssetId: uploadId || undefined, durationSeconds: duration });
     } catch (err: any) {
       setUploadFailed(true);
       setUploadErrorMsg(err.message || "Upload failed");
-      toast.error("Upload failed", { description: err.message });
+      toast.error("Upload failed", {
+        description: (err.message || "") + " — your recording is saved locally and will auto-resume next time you open the app.",
+      });
       setIsUploading(false);
       onEndStream({ durationSeconds: duration });
+    } finally {
+      document.removeEventListener("visibilitychange", reacquireWakeLock);
+      try { wakeLock?.release?.(); } catch {}
     }
   }, [recordingDuration, stopWebRTCHost, stopCurrentStream, user, title, onEndStream, toast, autoDownload]);
+
 
   const formatDuration = (seconds: number) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, "0");
