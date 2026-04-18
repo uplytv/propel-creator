@@ -194,6 +194,7 @@ const App = () => (
               <InstallPrompt />
               <PushNotificationPermission />
               <AppWithSplash>
+              <UploadRecovery />
               <BrowserRouter>
                 <ScrollToTop />
                 <ErrorBoundary>
