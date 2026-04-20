@@ -79,7 +79,7 @@ export function useDiscoveryAlgorithmFeed(tab: DiscoveryTab, category?: string) 
       const rMap = new Map((recordings.data ?? []).map((r: any) => [r.id, r]));
       const pMap = new Map((profiles.data ?? []).map((p: any) => [p.user_id, p]));
 
-      return ranked.map((r): DiscoveryItem => {
+      return ranked.map((r: any): DiscoveryItem => {
         let meta: any = null;
         if (r.content_type === "video") meta = vMap.get(r.content_id);
         else if (r.content_type === "clip") meta = cMap.get(r.content_id);
