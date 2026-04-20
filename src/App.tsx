@@ -68,6 +68,7 @@ const ReferralRedirect = lazy(() => import("./pages/ReferralRedirect"));
 const GrowthReports = lazy(() => import("./pages/GrowthReports"));
 const Shorts = lazy(() => import("./pages/Shorts"));
 const SearchPage = lazy(() => import("./pages/Search"));
+const Trending = lazy(() => import("./pages/Trending"));
 const Messages = lazy(() => import("./pages/Messages"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const Pricing = lazy(() => import("./pages/Pricing"));
@@ -274,7 +275,8 @@ const App = () => (
                     <Route path="/content-library" element={<ProtectedRoute><ContentLibrary /></ProtectedRoute>} />
                     <Route path="/launchpad" element={<ProtectedRoute><Launchpad /></ProtectedRoute>} />
                     <Route path="/growth-reports" element={<ProtectedRoute><GrowthReports /></ProtectedRoute>} />
-                    <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
+                   <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
+                   <Route path="/trending" element={<Trending />} />
                     <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
                     <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
                     <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />

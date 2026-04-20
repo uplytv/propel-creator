@@ -56,6 +56,17 @@ export default function VideoPlayer() {
   const { isFollowing, follow, unfollow } = useFollows();
   const isOwner = user?.id === video?.creator_id;
   const subscribed = video?.creator_id ? isFollowing(video.creator_id) : false;
+  const videoElRef = useRef<HTMLVideoElement | null>(null);
+
+  // Watch-time tracking → drives UPLY discovery algorithm
+  useWatchTimeTracker({
+    contentId: video?.id,
+    contentType: "video",
+    durationSeconds: video?.duration_seconds,
+    category: video?.category,
+    getCurrentTime: () => videoElRef.current?.currentTime ?? 0,
+    enabled: !!video?.id && !!video?.duration_seconds,
+  });
 
   // Fetch creator profile
   const { data: creator } = useQuery({
