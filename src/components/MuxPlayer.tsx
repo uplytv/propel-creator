@@ -11,6 +11,8 @@ interface MuxPlayerProps {
   muted?: boolean;
   className?: string;
   streamType?: 'on-demand' | 'live' | 'll-live';
+  /** Called once when the underlying <video> element is ready, so callers can read currentTime for watch-time tracking. */
+  onVideoRef?: (el: HTMLVideoElement | null) => void;
 }
 
 export const UPLYMuxPlayer = ({
@@ -20,6 +22,7 @@ export const UPLYMuxPlayer = ({
   muted = false,
   className,
   streamType = 'on-demand',
+  onVideoRef,
 }: MuxPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -163,7 +166,7 @@ export const UPLYMuxPlayer = ({
     <div ref={containerRef} className={`relative w-full aspect-video bg-black ${className || ''}`}>
       {/* eslint-disable-next-line */}
       <video
-        ref={videoRef}
+        ref={(el) => { (videoRef as any).current = el; onVideoRef?.(el); }}
         autoPlay={autoPlay}
         muted={muted}
         playsInline

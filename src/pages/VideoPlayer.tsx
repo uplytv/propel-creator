@@ -1,8 +1,9 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Heart, ThumbsDown, UserPlus, Check, Zap, Share2, ShoppingBag, Repeat2, ChevronDown, ChevronUp, MessageCircle, Eye, Clock, Send, BarChart3, TrendingUp } from "lucide-react";
 import { UPLYMuxPlayer } from "@/components/MuxPlayer";
+import { useWatchTimeTracker } from "@/hooks/useWatchTimeTracker";
 import { useFollows } from "@/hooks/useFollows";
 import { toast } from "sonner";
 import SEOHead from "@/components/SEOHead";
@@ -55,6 +56,17 @@ export default function VideoPlayer() {
   const { isFollowing, follow, unfollow } = useFollows();
   const isOwner = user?.id === video?.creator_id;
   const subscribed = video?.creator_id ? isFollowing(video.creator_id) : false;
+  const videoElRef = useRef<HTMLVideoElement | null>(null);
+
+  // Watch-time tracking → drives UPLY discovery algorithm
+  useWatchTimeTracker({
+    contentId: video?.id,
+    contentType: "video",
+    durationSeconds: video?.duration_seconds,
+    category: video?.category,
+    getCurrentTime: () => videoElRef.current?.currentTime ?? 0,
+    enabled: !!video?.id && !!video?.duration_seconds,
+  });
 
   // Fetch creator profile
   const { data: creator } = useQuery({
@@ -143,7 +155,12 @@ export default function VideoPlayer() {
       {/* Player */}
       <div className="w-full max-w-5xl mx-auto">
         {video.playback_id ? (
-          <UPLYMuxPlayer playbackId={video.playback_id} title={video.title} autoPlay />
+          <UPLYMuxPlayer
+            playbackId={video.playback_id}
+            title={video.title}
+            autoPlay
+            onVideoRef={(el) => { videoElRef.current = el; }}
+          />
         ) : (
           <div className="aspect-video bg-secondary flex items-center justify-center">
             <p className="text-muted-foreground">Video processing…</p>

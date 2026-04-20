@@ -27,6 +27,7 @@ import ReferralRewardsCard from "@/components/affiliates/ReferralRewardsCard";
 import ScheduleFirstShowCard from "@/components/scheduled/ScheduleFirstShowCard";
 import { useInviteCodes } from "@/hooks/useInviteCodes";
 import FirstDollarWizard from "@/components/dashboard/FirstDollarWizard";
+import DiscoveryInsights from "@/components/dashboard/DiscoveryInsights";
 
 function PlatformUpgradeBanner() {
   const { user } = useAuth();
@@ -221,6 +222,10 @@ export default function Dashboard() {
             })
           )}
         </motion.div>
+
+        <div className="px-4 md:px-8 mb-4">
+          <DiscoveryInsights />
+        </div>
 
         {/* Revenue Goal */}
         <div className="px-4 md:px-8 mb-4">

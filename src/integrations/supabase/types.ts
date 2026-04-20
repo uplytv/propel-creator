@@ -7334,6 +7334,27 @@ export type Database = {
           },
         ]
       }
+      trending_searches: {
+        Row: {
+          id: string
+          last_searched_at: string
+          search_count: number
+          term: string
+        }
+        Insert: {
+          id?: string
+          last_searched_at?: string
+          search_count?: number
+          term: string
+        }
+        Update: {
+          id?: string
+          last_searched_at?: string
+          search_count?: number
+          term?: string
+        }
+        Relationships: []
+      }
       upload_jobs: {
         Row: {
           completed_at: string | null
@@ -7497,6 +7518,66 @@ export type Database = {
           },
         ]
       }
+      video_discovery_scores: {
+        Row: {
+          category: string | null
+          comments: number
+          content_id: string
+          content_type: string
+          created_at: string
+          creator_id: string
+          feed_clicks: number
+          id: string
+          impressions: number
+          is_new_creator_boosted: boolean
+          last_calculated_at: string
+          likes: number
+          saves: number
+          score: number
+          shares: number
+          views: number
+          watch_time_avg_pct: number
+        }
+        Insert: {
+          category?: string | null
+          comments?: number
+          content_id: string
+          content_type: string
+          created_at?: string
+          creator_id: string
+          feed_clicks?: number
+          id?: string
+          impressions?: number
+          is_new_creator_boosted?: boolean
+          last_calculated_at?: string
+          likes?: number
+          saves?: number
+          score?: number
+          shares?: number
+          views?: number
+          watch_time_avg_pct?: number
+        }
+        Update: {
+          category?: string | null
+          comments?: number
+          content_id?: string
+          content_type?: string
+          created_at?: string
+          creator_id?: string
+          feed_clicks?: number
+          id?: string
+          impressions?: number
+          is_new_creator_boosted?: boolean
+          last_calculated_at?: string
+          likes?: number
+          saves?: number
+          score?: number
+          shares?: number
+          views?: number
+          watch_time_avg_pct?: number
+        }
+        Relationships: []
+      }
       video_likes: {
         Row: {
           created_at: string | null
@@ -7618,6 +7699,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      viewer_category_affinity: {
+        Row: {
+          category: string
+          id: string
+          last_watched_at: string
+          viewer_id: string
+          watch_count: number
+        }
+        Insert: {
+          category: string
+          id?: string
+          last_watched_at?: string
+          viewer_id: string
+          watch_count?: number
+        }
+        Update: {
+          category?: string
+          id?: string
+          last_watched_at?: string
+          viewer_id?: string
+          watch_count?: number
+        }
+        Relationships: []
       }
       views_log: {
         Row: {
@@ -7826,6 +7931,45 @@ export type Database = {
           lifetime_withdrawn?: number | null
           pending_balance?: number | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      watch_time_events: {
+        Row: {
+          content_id: string
+          content_type: string
+          created_at: string
+          duration_seconds: number
+          id: string
+          is_final: boolean
+          session_id: string | null
+          viewer_id: string | null
+          watch_pct: number
+          watched_seconds: number
+        }
+        Insert: {
+          content_id: string
+          content_type: string
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          is_final?: boolean
+          session_id?: string | null
+          viewer_id?: string | null
+          watch_pct?: number
+          watched_seconds?: number
+        }
+        Update: {
+          content_id?: string
+          content_type?: string
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          is_final?: boolean
+          session_id?: string | null
+          viewer_id?: string | null
+          watch_pct?: number
+          watched_seconds?: number
         }
         Relationships: []
       }
@@ -8140,6 +8284,11 @@ export type Database = {
       }
     }
     Functions: {
+      bump_trending_search: { Args: { p_term: string }; Returns: undefined }
+      bump_viewer_affinity: {
+        Args: { p_category: string; p_viewer: string }
+        Returns: undefined
+      }
       calculate_waitlist_leaderboard_rank: { Args: never; Returns: undefined }
       check_auth_rate_limit: {
         Args: {
@@ -8153,6 +8302,7 @@ export type Database = {
       }
       check_rank_movements_and_email: { Args: never; Returns: undefined }
       check_simulcast_key_rotation: { Args: never; Returns: undefined }
+      creator_content_count: { Args: { p_creator_id: string }; Returns: number }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -8190,6 +8340,7 @@ export type Database = {
         Returns: undefined
       }
       is_email_suppressed: { Args: { p_email: string }; Returns: boolean }
+      is_new_creator: { Args: { p_creator_id: string }; Returns: boolean }
       lookup_referrer_by_code: { Args: { ref_code: string }; Returns: Json }
       move_to_dlq: {
         Args: {
