@@ -196,4 +196,54 @@ describe("Onboarding Step 2 — creator type validation", () => {
     expect(screen.getByText(/Where are you right now\?/i)).toBeInTheDocument();
     expect(screen.queryByTestId("creator-type-error")).not.toBeInTheDocument();
   });
+
+  it("scrolls the error banner into view on mobile when Continue is clicked with no creator type", () => {
+    // Force a mobile viewport
+    Object.defineProperty(window, "innerWidth", { writable: true, configurable: true, value: 390 });
+    Object.defineProperty(window, "innerHeight", { writable: true, configurable: true, value: 844 });
+
+    // Spy on scrollIntoView (not implemented in jsdom by default)
+    const scrollSpy = vi.fn();
+    const originalScrollIntoView = (window as any).HTMLElement.prototype.scrollIntoView;
+    (window as any).HTMLElement.prototype.scrollIntoView = scrollSpy;
+
+    // Stub requestAnimationFrame to queue callbacks; we'll flush them after React commits.
+    const originalRaf = window.requestAnimationFrame;
+    const rafQueue: FrameRequestCallback[] = [];
+    const stubRaf = ((cb: FrameRequestCallback) => {
+      rafQueue.push(cb);
+      return rafQueue.length;
+    }) as any;
+    window.requestAnimationFrame = stubRaf;
+
+    try {
+      advanceToStep2();
+      // Re-apply rAF stub in case the fake-timer cycle in advanceToStep2 replaced it.
+      window.requestAnimationFrame = stubRaf;
+      act(() => {
+        fireEvent.click(getContinueButton()!);
+      });
+
+      // Now flush queued rAF callbacks — by this point React has committed
+      // the state update and the ref is attached to the rendered banner.
+      act(() => {
+        while (rafQueue.length) rafQueue.shift()!(0);
+      });
+
+      const banner = screen.getByTestId("creator-type-error");
+      expect(banner).toBeInTheDocument();
+
+      // scrollIntoView should have been called on the banner's wrapper element
+      expect(scrollSpy).toHaveBeenCalled();
+      const callArg = scrollSpy.mock.calls[0][0];
+      expect(callArg).toMatchObject({ behavior: "smooth", block: "center" });
+
+      // Verify the call was made on an element that contains the banner (the ref'd wrapper)
+      const calledOn = scrollSpy.mock.instances[0] as HTMLElement;
+      expect(calledOn.contains(banner) || calledOn === banner).toBe(true);
+    } finally {
+      (window as any).HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+      window.requestAnimationFrame = originalRaf;
+    }
+  });
 });
