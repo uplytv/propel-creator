@@ -9,6 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight, ArrowLeft, Camera, Check, X, Loader2, AlertTriangle, RotateCcw, Settings as SettingsIcon, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import ValidationBanner, { type ValidationBannerHandle } from "@/components/onboarding/ValidationBanner";
 import { toast } from "sonner";
 import { getAffiliateCookie, clearAffiliateCookie, getReferralData, clearReferralData } from "@/lib/affiliateCookies";
 import logoImg from "@/assets/logo.png";
@@ -128,11 +129,15 @@ export default function Onboarding() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [socialHandle, setSocialHandle] = useState("");
+  const [firstNameError, setFirstNameError] = useState(false);
+  const firstNameInputRef = useRef<HTMLInputElement | null>(null);
+  const step1BannerRef = useRef<ValidationBannerHandle | null>(null);
 
   // Step 2: Creator Profile
   const [creatorType, setCreatorType] = useState("");
   const [creatorTypeError, setCreatorTypeError] = useState(false);
   const creatorTypeErrorRef = useRef<HTMLDivElement | null>(null);
+  const step2BannerRef = useRef<ValidationBannerHandle | null>(null);
   const pendingCreatorTypeFocus = useRef<string | null>(null);
   useEffect(() => {
     const target = pendingCreatorTypeFocus.current;
@@ -191,6 +196,9 @@ export default function Onboarding() {
   const [challenges, setChallenges] = useState<string[]>(initialStep3?.challenges ?? []);
   const [firstUseCase, setFirstUseCase] = useState<string>(initialStep3?.firstUseCase ?? "");
   const [hearAbout, setHearAbout] = useState<string>(initialStep3?.hearAbout ?? "");
+  const [oneSentenceError, setOneSentenceError] = useState(false);
+  const oneSentenceInputRef = useRef<HTMLTextAreaElement | null>(null);
+  const step3BannerRef = useRef<ValidationBannerHandle | null>(null);
 
   // Persist Step 3 inputs to survive refreshes (with timestamp for TTL)
   useEffect(() => {
@@ -766,8 +774,26 @@ export default function Onboarding() {
             <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">The Basics</h1>
             <p className="text-muted-foreground text-center text-sm mb-2">Tell us a little about yourself.</p>
             <p className="text-xs text-primary text-center mb-6 font-medium">⚡ Takes less than 2 minutes</p>
+
+            <ValidationBanner
+              ref={step1BannerRef}
+              show={firstNameError && !firstName.trim()}
+              title="Full name required"
+              description="Please enter your full name to continue."
+              testId="full-name-error"
+            />
+
             <div className="space-y-4 mb-4">
-              <Input placeholder="Full name *" value={firstName} onChange={(e) => setFirstName(e.target.value)} autoFocus className="text-center text-lg py-6" />
+              <Input
+                ref={firstNameInputRef}
+                placeholder="Full name *"
+                value={firstName}
+                onChange={(e) => { setFirstName(e.target.value); if (firstNameError) setFirstNameError(false); }}
+                autoFocus
+                aria-invalid={firstNameError && !firstName.trim()}
+                aria-required="true"
+                className="text-center text-lg py-6"
+              />
               <Input placeholder="Email" value={user?.email || ""} disabled className="text-center text-sm py-4 opacity-60" />
               <Input placeholder="@yourhandle or youtube.com/c/yourchannel" value={socialHandle} onChange={(e) => setSocialHandle(e.target.value)} className="text-center text-sm py-4" />
             </div>
@@ -786,7 +812,20 @@ export default function Onboarding() {
               )}
             </div>
 
-            <Button variant="hero" size="xl" className="w-full" disabled={!firstName.trim()} onClick={() => setStep(2)}>
+            <Button
+              variant="hero"
+              size="xl"
+              className="w-full"
+              onClick={() => {
+                if (!firstName.trim()) {
+                  setFirstNameError(true);
+                  step1BannerRef.current?.surface(firstNameInputRef.current);
+                  return;
+                }
+                setFirstNameError(false);
+                setStep(2);
+              }}
+            >
               Continue <ArrowRight className="ml-1 w-4 h-4" />
             </Button>
             <p className="text-[10px] text-muted-foreground text-center mt-3">🔒 Your info is private and never shared</p>
@@ -801,17 +840,16 @@ export default function Onboarding() {
             <p className="text-muted-foreground text-center text-sm mb-1">Help us understand your audience.</p>
             <p className="text-xs text-primary text-center mb-6 font-medium">🎯 This helps us prioritize your application</p>
 
-            {creatorTypeError && !creatorType && (
-              <div ref={creatorTypeErrorRef}>
-                <Alert variant="destructive" role="alert" aria-live="assertive" className="mb-4" data-testid="creator-type-error">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Creator type required</AlertTitle>
-                  <AlertDescription>
-                    Please select a creator type below before continuing.
-                  </AlertDescription>
-                </Alert>
-              </div>
-            )}
+            {/* Wrapper kept for legacy ref-based scroll target; banner is now reusable. */}
+            <div ref={creatorTypeErrorRef}>
+              <ValidationBanner
+                ref={step2BannerRef}
+                show={creatorTypeError && !creatorType}
+                title="Creator type required"
+                description="Please select a creator type below before continuing."
+                testId="creator-type-error"
+              />
+            </div>
 
             <div className="space-y-4 mb-6">
               <div>
@@ -1004,6 +1042,18 @@ export default function Onboarding() {
             <p className="text-muted-foreground text-center text-sm mb-1">These help us match you with the right tools.</p>
             <p className="text-xs text-primary text-center mb-6 font-medium">✨ Detailed answers = faster approval</p>
 
+            <ValidationBanner
+              ref={step3BannerRef}
+              show={(attemptedSubmit && !creatorStage) || (oneSentenceError && !oneSentence.trim())}
+              title={!creatorStage ? "Creator stage required" : "One-sentence description required"}
+              description={
+                !creatorStage
+                  ? "Please choose where you are right now before continuing."
+                  : "Tell us in one sentence what you create — this is required to continue."
+              }
+              testId="step3-error"
+            />
+
             <div className="space-y-4 mb-6">
               <div>
                 <label className="text-sm font-medium text-foreground mb-2 block">
@@ -1092,12 +1142,18 @@ export default function Onboarding() {
               <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">In one sentence, what do you create? *</label>
                 <Textarea
+                  ref={oneSentenceInputRef}
                   value={oneSentence}
-                  onChange={(e) => setOneSentence(e.target.value.slice(0, 120))}
+                  onChange={(e) => {
+                    setOneSentence(e.target.value.slice(0, 120));
+                    if (oneSentenceError) setOneSentenceError(false);
+                  }}
                   placeholder='e.g. "I teach first-generation investors how to build wealth from zero."'
                   rows={2}
                   className="text-sm resize-none"
                   maxLength={120}
+                  aria-invalid={oneSentenceError && !oneSentence.trim()}
+                  aria-required="true"
                 />
                 <p className="text-xs text-muted-foreground text-right mt-1">{oneSentence.length}/120</p>
               </div>
@@ -1160,12 +1216,24 @@ export default function Onboarding() {
                 variant="hero"
                 size="xl"
                 className="flex-1"
-                disabled={!oneSentence.trim()}
                 onClick={() => {
                   if (!creatorStage) {
                     setAttemptedSubmit(true);
+                    setOneSentenceError(false);
+                    const firstStageCard = document.querySelector<HTMLButtonElement>(
+                      `[data-creator-stage-card="${CREATOR_STAGES[0].key}"]`
+                    );
+                    step3BannerRef.current?.surface(firstStageCard);
                     return;
                   }
+                  if (!oneSentence.trim()) {
+                    setOneSentenceError(true);
+                    setAttemptedSubmit(false);
+                    step3BannerRef.current?.surface(oneSentenceInputRef.current);
+                    return;
+                  }
+                  setOneSentenceError(false);
+                  setAttemptedSubmit(false);
                   setStep(4);
                 }}
               >
