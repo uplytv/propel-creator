@@ -304,4 +304,123 @@ describe("Settings navigation toast — cooldown UI", () => {
       expect(onActivate).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe("focus restoration", () => {
+    function Harness({
+      showToast,
+      onActivate,
+    }: {
+      showToast: boolean;
+      onActivate?: () => void;
+    }) {
+      return (
+        <div>
+          <button type="button" data-testid="trigger">
+            Enable auto-retry
+          </button>
+          {showToast && (
+            <CooldownToast
+              description="Navigation didn't complete."
+              onActivate={onActivate}
+            />
+          )}
+        </div>
+      );
+    }
+
+    it("restores focus to the previously focused element when the toast unmounts", () => {
+      writeSettingsNavLast(Date.now() - SETTINGS_NAV_COOLDOWN_MS - 1); // ready
+      const { rerender } = render(<Harness showToast={false} />);
+
+      const trigger = screen.getByTestId("trigger");
+      trigger.focus();
+      expect(trigger).toHaveFocus();
+
+      rerender(<Harness showToast={true} />);
+      expect(trigger).toHaveFocus();
+
+      rerender(<Harness showToast={false} />);
+      expect(trigger).toHaveFocus();
+    });
+
+    it("returns focus to the trigger after the user activates 'Try again'", async () => {
+      const user = userEvent.setup({
+        advanceTimers: vi.advanceTimersByTime.bind(vi),
+      });
+      const onActivate = vi.fn();
+      writeSettingsNavLast(Date.now() - SETTINGS_NAV_COOLDOWN_MS - 1); // ready
+      render(<Harness showToast={true} onActivate={onActivate} />);
+
+      const trigger = screen.getByTestId("trigger");
+      trigger.focus();
+      expect(trigger).toHaveFocus();
+
+      await user.tab();
+      const action = screen.getByRole("button", { name: "Try again" });
+      expect(action).toHaveFocus();
+      await user.keyboard("{Enter}");
+
+      expect(onActivate).toHaveBeenCalledTimes(1);
+      expect(trigger).toHaveFocus();
+    });
+
+    it("restores focus even if the user moved focus into the toast mid-cooldown", () => {
+      writeSettingsNavLast(Date.now()); // disabled mid-cooldown
+      const { rerender } = render(<Harness showToast={false} />);
+
+      const trigger = screen.getByTestId("trigger");
+      trigger.focus();
+      rerender(<Harness showToast={true} />);
+
+      const action = screen.getByRole("button");
+      action.focus();
+      expect(action).toHaveFocus();
+
+      rerender(<Harness showToast={false} />);
+      expect(trigger).toHaveFocus();
+    });
+
+    it("does not throw if the previously focused element was removed", () => {
+      writeSettingsNavLast(Date.now() - SETTINGS_NAV_COOLDOWN_MS - 1);
+      function Removable() {
+        const [showTrigger, setShowTrigger] = useState(true);
+        const [showToast, setShowToast] = useState(false);
+        return (
+          <div>
+            {showTrigger && (
+              <button
+                type="button"
+                data-testid="trigger"
+                onClick={() => {
+                  setShowToast(true);
+                  setShowTrigger(false);
+                }}
+              >
+                open
+              </button>
+            )}
+            {showToast && (
+              <CooldownToast description="Navigation didn't complete." />
+            )}
+            <button
+              type="button"
+              data-testid="dismiss"
+              onClick={() => setShowToast(false)}
+            >
+              close
+            </button>
+          </div>
+        );
+      }
+
+      render(<Removable />);
+      const open = screen.getByTestId("trigger");
+      open.focus();
+      open.click();
+
+      const dismiss = screen.getByTestId("dismiss");
+      expect(() => dismiss.click()).not.toThrow();
+      expect(document.body.contains(open)).toBe(false);
+    });
+  });
 });
