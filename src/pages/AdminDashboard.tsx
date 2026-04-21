@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import {
   ShieldCheck, Users, DollarSign, ToggleLeft, Link2, Share2,
-  RefreshCw, BarChart3, Heart, Radio, Zap, Shield, TrendingUp, ListChecks, Settings
+  RefreshCw, BarChart3, Heart, Radio, Zap, Shield, TrendingUp, ListChecks, Settings, Rocket
 } from "lucide-react";
 import { DateRange } from "@/hooks/useAdminHealthData";
 import OverviewTab from "@/components/admin/OverviewTab";
@@ -17,6 +17,7 @@ import MembersTab from "@/components/admin/MembersTab";
 import ContentTab from "@/components/admin/ContentTab";
 import EngagementTab from "@/components/admin/EngagementTab";
 import TechnicalTab from "@/components/admin/TechnicalTab";
+import BoostToastTab from "@/components/admin/BoostToastTab";
 import AdminWaitlistTab from "@/components/waitlist/AdminWaitlistTab";
 import AdminNotificationBell from "@/components/admin/AdminNotificationBell";
 import CriticalAlertBanner from "@/components/admin/CriticalAlertBanner";
