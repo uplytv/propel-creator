@@ -271,7 +271,7 @@ describe("Onboarding Step 2 — creator type validation", () => {
       const continueBtn = getContinueButton()!;
       // user-event's keyboard simulation triggers the browser's native button
       // activation behavior (Enter on a focused <button> fires click).
-      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      const user = userEvent.setup();
       continueBtn.focus();
       expect(document.activeElement).toBe(continueBtn);
 
