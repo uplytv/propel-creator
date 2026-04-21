@@ -1216,12 +1216,24 @@ export default function Onboarding() {
                 variant="hero"
                 size="xl"
                 className="flex-1"
-                disabled={!oneSentence.trim()}
                 onClick={() => {
                   if (!creatorStage) {
                     setAttemptedSubmit(true);
+                    setOneSentenceError(false);
+                    const firstStageCard = document.querySelector<HTMLButtonElement>(
+                      `[data-creator-stage-card="${CREATOR_STAGES[0].key}"]`
+                    );
+                    step3BannerRef.current?.surface(firstStageCard);
                     return;
                   }
+                  if (!oneSentence.trim()) {
+                    setOneSentenceError(true);
+                    setAttemptedSubmit(false);
+                    step3BannerRef.current?.surface(oneSentenceInputRef.current);
+                    return;
+                  }
+                  setOneSentenceError(false);
+                  setAttemptedSubmit(false);
                   setStep(4);
                 }}
               >
