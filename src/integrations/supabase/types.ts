@@ -2254,6 +2254,60 @@ export type Database = {
         }
         Relationships: []
       }
+      content_boosts: {
+        Row: {
+          amount_usd: number
+          clicks: number
+          content_id: string
+          content_type: string
+          created_at: string
+          creator_id: string
+          expires_at: string | null
+          id: string
+          impressions: number
+          starts_at: string | null
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          tier: string
+          updated_at: string
+        }
+        Insert: {
+          amount_usd: number
+          clicks?: number
+          content_id: string
+          content_type: string
+          created_at?: string
+          creator_id: string
+          expires_at?: string | null
+          id?: string
+          impressions?: number
+          starts_at?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          tier: string
+          updated_at?: string
+        }
+        Update: {
+          amount_usd?: number
+          clicks?: number
+          content_id?: string
+          content_type?: string
+          created_at?: string
+          creator_id?: string
+          expires_at?: string | null
+          id?: string
+          impressions?: number
+          starts_at?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          tier?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       content_distribution_jobs: {
         Row: {
           completed_at: string | null
