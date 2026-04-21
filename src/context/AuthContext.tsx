@@ -3,6 +3,8 @@ import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { setSentryUser, clearSentryUser } from "@/lib/sentry";
 import { identifyUser, resetPostHog } from "@/lib/posthog";
+import { registerNativePush } from "@/lib/native/pushNotifications";
+import { isNative } from "@/lib/native/platform";
 
 interface AuthContextType {
   session: Session | null;
@@ -28,6 +30,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: session.user.email,
           created_at: session.user.created_at,
         });
+        if (isNative() && event === 'SIGNED_IN') {
+          // Fire-and-forget native push registration
+          registerNativePush(session.user.id).catch((e) =>
+            console.error('[push] native registration failed', e)
+          );
+        }
       } else {
         clearSentryUser();
         if (event === 'SIGNED_OUT') {
