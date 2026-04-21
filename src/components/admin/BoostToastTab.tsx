@@ -152,6 +152,56 @@ export default function BoostToastTab() {
     URL.revokeObjectURL(url);
   };
 
+  const buildSampleCsv = () => {
+    const escape = (v: string | number) => {
+      const s = String(v);
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const lines: string[] = [];
+    lines.push("# Boost toast analytics export (sample)");
+    lines.push(
+      `# range=${range} state=${state} route=${route} generated_at=${new Date().toISOString()}`,
+    );
+    lines.push("");
+    lines.push(
+      "section,range_filter,boost_state_filter,route_filter,bucket_or_route,shown,clicked,ctr",
+    );
+    for (const b of (eventsQuery.data?.series ?? []).slice(0, 3)) {
+      const ctr = b.shown > 0 ? b.clicked / b.shown : 0;
+      lines.push(
+        ["timeseries", range, state, route, b.bucket, b.shown, b.clicked, ctr.toFixed(4)]
+          .map(escape)
+          .join(","),
+      );
+    }
+    for (const r of routes.slice(0, 3)) {
+      lines.push(
+        ["route", range, state, route, r.route, r.shown, r.clicked, r.ctr.toFixed(4)]
+          .map(escape)
+          .join(","),
+      );
+    }
+    if (totals) {
+      lines.push(
+        ["total", range, state, route, "all", totals.shown, totals.clicked, totals.ctr.toFixed(4)]
+          .map(escape)
+          .join(","),
+      );
+    }
+    return lines.join("\n");
+  };
+
+  const handleDownloadSampleCsv = () => {
+    const blob = new Blob([buildSampleCsv()], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `boost-toast-analytics_sample_${range}_${state}_${route.replace(/[^a-z0-9]+/gi, "-")}_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
   const handleExportJson = () => {
     const series = eventsQuery.data?.series ?? [];
     const payload = {
@@ -492,45 +542,14 @@ export default function BoostToastTab() {
             </DialogDescription>
           </DialogHeader>
           <pre className="max-h-[60vh] overflow-auto rounded-md border border-border bg-muted/40 p-3 text-xs font-mono leading-relaxed whitespace-pre">
-{(() => {
-  const escape = (v: string | number) => {
-    const s = String(v);
-    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-  };
-  const lines: string[] = [];
-  lines.push("# Boost toast analytics export");
-  lines.push(
-    `# range=${range} state=${state} route=${route} generated_at=${new Date().toISOString()}`,
-  );
-  lines.push("");
-  lines.push(
-    "section,range_filter,boost_state_filter,route_filter,bucket_or_route,shown,clicked,ctr",
-  );
-  for (const b of (eventsQuery.data?.series ?? []).slice(0, 3)) {
-    const ctr = b.shown > 0 ? b.clicked / b.shown : 0;
-    lines.push(
-      ["timeseries", range, state, route, b.bucket, b.shown, b.clicked, ctr.toFixed(4)]
-        .map(escape)
-        .join(","),
-    );
-  }
-  for (const r of routes.slice(0, 3)) {
-    lines.push(
-      ["route", range, state, route, r.route, r.shown, r.clicked, r.ctr.toFixed(4)]
-        .map(escape)
-        .join(","),
-    );
-  }
-  if (totals) {
-    lines.push(
-      ["total", range, state, route, "all", totals.shown, totals.clicked, totals.ctr.toFixed(4)]
-        .map(escape)
-        .join(","),
-    );
-  }
-  return lines.join("\n");
-})()}
+{buildSampleCsv()}
           </pre>
+          <div className="flex justify-end">
+            <Button size="sm" variant="outline" onClick={handleDownloadSampleCsv}>
+              <Download className="w-3.5 h-3.5 mr-1.5" />
+              Download sample CSV
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
