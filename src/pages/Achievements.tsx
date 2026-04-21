@@ -198,12 +198,10 @@ export default function Achievements() {
                     {opt.label}
                   </button>
                 ))}
-                {(query || filter !== "all" || sort !== "newest") && (
+                {(query || filter !== "all" || sort !== "newest" || page !== 1 || pageSize !== DEFAULT_PAGE_SIZE) && (
                   <button
                     onClick={() => {
-                      setQuery("");
-                      setFilter("all");
-                      setSort("newest");
+                      updateParams({ q: null, group: null, sort: null, page: null, pageSize: null });
                     }}
                     className="ml-auto inline-flex items-center gap-1 px-2.5 py-1 rounded-md font-medium border border-white/10 bg-white/[0.02] text-muted-foreground hover:text-foreground transition-colors"
                   >
