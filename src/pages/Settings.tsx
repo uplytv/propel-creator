@@ -113,9 +113,22 @@ export default function Settings() {
   const uploadAvatar = useUploadAvatar();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
+  const [searchParams] = useSearchParams();
+  const initialTab = (searchParams.get("tab") as SettingsTab) || "profile";
+  const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
   const [soundEnabled, setSoundEnabled] = useState(() => localStorage.getItem("notif_sound_enabled") !== "false");
   const { enabled: autoRetryEnabled, setEnabled: setAutoRetryEnabled } = useAutoRetryPreference();
+  const autoRetryRef = useRef<HTMLDivElement>(null);
+
+  // If linked with ?highlight=auto-retry, scroll the section into view
+  useEffect(() => {
+    if (searchParams.get("highlight") === "auto-retry" && activeTab === "account") {
+      const t = setTimeout(() => {
+        autoRetryRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+      return () => clearTimeout(t);
+    }
+  }, [searchParams, activeTab]);
 
   // Profile state - initialized from DB
   const [name, setName] = useState("");
