@@ -104,6 +104,7 @@ export default function Onboarding() {
 
   // Step 3: Qualifying
   const [creatorStage, setCreatorStage] = useState<string>("");
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const [oneSentence, setOneSentence] = useState("");
   const [challenges, setChallenges] = useState<string[]>([]);
   const [firstUseCase, setFirstUseCase] = useState("");
