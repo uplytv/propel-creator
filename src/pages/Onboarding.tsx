@@ -822,6 +822,7 @@ export default function Onboarding() {
                   role="radiogroup"
                   aria-label="Creator type"
                   aria-required="true"
+                  aria-invalid={creatorTypeError && !creatorType}
                   className="grid grid-cols-3 gap-2"
                 >
                   {CREATOR_TYPES.map((t, idx) => {
