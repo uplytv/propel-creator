@@ -86,6 +86,59 @@ export default function BoostToastTab() {
   const totals = eventsQuery.data?.totals;
   const routes = eventsQuery.data?.routes ?? [];
 
+  const handleExportCsv = () => {
+    const series = eventsQuery.data?.series ?? [];
+    const rows: string[] = [];
+    const escape = (v: string | number) => {
+      const s = String(v);
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+
+    rows.push("# Boost toast analytics export");
+    rows.push(
+      `# range=${range} state=${state} route=${route} generated_at=${new Date().toISOString()}`,
+    );
+    rows.push("");
+    rows.push("section,bucket_or_route,shown,clicked,ctr");
+
+    for (const b of series) {
+      const ctr = b.shown > 0 ? b.clicked / b.shown : 0;
+      rows.push(
+        ["timeseries", b.bucket, b.shown, b.clicked, ctr.toFixed(4)]
+          .map(escape)
+          .join(","),
+      );
+    }
+    for (const r of routes) {
+      rows.push(
+        ["route", r.route, r.shown, r.clicked, r.ctr.toFixed(4)]
+          .map(escape)
+          .join(","),
+      );
+    }
+    if (totals) {
+      rows.push(
+        ["total", "all", totals.shown, totals.clicked, totals.ctr.toFixed(4)]
+          .map(escape)
+          .join(","),
+      );
+    }
+
+    const blob = new Blob([rows.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `boost-toast-analytics_${range}_${state}_${route.replace(/[^a-z0-9]+/gi, "-")}_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const canExport =
+    !eventsQuery.isLoading &&
+    ((eventsQuery.data?.series?.length ?? 0) > 0 || routes.length > 0);
+
   return (
     <div className="space-y-4">
       {/* Filters */}
