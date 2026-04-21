@@ -20,9 +20,22 @@ import {
 } from "@/lib/settingsNavCooldown";
 import { showCooldownToast } from "@/lib/cooldownToast";
 
-const CREATOR_TYPES = [
-  "Fitness", "Finance", "Gaming", "Lifestyle", "Business", "Education",
-  "Music", "Cooking", "Sports", "Beauty", "Travel", "Tech", "Real Estate", "IRL", "Other"
+const CREATOR_TYPES: { value: string; emoji: string }[] = [
+  { value: "Fitness", emoji: "💪" },
+  { value: "Finance", emoji: "💸" },
+  { value: "Gaming", emoji: "🎮" },
+  { value: "Lifestyle", emoji: "✨" },
+  { value: "Business", emoji: "💼" },
+  { value: "Education", emoji: "📚" },
+  { value: "Music", emoji: "🎵" },
+  { value: "Cooking", emoji: "🍳" },
+  { value: "Sports", emoji: "🏆" },
+  { value: "Beauty", emoji: "💄" },
+  { value: "Travel", emoji: "✈️" },
+  { value: "Tech", emoji: "💻" },
+  { value: "Real Estate", emoji: "🏠" },
+  { value: "IRL", emoji: "📷" },
+  { value: "Other", emoji: "🎨" },
 ];
 
 const FOLLOWER_RANGES = [
@@ -766,13 +779,39 @@ export default function Onboarding() {
 
             <div className="space-y-4 mb-6">
               <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">What type of creator are you?</label>
-                <Select value={creatorType} onValueChange={setCreatorType}>
-                  <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
-                  <SelectContent>
-                    {CREATOR_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">
+                  What type of creator are you? <span className="text-destructive">*</span>
+                </label>
+                <div
+                  role="radiogroup"
+                  aria-label="Creator type"
+                  aria-required="true"
+                  className="grid grid-cols-3 gap-2"
+                >
+                  {CREATOR_TYPES.map(t => {
+                    const selected = creatorType === t.value;
+                    return (
+                      <button
+                        key={t.value}
+                        type="button"
+                        role="radio"
+                        aria-checked={selected}
+                        onClick={() => setCreatorType(t.value)}
+                        className={`rounded-xl p-3 text-center border-2 transition-all ${
+                          selected
+                            ? "border-primary bg-primary/5"
+                            : "border-border bg-card hover:border-primary/30"
+                        }`}
+                      >
+                        <span className="text-xl block mb-1">{t.emoji}</span>
+                        <span className="text-xs font-medium text-foreground">{t.value}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {!creatorType && (
+                  <p className="text-[11px] text-muted-foreground mt-1.5">Select one to continue</p>
+                )}
               </div>
 
               <div>
