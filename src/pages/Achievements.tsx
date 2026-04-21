@@ -3,13 +3,23 @@ import { useSearchParams } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Trophy, Sparkles, Search, X, RotateCcw } from "lucide-react";
+import { Trophy, Sparkles, Search, X, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-import { parseFilter, parseSort, parseQuery, type FilterGroup, type SortKey } from "./achievements/filters";
+import {
+  parseFilter,
+  parseSort,
+  parseQuery,
+  parsePage,
+  parsePageSize,
+  VALID_PAGE_SIZES,
+  DEFAULT_PAGE_SIZE,
+  type FilterGroup,
+  type SortKey,
+} from "./achievements/filters";
 
 interface Milestone {
   id: string;
@@ -52,9 +62,9 @@ export default function Achievements() {
     setSearchParams(next, { replace: true });
   };
 
-  const setQuery = (v: string) => updateParams({ q: v || null });
-  const setFilter = (v: FilterGroup) => updateParams({ group: v === "all" ? null : v });
-  const setSort = (v: SortKey) => updateParams({ sort: v === "newest" ? null : v });
+  const setQuery = (v: string) => updateParams({ q: v || null, page: null });
+  const setFilter = (v: FilterGroup) => updateParams({ group: v === "all" ? null : v, page: null });
+  const setSort = (v: SortKey) => updateParams({ sort: v === "newest" ? null : v, page: null });
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -78,10 +88,21 @@ export default function Achievements() {
     return sorted;
   }, [items, query, filter, sort]);
 
-  const groups = {
-    onboarding: filtered.filter((i) => i.group_type === "onboarding"),
-    kpi: filtered.filter((i) => i.group_type === "kpi"),
-  };
+  const pageSize = parsePageSize(searchParams.get("pageSize"));
+  const page = parsePage(searchParams.get("page"), filtered.length, pageSize);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const pageItems = useMemo(
+    () => filtered.slice((page - 1) * pageSize, page * pageSize),
+    [filtered, page, pageSize]
+  );
+
+  const setPage = (p: number) =>
+    updateParams({ page: p <= 1 ? null : String(p) });
+  const setPageSize = (n: number) =>
+    updateParams({
+      pageSize: n === DEFAULT_PAGE_SIZE ? null : String(n),
+      page: null,
+    });
 
   const counts = {
     all: items.length,
@@ -89,6 +110,7 @@ export default function Achievements() {
     onboarding: items.filter((i) => i.group_type === "onboarding").length,
   };
 
+  const groupLabel = (g: string) => (g === "kpi" ? "Growth Plan" : "Onboarding");
   return (
     <AppLayout>
       <div className="max-w-3xl mx-auto px-4 md:px-8 py-6 mobile-safe-content">
@@ -176,12 +198,10 @@ export default function Achievements() {
                     {opt.label}
                   </button>
                 ))}
-                {(query || filter !== "all" || sort !== "newest") && (
+                {(query || filter !== "all" || sort !== "newest" || page !== 1 || pageSize !== DEFAULT_PAGE_SIZE) && (
                   <button
                     onClick={() => {
-                      setQuery("");
-                      setFilter("all");
-                      setSort("newest");
+                      updateParams({ q: null, group: null, sort: null, page: null, pageSize: null });
                     }}
                     className="ml-auto inline-flex items-center gap-1 px-2.5 py-1 rounded-md font-medium border border-white/10 bg-white/[0.02] text-muted-foreground hover:text-foreground transition-colors"
                   >
@@ -201,40 +221,70 @@ export default function Achievements() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-8">
-                {(["kpi", "onboarding"] as const).map((g) => {
-                  const list = groups[g];
-                  if (list.length === 0) return null;
-                  return (
-                    <section key={g}>
-                      <h2 className="text-xs uppercase tracking-wider text-muted-foreground mb-3">
-                        {g === "kpi" ? "Growth Plan" : "Onboarding"}
-                        <span className="ml-2 text-foreground/60">({list.length})</span>
-                      </h2>
-                      <ul className="space-y-2">
-                        {list.map((m, i) => (
-                          <motion.li
-                            key={m.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.04 }}
-                            className="flex items-center gap-4 rounded-xl border border-primary/20 bg-primary/5 p-4"
-                          >
-                            <div className="text-3xl">{m.emoji}</div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-semibold truncate">{m.label}</p>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                Unlocked {format(new Date(m.reached_at), "MMM d, yyyy 'at' h:mm a")}
-                              </p>
-                            </div>
-                            <Trophy className="w-4 h-4 text-primary shrink-0" />
-                          </motion.li>
-                        ))}
-                      </ul>
-                    </section>
-                  );
-                })}
-              </div>
+              <>
+                <ul className="space-y-2">
+                  {pageItems.map((m, i) => (
+                    <motion.li
+                      key={m.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.03 }}
+                      className="flex items-center gap-4 rounded-xl border border-primary/20 bg-primary/5 p-4"
+                    >
+                      <div className="text-3xl">{m.emoji}</div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold truncate">{m.label}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {groupLabel(m.group_type)} · Unlocked{" "}
+                          {format(new Date(m.reached_at), "MMM d, yyyy 'at' h:mm a")}
+                        </p>
+                      </div>
+                      <Trophy className="w-4 h-4 text-primary shrink-0" />
+                    </motion.li>
+                  ))}
+                </ul>
+
+                <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <span>Per page:</span>
+                    {VALID_PAGE_SIZES.map((n) => (
+                      <button
+                        key={n}
+                        onClick={() => setPageSize(n)}
+                        className={cn(
+                          "px-2 py-1 rounded-md border transition-colors",
+                          pageSize === n
+                            ? "bg-primary/15 border-primary/40 text-primary"
+                            : "bg-white/[0.02] border-white/10 hover:text-foreground"
+                        )}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">
+                      Page {page} of {totalPages} · {filtered.length} total
+                    </span>
+                    <button
+                      onClick={() => setPage(page - 1)}
+                      disabled={page <= 1}
+                      className="p-1.5 rounded-md border border-white/10 bg-white/[0.02] text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
+                      aria-label="Previous page"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setPage(page + 1)}
+                      disabled={page >= totalPages}
+                      className="p-1.5 rounded-md border border-white/10 bg-white/[0.02] text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
+                      aria-label="Next page"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </>
             )}
           </>
         )}
