@@ -140,7 +140,9 @@ function gotoStep2() {
 }
 
 function getCard(name: string) {
-  return screen.getByRole("radio", { name: new RegExp(`^${name}$`, "i") }) as HTMLButtonElement;
+  const el = document.querySelector(`[data-creator-type-card="${name}"]`);
+  if (!el) throw new Error(`Card not found for "${name}"`);
+  return el as HTMLButtonElement;
 }
 
 describe("Onboarding Step 2 — creator-type cards keyboard navigation", () => {
