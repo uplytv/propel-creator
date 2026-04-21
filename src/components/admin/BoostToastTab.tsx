@@ -362,7 +362,10 @@ export default function BoostToastTab() {
               </UITooltip>
               <button
                 type="button"
-                onClick={() => setCsvSampleOpen(true)}
+                onClick={() => {
+                  setCsvSampleGeneratedAt(new Date().toISOString());
+                  setCsvSampleOpen(true);
+                }}
                 className="text-xs text-primary hover:underline self-center"
               >
                 View sample
