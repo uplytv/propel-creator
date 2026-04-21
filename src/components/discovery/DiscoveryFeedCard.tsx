@@ -78,6 +78,14 @@ export default function DiscoveryFeedCard({ item }: { item: DiscoveryItem }) {
     const href = linkFor(item);
     if (state === "ending" && prev === "active") {
       notifyBoostEndingOnce(key, () => {
+        trackEvent("boost_toast_shown", {
+          boost_state: "ending",
+          content_type: item.content_type,
+          content_id: item.content_id,
+          creator_id: item.creator_id,
+          route: href,
+          boost_key: key,
+        });
         let toastId: string | number | undefined;
         const handleAction = () => {
           trackEvent("boost_toast_action_clicked", {
@@ -109,6 +117,14 @@ export default function DiscoveryFeedCard({ item }: { item: DiscoveryItem }) {
       });
     } else if (state === "ended" && prev !== "ended") {
       notifyBoostEndedOnce(key, () => {
+        trackEvent("boost_toast_shown", {
+          boost_state: "ended",
+          content_type: item.content_type,
+          content_id: item.content_id,
+          creator_id: item.creator_id,
+          route: href,
+          boost_key: key,
+        });
         let toastId: string | number | undefined;
         const handleAction = () => {
           trackEvent("boost_toast_action_clicked", {
