@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+
 import type { ReactNode } from "react";
 
 const navigateMock = vi.fn();
@@ -248,7 +248,7 @@ describe("Onboarding Step 2 — creator type validation", () => {
     }
   });
 
-  it("triggers the error banner and scrolls it into view when Enter is pressed on the focused Continue button (mobile)", async () => {
+  it("triggers the error banner and scrolls it into view when Enter is pressed on the focused Continue button (mobile)", () => {
     Object.defineProperty(window, "innerWidth", { writable: true, configurable: true, value: 390 });
     Object.defineProperty(window, "innerHeight", { writable: true, configurable: true, value: 844 });
 
@@ -269,14 +269,14 @@ describe("Onboarding Step 2 — creator type validation", () => {
       window.requestAnimationFrame = stubRaf;
 
       const continueBtn = getContinueButton()!;
-      // user-event's keyboard simulation triggers the browser's native button
-      // activation behavior (Enter on a focused <button> fires click).
-      const user = userEvent.setup();
       continueBtn.focus();
       expect(document.activeElement).toBe(continueBtn);
 
-      await act(async () => {
-        await user.keyboard("{Enter}");
+      // Simulate the browser's native button-activation behavior on Enter:
+      // a keydown {Enter} on a focused <button> dispatches a click event.
+      fireEvent.keyDown(continueBtn, { key: "Enter", code: "Enter" });
+      act(() => {
+        fireEvent.click(continueBtn);
       });
 
       // Banner should now be in the DOM
@@ -296,6 +296,54 @@ describe("Onboarding Step 2 — creator type validation", () => {
       expect(scrollSpy.mock.calls[0][0]).toMatchObject({ behavior: "smooth", block: "center" });
       const calledOn = scrollSpy.mock.instances[0] as HTMLElement;
       expect(calledOn.contains(banner) || calledOn === banner).toBe(true);
+    } finally {
+      (window as any).HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+      window.requestAnimationFrame = originalRaf;
+    }
+  });
+
+  it("moves focus to the first actionable element near the banner (first creator-type radio card) on validation failure (mobile)", () => {
+    Object.defineProperty(window, "innerWidth", { writable: true, configurable: true, value: 390 });
+    Object.defineProperty(window, "innerHeight", { writable: true, configurable: true, value: 844 });
+
+    // Stub scrollIntoView (jsdom no-op) and queue rAF so the focus call (which
+    // is scheduled inside rAF alongside the scroll) can be flushed after React commits.
+    const originalScrollIntoView = (window as any).HTMLElement.prototype.scrollIntoView;
+    (window as any).HTMLElement.prototype.scrollIntoView = vi.fn();
+
+    const originalRaf = window.requestAnimationFrame;
+    const rafQueue: FrameRequestCallback[] = [];
+    const stubRaf = ((cb: FrameRequestCallback) => {
+      rafQueue.push(cb);
+      return rafQueue.length;
+    }) as any;
+    window.requestAnimationFrame = stubRaf;
+
+    try {
+      advanceToStep2();
+      window.requestAnimationFrame = stubRaf;
+
+      const continueBtn = getContinueButton()!;
+      act(() => {
+        fireEvent.click(continueBtn);
+      });
+
+      // Banner appeared
+      const banner = screen.getByTestId("creator-type-error");
+      expect(banner).toBeInTheDocument();
+
+      // Flush queued rAF — focus is moved here
+      act(() => {
+        while (rafQueue.length) rafQueue.shift()!(0);
+      });
+
+      // The first creator-type radio card should now be the focused element.
+      // (It's the closest actionable control after the non-interactive banner.)
+      const firstCard = screen.getByRole("radio", { name: /Fitness/i });
+      expect(document.activeElement).toBe(firstCard);
+
+      // And focus should NOT remain on the Continue button.
+      expect(document.activeElement).not.toBe(continueBtn);
     } finally {
       (window as any).HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
       window.requestAnimationFrame = originalRaf;

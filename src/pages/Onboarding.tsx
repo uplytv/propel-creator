@@ -976,6 +976,13 @@ export default function Onboarding() {
                     setCreatorTypeError(true);
                     requestAnimationFrame(() => {
                       creatorTypeErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+                      // Move focus to the first actionable element near the banner
+                      // (the first creator-type radio card) so keyboard/screen-reader
+                      // users land on a usable control immediately.
+                      const firstCard = document.querySelector<HTMLButtonElement>(
+                        `[data-creator-type-card="${CREATOR_TYPES[0].value}"]`
+                      );
+                      firstCard?.focus();
                     });
                     return;
                   }
