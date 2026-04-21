@@ -368,11 +368,12 @@ describe("Onboarding Step 4 — auto-retry countdown after submission failure", 
     expect(await screen.findByText(/Submission failed/i)).toBeInTheDocument();
 
     // Countdown text appears (5s starting value from AUTO_RETRY_SECONDS).
-    expect(
-      await screen.findByText((_, node) =>
-        !!node && /retrying in/i.test(node.textContent || ""),
-      ),
-    ).toBeInTheDocument();
+    // The "Retrying in" copy lives inside nested aria-live wrappers so it can
+    // legitimately match more than one element — accept any match.
+    const matches = await screen.findAllByText((_, node) =>
+      !!node && /retrying in/i.test(node.textContent || ""),
+    );
+    expect(matches.length).toBeGreaterThan(0);
 
     // The visible countdown number matches AUTO_RETRY_SECONDS = 5.
     expect(screen.getByText("5s")).toBeInTheDocument();
