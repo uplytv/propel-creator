@@ -424,7 +424,16 @@ export default function VideoPlayer() {
           </div>
           {/* Creator Analytics Card (visible only to video owner) */}
           {user && video.creator_id === user.id && (
-            <VideoAnalyticsCard videoId={video.id} viewCount={video.view_count} likeCount={video.like_count} commentCount={video.comment_count} createdAt={video.created_at} durationSeconds={video.duration_seconds} />
+            <>
+              <div className="rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 to-transparent p-4 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-foreground">🚀 Get more views</p>
+                  <p className="text-xs text-muted-foreground">Boost this video to the top of the Discover feed.</p>
+                </div>
+                <BoostButton contentId={video.id} contentType="video" variant="compact" />
+              </div>
+              <VideoAnalyticsCard videoId={video.id} viewCount={video.view_count} likeCount={video.like_count} commentCount={video.comment_count} createdAt={video.created_at} durationSeconds={video.duration_seconds} />
+            </>
           )}
         </div>
 
