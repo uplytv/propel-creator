@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -5,6 +6,24 @@ import { Sparkles, Eye, Play, Rocket } from "lucide-react";
 import LiveBadge from "./LiveBadge";
 import { useLiveViewerCount } from "@/hooks/useLiveViewerCount";
 import type { DiscoveryItem } from "@/hooks/useDiscoveryAlgorithmFeed";
+
+/** Re-renders the consumer once per minute, aligned to wall-clock minute. */
+function useMinuteTick(enabled: boolean) {
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (!enabled) return;
+    const msToNextMinute = 60_000 - (Date.now() % 60_000);
+    let interval: ReturnType<typeof setInterval> | null = null;
+    const timeout = setTimeout(() => {
+      setTick((t) => t + 1);
+      interval = setInterval(() => setTick((t) => t + 1), 60_000);
+    }, msToNextMinute);
+    return () => {
+      clearTimeout(timeout);
+      if (interval) clearInterval(interval);
+    };
+  }, [enabled]);
+}
 
 function linkFor(item: DiscoveryItem) {
   const slug = item.slug || item.content_id;
