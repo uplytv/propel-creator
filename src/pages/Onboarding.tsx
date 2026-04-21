@@ -967,7 +967,22 @@ export default function Onboarding() {
               <Button variant="outline" onClick={() => setStep(1)} className="gap-1">
                 <ArrowLeft className="w-4 h-4" /> Back
               </Button>
-              <Button variant="hero" size="xl" className="flex-1" disabled={!creatorType} onClick={() => setStep(3)}>
+              <Button
+                variant="hero"
+                size="xl"
+                className="flex-1"
+                onClick={() => {
+                  if (!creatorType) {
+                    setCreatorTypeError(true);
+                    requestAnimationFrame(() => {
+                      creatorTypeErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+                    });
+                    return;
+                  }
+                  setCreatorTypeError(false);
+                  setStep(3);
+                }}
+              >
                 Continue <ArrowRight className="ml-1 w-4 h-4" />
               </Button>
             </div>
