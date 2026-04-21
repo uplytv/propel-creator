@@ -326,14 +326,29 @@ export default function CreatorTour({
           style={{ ...tooltipStyle, ...tooltipWidthStyle }}
           className="fixed z-[9999] rounded-2xl border border-border bg-card shadow-2xl p-5"
           data-testid="creator-tour-popover"
+          // Dialog semantics: announce as a non-modal dialog (the rest of the
+          // page is still visually dimmed but not aria-hidden, so screen
+          // reader users keep their place). `aria-labelledby` /
+          // `aria-describedby` point at the title + body so VoiceOver / NVDA
+          // read the step heading and explanation as soon as it opens.
+          role="dialog"
+          aria-modal="false"
+          aria-labelledby={`tour-step-${step.id}-title`}
+          aria-describedby={`tour-step-${step.id}-body`}
         >
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center">
+              <div
+                className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center"
+                aria-hidden="true"
+              >
                 <Icon className="w-4.5 h-4.5 text-primary" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                <p
+                  className="text-xs font-semibold text-muted-foreground uppercase tracking-wide"
+                  aria-label={`Step ${stepIdx + 1} of ${CREATOR_TOUR_STEPS.length}`}
+                >
                   Step {stepIdx + 1} of {CREATOR_TOUR_STEPS.length}
                 </p>
               </div>
@@ -342,19 +357,39 @@ export default function CreatorTour({
               onClick={finish}
               className="text-muted-foreground hover:text-foreground transition"
               aria-label="Skip tour"
+              type="button"
             >
-              <X className="w-4 h-4" />
+              <X className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
 
-          <h3 className="text-base font-bold text-foreground mb-1.5">{step.title}</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed mb-4">{step.body}</p>
+          <h3
+            id={`tour-step-${step.id}-title`}
+            className="text-base font-bold text-foreground mb-1.5"
+          >
+            {step.title}
+          </h3>
+          <p
+            id={`tour-step-${step.id}-body`}
+            className="text-sm text-muted-foreground leading-relaxed mb-4"
+          >
+            {step.body}
+          </p>
 
-          {/* Progress dots */}
-          <div className="flex items-center gap-1 mb-4">
+          {/* Progress dots — purely decorative; the textual "Step X of N"
+              above already communicates progress to assistive tech. */}
+          <div
+            className="flex items-center gap-1 mb-4"
+            role="progressbar"
+            aria-valuemin={1}
+            aria-valuemax={CREATOR_TOUR_STEPS.length}
+            aria-valuenow={stepIdx + 1}
+            aria-label="Tour progress"
+          >
             {CREATOR_TOUR_STEPS.map((_, i) => (
               <div
                 key={i}
+                aria-hidden="true"
                 className={`h-1 rounded-full transition-all ${
                   i === stepIdx ? "w-6 bg-primary" : i < stepIdx ? "w-3 bg-primary/50" : "w-3 bg-border"
                 }`}
