@@ -33,6 +33,7 @@ export interface DiscoveryItem {
   is_live?: boolean;
   is_boosted?: boolean;
   boost_tier?: string | null;
+  boost_expires_at?: string | null;
   created_at: string;
   // joined
   title?: string;
