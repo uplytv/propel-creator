@@ -130,6 +130,16 @@ export default function Onboarding() {
 
   // Step 2: Creator Profile
   const [creatorType, setCreatorType] = useState("");
+  const pendingCreatorTypeFocus = useRef<string | null>(null);
+  useEffect(() => {
+    const target = pendingCreatorTypeFocus.current;
+    if (!target) return;
+    pendingCreatorTypeFocus.current = null;
+    const el = document.querySelector<HTMLButtonElement>(
+      `[data-creator-type-card="${target}"]`
+    );
+    el?.focus();
+  }, [creatorType]);
   const [followerCount, setFollowerCount] = useState("");
   const [primaryPlatform, setPrimaryPlatform] = useState("");
   const [isMonetizing, setIsMonetizing] = useState<string | null>(null);
