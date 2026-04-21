@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
 
 const navigateMock = vi.fn();
@@ -239,6 +240,60 @@ describe("Onboarding Step 2 — creator type validation", () => {
       expect(callArg).toMatchObject({ behavior: "smooth", block: "center" });
 
       // Verify the call was made on an element that contains the banner (the ref'd wrapper)
+      const calledOn = scrollSpy.mock.instances[0] as HTMLElement;
+      expect(calledOn.contains(banner) || calledOn === banner).toBe(true);
+    } finally {
+      (window as any).HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+      window.requestAnimationFrame = originalRaf;
+    }
+  });
+
+  it("triggers the error banner and scrolls it into view when Enter is pressed on the focused Continue button (mobile)", async () => {
+    Object.defineProperty(window, "innerWidth", { writable: true, configurable: true, value: 390 });
+    Object.defineProperty(window, "innerHeight", { writable: true, configurable: true, value: 844 });
+
+    const scrollSpy = vi.fn();
+    const originalScrollIntoView = (window as any).HTMLElement.prototype.scrollIntoView;
+    (window as any).HTMLElement.prototype.scrollIntoView = scrollSpy;
+
+    const originalRaf = window.requestAnimationFrame;
+    const rafQueue: FrameRequestCallback[] = [];
+    const stubRaf = ((cb: FrameRequestCallback) => {
+      rafQueue.push(cb);
+      return rafQueue.length;
+    }) as any;
+    window.requestAnimationFrame = stubRaf;
+
+    try {
+      advanceToStep2();
+      window.requestAnimationFrame = stubRaf;
+
+      const continueBtn = getContinueButton()!;
+      // user-event's keyboard simulation triggers the browser's native button
+      // activation behavior (Enter on a focused <button> fires click).
+      const user = userEvent.setup();
+      continueBtn.focus();
+      expect(document.activeElement).toBe(continueBtn);
+
+      await act(async () => {
+        await user.keyboard("{Enter}");
+      });
+
+      // Banner should now be in the DOM
+      const banner = screen.getByTestId("creator-type-error");
+      expect(banner).toBeInTheDocument();
+      expect(screen.getByText(/Creator type required/i)).toBeInTheDocument();
+
+      // Should NOT have advanced to Step 3
+      expect(screen.queryByText(/Where are you right now\?/i)).not.toBeInTheDocument();
+
+      // Flush queued rAF — scrollIntoView should fire on the ref'd wrapper
+      act(() => {
+        while (rafQueue.length) rafQueue.shift()!(0);
+      });
+
+      expect(scrollSpy).toHaveBeenCalled();
+      expect(scrollSpy.mock.calls[0][0]).toMatchObject({ behavior: "smooth", block: "center" });
       const calledOn = scrollSpy.mock.instances[0] as HTMLElement;
       expect(calledOn.contains(banner) || calledOn === banner).toBe(true);
     } finally {
