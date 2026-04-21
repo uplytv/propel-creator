@@ -227,6 +227,7 @@ const App = () => (
                     <Route path="/index" element={<Landing />} />
                     <Route path="/home" element={<Home />} />
                     <Route path="/auth" element={<Auth />} />
+                    <Route path="/auth-retry" element={<AuthRetry />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/p/:slug" element={<JointProduct isPublic />} />
                     <Route path="/live" element={<Live />} />
