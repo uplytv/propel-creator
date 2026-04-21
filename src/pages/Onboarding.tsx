@@ -574,6 +574,12 @@ export default function Onboarding() {
                   Auto-retrying in <span className="font-semibold text-foreground">{autoRetryCountdown}s</span>…
                 </p>
               )}
+              {autoRetryCountdown === 0 && (
+                <p className="text-xs font-semibold text-primary mt-3 flex items-center justify-center gap-1.5" aria-live="assertive">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  Retrying now…
+                </p>
+              )}
               <div className="flex gap-2 mt-5 w-full">
                 <Button
                   variant="outline"
