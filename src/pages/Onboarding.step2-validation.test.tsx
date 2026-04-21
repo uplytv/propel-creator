@@ -349,4 +349,53 @@ describe("Onboarding Step 2 — creator type validation", () => {
       window.requestAnimationFrame = originalRaf;
     }
   });
+
+  it("keyboard-only: tabbing to Continue and pressing Enter (no mouse) shows the banner and moves focus to the first card", () => {
+    Object.defineProperty(window, "innerWidth", { writable: true, configurable: true, value: 390 });
+    Object.defineProperty(window, "innerHeight", { writable: true, configurable: true, value: 844 });
+
+    const originalScrollIntoView = (window as any).HTMLElement.prototype.scrollIntoView;
+    (window as any).HTMLElement.prototype.scrollIntoView = vi.fn();
+
+    const originalRaf = window.requestAnimationFrame;
+    const rafQueue: FrameRequestCallback[] = [];
+    const stubRaf = ((cb: FrameRequestCallback) => {
+      rafQueue.push(cb);
+      return rafQueue.length;
+    }) as any;
+    window.requestAnimationFrame = stubRaf;
+
+    try {
+      advanceToStep2();
+      window.requestAnimationFrame = stubRaf;
+
+      // Move focus via keyboard simulation: focus the Continue button without
+      // clicking it (mouse is never used). This emulates a user tabbing to it.
+      const continueBtn = getContinueButton()!;
+      continueBtn.focus();
+      expect(document.activeElement).toBe(continueBtn);
+
+      // Press Enter on the focused button — simulate the browser's native
+      // activation (Enter on a focused <button> dispatches click).
+      fireEvent.keyDown(continueBtn, { key: "Enter", code: "Enter" });
+      act(() => {
+        fireEvent.click(continueBtn);
+      });
+
+      // Banner appears, no navigation
+      expect(screen.getByTestId("creator-type-error")).toBeInTheDocument();
+      expect(screen.queryByText(/Where are you right now\?/i)).not.toBeInTheDocument();
+
+      // Flush rAF — focus moves to first card
+      act(() => {
+        while (rafQueue.length) rafQueue.shift()!(0);
+      });
+
+      const firstCard = screen.getByRole("radio", { name: /Fitness/i });
+      expect(document.activeElement).toBe(firstCard);
+    } finally {
+      (window as any).HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+      window.requestAnimationFrame = originalRaf;
+    }
+  });
 });
