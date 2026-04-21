@@ -1248,6 +1248,90 @@ export default function Onboarding() {
             </div>
           </motion.div>
         )}
+
+        {/* STEP 5: Final confirmation — full-screen, only reachable after a
+            successful Step 4 submission. The user explicitly chooses when to
+            leave (no auto-redirect). */}
+        {step === 5 && (
+          <motion.div
+            key="confirmation"
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.02 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="w-full max-w-md flex flex-col items-center text-center"
+            role="status"
+            aria-live="polite"
+          >
+            <motion.div
+              initial={{ scale: 0.4, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 220, damping: 16, delay: 0.1 }}
+              className="w-20 h-20 rounded-full bg-primary/15 ring-4 ring-primary/30 flex items-center justify-center mb-5"
+            >
+              <Check className="w-10 h-10 text-primary" aria-hidden="true" />
+            </motion.div>
+
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">
+              {submittedApproved ? "You're in! 🎉" : "Application submitted 🎉"}
+            </h1>
+            <p className="text-muted-foreground text-sm mb-6 max-w-sm">
+              {submittedApproved
+                ? `Welcome to UPLY${firstName ? `, ${firstName.trim().split(" ")[0]}` : ""}. Your account is approved and ready to go.`
+                : `Thanks${firstName ? `, ${firstName.trim().split(" ")[0]}` : ""}! We've received your application and you're on the waitlist. We'll email you the moment a spot opens up.`}
+            </p>
+
+            <div className="w-full rounded-xl border border-border bg-card p-4 mb-6 text-left space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">1</div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Check your inbox</p>
+                  <p className="text-xs text-muted-foreground">We just sent a confirmation email with your details.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">2</div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {submittedApproved ? "Set up your creator space" : "Skip the line with referrals"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {submittedApproved
+                      ? "Customize your profile, go live, and start earning."
+                      : "Share your unique link — every signup moves you up the waitlist."}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">3</div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Stay in the loop</p>
+                  <p className="text-xs text-muted-foreground">Follow @uply on social for launch updates and creator tips.</p>
+                </div>
+              </div>
+            </div>
+
+            <Button
+              variant="hero"
+              size="xl"
+              className="w-full"
+              onClick={() => {
+                if (submittedApproved) {
+                  navigate("/discover", { replace: true });
+                } else {
+                  navigate("/waitlist?applied=true", { replace: true });
+                }
+              }}
+            >
+              {submittedApproved ? "Go to Dashboard" : "View My Waitlist Spot"}
+              <ArrowRight className="ml-1 w-4 h-4" />
+            </Button>
+
+            <p className="text-[11px] text-muted-foreground mt-4">
+              You can always come back to this from your email confirmation.
+            </p>
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );
