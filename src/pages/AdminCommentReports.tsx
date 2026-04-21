@@ -18,7 +18,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ArrowLeft, Flag, EyeOff, Eye, Trash2, Check, ShieldX, MessageCircle, Download } from "lucide-react";
+import { ArrowLeft, Flag, EyeOff, Eye, Trash2, Check, ShieldX, MessageCircle, Download, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNowStrict } from "date-fns";
 
