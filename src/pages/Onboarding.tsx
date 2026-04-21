@@ -236,6 +236,8 @@ export default function Onboarding() {
   }, [autoRetryCountdown]);
 
   const fileRef = useRef<HTMLInputElement>(null);
+  const settingsNavLastAttemptRef = useRef<number>(0);
+  const SETTINGS_NAV_COOLDOWN_MS = 2000;
 
   // Referrer info from cookies
   const [referrerName, setReferrerName] = useState<string | null>(null);
