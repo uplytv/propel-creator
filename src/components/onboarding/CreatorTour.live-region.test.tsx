@@ -14,7 +14,9 @@ const ANNOUNCE_DELAY_MS = 100; // > the 80ms debounce in CreatorTour
 
 const renderTour = () =>
   render(
-    <MemoryRouter>
+    // Pre-seed the router on /dashboard so the step-1 navigate() is a no-op
+    // and doesn't tear down the tour portal mid-transition.
+    <MemoryRouter initialEntries={["/dashboard"]}>
       <CreatorTour forceOpen />
     </MemoryRouter>,
   );
