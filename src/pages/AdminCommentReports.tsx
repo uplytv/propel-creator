@@ -302,7 +302,7 @@ export default function AdminCommentReports() {
       <ExportCsvDialog
         open={exportOpen}
         onOpenChange={setExportOpen}
-        count={list.length}
+        rows={list}
         tab={tab}
         onExport={handleExportCsv}
       />
@@ -330,15 +330,39 @@ const COMMENT_FIELDS = [
   { key: "comment_author_name", label: "Comment author name" },
 ];
 
+const FIELD_GETTERS: Record<string, (r: ReportRow) => unknown> = {
+  report_id: (r) => r.id,
+  status: (r) => r.status,
+  reason: (r) => r.reason,
+  details: (r) => r.details ?? "",
+  reported_at: (r) => r.created_at,
+  reporter_id: (r) => r.reporter_id,
+  reporter_name: (r) => r.reporter?.display_name ?? "",
+  comment_id: (r) => r.comment?.id ?? "",
+  comment_body: (r) => r.comment?.body ?? "",
+  comment_source: (r) => r.comment?.source ?? "",
+  comment_is_hidden: (r) => r.comment?.is_hidden ?? "",
+  comment_posted_at: (r) => r.comment?.created_at ?? "",
+  comment_author_id: (r) => r.comment?.user_id ?? "",
+  comment_author_name: (r) => r.target?.display_name ?? "",
+};
+
+const FIELD_LABEL = [...REPORT_FIELDS, ...COMMENT_FIELDS].reduce<Record<string, string>>(
+  (acc, f) => { acc[f.key] = f.label; return acc; }, {}
+);
+
+const ORDERED_KEYS = [...REPORT_FIELDS, ...COMMENT_FIELDS].map((f) => f.key);
+
 function ExportCsvDialog({
-  open, onOpenChange, count, tab, onExport,
+  open, onOpenChange, rows, tab, onExport,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
-  count: number;
+  rows: ReportRow[];
   tab: ReportStatus;
   onExport: (selected: string[]) => void;
 }) {
+  const count = rows.length;
   const [preset, setPreset] = useState<"both" | "report" | "comment" | "custom">(() => {
     try {
       const v = localStorage.getItem("admin-csv-export-preset");
@@ -381,9 +405,20 @@ function ExportCsvDialog({
     });
   };
 
+  const previewKeys = useMemo(
+    () => ORDERED_KEYS.filter((k) => selected.has(k)),
+    [selected]
+  );
+  const previewRows = useMemo(() => rows.slice(0, 5), [rows]);
+
+  const truncate = (v: unknown, max = 40) => {
+    const s = v === null || v === undefined ? "" : String(v);
+    return s.length > max ? `${s.slice(0, max)}…` : s;
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Export {tab} reports</DialogTitle>
           <DialogDescription>
@@ -413,11 +448,53 @@ function ExportCsvDialog({
             <FieldGroup title="Report fields" fields={REPORT_FIELDS} selected={selected} onToggle={toggle} />
             <FieldGroup title="Comment fields" fields={COMMENT_FIELDS} selected={selected} onToggle={toggle} />
           </div>
+
+          {/* CSV Preview */}
+          <div className="rounded-md border border-border">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/30">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Preview
+              </p>
+              <p className="text-[10px] text-muted-foreground">
+                Showing {Math.min(previewRows.length, 5)} of {count} row{count === 1 ? "" : "s"}
+              </p>
+            </div>
+            {previewKeys.length === 0 ? (
+              <p className="text-xs text-muted-foreground italic p-3">Select at least one column to preview.</p>
+            ) : previewRows.length === 0 ? (
+              <p className="text-xs text-muted-foreground italic p-3">No rows to preview.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead className="bg-muted/20">
+                    <tr>
+                      {previewKeys.map((k) => (
+                        <th key={k} className="text-left font-semibold text-foreground px-3 py-2 whitespace-nowrap border-b border-border">
+                          {FIELD_LABEL[k] || k}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {previewRows.map((r, i) => (
+                      <tr key={r.id} className={i % 2 ? "bg-muted/10" : ""}>
+                        {previewKeys.map((k) => (
+                          <td key={k} className="px-3 py-1.5 align-top text-foreground/80 whitespace-nowrap">
+                            {truncate(FIELD_GETTERS[k]?.(r))}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
 
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={() => onExport([...selected])} disabled={!selected.size}>
+          <Button onClick={() => onExport([...selected])} disabled={!selected.size || !count}>
             <Download className="w-4 h-4 mr-1.5" />
             Download CSV ({selected.size})
           </Button>
