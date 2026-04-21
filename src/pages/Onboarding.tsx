@@ -212,6 +212,7 @@ export default function Onboarding() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
+  const [submitSucceeded, setSubmitSucceeded] = useState(false);
   const [referralCode, setReferralCode] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -463,12 +464,16 @@ export default function Onboarding() {
     sessionStorage.setItem("waitlist_email", user.email || "");
 
     setSaving(false);
+    setSubmitSucceeded(true);
 
-    if (isApproved) {
-      navigate("/discover", { replace: true });
-    } else {
-      navigate("/waitlist?applied=true", { replace: true });
-    }
+    // Brief success screen, then navigate
+    setTimeout(() => {
+      if (isApproved) {
+        navigate("/discover", { replace: true });
+      } else {
+        navigate("/waitlist?applied=true", { replace: true });
+      }
+    }, 1200);
   };
 
   const totalSteps = 4; // splash, basics, profile, qualifying
