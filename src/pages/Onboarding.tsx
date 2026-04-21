@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowRight, ArrowLeft, Camera, Check, X, Loader2 } from "lucide-react";
+import { ArrowRight, ArrowLeft, Camera, Check, X, Loader2, AlertTriangle, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { getAffiliateCookie, clearAffiliateCookie, getReferralData, clearReferralData } from "@/lib/affiliateCookies";
 import logoImg from "@/assets/logo.png";
@@ -213,6 +213,7 @@ export default function Onboarding() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [submitSucceeded, setSubmitSucceeded] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [referralCode, setReferralCode] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -274,8 +275,10 @@ export default function Onboarding() {
   const finishOnboarding = async () => {
     if (!user) return;
     if (saving || submitSucceeded) return; // Prevent double-submit
+    setSubmitError(null);
     setSaving(true);
 
+    try {
     let uploadedUrl = avatarUrl;
     if (avatarFile) uploadedUrl = await uploadPhoto();
 
@@ -474,6 +477,14 @@ export default function Onboarding() {
         navigate("/waitlist?applied=true", { replace: true });
       }
     }, 1200);
+    } catch (err: any) {
+      console.error("[Onboarding] submission failed", err);
+      setSaving(false);
+      setSubmitError(
+        err?.message?.toString().slice(0, 200) ||
+          "Something went wrong while submitting your application."
+      );
+    }
   };
 
   const totalSteps = 4; // splash, basics, profile, qualifying
