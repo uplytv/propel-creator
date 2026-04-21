@@ -278,6 +278,7 @@ export default function Onboarding() {
     if (!user) return;
     if (saving || submitSucceeded) return; // Prevent double-submit
     setSubmitError(null);
+    setAutoRetryCountdown(null);
     setSaving(true);
 
     try {
@@ -486,6 +487,8 @@ export default function Onboarding() {
         err?.message?.toString().slice(0, 200) ||
           "Something went wrong while submitting your application."
       );
+      // Kick off the auto-retry countdown
+      setAutoRetryCountdown(AUTO_RETRY_SECONDS);
     }
   };
 
