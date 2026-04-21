@@ -602,3 +602,132 @@ describe("Onboarding Step 4 — submission error banner & manual retry", () => {
     expect(updatesAfterDismiss).toBe(updatesBeforeDismiss);
   });
 });
+
+// =================== EXACT PAYLOAD SHAPE ===================
+
+describe("Onboarding Step 4 — exact Supabase payload shapes", () => {
+  it("captures the entire 'Full name' string into first_name and leaves last_name empty (Step 1 has a single field)", async () => {
+    await advanceToStep4();
+    fillStep4Required();
+    fireEvent.click(submitButton());
+
+    await waitFor(() => {
+      expect(screen.getByText(/Application submitted!/i)).toBeInTheDocument();
+    });
+
+    const profileUpdate = updateCallPayloads.find((c) => c.table === "profiles");
+    expect(profileUpdate).toBeDefined();
+    // Step 1 only has a single "Full name" input that writes to firstName.
+    expect(profileUpdate!.payload.first_name).toBe("Jane Doe");
+    expect(profileUpdate!.payload.last_name).toBe("");
+    expect(profileUpdate!.payload.display_name).toBe("Jane Doe");
+
+    const waitlistInsert = insertCallPayloads.find((c) => c.table === "waitlist");
+    expect(waitlistInsert!.payload.full_name).toBe("Jane Doe");
+  });
+
+  it("trims surrounding whitespace from the name input on both profile and waitlist payloads", async () => {
+    renderOnboarding();
+    fillStep1("   Spaced Name   ");
+    fillStep2();
+    await screen.findByText(/Where are you right now\?/i);
+    fillStep3();
+    await screen.findByText(/Step 4 of 4/i);
+    fillStep4Required();
+    fireEvent.click(submitButton());
+
+    await waitFor(() => {
+      expect(screen.getByText(/Application submitted!/i)).toBeInTheDocument();
+    });
+
+    const profileUpdate = updateCallPayloads.find((c) => c.table === "profiles");
+    expect(profileUpdate!.payload.first_name).toBe("Spaced Name");
+    expect(profileUpdate!.payload.display_name).toBe("Spaced Name");
+
+    const waitlistInsert = insertCallPayloads.find((c) => c.table === "waitlist");
+    expect(waitlistInsert!.payload.full_name).toBe("Spaced Name");
+  });
+
+  it("writes the exact full profiles.update payload (role_type, onboarding_complete, creator_type, avatar_url)", async () => {
+    await advanceToStep4();
+    fillStep4Required();
+    fireEvent.click(submitButton());
+
+    await waitFor(() => {
+      expect(screen.getByText(/Application submitted!/i)).toBeInTheDocument();
+    });
+
+    const profileUpdate = updateCallPayloads.find((c) => c.table === "profiles");
+    expect(profileUpdate).toBeDefined();
+    expect(profileUpdate!.payload).toMatchObject({
+      first_name: "Jane Doe",
+      last_name: "",
+      display_name: "Jane Doe",
+      role_type: "creator",
+      onboarding_complete: true,
+      creator_type: "Fitness",
+    });
+    expect(profileUpdate!.payload.avatar_url).toBeFalsy();
+    expect("is_approved" in profileUpdate!.payload).toBe(true);
+  });
+
+  it("writes the exact waitlist.insert payload with required fields and nulls for unfilled optional fields", async () => {
+    await advanceToStep4();
+    fillStep4Required();
+    fireEvent.click(submitButton());
+
+    await waitFor(() => {
+      expect(screen.getByText(/Application submitted!/i)).toBeInTheDocument();
+    });
+
+    const waitlistInsert = insertCallPayloads.find((c) => c.table === "waitlist");
+    expect(waitlistInsert).toBeDefined();
+
+    expect(waitlistInsert!.payload).toMatchObject({
+      full_name: "Jane Doe",
+      email: "test@example.com",
+      user_id: "test-user",
+      creator_type: "Fitness",
+      one_sentence: "I teach beginners how to invest.",
+    });
+
+    // Optional fields not collected in the abbreviated test flow → null.
+    expect(waitlistInsert!.payload.social_handle).toBeNull();
+    expect(waitlistInsert!.payload.follower_count).toBeNull();
+    expect(waitlistInsert!.payload.primary_platform).toBeNull();
+    expect(waitlistInsert!.payload.is_monetizing).toBeNull();
+    expect(waitlistInsert!.payload.monthly_earnings).toBeNull();
+    expect(waitlistInsert!.payload.monetization_challenges).toBeNull();
+    expect(waitlistInsert!.payload.first_use_case).toBeNull();
+    expect(waitlistInsert!.payload.hear_about).toBeNull();
+
+    // Referral fields — none present in this flow (mocked out) → null.
+    expect(waitlistInsert!.payload.referred_by).toBeNull();
+    expect(waitlistInsert!.payload.referrer_username).toBeNull();
+    expect(waitlistInsert!.payload.referrer_display_name).toBeNull();
+    expect(waitlistInsert!.payload.referrer_avatar_url).toBeNull();
+  });
+
+  it("uses a different creator_type (Education) end-to-end when the user picks it in Step 2", async () => {
+    renderOnboarding();
+    fillStep1("Alex Educator");
+    fillStep2("Education");
+    await screen.findByText(/Where are you right now\?/i);
+    fillStep3();
+    await screen.findByText(/Step 4 of 4/i);
+    fillStep4Required();
+    fireEvent.click(submitButton());
+
+    await waitFor(() => {
+      expect(screen.getByText(/Application submitted!/i)).toBeInTheDocument();
+    });
+
+    const profileUpdate = updateCallPayloads.find((c) => c.table === "profiles");
+    expect(profileUpdate!.payload.creator_type).toBe("Education");
+    expect(profileUpdate!.payload.first_name).toBe("Alex Educator");
+
+    const waitlistInsert = insertCallPayloads.find((c) => c.table === "waitlist");
+    expect(waitlistInsert!.payload.creator_type).toBe("Education");
+    expect(waitlistInsert!.payload.full_name).toBe("Alex Educator");
+  });
+});
