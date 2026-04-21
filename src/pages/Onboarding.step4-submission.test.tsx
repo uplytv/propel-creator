@@ -743,3 +743,135 @@ describe("Onboarding Step 4 — exact Supabase payload shapes", () => {
     expect(waitlistInsert!.payload.full_name).toBe("Alex Educator");
   });
 });
+
+// =================== STEP 2 → SUPABASE creator_type MAPPING ===================
+//
+// These tests lock in the contract between the Step 2 creator-type picker and
+// the two Supabase writes that happen on Step 4 submission:
+//   - profiles.update.creator_type        (falls back to "Content Creator" when empty)
+//   - waitlist.insert.creator_type        (stays null when empty — intentional asymmetry)
+// They also assert that the Step 2 selection does not leak into other,
+// independently-tracked fields (e.g. follower_count, primary_platform), which
+// remain null for users who skip the optional Step 2 sub-questions.
+
+describe("Onboarding Step 2 → Supabase creator_type mapping", () => {
+  // Helper: drive the full flow with a chosen Step 2 creator type and submit.
+  async function submitWithCreatorType(creatorType: string, name = "Jane Doe") {
+    renderOnboarding();
+    fillStep1(name);
+    fillStep2(creatorType);
+    await screen.findByText(/Where are you right now\?/i);
+    fillStep3();
+    await screen.findByText(/Step 4 of 4/i);
+    fillStep4Required();
+    fireEvent.click(submitButton());
+    await waitFor(() => {
+      expect(screen.getByText(/Application submitted!/i)).toBeInTheDocument();
+    });
+  }
+
+  // Drive every supported creator-type label and assert it is written verbatim.
+  // Keep this list aligned with CREATOR_TYPES in src/pages/Onboarding.tsx.
+  const CREATOR_TYPE_LABELS = [
+    "Fitness",
+    "Finance",
+    "Gaming",
+    "Lifestyle",
+    "Business",
+    "Education",
+    "Music",
+    "Cooking",
+    "Sports",
+    "Beauty",
+    "Travel",
+    "Tech",
+    "Real Estate",
+    "IRL",
+    "Other",
+  ];
+
+  it.each(CREATOR_TYPE_LABELS)(
+    "writes creator_type=%s verbatim into both profiles.update and waitlist.insert",
+    async (label) => {
+      await submitWithCreatorType(label);
+
+      const profileUpdate = updateCallPayloads.find((c) => c.table === "profiles");
+      expect(profileUpdate).toBeDefined();
+      expect(profileUpdate!.payload.creator_type).toBe(label);
+
+      const waitlistInsert = insertCallPayloads.find((c) => c.table === "waitlist");
+      expect(waitlistInsert).toBeDefined();
+      expect(waitlistInsert!.payload.creator_type).toBe(label);
+    },
+  );
+
+  it("uses the same creator_type string in both writes (no transformation between tables)", async () => {
+    await submitWithCreatorType("Real Estate");
+
+    const profileUpdate = updateCallPayloads.find((c) => c.table === "profiles");
+    const waitlistInsert = insertCallPayloads.find((c) => c.table === "waitlist");
+
+    // Same exact string in both places — protects against future code paths
+    // that might lowercase, slugify, or re-map "Real Estate" → "real_estate".
+    expect(profileUpdate!.payload.creator_type).toBe("Real Estate");
+    expect(waitlistInsert!.payload.creator_type).toBe("Real Estate");
+    expect(profileUpdate!.payload.creator_type).toBe(
+      waitlistInsert!.payload.creator_type,
+    );
+  });
+
+  it("Step 2 selection does NOT touch unrelated dependent fields — they stay null on waitlist when the user skips optional sub-questions", async () => {
+    await submitWithCreatorType("Tech");
+
+    const waitlistInsert = insertCallPayloads.find((c) => c.table === "waitlist");
+    expect(waitlistInsert).toBeDefined();
+
+    // Picking a creator_type alone must not auto-populate other waitlist fields.
+    expect(waitlistInsert!.payload.follower_count).toBeNull();
+    expect(waitlistInsert!.payload.primary_platform).toBeNull();
+    expect(waitlistInsert!.payload.is_monetizing).toBeNull();
+    expect(waitlistInsert!.payload.monthly_earnings).toBeNull();
+    expect(waitlistInsert!.payload.monetization_challenges).toBeNull();
+    expect(waitlistInsert!.payload.first_use_case).toBeNull();
+    expect(waitlistInsert!.payload.hear_about).toBeNull();
+
+    // And profiles.update only carries the creator_type — it shouldn't have
+    // smuggled any of the optional Step 2 sub-fields onto the profile row.
+    const profileUpdate = updateCallPayloads.find((c) => c.table === "profiles");
+    expect(profileUpdate).toBeDefined();
+    expect(profileUpdate!.payload).not.toHaveProperty("follower_count");
+    expect(profileUpdate!.payload).not.toHaveProperty("primary_platform");
+    expect(profileUpdate!.payload).not.toHaveProperty("is_monetizing");
+  });
+
+  it("Step 2 creator_type selection switching: the most recent choice wins on submit", async () => {
+    renderOnboarding();
+    fillStep1();
+
+    // First select Music, then change mind to Gaming before continuing.
+    const musicCard = screen.getByRole("radio", { name: /Music/i });
+    fireEvent.click(musicCard);
+    const gamingCard = screen.getByRole("radio", { name: /Gaming/i });
+    fireEvent.click(gamingCard);
+    clickContinue();
+
+    await screen.findByText(/Where are you right now\?/i);
+    fillStep3();
+    await screen.findByText(/Step 4 of 4/i);
+    fillStep4Required();
+    fireEvent.click(submitButton());
+
+    await waitFor(() => {
+      expect(screen.getByText(/Application submitted!/i)).toBeInTheDocument();
+    });
+
+    const profileUpdate = updateCallPayloads.find((c) => c.table === "profiles");
+    const waitlistInsert = insertCallPayloads.find((c) => c.table === "waitlist");
+
+    expect(profileUpdate!.payload.creator_type).toBe("Gaming");
+    expect(waitlistInsert!.payload.creator_type).toBe("Gaming");
+    // Make sure the abandoned earlier selection is not present anywhere.
+    expect(profileUpdate!.payload.creator_type).not.toBe("Music");
+    expect(waitlistInsert!.payload.creator_type).not.toBe("Music");
+  });
+});
