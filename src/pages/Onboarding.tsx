@@ -365,6 +365,8 @@ export default function Onboarding() {
         </motion.div>
       )}
 
+      {step > 0 && <MilestoneProgressPill onboardingStep={step} totalOnboardingSteps={3} />}
+
       <AnimatePresence mode="wait">
         {step === 0 && (
           <motion.div
