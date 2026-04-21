@@ -648,6 +648,35 @@ export default function Onboarding() {
                 type="button"
                 onClick={() => {
                   const baseDestination = "/settings?tab=account&highlight=auto-retry";
+
+                  // Show an error toast that re-renders each second with a
+                  // counting-down "Try again (Xs)" label until cooldown elapses.
+                  const showErrorWithCountdown = (description: string) => {
+                    const toastId = `settings-nav-error-${Date.now()}`;
+                    const tick = () => {
+                      const remainingMs = Math.max(
+                        0,
+                        readSettingsNavLast() + SETTINGS_NAV_COOLDOWN_MS - Date.now()
+                      );
+                      const remainingSec = Math.ceil(remainingMs / 1000);
+                      const ready = remainingMs <= 0;
+                      toast.error("Couldn't open Settings", {
+                        id: toastId,
+                        description,
+                        duration: ready ? 8000 : 1500,
+                        action: {
+                          label: ready ? "Try again" : `Try again (${remainingSec}s)`,
+                          onClick: () => {
+                            if (!ready) return; // guard: ignore early presses
+                            attemptNavigate(true);
+                          },
+                        },
+                      });
+                      if (!ready) setTimeout(tick, 1000);
+                    };
+                    tick();
+                  };
+
                   const attemptNavigate = (isRetry = false) => {
                     const now = Date.now();
                     const sinceLast = now - readSettingsNavLast();
@@ -667,18 +696,12 @@ export default function Onboarding() {
                       navigate(destination);
                       setTimeout(() => {
                         if (!window.location.pathname.startsWith("/settings")) {
-                          toast.error("Couldn't open Settings", {
-                            description: `Navigation to ${destination} didn't complete.`,
-                            action: { label: "Try again", onClick: () => attemptNavigate(true) },
-                          });
+                          showErrorWithCountdown(`Navigation to ${destination} didn't complete.`);
                         }
                       }, 600);
                     } catch (err) {
                       console.error("[Onboarding] settings navigation failed", err);
-                      toast.error("Couldn't open Settings", {
-                        description: `Navigation to ${destination} failed.`,
-                        action: { label: "Try again", onClick: () => attemptNavigate(true) },
-                      });
+                      showErrorWithCountdown(`Navigation to ${destination} failed.`);
                     }
                   };
                   attemptNavigate(false);
