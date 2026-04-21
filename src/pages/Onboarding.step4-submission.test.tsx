@@ -416,11 +416,10 @@ describe("Onboarding Step 4 — auto-retry countdown after submission failure", 
     fireEvent.click(submitButton());
 
     expect(await screen.findByText(/Submission failed/i)).toBeInTheDocument();
-    expect(
-      screen.getByText((_, node) =>
-        !!node && /Auto-retry is\s+off/i.test(node.textContent || ""),
-      ),
-    ).toBeInTheDocument();
+    const offMatches = screen.getAllByText((_, node) =>
+      !!node && /Auto-retry is\s+off/i.test(node.textContent || ""),
+    );
+    expect(offMatches.length).toBeGreaterThan(0);
     // No countdown number rendered.
     expect(screen.queryByText(/^\d+s$/)).not.toBeInTheDocument();
   });
