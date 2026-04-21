@@ -168,28 +168,38 @@ export default function AdminCommentReports() {
 
   const list = useMemo(() => reports, [reports]);
 
-  const handleExportCsv = () => {
+  const handleExportCsv = (selected: string[]) => {
     if (!list.length) {
       toast.error("Nothing to export");
+      return;
+    }
+    if (!selected.length) {
+      toast.error("Select at least one column");
       return;
     }
     const escape = (v: unknown) => {
       const s = v === null || v === undefined ? "" : String(v);
       return `"${s.replace(/"/g, '""').replace(/\r?\n/g, " ")}"`;
     };
-    const headers = [
-      "report_id", "status", "reason", "details", "reported_at",
-      "reporter_id", "reporter_name",
-      "comment_id", "comment_body", "comment_source", "comment_is_hidden", "comment_posted_at",
-      "comment_author_id", "comment_author_name",
+    const allFields: { key: string; get: (r: ReportRow) => unknown }[] = [
+      { key: "report_id", get: (r) => r.id },
+      { key: "status", get: (r) => r.status },
+      { key: "reason", get: (r) => r.reason },
+      { key: "details", get: (r) => r.details ?? "" },
+      { key: "reported_at", get: (r) => r.created_at },
+      { key: "reporter_id", get: (r) => r.reporter_id },
+      { key: "reporter_name", get: (r) => r.reporter?.display_name ?? "" },
+      { key: "comment_id", get: (r) => r.comment?.id ?? "" },
+      { key: "comment_body", get: (r) => r.comment?.body ?? "" },
+      { key: "comment_source", get: (r) => r.comment?.source ?? "" },
+      { key: "comment_is_hidden", get: (r) => r.comment?.is_hidden ?? "" },
+      { key: "comment_posted_at", get: (r) => r.comment?.created_at ?? "" },
+      { key: "comment_author_id", get: (r) => r.comment?.user_id ?? "" },
+      { key: "comment_author_name", get: (r) => r.target?.display_name ?? "" },
     ];
-    const rows = list.map((r) => [
-      r.id, r.status, r.reason, r.details ?? "", r.created_at,
-      r.reporter_id, r.reporter?.display_name ?? "",
-      r.comment?.id ?? "", r.comment?.body ?? "", r.comment?.source ?? "",
-      r.comment?.is_hidden ?? "", r.comment?.created_at ?? "",
-      r.comment?.user_id ?? "", r.target?.display_name ?? "",
-    ]);
+    const fields = allFields.filter((f) => selected.includes(f.key));
+    const headers = fields.map((f) => f.key);
+    const rows = list.map((r) => fields.map((f) => f.get(r)));
     const csv = [headers, ...rows].map((row) => row.map(escape).join(",")).join("\n");
     const blob = new Blob([`\ufeff${csv}`], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -201,6 +211,7 @@ export default function AdminCommentReports() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     toast.success(`Exported ${list.length} ${tab} report${list.length === 1 ? "" : "s"}`);
+    setExportOpen(false);
   };
 
   return (
@@ -219,7 +230,7 @@ export default function AdminCommentReports() {
           <Button
             variant="outline"
             size="sm"
-            onClick={handleExportCsv}
+            onClick={() => setExportOpen(true)}
             disabled={isLoading || !list.length}
           >
             <Download className="w-3.5 h-3.5 mr-1.5" />
