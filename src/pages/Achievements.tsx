@@ -40,10 +40,11 @@ export default function Achievements() {
 
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<FilterGroup>("all");
+  const [sort, setSort] = useState<SortKey>("newest");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return items.filter((i) => {
+    const result = items.filter((i) => {
       if (filter !== "all" && i.group_type !== filter) return false;
       if (!q) return true;
       return (
@@ -52,7 +53,16 @@ export default function Achievements() {
         (i.emoji || "").includes(q)
       );
     });
-  }, [items, query, filter]);
+    const sorted = [...result];
+    if (sort === "newest") {
+      sorted.sort((a, b) => +new Date(b.reached_at) - +new Date(a.reached_at));
+    } else if (sort === "oldest") {
+      sorted.sort((a, b) => +new Date(a.reached_at) - +new Date(b.reached_at));
+    } else {
+      sorted.sort((a, b) => a.label.localeCompare(b.label));
+    }
+    return sorted;
+  }, [items, query, filter, sort]);
 
   const groups = {
     onboarding: filtered.filter((i) => i.group_type === "onboarding"),
