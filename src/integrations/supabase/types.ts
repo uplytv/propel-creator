@@ -8633,6 +8633,7 @@ export type Database = {
           is_verified_creator: boolean
           last_burst_at: string | null
           last_calculated_at: string
+          last_score_at: string
           likes: number
           momentum_score: number
           prev_score_snapshot: number
@@ -8640,6 +8641,7 @@ export type Database = {
           quality_score: number
           saves: number
           score: number
+          score_30min_ago: number
           shares: number
           thumbnail_url: string | null
           title: string | null
@@ -8664,6 +8666,7 @@ export type Database = {
           is_verified_creator?: boolean
           last_burst_at?: string | null
           last_calculated_at?: string
+          last_score_at?: string
           likes?: number
           momentum_score?: number
           prev_score_snapshot?: number
@@ -8671,6 +8674,7 @@ export type Database = {
           quality_score?: number
           saves?: number
           score?: number
+          score_30min_ago?: number
           shares?: number
           thumbnail_url?: string | null
           title?: string | null
@@ -8695,6 +8699,7 @@ export type Database = {
           is_verified_creator?: boolean
           last_burst_at?: string | null
           last_calculated_at?: string
+          last_score_at?: string
           likes?: number
           momentum_score?: number
           prev_score_snapshot?: number
@@ -8702,6 +8707,7 @@ export type Database = {
           quality_score?: number
           saves?: number
           score?: number
+          score_30min_ago?: number
           shares?: number
           thumbnail_url?: string | null
           title?: string | null
@@ -9565,6 +9571,7 @@ export type Database = {
           read_ct: number
         }[]
       }
+      recalculate_discovery_scores_v2: { Args: never; Returns: undefined }
       recalculate_subscriber_lead_scores: {
         Args: { p_creator_id: string }
         Returns: undefined
