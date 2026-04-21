@@ -29,6 +29,7 @@ import { useInviteCodes } from "@/hooks/useInviteCodes";
 import FirstDollarWizard from "@/components/dashboard/FirstDollarWizard";
 import DiscoveryInsights from "@/components/dashboard/DiscoveryInsights";
 import CreatorTour from "@/components/onboarding/CreatorTour";
+import GrowthPlanCard from "@/components/dashboard/GrowthPlanCard";
 
 function PlatformUpgradeBanner() {
   const { user } = useAuth();
