@@ -196,6 +196,9 @@ export default function Onboarding() {
   const [challenges, setChallenges] = useState<string[]>(initialStep3?.challenges ?? []);
   const [firstUseCase, setFirstUseCase] = useState<string>(initialStep3?.firstUseCase ?? "");
   const [hearAbout, setHearAbout] = useState<string>(initialStep3?.hearAbout ?? "");
+  const [oneSentenceError, setOneSentenceError] = useState(false);
+  const oneSentenceInputRef = useRef<HTMLTextAreaElement | null>(null);
+  const step3BannerRef = useRef<ValidationBannerHandle | null>(null);
 
   // Persist Step 3 inputs to survive refreshes (with timestamp for TTL)
   useEffect(() => {
