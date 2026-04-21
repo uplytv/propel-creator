@@ -385,6 +385,62 @@ describe("showCooldownToast — keyboard accessibility (warning & success)", () 
 
         expect(onAction).toHaveBeenCalledTimes(1);
       });
+
+      it("returns focus to the trigger after Enter activates the action", async () => {
+        const { user, trigger, onAction } = await setupVariant(variant);
+
+        await advance(SETTINGS_NAV_COOLDOWN_MS);
+
+        const btn = screen.getByRole("button", { name: /^Try again$/ });
+        btn.focus();
+        await user.keyboard("{Enter}");
+
+        // Drain restore-focus microtask + macrotask.
+        await act(async () => {
+          vi.advanceTimersByTime(10);
+        });
+
+        expect(onAction).toHaveBeenCalledTimes(1);
+        expect(trigger).toHaveFocus();
+      });
+
+      it("returns focus to the trigger after Space activates the action", async () => {
+        const { user, trigger, onAction } = await setupVariant(variant);
+
+        await advance(SETTINGS_NAV_COOLDOWN_MS);
+
+        const btn = screen.getByRole("button", { name: /^Try again$/ });
+        btn.focus();
+        await user.keyboard(" ");
+
+        await act(async () => {
+          vi.advanceTimersByTime(10);
+        });
+
+        expect(onAction).toHaveBeenCalledTimes(1);
+        expect(trigger).toHaveFocus();
+      });
+
+      it("returns focus to the trigger after the toast auto-dismisses (no action taken)", async () => {
+        const { trigger } = await setupVariant(variant);
+
+        // Move focus off the trigger so we can verify it's actively restored
+        // (not just left untouched). jsdom can't always focus <body>, so blur
+        // explicitly and assert focus moved away.
+        trigger.blur();
+        expect(trigger).not.toHaveFocus();
+
+        // Cooldown elapses → "ready" tick sets duration to 8000ms; advance
+        // past it so sonner fires onAutoClose → restoreFocus().
+        await advance(SETTINGS_NAV_COOLDOWN_MS);
+        await advance(8000);
+        await act(async () => {
+          vi.advanceTimersByTime(10);
+        });
+
+        expect(trigger).toHaveFocus();
+      });
     });
   }
 });
+
