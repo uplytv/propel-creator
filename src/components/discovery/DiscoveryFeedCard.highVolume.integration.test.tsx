@@ -81,12 +81,9 @@ function titleForItem(item: DiscoveryItem) {
 }
 
 function countForTitle(prefix: string, title: string) {
-  return toastFn.mock.calls.filter(
-    (c) =>
-      typeof c[0] === "string" &&
-      (c[0] as string).startsWith(prefix) &&
-      (c[0] as string).includes(title),
-  ).length;
+  // Exact suffix match: toast text is `${prefix}: ${title}`.
+  const expected = `${prefix}: ${title}`;
+  return toastFn.mock.calls.filter((c) => c[0] === expected).length;
 }
 
 function totalCountForPrefix(prefix: string) {
