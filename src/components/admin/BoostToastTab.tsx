@@ -181,6 +181,16 @@ export default function BoostToastTab() {
                 ))}
               </SelectContent>
             </Select>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 text-xs"
+              disabled={!canExport}
+              onClick={handleExportCsv}
+            >
+              <Download className="w-3.5 h-3.5 mr-1.5" />
+              Export CSV
+            </Button>
           </div>
         </div>
       </Card>
