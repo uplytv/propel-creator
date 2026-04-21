@@ -298,6 +298,18 @@ export default function CreatorTour({
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[9998]"
       >
+        {/* Visually-hidden live region — announces step changes to screen
+            readers. Lives outside the dialog so it isn't torn down on each
+            step transition (the dialog re-mounts via key={step.id}). */}
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          data-testid="creator-tour-live-region"
+          className="sr-only"
+        >
+          {liveMessage}
+        </div>
         {/* Spotlight via SVG mask */}
         <svg
           className="absolute inset-0 w-full h-full pointer-events-auto"
