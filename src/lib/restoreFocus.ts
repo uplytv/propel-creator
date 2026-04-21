@@ -40,14 +40,13 @@ export const captureFocus = (): FocusRestorer => {
         }
       }
     };
-    // Defer to a microtask so any in-flight DOM removals (e.g. the toast
-    // action being unmounted) settle first. Otherwise the browser blurs
-    // our newly-focused element when the previously-focused (now-removed)
-    // node is detached.
+    // Defer to a microtask + macrotask so any in-flight DOM removals
+    // (e.g. the toast action being unmounted) settle first. Otherwise the
+    // browser blurs our newly-focused element when the previously-focused
+    // (now-removed) node is detached.
     if (typeof queueMicrotask === "function") {
       queueMicrotask(doFocus);
-    } else {
-      Promise.resolve().then(doFocus);
     }
+    setTimeout(doFocus, 0);
   };
 };
