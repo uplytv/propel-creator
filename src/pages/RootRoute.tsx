@@ -2,6 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { PageSkeleton } from "@/components/ui/PageSkeleton";
 
 // Cache the dynamic imports so we can both lazy-load and imperatively prefetch
 // the same module without triggering a second network request.
