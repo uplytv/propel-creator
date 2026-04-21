@@ -4289,6 +4289,83 @@ export type Database = {
         }
         Relationships: []
       }
+      growth_plan_versions: {
+        Row: {
+          created_at: string
+          creator_id: string
+          id: string
+          is_named_milestone: boolean
+          plan_id: string
+          snapshot: Json
+          version_name: string | null
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          id?: string
+          is_named_milestone?: boolean
+          plan_id: string
+          snapshot: Json
+          version_name?: string | null
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          id?: string
+          is_named_milestone?: boolean
+          plan_id?: string
+          snapshot?: Json
+          version_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "growth_plan_versions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "growth_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      growth_plans: {
+        Row: {
+          created_at: string
+          creator_id: string
+          duration_days: number
+          id: string
+          milestones: Json
+          next_actions: Json
+          target_kpis: Json
+          title: string
+          updated_at: string
+          weekly_tasks: Json
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          duration_days?: number
+          id?: string
+          milestones?: Json
+          next_actions?: Json
+          target_kpis?: Json
+          title?: string
+          updated_at?: string
+          weekly_tasks?: Json
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          duration_days?: number
+          id?: string
+          milestones?: Json
+          next_actions?: Json
+          target_kpis?: Json
+          title?: string
+          updated_at?: string
+          weekly_tasks?: Json
+        }
+        Relationships: []
+      }
       health_checks: {
         Row: {
           checked_at: string
