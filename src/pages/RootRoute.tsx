@@ -78,11 +78,39 @@ const prefetchTarget = (target: "home" | "landing", reason: string) => {
   prefetchedRoutes[target] = true;
   prefetchLog(`running ${target} (${reason})`, { effectiveType });
   const importer = target === "home" ? homeImport : landingImport;
-  importer().catch(() => {
-    // Allow a future retry if the import fails.
+
+  // Short timeout so a stalled network doesn't keep an in-flight chunk
+  // request hanging forever. If we time out, mark the route as not
+  // prefetched so a later trigger (visibility, navigation) can retry.
+  let timedOut = false;
+  const timeoutId = window.setTimeout(() => {
+    timedOut = true;
     prefetchedRoutes[target] = false;
-  });
+    prefetchLog(`timeout: ${target} prefetch aborted after ${PREFETCH_TIMEOUT_MS}ms`, {
+      target,
+      reason,
+    });
+  }, PREFETCH_TIMEOUT_MS);
+
+  importer()
+    .then(() => {
+      if (timedOut) {
+        // Late success after timeout — keep the module (browser cached it),
+        // but log so we can see stalls in dev.
+        prefetchedRoutes[target] = true;
+        prefetchLog(`late success: ${target} resolved after timeout`, { target });
+      }
+    })
+    .catch(() => {
+      prefetchedRoutes[target] = false;
+      prefetchLog(`failed: ${target} import error`, { target });
+    })
+    .finally(() => {
+      window.clearTimeout(timeoutId);
+    });
 };
+
+const PREFETCH_TIMEOUT_MS = 4000;
 
 const AUTH_RESOLVE_TIMEOUT_MS = 8000;
 
