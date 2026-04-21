@@ -7,8 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Trash2, Sparkles, History, Save, Loader2, RotateCcw, Bookmark, Wand2, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Trash2, Sparkles, History, Save, Loader2, RotateCcw, Bookmark, Wand2, ArrowUp, ArrowDown, LayoutTemplate } from "lucide-react";
 import { useGrowthPlan, type EditablePlan, type PlanVersion } from "@/hooks/useGrowthPlan";
+import { useApp } from "@/context/AppContext";
+import { GROWTH_PLAN_TEMPLATES } from "@/lib/growthPlanTemplates";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
