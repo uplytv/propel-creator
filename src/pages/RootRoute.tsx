@@ -100,9 +100,52 @@ if (typeof window !== "undefined") {
 }
 
 const AUTH_RESOLVE_TIMEOUT_MS = 8000;
-// Wait a tick before showing the skeleton — avoids a flash when auth resolves
-// from cached session synchronously or within a frame.
-const SKELETON_DELAY_MS = 150;
+
+// Adaptive skeleton delay configuration.
+// We persist the most recent measured auth resolve duration to localStorage
+// and use it on the next mount to pick a skeleton delay that's:
+//   - near-zero for cached/instant sessions (avoids any flash)
+//   - moderate for typical network sessions
+//   - longer for known-slow sessions (avoids skeleton "blinking on" right
+//     before content arrives)
+const SKELETON_DELAY_DEFAULT_MS = 150;
+const SKELETON_DELAY_MIN_MS = 60;
+const SKELETON_DELAY_MAX_MS = 600;
+const AUTH_DURATION_STORAGE_KEY = "uply:lastAuthResolveMs";
+
+const readLastAuthDurationMs = (): number | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(AUTH_DURATION_STORAGE_KEY);
+    if (!raw) return null;
+    const n = Number(raw);
+    return Number.isFinite(n) && n >= 0 ? n : null;
+  } catch {
+    return null;
+  }
+};
+
+const persistAuthDurationMs = (ms: number) => {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(AUTH_DURATION_STORAGE_KEY, String(ms));
+  } catch {
+    // storage might be disabled (private mode) — fail silently
+  }
+};
+
+/**
+ * Pick a skeleton delay based on last measured auth duration.
+ * Strategy: wait ~80% of the previous resolve time, clamped to a sane range.
+ * This means cached sessions (~20ms) hide the skeleton entirely, while
+ * slow sessions (~3s) wait long enough that the skeleton represents a
+ * meaningful loading state instead of a brief flash.
+ */
+const computeAdaptiveSkeletonDelay = (lastMs: number | null): number => {
+  if (lastMs == null) return SKELETON_DELAY_DEFAULT_MS;
+  const target = Math.round(lastMs * 0.8);
+  return Math.min(SKELETON_DELAY_MAX_MS, Math.max(SKELETON_DELAY_MIN_MS, target));
+};
 
 const Loader = () => <PageSkeleton />;
 
@@ -160,10 +203,20 @@ export default function RootRoute() {
   const authStartRef = useRef<number>(performance.now());
   const reportedRef = useRef(false);
 
+  // Adaptive skeleton delay: derived from last-known auth resolve time.
+  // Stored in a ref so it's stable for the duration of this mount but can be
+  // refreshed on retry.
+  const skeletonDelayRef = useRef<number>(
+    computeAdaptiveSkeletonDelay(readLastAuthDurationMs())
+  );
+
   // Reset measurement when the user retries.
   useEffect(() => {
     authStartRef.current = performance.now();
     reportedRef.current = false;
+    skeletonDelayRef.current = computeAdaptiveSkeletonDelay(
+      readLastAuthDurationMs()
+    );
   }, [retryKey]);
 
   // Emit a one-shot timing event when auth flips from loading -> resolved.
@@ -182,8 +235,14 @@ export default function RootRoute() {
 
     if (import.meta.env.DEV) {
       // eslint-disable-next-line no-console
-      console.log(`[RootRoute auth] resolved in ${durationMs}ms (${bucket})`, payload);
+      console.log(
+        `[RootRoute auth] resolved in ${durationMs}ms (${bucket}) — adaptive skeleton delay was ${skeletonDelayRef.current}ms`,
+        payload
+      );
     }
+
+    // Persist for the next mount so we can pick a smarter skeleton delay.
+    persistAuthDurationMs(durationMs);
 
     // Soft analytics dispatch — works with anything that listens for the
     // CustomEvent (Segment shim, Plausible custom prop, GA4 listener, etc.)
@@ -197,13 +256,18 @@ export default function RootRoute() {
     }
   }, [loading, user, authError]);
 
-  // Delay skeleton display so fast auth resolution doesn't cause a flash.
+  // Delay skeleton display using the adaptive delay derived from the last
+  // measured auth resolve time. Cached sessions get ~60ms, slow sessions
+  // get up to 600ms before the skeleton appears.
   useEffect(() => {
     if (!loading) {
       setShowSkeleton(false);
       return;
     }
-    const id = window.setTimeout(() => setShowSkeleton(true), SKELETON_DELAY_MS);
+    const id = window.setTimeout(
+      () => setShowSkeleton(true),
+      skeletonDelayRef.current
+    );
     return () => window.clearTimeout(id);
   }, [loading, retryKey]);
 
