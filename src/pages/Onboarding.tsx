@@ -1275,12 +1275,20 @@ export default function Onboarding() {
             <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">What are you focused on?</h1>
             <p className="text-muted-foreground text-center text-sm mb-6">Pick up to 3 goals and a target timeline so we can prioritize your tools.</p>
 
+            <ValidationBanner
+              ref={step4Validation.bannerRef}
+              show={!!step4ActiveRule}
+              title={step4ActiveRule?.title ?? ""}
+              description={step4ActiveRule?.description ?? ""}
+              testId="step4-error"
+            />
+
             <div className="space-y-5 mb-6">
               <div>
                 <label className="text-sm font-medium text-foreground mb-2 block">
                   Your top goals * <span className="text-xs text-muted-foreground font-normal">(choose 1–3)</span>
                 </label>
-                <div className="grid grid-cols-2 gap-2">
+                <div ref={goalsGroupRef} className="grid grid-cols-2 gap-2">
                   {CREATOR_GOALS.map((g) => {
                     const selected = goals.includes(g.key);
                     const atLimit = !selected && goals.length >= 3;
@@ -1313,16 +1321,11 @@ export default function Onboarding() {
                     );
                   })}
                 </div>
-                {step4AttemptedSubmit && goals.length === 0 && (
-                  <p className="text-xs text-destructive mt-2" role="alert" aria-live="polite">
-                    Please pick at least one goal to continue.
-                  </p>
-                )}
               </div>
 
               <div>
                 <label className="text-sm font-medium text-foreground mb-2 block">Target timeline *</label>
-                <div className="grid grid-cols-3 gap-2">
+                <div ref={timelineGroupRef} className="grid grid-cols-3 gap-2">
                   {GOAL_TIMELINES.map((t) => {
                     const selected = goalTimeline === t.key;
                     return (
@@ -1342,23 +1345,16 @@ export default function Onboarding() {
                     );
                   })}
                 </div>
-                {step4AttemptedSubmit && !goalTimeline && (
-                  <p className="text-xs text-destructive mt-2" role="alert" aria-live="polite">
-                    Please choose a timeline to continue.
-                  </p>
-                )}
               </div>
             </div>
 
-            {submitError && (
-              <div
-                role="alert"
-                className="mb-3 flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive"
-              >
-                <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
-                <span className="flex-1">{submitError}</span>
-              </div>
-            )}
+            <ValidationBanner
+              ref={submitErrorBannerRef}
+              show={!!submitError}
+              title="Submission failed"
+              description={submitError ?? ""}
+              testId="step4-submit-error"
+            />
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => setStep(3)} className="gap-1">
                 <ArrowLeft className="w-4 h-4" /> Back
@@ -1369,10 +1365,8 @@ export default function Onboarding() {
                 className="flex-1"
                 disabled={saving}
                 onClick={() => {
-                  if (goals.length === 0 || !goalTimeline) {
-                    setStep4AttemptedSubmit(true);
-                    return;
-                  }
+                  setStep4AttemptedSubmit(true);
+                  if (!step4Validation.validate(step4Rules)) return;
                   finishOnboarding();
                 }}
               >
