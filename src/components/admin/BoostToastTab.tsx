@@ -362,6 +362,7 @@ export default function BoostToastTab() {
                 </TooltipContent>
               </UITooltip>
               <button
+                ref={csvSampleTriggerRef}
                 type="button"
                 onClick={() => {
                   setCsvSampleGeneratedAt(new Date().toISOString());
