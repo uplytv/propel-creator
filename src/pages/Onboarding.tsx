@@ -1397,6 +1397,7 @@ export default function Onboarding() {
             goalTimeline={goalTimeline}
             onBack={() => setStep(4)}
             onContinue={() => setStep(6)}
+            onEditStep={(s) => setStep(s)}
           />
         )}
 
