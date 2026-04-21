@@ -774,8 +774,26 @@ export default function Onboarding() {
             <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">The Basics</h1>
             <p className="text-muted-foreground text-center text-sm mb-2">Tell us a little about yourself.</p>
             <p className="text-xs text-primary text-center mb-6 font-medium">⚡ Takes less than 2 minutes</p>
+
+            <ValidationBanner
+              ref={step1BannerRef}
+              show={firstNameError && !firstName.trim()}
+              title="Full name required"
+              description="Please enter your full name to continue."
+              testId="full-name-error"
+            />
+
             <div className="space-y-4 mb-4">
-              <Input placeholder="Full name *" value={firstName} onChange={(e) => setFirstName(e.target.value)} autoFocus className="text-center text-lg py-6" />
+              <Input
+                ref={firstNameInputRef}
+                placeholder="Full name *"
+                value={firstName}
+                onChange={(e) => { setFirstName(e.target.value); if (firstNameError) setFirstNameError(false); }}
+                autoFocus
+                aria-invalid={firstNameError && !firstName.trim()}
+                aria-required="true"
+                className="text-center text-lg py-6"
+              />
               <Input placeholder="Email" value={user?.email || ""} disabled className="text-center text-sm py-4 opacity-60" />
               <Input placeholder="@yourhandle or youtube.com/c/yourchannel" value={socialHandle} onChange={(e) => setSocialHandle(e.target.value)} className="text-center text-sm py-4" />
             </div>
