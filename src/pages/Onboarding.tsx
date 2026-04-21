@@ -854,7 +854,7 @@ export default function Onboarding() {
                 <label className="text-sm font-medium text-foreground mb-2 block">
                   Where are you right now? *
                 </label>
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-[55vh] sm:max-h-none overflow-y-auto pr-1 -mr-1">
                   {CREATOR_STAGES.map((s) => {
                     const selected = creatorStage === s.key;
                     const showError = attemptedSubmit && !creatorStage;
@@ -864,7 +864,7 @@ export default function Onboarding() {
                         type="button"
                         onClick={() => { setCreatorStage(s.key); setAttemptedSubmit(false); }}
                         aria-pressed={selected}
-                        className={`w-full text-left flex items-start gap-3 rounded-xl border p-4 transition-all ${
+                        className={`w-full text-left flex items-start gap-2.5 sm:gap-3 rounded-xl border p-3 sm:p-4 transition-all ${
                           selected
                             ? "border-primary bg-primary/10 ring-1 ring-primary/40"
                             : showError
@@ -872,10 +872,10 @@ export default function Onboarding() {
                               : "border-border bg-card hover:border-primary/40 hover:bg-card/80"
                         }`}
                       >
-                        <div className="text-2xl shrink-0">{s.emoji}</div>
+                        <div className="text-xl sm:text-2xl shrink-0 leading-none mt-0.5">{s.emoji}</div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-foreground">{s.title}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">{s.desc}</p>
+                          <p className="text-sm font-semibold text-foreground leading-snug break-words">{s.title}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5 leading-snug break-words">{s.desc}</p>
                         </div>
                         {selected && (
                           <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />
