@@ -207,12 +207,14 @@ describe("Onboarding Step 2 — creator type validation", () => {
     const originalScrollIntoView = (window as any).HTMLElement.prototype.scrollIntoView;
     (window as any).HTMLElement.prototype.scrollIntoView = scrollSpy;
 
-    // Stub requestAnimationFrame so the scroll fires synchronously
+    // Stub requestAnimationFrame so the scroll fires synchronously.
+    // (Re-stub after advanceToStep2 because vi.useFakeTimers may replace it.)
     const originalRaf = window.requestAnimationFrame;
-    window.requestAnimationFrame = ((cb: FrameRequestCallback) => {
+    const stubRaf = ((cb: FrameRequestCallback) => {
       cb(0);
       return 0;
     }) as any;
+    window.requestAnimationFrame = stubRaf;
 
     try {
       advanceToStep2();
