@@ -269,14 +269,14 @@ describe("Onboarding Step 2 — creator type validation", () => {
       window.requestAnimationFrame = stubRaf;
 
       const continueBtn = getContinueButton()!;
-      // user-event's keyboard simulation triggers the browser's native button
-      // activation behavior (Enter on a focused <button> fires click).
-      const user = userEvent.setup();
       continueBtn.focus();
       expect(document.activeElement).toBe(continueBtn);
 
-      await act(async () => {
-        await user.keyboard("{Enter}");
+      // Simulate the browser's native button-activation behavior on Enter:
+      // a keydown {Enter} on a focused <button> dispatches a click event.
+      fireEvent.keyDown(continueBtn, { key: "Enter", code: "Enter" });
+      act(() => {
+        fireEvent.click(continueBtn);
       });
 
       // Banner should now be in the DOM
