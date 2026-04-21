@@ -930,6 +930,15 @@ export default function Onboarding() {
               </div>
             </div>
 
+            {submitError && (
+              <div
+                role="alert"
+                className="mb-3 flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive"
+              >
+                <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
+                <span className="flex-1">{submitError}</span>
+              </div>
+            )}
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => setStep(3)} className="gap-1">
                 <ArrowLeft className="w-4 h-4" /> Back
