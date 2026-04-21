@@ -120,12 +120,15 @@ export default function Settings() {
   const { enabled: autoRetryEnabled, setEnabled: setAutoRetryEnabled } = useAutoRetryPreference();
   const autoRetryRef = useRef<HTMLDivElement>(null);
 
-  // If linked with ?highlight=auto-retry, scroll the section into view
+  // If linked with ?highlight=auto-retry, scroll the section into view + toast
   useEffect(() => {
     if (searchParams.get("highlight") === "auto-retry" && activeTab === "account") {
       const t = setTimeout(() => {
         autoRetryRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      }, 100);
+        toast.success("Auto-retry section highlighted", {
+          description: "Toggle below to enable or disable automatic onboarding retries.",
+        });
+      }, 200);
       return () => clearTimeout(t);
     }
   }, [searchParams, activeTab]);
