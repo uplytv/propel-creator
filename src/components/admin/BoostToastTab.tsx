@@ -202,7 +202,40 @@ export default function BoostToastTab() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
-  const handleExportJson = () => {
+
+  const buildSampleJson = () => ({
+    generated_at: new Date().toISOString(),
+    filters: { range, boost_state: state, route },
+    totals: totals
+      ? { shown: totals.shown, clicked: totals.clicked, ctr: totals.ctr }
+      : { shown: 0, clicked: 0, ctr: 0 },
+    timeseries: ((eventsQuery.data?.series ?? []).slice(0, 3)).map((b) => ({
+      bucket: b.bucket,
+      shown: b.shown,
+      clicked: b.clicked,
+      ctr: b.shown > 0 ? Number((b.clicked / b.shown).toFixed(4)) : 0,
+    })),
+    routes: routes.slice(0, 3).map((r) => ({
+      route: r.route,
+      shown: r.shown,
+      clicked: r.clicked,
+      ctr: Number(r.ctr.toFixed(4)),
+    })),
+  });
+
+  const handleDownloadSampleJson = () => {
+    const blob = new Blob([JSON.stringify(buildSampleJson(), null, 2)], {
+      type: "application/json;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `boost-toast-analytics_sample_${range}_${state}_${route.replace(/[^a-z0-9]+/gi, "-")}_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
     const series = eventsQuery.data?.series ?? [];
     const payload = {
       generated_at: new Date().toISOString(),
