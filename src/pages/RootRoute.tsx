@@ -167,6 +167,10 @@ export default function RootRoute() {
   // measure how long resolution takes (cached vs network vs slow session).
   const authStartRef = useRef<number>(performance.now());
   const reportedRef = useRef(false);
+  // Captures the moment auth resolved, so we can measure time-to-render of
+  // the actual Home/Landing content vs. the loading state.
+  const authResolvedAtRef = useRef<number | null>(null);
+  const renderReportedRef = useRef(false);
 
   // Skeleton display tracking — used to verify the flash fix in production.
   const skeletonShownAtRef = useRef<number | null>(null);
@@ -182,6 +186,8 @@ export default function RootRoute() {
   useEffect(() => {
     authStartRef.current = performance.now();
     reportedRef.current = false;
+    authResolvedAtRef.current = null;
+    renderReportedRef.current = false;
     skeletonShownAtRef.current = null;
     skeletonShownDurationRef.current = 0;
     skeletonWasShownRef.current = false;
@@ -194,6 +200,7 @@ export default function RootRoute() {
   useEffect(() => {
     if (loading || reportedRef.current) return;
     reportedRef.current = true;
+    authResolvedAtRef.current = performance.now();
 
     // Targeted prefetch: only warm the bundle we're actually about to render.
     // Saves bandwidth vs. eagerly prefetching both Home and Landing.
@@ -274,6 +281,49 @@ export default function RootRoute() {
     }, skeletonDelayRef.current);
     return () => window.clearTimeout(id);
   }, [loading, retryKey]);
+
+  // Time-to-render: measures the gap between auth resolution and the actual
+  // commit + paint of Home/Landing. Useful for spotting slow lazy-loaded
+  // bundles or hydration cost.
+  useEffect(() => {
+    if (loading || authError) return;
+    if (renderReportedRef.current) return;
+    if (authResolvedAtRef.current == null) return;
+    renderReportedRef.current = true;
+
+    const resolvedAt = authResolvedAtRef.current;
+    // Wait for the next paint so we measure perceived render, not just commit.
+    const raf1 = requestAnimationFrame(() => {
+      const raf2 = requestAnimationFrame(() => {
+        const ttrMs = Math.round(performance.now() - resolvedAt);
+        const target = user ? "home" : "landing";
+        const renderPayload = {
+          ttr_ms: ttrMs,
+          target,
+          authenticated: !!user,
+        };
+
+        if (import.meta.env.DEV) {
+          // eslint-disable-next-line no-console
+          console.log(
+            `[RootRoute render] ${target} painted ${ttrMs}ms after auth resolved`,
+            renderPayload
+          );
+        }
+
+        try {
+          window.dispatchEvent(
+            new CustomEvent("uply:root_rendered", { detail: renderPayload })
+          );
+        } catch {
+          // no-op
+        }
+      });
+      // Cleanup nested raf in case of unmount between frames.
+      return () => cancelAnimationFrame(raf2);
+    });
+    return () => cancelAnimationFrame(raf1);
+  }, [loading, user, authError]);
 
   // Probe the session ourselves so we can surface real errors and timeouts.
   useEffect(() => {
