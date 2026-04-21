@@ -551,3 +551,14 @@ select {
     font-size: 16px !important;
   }
 }
+
+/* UPLY Home — fadeUp + global scrollbar hide for horizontal rows */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+*::-webkit-scrollbar { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-\[fadeUp_0\.9s_ease-out\] { animation: none !important; }
+}
