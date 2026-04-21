@@ -17,7 +17,14 @@ const Landing = lazy(landingImport);
 // This keeps mobile data usage low while still making the post-auth
 // transition feel instant on capable connections.
 if (typeof window !== "undefined") {
-  const prefetchRoutes = () => {
+  const isDev = import.meta.env.DEV;
+  const log = (msg: string, data?: unknown) => {
+    if (!isDev) return;
+    // eslint-disable-next-line no-console
+    console.log(`[RootRoute prefetch] ${msg}`, data ?? "");
+  };
+
+  const prefetchRoutes = (reason: string) => {
     const conn = (navigator as Navigator & {
       connection?: {
         saveData?: boolean;
@@ -25,9 +32,19 @@ if (typeof window !== "undefined") {
       };
     }).connection;
 
-    if (conn?.saveData) return;
-    if (conn?.effectiveType && /(^|-)2g$/.test(conn.effectiveType)) return;
+    if (conn?.saveData) {
+      log("skipped: saveData enabled", { effectiveType: conn?.effectiveType });
+      return;
+    }
+    if (conn?.effectiveType && /(^|-)2g$/.test(conn.effectiveType)) {
+      log("skipped: slow connection", { effectiveType: conn.effectiveType });
+      return;
+    }
 
+    log(`running (${reason})`, {
+      effectiveType: conn?.effectiveType ?? "unknown",
+      saveData: conn?.saveData ?? false,
+    });
     homeImport().catch(() => {});
     landingImport().catch(() => {});
   };
@@ -41,10 +58,24 @@ if (typeof window !== "undefined") {
     }).requestIdleCallback;
 
   if (typeof ric === "function") {
-    ric(prefetchRoutes, { timeout: 2500 });
+    let firedByIdle = false;
+    ric(
+      () => {
+        firedByIdle = true;
+        prefetchRoutes("idle");
+      },
+      { timeout: 2500 }
+    );
+    // If idle never came within the timeout window, rIC still fires (per spec)
+    // but log a warning so we can spot truly busy main threads in dev.
+    window.setTimeout(() => {
+      if (!firedByIdle) {
+        log("warning: idle not reached within 2500ms timeout");
+      }
+    }, 2600);
   } else {
-    // Fallback for browsers without rIC (Safari): defer past first paint.
-    window.setTimeout(prefetchRoutes, 1500);
+    log("requestIdleCallback unavailable — using 1500ms timeout fallback");
+    window.setTimeout(() => prefetchRoutes("timeout-fallback"), 1500);
   }
 }
 
