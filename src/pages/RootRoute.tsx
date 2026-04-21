@@ -167,6 +167,10 @@ export default function RootRoute() {
   // measure how long resolution takes (cached vs network vs slow session).
   const authStartRef = useRef<number>(performance.now());
   const reportedRef = useRef(false);
+  // Captures the moment auth resolved, so we can measure time-to-render of
+  // the actual Home/Landing content vs. the loading state.
+  const authResolvedAtRef = useRef<number | null>(null);
+  const renderReportedRef = useRef(false);
 
   // Skeleton display tracking — used to verify the flash fix in production.
   const skeletonShownAtRef = useRef<number | null>(null);
