@@ -629,7 +629,12 @@ export default function Onboarding() {
               </div>
               <button
                 type="button"
-                onClick={() => navigate("/settings?tab=account&highlight=auto-retry")}
+                onClick={() => {
+                  toast.info("Opening Settings", {
+                    description: "Taking you to the auto-retry toggle in Account settings.",
+                  });
+                  navigate("/settings?tab=account&highlight=auto-retry");
+                }}
                 className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline transition-colors"
               >
                 <SettingsIcon className="w-3.5 h-3.5" />
