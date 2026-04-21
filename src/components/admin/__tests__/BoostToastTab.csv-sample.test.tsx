@@ -34,10 +34,8 @@ describe("BoostToastTab — CSV sample download matches preview byte-for-byte", 
       return "blob:mock";
     });
     revokeObjectURLSpy = vi.fn();
-    // @ts-expect-error jsdom polyfill
-    global.URL.createObjectURL = createObjectURLSpy;
-    // @ts-expect-error jsdom polyfill
-    global.URL.revokeObjectURL = revokeObjectURLSpy;
+    global.URL.createObjectURL = createObjectURLSpy as unknown as typeof URL.createObjectURL;
+    global.URL.revokeObjectURL = revokeObjectURLSpy as unknown as typeof URL.revokeObjectURL;
     // Stub anchor click so jsdom doesn't try to navigate
     HTMLAnchorElement.prototype.click = vi.fn();
   });
