@@ -1,11 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Eye, Play, Rocket } from "lucide-react";
 import LiveBadge from "./LiveBadge";
 import { useLiveViewerCount } from "@/hooks/useLiveViewerCount";
 import type { DiscoveryItem } from "@/hooks/useDiscoveryAlgorithmFeed";
+
+// Module-level dedupe so the same boost doesn't toast twice across re-mounts/cards.
+const notifiedEndingBoosts = new Set<string>();
+const notifiedEndedBoosts = new Set<string>();
 
 /** Re-renders the consumer once per minute, aligned to wall-clock minute. */
 function useMinuteTick(enabled: boolean) {
@@ -57,6 +62,30 @@ export default function DiscoveryFeedCard({ item }: { item: DiscoveryItem }) {
   const { count: liveCount } = useLiveViewerCount(isStream ? item.content_id : null, item.views);
   // Tick once per minute while a boost countdown is showing.
   useMinuteTick(!!item.is_boosted && !!item.boost_expires_at);
+
+  // Toast when a visible boost crosses into the "ending" window (≤ 5 min) or fully ends.
+  const lastStateRef = useRef<"active" | "ending" | "ended" | null>(null);
+  useEffect(() => {
+    if (!item.is_boosted || !item.boost_expires_at) return;
+    const ms = new Date(item.boost_expires_at).getTime() - Date.now();
+    const state: "active" | "ending" | "ended" = ms <= 0 ? "ended" : ms <= 5 * 60_000 ? "ending" : "active";
+    const prev = lastStateRef.current;
+    lastStateRef.current = state;
+    // Only fire on transition (not on first mount when already past).
+    if (prev === null) return;
+    const key = `${item.content_type}:${item.content_id}:${item.boost_expires_at}`;
+    if (state === "ending" && prev === "active" && !notifiedEndingBoosts.has(key)) {
+      notifiedEndingBoosts.add(key);
+      toast(`Boost ending soon: ${item.title ?? "Promoted item"}`, {
+        description: "Less than 5 minutes left in the promoted slot.",
+      });
+    } else if (state === "ended" && prev !== "ended" && !notifiedEndedBoosts.has(key)) {
+      notifiedEndedBoosts.add(key);
+      toast(`Boost ended: ${item.title ?? "Promoted item"}`, {
+        description: "This promotion is no longer active.",
+      });
+    }
+  });
 
   return (
     <Link to={linkFor(item)} className="group block space-y-2">
