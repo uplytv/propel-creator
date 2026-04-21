@@ -1,10 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Trophy, Sparkles } from "lucide-react";
+import { Trophy, Sparkles, Search, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+
+type FilterGroup = "all" | "kpi" | "onboarding";
 
 interface Milestone {
   id: string;
@@ -33,9 +37,31 @@ export default function Achievements() {
     })();
   }, [user?.id]);
 
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<FilterGroup>("all");
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return items.filter((i) => {
+      if (filter !== "all" && i.group_type !== filter) return false;
+      if (!q) return true;
+      return (
+        i.label.toLowerCase().includes(q) ||
+        i.milestone_key.toLowerCase().includes(q) ||
+        (i.emoji || "").includes(q)
+      );
+    });
+  }, [items, query, filter]);
+
   const groups = {
-    onboarding: items.filter((i) => i.group_type === "onboarding"),
-    kpi: items.filter((i) => i.group_type === "kpi"),
+    onboarding: filtered.filter((i) => i.group_type === "onboarding"),
+    kpi: filtered.filter((i) => i.group_type === "kpi"),
+  };
+
+  const counts = {
+    all: items.length,
+    kpi: items.filter((i) => i.group_type === "kpi").length,
+    onboarding: items.filter((i) => i.group_type === "onboarding").length,
   };
 
   return (
@@ -64,40 +90,94 @@ export default function Achievements() {
             </p>
           </div>
         ) : (
-          <div className="space-y-8">
-            {(["kpi", "onboarding"] as const).map((g) => {
-              const list = groups[g];
-              if (list.length === 0) return null;
-              return (
-                <section key={g}>
-                  <h2 className="text-xs uppercase tracking-wider text-muted-foreground mb-3">
-                    {g === "kpi" ? "Growth Plan" : "Onboarding"}
-                    <span className="ml-2 text-foreground/60">({list.length})</span>
-                  </h2>
-                  <ul className="space-y-2">
-                    {list.map((m, i) => (
-                      <motion.li
-                        key={m.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.04 }}
-                        className="flex items-center gap-4 rounded-xl border border-primary/20 bg-primary/5 p-4"
-                      >
-                        <div className="text-3xl">{m.emoji}</div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold truncate">{m.label}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            Unlocked {format(new Date(m.reached_at), "MMM d, yyyy 'at' h:mm a")}
-                          </p>
-                        </div>
-                        <Trophy className="w-4 h-4 text-primary shrink-0" />
-                      </motion.li>
-                    ))}
-                  </ul>
-                </section>
-              );
-            })}
-          </div>
+          <>
+            <div className="mb-6 space-y-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search milestones..."
+                  className="pl-9 pr-9 bg-white/[0.03] border-white/10"
+                />
+                {query && (
+                  <button
+                    onClick={() => setQuery("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-white/5 text-muted-foreground"
+                    aria-label="Clear search"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {([
+                  { key: "all" as const, label: "All" },
+                  { key: "kpi" as const, label: "Growth Plan" },
+                  { key: "onboarding" as const, label: "Onboarding" },
+                ]).map((opt) => (
+                  <button
+                    key={opt.key}
+                    onClick={() => setFilter(opt.key)}
+                    className={cn(
+                      "px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
+                      filter === opt.key
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-white/[0.03] border-white/10 text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {opt.label}
+                    <span className="ml-1.5 opacity-70">({counts[opt.key]})</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {filtered.length === 0 ? (
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-8 text-center">
+                <Search className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+                <h3 className="font-semibold mb-1">No matches</h3>
+                <p className="text-sm text-muted-foreground">
+                  Try a different keyword or filter.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {(["kpi", "onboarding"] as const).map((g) => {
+                  const list = groups[g];
+                  if (list.length === 0) return null;
+                  return (
+                    <section key={g}>
+                      <h2 className="text-xs uppercase tracking-wider text-muted-foreground mb-3">
+                        {g === "kpi" ? "Growth Plan" : "Onboarding"}
+                        <span className="ml-2 text-foreground/60">({list.length})</span>
+                      </h2>
+                      <ul className="space-y-2">
+                        {list.map((m, i) => (
+                          <motion.li
+                            key={m.id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.04 }}
+                            className="flex items-center gap-4 rounded-xl border border-primary/20 bg-primary/5 p-4"
+                          >
+                            <div className="text-3xl">{m.emoji}</div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold truncate">{m.label}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                Unlocked {format(new Date(m.reached_at), "MMM d, yyyy 'at' h:mm a")}
+                              </p>
+                            </div>
+                            <Trophy className="w-4 h-4 text-primary shrink-0" />
+                          </motion.li>
+                        ))}
+                      </ul>
+                    </section>
+                  );
+                })}
+              </div>
+            )}
+          </>
         )}
       </div>
     </AppLayout>
