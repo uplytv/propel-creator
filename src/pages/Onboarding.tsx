@@ -1381,10 +1381,28 @@ export default function Onboarding() {
           </motion.div>
         )}
 
-        {/* STEP 5: Final confirmation — full-screen, only reachable after a
-            successful Step 4 submission. The user explicitly chooses when to
-            leave (no auto-redirect). */}
+        {/* STEP 5: Plan preview — shown after a successful submission, before
+            the final confirmation. Lets the user review their derived tier,
+            community type, and first-30-day actions before finishing. */}
         {step === 5 && (
+          <PlanPreview
+            firstName={firstName}
+            followerCount={followerCount}
+            isMonetizing={isMonetizing}
+            monthlyEarnings={monthlyEarnings}
+            creatorStage={creatorStage}
+            creatorType={creatorType}
+            firstUseCase={firstUseCase}
+            goals={goals}
+            goalTimeline={goalTimeline}
+            onBack={() => setStep(4)}
+            onContinue={() => setStep(6)}
+          />
+        )}
+
+        {/* STEP 6: Final confirmation — full-screen, only reachable after the
+            user reviews & accepts the plan preview on Step 5. */}
+        {step === 6 && (
           <motion.div
             key="confirmation"
             initial={{ opacity: 0, scale: 0.96 }}
