@@ -52,6 +52,33 @@ const HEAR_ABOUT = [
   "Google Search", "Podcast", "Newsletter", "Other"
 ];
 
+const CREATOR_STAGES = [
+  {
+    key: "exploring",
+    emoji: "🌱",
+    title: "Just exploring",
+    desc: "I'm new and figuring things out — no audience yet.",
+  },
+  {
+    key: "building",
+    emoji: "🛠️",
+    title: "Building momentum",
+    desc: "I post regularly and have a small but growing audience.",
+  },
+  {
+    key: "earning",
+    emoji: "💸",
+    title: "Earning consistently",
+    desc: "I make money from my work, but I want to scale.",
+  },
+  {
+    key: "scaling",
+    emoji: "🚀",
+    title: "Scaling a business",
+    desc: "I run a real creator business and want better tools.",
+  },
+];
+
 const slideVariants = {
   enter: { opacity: 0, x: 40 },
   center: { opacity: 1, x: 0 },
