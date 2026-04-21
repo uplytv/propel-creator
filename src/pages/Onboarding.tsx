@@ -631,25 +631,29 @@ export default function Onboarding() {
                 type="button"
                 onClick={() => {
                   const destination = "/settings?tab=account&highlight=auto-retry";
-                  try {
-                    toast.info("Opening Settings → Account", {
-                      description: `Navigating to ${destination}`,
-                    });
-                    navigate(destination);
-                    // Verify the route actually changed shortly after navigation
-                    setTimeout(() => {
-                      if (!window.location.pathname.startsWith("/settings")) {
-                        toast.error("Couldn't open Settings", {
-                          description: `Navigation to ${destination} didn't complete. Try opening Settings manually.`,
-                        });
-                      }
-                    }, 600);
-                  } catch (err) {
-                    console.error("[Onboarding] settings navigation failed", err);
-                    toast.error("Couldn't open Settings", {
-                      description: `Navigation to ${destination} failed. Open Settings → Account manually to manage auto-retry.`,
-                    });
-                  }
+                  const attemptNavigate = () => {
+                    try {
+                      toast.info("Opening Settings → Account", {
+                        description: `Navigating to ${destination}`,
+                      });
+                      navigate(destination);
+                      setTimeout(() => {
+                        if (!window.location.pathname.startsWith("/settings")) {
+                          toast.error("Couldn't open Settings", {
+                            description: `Navigation to ${destination} didn't complete.`,
+                            action: { label: "Try again", onClick: attemptNavigate },
+                          });
+                        }
+                      }, 600);
+                    } catch (err) {
+                      console.error("[Onboarding] settings navigation failed", err);
+                      toast.error("Couldn't open Settings", {
+                        description: `Navigation to ${destination} failed.`,
+                        action: { label: "Try again", onClick: attemptNavigate },
+                      });
+                    }
+                  };
+                  attemptNavigate();
                 }}
                 className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline transition-colors"
               >
