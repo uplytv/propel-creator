@@ -441,6 +441,32 @@ function ExportCsvDialog({
             ))}
           </RadioGroup>
 
+          {/* Delimiter */}
+          <div className="rounded-md border border-border p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+              Delimiter
+            </p>
+            <RadioGroup
+              value={delimiter === "\t" ? "tab" : "comma"}
+              onValueChange={(v) => setDelimiter(v === "tab" ? "\t" : ",")}
+              className="grid grid-cols-2 gap-2"
+            >
+              {[
+                { v: "comma", l: "Comma (.csv)" },
+                { v: "tab", l: "Tab (.tsv)" },
+              ].map((opt) => (
+                <Label
+                  key={opt.v}
+                  htmlFor={`delim-${opt.v}`}
+                  className="flex items-center gap-2 rounded-md border border-border p-2 cursor-pointer hover:bg-muted/40 [&:has([data-state=checked])]:border-primary [&:has([data-state=checked])]:bg-primary/5"
+                >
+                  <RadioGroupItem id={`delim-${opt.v}`} value={opt.v} />
+                  <span className="text-sm font-medium">{opt.l}</span>
+                </Label>
+              ))}
+            </RadioGroup>
+          </div>
+
           <div className="space-y-3">
             <FieldGroup title="Report fields" fields={REPORT_FIELDS} selected={selected} onToggle={toggle} />
             <FieldGroup title="Comment fields" fields={COMMENT_FIELDS} selected={selected} onToggle={toggle} />
