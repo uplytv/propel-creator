@@ -629,3 +629,187 @@ describe("showCooldownToast — accessible name & ARIA live announcements", () =
   );
 });
 
+describe("showCooldownToast — focus is never trapped (regression)", () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2025-01-01T00:00:00Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    sessionStorage.clear();
+    document.body.innerHTML = "";
+  });
+
+  const flushMount = async () => {
+    await act(async () => {
+      vi.advanceTimersByTime(50);
+    });
+  };
+
+  const advance = async (ms: number) => {
+    await act(async () => {
+      vi.advanceTimersByTime(ms);
+    });
+  };
+
+  // Renders trigger + two sibling focusables (before/after) so we can assert
+  // that Tab/Shift+Tab can escape the toast in both directions — i.e. the
+  // toast doesn't behave like a focus-trapping modal dialog.
+  const renderHarness = (variant: CooldownToastVariant) => {
+    const onAction = vi.fn();
+    render(
+      <>
+        <button type="button">before</button>
+        <button
+          type="button"
+          onClick={() => {
+            writeSettingsNavLast(Date.now());
+            showCooldownToast({
+              title: "T",
+              description: "D",
+              variant,
+              onAction,
+            });
+          }}
+        >
+          trigger-{variant}
+        </button>
+        <button type="button">after</button>
+        <Toaster />
+      </>,
+    );
+    return {
+      user: userEvent.setup({
+        advanceTimers: vi.advanceTimersByTime.bind(vi),
+      }),
+      before: screen.getByRole("button", { name: "before" }),
+      trigger: screen.getByRole("button", { name: `trigger-${variant}` }),
+      after: screen.getByRole("button", { name: "after" }),
+      onAction,
+    };
+  };
+
+  const variants: CooldownToastVariant[] = ["error", "warning", "success"];
+
+  it.each(variants)(
+    "[%s] Tab can move focus past the toast to the next page control",
+    async (variant) => {
+      const { user, trigger, after } = renderHarness(variant);
+
+      trigger.focus();
+      await act(async () => {
+        trigger.click();
+      });
+      await flushMount();
+
+      // Tab forward up to a generous bound; if focus is trapped inside the
+      // toast it will never reach the "after" page button.
+      for (let i = 0; i < 10 && document.activeElement !== after; i++) {
+        await user.tab();
+      }
+      expect(after).toHaveFocus();
+    },
+  );
+
+  it.each(variants)(
+    "[%s] Shift+Tab can move focus back past the toast to the previous page control",
+    async (variant) => {
+      const { user, trigger, before } = renderHarness(variant);
+
+      trigger.focus();
+      await act(async () => {
+        trigger.click();
+      });
+      await flushMount();
+
+      for (let i = 0; i < 10 && document.activeElement !== before; i++) {
+        await user.tab({ shift: true });
+      }
+      expect(before).toHaveFocus();
+    },
+  );
+
+  it.each(variants)(
+    "[%s] tabbing through the toast and back still restores focus to the trigger on action",
+    async (variant) => {
+      const { user, trigger, after, onAction } = renderHarness(variant);
+
+      trigger.focus();
+      await act(async () => {
+        trigger.click();
+      });
+      await flushMount();
+
+      // Walk focus past the toast onto an unrelated control during cooldown.
+      for (let i = 0; i < 10 && document.activeElement !== after; i++) {
+        await user.tab();
+      }
+      expect(after).toHaveFocus();
+
+      await advance(SETTINGS_NAV_COOLDOWN_MS);
+
+      const action = screen.getByRole("button", { name: /^Try again$/ });
+      action.focus();
+      await user.keyboard("{Enter}");
+
+      await act(async () => {
+        vi.advanceTimersByTime(10);
+      });
+
+      expect(onAction).toHaveBeenCalledTimes(1);
+      // Captured-at-show focus wins → restored to the original trigger,
+      // *not* the unrelated "after" button focus passed through.
+      expect(trigger).toHaveFocus();
+    },
+  );
+
+  it.each(variants)(
+    "[%s] Shift+Tab during cooldown then auto-dismiss still restores focus to the trigger",
+    async (variant) => {
+      const { user, trigger, before } = renderHarness(variant);
+
+      trigger.focus();
+      await act(async () => {
+        trigger.click();
+      });
+      await flushMount();
+
+      for (let i = 0; i < 10 && document.activeElement !== before; i++) {
+        await user.tab({ shift: true });
+      }
+      expect(before).toHaveFocus();
+
+      await advance(SETTINGS_NAV_COOLDOWN_MS);
+      await advance(8000);
+      await act(async () => {
+        vi.advanceTimersByTime(10);
+      });
+
+      expect(trigger).toHaveFocus();
+    },
+  );
+
+  it.each(variants)(
+    "[%s] toast root is not aria-modal and does not advertise dialog semantics",
+    async (variant) => {
+      const { trigger } = renderHarness(variant);
+      trigger.focus();
+      await act(async () => {
+        trigger.click();
+      });
+      await flushMount();
+
+      // Sentinel against accidentally introducing dialog/modal semantics that
+      // would imply (and typically enforce) a focus trap.
+      const action = screen.getByRole("button", { name: /Try again/ });
+      const toastRoot = action.closest("li") as HTMLElement | null;
+      expect(toastRoot).not.toBeNull();
+      expect(toastRoot!.getAttribute("aria-modal")).toBeNull();
+      expect(toastRoot!.getAttribute("role")).not.toBe("dialog");
+      expect(toastRoot!.getAttribute("role")).not.toBe("alertdialog");
+    },
+  );
+});
+
