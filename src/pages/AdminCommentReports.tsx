@@ -59,6 +59,7 @@ export default function AdminCommentReports() {
   const qc = useQueryClient();
   const [tab, setTab] = useState<ReportStatus>("pending");
   const [confirmDelete, setConfirmDelete] = useState<{ reportId: string; commentId: string } | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ["admin-comment-reports", tab],
