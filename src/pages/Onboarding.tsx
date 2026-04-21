@@ -216,6 +216,7 @@ export default function Onboarding() {
   const [submitSucceeded, setSubmitSucceeded] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [autoRetryCountdown, setAutoRetryCountdown] = useState<number | null>(null);
+  const [retryAt, setRetryAt] = useState<Date | null>(null);
   const AUTO_RETRY_SECONDS = 5;
   const [referralCode, setReferralCode] = useState("");
   const { enabled: autoRetryEnabled } = useAutoRetryPreference();
@@ -296,6 +297,7 @@ export default function Onboarding() {
     if (saving || submitSucceeded) return; // Prevent double-submit
     setSubmitError(null);
     setAutoRetryCountdown(null);
+    setRetryAt(null);
     setSaving(true);
 
     try {
@@ -506,11 +508,14 @@ export default function Onboarding() {
       );
       // Kick off the auto-retry countdown only if the user has enabled it
       if (autoRetryEnabled) {
+        const at = new Date(Date.now() + AUTO_RETRY_SECONDS * 1000);
+        setRetryAt(at);
         setAutoRetryCountdown(AUTO_RETRY_SECONDS);
         toast.error("Submission failed", {
-          description: `Auto-retry is on — we'll try again in ${AUTO_RETRY_SECONDS} seconds. You can cancel anytime.`,
+          description: `Auto-retry is on — we'll try again at ${at.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}. You can cancel anytime.`,
         });
       } else {
+        setRetryAt(null);
         toast.error("Submission failed", {
           description: "Auto-retry is off. Tap Retry to try again, or enable auto-retry in Settings.",
         });
@@ -570,23 +575,41 @@ export default function Onboarding() {
               </div>
               <p className="text-lg font-semibold text-foreground">Submission failed</p>
               <p className="text-sm text-muted-foreground mt-1">{submitError}</p>
-              {autoRetryCountdown !== null && autoRetryCountdown > 0 && (
-                <p className="text-xs text-muted-foreground mt-3" aria-live="polite">
-                  Auto-retrying in <span className="font-semibold text-foreground">{autoRetryCountdown}s</span>…
-                </p>
-              )}
-              {autoRetryCountdown === 0 && (
-                <p className="text-xs font-semibold text-primary mt-3 flex items-center justify-center gap-1.5" aria-live="assertive">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  Retrying now…
-                </p>
-              )}
+
+              {/* Inline auto-retry status */}
+              <div className="mt-3 w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs" aria-live="polite">
+                {autoRetryEnabled ? (
+                  autoRetryCountdown === null ? (
+                    <span className="text-muted-foreground">Auto-retry is <span className="font-semibold text-foreground">on</span>.</span>
+                  ) : autoRetryCountdown > 0 ? (
+                    <span className="text-muted-foreground">
+                      Auto-retry is <span className="font-semibold text-foreground">on</span> — retrying in{" "}
+                      <span className="font-semibold text-foreground">{autoRetryCountdown}s</span>
+                      {retryAt && (
+                        <> at <span className="font-semibold text-foreground">{retryAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span></>
+                      )}
+                      .
+                    </span>
+                  ) : (
+                    <span className="font-semibold text-primary flex items-center justify-center gap-1.5" aria-live="assertive">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      Retrying now…
+                    </span>
+                  )
+                ) : (
+                  <span className="text-muted-foreground">
+                    Auto-retry is <span className="font-semibold text-foreground">off</span>. Tap Retry now, or enable it in Settings.
+                  </span>
+                )}
+              </div>
+
               <div className="flex gap-2 mt-5 w-full">
                 <Button
                   variant="outline"
                   className="flex-1"
                   onClick={() => {
                     setAutoRetryCountdown(null);
+                    setRetryAt(null);
                     setSubmitError(null);
                   }}
                 >
