@@ -119,8 +119,9 @@ describe("DiscoveryFeedCard — high-volume dedupe across many distinct boost ke
     // through ending -> ended within our simulated time window.
     const uniqueItems: DiscoveryItem[] = Array.from({ length: NUM_KEYS }, (_, i) => {
       const contentType = CONTENT_TYPES[i % CONTENT_TYPES.length];
-      // Expiry between ~3 and ~4.5 minutes out, unique per key.
-      const expMs = Date.now() + 3 * 60_000 + i * 3_000;
+      // Start each boost in the ACTIVE state (> 5 min out) and stagger expiries
+      // between ~6 and ~7.25 minutes so they all transition active -> ending -> ended.
+      const expMs = Date.now() + 6 * 60_000 + i * 3_000;
       return makeBoostedItem({
         contentType,
         contentId: `key-${i}`,
@@ -140,10 +141,13 @@ describe("DiscoveryFeedCard — high-volume dedupe across many distinct boost ke
     expect(totalCountForPrefix("Boost ending soon")).toBe(0);
     expect(totalCountForPrefix("Boost ended")).toBe(0);
 
-    // Advance past all expiries. The minute-tick effect + precise setTimeouts
-    // should fire for every card, but dedupe must hold per key.
+    // Cross every key into the ending window.
     act(() => {
-      vi.advanceTimersByTime(8 * 60_000 + 1000);
+      vi.advanceTimersByTime(2 * 60_000 + 1000);
+    });
+    // Then cross every key past expiry.
+    act(() => {
+      vi.advanceTimersByTime(6 * 60_000);
     });
 
     // Verify per-key counts.
@@ -164,7 +168,8 @@ describe("DiscoveryFeedCard — high-volume dedupe across many distinct boost ke
 
     const uniqueItems: DiscoveryItem[] = Array.from({ length: NUM_KEYS }, (_, i) => {
       const contentType = CONTENT_TYPES[i % CONTENT_TYPES.length];
-      const expMs = Date.now() + 2 * 60_000 + i * 1_500;
+      // All start ACTIVE (> 5 min out), staggered.
+      const expMs = Date.now() + 6 * 60_000 + i * 1_500;
       return makeBoostedItem({
         contentType,
         contentId: `k-${i}`,
@@ -179,8 +184,12 @@ describe("DiscoveryFeedCard — high-volume dedupe across many distinct boost ke
 
     renderCards(allCards);
 
+    // Cross into ending window, then past expiry.
     act(() => {
-      vi.advanceTimersByTime(4 * 60_000 + 1000);
+      vi.advanceTimersByTime(2 * 60_000 + 1000);
+    });
+    act(() => {
+      vi.advanceTimersByTime(6 * 60_000);
     });
 
     for (const item of uniqueItems) {
