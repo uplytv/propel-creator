@@ -19,6 +19,7 @@ import {
   writeSettingsNavLast,
   computeCooldownState,
 } from "@/lib/settingsNavCooldown";
+import { captureFocus } from "@/lib/restoreFocus";
 
 const CREATOR_TYPES = [
   "Fitness", "Finance", "Gaming", "Lifestyle", "Business", "Education",
@@ -642,9 +643,12 @@ export default function Onboarding() {
                   // counting-down "Try again (Xs)" label + progress bar until cooldown elapses.
                   const showErrorWithCountdown = (description: string) => {
                     const toastId = `settings-nav-error-${Date.now()}`;
+                    // Capture the element that had focus when the toast first
+                    // appeared so we can return focus to it on dismiss/retry.
+                    const restoreFocus = captureFocus();
                     const tick = () => {
                       const state = computeCooldownState(readSettingsNavLast());
-                      const { remainingMs, ready, elapsedPct, actionLabel } = state;
+                      const { ready, elapsedPct, actionLabel } = state;
                       toast.error("Couldn't open Settings", {
                         id: toastId,
                         description: (
@@ -668,10 +672,13 @@ export default function Onboarding() {
                           </div>
                         ),
                         duration: ready ? 8000 : 1500,
+                        onDismiss: () => restoreFocus(),
+                        onAutoClose: () => restoreFocus(),
                         action: {
                           label: actionLabel,
                           onClick: () => {
                             if (!ready) return;
+                            restoreFocus();
                             attemptNavigate(true);
                           },
                         },
