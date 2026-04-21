@@ -62,9 +62,9 @@ export default function Achievements() {
     setSearchParams(next, { replace: true });
   };
 
-  const setQuery = (v: string) => updateParams({ q: v || null });
-  const setFilter = (v: FilterGroup) => updateParams({ group: v === "all" ? null : v });
-  const setSort = (v: SortKey) => updateParams({ sort: v === "newest" ? null : v });
+  const setQuery = (v: string) => updateParams({ q: v || null, page: null });
+  const setFilter = (v: FilterGroup) => updateParams({ group: v === "all" ? null : v, page: null });
+  const setSort = (v: SortKey) => updateParams({ sort: v === "newest" ? null : v, page: null });
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -88,10 +88,21 @@ export default function Achievements() {
     return sorted;
   }, [items, query, filter, sort]);
 
-  const groups = {
-    onboarding: filtered.filter((i) => i.group_type === "onboarding"),
-    kpi: filtered.filter((i) => i.group_type === "kpi"),
-  };
+  const pageSize = parsePageSize(searchParams.get("pageSize"));
+  const page = parsePage(searchParams.get("page"), filtered.length, pageSize);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const pageItems = useMemo(
+    () => filtered.slice((page - 1) * pageSize, page * pageSize),
+    [filtered, page, pageSize]
+  );
+
+  const setPage = (p: number) =>
+    updateParams({ page: p <= 1 ? null : String(p) });
+  const setPageSize = (n: number) =>
+    updateParams({
+      pageSize: n === DEFAULT_PAGE_SIZE ? null : String(n),
+      page: null,
+    });
 
   const counts = {
     all: items.length,
@@ -99,6 +110,7 @@ export default function Achievements() {
     onboarding: items.filter((i) => i.group_type === "onboarding").length,
   };
 
+  const groupLabel = (g: string) => (g === "kpi" ? "Growth Plan" : "Onboarding");
   return (
     <AppLayout>
       <div className="max-w-3xl mx-auto px-4 md:px-8 py-6 mobile-safe-content">
