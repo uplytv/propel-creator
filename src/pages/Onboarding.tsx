@@ -102,13 +102,43 @@ export default function Onboarding() {
   const [isMonetizing, setIsMonetizing] = useState<string | null>(null);
   const [monthlyEarnings, setMonthlyEarnings] = useState("");
 
-  // Step 3: Qualifying
-  const [creatorStage, setCreatorStage] = useState<string>("");
+  // Step 3: Qualifying — hydrate from localStorage so refresh mid-step keeps inputs
+  const STEP3_STORAGE_KEY = "onboarding:step3";
+  const initialStep3 = (() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const raw = window.localStorage.getItem(STEP3_STORAGE_KEY);
+      return raw ? (JSON.parse(raw) as {
+        creatorStage?: string;
+        oneSentence?: string;
+        challenges?: string[];
+        firstUseCase?: string;
+        hearAbout?: string;
+      }) : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  const [creatorStage, setCreatorStage] = useState<string>(initialStep3?.creatorStage ?? "");
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
-  const [oneSentence, setOneSentence] = useState("");
-  const [challenges, setChallenges] = useState<string[]>([]);
-  const [firstUseCase, setFirstUseCase] = useState("");
-  const [hearAbout, setHearAbout] = useState("");
+  const [oneSentence, setOneSentence] = useState<string>(initialStep3?.oneSentence ?? "");
+  const [challenges, setChallenges] = useState<string[]>(initialStep3?.challenges ?? []);
+  const [firstUseCase, setFirstUseCase] = useState<string>(initialStep3?.firstUseCase ?? "");
+  const [hearAbout, setHearAbout] = useState<string>(initialStep3?.hearAbout ?? "");
+
+  // Persist Step 3 inputs to survive refreshes
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(
+        STEP3_STORAGE_KEY,
+        JSON.stringify({ creatorStage, oneSentence, challenges, firstUseCase, hearAbout })
+      );
+    } catch {
+      // ignore quota / serialization errors
+    }
+  }, [creatorStage, oneSentence, challenges, firstUseCase, hearAbout]);
 
   // Photo & state
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -235,6 +265,13 @@ export default function Onboarding() {
         creator_type: creatorType || "Content Creator",
       })
       .eq("user_id", user.id);
+
+    // Clear persisted Step 3 draft now that onboarding is submitted
+    try {
+      window.localStorage.removeItem(STEP3_STORAGE_KEY);
+    } catch {
+      // ignore
+    }
 
     // Get updated referral code
     const { data: updatedProfile } = await supabase
