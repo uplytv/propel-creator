@@ -26,6 +26,7 @@ const Landing = lazy(() => import("./pages/Landing"));
 const Home = lazy(() => import("./pages/Home"));
 const RootRoute = lazy(() => import("./pages/RootRoute"));
 const Auth = lazy(() => import("./pages/Auth"));
+const AuthRetry = lazy(() => import("./pages/AuthRetry"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const WaitlistPage = lazy(() => import("./pages/WaitlistPage"));
@@ -226,6 +227,7 @@ const App = () => (
                     <Route path="/index" element={<Landing />} />
                     <Route path="/home" element={<Home />} />
                     <Route path="/auth" element={<Auth />} />
+                    <Route path="/auth-retry" element={<AuthRetry />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/p/:slug" element={<JointProduct isPublic />} />
                     <Route path="/live" element={<Live />} />
