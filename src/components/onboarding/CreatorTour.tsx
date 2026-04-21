@@ -200,26 +200,43 @@ export default function CreatorTour({
   const TOOLTIP_W = isNarrow ? Math.min(340, window.innerWidth - SIDE_MARGIN * 2) : 340;
   const tooltipWidthStyle: React.CSSProperties = { width: TOOLTIP_W, maxWidth: `calc(100vw - ${SIDE_MARGIN * 2}px)` };
 
+  // NOTE: We avoid CSS `transform` for positioning here because framer-motion's
+  // `animate` prop drives `transform` and would clobber a translate(-50%,-50%).
+  // Instead we compute concrete top/left values that already account for the
+  // tooltip's own size, so the card lands in the intended spot on every device.
+  const viewportW = typeof window !== "undefined" ? window.innerWidth : 0;
+  const viewportH = typeof window !== "undefined" ? window.innerHeight : 0;
+  // Estimated tooltip height — only used for vertical clamping. Real height is
+  // measured by layout; this is intentionally generous so we never under-clamp.
+  const TOOLTIP_H_EST = 280;
+
   if (isCenter) {
-    tooltipStyle = { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
+    tooltipStyle = {
+      top: Math.max(SIDE_MARGIN, (viewportH - TOOLTIP_H_EST) / 2),
+      left: Math.max(SIDE_MARGIN, (viewportW - TOOLTIP_W) / 2),
+    };
   } else if (rect) {
     const PAD = 12;
     const clampLeft = (l: number) =>
-      Math.max(SIDE_MARGIN, Math.min(window.innerWidth - TOOLTIP_W - SIDE_MARGIN, l));
+      Math.max(SIDE_MARGIN, Math.min(viewportW - TOOLTIP_W - SIDE_MARGIN, l));
+    const clampTop = (t: number) =>
+      Math.max(SIDE_MARGIN, Math.min(viewportH - TOOLTIP_H_EST - SIDE_MARGIN, t));
     // On narrow screens (mobile), always place top/bottom and center horizontally
     // so left/right placements don't push the card off-screen.
-    let placement = step.placement || (rect.top > window.innerHeight / 2 ? "top" : "bottom");
+    let placement = step.placement || (rect.top > viewportH / 2 ? "top" : "bottom");
     if (isNarrow && (placement === "left" || placement === "right")) {
-      placement = rect.top > window.innerHeight / 2 ? "top" : "bottom";
+      placement = rect.top > viewportH / 2 ? "top" : "bottom";
     }
     if (placement === "bottom") {
-      tooltipStyle = { top: rect.top + rect.height + PAD, left: clampLeft(rect.left) };
+      tooltipStyle = { top: clampTop(rect.top + rect.height + PAD), left: clampLeft(rect.left) };
     } else if (placement === "top") {
-      tooltipStyle = { top: rect.top - PAD, left: clampLeft(rect.left), transform: "translateY(-100%)" };
+      // Manually subtract estimated height instead of using translateY(-100%),
+      // which would be overridden by framer-motion's transform animation.
+      tooltipStyle = { top: clampTop(rect.top - PAD - TOOLTIP_H_EST), left: clampLeft(rect.left) };
     } else if (placement === "right") {
-      tooltipStyle = { top: rect.top, left: clampLeft(rect.left + rect.width + PAD) };
+      tooltipStyle = { top: clampTop(rect.top), left: clampLeft(rect.left + rect.width + PAD) };
     } else {
-      tooltipStyle = { top: rect.top, left: clampLeft(rect.left - PAD - TOOLTIP_W) };
+      tooltipStyle = { top: clampTop(rect.top), left: clampLeft(rect.left - PAD - TOOLTIP_W) };
     }
   }
 
