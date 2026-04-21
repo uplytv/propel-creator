@@ -298,6 +298,141 @@ export default function AdminCommentReports() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ExportCsvDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        count={list.length}
+        tab={tab}
+        onExport={handleExportCsv}
+      />
+    </div>
+  );
+}
+
+const REPORT_FIELDS = [
+  { key: "report_id", label: "Report ID" },
+  { key: "status", label: "Status" },
+  { key: "reason", label: "Reason" },
+  { key: "details", label: "Reporter details" },
+  { key: "reported_at", label: "Reported at" },
+  { key: "reporter_id", label: "Reporter ID" },
+  { key: "reporter_name", label: "Reporter name" },
+];
+
+const COMMENT_FIELDS = [
+  { key: "comment_id", label: "Comment ID" },
+  { key: "comment_body", label: "Comment body" },
+  { key: "comment_source", label: "Source (clip/short)" },
+  { key: "comment_is_hidden", label: "Hidden flag" },
+  { key: "comment_posted_at", label: "Comment posted at" },
+  { key: "comment_author_id", label: "Comment author ID" },
+  { key: "comment_author_name", label: "Comment author name" },
+];
+
+function ExportCsvDialog({
+  open, onOpenChange, count, tab, onExport,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  count: number;
+  tab: ReportStatus;
+  onExport: (selected: string[]) => void;
+}) {
+  const [preset, setPreset] = useState<"both" | "report" | "comment" | "custom">("both");
+  const [selected, setSelected] = useState<Set<string>>(
+    new Set([...REPORT_FIELDS, ...COMMENT_FIELDS].map((f) => f.key))
+  );
+
+  const applyPreset = (p: "both" | "report" | "comment" | "custom") => {
+    setPreset(p);
+    if (p === "both") setSelected(new Set([...REPORT_FIELDS, ...COMMENT_FIELDS].map((f) => f.key)));
+    else if (p === "report") setSelected(new Set(REPORT_FIELDS.map((f) => f.key)));
+    else if (p === "comment") setSelected(new Set(COMMENT_FIELDS.map((f) => f.key)));
+  };
+
+  const toggle = (key: string) => {
+    setPreset("custom");
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Export {tab} reports</DialogTitle>
+          <DialogDescription>
+            Choose which columns to include. {count} row{count === 1 ? "" : "s"} will be exported.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <RadioGroup value={preset} onValueChange={(v) => applyPreset(v as typeof preset)} className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            {[
+              { v: "both", l: "Both" },
+              { v: "report", l: "Report only" },
+              { v: "comment", l: "Comment only" },
+            ].map((opt) => (
+              <Label
+                key={opt.v}
+                htmlFor={`preset-${opt.v}`}
+                className="flex items-center gap-2 rounded-md border border-border p-2.5 cursor-pointer hover:bg-muted/40 [&:has([data-state=checked])]:border-primary [&:has([data-state=checked])]:bg-primary/5"
+              >
+                <RadioGroupItem id={`preset-${opt.v}`} value={opt.v} />
+                <span className="text-sm font-medium">{opt.l}</span>
+              </Label>
+            ))}
+          </RadioGroup>
+
+          <div className="space-y-3">
+            <FieldGroup title="Report fields" fields={REPORT_FIELDS} selected={selected} onToggle={toggle} />
+            <FieldGroup title="Comment fields" fields={COMMENT_FIELDS} selected={selected} onToggle={toggle} />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button onClick={() => onExport([...selected])} disabled={!selected.size}>
+            <Download className="w-4 h-4 mr-1.5" />
+            Download CSV ({selected.size})
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function FieldGroup({
+  title, fields, selected, onToggle,
+}: {
+  title: string;
+  fields: { key: string; label: string }[];
+  selected: Set<string>;
+  onToggle: (key: string) => void;
+}) {
+  return (
+    <div className="rounded-md border border-border p-3">
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">{title}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {fields.map((f) => (
+          <Label
+            key={f.key}
+            htmlFor={`col-${f.key}`}
+            className="flex items-center gap-2 text-sm cursor-pointer rounded px-2 py-1.5 hover:bg-muted/40"
+          >
+            <Checkbox
+              id={`col-${f.key}`}
+              checked={selected.has(f.key)}
+              onCheckedChange={() => onToggle(f.key)}
+            />
+            <span className="truncate">{f.label}</span>
+          </Label>
+        ))}
+      </div>
     </div>
   );
 }
