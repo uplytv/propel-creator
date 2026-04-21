@@ -21,6 +21,7 @@ import ChapterRail from "@/components/video/ChapterRail";
 import ChapterEditor from "@/components/video/ChapterEditor";
 import AddToPlaylistButton from "@/components/video/AddToPlaylistButton";
 import NextUpCard from "@/components/video/NextUpCard";
+import BoostButton from "@/components/video/BoostButton";
 import { usePlaylistItems } from "@/hooks/usePlaylists";
 
 function formatDate(d: string) {
@@ -210,7 +211,7 @@ export default function VideoPlayer() {
       />
 
       {/* Player */}
-      <div className="w-full max-w-5xl mx-auto">
+      <div className="w-full max-w-5xl mx-auto relative">
         {video.playback_id ? (
           <UPLYMuxPlayer
             playbackId={video.playback_id}
@@ -221,6 +222,15 @@ export default function VideoPlayer() {
         ) : (
           <div className="aspect-video bg-secondary flex items-center justify-center">
             <p className="text-muted-foreground">Video processing…</p>
+          </div>
+        )}
+        {nextUp && (
+          <div className="absolute bottom-3 right-3 left-3 sm:left-auto sm:max-w-sm pointer-events-auto z-10">
+            <NextUpCard
+              next={nextUp}
+              triggered={ended}
+              onCancel={() => setEnded(false)}
+            />
           </div>
         )}
       </div>
@@ -236,6 +246,13 @@ export default function VideoPlayer() {
               <span>{formatDate(video.created_at)}</span>
             </div>
           </div>
+
+          {/* Chapters */}
+          <ChapterRail
+            videoId={video.id}
+            currentTime={currentTime}
+            onSeek={(s) => { if (videoElRef.current) { videoElRef.current.currentTime = s; videoElRef.current.play?.(); } }}
+          />
 
           {/* Action Bar */}
           <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
@@ -292,12 +309,21 @@ export default function VideoPlayer() {
               active={false}
               onClick={() => setRemixOpen(true)}
             />
+            {/* Save to Playlist */}
+            {user && (
+              <div className="shrink-0">
+                <AddToPlaylistButton videoId={video.id} />
+              </div>
+            )}
           </div>
 
           {/* Tip Modal */}
           {tipOpen && <TipModal onClose={() => setTipOpen(false)} creatorName={creatorName} />}
           {/* Remix Modal */}
           {remixOpen && <RemixModal onClose={() => setRemixOpen(false)} />}
+
+          {/* Chapter Editor (owner only) */}
+          {isOwner && <ChapterEditor videoId={video.id} />}
 
           {/* Creator */}
           <div className="flex items-center gap-3 py-3 border-y border-border">
@@ -398,7 +424,16 @@ export default function VideoPlayer() {
           </div>
           {/* Creator Analytics Card (visible only to video owner) */}
           {user && video.creator_id === user.id && (
-            <VideoAnalyticsCard videoId={video.id} viewCount={video.view_count} likeCount={video.like_count} commentCount={video.comment_count} createdAt={video.created_at} durationSeconds={video.duration_seconds} />
+            <>
+              <div className="rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 to-transparent p-4 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-foreground">🚀 Get more views</p>
+                  <p className="text-xs text-muted-foreground">Boost this video to the top of the Discover feed.</p>
+                </div>
+                <BoostButton contentId={video.id} contentType="video" variant="compact" />
+              </div>
+              <VideoAnalyticsCard videoId={video.id} viewCount={video.view_count} likeCount={video.like_count} commentCount={video.comment_count} createdAt={video.created_at} durationSeconds={video.duration_seconds} />
+            </>
           )}
         </div>
 
