@@ -1,17 +1,13 @@
-import { Helmet } from "react-helmet-async";
+import { useEffect } from "react";
 import { Sparkles } from "lucide-react";
 import { useDiscoveryAlgorithmFeed } from "@/hooks/useDiscoveryAlgorithmFeed";
 import DiscoveryGrid from "@/components/discovery/DiscoveryGrid";
 
 export default function NewCreators() {
   const { data: items = [], isLoading } = useDiscoveryAlgorithmFeed("new");
+  useEffect(() => { document.title = "Rising Creators — UPLY"; }, []);
   return (
     <div className="min-h-screen bg-background mobile-safe-content">
-      <Helmet>
-        <title>Rising Creators — UPLY</title>
-        <meta name="description" content="Discover the newest creators on UPLY — guaranteed visibility from day one." />
-        <link rel="canonical" href="https://uply.tv/new" />
-      </Helmet>
       <header className="px-4 pt-6 pb-2 flex items-center gap-2">
         <Sparkles className="w-5 h-5 text-primary" />
         <div>

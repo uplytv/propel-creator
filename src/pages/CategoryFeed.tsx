@@ -1,5 +1,5 @@
+import { useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 import { useDiscoveryAlgorithmFeed } from "@/hooks/useDiscoveryAlgorithmFeed";
 import DiscoveryGrid from "@/components/discovery/DiscoveryGrid";
 
@@ -11,14 +11,10 @@ export default function CategoryFeed() {
   const { category = "" } = useParams();
   const display = prettify(category);
   const { data: items = [], isLoading } = useDiscoveryAlgorithmFeed("for-you", display);
+  useEffect(() => { document.title = `${display} — UPLY`; }, [display]);
 
   return (
     <div className="min-h-screen bg-background mobile-safe-content">
-      <Helmet>
-        <title>{display} — UPLY</title>
-        <meta name="description" content={`Top ${display} streams, videos, and creators on UPLY.`} />
-        <link rel="canonical" href={`https://uply.tv/c/${category}`} />
-      </Helmet>
       <header className="px-4 pt-6 pb-2">
         <h1 className="text-2xl font-bold tracking-tight">{display}</h1>
         <p className="text-sm text-muted-foreground">Trending in {display} right now.</p>
