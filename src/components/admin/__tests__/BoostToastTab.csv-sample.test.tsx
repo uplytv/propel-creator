@@ -67,7 +67,12 @@ describe("BoostToastTab — CSV sample download matches preview byte-for-byte", 
     await waitFor(() => expect(createObjectURLSpy).toHaveBeenCalledTimes(1));
     expect(capturedBlob).toBeInstanceOf(Blob);
 
-    const downloadedText = await capturedBlob!.text();
+    const downloadedText = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(reader.error);
+      reader.readAsText(capturedBlob!);
+    });
 
     // Byte-for-byte equality, including the frozen generated_at line
     expect(downloadedText).toBe(previewText);
