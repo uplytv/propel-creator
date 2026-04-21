@@ -12,6 +12,14 @@ import type { DiscoveryItem } from "@/hooks/useDiscoveryAlgorithmFeed";
 // Module-level dedupe so the same boost doesn't toast twice across re-mounts/cards.
 const notifiedEndingBoosts = new Set<string>();
 const notifiedEndedBoosts = new Set<string>();
+// Module-level dedupe so we only invalidate the discovery feed ONCE per boost expiry,
+// even when multiple cards (same boost surfaced in different feeds) fire simultaneously.
+const invalidatedBoostExpiries = new Set<string>();
+function invalidateBoostFeedOnce(key: string, run: () => void) {
+  if (invalidatedBoostExpiries.has(key)) return;
+  invalidatedBoostExpiries.add(key);
+  run();
+}
 
 /** Re-renders the consumer once per minute, aligned to wall-clock minute. */
 function useMinuteTick(enabled: boolean) {
@@ -87,8 +95,11 @@ export default function DiscoveryFeedCard({ item }: { item: DiscoveryItem }) {
         description: "This promotion is no longer active.",
       });
       // Re-rank the discovery feed immediately so non-boosted items flow upward.
-      queryClient.invalidateQueries({ queryKey: ["discovery-feed"] });
-      queryClient.invalidateQueries({ queryKey: ["active-boosts"] });
+      // Guarded so multiple cards sharing this boost only invalidate once.
+      invalidateBoostFeedOnce(key, () => {
+        queryClient.invalidateQueries({ queryKey: ["discovery-feed"] });
+        queryClient.invalidateQueries({ queryKey: ["active-boosts"] });
+      });
     }
   });
 
@@ -98,12 +109,15 @@ export default function DiscoveryFeedCard({ item }: { item: DiscoveryItem }) {
     if (!item.is_boosted || !item.boost_expires_at) return;
     const ms = new Date(item.boost_expires_at).getTime() - Date.now();
     if (ms <= 0 || ms > 24 * 60 * 60_000) return; // skip if already past or > 1 day away
+    const expiryKey = `${item.content_type}:${item.content_id}:${item.boost_expires_at}`;
     const t = setTimeout(() => {
-      queryClient.invalidateQueries({ queryKey: ["discovery-feed"] });
-      queryClient.invalidateQueries({ queryKey: ["active-boosts"] });
+      invalidateBoostFeedOnce(expiryKey, () => {
+        queryClient.invalidateQueries({ queryKey: ["discovery-feed"] });
+        queryClient.invalidateQueries({ queryKey: ["active-boosts"] });
+      });
     }, ms + 250);
     return () => clearTimeout(t);
-  }, [item.is_boosted, item.boost_expires_at, queryClient]);
+  }, [item.is_boosted, item.boost_expires_at, item.content_type, item.content_id, queryClient]);
 
   return (
     <Link to={linkFor(item)} className="group block space-y-2">
