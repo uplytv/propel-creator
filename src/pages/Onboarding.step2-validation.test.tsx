@@ -301,4 +301,52 @@ describe("Onboarding Step 2 — creator type validation", () => {
       window.requestAnimationFrame = originalRaf;
     }
   });
+
+  it("moves focus to the first actionable element near the banner (first creator-type radio card) on validation failure (mobile)", () => {
+    Object.defineProperty(window, "innerWidth", { writable: true, configurable: true, value: 390 });
+    Object.defineProperty(window, "innerHeight", { writable: true, configurable: true, value: 844 });
+
+    // Stub scrollIntoView (jsdom no-op) and queue rAF so the focus call (which
+    // is scheduled inside rAF alongside the scroll) can be flushed after React commits.
+    const originalScrollIntoView = (window as any).HTMLElement.prototype.scrollIntoView;
+    (window as any).HTMLElement.prototype.scrollIntoView = vi.fn();
+
+    const originalRaf = window.requestAnimationFrame;
+    const rafQueue: FrameRequestCallback[] = [];
+    const stubRaf = ((cb: FrameRequestCallback) => {
+      rafQueue.push(cb);
+      return rafQueue.length;
+    }) as any;
+    window.requestAnimationFrame = stubRaf;
+
+    try {
+      advanceToStep2();
+      window.requestAnimationFrame = stubRaf;
+
+      const continueBtn = getContinueButton()!;
+      act(() => {
+        fireEvent.click(continueBtn);
+      });
+
+      // Banner appeared
+      const banner = screen.getByTestId("creator-type-error");
+      expect(banner).toBeInTheDocument();
+
+      // Flush queued rAF — focus is moved here
+      act(() => {
+        while (rafQueue.length) rafQueue.shift()!(0);
+      });
+
+      // The first creator-type radio card should now be the focused element.
+      // (It's the closest actionable control after the non-interactive banner.)
+      const firstCard = screen.getByRole("radio", { name: /Fitness/i });
+      expect(document.activeElement).toBe(firstCard);
+
+      // And focus should NOT remain on the Continue button.
+      expect(document.activeElement).not.toBe(continueBtn);
+    } finally {
+      (window as any).HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+      window.requestAnimationFrame = originalRaf;
+    }
+  });
 });
