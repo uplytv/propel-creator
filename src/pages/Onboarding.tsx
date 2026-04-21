@@ -889,6 +889,7 @@ export default function Onboarding() {
                           // Defer focus to after React commits the new tabindex/state.
                           pendingCreatorTypeFocus.current = nextValue;
                           setCreatorType(nextValue);
+                          setCreatorTypeError(false);
                         }}
                         className={`rounded-xl p-3 text-center border-2 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                           selected
