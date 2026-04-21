@@ -481,6 +481,58 @@ export default function BoostToastTab() {
           </pre>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={csvSampleOpen} onOpenChange={setCsvSampleOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Example Export CSV</DialogTitle>
+            <DialogDescription>
+              Sample rows using the current filters (range={range}, state={state}, route={route}).
+              Up to 3 timeseries rows and 3 route rows are shown for brevity.
+            </DialogDescription>
+          </DialogHeader>
+          <pre className="max-h-[60vh] overflow-auto rounded-md border border-border bg-muted/40 p-3 text-xs font-mono leading-relaxed whitespace-pre">
+{(() => {
+  const escape = (v: string | number) => {
+    const s = String(v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const lines: string[] = [];
+  lines.push("# Boost toast analytics export");
+  lines.push(
+    `# range=${range} state=${state} route=${route} generated_at=${new Date().toISOString()}`,
+  );
+  lines.push("");
+  lines.push(
+    "section,range_filter,boost_state_filter,route_filter,bucket_or_route,shown,clicked,ctr",
+  );
+  for (const b of (eventsQuery.data?.series ?? []).slice(0, 3)) {
+    const ctr = b.shown > 0 ? b.clicked / b.shown : 0;
+    lines.push(
+      ["timeseries", range, state, route, b.bucket, b.shown, b.clicked, ctr.toFixed(4)]
+        .map(escape)
+        .join(","),
+    );
+  }
+  for (const r of routes.slice(0, 3)) {
+    lines.push(
+      ["route", range, state, route, r.route, r.shown, r.clicked, r.ctr.toFixed(4)]
+        .map(escape)
+        .join(","),
+    );
+  }
+  if (totals) {
+    lines.push(
+      ["total", range, state, route, "all", totals.shown, totals.clicked, totals.ctr.toFixed(4)]
+        .map(escape)
+        .join(","),
+    );
+  }
+  return lines.join("\n");
+})()}
+          </pre>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
