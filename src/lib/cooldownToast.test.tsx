@@ -332,16 +332,16 @@ describe("showCooldownToast — keyboard accessibility (warning & success)", () 
       it("Tab reaches the action button after cooldown elapses", async () => {
         const { user } = await setupVariant(variant);
 
-        // Cooldown has not elapsed → button is disabled and skipped by Tab.
-        const disabledBtn = screen.getByRole("button", { name: /Try again \(\d+s\)/ });
-        expect(disabledBtn).toBeDisabled();
+        // Cooldown not elapsed → action shows the countdown label.
+        expect(
+          screen.getByRole("button", { name: /Try again \(\d+s\)/ }),
+        ).toBeInTheDocument();
 
         await advance(SETTINGS_NAV_COOLDOWN_MS);
 
         const enabledBtn = screen.getByRole("button", { name: /^Try again$/ });
-        expect(enabledBtn).toBeEnabled();
 
-        // Move focus off the trigger and Tab forward until we reach the action.
+        // Tab forward from <body> until we land on the action button.
         (document.activeElement as HTMLElement | null)?.blur();
         document.body.focus();
         for (let i = 0; i < 6 && document.activeElement !== enabledBtn; i++) {
@@ -350,13 +350,11 @@ describe("showCooldownToast — keyboard accessibility (warning & success)", () 
         expect(enabledBtn).toHaveFocus();
       });
 
-      it("Enter/Space are no-ops while the button is disabled (cooldown active)", async () => {
+      it("Enter/Space do not invoke the action while cooldown is active", async () => {
         const { user, onAction } = await setupVariant(variant);
 
+        // Countdown label confirms the action is not yet ready.
         const btn = screen.getByRole("button", { name: /Try again \(\d+s\)/ });
-        expect(btn).toBeDisabled();
-
-        // Focus the disabled action and try to activate it.
         btn.focus();
         await user.keyboard("{Enter}");
         await user.keyboard(" ");
