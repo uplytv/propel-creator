@@ -849,13 +849,11 @@ export default function Onboarding() {
                           e.preventDefault();
                           const nextValue = CREATOR_TYPES[nextIdx].value;
                           setCreatorType(nextValue);
-                          // Move focus to the newly selected card
-                          requestAnimationFrame(() => {
-                            const next = document.querySelector<HTMLButtonElement>(
-                              `[data-creator-type-card="${nextValue}"]`
-                            );
-                            next?.focus();
-                          });
+                          // Move focus immediately so subsequent key events target the new card.
+                          const next = document.querySelector<HTMLButtonElement>(
+                            `[data-creator-type-card="${nextValue}"]`
+                          );
+                          next?.focus();
                         }}
                         className={`rounded-xl p-3 text-center border-2 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                           selected
