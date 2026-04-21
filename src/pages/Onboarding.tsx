@@ -13,6 +13,12 @@ import { getAffiliateCookie, clearAffiliateCookie, getReferralData, clearReferra
 import logoImg from "@/assets/logo.png";
 import MilestoneProgressPill from "@/components/onboarding/MilestoneProgressPill";
 import { useAutoRetryPreference } from "@/hooks/useAutoRetryPreference";
+import {
+  SETTINGS_NAV_COOLDOWN_MS,
+  readSettingsNavLast,
+  writeSettingsNavLast,
+  computeCooldownState,
+} from "@/lib/settingsNavCooldown";
 
 const CREATOR_TYPES = [
   "Fitness", "Finance", "Gaming", "Lifestyle", "Business", "Education",
@@ -236,23 +242,6 @@ export default function Onboarding() {
   }, [autoRetryCountdown]);
 
   const fileRef = useRef<HTMLInputElement>(null);
-  const SETTINGS_NAV_COOLDOWN_MS = 2000;
-  const SETTINGS_NAV_COOLDOWN_KEY = "onboarding:settings_nav_last_attempt";
-  const readSettingsNavLast = (): number => {
-    try {
-      const raw = sessionStorage.getItem(SETTINGS_NAV_COOLDOWN_KEY);
-      return raw ? Number(raw) || 0 : 0;
-    } catch {
-      return 0;
-    }
-  };
-  const writeSettingsNavLast = (ts: number) => {
-    try {
-      sessionStorage.setItem(SETTINGS_NAV_COOLDOWN_KEY, String(ts));
-    } catch {
-      // ignore
-    }
-  };
 
   // Referrer info from cookies
   const [referrerName, setReferrerName] = useState<string | null>(null);
