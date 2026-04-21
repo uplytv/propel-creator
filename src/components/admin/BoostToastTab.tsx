@@ -237,6 +237,16 @@ export default function BoostToastTab() {
               <Download className="w-3.5 h-3.5 mr-1.5" />
               Export CSV
             </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 text-xs"
+              disabled={!canExport}
+              onClick={handleExportJson}
+            >
+              <Download className="w-3.5 h-3.5 mr-1.5" />
+              Export JSON
+            </Button>
             <TooltipProvider delayDuration={150}>
               <UITooltip>
                 <TooltipTrigger asChild>
