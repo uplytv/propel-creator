@@ -21,6 +21,17 @@ function linkFor(item: DiscoveryItem) {
   }
 }
 
+function formatBoostRemaining(expiresAt: string): string {
+  const ms = new Date(expiresAt).getTime() - Date.now();
+  if (ms <= 0) return "ending";
+  const mins = Math.floor(ms / 60000);
+  if (mins < 60) return `${mins}m left`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h left`;
+  const days = Math.floor(hours / 24);
+  return `${days}d left`;
+}
+
 export default function DiscoveryFeedCard({ item }: { item: DiscoveryItem }) {
   // Subscribe to live viewer count only when the item is a live stream
   const isStream = item.content_type === "stream" && item.is_live;
