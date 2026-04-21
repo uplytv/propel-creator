@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useEffect, useState } from "react";
 import {
@@ -378,13 +378,14 @@ describe("Settings navigation toast — cooldown UI", () => {
       await act(async () => {
         await user.keyboard("{Enter}");
       });
-      // Flush the deferred microtask in restoreFocus.
+      // Flush React commit + the deferred microtask in restoreFocus.
       await act(async () => {
+        await Promise.resolve();
         await Promise.resolve();
       });
 
       expect(onActivate).toHaveBeenCalledTimes(1);
-      await waitFor(() => expect(trigger).toHaveFocus());
+      expect(trigger).toHaveFocus();
     });
 
     it("restores focus to the trigger after the toast unmounts mid-cooldown", () => {
