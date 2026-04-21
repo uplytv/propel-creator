@@ -39,8 +39,15 @@ export default function DiscoveryFeedCard({ item }: { item: DiscoveryItem }) {
           <LiveBadge count={liveCount} className="absolute top-2 left-2" />
         )}
         {!isStream && item.is_boosted && (
-          <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground gap-1 shadow-lg">
-            <Rocket className="w-3 h-3" /> Promoted
+          <Badge
+            className="absolute top-2 left-2 bg-primary text-primary-foreground gap-1 shadow-lg"
+            title={item.boost_expires_at ? `Boost ends ${new Date(item.boost_expires_at).toLocaleString()}` : undefined}
+          >
+            <Rocket className="w-3 h-3" />
+            <span>Promoted</span>
+            {item.boost_expires_at && (
+              <span className="opacity-80 font-normal">· {formatBoostRemaining(item.boost_expires_at)}</span>
+            )}
           </Badge>
         )}
         {!isStream && !item.is_boosted && item.is_new_creator_boosted && (
