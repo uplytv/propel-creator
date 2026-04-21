@@ -519,7 +519,14 @@ export default function Settings() {
         {activeTab === "account" && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             {/* Onboarding auto-retry preference */}
-            <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-4">
+            <div
+              ref={autoRetryRef}
+              className={`rounded-2xl border bg-card/40 p-6 space-y-4 transition-all ${
+                searchParams.get("highlight") === "auto-retry"
+                  ? "border-primary ring-2 ring-primary/40"
+                  : "border-border"
+              }`}
+            >
               <div className="flex items-center gap-3">
                 <Loader2 className="w-5 h-5 text-primary" />
                 <h2 className="text-lg font-semibold">Onboarding Submission</h2>
