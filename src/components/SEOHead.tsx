@@ -7,6 +7,12 @@ interface SEOHeadProps {
   type?: string;
   image?: string;
   twitterCard?: string;
+  /** JSON-LD structured data (single object or array). Injected as <script type="application/ld+json"> */
+  jsonLd?: Record<string, any> | Record<string, any>[];
+  /** Optional canonical URL override (defaults to current pathname on uply.tv) */
+  canonicalUrl?: string;
+  /** noindex flag — set true for private/auth-only pages */
+  noindex?: boolean;
 }
 
 const BASE_URL = "https://uply.tv";
@@ -21,12 +27,15 @@ export default function SEOHead({
   type = "website",
   image,
   twitterCard = "summary_large_image",
+  jsonLd,
+  canonicalUrl,
+  noindex = false,
 }: SEOHeadProps) {
   const { pathname } = useLocation();
   const fullTitle = title ? `${title} | Uply` : DEFAULT_TITLE;
   const desc = description || DEFAULT_DESCRIPTION;
   const img = image || DEFAULT_IMAGE;
-  const canonical = `${BASE_URL}${pathname === "/" ? "" : pathname}`;
+  const canonical = canonicalUrl || `${BASE_URL}${pathname === "/" ? "" : pathname}`;
 
   useEffect(() => {
     // Title
@@ -68,7 +77,93 @@ export default function SEOHead({
     setMeta("name", "twitter:description", desc);
     setMeta("name", "twitter:image", img);
     setMeta("name", "twitter:card", twitterCard);
-  }, [fullTitle, desc, img, canonical, type]);
+
+    // Robots
+    setMeta("name", "robots", noindex ? "noindex, nofollow" : "index, follow");
+
+    // JSON-LD structured data
+    const SCRIPT_ID = "seo-jsonld";
+    const existing = document.getElementById(SCRIPT_ID);
+    if (existing) existing.remove();
+    if (jsonLd) {
+      const script = document.createElement("script");
+      script.id = SCRIPT_ID;
+      script.type = "application/ld+json";
+      script.text = JSON.stringify(jsonLd);
+      document.head.appendChild(script);
+    }
+  }, [fullTitle, desc, img, canonical, type, twitterCard, noindex, jsonLd]);
 
   return null;
+}
+
+/** Helper: Build VideoObject schema for video/clip/recording pages */
+export function buildVideoSchema(opts: {
+  name: string;
+  description: string;
+  thumbnailUrl: string;
+  uploadDate: string;
+  duration?: number; // seconds
+  contentUrl?: string;
+  embedUrl?: string;
+  creatorName?: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "VideoObject",
+    name: opts.name,
+    description: opts.description,
+    thumbnailUrl: opts.thumbnailUrl,
+    uploadDate: opts.uploadDate,
+    ...(opts.duration ? { duration: `PT${Math.floor(opts.duration)}S` } : {}),
+    ...(opts.contentUrl ? { contentUrl: opts.contentUrl } : {}),
+    ...(opts.embedUrl ? { embedUrl: opts.embedUrl } : {}),
+    ...(opts.creatorName
+      ? { author: { "@type": "Person", name: opts.creatorName } }
+      : {}),
+  };
+}
+
+/** Helper: BroadcastEvent schema for live streams */
+export function buildLiveStreamSchema(opts: {
+  name: string;
+  description: string;
+  thumbnailUrl: string;
+  startDate: string;
+  endDate?: string;
+  isLiveBroadcast?: boolean;
+  creatorName?: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BroadcastEvent",
+    name: opts.name,
+    description: opts.description,
+    thumbnailUrl: opts.thumbnailUrl,
+    startDate: opts.startDate,
+    ...(opts.endDate ? { endDate: opts.endDate } : {}),
+    isLiveBroadcast: opts.isLiveBroadcast ?? false,
+    ...(opts.creatorName
+      ? { broadcastOfEvent: { "@type": "Event", performer: opts.creatorName } }
+      : {}),
+  };
+}
+
+/** Helper: Person/ProfilePage schema for creator profiles */
+export function buildPersonSchema(opts: {
+  name: string;
+  url: string;
+  image?: string;
+  description?: string;
+  sameAs?: string[];
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: opts.name,
+    url: opts.url,
+    ...(opts.image ? { image: opts.image } : {}),
+    ...(opts.description ? { description: opts.description } : {}),
+    ...(opts.sameAs?.length ? { sameAs: opts.sameAs } : {}),
+  };
 }
