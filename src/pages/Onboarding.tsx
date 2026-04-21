@@ -19,7 +19,6 @@ import {
   writeSettingsNavLast,
   computeCooldownState,
 } from "@/lib/settingsNavCooldown";
-import { captureFocus } from "@/lib/restoreFocus";
 import { showCooldownToast } from "@/lib/cooldownToast";
 
 const CREATOR_TYPES = [
