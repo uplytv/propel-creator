@@ -195,20 +195,31 @@ export default function CreatorTour({
 
   // Compute tooltip position
   let tooltipStyle: React.CSSProperties = {};
+  const SIDE_MARGIN = 16;
+  const isNarrow = typeof window !== "undefined" && window.innerWidth < 640;
+  const TOOLTIP_W = isNarrow ? Math.min(340, window.innerWidth - SIDE_MARGIN * 2) : 340;
+  const tooltipWidthStyle: React.CSSProperties = { width: TOOLTIP_W, maxWidth: `calc(100vw - ${SIDE_MARGIN * 2}px)` };
+
   if (isCenter) {
     tooltipStyle = { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
   } else if (rect) {
     const PAD = 12;
-    const TOOLTIP_W = 340;
-    const placement = step.placement || (rect.top > window.innerHeight / 2 ? "top" : "bottom");
+    const clampLeft = (l: number) =>
+      Math.max(SIDE_MARGIN, Math.min(window.innerWidth - TOOLTIP_W - SIDE_MARGIN, l));
+    // On narrow screens (mobile), always place top/bottom and center horizontally
+    // so left/right placements don't push the card off-screen.
+    let placement = step.placement || (rect.top > window.innerHeight / 2 ? "top" : "bottom");
+    if (isNarrow && (placement === "left" || placement === "right")) {
+      placement = rect.top > window.innerHeight / 2 ? "top" : "bottom";
+    }
     if (placement === "bottom") {
-      tooltipStyle = { top: rect.top + rect.height + PAD, left: Math.max(16, Math.min(window.innerWidth - TOOLTIP_W - 16, rect.left)) };
+      tooltipStyle = { top: rect.top + rect.height + PAD, left: clampLeft(rect.left) };
     } else if (placement === "top") {
-      tooltipStyle = { top: rect.top - PAD, left: Math.max(16, Math.min(window.innerWidth - TOOLTIP_W - 16, rect.left)), transform: "translateY(-100%)" };
+      tooltipStyle = { top: rect.top - PAD, left: clampLeft(rect.left), transform: "translateY(-100%)" };
     } else if (placement === "right") {
-      tooltipStyle = { top: rect.top, left: Math.min(window.innerWidth - TOOLTIP_W - 16, rect.left + rect.width + PAD) };
+      tooltipStyle = { top: rect.top, left: clampLeft(rect.left + rect.width + PAD) };
     } else {
-      tooltipStyle = { top: rect.top, left: Math.max(16, rect.left - PAD), transform: "translateX(-100%)" };
+      tooltipStyle = { top: rect.top, left: clampLeft(rect.left - PAD - TOOLTIP_W) };
     }
   }
 
