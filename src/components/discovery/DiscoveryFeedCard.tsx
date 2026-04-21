@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Eye, Play, Rocket } from "lucide-react";
@@ -57,6 +58,7 @@ function formatBoostRemaining(expiresAt: string): string {
 }
 
 export default function DiscoveryFeedCard({ item }: { item: DiscoveryItem }) {
+  const queryClient = useQueryClient();
   // Subscribe to live viewer count only when the item is a live stream
   const isStream = item.content_type === "stream" && item.is_live;
   const { count: liveCount } = useLiveViewerCount(isStream ? item.content_id : null, item.views);
@@ -84,8 +86,24 @@ export default function DiscoveryFeedCard({ item }: { item: DiscoveryItem }) {
       toast(`Boost ended: ${item.title ?? "Promoted item"}`, {
         description: "This promotion is no longer active.",
       });
+      // Re-rank the discovery feed immediately so non-boosted items flow upward.
+      queryClient.invalidateQueries({ queryKey: ["discovery-feed"] });
+      queryClient.invalidateQueries({ queryKey: ["active-boosts"] });
     }
   });
+
+  // Schedule a precise refetch at the exact expiry moment (in case the minute
+  // tick lands a few seconds early/late and to handle boosts > 1 minute away).
+  useEffect(() => {
+    if (!item.is_boosted || !item.boost_expires_at) return;
+    const ms = new Date(item.boost_expires_at).getTime() - Date.now();
+    if (ms <= 0 || ms > 24 * 60 * 60_000) return; // skip if already past or > 1 day away
+    const t = setTimeout(() => {
+      queryClient.invalidateQueries({ queryKey: ["discovery-feed"] });
+      queryClient.invalidateQueries({ queryKey: ["active-boosts"] });
+    }, ms + 250);
+    return () => clearTimeout(t);
+  }, [item.is_boosted, item.boost_expires_at, queryClient]);
 
   return (
     <Link to={linkFor(item)} className="group block space-y-2">
