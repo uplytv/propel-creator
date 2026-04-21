@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, Pencil } from "lucide-react";
 import {
   deriveTier,
   deriveCommunityType,
@@ -19,6 +19,32 @@ interface PlanPreviewProps {
   goalTimeline?: string;
   onBack: () => void;
   onContinue: () => void;
+  /** Jump back to a specific onboarding step (2, 3, or 4). */
+  onEditStep: (step: 2 | 3 | 4) => void;
+}
+
+/** Inline pencil button used in section headers. */
+function EditButton({
+  onClick,
+  label,
+  testId,
+}: {
+  onClick: () => void;
+  label: string;
+  testId: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      data-testid={testId}
+      aria-label={label}
+      className="ml-auto inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 focus-visible:ring-offset-background transition-colors"
+    >
+      <Pencil className="w-3 h-3" aria-hidden="true" />
+      Edit
+    </button>
+  );
 }
 
 export default function PlanPreview(props: PlanPreviewProps) {
@@ -38,6 +64,22 @@ export default function PlanPreview(props: PlanPreviewProps) {
   const grouped: Record<number, typeof actions> = { 1: [], 2: [], 3: [], 4: [] };
   actions.forEach((a) => grouped[a.week].push(a));
 
+  // Each week is shaped by upstream answers — route the user to the step that
+  // controls that week's actions. Weeks 1–2 are activation/goal-driven (Step 4);
+  // Weeks 3–4 reflect stage + use case (Step 3).
+  const weekEditStep: Record<1 | 2 | 3 | 4, 2 | 3 | 4> = {
+    1: 4,
+    2: 4,
+    3: 3,
+    4: 3,
+  };
+  const weekEditLabel: Record<1 | 2 | 3 | 4, string> = {
+    1: "Edit goals & timeline",
+    2: "Edit goals & timeline",
+    3: "Edit your stage & use case",
+    4: "Edit your stage & use case",
+  };
+
   return (
     <motion.div
       key="plan-preview"
@@ -54,13 +96,20 @@ export default function PlanPreview(props: PlanPreviewProps) {
         Here's your first 30 days{props.firstName ? `, ${props.firstName.split(" ")[0]}` : ""} ✨
       </h1>
       <p className="text-muted-foreground text-center text-sm mb-5">
-        Built from your answers. Review, then finish to lock it in.
+        Built from your answers. Tap <span className="inline-flex items-center gap-0.5 text-primary font-medium"><Pencil className="w-3 h-3" aria-hidden="true" />Edit</span> on any section to tweak it.
       </p>
 
       {/* Tier + community type */}
       <div className="grid grid-cols-2 gap-3 mb-4">
         <div className="rounded-xl border border-primary/30 bg-primary/5 p-3">
-          <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Starting tier</p>
+          <div className="flex items-center mb-1">
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Starting tier</p>
+            <EditButton
+              onClick={() => props.onEditStep(2)}
+              label="Edit tier inputs (followers, monetization, earnings)"
+              testId="edit-tier"
+            />
+          </div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xl" aria-hidden="true">{tier.emoji}</span>
             <span className="text-sm font-bold text-foreground">Tier {tier.level} · {tier.name}</span>
@@ -68,7 +117,14 @@ export default function PlanPreview(props: PlanPreviewProps) {
           <p className="text-[11px] text-muted-foreground leading-snug">{tier.blurb}</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-3">
-          <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Community type</p>
+          <div className="flex items-center mb-1">
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Community type</p>
+            <EditButton
+              onClick={() => props.onEditStep(3)}
+              label="Edit community type inputs (use case, goals)"
+              testId="edit-community"
+            />
+          </div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xl" aria-hidden="true">{community.emoji}</span>
             <span className="text-sm font-bold text-foreground">{community.label}</span>
@@ -84,9 +140,16 @@ export default function PlanPreview(props: PlanPreviewProps) {
           <h2 className="text-sm font-bold text-foreground">First 30 days</h2>
         </div>
         <ol className="space-y-3">
-          {[1, 2, 3, 4].map((w) => (
+          {([1, 2, 3, 4] as const).map((w) => (
             <li key={w}>
-              <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Week {w}</p>
+              <div className="flex items-center mb-1">
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Week {w}</p>
+                <EditButton
+                  onClick={() => props.onEditStep(weekEditStep[w])}
+                  label={`${weekEditLabel[w]} (week ${w})`}
+                  testId={`edit-week-${w}`}
+                />
+              </div>
               <ul className="space-y-2">
                 {grouped[w].map((a, i) => (
                   <li key={`${w}-${i}`} className="flex gap-2">
