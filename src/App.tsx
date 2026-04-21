@@ -76,6 +76,7 @@ const VideoPlayer = lazy(() => import("./pages/VideoPlayer"));
 const Events = lazy(() => import("./pages/Events"));
 const CreateEvent = lazy(() => import("./pages/CreateEvent"));
 const EventPage = lazy(() => import("./pages/EventPage"));
+const GlobalEventDetail = lazy(() => import("./pages/GlobalEventDetail"));
 const TicketDetail = lazy(() => import("./pages/TicketDetail"));
 const TicketSuccess = lazy(() => import("./pages/TicketSuccess"));
 const ContentStudio = lazy(() => import("./pages/ContentStudio"));
