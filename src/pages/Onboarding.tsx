@@ -173,6 +173,16 @@ export default function Onboarding() {
   })();
 
   const [creatorStage, setCreatorStage] = useState<string>(initialStep3?.creatorStage ?? "");
+  const pendingCreatorStageFocus = useRef<string | null>(null);
+  useEffect(() => {
+    const target = pendingCreatorStageFocus.current;
+    if (!target) return;
+    pendingCreatorStageFocus.current = null;
+    const el = document.querySelector<HTMLButtonElement>(
+      `[data-creator-stage-card="${target}"]`
+    );
+    el?.focus();
+  }, [creatorStage]);
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const [oneSentence, setOneSentence] = useState<string>(initialStep3?.oneSentence ?? "");
   const [challenges, setChallenges] = useState<string[]>(initialStep3?.challenges ?? []);
