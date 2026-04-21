@@ -11,14 +11,41 @@ const landingImport = () => import("./Landing");
 const Home = lazy(homeImport);
 const Landing = lazy(landingImport);
 
-// Kick off prefetch for both bundles as soon as this module is evaluated, so
-// by the time auth resolves the chosen page is already in the browser cache.
-// Wrapped in a microtask to avoid blocking initial paint.
+// Idle/connection-aware prefetch. We only warm the route bundles when:
+//   - the browser is idle (requestIdleCallback), and
+//   - the network isn't save-data, 2g, or slow-2g.
+// This keeps mobile data usage low while still making the post-auth
+// transition feel instant on capable connections.
 if (typeof window !== "undefined") {
-  queueMicrotask(() => {
+  const prefetchRoutes = () => {
+    const conn = (navigator as Navigator & {
+      connection?: {
+        saveData?: boolean;
+        effectiveType?: string;
+      };
+    }).connection;
+
+    if (conn?.saveData) return;
+    if (conn?.effectiveType && /(^|-)2g$/.test(conn.effectiveType)) return;
+
     homeImport().catch(() => {});
     landingImport().catch(() => {});
-  });
+  };
+
+  const ric =
+    (window as Window & {
+      requestIdleCallback?: (
+        cb: () => void,
+        opts?: { timeout?: number }
+      ) => number;
+    }).requestIdleCallback;
+
+  if (typeof ric === "function") {
+    ric(prefetchRoutes, { timeout: 2500 });
+  } else {
+    // Fallback for browsers without rIC (Safari): defer past first paint.
+    window.setTimeout(prefetchRoutes, 1500);
+  }
 }
 
 const AUTH_RESOLVE_TIMEOUT_MS = 8000;
