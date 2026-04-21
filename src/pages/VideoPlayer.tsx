@@ -223,12 +223,14 @@ export default function VideoPlayer() {
             <p className="text-muted-foreground">Video processing…</p>
           </div>
         )}
-        {ended && nextUp && (
-          <NextUpCard
-            next={nextUp}
-            playlistId={playlistId}
-            onCancel={() => setEnded(false)}
-          />
+        {nextUp && (
+          <div className="absolute bottom-3 right-3 left-3 sm:left-auto sm:max-w-sm pointer-events-auto z-10">
+            <NextUpCard
+              next={nextUp}
+              triggered={ended}
+              onCancel={() => setEnded(false)}
+            />
+          </div>
         )}
       </div>
 
