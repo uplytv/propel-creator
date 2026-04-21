@@ -28,7 +28,7 @@ import ScheduleFirstShowCard from "@/components/scheduled/ScheduleFirstShowCard"
 import { useInviteCodes } from "@/hooks/useInviteCodes";
 import FirstDollarWizard from "@/components/dashboard/FirstDollarWizard";
 import DiscoveryInsights from "@/components/dashboard/DiscoveryInsights";
-import CreatorTour from "@/components/onboarding/CreatorTour";
+
 import GrowthPlanCard from "@/components/dashboard/GrowthPlanCard";
 import AICoachWidget from "@/components/dashboard/AICoachWidget";
 import { useMilestoneTracker } from "@/hooks/useMilestoneTracker";
@@ -121,8 +121,6 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <div className="max-w-5xl mx-auto pb-20 md:pb-8">
-        {/* Interactive onboarding tour (auto-launches once for new creators) */}
-        <CreatorTour />
         <MilestoneProgressPill />
 
         {/* First Dollar Wizard */}

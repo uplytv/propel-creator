@@ -7441,6 +7441,36 @@ export type Database = {
         }
         Relationships: []
       }
+      short_comments: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          like_count: number
+          short_id: string
+          source: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          like_count?: number
+          short_id: string
+          source: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          like_count?: number
+          short_id?: string
+          source?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       shorts: {
         Row: {
           caption: string
