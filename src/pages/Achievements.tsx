@@ -13,8 +13,9 @@ import {
   parseFilter,
   parseSort,
   parseQuery,
-  parsePage,
   parsePageSize,
+  parseCursor,
+  sliceByCursor,
   VALID_PAGE_SIZES,
   DEFAULT_PAGE_SIZE,
   type FilterGroup,
@@ -62,9 +63,9 @@ export default function Achievements() {
     setSearchParams(next, { replace: true });
   };
 
-  const setQuery = (v: string) => updateParams({ q: v || null, page: null });
-  const setFilter = (v: FilterGroup) => updateParams({ group: v === "all" ? null : v, page: null });
-  const setSort = (v: SortKey) => updateParams({ sort: v === "newest" ? null : v, page: null });
+  const setQuery = (v: string) => updateParams({ q: v || null, cursor: null });
+  const setFilter = (v: FilterGroup) => updateParams({ group: v === "all" ? null : v, cursor: null });
+  const setSort = (v: SortKey) => updateParams({ sort: v === "newest" ? null : v, cursor: null });
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -89,19 +90,22 @@ export default function Achievements() {
   }, [items, query, filter, sort]);
 
   const pageSize = parsePageSize(searchParams.get("pageSize"));
-  const page = parsePage(searchParams.get("page"), filtered.length, pageSize);
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const pageItems = useMemo(
-    () => filtered.slice((page - 1) * pageSize, page * pageSize),
-    [filtered, page, pageSize]
+  const cursor = parseCursor(searchParams.get("cursor"));
+  const {
+    items: pageItems,
+    startIndex,
+    nextCursor,
+    prevCursor,
+  } = useMemo(
+    () => sliceByCursor(filtered, cursor, pageSize),
+    [filtered, cursor, pageSize]
   );
 
-  const setPage = (p: number) =>
-    updateParams({ page: p <= 1 ? null : String(p) });
+  const setCursor = (c: string | null) => updateParams({ cursor: c });
   const setPageSize = (n: number) =>
     updateParams({
       pageSize: n === DEFAULT_PAGE_SIZE ? null : String(n),
-      page: null,
+      cursor: null,
     });
 
   const counts = {
@@ -198,10 +202,10 @@ export default function Achievements() {
                     {opt.label}
                   </button>
                 ))}
-                {(query || filter !== "all" || sort !== "newest" || page !== 1 || pageSize !== DEFAULT_PAGE_SIZE) && (
+                {(query || filter !== "all" || sort !== "newest" || cursor || pageSize !== DEFAULT_PAGE_SIZE) && (
                   <button
                     onClick={() => {
-                      updateParams({ q: null, group: null, sort: null, page: null, pageSize: null });
+                      updateParams({ q: null, group: null, sort: null, cursor: null, pageSize: null });
                     }}
                     className="ml-auto inline-flex items-center gap-1 px-2.5 py-1 rounded-md font-medium border border-white/10 bg-white/[0.02] text-muted-foreground hover:text-foreground transition-colors"
                   >
@@ -264,19 +268,21 @@ export default function Achievements() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground">
-                      Page {page} of {totalPages} · {filtered.length} total
+                      {filtered.length === 0
+                        ? "0 results"
+                        : `${startIndex + 1}–${startIndex + pageItems.length} of ${filtered.length}`}
                     </span>
                     <button
-                      onClick={() => setPage(page - 1)}
-                      disabled={page <= 1}
+                      onClick={() => setCursor(prevCursor)}
+                      disabled={prevCursor === null && startIndex === 0}
                       className="p-1.5 rounded-md border border-white/10 bg-white/[0.02] text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
                       aria-label="Previous page"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => setPage(page + 1)}
-                      disabled={page >= totalPages}
+                      onClick={() => setCursor(nextCursor)}
+                      disabled={nextCursor === null}
                       className="p-1.5 rounded-md border border-white/10 bg-white/[0.02] text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
                       aria-label="Next page"
                     >
