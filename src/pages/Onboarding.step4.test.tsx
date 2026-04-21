@@ -197,13 +197,13 @@ describe("Onboarding Step 4 — mouse interactions and validation", () => {
       screen.getByText(/Please choose a timeline to continue\./i),
     ).toBeInTheDocument();
 
-    // Both error messages have role="alert" + aria-live="polite".
-    const goalAlert = screen.getByText(/Please pick at least one goal/i);
-    const timelineAlert = screen.getByText(/Please choose a timeline/i);
-    expect(goalAlert.getAttribute("role")).toBe("alert");
-    expect(goalAlert.getAttribute("aria-live")).toBe("polite");
-    expect(timelineAlert.getAttribute("role")).toBe("alert");
-    expect(timelineAlert.getAttribute("aria-live")).toBe("polite");
+    // Both banners expose role="alert" + aria-live="assertive" on the alert wrapper.
+    const goalsBanner = screen.getByTestId("step4-goals-error");
+    const timelineBanner = screen.getByTestId("step4-timeline-error");
+    expect(goalsBanner.getAttribute("role")).toBe("alert");
+    expect(goalsBanner.getAttribute("aria-live")).toBe("assertive");
+    expect(timelineBanner.getAttribute("role")).toBe("alert");
+    expect(timelineBanner.getAttribute("aria-live")).toBe("assertive");
 
     // Still on Step 4 (heading still present).
     expect(screen.getByText(/Step 4 of 4/i)).toBeInTheDocument();
