@@ -28,6 +28,7 @@ import ScheduleFirstShowCard from "@/components/scheduled/ScheduleFirstShowCard"
 import { useInviteCodes } from "@/hooks/useInviteCodes";
 import FirstDollarWizard from "@/components/dashboard/FirstDollarWizard";
 import DiscoveryInsights from "@/components/dashboard/DiscoveryInsights";
+import CreatorTour from "@/components/onboarding/CreatorTour";
 
 function PlatformUpgradeBanner() {
   const { user } = useAuth();
@@ -115,9 +116,12 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <div className="max-w-5xl mx-auto pb-20 md:pb-8">
+        {/* Interactive onboarding tour (auto-launches once for new creators) */}
+        <CreatorTour />
+
         {/* First Dollar Wizard */}
         {showWizard && !wizardDone && (
-          <div className="px-4 md:px-8 pt-4">
+          <div data-tour="first-dollar-wizard" className="px-4 md:px-8 pt-4">
             <FirstDollarWizard
               onDismiss={() => { setShowWizard(false); setWizardDone(true); localStorage.setItem("uply_fdw", "1"); }}
               username={creatorUsername}
