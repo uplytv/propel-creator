@@ -39,8 +39,10 @@ const isSlowOrSavingData = (): { skip: boolean; reason?: string; effectiveType?:
 };
 
 /**
- * Prefetch a single target route bundle. Skips if already warmed or if the
- * connection is save-data / 2g.
+ * Prefetch a single target route bundle. Skips if already warmed, the
+ * connection is save-data / 2g, or the tab is not currently visible — in
+ * the hidden case we defer until the tab becomes visible again so background
+ * tabs don't burn user data.
  */
 const prefetchTarget = (target: "home" | "landing", reason: string) => {
   if (typeof window === "undefined") return;
@@ -52,6 +54,24 @@ const prefetchTarget = (target: "home" | "landing", reason: string) => {
   const { skip, reason: skipReason, effectiveType } = isSlowOrSavingData();
   if (skip) {
     prefetchLog(`skipped: ${skipReason}`, { effectiveType, target, reason });
+    return;
+  }
+
+  // Defer prefetch when the tab isn't visible. Re-attempt on the next
+  // visibility change. This avoids wasting bandwidth on background tabs
+  // (e.g. user opened the app in a new tab and switched away).
+  if (typeof document !== "undefined" && document.visibilityState !== "visible") {
+    prefetchLog(`deferred: tab not visible (${document.visibilityState})`, {
+      target,
+      reason,
+    });
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        document.removeEventListener("visibilitychange", onVisible);
+        prefetchTarget(target, `${reason}+visibility`);
+      }
+    };
+    document.addEventListener("visibilitychange", onVisible);
     return;
   }
 
