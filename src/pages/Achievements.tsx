@@ -3,13 +3,23 @@ import { useSearchParams } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Trophy, Sparkles, Search, X, RotateCcw } from "lucide-react";
+import { Trophy, Sparkles, Search, X, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-import { parseFilter, parseSort, parseQuery, type FilterGroup, type SortKey } from "./achievements/filters";
+import {
+  parseFilter,
+  parseSort,
+  parseQuery,
+  parsePage,
+  parsePageSize,
+  VALID_PAGE_SIZES,
+  DEFAULT_PAGE_SIZE,
+  type FilterGroup,
+  type SortKey,
+} from "./achievements/filters";
 
 interface Milestone {
   id: string;
