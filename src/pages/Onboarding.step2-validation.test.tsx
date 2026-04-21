@@ -248,7 +248,7 @@ describe("Onboarding Step 2 — creator type validation", () => {
     }
   });
 
-  it("triggers the error banner and scrolls it into view when Enter is pressed on the focused Continue button (mobile)", async () => {
+  it("triggers the error banner and scrolls it into view when Enter is pressed on the focused Continue button (mobile)", () => {
     Object.defineProperty(window, "innerWidth", { writable: true, configurable: true, value: 390 });
     Object.defineProperty(window, "innerHeight", { writable: true, configurable: true, value: 844 });
 
