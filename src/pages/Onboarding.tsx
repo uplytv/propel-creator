@@ -1277,14 +1277,6 @@ export default function Onboarding() {
             <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">What are you focused on?</h1>
             <p className="text-muted-foreground text-center text-sm mb-6">Pick up to 3 goals and a target timeline so we can prioritize your tools.</p>
 
-            <ValidationBanner
-              ref={step4Validation.bannerRef}
-              show={!!step4ActiveRule}
-              title={step4ActiveRule?.title ?? ""}
-              description={step4ActiveRule?.description ?? ""}
-              testId="step4-error"
-            />
-
             <div className="space-y-5 mb-6">
               <div>
                 <label className="text-sm font-medium text-foreground mb-2 block">
@@ -1323,6 +1315,14 @@ export default function Onboarding() {
                     );
                   })}
                 </div>
+                <ValidationBanner
+                  ref={step4Validation.bannerRef}
+                  show={showGoalsError}
+                  title="Goals required"
+                  description="Please pick at least one goal to continue."
+                  testId="step4-goals-error"
+                  className="mt-2"
+                />
               </div>
 
               <div>
@@ -1347,16 +1347,17 @@ export default function Onboarding() {
                     );
                   })}
                 </div>
+                <ValidationBanner
+                  ref={step4TimelineBannerRef}
+                  show={showTimelineError}
+                  title="Timeline required"
+                  description="Please choose a timeline to continue."
+                  testId="step4-timeline-error"
+                  className="mt-2"
+                />
               </div>
             </div>
 
-            <ValidationBanner
-              ref={submitErrorBannerRef}
-              show={!!submitError}
-              title="Submission failed"
-              description={submitError ?? ""}
-              testId="step4-submit-error"
-            />
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => setStep(3)} className="gap-1">
                 <ArrowLeft className="w-4 h-4" /> Back
