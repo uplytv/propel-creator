@@ -40,9 +40,19 @@ export default function Achievements() {
   }, [user?.id]);
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const query = searchParams.get("q") ?? "";
-  const filter = ((searchParams.get("group") as FilterGroup) || "all");
-  const sort = ((searchParams.get("sort") as SortKey) || "newest");
+  const VALID_FILTERS: FilterGroup[] = ["all", "kpi", "onboarding"];
+  const VALID_SORTS: SortKey[] = ["newest", "oldest", "label"];
+
+  const rawQuery = searchParams.get("q") ?? "";
+  const query = rawQuery.slice(0, 100);
+  const rawFilter = searchParams.get("group");
+  const filter: FilterGroup = VALID_FILTERS.includes(rawFilter as FilterGroup)
+    ? (rawFilter as FilterGroup)
+    : "all";
+  const rawSort = searchParams.get("sort");
+  const sort: SortKey = VALID_SORTS.includes(rawSort as SortKey)
+    ? (rawSort as SortKey)
+    : "newest";
 
   const updateParams = (patch: Record<string, string | null>) => {
     const next = new URLSearchParams(searchParams);
