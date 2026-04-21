@@ -63,9 +63,9 @@ export default function Achievements() {
     setSearchParams(next, { replace: true });
   };
 
-  const setQuery = (v: string) => updateParams({ q: v || null, page: null });
-  const setFilter = (v: FilterGroup) => updateParams({ group: v === "all" ? null : v, page: null });
-  const setSort = (v: SortKey) => updateParams({ sort: v === "newest" ? null : v, page: null });
+  const setQuery = (v: string) => updateParams({ q: v || null, cursor: null });
+  const setFilter = (v: FilterGroup) => updateParams({ group: v === "all" ? null : v, cursor: null });
+  const setSort = (v: SortKey) => updateParams({ sort: v === "newest" ? null : v, cursor: null });
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -90,19 +90,22 @@ export default function Achievements() {
   }, [items, query, filter, sort]);
 
   const pageSize = parsePageSize(searchParams.get("pageSize"));
-  const page = parsePage(searchParams.get("page"), filtered.length, pageSize);
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const pageItems = useMemo(
-    () => filtered.slice((page - 1) * pageSize, page * pageSize),
-    [filtered, page, pageSize]
+  const cursor = parseCursor(searchParams.get("cursor"));
+  const {
+    items: pageItems,
+    startIndex,
+    nextCursor,
+    prevCursor,
+  } = useMemo(
+    () => sliceByCursor(filtered, cursor, pageSize),
+    [filtered, cursor, pageSize]
   );
 
-  const setPage = (p: number) =>
-    updateParams({ page: p <= 1 ? null : String(p) });
+  const setCursor = (c: string | null) => updateParams({ cursor: c });
   const setPageSize = (n: number) =>
     updateParams({
       pageSize: n === DEFAULT_PAGE_SIZE ? null : String(n),
-      page: null,
+      cursor: null,
     });
 
   const counts = {
