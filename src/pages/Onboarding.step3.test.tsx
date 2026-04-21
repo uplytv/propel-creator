@@ -10,15 +10,16 @@ vi.mock("react-router-dom", () => ({
   useNavigate: () => vi.fn(),
 }));
 
-const fromMock = () => ({
-  select: () => ({
-    eq: () => ({ single: async () => ({ data: null, error: null }), maybeSingle: async () => ({ data: null, error: null }) }),
-  }),
-});
-
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
-    from: vi.fn(fromMock),
+    from: vi.fn(() => ({
+      select: () => ({
+        eq: () => ({
+          single: async () => ({ data: null, error: null }),
+          maybeSingle: async () => ({ data: null, error: null }),
+        }),
+      }),
+    })),
     rpc: vi.fn(async () => ({ data: null })),
     storage: { from: () => ({ upload: async () => ({ error: null }), getPublicUrl: () => ({ data: { publicUrl: "" } }) }) },
     functions: { invoke: vi.fn(async () => ({ data: null })) },
