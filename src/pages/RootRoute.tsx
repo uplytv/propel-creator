@@ -3,8 +3,23 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
-const Home = lazy(() => import("./Home"));
-const Landing = lazy(() => import("./Landing"));
+// Cache the dynamic imports so we can both lazy-load and imperatively prefetch
+// the same module without triggering a second network request.
+const homeImport = () => import("./Home");
+const landingImport = () => import("./Landing");
+
+const Home = lazy(homeImport);
+const Landing = lazy(landingImport);
+
+// Kick off prefetch for both bundles as soon as this module is evaluated, so
+// by the time auth resolves the chosen page is already in the browser cache.
+// Wrapped in a microtask to avoid blocking initial paint.
+if (typeof window !== "undefined") {
+  queueMicrotask(() => {
+    homeImport().catch(() => {});
+    landingImport().catch(() => {});
+  });
+}
 
 const AUTH_RESOLVE_TIMEOUT_MS = 8000;
 // Wait a tick before showing the skeleton — avoids a flash when auth resolves
