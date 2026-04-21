@@ -131,6 +131,8 @@ export default function Onboarding() {
 
   // Step 2: Creator Profile
   const [creatorType, setCreatorType] = useState("");
+  const [creatorTypeError, setCreatorTypeError] = useState(false);
+  const creatorTypeErrorRef = useRef<HTMLDivElement | null>(null);
   const pendingCreatorTypeFocus = useRef<string | null>(null);
   useEffect(() => {
     const target = pendingCreatorTypeFocus.current;
