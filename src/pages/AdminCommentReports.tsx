@@ -12,7 +12,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Flag, EyeOff, Eye, Trash2, Check, ShieldX, MessageCircle } from "lucide-react";
+import { ArrowLeft, Flag, EyeOff, Eye, Trash2, Check, ShieldX, MessageCircle, Download } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNowStrict } from "date-fns";
 
