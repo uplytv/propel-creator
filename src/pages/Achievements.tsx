@@ -3,11 +3,12 @@ import { useSearchParams } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Trophy, Sparkles, Search, X, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
+import { Trophy, Sparkles, Search, X, RotateCcw, ChevronLeft, ChevronRight, Info } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 import {
   parseFilter,
@@ -267,10 +268,28 @@ export default function Achievements() {
                     ))}
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground">
+                    <span className="inline-flex items-center gap-1 text-muted-foreground">
                       {filtered.length === 0
                         ? "0 results"
                         : `${startIndex + 1}–${startIndex + pageItems.length} of ${filtered.length}`}
+                      {filtered.length > 0 && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              aria-label="About this range"
+                              className="text-muted-foreground/70 hover:text-foreground transition-colors"
+                            >
+                              <Info className="w-3 h-3" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-[220px] text-xs">
+                            This page uses a stable cursor — newly unlocked
+                            achievements appear at the top without shifting
+                            your current view.
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
                     </span>
                     <button
                       onClick={() => setCursor(prevCursor)}
