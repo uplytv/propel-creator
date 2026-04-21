@@ -553,7 +553,13 @@ export default function BoostToastTab() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={csvSampleOpen} onOpenChange={setCsvSampleOpen}>
+      <Dialog
+        open={csvSampleOpen}
+        onOpenChange={(open) => {
+          if (open) setCsvSampleGeneratedAt(new Date().toISOString());
+          setCsvSampleOpen(open);
+        }}
+      >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Example Export CSV</DialogTitle>
