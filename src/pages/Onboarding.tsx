@@ -508,17 +508,34 @@ export default function Onboarding() {
 
       {step > 0 && <MilestoneProgressPill onboardingStep={step} totalOnboardingSteps={4} />}
 
-      {/* Full-screen submission overlay — blocks interaction so users can't double-submit */}
-      {saving && (
+      {/* Full-screen submission overlay — blocks interaction & shows progress / success */}
+      {(saving || submitSucceeded) && (
         <div
           className="fixed inset-0 z-[100] bg-background/90 backdrop-blur-sm flex flex-col items-center justify-center p-6"
           role="status"
           aria-live="assertive"
-          aria-busy="true"
+          aria-busy={saving}
         >
-          <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" aria-hidden="true" />
-          <p className="text-lg font-semibold text-foreground">Submitting your application…</p>
-          <p className="text-sm text-muted-foreground mt-1">Hang tight, this only takes a moment.</p>
+          {submitSucceeded ? (
+            <motion.div
+              initial={{ scale: 0.6, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 220, damping: 18 }}
+              className="flex flex-col items-center"
+            >
+              <div className="w-16 h-16 rounded-full bg-primary/15 ring-4 ring-primary/30 flex items-center justify-center mb-4">
+                <Check className="w-9 h-9 text-primary" aria-hidden="true" />
+              </div>
+              <p className="text-lg font-semibold text-foreground">Application submitted!</p>
+              <p className="text-sm text-muted-foreground mt-1">Redirecting…</p>
+            </motion.div>
+          ) : (
+            <>
+              <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" aria-hidden="true" />
+              <p className="text-lg font-semibold text-foreground">Submitting your application…</p>
+              <p className="text-sm text-muted-foreground mt-1">Hang tight, this only takes a moment.</p>
+            </>
+          )}
         </div>
       )}
 
