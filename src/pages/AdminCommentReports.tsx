@@ -161,6 +161,41 @@ export default function AdminCommentReports() {
 
   const list = useMemo(() => reports, [reports]);
 
+  const handleExportCsv = () => {
+    if (!list.length) {
+      toast.error("Nothing to export");
+      return;
+    }
+    const escape = (v: unknown) => {
+      const s = v === null || v === undefined ? "" : String(v);
+      return `"${s.replace(/"/g, '""').replace(/\r?\n/g, " ")}"`;
+    };
+    const headers = [
+      "report_id", "status", "reason", "details", "reported_at",
+      "reporter_id", "reporter_name",
+      "comment_id", "comment_body", "comment_source", "comment_is_hidden", "comment_posted_at",
+      "comment_author_id", "comment_author_name",
+    ];
+    const rows = list.map((r) => [
+      r.id, r.status, r.reason, r.details ?? "", r.created_at,
+      r.reporter_id, r.reporter?.display_name ?? "",
+      r.comment?.id ?? "", r.comment?.body ?? "", r.comment?.source ?? "",
+      r.comment?.is_hidden ?? "", r.comment?.created_at ?? "",
+      r.comment?.user_id ?? "", r.target?.display_name ?? "",
+    ]);
+    const csv = [headers, ...rows].map((row) => row.map(escape).join(",")).join("\n");
+    const blob = new Blob([`\ufeff${csv}`], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `comment-reports-${tab}-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${list.length} ${tab} report${list.length === 1 ? "" : "s"}`);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="border-b border-border bg-card sticky top-0 z-10">
@@ -174,6 +209,15 @@ export default function AdminCommentReports() {
             </h1>
             <p className="text-xs text-muted-foreground">Review and resolve flagged comments</p>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportCsv}
+            disabled={isLoading || !list.length}
+          >
+            <Download className="w-3.5 h-3.5 mr-1.5" />
+            Export CSV
+          </Button>
         </div>
       </div>
 
