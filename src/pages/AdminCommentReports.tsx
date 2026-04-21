@@ -18,7 +18,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ArrowLeft, Flag, EyeOff, Eye, Trash2, Check, ShieldX, MessageCircle, Download } from "lucide-react";
+import { ArrowLeft, Flag, EyeOff, Eye, Trash2, Check, ShieldX, MessageCircle, Download, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNowStrict } from "date-fns";
 
@@ -409,7 +409,8 @@ function ExportCsvDialog({
     () => ORDERED_KEYS.filter((k) => selected.has(k)),
     [selected]
   );
-  const previewRows = useMemo(() => rows.slice(0, 5), [rows]);
+  const [previewNonce, setPreviewNonce] = useState(0);
+  const previewRows = useMemo(() => rows.slice(0, 5), [rows, previewNonce]);
 
   const truncate = (v: unknown, max = 40) => {
     const s = v === null || v === undefined ? "" : String(v);
@@ -451,13 +452,24 @@ function ExportCsvDialog({
 
           {/* CSV Preview */}
           <div className="rounded-md border border-border">
-            <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/30">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/30 gap-2">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Preview
               </p>
-              <p className="text-[10px] text-muted-foreground">
-                Showing {Math.min(previewRows.length, 5)} of {count} row{count === 1 ? "" : "s"}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-[10px] text-muted-foreground">
+                  Showing {Math.min(previewRows.length, 5)} of {count} row{count === 1 ? "" : "s"}
+                </p>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 px-2 text-[11px]"
+                  onClick={() => setPreviewNonce((n) => n + 1)}
+                >
+                  <RefreshCw className="w-3 h-3 mr-1" />
+                  Refresh
+                </Button>
+              </div>
             </div>
             {previewKeys.length === 0 ? (
               <p className="text-xs text-muted-foreground italic p-3">Select at least one column to preview.</p>
