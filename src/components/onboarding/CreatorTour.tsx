@@ -279,7 +279,12 @@ export default function CreatorTour({
         className="fixed inset-0 z-[9998]"
       >
         {/* Spotlight via SVG mask */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-auto" onClick={isCenter ? undefined : next}>
+        <svg
+          className="absolute inset-0 w-full h-full pointer-events-auto"
+          onClick={isCenter ? undefined : next}
+          aria-hidden="true"
+          focusable="false"
+        >
           <defs>
             <mask id="tour-mask">
               <rect width="100%" height="100%" fill="white" />
