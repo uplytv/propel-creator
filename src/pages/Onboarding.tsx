@@ -214,6 +214,8 @@ export default function Onboarding() {
   const [saving, setSaving] = useState(false);
   const [submitSucceeded, setSubmitSucceeded] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [autoRetryCountdown, setAutoRetryCountdown] = useState<number | null>(null);
+  const AUTO_RETRY_SECONDS = 5;
   const [referralCode, setReferralCode] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
