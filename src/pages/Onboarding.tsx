@@ -214,7 +214,23 @@ export default function Onboarding() {
   const [saving, setSaving] = useState(false);
   const [submitSucceeded, setSubmitSucceeded] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [autoRetryCountdown, setAutoRetryCountdown] = useState<number | null>(null);
+  const AUTO_RETRY_SECONDS = 5;
   const [referralCode, setReferralCode] = useState("");
+
+  // Auto-retry countdown: tick every second; at 0, fire finishOnboarding once
+  useEffect(() => {
+    if (autoRetryCountdown === null) return;
+    if (autoRetryCountdown <= 0) {
+      setAutoRetryCountdown(null);
+      finishOnboarding();
+      return;
+    }
+    const t = setTimeout(() => setAutoRetryCountdown((n) => (n === null ? null : n - 1)), 1000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoRetryCountdown]);
+
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Referrer info from cookies
@@ -276,6 +292,7 @@ export default function Onboarding() {
     if (!user) return;
     if (saving || submitSucceeded) return; // Prevent double-submit
     setSubmitError(null);
+    setAutoRetryCountdown(null);
     setSaving(true);
 
     try {
@@ -484,6 +501,8 @@ export default function Onboarding() {
         err?.message?.toString().slice(0, 200) ||
           "Something went wrong while submitting your application."
       );
+      // Kick off the auto-retry countdown
+      setAutoRetryCountdown(AUTO_RETRY_SECONDS);
     }
   };
 
@@ -539,20 +558,32 @@ export default function Onboarding() {
               </div>
               <p className="text-lg font-semibold text-foreground">Submission failed</p>
               <p className="text-sm text-muted-foreground mt-1">{submitError}</p>
+              {autoRetryCountdown !== null && autoRetryCountdown > 0 && (
+                <p className="text-xs text-muted-foreground mt-3" aria-live="polite">
+                  Auto-retrying in <span className="font-semibold text-foreground">{autoRetryCountdown}s</span>…
+                </p>
+              )}
               <div className="flex gap-2 mt-5 w-full">
                 <Button
                   variant="outline"
                   className="flex-1"
-                  onClick={() => setSubmitError(null)}
+                  onClick={() => {
+                    setAutoRetryCountdown(null);
+                    setSubmitError(null);
+                  }}
                 >
-                  Dismiss
+                  {autoRetryCountdown !== null ? "Cancel" : "Dismiss"}
                 </Button>
                 <Button
                   variant="hero"
                   className="flex-1 gap-1"
-                  onClick={() => { setSubmitError(null); finishOnboarding(); }}
+                  onClick={() => {
+                    setAutoRetryCountdown(null);
+                    setSubmitError(null);
+                    finishOnboarding();
+                  }}
                 >
-                  <RotateCcw className="w-4 h-4" /> Retry
+                  <RotateCcw className="w-4 h-4" /> Retry now
                 </Button>
               </div>
             </motion.div>
