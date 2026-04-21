@@ -638,7 +638,7 @@ export default function Onboarding() {
         {/* STEP 3: Qualifying Questions */}
         {step === 3 && (
           <motion.div key="qualifying" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md">
-            <p className="text-xs text-muted-foreground text-center mb-1 uppercase tracking-wider">Step 3 of 3 — Almost there! 🏁</p>
+            <p className="text-xs text-muted-foreground text-center mb-1 uppercase tracking-wider">Step 3 of 4 — Almost there! 🏁</p>
             <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">One Last Thing</h1>
             <p className="text-muted-foreground text-center text-sm mb-1">These help us match you with the right tools.</p>
             <p className="text-xs text-primary text-center mb-6 font-medium">✨ Detailed answers = faster approval</p>
