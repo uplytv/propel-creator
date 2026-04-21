@@ -52,6 +52,33 @@ const HEAR_ABOUT = [
   "Google Search", "Podcast", "Newsletter", "Other"
 ];
 
+const CREATOR_STAGES = [
+  {
+    key: "exploring",
+    emoji: "🌱",
+    title: "Just exploring",
+    desc: "I'm new and figuring things out — no audience yet.",
+  },
+  {
+    key: "building",
+    emoji: "🛠️",
+    title: "Building momentum",
+    desc: "I post regularly and have a small but growing audience.",
+  },
+  {
+    key: "earning",
+    emoji: "💸",
+    title: "Earning consistently",
+    desc: "I make money from my work, but I want to scale.",
+  },
+  {
+    key: "scaling",
+    emoji: "🚀",
+    title: "Scaling a business",
+    desc: "I run a real creator business and want better tools.",
+  },
+];
+
 const slideVariants = {
   enter: { opacity: 0, x: 40 },
   center: { opacity: 1, x: 0 },
@@ -76,6 +103,7 @@ export default function Onboarding() {
   const [monthlyEarnings, setMonthlyEarnings] = useState("");
 
   // Step 3: Qualifying
+  const [creatorStage, setCreatorStage] = useState<string>("");
   const [oneSentence, setOneSentence] = useState("");
   const [challenges, setChallenges] = useState<string[]>([]);
   const [firstUseCase, setFirstUseCase] = useState("");
@@ -510,6 +538,39 @@ export default function Onboarding() {
 
             <div className="space-y-4 mb-6">
               <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">
+                  Where are you right now? *
+                </label>
+                <div className="space-y-2">
+                  {CREATOR_STAGES.map((s) => {
+                    const selected = creatorStage === s.key;
+                    return (
+                      <button
+                        key={s.key}
+                        type="button"
+                        onClick={() => setCreatorStage(s.key)}
+                        aria-pressed={selected}
+                        className={`w-full text-left flex items-start gap-3 rounded-xl border p-4 transition-all ${
+                          selected
+                            ? "border-primary bg-primary/10 ring-1 ring-primary/40"
+                            : "border-border bg-card hover:border-primary/40 hover:bg-card/80"
+                        }`}
+                      >
+                        <div className="text-2xl shrink-0">{s.emoji}</div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-foreground">{s.title}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{s.desc}</p>
+                        </div>
+                        {selected && (
+                          <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">In one sentence, what do you create? *</label>
                 <Textarea
                   value={oneSentence}
@@ -576,7 +637,7 @@ export default function Onboarding() {
               <Button variant="outline" onClick={() => setStep(2)} className="gap-1">
                 <ArrowLeft className="w-4 h-4" /> Back
               </Button>
-              <Button variant="hero" size="xl" className="flex-1" disabled={!oneSentence.trim() || saving} onClick={finishOnboarding}>
+              <Button variant="hero" size="xl" className="flex-1" disabled={!creatorStage || !oneSentence.trim() || saving} onClick={finishOnboarding}>
                 {saving ? "Submitting..." : "Submit Application"} <ArrowRight className="ml-1 w-4 h-4" />
               </Button>
             </div>
