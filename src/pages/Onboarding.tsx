@@ -878,6 +878,7 @@ export default function Onboarding() {
                             case "Enter":
                               e.preventDefault();
                               setCreatorType(t.value);
+                              setCreatorTypeError(false);
                               return;
                             default:
                               return;
