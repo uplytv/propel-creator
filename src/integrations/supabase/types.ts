@@ -2012,6 +2012,44 @@ export type Database = {
         }
         Relationships: []
       }
+      comment_reports: {
+        Row: {
+          comment_id: string
+          created_at: string
+          details: string | null
+          id: string
+          reason: string
+          reporter_id: string
+          status: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason?: string
+          reporter_id: string
+          status?: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason?: string
+          reporter_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comment_reports_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "short_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_blasts: {
         Row: {
           created_at: string
@@ -7445,7 +7483,10 @@ export type Database = {
         Row: {
           body: string
           created_at: string
+          hidden_at: string | null
+          hidden_by: string | null
           id: string
+          is_hidden: boolean
           like_count: number
           short_id: string
           source: string
@@ -7454,7 +7495,10 @@ export type Database = {
         Insert: {
           body: string
           created_at?: string
+          hidden_at?: string | null
+          hidden_by?: string | null
           id?: string
+          is_hidden?: boolean
           like_count?: number
           short_id: string
           source: string
@@ -7463,7 +7507,10 @@ export type Database = {
         Update: {
           body?: string
           created_at?: string
+          hidden_at?: string | null
+          hidden_by?: string | null
           id?: string
+          is_hidden?: boolean
           like_count?: number
           short_id?: string
           source?: string
@@ -9936,6 +9983,10 @@ export type Database = {
       send_creator_lifecycle_emails_batch: { Args: never; Returns: undefined }
       send_member_lifecycle_emails_batch: { Args: never; Returns: undefined }
       send_weekly_discovery_digest: { Args: never; Returns: undefined }
+      short_comment_creator_id: {
+        Args: { _short_id: string; _source: string }
+        Returns: string
+      }
       update_subscriber_send_hour: {
         Args: { p_email: string; p_hour: number }
         Returns: undefined
