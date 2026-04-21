@@ -38,6 +38,25 @@ export function MilestoneProgressPill({ onboardingStep, totalOnboardingSteps = 3
   const [pulse, setPulse] = useState(false);
   const seenRef = useRef<Set<string>>(new Set());
   const initializedRef = useRef(false);
+  const [serverLoaded, setServerLoaded] = useState(false);
+
+  // Load previously-unlocked milestones from Supabase (cross-device sync)
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("user_milestones")
+        .select("milestone_key")
+        .eq("user_id", user.id);
+      if (cancelled) return;
+      if (!error && data) {
+        data.forEach((row: any) => seenRef.current.add(row.milestone_key));
+      }
+      setServerLoaded(true);
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
 
   const milestones = useMemo<Milestone[]>(() => {
     const list: Milestone[] = [];
