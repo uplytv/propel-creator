@@ -301,6 +301,7 @@ export default function Shorts() {
           onClose={() => setCommentsOpen(false)}
           shortId={currentShort.id}
           source={currentShort.source}
+          creatorId={currentShort.creator_id}
         />
       )}
     </div>
