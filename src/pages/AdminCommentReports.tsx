@@ -86,12 +86,12 @@ export default function AdminCommentReports() {
       const pmap = new Map((profs as any[] || []).map((p: any) => [p.user_id, p]));
 
       return rows.map((r) => {
-        const c = cmap.get(r.comment_id) || null;
+        const c = (cmap.get(r.comment_id) || null) as ReportRow["comment"];
         return {
           ...r,
           comment: c,
           reporter: pmap.get(r.reporter_id) || null,
-          target: c ? pmap.get((c as any).user_id) || null : null,
+          target: c ? pmap.get(c.user_id) || null : null,
         };
       });
     },
