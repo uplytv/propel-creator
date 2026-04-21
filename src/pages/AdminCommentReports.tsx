@@ -368,6 +368,13 @@ function ExportCsvDialog({
     } catch { /* ignore */ }
     return new Set([...REPORT_FIELDS, ...COMMENT_FIELDS].map((f) => f.key));
   });
+  const [delimiter, setDelimiter] = useState<"," | "\t">(() => {
+    try {
+      const v = localStorage.getItem("admin-csv-export-delimiter");
+      if (v === "\t") return "\t";
+    } catch { /* ignore */ }
+    return ",";
+  });
 
   // Persist whenever preset or selection changes
   useEffect(() => {
