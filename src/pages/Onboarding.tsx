@@ -247,6 +247,30 @@ export default function Onboarding() {
   const [goals, setGoals] = useState<string[]>(initialStep4?.goals ?? []);
   const [goalTimeline, setGoalTimeline] = useState<string>(initialStep4?.goalTimeline ?? "");
   const [step4AttemptedSubmit, setStep4AttemptedSubmit] = useState(false);
+  const goalsGroupRef = useRef<HTMLDivElement | null>(null);
+  const timelineGroupRef = useRef<HTMLDivElement | null>(null);
+  const step4Validation = useFieldValidation();
+  const submitErrorBannerRef = useRef<ValidationBannerHandle | null>(null);
+
+  // Step 4 rule list — single source of truth for both submit-time validation
+  // and the banner's `show`/`title`/`description` props.
+  const step4Rules: ValidationRule[] = [
+    {
+      isInvalid: () => goals.length === 0,
+      title: "Goals required",
+      description: "Please pick at least one goal to continue.",
+      focusTarget: () =>
+        goalsGroupRef.current?.querySelector<HTMLButtonElement>("button:not([disabled])") ?? null,
+    },
+    {
+      isInvalid: () => !goalTimeline,
+      title: "Timeline required",
+      description: "Please choose a target timeline to continue.",
+      focusTarget: () =>
+        timelineGroupRef.current?.querySelector<HTMLButtonElement>("button:not([disabled])") ?? null,
+    },
+  ];
+  const step4ActiveRule = step4AttemptedSubmit ? step4Validation.activeRule(step4Rules) : null;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
