@@ -113,7 +113,36 @@ export default function CreatorTour({
   const [open, setOpen] = useState(false);
   const [stepIdx, setStepIdx] = useState(0);
   const [rect, setRect] = useState<Rect | null>(null);
+  // Track viewport size in state so positioning recalculates on resize and
+  // orientation change (e.g. phone rotation). Without this, `tooltipStyle` is
+  // computed during render using stale `window.innerWidth/Height` snapshots.
+  const [viewport, setViewport] = useState<{ w: number; h: number }>(() => ({
+    w: typeof window !== "undefined" ? window.innerWidth : 0,
+    h: typeof window !== "undefined" ? window.innerHeight : 0,
+  }));
   const rafRef = useRef<number | null>(null);
+  const viewportRafRef = useRef<number | null>(null);
+
+  // Subscribe to resize + orientationchange so the tooltip never clips after
+  // the user rotates their device or the visual viewport shrinks (e.g. when
+  // the mobile browser chrome or keyboard appears/disappears).
+  useEffect(() => {
+    const update = () => {
+      if (viewportRafRef.current) cancelAnimationFrame(viewportRafRef.current);
+      viewportRafRef.current = requestAnimationFrame(() => {
+        setViewport({ w: window.innerWidth, h: window.innerHeight });
+      });
+    };
+    window.addEventListener("resize", update);
+    window.addEventListener("orientationchange", update);
+    // visualViewport fires more reliably on iOS when the URL bar collapses.
+    window.visualViewport?.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("orientationchange", update);
+      window.visualViewport?.removeEventListener("resize", update);
+    };
+  }, []);
 
   const step = CREATOR_TOUR_STEPS[stepIdx];
 
