@@ -976,3 +976,305 @@ describe("showCooldownToast — mouse vs keyboard parity (regression)", () => {
   );
 });
 
+describe("showCooldownToast — accessible name lifecycle (regression)", () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2025-01-01T00:00:00Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    sessionStorage.clear();
+    document.body.innerHTML = "";
+  });
+
+  const flushMount = async () => {
+    await act(async () => {
+      vi.advanceTimersByTime(50);
+    });
+  };
+
+  const advance = async (ms: number) => {
+    await act(async () => {
+      vi.advanceTimersByTime(ms);
+    });
+  };
+
+  const setup = (variant: CooldownToastVariant) => {
+    const onAction = vi.fn();
+    render(
+      <>
+        <button
+          type="button"
+          onClick={() => {
+            writeSettingsNavLast(Date.now());
+            showCooldownToast({
+              title: "T",
+              description: "D",
+              variant,
+              onAction,
+            });
+          }}
+        >
+          trigger-{variant}
+        </button>
+        <Toaster />
+      </>,
+    );
+    return {
+      user: userEvent.setup({
+        advanceTimers: vi.advanceTimersByTime.bind(vi),
+      }),
+      trigger: screen.getByRole("button", { name: `trigger-${variant}` }),
+      onAction,
+    };
+  };
+
+  const readSec = (): number | null => {
+    const btn = screen.queryByRole("button", { name: /^Try again \(\d+s\)$/ });
+    if (!btn) return null;
+    const m = /\((\d+)s\)/.exec(btn.textContent ?? "");
+    return m ? Number(m[1]) : null;
+  };
+
+  const variants: CooldownToastVariant[] = ["error", "warning", "success"];
+
+  it.each(variants)(
+    "[%s] accessible name decreases monotonically through the countdown",
+    async (variant) => {
+      const { trigger } = setup(variant);
+      trigger.focus();
+      await act(async () => {
+        trigger.click();
+      });
+      await flushMount();
+
+      // Sample the accessible-name countdown across multiple ticks. We expect
+      // a strictly non-increasing sequence that ends with at least one
+      // strictly-lower value than where we started.
+      const samples: number[] = [];
+      const start = readSec();
+      expect(start).not.toBeNull();
+      samples.push(start!);
+
+      for (let i = 0; i < 4; i++) {
+        await advance(1000);
+        const sec = readSec();
+        // While cooldown is active, the countdown name must still be present.
+        if (sec === null) break;
+        samples.push(sec);
+      }
+
+      for (let i = 1; i < samples.length; i++) {
+        expect(samples[i]).toBeLessThanOrEqual(samples[i - 1]);
+      }
+      expect(samples[samples.length - 1]).toBeLessThan(samples[0]);
+    },
+  );
+
+  it.each(variants)(
+    "[%s] name flips from '(Ns)' to ready exactly when cooldown elapses",
+    async (variant) => {
+      const { trigger } = setup(variant);
+      trigger.focus();
+      await act(async () => {
+        trigger.click();
+      });
+      await flushMount();
+
+      // Pre-elapse: countdown name is present, ready name is not.
+      expect(
+        screen.getByRole("button", { name: /^Try again \(\d+s\)$/ }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: /^Try again$/ }),
+      ).not.toBeInTheDocument();
+
+      await advance(SETTINGS_NAV_COOLDOWN_MS);
+
+      // Post-elapse: ready name appears, countdown name is gone.
+      expect(
+        screen.queryByRole("button", { name: /^Try again \(\d+s\)$/ }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /^Try again$/ }),
+      ).toBeInTheDocument();
+    },
+  );
+
+  it.each(variants)(
+    "[%s] after click activation, no stale countdown name remains in the DOM",
+    async (variant) => {
+      const { user, trigger } = setup(variant);
+      trigger.focus();
+      await act(async () => {
+        trigger.click();
+      });
+      await flushMount();
+
+      await advance(SETTINGS_NAV_COOLDOWN_MS);
+      const action = screen.getByRole("button", { name: /^Try again$/ });
+      await user.click(action);
+
+      // Wait past sonner's 200ms exit animation.
+      await advance(250);
+
+      // Both the ready and the countdown forms of the name must be gone.
+      expect(
+        screen.queryByRole("button", { name: /^Try again$/ }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: /^Try again \(\d+s\)$/ }),
+      ).not.toBeInTheDocument();
+    },
+  );
+
+  it.each(variants)(
+    "[%s] after Enter activation, no stale countdown name remains in the DOM",
+    async (variant) => {
+      const { user, trigger } = setup(variant);
+      trigger.focus();
+      await act(async () => {
+        trigger.click();
+      });
+      await flushMount();
+
+      await advance(SETTINGS_NAV_COOLDOWN_MS);
+      const action = screen.getByRole("button", { name: /^Try again$/ });
+      action.focus();
+      await user.keyboard("{Enter}");
+      await advance(250);
+
+      expect(
+        screen.queryByRole("button", { name: /^Try again$/ }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: /^Try again \(\d+s\)$/ }),
+      ).not.toBeInTheDocument();
+    },
+  );
+
+  it.each(variants)(
+    "[%s] after Space activation, no stale countdown name remains in the DOM",
+    async (variant) => {
+      const { user, trigger } = setup(variant);
+      trigger.focus();
+      await act(async () => {
+        trigger.click();
+      });
+      await flushMount();
+
+      await advance(SETTINGS_NAV_COOLDOWN_MS);
+      const action = screen.getByRole("button", { name: /^Try again$/ });
+      action.focus();
+      await user.keyboard(" ");
+      await advance(250);
+
+      expect(
+        screen.queryByRole("button", { name: /^Try again$/ }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: /^Try again \(\d+s\)$/ }),
+      ).not.toBeInTheDocument();
+    },
+  );
+
+  it.each(variants)(
+    "[%s] re-trigger after dismissal restarts the lifecycle: countdown → ready",
+    async (variant) => {
+      const { user, trigger } = setup(variant);
+
+      // First lifecycle: open, elapse, click action, confirm dismissal.
+      trigger.focus();
+      await act(async () => {
+        trigger.click();
+      });
+      await flushMount();
+      await advance(SETTINGS_NAV_COOLDOWN_MS);
+      await user.click(screen.getByRole("button", { name: /^Try again$/ }));
+      await advance(250);
+      expect(
+        screen.queryByRole("button", { name: /Try again/ }),
+      ).not.toBeInTheDocument();
+
+      // Cooldown bookkeeping is per-attempt; reset and re-trigger to verify
+      // the name lifecycle starts fresh (countdown reappears, then ready).
+      sessionStorage.clear();
+      await act(async () => {
+        trigger.click();
+      });
+      await flushMount();
+
+      expect(
+        screen.getByRole("button", { name: /^Try again \(\d+s\)$/ }),
+      ).toBeInTheDocument();
+
+      await advance(SETTINGS_NAV_COOLDOWN_MS);
+
+      expect(
+        screen.getByRole("button", { name: /^Try again$/ }),
+      ).toBeInTheDocument();
+    },
+  );
+
+  it.each(variants)(
+    "[%s] custom actionLabel follows the same name lifecycle through dismissal",
+    async (variant) => {
+      const onAction = vi.fn();
+      const user = userEvent.setup({
+        advanceTimers: vi.advanceTimersByTime.bind(vi),
+      });
+
+      render(
+        <>
+          <button
+            type="button"
+            onClick={() => {
+              writeSettingsNavLast(Date.now());
+              showCooldownToast({
+                title: "T",
+                description: "D",
+                variant,
+                actionLabel: "Resend code",
+                onAction,
+              });
+            }}
+          >
+            trigger
+          </button>
+          <Toaster />
+        </>,
+      );
+      const trigger = screen.getByRole("button", { name: "trigger" });
+      trigger.focus();
+      await act(async () => {
+        trigger.click();
+      });
+      await flushMount();
+
+      // Countdown form uses the custom label.
+      expect(
+        screen.getByRole("button", { name: /^Resend code \(\d+s\)$/ }),
+      ).toBeInTheDocument();
+
+      await advance(SETTINGS_NAV_COOLDOWN_MS);
+
+      // Ready form uses the custom label.
+      const ready = screen.getByRole("button", { name: /^Resend code$/ });
+      await user.keyboard("{Tab}"); // exercise keyboard reach without asserting
+      ready.focus();
+      await user.keyboard("{Enter}");
+      await advance(250);
+
+      // Both forms of the custom label are gone after dismissal.
+      expect(
+        screen.queryByRole("button", { name: /^Resend code$/ }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: /^Resend code \(\d+s\)$/ }),
+      ).not.toBeInTheDocument();
+    },
+  );
+});
+
