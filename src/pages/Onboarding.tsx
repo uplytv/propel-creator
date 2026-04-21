@@ -220,11 +220,12 @@ export default function Onboarding() {
   const [referralCode, setReferralCode] = useState("");
   const { enabled: autoRetryEnabled } = useAutoRetryPreference();
 
-  // Auto-retry countdown: tick every second; at 0, fire finishOnboarding once
+  // Auto-retry countdown: tick every second; at 0, fire finishOnboarding once.
+  // We leave the value at 0 (not null) so the overlay can show "Retrying now…"
+  // until finishOnboarding clears submitError or the failure overlay re-opens.
   useEffect(() => {
     if (autoRetryCountdown === null) return;
     if (autoRetryCountdown <= 0) {
-      setAutoRetryCountdown(null);
       finishOnboarding();
       return;
     }
