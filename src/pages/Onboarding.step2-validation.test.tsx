@@ -220,7 +220,15 @@ describe("Onboarding Step 2 — creator type validation", () => {
       advanceToStep2();
       // Re-apply rAF stub in case the fake-timer cycle in advanceToStep2 replaced it.
       window.requestAnimationFrame = stubRaf;
-      fireEvent.click(getContinueButton()!);
+      act(() => {
+        fireEvent.click(getContinueButton()!);
+      });
+
+      // Now flush queued rAF callbacks — by this point React has committed
+      // the state update and the ref is attached to the rendered banner.
+      act(() => {
+        while (rafQueue.length) rafQueue.shift()!(0);
+      });
 
       const banner = screen.getByTestId("creator-type-error");
       expect(banner).toBeInTheDocument();
