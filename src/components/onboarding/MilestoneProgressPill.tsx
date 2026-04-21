@@ -97,10 +97,11 @@ export function MilestoneProgressPill({ onboardingStep, totalOnboardingSteps = 3
   const reachedCount = milestones.filter((m) => m.reached).length;
   const total = milestones.length;
 
-  // Detect newly reached milestones → celebrate
+  // Detect newly reached milestones → celebrate + persist to Supabase
   useEffect(() => {
+    if (!user || !serverLoaded) return;
     if (!initializedRef.current) {
-      // Seed already-reached ones on first mount so we don't re-celebrate history
+      // Seed locally-already-reached ones (covers session+server) so we don't re-celebrate history
       milestones.filter((m) => m.reached).forEach((m) => seenRef.current.add(m.key));
       initializedRef.current = true;
       return;
@@ -108,15 +109,31 @@ export function MilestoneProgressPill({ onboardingStep, totalOnboardingSteps = 3
     const newlyReached = milestones.filter((m) => m.reached && !seenRef.current.has(m.key));
     if (newlyReached.length === 0) return;
 
+    newlyReached.forEach((m) => seenRef.current.add(m.key));
+
+    // Persist (idempotent via unique constraint)
+    (async () => {
+      const rows = newlyReached.map((m) => ({
+        user_id: user.id,
+        milestone_key: m.key,
+        label: m.label,
+        emoji: m.emoji,
+        group_type: m.group,
+      }));
+      const { error } = await supabase.from("user_milestones").insert(rows);
+      if (error && !/duplicate|unique/i.test(error.message)) {
+        console.error("milestone sync error", error);
+      }
+    })();
+
     newlyReached.forEach((m) => {
-      seenRef.current.add(m.key);
       toast.success(`${m.emoji} ${m.label}`, { description: "Milestone unlocked" });
     });
     fireConfetti();
     setPulse(true);
     const t = setTimeout(() => setPulse(false), 1600);
     return () => clearTimeout(t);
-  }, [milestones]);
+  }, [milestones, serverLoaded, user?.id]);
 
   if (!user || total === 0) return null;
 
