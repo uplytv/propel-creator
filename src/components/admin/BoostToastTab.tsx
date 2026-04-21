@@ -565,7 +565,15 @@ export default function BoostToastTab() {
           setCsvSampleOpen(open);
         }}
       >
-        <DialogContent className="max-w-2xl">
+        <DialogContent
+          className="max-w-2xl"
+          onCloseAutoFocus={(e) => {
+            if (csvSampleTriggerRef.current) {
+              e.preventDefault();
+              csvSampleTriggerRef.current.focus();
+            }
+          }}
+        >
           <DialogHeader>
             <DialogTitle>Example Export CSV</DialogTitle>
             <DialogDescription>
