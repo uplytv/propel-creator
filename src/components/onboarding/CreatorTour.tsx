@@ -405,16 +405,16 @@ export default function CreatorTour({
               disabled={stepIdx === 0}
               className="gap-1.5"
             >
-              <ArrowLeft className="w-3.5 h-3.5" /> Back
+              <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" /> Back
             </Button>
             <Button size="sm" onClick={next} className="gap-1.5 flex-1 max-w-[180px]">
               {stepIdx === CREATOR_TOUR_STEPS.length - 1 ? (
                 <>
-                  <Check className="w-3.5 h-3.5" /> {step.cta || "Finish"}
+                  <Check className="w-3.5 h-3.5" aria-hidden="true" /> {step.cta || "Finish"}
                 </>
               ) : (
                 <>
-                  {step.cta || "Next"} <ArrowRight className="w-3.5 h-3.5" />
+                  {step.cta || "Next"} <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
                 </>
               )}
             </Button>
