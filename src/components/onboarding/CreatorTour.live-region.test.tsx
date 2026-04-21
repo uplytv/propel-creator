@@ -88,6 +88,8 @@ describe("CreatorTour — aria-live announcements", () => {
       fireEvent.click(nextBtn!);
     });
 
+    // eslint-disable-next-line no-console
+    console.log("DOM after click:", document.body.innerHTML.slice(0, 500));
     // Immediately after the step change the region is cleared so screen
     // readers reliably treat the next message as a *new* announcement.
     const live = getLiveRegion();
