@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowRight, ArrowLeft, Camera, Check, X, Loader2, AlertTriangle, RotateCcw, Settings as SettingsIcon } from "lucide-react";
+import { ArrowRight, ArrowLeft, Camera, Check, X, Loader2, AlertTriangle, RotateCcw, Settings as SettingsIcon, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { getAffiliateCookie, clearAffiliateCookie, getReferralData, clearReferralData } from "@/lib/affiliateCookies";
 import logoImg from "@/assets/logo.png";
