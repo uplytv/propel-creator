@@ -127,6 +127,7 @@ export default function AdminDashboard() {
             <TabsTrigger value="content" className="text-xs gap-1"><Radio className="w-3.5 h-3.5" /> Content</TabsTrigger>
             <TabsTrigger value="engagement" className="text-xs gap-1"><Zap className="w-3.5 h-3.5" /> Engagement</TabsTrigger>
             <TabsTrigger value="technical" className="text-xs gap-1"><Shield className="w-3.5 h-3.5" /> Technical</TabsTrigger>
+            <TabsTrigger value="boosts" className="text-xs gap-1"><Rocket className="w-3.5 h-3.5" /> Boost Toasts</TabsTrigger>
             <TabsTrigger value="waitlist" className="text-xs gap-1"><ListChecks className="w-3.5 h-3.5" /> Waitlist</TabsTrigger>
           </TabsList>
 
@@ -138,6 +139,7 @@ export default function AdminDashboard() {
           <TabsContent value="content"><ContentTab range={range} /></TabsContent>
           <TabsContent value="engagement"><EngagementTab range={range} /></TabsContent>
           <TabsContent value="technical"><TechnicalTab range={range} /></TabsContent>
+          <TabsContent value="boosts"><BoostToastTab /></TabsContent>
           <TabsContent value="waitlist"><AdminWaitlistTab /></TabsContent>
         </Tabs>
       </div>
