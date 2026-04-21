@@ -646,7 +646,19 @@ export default function Onboarding() {
               <Button variant="outline" onClick={() => setStep(2)} className="gap-1">
                 <ArrowLeft className="w-4 h-4" /> Back
               </Button>
-              <Button variant="hero" size="xl" className="flex-1" disabled={!creatorStage || !oneSentence.trim() || saving} onClick={finishOnboarding}>
+              <Button
+                variant="hero"
+                size="xl"
+                className="flex-1"
+                disabled={!oneSentence.trim() || saving}
+                onClick={() => {
+                  if (!creatorStage) {
+                    setAttemptedSubmit(true);
+                    return;
+                  }
+                  finishOnboarding();
+                }}
+              >
                 {saving ? "Submitting..." : "Submit Application"} <ArrowRight className="ml-1 w-4 h-4" />
               </Button>
             </div>
