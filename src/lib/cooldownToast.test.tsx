@@ -813,3 +813,166 @@ describe("showCooldownToast — focus is never trapped (regression)", () => {
   );
 });
 
+describe("showCooldownToast — mouse vs keyboard parity (regression)", () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2025-01-01T00:00:00Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    sessionStorage.clear();
+    document.body.innerHTML = "";
+  });
+
+  const flushMount = async () => {
+    await act(async () => {
+      vi.advanceTimersByTime(50);
+    });
+  };
+
+  const advance = async (ms: number) => {
+    await act(async () => {
+      vi.advanceTimersByTime(ms);
+    });
+  };
+
+  const drainRestore = async () => {
+    await act(async () => {
+      vi.advanceTimersByTime(10);
+    });
+  };
+
+  type Activation = "click" | "enter" | "space";
+
+  const setup = (variant: CooldownToastVariant) => {
+    const onAction = vi.fn();
+    render(
+      <>
+        <button
+          type="button"
+          onClick={() => {
+            writeSettingsNavLast(Date.now());
+            showCooldownToast({
+              title: "T",
+              description: "D",
+              variant,
+              onAction,
+            });
+          }}
+        >
+          trigger-{variant}
+        </button>
+        <Toaster />
+      </>,
+    );
+    return {
+      user: userEvent.setup({
+        advanceTimers: vi.advanceTimersByTime.bind(vi),
+      }),
+      trigger: screen.getByRole("button", { name: `trigger-${variant}` }),
+      onAction,
+    };
+  };
+
+  // Single source of truth: open the toast, run the chosen activation method,
+  // and return what callers need to make per-path assertions.
+  const runActivation = async (
+    variant: CooldownToastVariant,
+    method: Activation,
+  ) => {
+    const ctx = setup(variant);
+    ctx.trigger.focus();
+    await act(async () => {
+      ctx.trigger.click();
+    });
+    await flushMount();
+
+    await advance(SETTINGS_NAV_COOLDOWN_MS);
+
+    const action = screen.getByRole("button", { name: /^Try again$/ });
+
+    if (method === "click") {
+      await ctx.user.click(action);
+    } else {
+      action.focus();
+      await ctx.user.keyboard(method === "enter" ? "{Enter}" : " ");
+    }
+
+    await drainRestore();
+    return { ...ctx, action };
+  };
+
+  const variants: CooldownToastVariant[] = ["error", "warning", "success"];
+  const methods: Activation[] = ["click", "enter", "space"];
+
+  it.each(
+    variants.flatMap((v) => methods.map((m) => [v, m] as const)),
+  )(
+    "[%s · %s] invokes onAction exactly once",
+    async (variant, method) => {
+      const { onAction } = await runActivation(variant, method);
+      expect(onAction).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it.each(
+    variants.flatMap((v) => methods.map((m) => [v, m] as const)),
+  )(
+    "[%s · %s] dismisses the toast (action button is gone)",
+    async (variant, method) => {
+      await runActivation(variant, method);
+      // Sonner removes the toast on action; allow its 200ms exit animation.
+      await advance(250);
+      expect(
+        screen.queryByRole("button", { name: /^Try again$/ }),
+      ).not.toBeInTheDocument();
+    },
+  );
+
+  it.each(
+    variants.flatMap((v) => methods.map((m) => [v, m] as const)),
+  )(
+    "[%s · %s] restores focus to the trigger",
+    async (variant, method) => {
+      const { trigger } = await runActivation(variant, method);
+      expect(trigger).toHaveFocus();
+    },
+  );
+
+  it.each(variants)(
+    "[%s] post-activation focus target is identical across click/Enter/Space",
+    async (variant) => {
+      // Compare the focus outcome from each path independently. Re-rendering
+      // between runs produces fresh DOM nodes, so we record per-run whether
+      // focus landed on that run's own trigger.
+      const seen: string[] = [];
+      for (const method of methods) {
+        const { trigger } = await runActivation(variant, method);
+        seen.push(document.activeElement === trigger ? "trigger" : "other");
+        document.body.innerHTML = "";
+        sessionStorage.clear();
+        vi.setSystemTime(new Date("2025-01-01T00:00:00Z"));
+      }
+      expect(seen).toEqual(["trigger", "trigger", "trigger"]);
+    },
+  );
+
+  it.each(variants)(
+    "[%s] all three activation paths leave no lingering action button",
+    async (variant) => {
+      for (const method of methods) {
+        await runActivation(variant, method);
+        await advance(250);
+        expect(
+          screen.queryByRole("button", { name: /^Try again$/ }),
+        ).not.toBeInTheDocument();
+        document.body.innerHTML = "";
+        sessionStorage.clear();
+        vi.setSystemTime(new Date("2025-01-01T00:00:00Z"));
+      }
+    },
+  );
+});
+
