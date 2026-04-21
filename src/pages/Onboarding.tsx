@@ -13,6 +13,12 @@ import { getAffiliateCookie, clearAffiliateCookie, getReferralData, clearReferra
 import logoImg from "@/assets/logo.png";
 import MilestoneProgressPill from "@/components/onboarding/MilestoneProgressPill";
 import { useAutoRetryPreference } from "@/hooks/useAutoRetryPreference";
+import {
+  SETTINGS_NAV_COOLDOWN_MS,
+  readSettingsNavLast,
+  writeSettingsNavLast,
+  computeCooldownState,
+} from "@/lib/settingsNavCooldown";
 
 const CREATOR_TYPES = [
   "Fitness", "Finance", "Gaming", "Lifestyle", "Business", "Education",
@@ -236,23 +242,6 @@ export default function Onboarding() {
   }, [autoRetryCountdown]);
 
   const fileRef = useRef<HTMLInputElement>(null);
-  const SETTINGS_NAV_COOLDOWN_MS = 2000;
-  const SETTINGS_NAV_COOLDOWN_KEY = "onboarding:settings_nav_last_attempt";
-  const readSettingsNavLast = (): number => {
-    try {
-      const raw = sessionStorage.getItem(SETTINGS_NAV_COOLDOWN_KEY);
-      return raw ? Number(raw) || 0 : 0;
-    } catch {
-      return 0;
-    }
-  };
-  const writeSettingsNavLast = (ts: number) => {
-    try {
-      sessionStorage.setItem(SETTINGS_NAV_COOLDOWN_KEY, String(ts));
-    } catch {
-      // ignore
-    }
-  };
 
   // Referrer info from cookies
   const [referrerName, setReferrerName] = useState<string | null>(null);
@@ -654,13 +643,8 @@ export default function Onboarding() {
                   const showErrorWithCountdown = (description: string) => {
                     const toastId = `settings-nav-error-${Date.now()}`;
                     const tick = () => {
-                      const last = readSettingsNavLast();
-                      const remainingMs = Math.max(0, last + SETTINGS_NAV_COOLDOWN_MS - Date.now());
-                      const remainingSec = Math.ceil(remainingMs / 1000);
-                      const ready = remainingMs <= 0;
-                      const elapsedPct = ready
-                        ? 100
-                        : Math.min(100, Math.max(0, ((SETTINGS_NAV_COOLDOWN_MS - remainingMs) / SETTINGS_NAV_COOLDOWN_MS) * 100));
+                      const state = computeCooldownState(readSettingsNavLast());
+                      const { remainingMs, ready, elapsedPct, actionLabel } = state;
                       toast.error("Couldn't open Settings", {
                         id: toastId,
                         description: (
@@ -685,7 +669,7 @@ export default function Onboarding() {
                         ),
                         duration: ready ? 8000 : 1500,
                         action: {
-                          label: ready ? "Try again" : `Try again (${remainingSec}s)`,
+                          label: actionLabel,
                           onClick: () => {
                             if (!ready) return;
                             attemptNavigate(true);
