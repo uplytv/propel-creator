@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowRight, ArrowLeft, Camera, Check, X, Loader2, AlertTriangle, RotateCcw, Settings as SettingsIcon } from "lucide-react";
+import { ArrowRight, ArrowLeft, Camera, Check, X, Loader2, AlertTriangle, RotateCcw, Settings as SettingsIcon, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { getAffiliateCookie, clearAffiliateCookie, getReferralData, clearReferralData } from "@/lib/affiliateCookies";
 import logoImg from "@/assets/logo.png";
@@ -130,6 +131,8 @@ export default function Onboarding() {
 
   // Step 2: Creator Profile
   const [creatorType, setCreatorType] = useState("");
+  const [creatorTypeError, setCreatorTypeError] = useState(false);
+  const creatorTypeErrorRef = useRef<HTMLDivElement | null>(null);
   const pendingCreatorTypeFocus = useRef<string | null>(null);
   useEffect(() => {
     const target = pendingCreatorTypeFocus.current;
@@ -798,6 +801,18 @@ export default function Onboarding() {
             <p className="text-muted-foreground text-center text-sm mb-1">Help us understand your audience.</p>
             <p className="text-xs text-primary text-center mb-6 font-medium">🎯 This helps us prioritize your application</p>
 
+            {creatorTypeError && !creatorType && (
+              <div ref={creatorTypeErrorRef}>
+                <Alert variant="destructive" role="alert" aria-live="assertive" className="mb-4" data-testid="creator-type-error">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Creator type required</AlertTitle>
+                  <AlertDescription>
+                    Please select a creator type below before continuing.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            )}
+
             <div className="space-y-4 mb-6">
               <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">
@@ -807,6 +822,7 @@ export default function Onboarding() {
                   role="radiogroup"
                   aria-label="Creator type"
                   aria-required="true"
+                  aria-invalid={creatorTypeError && !creatorType}
                   className="grid grid-cols-3 gap-2"
                 >
                   {CREATOR_TYPES.map((t, idx) => {
@@ -821,7 +837,7 @@ export default function Onboarding() {
                         aria-checked={selected}
                         tabIndex={isTabStop ? 0 : -1}
                         data-creator-type-card={t.value}
-                        onClick={() => setCreatorType(t.value)}
+                        onClick={() => { setCreatorType(t.value); setCreatorTypeError(false); }}
                         onKeyDown={(e) => {
                           const cols = 3;
                           const last = CREATOR_TYPES.length - 1;
@@ -862,6 +878,7 @@ export default function Onboarding() {
                             case "Enter":
                               e.preventDefault();
                               setCreatorType(t.value);
+                              setCreatorTypeError(false);
                               return;
                             default:
                               return;
@@ -872,6 +889,7 @@ export default function Onboarding() {
                           // Defer focus to after React commits the new tabindex/state.
                           pendingCreatorTypeFocus.current = nextValue;
                           setCreatorType(nextValue);
+                          setCreatorTypeError(false);
                         }}
                         className={`rounded-xl p-3 text-center border-2 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                           selected
@@ -949,7 +967,22 @@ export default function Onboarding() {
               <Button variant="outline" onClick={() => setStep(1)} className="gap-1">
                 <ArrowLeft className="w-4 h-4" /> Back
               </Button>
-              <Button variant="hero" size="xl" className="flex-1" disabled={!creatorType} onClick={() => setStep(3)}>
+              <Button
+                variant="hero"
+                size="xl"
+                className="flex-1"
+                onClick={() => {
+                  if (!creatorType) {
+                    setCreatorTypeError(true);
+                    requestAnimationFrame(() => {
+                      creatorTypeErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+                    });
+                    return;
+                  }
+                  setCreatorTypeError(false);
+                  setStep(3);
+                }}
+              >
                 Continue <ArrowRight className="ml-1 w-4 h-4" />
               </Button>
             </div>
