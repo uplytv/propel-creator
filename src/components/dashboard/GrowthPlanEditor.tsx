@@ -131,8 +131,9 @@ export default function GrowthPlanEditor({ open, onOpenChange }: { open: boolean
         </DialogHeader>
 
         <Tabs defaultValue="edit" className="flex-1 flex flex-col min-h-0">
-          <TabsList className="grid grid-cols-3 mx-5 mt-3">
+          <TabsList className="grid grid-cols-4 mx-5 mt-3">
             <TabsTrigger value="edit">Edit</TabsTrigger>
+            <TabsTrigger value="templates" className="gap-1.5"><LayoutTemplate className="w-3.5 h-3.5" /> Templates</TabsTrigger>
             <TabsTrigger value="suggest" className="gap-1.5"><Wand2 className="w-3.5 h-3.5" /> AI</TabsTrigger>
             <TabsTrigger value="history" className="gap-1.5"><History className="w-3.5 h-3.5" /> History</TabsTrigger>
           </TabsList>
