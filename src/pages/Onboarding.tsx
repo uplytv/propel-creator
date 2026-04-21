@@ -1042,6 +1042,18 @@ export default function Onboarding() {
             <p className="text-muted-foreground text-center text-sm mb-1">These help us match you with the right tools.</p>
             <p className="text-xs text-primary text-center mb-6 font-medium">✨ Detailed answers = faster approval</p>
 
+            <ValidationBanner
+              ref={step3BannerRef}
+              show={(attemptedSubmit && !creatorStage) || (oneSentenceError && !oneSentence.trim())}
+              title={!creatorStage ? "Creator stage required" : "One-sentence description required"}
+              description={
+                !creatorStage
+                  ? "Please choose where you are right now before continuing."
+                  : "Tell us in one sentence what you create — this is required to continue."
+              }
+              testId="step3-error"
+            />
+
             <div className="space-y-4 mb-6">
               <div>
                 <label className="text-sm font-medium text-foreground mb-2 block">
