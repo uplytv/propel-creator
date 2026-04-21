@@ -1142,12 +1142,18 @@ export default function Onboarding() {
               <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">In one sentence, what do you create? *</label>
                 <Textarea
+                  ref={oneSentenceInputRef}
                   value={oneSentence}
-                  onChange={(e) => setOneSentence(e.target.value.slice(0, 120))}
+                  onChange={(e) => {
+                    setOneSentence(e.target.value.slice(0, 120));
+                    if (oneSentenceError) setOneSentenceError(false);
+                  }}
                   placeholder='e.g. "I teach first-generation investors how to build wealth from zero."'
                   rows={2}
                   className="text-sm resize-none"
                   maxLength={120}
+                  aria-invalid={oneSentenceError && !oneSentence.trim()}
+                  aria-required="true"
                 />
                 <p className="text-xs text-muted-foreground text-right mt-1">{oneSentence.length}/120</p>
               </div>
