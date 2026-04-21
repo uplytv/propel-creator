@@ -246,6 +246,13 @@ export function MilestoneProgressPill({ onboardingStep, totalOnboardingSteps = 3
                   </div>
                 );
               })}
+
+              <a
+                href="/achievements"
+                className="mt-2 flex items-center justify-center gap-2 w-full text-xs font-medium text-primary hover:underline min-h-[44px]"
+              >
+                View full achievement history →
+              </a>
             </motion.div>
           </>
         )}
