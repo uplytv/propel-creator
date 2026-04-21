@@ -199,6 +199,34 @@ export default function BoostToastTab() {
               <Download className="w-3.5 h-3.5 mr-1.5" />
               Export CSV
             </Button>
+            <TooltipProvider delayDuration={150}>
+              <UITooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 text-muted-foreground"
+                    aria-label="CSV columns help"
+                  >
+                    <HelpCircle className="w-4 h-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" align="end" className="max-w-xs text-xs">
+                  <p className="font-semibold mb-1">CSV columns</p>
+                  <ul className="space-y-1">
+                    <li><span className="font-mono">section</span> — row type: <span className="font-mono">timeseries</span>, <span className="font-mono">route</span>, or <span className="font-mono">total</span>.</li>
+                    <li><span className="font-mono">range_filter</span> — selected time window (e.g. 7d).</li>
+                    <li><span className="font-mono">boost_state_filter</span> — boost state filter (all/ending/ended).</li>
+                    <li><span className="font-mono">route_filter</span> — route filter applied at export.</li>
+                    <li><span className="font-mono">bucket_or_route</span> — time bucket (ISO) for timeseries, route path for route rows, or "all" for totals.</li>
+                    <li><span className="font-mono">shown</span> — count of <span className="font-mono">boost_toast_shown</span> events.</li>
+                    <li><span className="font-mono">clicked</span> — count of <span className="font-mono">boost_toast_action_clicked</span> events.</li>
+                    <li><span className="font-mono">ctr</span> — clicked ÷ shown (0–1, 4 decimals).</li>
+                  </ul>
+                </TooltipContent>
+              </UITooltip>
+            </TooltipProvider>
           </div>
         </div>
       </Card>
