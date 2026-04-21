@@ -268,10 +268,28 @@ export default function Achievements() {
                     ))}
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground">
+                    <span className="inline-flex items-center gap-1 text-muted-foreground">
                       {filtered.length === 0
                         ? "0 results"
                         : `${startIndex + 1}–${startIndex + pageItems.length} of ${filtered.length}`}
+                      {filtered.length > 0 && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              aria-label="About this range"
+                              className="text-muted-foreground/70 hover:text-foreground transition-colors"
+                            >
+                              <Info className="w-3 h-3" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-[220px] text-xs">
+                            This page uses a stable cursor — newly unlocked
+                            achievements appear at the top without shifting
+                            your current view.
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
                     </span>
                     <button
                       onClick={() => setCursor(prevCursor)}
