@@ -359,7 +359,7 @@ function ExportCsvDialog({
   onOpenChange: (o: boolean) => void;
   rows: ReportRow[];
   tab: ReportStatus;
-  onExport: (selected: string[], delimiter: "," | "\t") => void;
+  onExport: (selected: string[], delimiter: "," | "\t", quoteAll: boolean) => void;
 }) {
   const count = rows.length;
   const [preset, setPreset] = useState<"both" | "report" | "comment" | "custom">(() => {
