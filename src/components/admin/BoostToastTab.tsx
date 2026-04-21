@@ -143,6 +143,44 @@ export default function BoostToastTab() {
     URL.revokeObjectURL(url);
   };
 
+  const handleExportJson = () => {
+    const series = eventsQuery.data?.series ?? [];
+    const payload = {
+      generated_at: new Date().toISOString(),
+      filters: {
+        range,
+        boost_state: state,
+        route,
+      },
+      totals: totals
+        ? { shown: totals.shown, clicked: totals.clicked, ctr: totals.ctr }
+        : null,
+      timeseries: series.map((b) => ({
+        bucket: b.bucket,
+        shown: b.shown,
+        clicked: b.clicked,
+        ctr: b.shown > 0 ? b.clicked / b.shown : 0,
+      })),
+      routes: routes.map((r) => ({
+        route: r.route,
+        shown: r.shown,
+        clicked: r.clicked,
+        ctr: r.ctr,
+      })),
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `boost-toast-analytics_${range}_${state}_${route.replace(/[^a-z0-9]+/gi, "-")}_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
   const canExport =
     !eventsQuery.isLoading &&
     ((eventsQuery.data?.series?.length ?? 0) > 0 || routes.length > 0);
@@ -198,6 +236,16 @@ export default function BoostToastTab() {
             >
               <Download className="w-3.5 h-3.5 mr-1.5" />
               Export CSV
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 text-xs"
+              disabled={!canExport}
+              onClick={handleExportJson}
+            >
+              <Download className="w-3.5 h-3.5 mr-1.5" />
+              Export JSON
             </Button>
             <TooltipProvider delayDuration={150}>
               <UITooltip>
