@@ -129,6 +129,9 @@ export default function Onboarding() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [socialHandle, setSocialHandle] = useState("");
+  const [firstNameError, setFirstNameError] = useState(false);
+  const firstNameInputRef = useRef<HTMLInputElement | null>(null);
+  const step1BannerRef = useRef<ValidationBannerHandle | null>(null);
 
   // Step 2: Creator Profile
   const [creatorType, setCreatorType] = useState("");
