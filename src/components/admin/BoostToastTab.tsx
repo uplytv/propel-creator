@@ -236,6 +236,8 @@ export default function BoostToastTab() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
+
+  const handleExportJson = () => {
     const series = eventsQuery.data?.series ?? [];
     const payload = {
       generated_at: new Date().toISOString(),
