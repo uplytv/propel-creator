@@ -7,6 +7,9 @@ const Home = lazy(() => import("./Home"));
 const Landing = lazy(() => import("./Landing"));
 
 const AUTH_RESOLVE_TIMEOUT_MS = 8000;
+// Wait a tick before showing the skeleton — avoids a flash when auth resolves
+// from cached session synchronously or within a frame.
+const SKELETON_DELAY_MS = 150;
 
 const Loader = () => (
   <div className="min-h-screen bg-[#0A0A0A] text-white animate-pulse">
