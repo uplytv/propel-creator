@@ -76,7 +76,7 @@ export default function DiscoveryFeedCard({ item }: { item: DiscoveryItem }) {
     lastStateRef.current = state;
     // Only fire on transition (not on first mount when already past).
     if (prev === null) return;
-    const key = `${item.content_type}:${item.content_id}:${item.boost_expires_at}`;
+    const key = boostExpiryKey(item.content_type, item.content_id, item.boost_expires_at);
     if (state === "ending" && prev === "active" && !notifiedEndingBoosts.has(key)) {
       notifiedEndingBoosts.add(key);
       toast(`Boost ending soon: ${item.title ?? "Promoted item"}`, {
@@ -102,7 +102,7 @@ export default function DiscoveryFeedCard({ item }: { item: DiscoveryItem }) {
     if (!item.is_boosted || !item.boost_expires_at) return;
     const ms = new Date(item.boost_expires_at).getTime() - Date.now();
     if (ms <= 0 || ms > 24 * 60 * 60_000) return; // skip if already past or > 1 day away
-    const expiryKey = `${item.content_type}:${item.content_id}:${item.boost_expires_at}`;
+    const expiryKey = boostExpiryKey(item.content_type, item.content_id, item.boost_expires_at);
     const t = setTimeout(() => {
       invalidateBoostFeedOnce(expiryKey, () => {
         queryClient.invalidateQueries({ queryKey: ["discovery-feed"] });
