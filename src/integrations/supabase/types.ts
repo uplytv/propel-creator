@@ -3862,6 +3862,7 @@ export type Database = {
       }
       events_global: {
         Row: {
+          affiliate_url: string | null
           artist_name: string | null
           category: string | null
           city: string | null
@@ -3872,6 +3873,8 @@ export type Database = {
           id: string
           image_url: string | null
           is_persian: boolean
+          latitude: number | null
+          longitude: number | null
           source: string
           synced_at: string
           ticket_url: string | null
@@ -3879,6 +3882,7 @@ export type Database = {
           venue: string | null
         }
         Insert: {
+          affiliate_url?: string | null
           artist_name?: string | null
           category?: string | null
           city?: string | null
@@ -3889,6 +3893,8 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_persian?: boolean
+          latitude?: number | null
+          longitude?: number | null
           source: string
           synced_at?: string
           ticket_url?: string | null
@@ -3896,6 +3902,7 @@ export type Database = {
           venue?: string | null
         }
         Update: {
+          affiliate_url?: string | null
           artist_name?: string | null
           category?: string | null
           city?: string | null
@@ -3906,6 +3913,8 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_persian?: boolean
+          latitude?: number | null
+          longitude?: number | null
           source?: string
           synced_at?: string
           ticket_url?: string | null
