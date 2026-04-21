@@ -210,7 +210,7 @@ export default function VideoPlayer() {
       />
 
       {/* Player */}
-      <div className="w-full max-w-5xl mx-auto">
+      <div className="w-full max-w-5xl mx-auto relative">
         {video.playback_id ? (
           <UPLYMuxPlayer
             playbackId={video.playback_id}
@@ -222,6 +222,13 @@ export default function VideoPlayer() {
           <div className="aspect-video bg-secondary flex items-center justify-center">
             <p className="text-muted-foreground">Video processing…</p>
           </div>
+        )}
+        {ended && nextUp && (
+          <NextUpCard
+            next={nextUp}
+            playlistId={playlistId}
+            onCancel={() => setEnded(false)}
+          />
         )}
       </div>
 
