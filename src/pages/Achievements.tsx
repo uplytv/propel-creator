@@ -221,40 +221,70 @@ export default function Achievements() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-8">
-                {(["kpi", "onboarding"] as const).map((g) => {
-                  const list = groups[g];
-                  if (list.length === 0) return null;
-                  return (
-                    <section key={g}>
-                      <h2 className="text-xs uppercase tracking-wider text-muted-foreground mb-3">
-                        {g === "kpi" ? "Growth Plan" : "Onboarding"}
-                        <span className="ml-2 text-foreground/60">({list.length})</span>
-                      </h2>
-                      <ul className="space-y-2">
-                        {list.map((m, i) => (
-                          <motion.li
-                            key={m.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.04 }}
-                            className="flex items-center gap-4 rounded-xl border border-primary/20 bg-primary/5 p-4"
-                          >
-                            <div className="text-3xl">{m.emoji}</div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-semibold truncate">{m.label}</p>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                Unlocked {format(new Date(m.reached_at), "MMM d, yyyy 'at' h:mm a")}
-                              </p>
-                            </div>
-                            <Trophy className="w-4 h-4 text-primary shrink-0" />
-                          </motion.li>
-                        ))}
-                      </ul>
-                    </section>
-                  );
-                })}
-              </div>
+              <>
+                <ul className="space-y-2">
+                  {pageItems.map((m, i) => (
+                    <motion.li
+                      key={m.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.03 }}
+                      className="flex items-center gap-4 rounded-xl border border-primary/20 bg-primary/5 p-4"
+                    >
+                      <div className="text-3xl">{m.emoji}</div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold truncate">{m.label}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {groupLabel(m.group_type)} · Unlocked{" "}
+                          {format(new Date(m.reached_at), "MMM d, yyyy 'at' h:mm a")}
+                        </p>
+                      </div>
+                      <Trophy className="w-4 h-4 text-primary shrink-0" />
+                    </motion.li>
+                  ))}
+                </ul>
+
+                <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <span>Per page:</span>
+                    {VALID_PAGE_SIZES.map((n) => (
+                      <button
+                        key={n}
+                        onClick={() => setPageSize(n)}
+                        className={cn(
+                          "px-2 py-1 rounded-md border transition-colors",
+                          pageSize === n
+                            ? "bg-primary/15 border-primary/40 text-primary"
+                            : "bg-white/[0.02] border-white/10 hover:text-foreground"
+                        )}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">
+                      Page {page} of {totalPages} · {filtered.length} total
+                    </span>
+                    <button
+                      onClick={() => setPage(page - 1)}
+                      disabled={page <= 1}
+                      className="p-1.5 rounded-md border border-white/10 bg-white/[0.02] text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
+                      aria-label="Previous page"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setPage(page + 1)}
+                      disabled={page >= totalPages}
+                      className="p-1.5 rounded-md border border-white/10 bg-white/[0.02] text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
+                      aria-label="Next page"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </>
             )}
           </>
         )}
