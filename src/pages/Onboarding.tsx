@@ -650,7 +650,7 @@ export default function Onboarding() {
                   const baseDestination = "/settings?tab=account&highlight=auto-retry";
                   const attemptNavigate = (isRetry = false) => {
                     const now = Date.now();
-                    const sinceLast = now - settingsNavLastAttemptRef.current;
+                    const sinceLast = now - readSettingsNavLast();
                     if (sinceLast < SETTINGS_NAV_COOLDOWN_MS) {
                       const wait = Math.ceil((SETTINGS_NAV_COOLDOWN_MS - sinceLast) / 1000);
                       toast.warning("Slow down", {
@@ -658,7 +658,7 @@ export default function Onboarding() {
                       });
                       return;
                     }
-                    settingsNavLastAttemptRef.current = now;
+                    writeSettingsNavLast(now);
                     const destination = isRetry ? `${baseDestination}&from=retry` : baseDestination;
                     try {
                       toast.info("Opening Settings → Account", {
