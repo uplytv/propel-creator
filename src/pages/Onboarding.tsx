@@ -650,29 +650,49 @@ export default function Onboarding() {
                   const baseDestination = "/settings?tab=account&highlight=auto-retry";
 
                   // Show an error toast that re-renders each second with a
-                  // counting-down "Try again (Xs)" label until cooldown elapses.
+                  // counting-down "Try again (Xs)" label + progress bar until cooldown elapses.
                   const showErrorWithCountdown = (description: string) => {
                     const toastId = `settings-nav-error-${Date.now()}`;
                     const tick = () => {
-                      const remainingMs = Math.max(
-                        0,
-                        readSettingsNavLast() + SETTINGS_NAV_COOLDOWN_MS - Date.now()
-                      );
+                      const last = readSettingsNavLast();
+                      const remainingMs = Math.max(0, last + SETTINGS_NAV_COOLDOWN_MS - Date.now());
                       const remainingSec = Math.ceil(remainingMs / 1000);
                       const ready = remainingMs <= 0;
+                      const elapsedPct = ready
+                        ? 100
+                        : Math.min(100, Math.max(0, ((SETTINGS_NAV_COOLDOWN_MS - remainingMs) / SETTINGS_NAV_COOLDOWN_MS) * 100));
                       toast.error("Couldn't open Settings", {
                         id: toastId,
-                        description,
+                        description: (
+                          <div className="space-y-2">
+                            <p>{description}</p>
+                            {!ready && (
+                              <div
+                                className="h-1 w-full overflow-hidden rounded-full bg-muted"
+                                role="progressbar"
+                                aria-valuemin={0}
+                                aria-valuemax={100}
+                                aria-valuenow={Math.round(elapsedPct)}
+                                aria-label="Cooldown progress"
+                              >
+                                <div
+                                  className="h-full bg-primary transition-[width] duration-200 ease-linear"
+                                  style={{ width: `${elapsedPct}%` }}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        ),
                         duration: ready ? 8000 : 1500,
                         action: {
                           label: ready ? "Try again" : `Try again (${remainingSec}s)`,
                           onClick: () => {
-                            if (!ready) return; // guard: ignore early presses
+                            if (!ready) return;
                             attemptNavigate(true);
                           },
                         },
                       });
-                      if (!ready) setTimeout(tick, 1000);
+                      if (!ready) setTimeout(tick, 200);
                     };
                     tick();
                   };
