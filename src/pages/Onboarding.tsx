@@ -17,9 +17,8 @@ import {
   SETTINGS_NAV_COOLDOWN_MS,
   readSettingsNavLast,
   writeSettingsNavLast,
-  computeCooldownState,
 } from "@/lib/settingsNavCooldown";
-import { captureFocus } from "@/lib/restoreFocus";
+import { showCooldownToast } from "@/lib/cooldownToast";
 
 const CREATOR_TYPES = [
   "Fitness", "Finance", "Gaming", "Lifestyle", "Business", "Education",
@@ -639,53 +638,16 @@ export default function Onboarding() {
                 onClick={() => {
                   const baseDestination = "/settings?tab=account&highlight=auto-retry";
 
-                  // Show an error toast that re-renders each second with a
+                  // Show a cooldown toast that re-renders every 200ms with a
                   // counting-down "Try again (Xs)" label + progress bar until cooldown elapses.
                   const showErrorWithCountdown = (description: string) => {
-                    const toastId = `settings-nav-error-${Date.now()}`;
-                    // Capture the element that had focus when the toast first
-                    // appeared so we can return focus to it on dismiss/retry.
-                    const restoreFocus = captureFocus();
-                    const tick = () => {
-                      const state = computeCooldownState(readSettingsNavLast());
-                      const { ready, elapsedPct, actionLabel } = state;
-                      toast.error("Couldn't open Settings", {
-                        id: toastId,
-                        description: (
-                          <div className="space-y-2">
-                            <p>{description}</p>
-                            {!ready && (
-                              <div
-                                className="h-1 w-full overflow-hidden rounded-full bg-muted"
-                                role="progressbar"
-                                aria-valuemin={0}
-                                aria-valuemax={100}
-                                aria-valuenow={Math.round(elapsedPct)}
-                                aria-label="Cooldown progress"
-                              >
-                                <div
-                                  className="h-full bg-primary transition-[width] duration-200 ease-linear"
-                                  style={{ width: `${elapsedPct}%` }}
-                                />
-                              </div>
-                            )}
-                          </div>
-                        ),
-                        duration: ready ? 8000 : 1500,
-                        onDismiss: () => restoreFocus(),
-                        onAutoClose: () => restoreFocus(),
-                        action: {
-                          label: actionLabel,
-                          onClick: () => {
-                            if (!ready) return;
-                            restoreFocus();
-                            attemptNavigate(true);
-                          },
-                        },
-                      });
-                      if (!ready) setTimeout(tick, 200);
-                    };
-                    tick();
+                    showCooldownToast({
+                      title: "Couldn't open Settings",
+                      description,
+                      variant: "error",
+                      id: `settings-nav-error-${Date.now()}`,
+                      onAction: () => attemptNavigate(true),
+                    });
                   };
 
                   const attemptNavigate = (isRetry = false) => {
