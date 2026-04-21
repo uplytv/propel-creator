@@ -9585,6 +9585,7 @@ export type Database = {
       rotate_ticket_qr: { Args: { p_ticket_id: string }; Returns: string }
       send_creator_lifecycle_emails_batch: { Args: never; Returns: undefined }
       send_member_lifecycle_emails_batch: { Args: never; Returns: undefined }
+      send_weekly_discovery_digest: { Args: never; Returns: undefined }
       update_subscriber_send_hour: {
         Args: { p_email: string; p_hour: number }
         Returns: undefined

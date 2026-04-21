@@ -6,7 +6,7 @@ import { UPLYMuxPlayer } from "@/components/MuxPlayer";
 import { useWatchTimeTracker } from "@/hooks/useWatchTimeTracker";
 import { useFollows } from "@/hooks/useFollows";
 import { toast } from "sonner";
-import SEOHead from "@/components/SEOHead";
+import SEOHead, { buildVideoSchema } from "@/components/SEOHead";
 import FollowButton from "@/components/FollowButton";
 import SharePanel from "@/components/share/SharePanel";
 import { Button } from "@/components/ui/button";
@@ -150,6 +150,15 @@ export default function VideoPlayer() {
         description={video.description || `Watch ${video.title} by ${creatorName} on UPLY`}
         type="video.other"
         image={video.playback_id ? `https://image.mux.com/${video.playback_id}/thumbnail.jpg?width=1200&height=630&fit_mode=smartcrop` : undefined}
+        jsonLd={buildVideoSchema({
+          name: video.title,
+          description: video.description || `Watch ${video.title} by ${creatorName} on UPLY`,
+          thumbnailUrl: video.playback_id ? `https://image.mux.com/${video.playback_id}/thumbnail.jpg?width=1200&height=630&fit_mode=smartcrop` : "",
+          uploadDate: (video as any).created_at || new Date().toISOString(),
+          duration: (video as any).duration_seconds,
+          embedUrl: video.playback_id ? `https://stream.mux.com/${video.playback_id}.m3u8` : undefined,
+          creatorName,
+        })}
       />
 
       {/* Player */}
