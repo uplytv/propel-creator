@@ -17,7 +17,6 @@ import {
   SETTINGS_NAV_COOLDOWN_MS,
   readSettingsNavLast,
   writeSettingsNavLast,
-  computeCooldownState,
 } from "@/lib/settingsNavCooldown";
 import { showCooldownToast } from "@/lib/cooldownToast";
 
