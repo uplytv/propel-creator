@@ -57,25 +57,44 @@ if (typeof window !== "undefined") {
       ) => number;
     }).requestIdleCallback;
 
-  if (typeof ric === "function") {
+  const ricAvailable = typeof ric === "function";
+  log("scheduling", {
+    requestIdleCallbackScheduled: ricAvailable,
+    strategy: ricAvailable ? "requestIdleCallback" : "setTimeout-fallback",
+    idleTimeoutMs: ricAvailable ? 2500 : null,
+    fallbackDelayMs: ricAvailable ? null : 1500,
+  });
+
+  if (ricAvailable) {
     let firedByIdle = false;
+    const scheduledAt = performance.now();
     ric(
       () => {
         firedByIdle = true;
+        log("requestIdleCallback fired", {
+          firedBeforeTimeout: true,
+          via: "idle",
+          elapsedMs: Math.round(performance.now() - scheduledAt),
+        });
         prefetchRoutes("idle");
       },
       { timeout: 2500 }
     );
-    // If idle never came within the timeout window, rIC still fires (per spec)
-    // but log a warning so we can spot truly busy main threads in dev.
+    // Detect the case where rIC only fired because of its timeout deadline
+    // (i.e. the main thread never went idle in time).
     window.setTimeout(() => {
       if (!firedByIdle) {
-        log("warning: idle not reached within 2500ms timeout");
+        log("requestIdleCallback did not fire before 2500ms", {
+          firedBeforeTimeout: false,
+          via: "timeout-fallback",
+        });
       }
     }, 2600);
   } else {
-    log("requestIdleCallback unavailable — using 1500ms timeout fallback");
-    window.setTimeout(() => prefetchRoutes("timeout-fallback"), 1500);
+    window.setTimeout(() => {
+      log("setTimeout fallback fired", { via: "timeout-fallback" });
+      prefetchRoutes("timeout-fallback");
+    }, 1500);
   }
 }
 
