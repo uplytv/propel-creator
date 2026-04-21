@@ -272,6 +272,7 @@ export default function Onboarding() {
 
   const finishOnboarding = async () => {
     if (!user) return;
+    if (saving) return; // Prevent double-submit
     setSaving(true);
 
     let uploadedUrl = avatarUrl;
