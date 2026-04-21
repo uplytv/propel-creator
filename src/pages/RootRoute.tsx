@@ -102,6 +102,17 @@ export default function RootRoute() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [redirectGuest, setRedirectGuest] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
+  const [showSkeleton, setShowSkeleton] = useState(false);
+
+  // Delay skeleton display so fast auth resolution doesn't cause a flash.
+  useEffect(() => {
+    if (!loading) {
+      setShowSkeleton(false);
+      return;
+    }
+    const id = window.setTimeout(() => setShowSkeleton(true), SKELETON_DELAY_MS);
+    return () => window.clearTimeout(id);
+  }, [loading, retryKey]);
 
   // Probe the session ourselves so we can surface real errors and timeouts.
   useEffect(() => {
