@@ -30,6 +30,7 @@ import FirstDollarWizard from "@/components/dashboard/FirstDollarWizard";
 import DiscoveryInsights from "@/components/dashboard/DiscoveryInsights";
 import CreatorTour from "@/components/onboarding/CreatorTour";
 import GrowthPlanCard from "@/components/dashboard/GrowthPlanCard";
+import AICoachWidget from "@/components/dashboard/AICoachWidget";
 
 function PlatformUpgradeBanner() {
   const { user } = useAuth();

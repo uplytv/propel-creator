@@ -38,7 +38,6 @@ export default function AICoachWidget() {
             targetKpis: plan?.targetKpis,
             weeklyTasks: (plan?.weeklyTasks ?? []).map((t) => t.title),
             milestones: (plan?.milestones ?? []).map((m) => m.title),
-            completed: (plan?.weeklyTasks ?? []).filter((t) => t.done).map((t) => t.title),
           },
         },
       });
