@@ -381,8 +381,9 @@ function ExportCsvDialog({
     try {
       localStorage.setItem("admin-csv-export-preset", preset);
       localStorage.setItem("admin-csv-export-columns", JSON.stringify([...selected]));
+      localStorage.setItem("admin-csv-export-delimiter", delimiter);
     } catch { /* ignore */ }
-  }, [preset, selected]);
+  }, [preset, selected, delimiter]);
 
   const applyPreset = (p: "both" | "report" | "comment" | "custom") => {
     setPreset(p);
