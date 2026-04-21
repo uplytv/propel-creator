@@ -128,6 +128,25 @@ export default function VideoPlayer() {
     enabled: !!video?.id && !!video?.category,
   });
 
+  // Resolve next-up video (playlist context wins, else first related)
+  const nextUp = useMemo(() => {
+    if (playlistItems && playlistItems.length > 0 && video?.id) {
+      const idx = playlistItems.findIndex((it: any) => it.video_id === video.id);
+      const next: any = idx >= 0 && idx < playlistItems.length - 1 ? playlistItems[idx + 1].videos : null;
+      if (next) {
+        return {
+          id: next.id,
+          title: next.title,
+          thumbnail_url: next.thumbnail_url,
+          slug: next.slug,
+          creator_username: null,
+        };
+      }
+    }
+    const r = related?.[0];
+    return r ? { id: r.id, title: r.title, thumbnail_url: r.thumbnail_url, slug: r.slug, creator_username: null } : null;
+  }, [playlistItems, related, video?.id]);
+
   // Track view after 3s of playback
   useEffect(() => {
     if (!video?.id) return;
