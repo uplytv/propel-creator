@@ -8640,6 +8640,36 @@ export type Database = {
           },
         ]
       }
+      user_milestones: {
+        Row: {
+          emoji: string
+          group_type: string
+          id: string
+          label: string
+          milestone_key: string
+          reached_at: string
+          user_id: string
+        }
+        Insert: {
+          emoji?: string
+          group_type?: string
+          id?: string
+          label: string
+          milestone_key: string
+          reached_at?: string
+          user_id: string
+        }
+        Update: {
+          emoji?: string
+          group_type?: string
+          id?: string
+          label?: string
+          milestone_key?: string
+          reached_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string

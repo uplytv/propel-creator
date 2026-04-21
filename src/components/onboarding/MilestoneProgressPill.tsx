@@ -5,6 +5,7 @@ import confetti from "canvas-confetti";
 import { useAuth } from "@/context/AuthContext";
 import { useApp } from "@/context/AppContext";
 import { useGrowthPlan } from "@/hooks/useGrowthPlan";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -37,6 +38,25 @@ export function MilestoneProgressPill({ onboardingStep, totalOnboardingSteps = 3
   const [pulse, setPulse] = useState(false);
   const seenRef = useRef<Set<string>>(new Set());
   const initializedRef = useRef(false);
+  const [serverLoaded, setServerLoaded] = useState(false);
+
+  // Load previously-unlocked milestones from Supabase (cross-device sync)
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("user_milestones")
+        .select("milestone_key")
+        .eq("user_id", user.id);
+      if (cancelled) return;
+      if (!error && data) {
+        data.forEach((row: any) => seenRef.current.add(row.milestone_key));
+      }
+      setServerLoaded(true);
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
 
   const milestones = useMemo<Milestone[]>(() => {
     const list: Milestone[] = [];
@@ -77,10 +97,11 @@ export function MilestoneProgressPill({ onboardingStep, totalOnboardingSteps = 3
   const reachedCount = milestones.filter((m) => m.reached).length;
   const total = milestones.length;
 
-  // Detect newly reached milestones → celebrate
+  // Detect newly reached milestones → celebrate + persist to Supabase
   useEffect(() => {
+    if (!user || !serverLoaded) return;
     if (!initializedRef.current) {
-      // Seed already-reached ones on first mount so we don't re-celebrate history
+      // Seed locally-already-reached ones (covers session+server) so we don't re-celebrate history
       milestones.filter((m) => m.reached).forEach((m) => seenRef.current.add(m.key));
       initializedRef.current = true;
       return;
@@ -88,15 +109,31 @@ export function MilestoneProgressPill({ onboardingStep, totalOnboardingSteps = 3
     const newlyReached = milestones.filter((m) => m.reached && !seenRef.current.has(m.key));
     if (newlyReached.length === 0) return;
 
+    newlyReached.forEach((m) => seenRef.current.add(m.key));
+
+    // Persist (idempotent via unique constraint)
+    (async () => {
+      const rows = newlyReached.map((m) => ({
+        user_id: user.id,
+        milestone_key: m.key,
+        label: m.label,
+        emoji: m.emoji,
+        group_type: m.group,
+      }));
+      const { error } = await supabase.from("user_milestones").insert(rows);
+      if (error && !/duplicate|unique/i.test(error.message)) {
+        console.error("milestone sync error", error);
+      }
+    })();
+
     newlyReached.forEach((m) => {
-      seenRef.current.add(m.key);
       toast.success(`${m.emoji} ${m.label}`, { description: "Milestone unlocked" });
     });
     fireConfetti();
     setPulse(true);
     const t = setTimeout(() => setPulse(false), 1600);
     return () => clearTimeout(t);
-  }, [milestones]);
+  }, [milestones, serverLoaded, user?.id]);
 
   if (!user || total === 0) return null;
 
