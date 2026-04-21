@@ -236,8 +236,23 @@ export default function Onboarding() {
   }, [autoRetryCountdown]);
 
   const fileRef = useRef<HTMLInputElement>(null);
-  const settingsNavLastAttemptRef = useRef<number>(0);
   const SETTINGS_NAV_COOLDOWN_MS = 2000;
+  const SETTINGS_NAV_COOLDOWN_KEY = "onboarding:settings_nav_last_attempt";
+  const readSettingsNavLast = (): number => {
+    try {
+      const raw = sessionStorage.getItem(SETTINGS_NAV_COOLDOWN_KEY);
+      return raw ? Number(raw) || 0 : 0;
+    } catch {
+      return 0;
+    }
+  };
+  const writeSettingsNavLast = (ts: number) => {
+    try {
+      sessionStorage.setItem(SETTINGS_NAV_COOLDOWN_KEY, String(ts));
+    } catch {
+      // ignore
+    }
+  };
 
   // Referrer info from cookies
   const [referrerName, setReferrerName] = useState<string | null>(null);
@@ -635,7 +650,7 @@ export default function Onboarding() {
                   const baseDestination = "/settings?tab=account&highlight=auto-retry";
                   const attemptNavigate = (isRetry = false) => {
                     const now = Date.now();
-                    const sinceLast = now - settingsNavLastAttemptRef.current;
+                    const sinceLast = now - readSettingsNavLast();
                     if (sinceLast < SETTINGS_NAV_COOLDOWN_MS) {
                       const wait = Math.ceil((SETTINGS_NAV_COOLDOWN_MS - sinceLast) / 1000);
                       toast.warning("Slow down", {
@@ -643,7 +658,7 @@ export default function Onboarding() {
                       });
                       return;
                     }
-                    settingsNavLastAttemptRef.current = now;
+                    writeSettingsNavLast(now);
                     const destination = isRetry ? `${baseDestination}&from=retry` : baseDestination;
                     try {
                       toast.info("Opening Settings → Account", {
