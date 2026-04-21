@@ -168,7 +168,11 @@ export default function AdminCommentReports() {
 
   const list = useMemo(() => reports, [reports]);
 
-  const handleExportCsv = (selected: string[], delimiter: "," | "\t" = ",") => {
+  const handleExportCsv = (
+    selected: string[],
+    delimiter: "," | "\t" = ",",
+    quoteAll = false,
+  ) => {
     if (!list.length) {
       toast.error("Nothing to export");
       return;
@@ -179,7 +183,14 @@ export default function AdminCommentReports() {
     }
     const escape = (v: unknown) => {
       const s = v === null || v === undefined ? "" : String(v);
-      return `"${s.replace(/"/g, '""').replace(/\r?\n/g, " ")}"`;
+      const cleaned = s.replace(/\r?\n/g, " ");
+      const needsQuotes =
+        quoteAll ||
+        cleaned.includes('"') ||
+        cleaned.includes(delimiter) ||
+        cleaned.includes("\n") ||
+        cleaned.includes("\r");
+      return needsQuotes ? `"${cleaned.replace(/"/g, '""')}"` : cleaned;
     };
     const fields = ORDERED_KEYS
       .filter((k) => selected.includes(k))
@@ -348,7 +359,7 @@ function ExportCsvDialog({
   onOpenChange: (o: boolean) => void;
   rows: ReportRow[];
   tab: ReportStatus;
-  onExport: (selected: string[], delimiter: "," | "\t") => void;
+  onExport: (selected: string[], delimiter: "," | "\t", quoteAll: boolean) => void;
 }) {
   const count = rows.length;
   const [preset, setPreset] = useState<"both" | "report" | "comment" | "custom">(() => {
@@ -375,15 +386,21 @@ function ExportCsvDialog({
     } catch { /* ignore */ }
     return ",";
   });
+  const [quoteAll, setQuoteAll] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("admin-csv-export-quote-all") === "1";
+    } catch { return false; }
+  });
 
-  // Persist whenever preset or selection changes
+  // Persist whenever preset, selection, delimiter, or quoting changes
   useEffect(() => {
     try {
       localStorage.setItem("admin-csv-export-preset", preset);
       localStorage.setItem("admin-csv-export-columns", JSON.stringify([...selected]));
       localStorage.setItem("admin-csv-export-delimiter", delimiter);
+      localStorage.setItem("admin-csv-export-quote-all", quoteAll ? "1" : "0");
     } catch { /* ignore */ }
-  }, [preset, selected, delimiter]);
+  }, [preset, selected, delimiter, quoteAll]);
 
   const applyPreset = (p: "both" | "report" | "comment" | "custom") => {
     setPreset(p);
@@ -465,6 +482,23 @@ function ExportCsvDialog({
                 </Label>
               ))}
             </RadioGroup>
+            <Label
+              htmlFor="quote-all"
+              className="mt-3 flex items-start gap-2 rounded-md border border-border p-2 cursor-pointer hover:bg-muted/40"
+            >
+              <Checkbox
+                id="quote-all"
+                checked={quoteAll}
+                onCheckedChange={(v) => setQuoteAll(!!v)}
+                className="mt-0.5"
+              />
+              <div className="space-y-0.5">
+                <p className="text-sm font-medium">Quote every field</p>
+                <p className="text-[11px] text-muted-foreground">
+                  When off, fields are quoted only when needed (contain {delimiter === "\t" ? "tabs" : "commas"}, quotes, or newlines).
+                </p>
+              </div>
+            </Label>
           </div>
 
           <div className="space-y-3">
@@ -528,7 +562,7 @@ function ExportCsvDialog({
 
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={() => onExport([...selected], delimiter)} disabled={!selected.size || !count}>
+          <Button onClick={() => onExport([...selected], delimiter, quoteAll)} disabled={!selected.size || !count}>
             <Download className="w-4 h-4 mr-1.5" />
             Download {delimiter === "\t" ? "TSV" : "CSV"} ({selected.size})
           </Button>
