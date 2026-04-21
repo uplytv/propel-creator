@@ -235,8 +235,14 @@ export default function RootRoute() {
 
     if (import.meta.env.DEV) {
       // eslint-disable-next-line no-console
-      console.log(`[RootRoute auth] resolved in ${durationMs}ms (${bucket})`, payload);
+      console.log(
+        `[RootRoute auth] resolved in ${durationMs}ms (${bucket}) — adaptive skeleton delay was ${skeletonDelayRef.current}ms`,
+        payload
+      );
     }
+
+    // Persist for the next mount so we can pick a smarter skeleton delay.
+    persistAuthDurationMs(durationMs);
 
     // Soft analytics dispatch — works with anything that listens for the
     // CustomEvent (Segment shim, Plausible custom prop, GA4 listener, etc.)
@@ -250,13 +256,18 @@ export default function RootRoute() {
     }
   }, [loading, user, authError]);
 
-  // Delay skeleton display so fast auth resolution doesn't cause a flash.
+  // Delay skeleton display using the adaptive delay derived from the last
+  // measured auth resolve time. Cached sessions get ~60ms, slow sessions
+  // get up to 600ms before the skeleton appears.
   useEffect(() => {
     if (!loading) {
       setShowSkeleton(false);
       return;
     }
-    const id = window.setTimeout(() => setShowSkeleton(true), SKELETON_DELAY_MS);
+    const id = window.setTimeout(
+      () => setShowSkeleton(true),
+      skeletonDelayRef.current
+    );
     return () => window.clearTimeout(id);
   }, [loading, retryKey]);
 
