@@ -86,6 +86,7 @@ export default function BoostToastTab() {
   const [sampleOpen, setSampleOpen] = useState(false);
   const [csvSampleOpen, setCsvSampleOpen] = useState(false);
   const [csvSampleGeneratedAt, setCsvSampleGeneratedAt] = useState<string>("");
+  const csvSampleTriggerRef = useRef<HTMLButtonElement | null>(null);
 
   const routesQuery = useBoostRoutesList(range);
   const eventsQuery = useBoostToastEvents({ range, state, route });
