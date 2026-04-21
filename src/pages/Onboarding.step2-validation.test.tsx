@@ -196,4 +196,42 @@ describe("Onboarding Step 2 — creator type validation", () => {
     expect(screen.getByText(/Where are you right now\?/i)).toBeInTheDocument();
     expect(screen.queryByTestId("creator-type-error")).not.toBeInTheDocument();
   });
+
+  it("scrolls the error banner into view on mobile when Continue is clicked with no creator type", () => {
+    // Force a mobile viewport
+    Object.defineProperty(window, "innerWidth", { writable: true, configurable: true, value: 390 });
+    Object.defineProperty(window, "innerHeight", { writable: true, configurable: true, value: 844 });
+
+    // Spy on scrollIntoView (not implemented in jsdom by default)
+    const scrollSpy = vi.fn();
+    const originalScrollIntoView = (window as any).HTMLElement.prototype.scrollIntoView;
+    (window as any).HTMLElement.prototype.scrollIntoView = scrollSpy;
+
+    // Stub requestAnimationFrame so the scroll fires synchronously
+    const originalRaf = window.requestAnimationFrame;
+    window.requestAnimationFrame = ((cb: FrameRequestCallback) => {
+      cb(0);
+      return 0;
+    }) as any;
+
+    try {
+      advanceToStep2();
+      fireEvent.click(getContinueButton()!);
+
+      const banner = screen.getByTestId("creator-type-error");
+      expect(banner).toBeInTheDocument();
+
+      // scrollIntoView should have been called on the banner's wrapper element
+      expect(scrollSpy).toHaveBeenCalled();
+      const callArg = scrollSpy.mock.calls[0][0];
+      expect(callArg).toMatchObject({ behavior: "smooth", block: "center" });
+
+      // Verify the call was made on an element that contains the banner (the ref'd wrapper)
+      const calledOn = scrollSpy.mock.instances[0] as HTMLElement;
+      expect(calledOn.contains(banner) || calledOn === banner).toBe(true);
+    } finally {
+      (window as any).HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+      window.requestAnimationFrame = originalRaf;
+    }
+  });
 });
