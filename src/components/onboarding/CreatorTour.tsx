@@ -146,6 +146,26 @@ export default function CreatorTour({
 
   const step = CREATOR_TOUR_STEPS[stepIdx];
 
+  // Live-region announcement for screen readers. We deliberately drive this
+  // with a small delay (and a momentary clear) so assistive tech reliably
+  // re-announces the new step even when the new text is similar to the
+  // previous one — most screen readers only fire when the live region's
+  // text content actually changes.
+  const [liveMessage, setLiveMessage] = useState("");
+  useEffect(() => {
+    if (!open || !step) {
+      setLiveMessage("");
+      return;
+    }
+    setLiveMessage("");
+    const t = setTimeout(() => {
+      setLiveMessage(
+        `Step ${stepIdx + 1} of ${CREATOR_TOUR_STEPS.length}. ${step.title}. ${step.body}`,
+      );
+    }, 80);
+    return () => clearTimeout(t);
+  }, [open, step, stepIdx]);
+
   // Decide whether to auto-open for new users
   useEffect(() => {
     if (forceOpen) {
@@ -278,6 +298,18 @@ export default function CreatorTour({
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[9998]"
       >
+        {/* Visually-hidden live region — announces step changes to screen
+            readers. Lives outside the dialog so it isn't torn down on each
+            step transition (the dialog re-mounts via key={step.id}). */}
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          data-testid="creator-tour-live-region"
+          className="sr-only"
+        >
+          {liveMessage}
+        </div>
         {/* Spotlight via SVG mask */}
         <svg
           className="absolute inset-0 w-full h-full pointer-events-auto"
