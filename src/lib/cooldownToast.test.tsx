@@ -264,3 +264,127 @@ describe("showCooldownToast — variants", () => {
     expect(within(region).getByRole("progressbar")).toBeInTheDocument();
   });
 });
+
+describe("showCooldownToast — keyboard accessibility (warning & success)", () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2025-01-01T00:00:00Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    sessionStorage.clear();
+    document.body.innerHTML = "";
+  });
+
+  const flushMount = async () => {
+    await act(async () => {
+      vi.advanceTimersByTime(50);
+    });
+  };
+
+  const advance = async (ms: number) => {
+    await act(async () => {
+      vi.advanceTimersByTime(ms);
+    });
+  };
+
+  // Renders a trigger + Toaster, fires the trigger so the toast mounts under
+  // the requested variant, and returns the trigger element + onAction spy.
+  const setupVariant = async (variant: "warning" | "success") => {
+    const user = userEvent.setup({
+      advanceTimers: vi.advanceTimersByTime.bind(vi),
+    });
+    const onAction = vi.fn();
+
+    render(
+      <>
+        <button
+          type="button"
+          onClick={() => {
+            writeSettingsNavLast(Date.now());
+            showCooldownToast({
+              title: `T-${variant}`,
+              description: `D-${variant}`,
+              variant,
+              onAction,
+            });
+          }}
+        >
+          trigger-{variant}
+        </button>
+        <Toaster />
+      </>,
+    );
+
+    const trigger = screen.getByRole("button", { name: `trigger-${variant}` });
+    trigger.focus();
+    await act(async () => {
+      trigger.click();
+    });
+    await flushMount();
+    return { user, trigger, onAction };
+  };
+
+  for (const variant of ["warning", "success"] as const) {
+    describe(`[${variant}]`, () => {
+      it("Tab reaches the action button after cooldown elapses", async () => {
+        const { user } = await setupVariant(variant);
+
+        // Cooldown not elapsed → action shows the countdown label.
+        expect(
+          screen.getByRole("button", { name: /Try again \(\d+s\)/ }),
+        ).toBeInTheDocument();
+
+        await advance(SETTINGS_NAV_COOLDOWN_MS);
+
+        const enabledBtn = screen.getByRole("button", { name: /^Try again$/ });
+
+        // Tab forward from <body> until we land on the action button.
+        (document.activeElement as HTMLElement | null)?.blur();
+        document.body.focus();
+        for (let i = 0; i < 6 && document.activeElement !== enabledBtn; i++) {
+          await user.tab();
+        }
+        expect(enabledBtn).toHaveFocus();
+      });
+
+      it("Enter/Space do not invoke the action while cooldown is active", async () => {
+        const { user, onAction } = await setupVariant(variant);
+
+        // Countdown label confirms the action is not yet ready.
+        const btn = screen.getByRole("button", { name: /Try again \(\d+s\)/ });
+        btn.focus();
+        await user.keyboard("{Enter}");
+        await user.keyboard(" ");
+
+        expect(onAction).not.toHaveBeenCalled();
+      });
+
+      it("Enter activates the action exactly when the cooldown elapses", async () => {
+        const { user, onAction } = await setupVariant(variant);
+
+        await advance(SETTINGS_NAV_COOLDOWN_MS);
+
+        const btn = screen.getByRole("button", { name: /^Try again$/ });
+        btn.focus();
+        await user.keyboard("{Enter}");
+
+        expect(onAction).toHaveBeenCalledTimes(1);
+      });
+
+      it("Space activates the action exactly when the cooldown elapses", async () => {
+        const { user, onAction } = await setupVariant(variant);
+
+        await advance(SETTINGS_NAV_COOLDOWN_MS);
+
+        const btn = screen.getByRole("button", { name: /^Try again$/ });
+        btn.focus();
+        await user.keyboard(" ");
+
+        expect(onAction).toHaveBeenCalledTimes(1);
+      });
+    });
+  }
+});
