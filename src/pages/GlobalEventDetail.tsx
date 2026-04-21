@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Ticket, ArrowLeft, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { GlobalEvent } from "@/components/events/GlobalEventCard";
+import { RsvpButton } from "@/components/events/RsvpButton";
+import { EventSeo } from "@/components/events/EventSeo";
 
 interface CreatorTag {
   id: string;
@@ -74,14 +76,18 @@ export default function GlobalEventDetail() {
               <div className="flex items-center gap-2"><MapPin className="w-4 h-4" /> {[event.venue, event.city, event.country].filter(Boolean).join(", ")}</div>
             )}
           </div>
-          {event.ticket_url && (
-            <Button asChild size="lg" className="w-full sm:w-auto">
-              <a href={event.ticket_url} target="_blank" rel="noopener noreferrer">
-                <Ticket className="w-4 h-4 mr-2" /> Get Tickets
-              </a>
-            </Button>
-          )}
+          <div className="flex flex-wrap gap-2">
+            <RsvpButton eventId={event.id} />
+            {((event as any).affiliate_url || event.ticket_url) && (
+              <Button asChild size="lg" variant="outline">
+                <a href={(event as any).affiliate_url || event.ticket_url} target="_blank" rel="noopener noreferrer">
+                  <Ticket className="w-4 h-4 mr-2" /> Get Tickets
+                </a>
+              </Button>
+            )}
+          </div>
         </div>
+        <EventSeo event={event} />
 
         <div className="border-t border-border pt-6 space-y-4">
           <h2 className="text-xl font-semibold flex items-center gap-2">

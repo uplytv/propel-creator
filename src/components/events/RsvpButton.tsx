@@ -19,9 +19,10 @@ export function RsvpButton({ eventId }: Props) {
       const { data: { user } } = await supabase.auth.getUser();
       setUserId(user?.id ?? null);
 
+      const sb = supabase as any;
       const [{ count: c }, mine] = await Promise.all([
-        supabase.from("event_rsvps").select("*", { count: "exact", head: true }).eq("event_id", eventId),
-        user ? supabase.from("event_rsvps").select("id").eq("event_id", eventId).eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),
+        sb.from("event_rsvps").select("*", { count: "exact", head: true }).eq("event_id", eventId),
+        user ? sb.from("event_rsvps").select("id").eq("event_id", eventId).eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),
       ]);
       setCount(c || 0);
       setGoing(!!(mine as any)?.data);
@@ -35,12 +36,13 @@ export function RsvpButton({ eventId }: Props) {
       return;
     }
     setLoading(true);
+    const sb = supabase as any;
     if (going) {
-      await supabase.from("event_rsvps").delete().eq("event_id", eventId).eq("user_id", userId);
+      await sb.from("event_rsvps").delete().eq("event_id", eventId).eq("user_id", userId);
       setGoing(false);
       setCount((c) => Math.max(0, c - 1));
     } else {
-      await supabase.from("event_rsvps").insert({ event_id: eventId, user_id: userId, status: "going" });
+      await sb.from("event_rsvps").insert({ event_id: eventId, user_id: userId, status: "going" });
       setGoing(true);
       setCount((c) => c + 1);
       toast.success("You're going! 🎉");
