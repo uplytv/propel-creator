@@ -246,6 +246,13 @@ export default function VideoPlayer() {
             </div>
           </div>
 
+          {/* Chapters */}
+          <ChapterRail
+            videoId={video.id}
+            currentTime={currentTime}
+            onSeek={(s) => { if (videoElRef.current) { videoElRef.current.currentTime = s; videoElRef.current.play?.(); } }}
+          />
+
           {/* Action Bar */}
           <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
             {/* Like */}
