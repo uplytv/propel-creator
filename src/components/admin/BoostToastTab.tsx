@@ -153,7 +153,8 @@ export default function BoostToastTab() {
     URL.revokeObjectURL(url);
   };
 
-  const buildSampleCsv = () => {
+  const buildSampleCsv = (generatedAt?: string) => {
+    const ts = generatedAt || csvSampleGeneratedAt || new Date().toISOString();
     const escape = (v: string | number) => {
       const s = String(v);
       return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
@@ -161,7 +162,7 @@ export default function BoostToastTab() {
     const lines: string[] = [];
     lines.push("# Boost toast analytics export (sample)");
     lines.push(
-      `# range=${range} state=${state} route=${route} generated_at=${new Date().toISOString()}`,
+      `# range=${range} state=${state} route=${route} generated_at=${ts}`,
     );
     lines.push("");
     lines.push(
