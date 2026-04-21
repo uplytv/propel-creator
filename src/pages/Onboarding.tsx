@@ -11,6 +11,7 @@ import { ArrowRight, ArrowLeft, Camera, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { getAffiliateCookie, clearAffiliateCookie, getReferralData, clearReferralData } from "@/lib/affiliateCookies";
 import logoImg from "@/assets/logo.png";
+import MilestoneProgressPill from "@/components/onboarding/MilestoneProgressPill";
 
 const CREATOR_TYPES = [
   "Fitness", "Finance", "Gaming", "Lifestyle", "Business", "Education",
