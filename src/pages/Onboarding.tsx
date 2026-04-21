@@ -76,6 +76,7 @@ export default function Onboarding() {
   const [monthlyEarnings, setMonthlyEarnings] = useState("");
 
   // Step 3: Qualifying
+  const [creatorStage, setCreatorStage] = useState<string>("");
   const [oneSentence, setOneSentence] = useState("");
   const [challenges, setChallenges] = useState<string[]>([]);
   const [firstUseCase, setFirstUseCase] = useState("");
