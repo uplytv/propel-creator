@@ -3,8 +3,9 @@ import { motion } from "framer-motion";
 import {
   User, Bell, Shield, CreditCard, Palette, Mail,
   Camera, Save, Eye, EyeOff, Trash2, Download, Megaphone, Loader2, Users, Ticket, Bot,
-  Sun, Moon, Monitor, Radio, Cast, Share2, Heart
+  Sun, Moon, Monitor, Radio, Cast, Share2, Heart, Info
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import AppLayout from "@/components/layout/AppLayout";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
@@ -512,7 +513,27 @@ export default function Settings() {
               </div>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground">Auto-retry on submission failure</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-medium text-foreground">Auto-retry on submission failure</p>
+                    <TooltipProvider delayDuration={150}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            aria-label="What does auto-retry do?"
+                            className="text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            <Info className="w-3.5 h-3.5" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs text-xs leading-relaxed">
+                          Automatic retries kick in only when your onboarding application fails to submit
+                          (e.g. network drop or server error). We wait a 5-second countdown — which you can
+                          cancel — then resend automatically. Successful submissions are never retried.
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   <p className="text-xs text-muted-foreground mt-1">
                     If your onboarding application fails to submit, automatically try again after a short countdown.
                     You can always cancel or retry manually.
