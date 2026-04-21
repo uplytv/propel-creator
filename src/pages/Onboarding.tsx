@@ -79,6 +79,19 @@ const CREATOR_STAGES = [
   },
 ];
 
+const CREATOR_GOALS = [
+  { key: "grow_audience", emoji: "📈", label: "Grow my audience" },
+  { key: "monetize", emoji: "💰", label: "Start monetizing" },
+  { key: "launch_product", emoji: "🚀", label: "Launch a product" },
+  { key: "build_community", emoji: "🤝", label: "Build a community" },
+];
+
+const GOAL_TIMELINES = [
+  { key: "30", label: "Next 30 days" },
+  { key: "60", label: "Next 60 days" },
+  { key: "90", label: "Next 90 days" },
+];
+
 const slideVariants = {
   enter: { opacity: 0, x: 40 },
   center: { opacity: 1, x: 0 },
