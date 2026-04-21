@@ -630,8 +630,9 @@ export default function Onboarding() {
               <button
                 type="button"
                 onClick={() => {
-                  const destination = "/settings?tab=account&highlight=auto-retry";
-                  const attemptNavigate = () => {
+                  const baseDestination = "/settings?tab=account&highlight=auto-retry";
+                  const attemptNavigate = (isRetry = false) => {
+                    const destination = isRetry ? `${baseDestination}&from=retry` : baseDestination;
                     try {
                       toast.info("Opening Settings → Account", {
                         description: `Navigating to ${destination}`,
@@ -641,7 +642,7 @@ export default function Onboarding() {
                         if (!window.location.pathname.startsWith("/settings")) {
                           toast.error("Couldn't open Settings", {
                             description: `Navigation to ${destination} didn't complete.`,
-                            action: { label: "Try again", onClick: attemptNavigate },
+                            action: { label: "Try again", onClick: () => attemptNavigate(true) },
                           });
                         }
                       }, 600);
@@ -649,11 +650,11 @@ export default function Onboarding() {
                       console.error("[Onboarding] settings navigation failed", err);
                       toast.error("Couldn't open Settings", {
                         description: `Navigation to ${destination} failed.`,
-                        action: { label: "Try again", onClick: attemptNavigate },
+                        action: { label: "Try again", onClick: () => attemptNavigate(true) },
                       });
                     }
                   };
-                  attemptNavigate();
+                  attemptNavigate(false);
                 }}
                 className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline transition-colors"
               >
