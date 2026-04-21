@@ -8620,6 +8620,7 @@ export type Database = {
         Row: {
           category: string | null
           comments: number
+          completion_rate: number
           content_id: string
           content_type: string
           created_at: string
@@ -8627,18 +8628,28 @@ export type Database = {
           feed_clicks: number
           id: string
           impressions: number
+          is_live: boolean
           is_new_creator_boosted: boolean
+          is_verified_creator: boolean
+          last_burst_at: string | null
           last_calculated_at: string
           likes: number
+          momentum_score: number
+          prev_score_snapshot: number
+          prev_shares_snapshot: number
+          quality_score: number
           saves: number
           score: number
           shares: number
+          thumbnail_url: string | null
+          title: string | null
           views: number
           watch_time_avg_pct: number
         }
         Insert: {
           category?: string | null
           comments?: number
+          completion_rate?: number
           content_id: string
           content_type: string
           created_at?: string
@@ -8646,18 +8657,28 @@ export type Database = {
           feed_clicks?: number
           id?: string
           impressions?: number
+          is_live?: boolean
           is_new_creator_boosted?: boolean
+          is_verified_creator?: boolean
+          last_burst_at?: string | null
           last_calculated_at?: string
           likes?: number
+          momentum_score?: number
+          prev_score_snapshot?: number
+          prev_shares_snapshot?: number
+          quality_score?: number
           saves?: number
           score?: number
           shares?: number
+          thumbnail_url?: string | null
+          title?: string | null
           views?: number
           watch_time_avg_pct?: number
         }
         Update: {
           category?: string | null
           comments?: number
+          completion_rate?: number
           content_id?: string
           content_type?: string
           created_at?: string
@@ -8665,12 +8686,21 @@ export type Database = {
           feed_clicks?: number
           id?: string
           impressions?: number
+          is_live?: boolean
           is_new_creator_boosted?: boolean
+          is_verified_creator?: boolean
+          last_burst_at?: string | null
           last_calculated_at?: string
           likes?: number
+          momentum_score?: number
+          prev_score_snapshot?: number
+          prev_shares_snapshot?: number
+          quality_score?: number
           saves?: number
           score?: number
           shares?: number
+          thumbnail_url?: string | null
+          title?: string | null
           views?: number
           watch_time_avg_pct?: number
         }
@@ -8819,6 +8849,33 @@ export type Database = {
           last_watched_at?: string
           viewer_id?: string
           watch_count?: number
+        }
+        Relationships: []
+      }
+      viewer_session_seen: {
+        Row: {
+          content_id: string
+          content_type: string
+          id: string
+          seen_at: string
+          session_id: string
+          viewer_id: string
+        }
+        Insert: {
+          content_id: string
+          content_type: string
+          id?: string
+          seen_at?: string
+          session_id: string
+          viewer_id: string
+        }
+        Update: {
+          content_id?: string
+          content_type?: string
+          id?: string
+          seen_at?: string
+          session_id?: string
+          viewer_id?: string
         }
         Relationships: []
       }
