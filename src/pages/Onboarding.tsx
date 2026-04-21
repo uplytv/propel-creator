@@ -593,7 +593,7 @@ export default function Onboarding() {
         </motion.div>
       )}
 
-      {step > 0 && <MilestoneProgressPill onboardingStep={step} totalOnboardingSteps={4} />}
+      {step > 0 && step < 5 && <MilestoneProgressPill onboardingStep={step} totalOnboardingSteps={4} />}
 
       {/* Full-screen submission overlay — blocks interaction & shows progress / success / failure */}
       {(saving || submitSucceeded || submitError) && (
