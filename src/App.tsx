@@ -98,6 +98,11 @@ const EmailBroadcast = lazy(() => import("./pages/EmailBroadcast"));
 const EmailAnalytics = lazy(() => import("./pages/EmailAnalytics"));
 const DripSequences = lazy(() => import("./pages/DripSequences"));
 const EventRSVP = lazy(() => import("./pages/EventRSVP"));
+const Camera = lazy(() => import("./pages/Camera"));
+const PostEditor = lazy(() => import("./pages/create/PostEditor"));
+const StoryEditor = lazy(() => import("./pages/create/StoryEditor"));
+const ShortEditor = lazy(() => import("./pages/create/ShortEditor"));
+const VideoEditorPage = lazy(() => import("./pages/create/VideoEditor"));
 
 // Social pages
 const SocialHome = lazy(() => import("./pages/social/SocialHome"));
@@ -307,6 +312,13 @@ const App = () => (
                     <Route path="/admin/features" element={<AdminRoute><AdminFeatureToggles /></AdminRoute>} />
                     <Route path="/admin/affiliates" element={<AdminRoute><AdminAffiliates /></AdminRoute>} />
                     <Route path="/admin/referrals" element={<AdminRoute><AdminReferrals /></AdminRoute>} />
+
+                    {/* In-app camera & post-capture editors */}
+                    <Route path="/camera" element={<ProtectedRoute><Camera /></ProtectedRoute>} />
+                    <Route path="/create/post/editor" element={<ProtectedRoute><PostEditor /></ProtectedRoute>} />
+                    <Route path="/create/story/editor" element={<ProtectedRoute><StoryEditor /></ProtectedRoute>} />
+                    <Route path="/create/short/editor" element={<ProtectedRoute><ShortEditor /></ProtectedRoute>} />
+                    <Route path="/create/video/editor" element={<ProtectedRoute><VideoEditorPage /></ProtectedRoute>} />
 
                     <Route path="*" element={<NotFound />} />
                   </Routes>
