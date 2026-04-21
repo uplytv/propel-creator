@@ -178,11 +178,11 @@ describe("Onboarding Step 3 — creator-stage mouse interaction", () => {
   it("selects a card on click and reflects aria-checked state", async () => {
     await advanceToStep3();
 
+    expect(getStage(/Just exploring/i).getAttribute("aria-checked")).toBe("false");
+
+    fireEvent.click(getStage(/Just exploring/i));
+
     const exploring = getStage(/Just exploring/i);
-    expect(exploring.getAttribute("aria-checked")).toBe("false");
-
-    fireEvent.click(exploring);
-
     expect(exploring.getAttribute("aria-checked")).toBe("true");
     // Other radios remain unchecked.
     for (const r of getStageRadios()) {
