@@ -169,6 +169,45 @@ export default function Onboarding() {
     }
   }, [creatorStage, oneSentence, challenges, firstUseCase, hearAbout]);
 
+  // Step 4: Goals & timeline — same TTL pattern as Step 3
+  const STEP4_STORAGE_KEY = "onboarding:step4";
+  const STEP4_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+  const initialStep4 = (() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const raw = window.localStorage.getItem(STEP4_STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as {
+        savedAt?: number;
+        goals?: string[];
+        goalTimeline?: string;
+      };
+      if (!parsed.savedAt || Date.now() - parsed.savedAt > STEP4_TTL_MS) {
+        window.localStorage.removeItem(STEP4_STORAGE_KEY);
+        return null;
+      }
+      return parsed;
+    } catch {
+      return null;
+    }
+  })();
+
+  const [goals, setGoals] = useState<string[]>(initialStep4?.goals ?? []);
+  const [goalTimeline, setGoalTimeline] = useState<string>(initialStep4?.goalTimeline ?? "");
+  const [step4AttemptedSubmit, setStep4AttemptedSubmit] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(
+        STEP4_STORAGE_KEY,
+        JSON.stringify({ savedAt: Date.now(), goals, goalTimeline })
+      );
+    } catch {
+      // ignore
+    }
+  }, [goals, goalTimeline]);
+
   // Photo & state
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
