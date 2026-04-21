@@ -308,12 +308,21 @@ export default function VideoPlayer() {
               active={false}
               onClick={() => setRemixOpen(true)}
             />
+            {/* Save to Playlist */}
+            {user && (
+              <div className="shrink-0">
+                <AddToPlaylistButton videoId={video.id} />
+              </div>
+            )}
           </div>
 
           {/* Tip Modal */}
           {tipOpen && <TipModal onClose={() => setTipOpen(false)} creatorName={creatorName} />}
           {/* Remix Modal */}
           {remixOpen && <RemixModal onClose={() => setRemixOpen(false)} />}
+
+          {/* Chapter Editor (owner only) */}
+          {isOwner && <ChapterEditor videoId={video.id} />}
 
           {/* Creator */}
           <div className="flex items-center gap-3 py-3 border-y border-border">
