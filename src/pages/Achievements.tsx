@@ -202,10 +202,10 @@ export default function Achievements() {
                     {opt.label}
                   </button>
                 ))}
-                {(query || filter !== "all" || sort !== "newest" || page !== 1 || pageSize !== DEFAULT_PAGE_SIZE) && (
+                {(query || filter !== "all" || sort !== "newest" || cursor || pageSize !== DEFAULT_PAGE_SIZE) && (
                   <button
                     onClick={() => {
-                      updateParams({ q: null, group: null, sort: null, page: null, pageSize: null });
+                      updateParams({ q: null, group: null, sort: null, cursor: null, pageSize: null });
                     }}
                     className="ml-auto inline-flex items-center gap-1 px-2.5 py-1 rounded-md font-medium border border-white/10 bg-white/[0.02] text-muted-foreground hover:text-foreground transition-colors"
                   >
