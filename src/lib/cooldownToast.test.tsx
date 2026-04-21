@@ -424,9 +424,10 @@ describe("showCooldownToast — keyboard accessibility (warning & success)", () 
       it("returns focus to the trigger after the toast auto-dismisses (no action taken)", async () => {
         const { trigger } = await setupVariant(variant);
 
-        // Move focus elsewhere while the toast is up — restore should still
-        // bring us back to the original trigger when the toast auto-closes.
-        document.body.focus();
+        // Move focus off the trigger so we can verify it's actively restored
+        // (not just left untouched). jsdom can't always focus <body>, so blur
+        // explicitly and assert focus moved away.
+        trigger.blur();
         expect(trigger).not.toHaveFocus();
 
         // Cooldown elapses → "ready" tick sets duration to 8000ms; advance
