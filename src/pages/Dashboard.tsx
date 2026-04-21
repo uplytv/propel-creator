@@ -31,6 +31,7 @@ import DiscoveryInsights from "@/components/dashboard/DiscoveryInsights";
 import CreatorTour from "@/components/onboarding/CreatorTour";
 import GrowthPlanCard from "@/components/dashboard/GrowthPlanCard";
 import AICoachWidget from "@/components/dashboard/AICoachWidget";
+import { useMilestoneTracker } from "@/hooks/useMilestoneTracker";
 
 function PlatformUpgradeBanner() {
   const { user } = useAuth();
@@ -83,6 +84,7 @@ export default function Dashboard() {
   const [showWizard, setShowWizard] = useState(false);
   const [wizardDone, setWizardDone] = useState(() => localStorage.getItem("uply_fdw") === "1");
   const [creatorUsername, setCreatorUsername] = useState<string | null>(null);
+  useMilestoneTracker();
 
   useEffect(() => {
     if (!user || wizardDone) return;
