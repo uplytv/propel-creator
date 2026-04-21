@@ -236,6 +236,8 @@ export default function Onboarding() {
   }, [autoRetryCountdown]);
 
   const fileRef = useRef<HTMLInputElement>(null);
+  const settingsNavLastAttemptRef = useRef<number>(0);
+  const SETTINGS_NAV_COOLDOWN_MS = 2000;
 
   // Referrer info from cookies
   const [referrerName, setReferrerName] = useState<string | null>(null);
@@ -632,6 +634,16 @@ export default function Onboarding() {
                 onClick={() => {
                   const baseDestination = "/settings?tab=account&highlight=auto-retry";
                   const attemptNavigate = (isRetry = false) => {
+                    const now = Date.now();
+                    const sinceLast = now - settingsNavLastAttemptRef.current;
+                    if (sinceLast < SETTINGS_NAV_COOLDOWN_MS) {
+                      const wait = Math.ceil((SETTINGS_NAV_COOLDOWN_MS - sinceLast) / 1000);
+                      toast.warning("Slow down", {
+                        description: `Please wait ${wait}s before trying again.`,
+                      });
+                      return;
+                    }
+                    settingsNavLastAttemptRef.current = now;
                     const destination = isRetry ? `${baseDestination}&from=retry` : baseDestination;
                     try {
                       toast.info("Opening Settings → Account", {
