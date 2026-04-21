@@ -504,6 +504,31 @@ export default function Settings() {
         {/* Account tab */}
         {activeTab === "account" && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+            {/* Onboarding auto-retry preference */}
+            <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-4">
+              <div className="flex items-center gap-3">
+                <Loader2 className="w-5 h-5 text-primary" />
+                <h2 className="text-lg font-semibold">Onboarding Submission</h2>
+              </div>
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-foreground">Auto-retry on submission failure</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    If your onboarding application fails to submit, automatically try again after a short countdown.
+                    You can always cancel or retry manually.
+                  </p>
+                </div>
+                <Switch
+                  checked={autoRetryEnabled}
+                  onCheckedChange={(v) => {
+                    setAutoRetryEnabled(v);
+                    toast.success(v ? "Auto-retry enabled" : "Auto-retry disabled");
+                  }}
+                  aria-label="Toggle onboarding auto-retry"
+                />
+              </div>
+            </div>
+
             {/* Password */}
             <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-4">
               <div className="flex items-center gap-3">
