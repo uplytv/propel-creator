@@ -24,6 +24,9 @@ function CooldownToast({
   onActivate?: () => void;
 }) {
   const [, force] = useState(0);
+  // Capture focus once when the toast first mounts; restore on unmount or
+  // when the action is activated. Mirrors Onboarding.tsx behavior.
+  const [restoreFocus] = useState<FocusRestorer>(() => captureFocus());
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | null = null;
@@ -35,8 +38,9 @@ function CooldownToast({
     tick();
     return () => {
       if (timer) clearTimeout(timer);
+      restoreFocus();
     };
-  }, []);
+  }, [restoreFocus]);
 
   const state = computeCooldownState(readSettingsNavLast());
   return (
