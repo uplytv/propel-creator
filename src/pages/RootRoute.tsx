@@ -175,7 +175,9 @@ export default function RootRoute() {
     );
   }
 
-  if (loading) return <Loader />;
+  // Wait fully for auth to resolve. Render nothing for the first ~150ms to
+  // avoid a skeleton flash on cached sessions; then show the skeleton.
+  if (loading) return showSkeleton ? <Loader /> : null;
 
   return (
     <Suspense fallback={<Loader />}>
