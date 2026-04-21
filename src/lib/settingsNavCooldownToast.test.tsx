@@ -378,9 +378,10 @@ describe("Settings navigation toast — cooldown UI", () => {
       await act(async () => {
         await user.keyboard("{Enter}");
       });
-      // Flush React commit + the deferred microtask in restoreFocus.
+      // Flush React commit + the deferred microtask + macrotask in restoreFocus.
       await act(async () => {
         await Promise.resolve();
+        vi.advanceTimersByTime(0);
         await Promise.resolve();
       });
 
