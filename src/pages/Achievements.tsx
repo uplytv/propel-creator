@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 type FilterGroup = "all" | "kpi" | "onboarding";
+type SortKey = "newest" | "oldest" | "label";
 
 interface Milestone {
   id: string;
