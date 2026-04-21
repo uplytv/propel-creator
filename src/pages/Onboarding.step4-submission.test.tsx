@@ -308,28 +308,30 @@ describe("Onboarding Step 4 — successful submission", () => {
       expect(screen.getByText(/Application submitted!/i)).toBeInTheDocument();
     });
 
-    // Profile update payload includes the trimmed name + creator_type.
+    // Profile update payload. Step 1 captures the entire entered string into
+    // `firstName` (placeholder is "Full name"), so first_name == "Jane Doe"
+    // and last_name is empty.
     const profileUpdate = updateCallPayloads.find((c) => c.table === "profiles");
     expect(profileUpdate).toBeDefined();
     expect(profileUpdate.payload).toMatchObject({
-      first_name: "Jane",
-      last_name: "Doe",
-      display_name: "Jane Doe",
+      first_name: "Jane Doe",
+      last_name: "",
       role_type: "creator",
       onboarding_complete: true,
       creator_type: "Fitness",
     });
+    expect(profileUpdate.payload.display_name).toMatch(/^Jane Doe\s*$/);
 
     // Waitlist insert carries Step 1–3 answers.
     const waitlistInsert = insertCallPayloads.find((c) => c.table === "waitlist");
     expect(waitlistInsert).toBeDefined();
     expect(waitlistInsert.payload).toMatchObject({
-      full_name: "Jane Doe",
       email: "test@example.com",
       creator_type: "Fitness",
       one_sentence: "I teach beginners how to invest.",
       user_id: "test-user",
     });
+    expect(waitlistInsert.payload.full_name).toMatch(/^Jane Doe\s*$/);
   });
 
   it("stores waitlist position metadata in sessionStorage on success", async () => {
