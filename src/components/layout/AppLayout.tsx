@@ -196,9 +196,17 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     const isLocked = !!(item.requiresTier && profile.tier < item.requiresTier);
     const badge = getBadge(item);
 
+    const tourKey =
+      resolvedPath === "/products" ? "nav-products"
+      : resolvedPath === "/grow" ? "nav-grow"
+      : resolvedPath === "/discover" ? "nav-discover"
+      : resolvedPath === "/dashboard" ? "nav-dashboard"
+      : undefined;
+
     return (
       <button
         key={item.label}
+        data-tour={tourKey}
         onClick={() => {
           if (!isLocked) {
             navigate(resolvedPath);
