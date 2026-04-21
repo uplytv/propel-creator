@@ -1377,9 +1377,26 @@ export default function Onboarding() {
               </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <Button variant="outline" onClick={() => setStep(3)} className="gap-1">
                 <ArrowLeft className="w-4 h-4" /> Back
+              </Button>
+              <Button
+                variant="ghost"
+                data-testid="save-draft-step4"
+                onClick={() => {
+                  try {
+                    window.localStorage.setItem(
+                      STEP4_STORAGE_KEY,
+                      JSON.stringify({ savedAt: Date.now(), goals, goalTimeline })
+                    );
+                    toast.success("Draft saved", { description: "Your goals are stored on this device for 24 hours." });
+                  } catch {
+                    toast.error("Couldn't save draft");
+                  }
+                }}
+              >
+                Save draft
               </Button>
               <Button
                 variant="hero"
