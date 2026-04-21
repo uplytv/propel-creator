@@ -12,5 +12,11 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /dashboard
+Disallow: /settings
+Disallow: /wallet
+Disallow: /admin
+Disallow: /onboarding
+Disallow: /auth
 
-Sitemap: https://propel-creator.lovable.app/sitemap.xml
+Sitemap: https://uply.tv/sitemap.xml
