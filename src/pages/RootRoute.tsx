@@ -1,8 +1,12 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const Home = lazy(() => import("./Home"));
 const Landing = lazy(() => import("./Landing"));
+
+const AUTH_RESOLVE_TIMEOUT_MS = 8000;
 
 const Loader = () => (
   <div className="min-h-screen bg-[#0A0A0A] text-white animate-pulse">
@@ -58,8 +62,104 @@ const Loader = () => (
   </div>
 );
 
+const ErrorState = ({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry: () => void;
+}) => (
+  <div className="flex min-h-screen flex-col items-center justify-center gap-5 bg-[#0A0A0A] px-6 text-center text-white">
+    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/5 text-2xl">
+      ⚠️
+    </div>
+    <div className="space-y-2 max-w-sm">
+      <h1 className="text-xl font-semibold">We couldn't load your session</h1>
+      <p className="text-sm text-white/60">{message}</p>
+    </div>
+    <div className="flex flex-col sm:flex-row gap-3">
+      <button
+        onClick={onRetry}
+        className="rounded-full bg-[#00FF85] px-6 py-2.5 text-sm font-semibold text-black hover:bg-[#00FF85]/90 transition"
+      >
+        Try again
+      </button>
+      <a
+        href="/welcome"
+        className="rounded-full border border-white/15 px-6 py-2.5 text-sm font-semibold text-white hover:bg-white/5 transition"
+      >
+        Continue as guest
+      </a>
+    </div>
+  </div>
+);
+
 export default function RootRoute() {
   const { user, loading } = useAuth();
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [redirectGuest, setRedirectGuest] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
+
+  // Probe the session ourselves so we can surface real errors and timeouts.
+  useEffect(() => {
+    let cancelled = false;
+    setAuthError(null);
+
+    const timeoutId = window.setTimeout(() => {
+      if (cancelled) return;
+      if (loading) {
+        setAuthError(
+          "Authentication is taking longer than expected. Check your connection and try again."
+        );
+      }
+    }, AUTH_RESOLVE_TIMEOUT_MS);
+
+    supabase.auth
+      .getSession()
+      .then(({ error }) => {
+        if (cancelled) return;
+        if (error) {
+          setAuthError(
+            error.message ||
+              "Something went wrong while loading your session."
+          );
+        }
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        const msg =
+          err instanceof Error
+            ? err.message
+            : "Network error while loading your session.";
+        setAuthError(msg);
+      });
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [loading, retryKey]);
+
+  const handleRetry = useCallback(() => {
+    setAuthError(null);
+    setRetryKey((k) => k + 1);
+  }, []);
+
+  if (redirectGuest) return <Navigate to="/welcome" replace />;
+
+  if (authError) {
+    return (
+      <ErrorState
+        message={authError}
+        onRetry={() => {
+          handleRetry();
+          // If retry doesn't resolve quickly, the timeout will fire again;
+          // meanwhile let users escape to the guest landing.
+          setRedirectGuest(false);
+        }}
+      />
+    );
+  }
 
   if (loading) return <Loader />;
 
