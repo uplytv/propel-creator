@@ -23,7 +23,7 @@ import SocialProfileSection from "@/components/settings/SocialProfileSection";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAutoRetryPreference } from "@/hooks/useAutoRetryPreference";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { format, isBefore } from "date-fns";
 
 type SettingsTab = "profile" | "social" | "notifications" | "subscriptions" | "tickets" | "aria" | "ai-team" | "simulcast" | "distribution" | "account";
@@ -113,9 +113,22 @@ export default function Settings() {
   const uploadAvatar = useUploadAvatar();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
+  const [searchParams] = useSearchParams();
+  const initialTab = (searchParams.get("tab") as SettingsTab) || "profile";
+  const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
   const [soundEnabled, setSoundEnabled] = useState(() => localStorage.getItem("notif_sound_enabled") !== "false");
   const { enabled: autoRetryEnabled, setEnabled: setAutoRetryEnabled } = useAutoRetryPreference();
+  const autoRetryRef = useRef<HTMLDivElement>(null);
+
+  // If linked with ?highlight=auto-retry, scroll the section into view
+  useEffect(() => {
+    if (searchParams.get("highlight") === "auto-retry" && activeTab === "account") {
+      const t = setTimeout(() => {
+        autoRetryRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+      return () => clearTimeout(t);
+    }
+  }, [searchParams, activeTab]);
 
   // Profile state - initialized from DB
   const [name, setName] = useState("");
@@ -506,7 +519,14 @@ export default function Settings() {
         {activeTab === "account" && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             {/* Onboarding auto-retry preference */}
-            <div className="rounded-2xl border border-border bg-card/40 p-6 space-y-4">
+            <div
+              ref={autoRetryRef}
+              className={`rounded-2xl border bg-card/40 p-6 space-y-4 transition-all ${
+                searchParams.get("highlight") === "auto-retry"
+                  ? "border-primary ring-2 ring-primary/40"
+                  : "border-border"
+              }`}
+            >
               <div className="flex items-center gap-3">
                 <Loader2 className="w-5 h-5 text-primary" />
                 <h2 className="text-lg font-semibold">Onboarding Submission</h2>

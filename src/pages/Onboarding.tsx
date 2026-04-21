@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowRight, ArrowLeft, Camera, Check, X, Loader2, AlertTriangle, RotateCcw } from "lucide-react";
+import { ArrowRight, ArrowLeft, Camera, Check, X, Loader2, AlertTriangle, RotateCcw, Settings as SettingsIcon } from "lucide-react";
 import { toast } from "sonner";
 import { getAffiliateCookie, clearAffiliateCookie, getReferralData, clearReferralData } from "@/lib/affiliateCookies";
 import logoImg from "@/assets/logo.png";
@@ -627,6 +627,14 @@ export default function Onboarding() {
                   <RotateCcw className="w-4 h-4" /> Retry now
                 </Button>
               </div>
+              <button
+                type="button"
+                onClick={() => navigate("/settings?tab=account&highlight=auto-retry")}
+                className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline transition-colors"
+              >
+                <SettingsIcon className="w-3.5 h-3.5" />
+                {autoRetryEnabled ? "Manage auto-retry in Settings" : "Enable auto-retry in Settings"}
+              </button>
             </motion.div>
           ) : submitSucceeded ? (
             <motion.div
