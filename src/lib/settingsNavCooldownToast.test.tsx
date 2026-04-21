@@ -375,7 +375,9 @@ describe("Settings navigation toast — cooldown UI", () => {
       await user.tab();
       const action = screen.getByRole("button", { name: "Try again" });
       expect(action).toHaveFocus();
-      await user.keyboard("{Enter}");
+      await act(async () => {
+        await user.keyboard("{Enter}");
+      });
 
       expect(onActivate).toHaveBeenCalledTimes(1);
       // Toast unmounted → cleanup ran restoreFocus → focus is back on trigger.
