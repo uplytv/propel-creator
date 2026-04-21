@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Sparkles, Calendar, Mail, ArrowRight } from "lucide-react";
+import { Sparkles, Calendar, ArrowRight, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ShareGrowthPlanModal from "./ShareGrowthPlanModal";
+import GrowthPlanEditor from "./GrowthPlanEditor";
 import { useApp } from "@/context/AppContext";
 import { buildGrowthPlan } from "@/lib/growthPlan";
 
 export default function GrowthPlanCard() {
   const [open, setOpen] = useState(false);
+  const [editorOpen, setEditorOpen] = useState(false);
   const { profile } = useApp();
   const plan = buildGrowthPlan(profile);
 
@@ -51,17 +53,18 @@ export default function GrowthPlanCard() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button size="sm" onClick={() => setOpen(true)} className="flex-1 gap-1.5">
-            <Calendar className="w-3.5 h-3.5" /> Export & share
+          <Button size="sm" onClick={() => setEditorOpen(true)} className="flex-1 gap-1.5">
+            <Pencil className="w-3.5 h-3.5" /> Edit with AI
             <ArrowRight className="w-3.5 h-3.5" />
           </Button>
-          <Button size="sm" variant="secondary" onClick={() => setOpen(true)} className="gap-1.5" aria-label="Share via email">
-            <Mail className="w-3.5 h-3.5" />
+          <Button size="sm" variant="secondary" onClick={() => setOpen(true)} className="gap-1.5" aria-label="Export & share">
+            <Calendar className="w-3.5 h-3.5" />
           </Button>
         </div>
       </motion.div>
 
       <ShareGrowthPlanModal open={open} onOpenChange={setOpen} />
+      <GrowthPlanEditor open={editorOpen} onOpenChange={setEditorOpen} />
     </>
   );
 }
