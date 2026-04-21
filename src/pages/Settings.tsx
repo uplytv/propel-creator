@@ -114,6 +114,7 @@ export default function Settings() {
 
   const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
   const [soundEnabled, setSoundEnabled] = useState(() => localStorage.getItem("notif_sound_enabled") !== "false");
+  const { enabled: autoRetryEnabled, setEnabled: setAutoRetryEnabled } = useAutoRetryPreference();
 
   // Profile state - initialized from DB
   const [name, setName] = useState("");
