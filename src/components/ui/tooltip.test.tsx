@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { render } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import {
   Tooltip,
   TooltipContent,
@@ -40,5 +41,27 @@ describe("Tooltip", () => {
       </TooltipProvider>
     );
     expect(getAllByText("Tooltip content here").length).toBeGreaterThan(0);
+  });
+
+  it("shows TooltipContent on hover and does not throw", async () => {
+    const user = userEvent.setup();
+    render(
+      <TooltipProvider delayDuration={0}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button>Hover me</button>
+          </TooltipTrigger>
+          <TooltipContent>Hovered tooltip text</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+
+    expect(screen.queryByText("Hovered tooltip text")).not.toBeInTheDocument();
+
+    await user.hover(screen.getByRole("button", { name: "Hover me" }));
+
+    await waitFor(() => {
+      expect(screen.getAllByText("Hovered tooltip text").length).toBeGreaterThan(0);
+    });
   });
 });
