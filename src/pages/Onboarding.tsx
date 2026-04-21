@@ -533,7 +533,7 @@ export default function Onboarding() {
   const progressStep = step > 0 ? step : 0;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 py-8 relative overflow-y-auto overflow-x-hidden">
       {step > 0 && step < 5 && (
         <div className="absolute top-0 left-0 right-0 h-1 bg-secondary">
           <motion.div className="h-full bg-primary" animate={{ width: `${(progressStep / totalSteps) * 100}%` }} transition={{ duration: 0.4 }} />
