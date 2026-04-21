@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Heart, ThumbsDown, UserPlus, Check, Zap, Share2, ShoppingBag, Repeat2, ChevronDown, ChevronUp, MessageCircle, Eye, Clock, Send, BarChart3, TrendingUp } from "lucide-react";
 import { UPLYMuxPlayer } from "@/components/MuxPlayer";
@@ -17,6 +17,11 @@ import { useVideo, useVideoComments, useVideoLike, useAddComment, useVideos, typ
 import { useAuth } from "@/context/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import ChapterRail from "@/components/video/ChapterRail";
+import ChapterEditor from "@/components/video/ChapterEditor";
+import AddToPlaylistButton from "@/components/video/AddToPlaylistButton";
+import NextUpCard from "@/components/video/NextUpCard";
+import { usePlaylistItems } from "@/hooks/usePlaylists";
 
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -42,6 +47,8 @@ export default function VideoPlayer() {
   const resolvedSlug = slug || videoId; // /creator/:username/videos/:id uses 'id' param
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const playlistId = searchParams.get("playlist") || undefined;
   const { data: video, isLoading } = useVideo(resolvedSlug);
   const { data: comments } = useVideoComments(video?.id);
   const { isLiked, toggleLike } = useVideoLike(video?.id);
@@ -53,6 +60,8 @@ export default function VideoPlayer() {
   const [dislikeCount, setDislikeCount] = useState(0);
   const [tipOpen, setTipOpen] = useState(false);
   const [remixOpen, setRemixOpen] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [ended, setEnded] = useState(false);
   const { isFollowing, follow, unfollow } = useFollows();
   const isOwner = user?.id === video?.creator_id;
   const subscribed = video?.creator_id ? isFollowing(video.creator_id) : false;
@@ -67,6 +76,26 @@ export default function VideoPlayer() {
     getCurrentTime: () => videoElRef.current?.currentTime ?? 0,
     enabled: !!video?.id && !!video?.duration_seconds,
   });
+
+  // Attach time/ended listeners for chapter highlight + autoplay
+  useEffect(() => {
+    const el = videoElRef.current;
+    if (!el) return;
+    const onTime = () => setCurrentTime(el.currentTime);
+    const onEnded = () => setEnded(true);
+    const onPlay = () => setEnded(false);
+    el.addEventListener("timeupdate", onTime);
+    el.addEventListener("ended", onEnded);
+    el.addEventListener("play", onPlay);
+    return () => {
+      el.removeEventListener("timeupdate", onTime);
+      el.removeEventListener("ended", onEnded);
+      el.removeEventListener("play", onPlay);
+    };
+  }, [video?.id]);
+
+  // Playlist context for next-up
+  const { data: playlistItems } = usePlaylistItems(playlistId);
 
   // Fetch creator profile
   const { data: creator } = useQuery({
@@ -98,6 +127,25 @@ export default function VideoPlayer() {
     },
     enabled: !!video?.id && !!video?.category,
   });
+
+  // Resolve next-up video (playlist context wins, else first related)
+  const nextUp = useMemo(() => {
+    if (playlistItems && playlistItems.length > 0 && video?.id) {
+      const idx = playlistItems.findIndex((it: any) => it.video_id === video.id);
+      const next: any = idx >= 0 && idx < playlistItems.length - 1 ? playlistItems[idx + 1].videos : null;
+      if (next) {
+        return {
+          id: next.id,
+          title: next.title,
+          thumbnail_url: next.thumbnail_url,
+          slug: next.slug,
+          creator_username: null,
+        };
+      }
+    }
+    const r = related?.[0];
+    return r ? { id: r.id, title: r.title, thumbnail_url: r.thumbnail_url, slug: r.slug, creator_username: null } : null;
+  }, [playlistItems, related, video?.id]);
 
   // Track view after 3s of playback
   useEffect(() => {

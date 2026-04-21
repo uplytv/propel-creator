@@ -55,6 +55,8 @@ const CreatorProfile = lazy(() => import("./pages/CreatorProfile"));
 const Discover = lazy(() => import("./pages/Discover"));
 const Wallet = lazy(() => import("./pages/Wallet"));
 const Achievements = lazy(() => import("./pages/Achievements"));
+const Playlists = lazy(() => import("./pages/Playlists"));
+const PlaylistDetail = lazy(() => import("./pages/PlaylistDetail"));
 const AdminPayouts = lazy(() => import("./pages/AdminPayouts"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminUsers = lazy(() => import("./pages/AdminUsers"));
@@ -284,6 +286,8 @@ const App = () => (
                     <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
                     <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
                     <Route path="/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
+                    <Route path="/playlists" element={<ProtectedRoute><Playlists /></ProtectedRoute>} />
+                    <Route path="/playlist/:id" element={<PlaylistDetail />} />
                     <Route path="/content-library" element={<ProtectedRoute><ContentLibrary /></ProtectedRoute>} />
                     <Route path="/launchpad" element={<ProtectedRoute><Launchpad /></ProtectedRoute>} />
                     <Route path="/growth-reports" element={<ProtectedRoute><GrowthReports /></ProtectedRoute>} />
