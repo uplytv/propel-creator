@@ -15,6 +15,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Rocket, MousePointerClick, Percent, Download, HelpCircle } from "lucide-react";
 import {
   LineChart,
