@@ -756,10 +756,115 @@ export default function Onboarding() {
                 variant="hero"
                 size="xl"
                 className="flex-1"
-                disabled={!oneSentence.trim() || saving}
+                disabled={!oneSentence.trim()}
                 onClick={() => {
                   if (!creatorStage) {
                     setAttemptedSubmit(true);
+                    return;
+                  }
+                  setStep(4);
+                }}
+              >
+                Continue <ArrowRight className="ml-1 w-4 h-4" />
+              </Button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* STEP 4: Goals & Timeline */}
+        {step === 4 && (
+          <motion.div key="goals" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md">
+            <p className="text-xs text-muted-foreground text-center mb-1 uppercase tracking-wider">Step 4 of 4 — Final step 🎯</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">What are you focused on?</h1>
+            <p className="text-muted-foreground text-center text-sm mb-6">Pick up to 3 goals and a target timeline so we can prioritize your tools.</p>
+
+            <div className="space-y-5 mb-6">
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">
+                  Your top goals * <span className="text-xs text-muted-foreground font-normal">(choose 1–3)</span>
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {CREATOR_GOALS.map((g) => {
+                    const selected = goals.includes(g.key);
+                    const atLimit = !selected && goals.length >= 3;
+                    return (
+                      <button
+                        key={g.key}
+                        type="button"
+                        disabled={atLimit}
+                        aria-pressed={selected}
+                        onClick={() => {
+                          setStep4AttemptedSubmit(false);
+                          setGoals((prev) =>
+                            selected ? prev.filter((k) => k !== g.key) : [...prev, g.key]
+                          );
+                        }}
+                        className={`text-left rounded-xl border p-3 transition-all ${
+                          selected
+                            ? "border-primary bg-primary/10 ring-1 ring-primary/40"
+                            : atLimit
+                              ? "border-border bg-card opacity-50 cursor-not-allowed"
+                              : "border-border bg-card hover:border-primary/40"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">{g.emoji}</span>
+                          <span className="text-sm font-medium text-foreground">{g.label}</span>
+                          {selected && <Check className="w-4 h-4 text-primary ml-auto shrink-0" />}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+                {step4AttemptedSubmit && goals.length === 0 && (
+                  <p className="text-xs text-destructive mt-2" role="alert" aria-live="polite">
+                    Please pick at least one goal to continue.
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">Target timeline *</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {GOAL_TIMELINES.map((t) => {
+                    const selected = goalTimeline === t.key;
+                    return (
+                      <button
+                        key={t.key}
+                        type="button"
+                        aria-pressed={selected}
+                        onClick={() => { setGoalTimeline(t.key); setStep4AttemptedSubmit(false); }}
+                        className={`rounded-xl border p-3 text-center transition-all ${
+                          selected
+                            ? "border-primary bg-primary/10 ring-1 ring-primary/40"
+                            : "border-border bg-card hover:border-primary/40"
+                        }`}
+                      >
+                        <span className="text-sm font-medium text-foreground">{t.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {step4AttemptedSubmit && !goalTimeline && (
+                  <p className="text-xs text-destructive mt-2" role="alert" aria-live="polite">
+                    Please choose a timeline to continue.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => setStep(3)} className="gap-1">
+                <ArrowLeft className="w-4 h-4" /> Back
+              </Button>
+              <Button
+                variant="hero"
+                size="xl"
+                className="flex-1"
+                disabled={saving}
+                onClick={() => {
+                  if (goals.length === 0 || !goalTimeline) {
+                    setStep4AttemptedSubmit(true);
                     return;
                   }
                   finishOnboarding();
