@@ -137,6 +137,7 @@ export default function Onboarding() {
   const [creatorType, setCreatorType] = useState("");
   const [creatorTypeError, setCreatorTypeError] = useState(false);
   const creatorTypeErrorRef = useRef<HTMLDivElement | null>(null);
+  const step2BannerRef = useRef<ValidationBannerHandle | null>(null);
   const pendingCreatorTypeFocus = useRef<string | null>(null);
   useEffect(() => {
     const target = pendingCreatorTypeFocus.current;
