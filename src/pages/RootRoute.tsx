@@ -203,10 +203,20 @@ export default function RootRoute() {
   const authStartRef = useRef<number>(performance.now());
   const reportedRef = useRef(false);
 
+  // Adaptive skeleton delay: derived from last-known auth resolve time.
+  // Stored in a ref so it's stable for the duration of this mount but can be
+  // refreshed on retry.
+  const skeletonDelayRef = useRef<number>(
+    computeAdaptiveSkeletonDelay(readLastAuthDurationMs())
+  );
+
   // Reset measurement when the user retries.
   useEffect(() => {
     authStartRef.current = performance.now();
     reportedRef.current = false;
+    skeletonDelayRef.current = computeAdaptiveSkeletonDelay(
+      readLastAuthDurationMs()
+    );
   }, [retryKey]);
 
   // Emit a one-shot timing event when auth flips from loading -> resolved.
