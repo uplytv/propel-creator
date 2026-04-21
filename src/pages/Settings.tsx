@@ -21,6 +21,7 @@ import { useMyTickets } from "@/hooks/useEvents";
 import SocialProfileSection from "@/components/settings/SocialProfileSection";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAutoRetryPreference } from "@/hooks/useAutoRetryPreference";
 import { useNavigate } from "react-router-dom";
 import { format, isBefore } from "date-fns";
 
