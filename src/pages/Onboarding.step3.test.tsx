@@ -207,7 +207,8 @@ describe("Onboarding Step 3 — iPhone layout", () => {
     expect(container.className).toContain("overflow-y-auto");
     expect(container.className).toContain("max-h-[55vh]");
 
-    const buttons = within(container as HTMLElement).getAllByRole("button");
-    expect(buttons.length).toBe(4);
+    // Stage cards are now a radiogroup (role="radio")
+    const radios = within(container as HTMLElement).getAllByRole("radio");
+    expect(radios.length).toBe(4);
   });
 });

@@ -173,6 +173,16 @@ export default function Onboarding() {
   })();
 
   const [creatorStage, setCreatorStage] = useState<string>(initialStep3?.creatorStage ?? "");
+  const pendingCreatorStageFocus = useRef<string | null>(null);
+  useEffect(() => {
+    const target = pendingCreatorStageFocus.current;
+    if (!target) return;
+    pendingCreatorStageFocus.current = null;
+    const el = document.querySelector<HTMLButtonElement>(
+      `[data-creator-stage-card="${target}"]`
+    );
+    el?.focus();
+  }, [creatorStage]);
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const [oneSentence, setOneSentence] = useState<string>(initialStep3?.oneSentence ?? "");
   const [challenges, setChallenges] = useState<string[]>(initialStep3?.challenges ?? []);
@@ -958,17 +968,60 @@ export default function Onboarding() {
                 <label className="text-sm font-medium text-foreground mb-2 block">
                   Where are you right now? *
                 </label>
-                <div className="space-y-2 max-h-[55vh] sm:max-h-none overflow-y-auto pr-1 -mr-1">
-                  {CREATOR_STAGES.map((s) => {
+                <div
+                  role="radiogroup"
+                  aria-label="Creator stage"
+                  aria-required="true"
+                  className="space-y-2 max-h-[55vh] sm:max-h-none overflow-y-auto pr-1 -mr-1"
+                >
+                  {CREATOR_STAGES.map((s, idx) => {
                     const selected = creatorStage === s.key;
                     const showError = attemptedSubmit && !creatorStage;
+                    const isTabStop = creatorStage ? selected : idx === 0;
                     return (
                       <button
                         key={s.key}
                         type="button"
+                        role="radio"
+                        aria-checked={selected}
+                        tabIndex={isTabStop ? 0 : -1}
+                        data-creator-stage-card={s.key}
                         onClick={() => { setCreatorStage(s.key); setAttemptedSubmit(false); }}
-                        aria-pressed={selected}
-                        className={`w-full text-left flex items-start gap-2.5 sm:gap-3 rounded-xl border p-3 sm:p-4 transition-all ${
+                        onKeyDown={(e) => {
+                          const last = CREATOR_STAGES.length - 1;
+                          let nextIdx: number | null = null;
+                          switch (e.key) {
+                            case "ArrowDown":
+                            case "ArrowRight":
+                              nextIdx = idx === last ? 0 : idx + 1;
+                              break;
+                            case "ArrowUp":
+                            case "ArrowLeft":
+                              nextIdx = idx === 0 ? last : idx - 1;
+                              break;
+                            case "Home":
+                              nextIdx = 0;
+                              break;
+                            case "End":
+                              nextIdx = last;
+                              break;
+                            case " ":
+                            case "Enter":
+                              e.preventDefault();
+                              setCreatorStage(s.key);
+                              setAttemptedSubmit(false);
+                              return;
+                            default:
+                              return;
+                          }
+                          if (nextIdx === null) return;
+                          e.preventDefault();
+                          const nextValue = CREATOR_STAGES[nextIdx].key;
+                          pendingCreatorStageFocus.current = nextValue;
+                          setCreatorStage(nextValue);
+                          setAttemptedSubmit(false);
+                        }}
+                        className={`w-full text-left flex items-start gap-2.5 sm:gap-3 rounded-xl border p-3 sm:p-4 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                           selected
                             ? "border-primary bg-primary/10 ring-1 ring-primary/40"
                             : showError
