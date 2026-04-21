@@ -33,6 +33,7 @@ export interface DiscoveryItem {
   is_live?: boolean;
   is_boosted?: boolean;
   boost_tier?: string | null;
+  boost_expires_at?: string | null;
   created_at: string;
   // joined
   title?: string;
@@ -101,18 +102,18 @@ export function useDiscoveryAlgorithmFeed(tab: DiscoveryTab, category?: string) 
           .gt("expires_at", nowIso);
 
         const tierWeight: Record<string, number> = { pro: 3, growth: 2, starter: 1 };
-        const boostMap = new Map<string, { tier: string; weight: number }>();
+        const boostMap = new Map<string, { tier: string; weight: number; expires_at: string }>();
         (boosts ?? []).forEach((b: any) => {
           const key = `${b.content_type}:${b.content_id}`;
           const w = tierWeight[b.tier] ?? 1;
           const existing = boostMap.get(key);
-          if (!existing || w > existing.weight) boostMap.set(key, { tier: b.tier, weight: w });
+          if (!existing || w > existing.weight) boostMap.set(key, { tier: b.tier, weight: w, expires_at: b.expires_at });
         });
 
         if (boostMap.size > 0) {
           ranked = ranked.map((r: any) => {
             const b = boostMap.get(`${r.content_type}:${r.content_id}`);
-            return b ? { ...r, is_boosted: true, boost_tier: b.tier, _boostWeight: b.weight } : r;
+            return b ? { ...r, is_boosted: true, boost_tier: b.tier, boost_expires_at: b.expires_at, _boostWeight: b.weight } : r;
           });
           // Stable sort: boosted first by weight desc, then by score desc
           ranked.sort((a: any, b: any) => {
