@@ -519,15 +519,44 @@ export default function Onboarding() {
 
       {step > 0 && <MilestoneProgressPill onboardingStep={step} totalOnboardingSteps={4} />}
 
-      {/* Full-screen submission overlay — blocks interaction & shows progress / success */}
-      {(saving || submitSucceeded) && (
+      {/* Full-screen submission overlay — blocks interaction & shows progress / success / failure */}
+      {(saving || submitSucceeded || submitError) && (
         <div
           className="fixed inset-0 z-[100] bg-background/90 backdrop-blur-sm flex flex-col items-center justify-center p-6"
-          role="status"
+          role={submitError ? "alertdialog" : "status"}
           aria-live="assertive"
           aria-busy={saving}
         >
-          {submitSucceeded ? (
+          {submitError ? (
+            <motion.div
+              initial={{ scale: 0.6, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 220, damping: 18 }}
+              className="flex flex-col items-center max-w-sm text-center"
+            >
+              <div className="w-16 h-16 rounded-full bg-destructive/15 ring-4 ring-destructive/30 flex items-center justify-center mb-4">
+                <AlertTriangle className="w-9 h-9 text-destructive" aria-hidden="true" />
+              </div>
+              <p className="text-lg font-semibold text-foreground">Submission failed</p>
+              <p className="text-sm text-muted-foreground mt-1">{submitError}</p>
+              <div className="flex gap-2 mt-5 w-full">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setSubmitError(null)}
+                >
+                  Dismiss
+                </Button>
+                <Button
+                  variant="hero"
+                  className="flex-1 gap-1"
+                  onClick={() => { setSubmitError(null); finishOnboarding(); }}
+                >
+                  <RotateCcw className="w-4 h-4" /> Retry
+                </Button>
+              </div>
+            </motion.div>
+          ) : submitSucceeded ? (
             <motion.div
               initial={{ scale: 0.6, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
