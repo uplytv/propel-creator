@@ -482,6 +482,23 @@ function ExportCsvDialog({
                 </Label>
               ))}
             </RadioGroup>
+            <Label
+              htmlFor="quote-all"
+              className="mt-3 flex items-start gap-2 rounded-md border border-border p-2 cursor-pointer hover:bg-muted/40"
+            >
+              <Checkbox
+                id="quote-all"
+                checked={quoteAll}
+                onCheckedChange={(v) => setQuoteAll(!!v)}
+                className="mt-0.5"
+              />
+              <div className="space-y-0.5">
+                <p className="text-sm font-medium">Quote every field</p>
+                <p className="text-[11px] text-muted-foreground">
+                  When off, fields are quoted only when needed (contain {delimiter === "\t" ? "tabs" : "commas"}, quotes, or newlines).
+                </p>
+              </div>
+            </Label>
           </div>
 
           <div className="space-y-3">
