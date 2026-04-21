@@ -85,6 +85,7 @@ export default function BoostToastTab() {
   const [route, setRoute] = useState<string>("all");
   const [sampleOpen, setSampleOpen] = useState(false);
   const [csvSampleOpen, setCsvSampleOpen] = useState(false);
+  const [csvSampleGeneratedAt, setCsvSampleGeneratedAt] = useState<string>("");
 
   const routesQuery = useBoostRoutesList(range);
   const eventsQuery = useBoostToastEvents({ range, state, route });
@@ -152,7 +153,8 @@ export default function BoostToastTab() {
     URL.revokeObjectURL(url);
   };
 
-  const buildSampleCsv = () => {
+  const buildSampleCsv = (generatedAt?: string) => {
+    const ts = generatedAt || csvSampleGeneratedAt || new Date().toISOString();
     const escape = (v: string | number) => {
       const s = String(v);
       return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
@@ -160,7 +162,7 @@ export default function BoostToastTab() {
     const lines: string[] = [];
     lines.push("# Boost toast analytics export (sample)");
     lines.push(
-      `# range=${range} state=${state} route=${route} generated_at=${new Date().toISOString()}`,
+      `# range=${range} state=${state} route=${route} generated_at=${ts}`,
     );
     lines.push("");
     lines.push(
@@ -360,7 +362,10 @@ export default function BoostToastTab() {
               </UITooltip>
               <button
                 type="button"
-                onClick={() => setCsvSampleOpen(true)}
+                onClick={() => {
+                  setCsvSampleGeneratedAt(new Date().toISOString());
+                  setCsvSampleOpen(true);
+                }}
                 className="text-xs text-primary hover:underline self-center"
               >
                 View sample
@@ -551,7 +556,13 @@ export default function BoostToastTab() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={csvSampleOpen} onOpenChange={setCsvSampleOpen}>
+      <Dialog
+        open={csvSampleOpen}
+        onOpenChange={(open) => {
+          if (open) setCsvSampleGeneratedAt(new Date().toISOString());
+          setCsvSampleOpen(open);
+        }}
+      >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Example Export CSV</DialogTitle>
