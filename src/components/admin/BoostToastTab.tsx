@@ -540,30 +540,14 @@ export default function BoostToastTab() {
             </DialogDescription>
           </DialogHeader>
           <pre className="max-h-[60vh] overflow-auto rounded-md border border-border bg-muted/40 p-3 text-xs font-mono leading-relaxed">
-{JSON.stringify(
-  {
-    generated_at: new Date().toISOString(),
-    filters: { range, boost_state: state, route },
-    totals: totals
-      ? { shown: totals.shown, clicked: totals.clicked, ctr: totals.ctr }
-      : { shown: 0, clicked: 0, ctr: 0 },
-    timeseries: ((eventsQuery.data?.series ?? []).slice(0, 3)).map((b) => ({
-      bucket: b.bucket,
-      shown: b.shown,
-      clicked: b.clicked,
-      ctr: b.shown > 0 ? Number((b.clicked / b.shown).toFixed(4)) : 0,
-    })),
-    routes: routes.slice(0, 3).map((r) => ({
-      route: r.route,
-      shown: r.shown,
-      clicked: r.clicked,
-      ctr: Number(r.ctr.toFixed(4)),
-    })),
-  },
-  null,
-  2,
-)}
+{JSON.stringify(buildSampleJson(), null, 2)}
           </pre>
+          <div className="flex justify-end">
+            <Button size="sm" variant="outline" onClick={handleDownloadSampleJson}>
+              <Download className="w-3.5 h-3.5 mr-1.5" />
+              Download sample JSON
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
