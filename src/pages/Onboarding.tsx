@@ -801,6 +801,18 @@ export default function Onboarding() {
             <p className="text-muted-foreground text-center text-sm mb-1">Help us understand your audience.</p>
             <p className="text-xs text-primary text-center mb-6 font-medium">🎯 This helps us prioritize your application</p>
 
+            {creatorTypeError && !creatorType && (
+              <div ref={creatorTypeErrorRef}>
+                <Alert variant="destructive" role="alert" aria-live="assertive" className="mb-4" data-testid="creator-type-error">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Creator type required</AlertTitle>
+                  <AlertDescription>
+                    Please select a creator type below before continuing.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            )}
+
             <div className="space-y-4 mb-6">
               <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">
