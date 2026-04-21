@@ -216,6 +216,7 @@ export default function Onboarding() {
   const [submitSucceeded, setSubmitSucceeded] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [autoRetryCountdown, setAutoRetryCountdown] = useState<number | null>(null);
+  const [retryAt, setRetryAt] = useState<Date | null>(null);
   const AUTO_RETRY_SECONDS = 5;
   const [referralCode, setReferralCode] = useState("");
   const { enabled: autoRetryEnabled } = useAutoRetryPreference();
