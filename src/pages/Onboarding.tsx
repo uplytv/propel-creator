@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowRight, ArrowLeft, Camera, Check, X, Loader2 } from "lucide-react";
+import { ArrowRight, ArrowLeft, Camera, Check, X, Loader2, AlertTriangle, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { getAffiliateCookie, clearAffiliateCookie, getReferralData, clearReferralData } from "@/lib/affiliateCookies";
 import logoImg from "@/assets/logo.png";
@@ -213,6 +213,7 @@ export default function Onboarding() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [submitSucceeded, setSubmitSucceeded] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [referralCode, setReferralCode] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -274,8 +275,10 @@ export default function Onboarding() {
   const finishOnboarding = async () => {
     if (!user) return;
     if (saving || submitSucceeded) return; // Prevent double-submit
+    setSubmitError(null);
     setSaving(true);
 
+    try {
     let uploadedUrl = avatarUrl;
     if (avatarFile) uploadedUrl = await uploadPhoto();
 
@@ -474,6 +477,14 @@ export default function Onboarding() {
         navigate("/waitlist?applied=true", { replace: true });
       }
     }, 1200);
+    } catch (err: any) {
+      console.error("[Onboarding] submission failed", err);
+      setSaving(false);
+      setSubmitError(
+        err?.message?.toString().slice(0, 200) ||
+          "Something went wrong while submitting your application."
+      );
+    }
   };
 
   const totalSteps = 4; // splash, basics, profile, qualifying
@@ -508,15 +519,44 @@ export default function Onboarding() {
 
       {step > 0 && <MilestoneProgressPill onboardingStep={step} totalOnboardingSteps={4} />}
 
-      {/* Full-screen submission overlay — blocks interaction & shows progress / success */}
-      {(saving || submitSucceeded) && (
+      {/* Full-screen submission overlay — blocks interaction & shows progress / success / failure */}
+      {(saving || submitSucceeded || submitError) && (
         <div
           className="fixed inset-0 z-[100] bg-background/90 backdrop-blur-sm flex flex-col items-center justify-center p-6"
-          role="status"
+          role={submitError ? "alertdialog" : "status"}
           aria-live="assertive"
           aria-busy={saving}
         >
-          {submitSucceeded ? (
+          {submitError ? (
+            <motion.div
+              initial={{ scale: 0.6, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 220, damping: 18 }}
+              className="flex flex-col items-center max-w-sm text-center"
+            >
+              <div className="w-16 h-16 rounded-full bg-destructive/15 ring-4 ring-destructive/30 flex items-center justify-center mb-4">
+                <AlertTriangle className="w-9 h-9 text-destructive" aria-hidden="true" />
+              </div>
+              <p className="text-lg font-semibold text-foreground">Submission failed</p>
+              <p className="text-sm text-muted-foreground mt-1">{submitError}</p>
+              <div className="flex gap-2 mt-5 w-full">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setSubmitError(null)}
+                >
+                  Dismiss
+                </Button>
+                <Button
+                  variant="hero"
+                  className="flex-1 gap-1"
+                  onClick={() => { setSubmitError(null); finishOnboarding(); }}
+                >
+                  <RotateCcw className="w-4 h-4" /> Retry
+                </Button>
+              </div>
+            </motion.div>
+          ) : submitSucceeded ? (
             <motion.div
               initial={{ scale: 0.6, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -890,6 +930,15 @@ export default function Onboarding() {
               </div>
             </div>
 
+            {submitError && (
+              <div
+                role="alert"
+                className="mb-3 flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive"
+              >
+                <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
+                <span className="flex-1">{submitError}</span>
+              </div>
+            )}
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => setStep(3)} className="gap-1">
                 <ArrowLeft className="w-4 h-4" /> Back
