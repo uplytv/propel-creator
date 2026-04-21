@@ -12,92 +12,57 @@ const landingImport = () => import("./Landing");
 const Home = lazy(homeImport);
 const Landing = lazy(landingImport);
 
-// Idle/connection-aware prefetch. We only warm the route bundles when:
-//   - the browser is idle (requestIdleCallback), and
-//   - the network isn't save-data, 2g, or slow-2g.
-// This keeps mobile data usage low while still making the post-auth
-// transition feel instant on capable connections.
-if (typeof window !== "undefined") {
-  const isDev = import.meta.env.DEV;
-  const log = (msg: string, data?: unknown) => {
-    if (!isDev) return;
-    // eslint-disable-next-line no-console
-    console.log(`[RootRoute prefetch] ${msg}`, data ?? "");
-  };
+// Track which route bundles have been requested so we never double-prefetch.
+const prefetchedRoutes = {
+  home: false,
+  landing: false,
+};
 
-  const prefetchRoutes = (reason: string) => {
-    const conn = (navigator as Navigator & {
-      connection?: {
-        saveData?: boolean;
-        effectiveType?: string;
-      };
-    }).connection;
+const prefetchLog = (msg: string, data?: unknown) => {
+  if (!import.meta.env.DEV) return;
+  // eslint-disable-next-line no-console
+  console.log(`[RootRoute prefetch] ${msg}`, data ?? "");
+};
 
-    if (conn?.saveData) {
-      log("skipped: saveData enabled", { effectiveType: conn?.effectiveType });
-      return;
-    }
-    if (conn?.effectiveType && /(^|-)2g$/.test(conn.effectiveType)) {
-      log("skipped: slow connection", { effectiveType: conn.effectiveType });
-      return;
-    }
+const isSlowOrSavingData = (): { skip: boolean; reason?: string; effectiveType?: string } => {
+  const conn = (navigator as Navigator & {
+    connection?: { saveData?: boolean; effectiveType?: string };
+  }).connection;
 
-    log(`running (${reason})`, {
-      effectiveType: conn?.effectiveType ?? "unknown",
-      saveData: conn?.saveData ?? false,
-    });
-    homeImport().catch(() => {});
-    landingImport().catch(() => {});
-  };
-
-  const ric =
-    (window as Window & {
-      requestIdleCallback?: (
-        cb: () => void,
-        opts?: { timeout?: number }
-      ) => number;
-    }).requestIdleCallback;
-
-  const ricAvailable = typeof ric === "function";
-  log("scheduling", {
-    requestIdleCallbackScheduled: ricAvailable,
-    strategy: ricAvailable ? "requestIdleCallback" : "setTimeout-fallback",
-    idleTimeoutMs: ricAvailable ? 2500 : null,
-    fallbackDelayMs: ricAvailable ? null : 1500,
-  });
-
-  if (ricAvailable) {
-    let firedByIdle = false;
-    const scheduledAt = performance.now();
-    ric(
-      () => {
-        firedByIdle = true;
-        log("requestIdleCallback fired", {
-          firedBeforeTimeout: true,
-          via: "idle",
-          elapsedMs: Math.round(performance.now() - scheduledAt),
-        });
-        prefetchRoutes("idle");
-      },
-      { timeout: 2500 }
-    );
-    // Detect the case where rIC only fired because of its timeout deadline
-    // (i.e. the main thread never went idle in time).
-    window.setTimeout(() => {
-      if (!firedByIdle) {
-        log("requestIdleCallback did not fire before 2500ms", {
-          firedBeforeTimeout: false,
-          via: "timeout-fallback",
-        });
-      }
-    }, 2600);
-  } else {
-    window.setTimeout(() => {
-      log("setTimeout fallback fired", { via: "timeout-fallback" });
-      prefetchRoutes("timeout-fallback");
-    }, 1500);
+  if (conn?.saveData) {
+    return { skip: true, reason: "saveData", effectiveType: conn.effectiveType };
   }
-}
+  if (conn?.effectiveType && /(^|-)2g$/.test(conn.effectiveType)) {
+    return { skip: true, reason: "slow-connection", effectiveType: conn.effectiveType };
+  }
+  return { skip: false, effectiveType: conn?.effectiveType };
+};
+
+/**
+ * Prefetch a single target route bundle. Skips if already warmed or if the
+ * connection is save-data / 2g.
+ */
+const prefetchTarget = (target: "home" | "landing", reason: string) => {
+  if (typeof window === "undefined") return;
+  if (prefetchedRoutes[target]) {
+    prefetchLog(`skipped: ${target} already prefetched`, { reason });
+    return;
+  }
+
+  const { skip, reason: skipReason, effectiveType } = isSlowOrSavingData();
+  if (skip) {
+    prefetchLog(`skipped: ${skipReason}`, { effectiveType, target, reason });
+    return;
+  }
+
+  prefetchedRoutes[target] = true;
+  prefetchLog(`running ${target} (${reason})`, { effectiveType });
+  const importer = target === "home" ? homeImport : landingImport;
+  importer().catch(() => {
+    // Allow a future retry if the import fails.
+    prefetchedRoutes[target] = false;
+  });
+};
 
 const AUTH_RESOLVE_TIMEOUT_MS = 8000;
 
