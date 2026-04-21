@@ -384,6 +384,8 @@ describe("showCooldownToast — keyboard accessibility (warning & success)", () 
         await user.keyboard(" ");
 
         expect(onAction).toHaveBeenCalledTimes(1);
+      });
+
       it("returns focus to the trigger after Enter activates the action", async () => {
         const { user, trigger, onAction } = await setupVariant(variant);
 
