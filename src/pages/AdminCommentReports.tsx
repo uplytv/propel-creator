@@ -168,7 +168,7 @@ export default function AdminCommentReports() {
 
   const list = useMemo(() => reports, [reports]);
 
-  const handleExportCsv = (selected: string[]) => {
+  const handleExportCsv = (selected: string[], delimiter: "," | "\t" = ",") => {
     if (!list.length) {
       toast.error("Nothing to export");
       return;
@@ -181,31 +181,19 @@ export default function AdminCommentReports() {
       const s = v === null || v === undefined ? "" : String(v);
       return `"${s.replace(/"/g, '""').replace(/\r?\n/g, " ")}"`;
     };
-    const allFields: { key: string; get: (r: ReportRow) => unknown }[] = [
-      { key: "report_id", get: (r) => r.id },
-      { key: "status", get: (r) => r.status },
-      { key: "reason", get: (r) => r.reason },
-      { key: "details", get: (r) => r.details ?? "" },
-      { key: "reported_at", get: (r) => r.created_at },
-      { key: "reporter_id", get: (r) => r.reporter_id },
-      { key: "reporter_name", get: (r) => r.reporter?.display_name ?? "" },
-      { key: "comment_id", get: (r) => r.comment?.id ?? "" },
-      { key: "comment_body", get: (r) => r.comment?.body ?? "" },
-      { key: "comment_source", get: (r) => r.comment?.source ?? "" },
-      { key: "comment_is_hidden", get: (r) => r.comment?.is_hidden ?? "" },
-      { key: "comment_posted_at", get: (r) => r.comment?.created_at ?? "" },
-      { key: "comment_author_id", get: (r) => r.comment?.user_id ?? "" },
-      { key: "comment_author_name", get: (r) => r.target?.display_name ?? "" },
-    ];
-    const fields = allFields.filter((f) => selected.includes(f.key));
+    const fields = ORDERED_KEYS
+      .filter((k) => selected.includes(k))
+      .map((k) => ({ key: k, get: FIELD_GETTERS[k] }));
     const headers = fields.map((f) => f.key);
     const rows = list.map((r) => fields.map((f) => f.get(r)));
-    const csv = [headers, ...rows].map((row) => row.map(escape).join(",")).join("\n");
-    const blob = new Blob([`\ufeff${csv}`], { type: "text/csv;charset=utf-8;" });
+    const csv = [headers, ...rows].map((row) => row.map(escape).join(delimiter)).join("\n");
+    const ext = delimiter === "\t" ? "tsv" : "csv";
+    const mime = delimiter === "\t" ? "text/tab-separated-values" : "text/csv";
+    const blob = new Blob([`\ufeff${csv}`], { type: `${mime};charset=utf-8;` });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `comment-reports-${tab}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `comment-reports-${tab}-${new Date().toISOString().slice(0, 10)}.${ext}`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -360,7 +348,7 @@ function ExportCsvDialog({
   onOpenChange: (o: boolean) => void;
   rows: ReportRow[];
   tab: ReportStatus;
-  onExport: (selected: string[]) => void;
+  onExport: (selected: string[], delimiter: "," | "\t") => void;
 }) {
   const count = rows.length;
   const [preset, setPreset] = useState<"both" | "report" | "comment" | "custom">(() => {
@@ -380,14 +368,22 @@ function ExportCsvDialog({
     } catch { /* ignore */ }
     return new Set([...REPORT_FIELDS, ...COMMENT_FIELDS].map((f) => f.key));
   });
+  const [delimiter, setDelimiter] = useState<"," | "\t">(() => {
+    try {
+      const v = localStorage.getItem("admin-csv-export-delimiter");
+      if (v === "\t") return "\t";
+    } catch { /* ignore */ }
+    return ",";
+  });
 
   // Persist whenever preset or selection changes
   useEffect(() => {
     try {
       localStorage.setItem("admin-csv-export-preset", preset);
       localStorage.setItem("admin-csv-export-columns", JSON.stringify([...selected]));
+      localStorage.setItem("admin-csv-export-delimiter", delimiter);
     } catch { /* ignore */ }
-  }, [preset, selected]);
+  }, [preset, selected, delimiter]);
 
   const applyPreset = (p: "both" | "report" | "comment" | "custom") => {
     setPreset(p);
@@ -445,6 +441,32 @@ function ExportCsvDialog({
             ))}
           </RadioGroup>
 
+          {/* Delimiter */}
+          <div className="rounded-md border border-border p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+              Delimiter
+            </p>
+            <RadioGroup
+              value={delimiter === "\t" ? "tab" : "comma"}
+              onValueChange={(v) => setDelimiter(v === "tab" ? "\t" : ",")}
+              className="grid grid-cols-2 gap-2"
+            >
+              {[
+                { v: "comma", l: "Comma (.csv)" },
+                { v: "tab", l: "Tab (.tsv)" },
+              ].map((opt) => (
+                <Label
+                  key={opt.v}
+                  htmlFor={`delim-${opt.v}`}
+                  className="flex items-center gap-2 rounded-md border border-border p-2 cursor-pointer hover:bg-muted/40 [&:has([data-state=checked])]:border-primary [&:has([data-state=checked])]:bg-primary/5"
+                >
+                  <RadioGroupItem id={`delim-${opt.v}`} value={opt.v} />
+                  <span className="text-sm font-medium">{opt.l}</span>
+                </Label>
+              ))}
+            </RadioGroup>
+          </div>
+
           <div className="space-y-3">
             <FieldGroup title="Report fields" fields={REPORT_FIELDS} selected={selected} onToggle={toggle} />
             <FieldGroup title="Comment fields" fields={COMMENT_FIELDS} selected={selected} onToggle={toggle} />
@@ -454,7 +476,7 @@ function ExportCsvDialog({
           <div className="rounded-md border border-border">
             <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/30 gap-2">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Preview
+                Preview <span className="ml-1 normal-case font-normal text-[10px] text-muted-foreground/70">· {delimiter === "\t" ? "tab" : "comma"}-separated</span>
               </p>
               <div className="flex items-center gap-2">
                 <p className="text-[10px] text-muted-foreground">
@@ -506,9 +528,9 @@ function ExportCsvDialog({
 
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={() => onExport([...selected])} disabled={!selected.size || !count}>
+          <Button onClick={() => onExport([...selected], delimiter)} disabled={!selected.size || !count}>
             <Download className="w-4 h-4 mr-1.5" />
-            Download CSV ({selected.size})
+            Download {delimiter === "\t" ? "TSV" : "CSV"} ({selected.size})
           </Button>
         </DialogFooter>
       </DialogContent>
