@@ -24,13 +24,12 @@ const setViewport = (w: number, h: number) => {
 };
 
 const findTooltipCard = (): HTMLElement => {
-  // The tooltip is rendered into document.body via a portal. It's the only
-  // fixed-position card with explicit width inline style.
-  const candidates = Array.from(
-    document.querySelectorAll<HTMLElement>("div[style*='width']"),
-  );
+  // The tooltip is rendered into document.body via a portal. We identify it
+  // by the inline width + left styles produced by the positioning math (the
+  // overlay wrapper has neither).
+  const candidates = Array.from(document.querySelectorAll<HTMLElement>("div"));
   const card = candidates.find(
-    (el) => el.style.position === "fixed" && el.style.width && el.style.left,
+    (el) => el.style.width !== "" && el.style.left !== "" && el.style.top !== "",
   );
   if (!card) throw new Error("Tour tooltip card not found in DOM");
   return card;
