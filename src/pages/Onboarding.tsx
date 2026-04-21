@@ -812,7 +812,20 @@ export default function Onboarding() {
               )}
             </div>
 
-            <Button variant="hero" size="xl" className="w-full" disabled={!firstName.trim()} onClick={() => setStep(2)}>
+            <Button
+              variant="hero"
+              size="xl"
+              className="w-full"
+              onClick={() => {
+                if (!firstName.trim()) {
+                  setFirstNameError(true);
+                  step1BannerRef.current?.surface(firstNameInputRef.current);
+                  return;
+                }
+                setFirstNameError(false);
+                setStep(2);
+              }}
+            >
               Continue <ArrowRight className="ml-1 w-4 h-4" />
             </Button>
             <p className="text-[10px] text-muted-foreground text-center mt-3">🔒 Your info is private and never shared</p>
