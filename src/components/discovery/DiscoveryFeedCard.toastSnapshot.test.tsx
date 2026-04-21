@@ -81,8 +81,7 @@ describe("DiscoveryFeedCard — boost toast text + action wiring snapshots", () 
     vi.useRealTimers();
   });
 
-  it("ENDING toast: exact title, description, and action wiring snapshot", () => {
-    // Boost expires in 6 minutes → starts ACTIVE, then crosses into ENDING after ~1 min tick.
+  it("ENDING toast: exact title + description + action label snapshot, action.onClick is wired", () => {
     const item = makeBoostedItem(new Date(Date.now() + 6 * 60_000).toISOString());
     renderCard(item);
 
@@ -92,34 +91,20 @@ describe("DiscoveryFeedCard — boost toast text + action wiring snapshots", () 
 
     const call = findCall("Boost ending soon");
     expect(call).toBeDefined();
+    const [title, opts] = call as [
+      string,
+      { description?: string; action?: { label?: string; onClick?: unknown } },
+    ];
 
-    const [title, opts] = call as [string, Record<string, unknown> | undefined];
-
-    // Exact text snapshot.
-    expect(title).toMatchInlineSnapshot(
-      `"Boost ending soon: My Promoted Video"`,
-    );
-    expect((opts as { description?: string } | undefined)?.description).toMatchInlineSnapshot(
+    expect(title).toMatchInlineSnapshot(`"Boost ending soon: My Promoted Video"`);
+    expect(opts.description).toMatchInlineSnapshot(
       `"Less than 5 minutes left in the promoted slot."`,
     );
-
-    // Action wiring snapshot — currently the ending toast has no action button.
-    // If an action is added later, this snapshot will fail and must be updated
-    // along with explicit click-handler tests.
-    expect(
-      (opts as { action?: unknown } | undefined)?.action,
-    ).toMatchInlineSnapshot(`undefined`);
-
-    // Full options shape snapshot for full-coverage drift detection.
-    expect(opts).toMatchInlineSnapshot(`
-      {
-        "description": "Less than 5 minutes left in the promoted slot.",
-      }
-    `);
+    expect(opts.action?.label).toMatchInlineSnapshot(`"View"`);
+    expect(typeof opts.action?.onClick).toBe("function");
   });
 
-  it("ENDED toast: exact title, description, and action wiring snapshot", () => {
-    // Boost expires in 1 minute → after a 2-minute tick we're past expiry → ENDED.
+  it("ENDED toast: exact title + description + action label snapshot, action.onClick is wired", () => {
     const item = makeBoostedItem(new Date(Date.now() + 60_000).toISOString());
     renderCard(item);
 
@@ -129,26 +114,17 @@ describe("DiscoveryFeedCard — boost toast text + action wiring snapshots", () 
 
     const call = findCall("Boost ended");
     expect(call).toBeDefined();
+    const [title, opts] = call as [
+      string,
+      { description?: string; action?: { label?: string; onClick?: unknown } },
+    ];
 
-    const [title, opts] = call as [string, Record<string, unknown> | undefined];
-
-    expect(title).toMatchInlineSnapshot(
-      `"Boost ended: My Promoted Video"`,
-    );
-    expect((opts as { description?: string } | undefined)?.description).toMatchInlineSnapshot(
+    expect(title).toMatchInlineSnapshot(`"Boost ended: My Promoted Video"`);
+    expect(opts.description).toMatchInlineSnapshot(
       `"This promotion is no longer active."`,
     );
-
-    // No action button wired on the ENDED toast either.
-    expect(
-      (opts as { action?: unknown } | undefined)?.action,
-    ).toMatchInlineSnapshot(`undefined`);
-
-    expect(opts).toMatchInlineSnapshot(`
-      {
-        "description": "This promotion is no longer active.",
-      }
-    `);
+    expect(opts.action?.label).toMatchInlineSnapshot(`"View"`);
+    expect(typeof opts.action?.onClick).toBe("function");
   });
 
   it("Falls back to 'Promoted item' in toast title when item.title is missing", () => {
@@ -161,8 +137,6 @@ describe("DiscoveryFeedCard — boost toast text + action wiring snapshots", () 
     });
 
     const [title] = findCall("Boost ending soon") as [string, unknown];
-    expect(title).toMatchInlineSnapshot(
-      `"Boost ending soon: Promoted item"`,
-    );
+    expect(title).toMatchInlineSnapshot(`"Boost ending soon: Promoted item"`);
   });
 });

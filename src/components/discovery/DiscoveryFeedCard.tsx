@@ -74,16 +74,29 @@ export default function DiscoveryFeedCard({ item }: { item: DiscoveryItem }) {
     // Only fire on transition (not on first mount when already past).
     if (prev === null) return;
     const key = boostExpiryKey(item.content_type, item.content_id, item.boost_expires_at);
+    const href = linkFor(item);
     if (state === "ending" && prev === "active") {
       notifyBoostEndingOnce(key, () => {
         toast(`Boost ending soon: ${item.title ?? "Promoted item"}`, {
           description: "Less than 5 minutes left in the promoted slot.",
+          action: {
+            label: "View",
+            onClick: () => {
+              window.location.href = href;
+            },
+          },
         });
       });
     } else if (state === "ended" && prev !== "ended") {
       notifyBoostEndedOnce(key, () => {
         toast(`Boost ended: ${item.title ?? "Promoted item"}`, {
           description: "This promotion is no longer active.",
+          action: {
+            label: "View",
+            onClick: () => {
+              window.location.href = href;
+            },
+          },
         });
       });
       // Re-rank the discovery feed immediately so non-boosted items flow upward.
