@@ -18,14 +18,25 @@ type SuggestField = "task" | "milestone" | "next_action" | "title";
 
 export default function GrowthPlanEditor({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void; }) {
   const { plan, versions, loading, saving, save, restoreVersion, fetchSuggestions } = useGrowthPlan();
+  const { profile } = useApp();
   const [draft, setDraft] = useState<EditablePlan | null>(null);
   const [suggestField, setSuggestField] = useState<SuggestField | null>(null);
   const [suggestTarget, setSuggestTarget] = useState<{ index?: number; current?: string } | null>(null);
   const [suggestions, setSuggestions] = useState<{ text: string; reason: string }[]>([]);
   const [suggestLoading, setSuggestLoading] = useState(false);
   const [versionNameInput, setVersionNameInput] = useState("");
+  const [pendingTemplate, setPendingTemplate] = useState<string | null>(null);
 
   useEffect(() => { if (plan) setDraft(plan); }, [plan]);
+
+  const applyTemplate = (templateId: string) => {
+    const tpl = GROWTH_PLAN_TEMPLATES.find(t => t.id === templateId);
+    if (!tpl || !draft) return;
+    const built = tpl.build(profile.name || "Your");
+    setDraft({ ...built, id: draft.id });
+    setPendingTemplate(null);
+    toast.success(`Applied "${tpl.name}" template — review and save`);
+  };
 
   if (!open) return null;
   if (loading || !draft) {
