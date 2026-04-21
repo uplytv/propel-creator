@@ -138,12 +138,64 @@ const ErrorState = ({
   </div>
 );
 
+// Buckets for slicing slow-session telemetry without leaking exact timings.
+const bucketAuthDuration = (ms: number): string => {
+  if (ms < 100) return "instant";
+  if (ms < 300) return "fast";
+  if (ms < 800) return "normal";
+  if (ms < 2000) return "slow";
+  if (ms < 5000) return "very_slow";
+  return "timeout_risk";
+};
+
 export default function RootRoute() {
   const { user, loading } = useAuth();
   const [authError, setAuthError] = useState<string | null>(null);
   const [redirectGuest, setRedirectGuest] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const [showSkeleton, setShowSkeleton] = useState(false);
+
+  // Capture the moment this RootRoute mount began waiting on auth, so we can
+  // measure how long resolution takes (cached vs network vs slow session).
+  const authStartRef = useRef<number>(performance.now());
+  const reportedRef = useRef(false);
+
+  // Reset measurement when the user retries.
+  useEffect(() => {
+    authStartRef.current = performance.now();
+    reportedRef.current = false;
+  }, [retryKey]);
+
+  // Emit a one-shot timing event when auth flips from loading -> resolved.
+  useEffect(() => {
+    if (loading || reportedRef.current) return;
+    reportedRef.current = true;
+
+    const durationMs = Math.round(performance.now() - authStartRef.current);
+    const bucket = bucketAuthDuration(durationMs);
+    const payload = {
+      duration_ms: durationMs,
+      bucket,
+      authenticated: !!user,
+      had_error: !!authError,
+    };
+
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.log(`[RootRoute auth] resolved in ${durationMs}ms (${bucket})`, payload);
+    }
+
+    // Soft analytics dispatch — works with anything that listens for the
+    // CustomEvent (Segment shim, Plausible custom prop, GA4 listener, etc.)
+    // and falls back gracefully when no listener is attached.
+    try {
+      window.dispatchEvent(
+        new CustomEvent("uply:auth_resolved", { detail: payload })
+      );
+    } catch {
+      // no-op
+    }
+  }, [loading, user, authError]);
 
   // Delay skeleton display so fast auth resolution doesn't cause a flash.
   useEffect(() => {
