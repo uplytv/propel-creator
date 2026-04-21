@@ -136,4 +136,68 @@ describe("Settings navigation toast — cooldown UI", () => {
     expect(btn).toBeEnabled();
     expect(btn).toHaveTextContent("Try again");
   });
+
+  describe("accessibility", () => {
+    it("exposes a labeled progressbar with min/max and a live aria-valuenow", async () => {
+      writeSettingsNavLast(Date.now());
+      render(<CooldownToast description="Navigation didn't complete." />);
+
+      const bar = screen.getByRole("progressbar", { name: /cooldown progress/i });
+      expect(bar).toHaveAttribute("aria-valuemin", "0");
+      expect(bar).toHaveAttribute("aria-valuemax", "100");
+      expect(bar).toHaveAttribute("aria-valuenow", "0");
+
+      await advance(1000);
+      const mid = Number(
+        screen.getByRole("progressbar").getAttribute("aria-valuenow"),
+      );
+      expect(mid).toBeGreaterThan(0);
+      expect(mid).toBeLessThan(100);
+    });
+
+    it("updates the button's accessible name as the countdown ticks", async () => {
+      writeSettingsNavLast(Date.now());
+      render(<CooldownToast description="Navigation didn't complete." />);
+
+      expect(
+        screen.getByRole("button", { name: "Try again (2s)" }),
+      ).toBeInTheDocument();
+
+      await advance(1000);
+      expect(
+        screen.getByRole("button", { name: "Try again (1s)" }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: "Try again (2s)" }),
+      ).not.toBeInTheDocument();
+
+      await advance(1000);
+      const ready = screen.getByRole("button", { name: "Try again" });
+      expect(ready).toBeEnabled();
+      expect(ready).toHaveAccessibleName("Try again");
+    });
+
+    it("removes the progressbar from the a11y tree once ready", async () => {
+      writeSettingsNavLast(Date.now());
+      render(<CooldownToast description="Navigation didn't complete." />);
+
+      expect(screen.getByRole("progressbar")).toBeInTheDocument();
+      await advance(SETTINGS_NAV_COOLDOWN_MS);
+      expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
+      expect(
+        screen.queryByLabelText(/cooldown progress/i),
+      ).not.toBeInTheDocument();
+    });
+
+    it("keeps the action button discoverable via role at every stage", async () => {
+      writeSettingsNavLast(Date.now());
+      render(<CooldownToast description="Navigation didn't complete." />);
+
+      expect(screen.getAllByRole("button")).toHaveLength(1);
+      await advance(500);
+      expect(screen.getAllByRole("button")).toHaveLength(1);
+      await advance(SETTINGS_NAV_COOLDOWN_MS);
+      expect(screen.getAllByRole("button")).toHaveLength(1);
+    });
+  });
 });
