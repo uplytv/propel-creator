@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -86,6 +86,7 @@ export default function BoostToastTab() {
   const [sampleOpen, setSampleOpen] = useState(false);
   const [csvSampleOpen, setCsvSampleOpen] = useState(false);
   const [csvSampleGeneratedAt, setCsvSampleGeneratedAt] = useState<string>("");
+  const csvSampleTriggerRef = useRef<HTMLButtonElement | null>(null);
 
   const routesQuery = useBoostRoutesList(range);
   const eventsQuery = useBoostToastEvents({ range, state, route });
@@ -361,6 +362,7 @@ export default function BoostToastTab() {
                 </TooltipContent>
               </UITooltip>
               <button
+                ref={csvSampleTriggerRef}
                 type="button"
                 onClick={() => {
                   setCsvSampleGeneratedAt(new Date().toISOString());
@@ -563,7 +565,15 @@ export default function BoostToastTab() {
           setCsvSampleOpen(open);
         }}
       >
-        <DialogContent className="max-w-2xl">
+        <DialogContent
+          className="max-w-2xl"
+          onCloseAutoFocus={(e) => {
+            if (csvSampleTriggerRef.current) {
+              e.preventDefault();
+              csvSampleTriggerRef.current.focus();
+            }
+          }}
+        >
           <DialogHeader>
             <DialogTitle>Example Export CSV</DialogTitle>
             <DialogDescription>
