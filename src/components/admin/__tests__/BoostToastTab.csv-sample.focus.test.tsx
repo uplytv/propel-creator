@@ -40,15 +40,15 @@ describe("BoostToastTab — keyboard focus management for CSV sample dialog", ()
     const dialog = await screen.findByRole("dialog");
     expect(dialog).toBeInTheDocument();
 
-    // Radix focuses the dialog's close button ("Close") on open by default.
-    // Assert focus has moved into the dialog and onto the Close button specifically.
+    // Radix moves focus into the dialog on open. In this dialog the first
+    // focusable content element is the "Download sample CSV" button.
     await waitFor(() => {
       expect(document.activeElement).not.toBe(csvViewSample);
       expect(dialog.contains(document.activeElement)).toBe(true);
     });
-    const closeBtn = screen.getByRole("button", { name: /close/i });
+    const downloadBtn = screen.getByRole("button", { name: /download sample csv/i });
     await waitFor(() => {
-      expect(document.activeElement).toBe(closeBtn);
+      expect(document.activeElement).toBe(downloadBtn);
     });
 
     // Close with Escape
