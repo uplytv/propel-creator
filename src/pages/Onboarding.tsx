@@ -558,20 +558,32 @@ export default function Onboarding() {
               </div>
               <p className="text-lg font-semibold text-foreground">Submission failed</p>
               <p className="text-sm text-muted-foreground mt-1">{submitError}</p>
+              {autoRetryCountdown !== null && autoRetryCountdown > 0 && (
+                <p className="text-xs text-muted-foreground mt-3" aria-live="polite">
+                  Auto-retrying in <span className="font-semibold text-foreground">{autoRetryCountdown}s</span>…
+                </p>
+              )}
               <div className="flex gap-2 mt-5 w-full">
                 <Button
                   variant="outline"
                   className="flex-1"
-                  onClick={() => setSubmitError(null)}
+                  onClick={() => {
+                    setAutoRetryCountdown(null);
+                    setSubmitError(null);
+                  }}
                 >
-                  Dismiss
+                  {autoRetryCountdown !== null ? "Cancel" : "Dismiss"}
                 </Button>
                 <Button
                   variant="hero"
                   className="flex-1 gap-1"
-                  onClick={() => { setSubmitError(null); finishOnboarding(); }}
+                  onClick={() => {
+                    setAutoRetryCountdown(null);
+                    setSubmitError(null);
+                    finishOnboarding();
+                  }}
                 >
-                  <RotateCcw className="w-4 h-4" /> Retry
+                  <RotateCcw className="w-4 h-4" /> Retry now
                 </Button>
               </div>
             </motion.div>
