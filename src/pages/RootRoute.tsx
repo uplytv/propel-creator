@@ -200,6 +200,7 @@ export default function RootRoute() {
   useEffect(() => {
     if (loading || reportedRef.current) return;
     reportedRef.current = true;
+    authResolvedAtRef.current = performance.now();
 
     // Targeted prefetch: only warm the bundle we're actually about to render.
     // Saves bandwidth vs. eagerly prefetching both Home and Landing.
