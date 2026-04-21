@@ -545,16 +545,19 @@ export default function Onboarding() {
                 <div className="space-y-2">
                   {CREATOR_STAGES.map((s) => {
                     const selected = creatorStage === s.key;
+                    const showError = attemptedSubmit && !creatorStage;
                     return (
                       <button
                         key={s.key}
                         type="button"
-                        onClick={() => setCreatorStage(s.key)}
+                        onClick={() => { setCreatorStage(s.key); setAttemptedSubmit(false); }}
                         aria-pressed={selected}
                         className={`w-full text-left flex items-start gap-3 rounded-xl border p-4 transition-all ${
                           selected
                             ? "border-primary bg-primary/10 ring-1 ring-primary/40"
-                            : "border-border bg-card hover:border-primary/40 hover:bg-card/80"
+                            : showError
+                              ? "border-destructive/60 bg-card hover:border-destructive"
+                              : "border-border bg-card hover:border-primary/40 hover:bg-card/80"
                         }`}
                       >
                         <div className="text-2xl shrink-0">{s.emoji}</div>
@@ -569,6 +572,11 @@ export default function Onboarding() {
                     );
                   })}
                 </div>
+                {attemptedSubmit && !creatorStage && (
+                  <p className="text-xs text-destructive mt-2" role="alert" aria-live="polite">
+                    Please select where you are right now to continue.
+                  </p>
+                )}
               </div>
 
               <div>
