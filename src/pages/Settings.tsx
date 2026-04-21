@@ -23,7 +23,7 @@ import SocialProfileSection from "@/components/settings/SocialProfileSection";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAutoRetryPreference } from "@/hooks/useAutoRetryPreference";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { format, isBefore } from "date-fns";
 
 type SettingsTab = "profile" | "social" | "notifications" | "subscriptions" | "tickets" | "aria" | "ai-team" | "simulcast" | "distribution" | "account";
