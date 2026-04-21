@@ -45,11 +45,7 @@ function CooldownToast({ description }: { description: string }) {
           <div data-testid="progress-fill" style={{ width: `${state.elapsedPct}%` }} />
         </div>
       )}
-      <button
-        type="button"
-        disabled={!state.ready}
-        aria-label={state.actionLabel}
-      >
+      <button type="button" disabled={!state.ready}>
         {state.actionLabel}
       </button>
     </div>
