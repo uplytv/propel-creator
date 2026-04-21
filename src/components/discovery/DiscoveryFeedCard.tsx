@@ -9,10 +9,7 @@ import LiveBadge from "./LiveBadge";
 import { useLiveViewerCount } from "@/hooks/useLiveViewerCount";
 import type { DiscoveryItem } from "@/hooks/useDiscoveryAlgorithmFeed";
 import { invalidateBoostFeedOnce, boostExpiryKey } from "./boostInvalidation";
-
-// Module-level dedupe so the same boost doesn't toast twice across re-mounts/cards.
-const notifiedEndingBoosts = new Set<string>();
-const notifiedEndedBoosts = new Set<string>();
+import { notifyBoostEndingOnce, notifyBoostEndedOnce } from "./boostToastDedupe";
 
 /** Re-renders the consumer once per minute, aligned to wall-clock minute. */
 function useMinuteTick(enabled: boolean) {
@@ -77,15 +74,17 @@ export default function DiscoveryFeedCard({ item }: { item: DiscoveryItem }) {
     // Only fire on transition (not on first mount when already past).
     if (prev === null) return;
     const key = boostExpiryKey(item.content_type, item.content_id, item.boost_expires_at);
-    if (state === "ending" && prev === "active" && !notifiedEndingBoosts.has(key)) {
-      notifiedEndingBoosts.add(key);
-      toast(`Boost ending soon: ${item.title ?? "Promoted item"}`, {
-        description: "Less than 5 minutes left in the promoted slot.",
+    if (state === "ending" && prev === "active") {
+      notifyBoostEndingOnce(key, () => {
+        toast(`Boost ending soon: ${item.title ?? "Promoted item"}`, {
+          description: "Less than 5 minutes left in the promoted slot.",
+        });
       });
-    } else if (state === "ended" && prev !== "ended" && !notifiedEndedBoosts.has(key)) {
-      notifiedEndedBoosts.add(key);
-      toast(`Boost ended: ${item.title ?? "Promoted item"}`, {
-        description: "This promotion is no longer active.",
+    } else if (state === "ended" && prev !== "ended") {
+      notifyBoostEndedOnce(key, () => {
+        toast(`Boost ended: ${item.title ?? "Promoted item"}`, {
+          description: "This promotion is no longer active.",
+        });
       });
       // Re-rank the discovery feed immediately so non-boosted items flow upward.
       // Guarded so multiple cards sharing this boost only invalidate once.
