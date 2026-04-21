@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { useEffect, useState } from "react";
 import {
   SETTINGS_NAV_COOLDOWN_MS,
@@ -14,7 +15,13 @@ import {
  * portal-rendered and not trivially queryable). The behavior under test —
  * label + progress bar updating on a 200ms tick — is identical.
  */
-function CooldownToast({ description }: { description: string }) {
+function CooldownToast({
+  description,
+  onActivate,
+}: {
+  description: string;
+  onActivate?: () => void;
+}) {
   const [, force] = useState(0);
 
   useEffect(() => {
@@ -45,7 +52,13 @@ function CooldownToast({ description }: { description: string }) {
           <div data-testid="progress-fill" style={{ width: `${state.elapsedPct}%` }} />
         </div>
       )}
-      <button type="button" disabled={!state.ready}>
+      <button
+        type="button"
+        disabled={!state.ready}
+        onClick={() => {
+          if (state.ready) onActivate?.();
+        }}
+      >
         {state.actionLabel}
       </button>
     </div>
