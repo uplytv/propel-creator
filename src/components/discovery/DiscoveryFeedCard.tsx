@@ -10,6 +10,7 @@ import { useLiveViewerCount } from "@/hooks/useLiveViewerCount";
 import type { DiscoveryItem } from "@/hooks/useDiscoveryAlgorithmFeed";
 import { invalidateBoostFeedOnce, boostExpiryKey } from "./boostInvalidation";
 import { notifyBoostEndingOnce, notifyBoostEndedOnce } from "./boostToastDedupe";
+import { trackEvent } from "@/lib/posthog";
 
 /** Re-renders the consumer once per minute, aligned to wall-clock minute. */
 function useMinuteTick(enabled: boolean) {
