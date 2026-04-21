@@ -21,6 +21,7 @@ import ChapterRail from "@/components/video/ChapterRail";
 import ChapterEditor from "@/components/video/ChapterEditor";
 import AddToPlaylistButton from "@/components/video/AddToPlaylistButton";
 import NextUpCard from "@/components/video/NextUpCard";
+import BoostButton from "@/components/video/BoostButton";
 import { usePlaylistItems } from "@/hooks/usePlaylists";
 
 function formatDate(d: string) {
