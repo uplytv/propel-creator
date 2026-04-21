@@ -217,6 +217,20 @@ export default function Onboarding() {
   const [autoRetryCountdown, setAutoRetryCountdown] = useState<number | null>(null);
   const AUTO_RETRY_SECONDS = 5;
   const [referralCode, setReferralCode] = useState("");
+
+  // Auto-retry countdown: tick every second; at 0, fire finishOnboarding once
+  useEffect(() => {
+    if (autoRetryCountdown === null) return;
+    if (autoRetryCountdown <= 0) {
+      setAutoRetryCountdown(null);
+      finishOnboarding();
+      return;
+    }
+    const t = setTimeout(() => setAutoRetryCountdown((n) => (n === null ? null : n - 1)), 1000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoRetryCountdown]);
+
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Referrer info from cookies
