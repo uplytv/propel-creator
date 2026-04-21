@@ -218,6 +218,8 @@ describe("Onboarding Step 2 — creator type validation", () => {
 
     try {
       advanceToStep2();
+      // Re-apply rAF stub in case the fake-timer cycle in advanceToStep2 replaced it.
+      window.requestAnimationFrame = stubRaf;
       fireEvent.click(getContinueButton()!);
 
       const banner = screen.getByTestId("creator-type-error");
