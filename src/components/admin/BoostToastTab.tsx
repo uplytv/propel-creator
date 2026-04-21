@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Rocket, MousePointerClick, Percent } from "lucide-react";
+import { Rocket, MousePointerClick, Percent, Download } from "lucide-react";
 import {
   LineChart,
   Line,
