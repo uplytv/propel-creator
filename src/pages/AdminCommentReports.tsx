@@ -562,7 +562,7 @@ function ExportCsvDialog({
 
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={() => onExport([...selected], delimiter)} disabled={!selected.size || !count}>
+          <Button onClick={() => onExport([...selected], delimiter, quoteAll)} disabled={!selected.size || !count}>
             <Download className="w-4 h-4 mr-1.5" />
             Download {delimiter === "\t" ? "TSV" : "CSV"} ({selected.size})
           </Button>
