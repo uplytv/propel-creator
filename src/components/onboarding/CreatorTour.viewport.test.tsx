@@ -24,12 +24,11 @@ const setViewport = (w: number, h: number) => {
 };
 
 const findTooltipCard = (): HTMLElement => {
-  // The tooltip is rendered into document.body via a portal. We identify it
-  // by the inline width + left styles produced by the positioning math (the
-  // overlay wrapper has neither).
-  const candidates = Array.from(document.querySelectorAll<HTMLElement>("div"));
-  const card = candidates.find(
-    (el) => el.style.width !== "" && el.style.left !== "" && el.style.top !== "",
+  // The popover exposes a stable `data-testid` so this selector is resilient
+  // to className / inline-style refactors. The card is portaled into
+  // document.body, so we query from there rather than a render() container.
+  const card = document.querySelector<HTMLElement>(
+    '[data-testid="creator-tour-popover"]',
   );
   if (!card) throw new Error("Tour tooltip card not found in DOM");
   return card;

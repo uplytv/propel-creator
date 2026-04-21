@@ -320,6 +320,7 @@ export default function CreatorTour({
           transition={{ duration: 0.2 }}
           style={{ ...tooltipStyle, ...tooltipWidthStyle }}
           className="fixed z-[9999] rounded-2xl border border-border bg-card shadow-2xl p-5"
+          data-testid="creator-tour-popover"
         >
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center gap-2.5">
