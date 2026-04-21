@@ -8,6 +8,7 @@ import {
   readSettingsNavLast,
   writeSettingsNavLast,
 } from "./settingsNavCooldown";
+import { captureFocus, type FocusRestorer } from "./restoreFocus";
 
 /**
  * Mirrors the toast body rendered by Onboarding.tsx's `showErrorWithCountdown`.
@@ -56,7 +57,10 @@ function CooldownToast({
         type="button"
         disabled={!state.ready}
         onClick={() => {
-          if (state.ready) onActivate?.();
+          if (state.ready) {
+            restoreFocus();
+            onActivate?.();
+          }
         }}
       >
         {state.actionLabel}
