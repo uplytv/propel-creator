@@ -55,6 +55,8 @@ export default function DiscoveryFeedCard({ item }: { item: DiscoveryItem }) {
   // Subscribe to live viewer count only when the item is a live stream
   const isStream = item.content_type === "stream" && item.is_live;
   const { count: liveCount } = useLiveViewerCount(isStream ? item.content_id : null, item.views);
+  // Tick once per minute while a boost countdown is showing.
+  useMinuteTick(!!item.is_boosted && !!item.boost_expires_at);
 
   return (
     <Link to={linkFor(item)} className="group block space-y-2">
