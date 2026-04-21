@@ -12,6 +12,14 @@ import type { DiscoveryItem } from "@/hooks/useDiscoveryAlgorithmFeed";
 // Module-level dedupe so the same boost doesn't toast twice across re-mounts/cards.
 const notifiedEndingBoosts = new Set<string>();
 const notifiedEndedBoosts = new Set<string>();
+// Module-level dedupe so we only invalidate the discovery feed ONCE per boost expiry,
+// even when multiple cards (same boost surfaced in different feeds) fire simultaneously.
+const invalidatedBoostExpiries = new Set<string>();
+function invalidateBoostFeedOnce(key: string, run: () => void) {
+  if (invalidatedBoostExpiries.has(key)) return;
+  invalidatedBoostExpiries.add(key);
+  run();
+}
 
 /** Re-renders the consumer once per minute, aligned to wall-clock minute. */
 function useMinuteTick(enabled: boolean) {
