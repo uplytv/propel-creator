@@ -9,8 +9,7 @@ import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-type FilterGroup = "all" | "kpi" | "onboarding";
-type SortKey = "newest" | "oldest" | "label";
+import { parseFilter, parseSort, parseQuery, type FilterGroup, type SortKey } from "./achievements/filters";
 
 interface Milestone {
   id: string;
@@ -40,19 +39,9 @@ export default function Achievements() {
   }, [user?.id]);
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const VALID_FILTERS: FilterGroup[] = ["all", "kpi", "onboarding"];
-  const VALID_SORTS: SortKey[] = ["newest", "oldest", "label"];
-
-  const rawQuery = searchParams.get("q") ?? "";
-  const query = rawQuery.slice(0, 100);
-  const rawFilter = searchParams.get("group");
-  const filter: FilterGroup = VALID_FILTERS.includes(rawFilter as FilterGroup)
-    ? (rawFilter as FilterGroup)
-    : "all";
-  const rawSort = searchParams.get("sort");
-  const sort: SortKey = VALID_SORTS.includes(rawSort as SortKey)
-    ? (rawSort as SortKey)
-    : "newest";
+  const query = parseQuery(searchParams.get("q"));
+  const filter = parseFilter(searchParams.get("group"));
+  const sort = parseSort(searchParams.get("sort"));
 
   const updateParams = (patch: Record<string, string | null>) => {
     const next = new URLSearchParams(searchParams);
