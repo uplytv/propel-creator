@@ -275,7 +275,7 @@ function fillStep4Required() {
 // =================== SUCCESS STATE ===================
 
 describe("Onboarding Step 4 — successful submission", () => {
-  it("shows 'Application submitted!' overlay and navigates to /waitlist?applied=true", async () => {
+  it("shows 'Application submitted!' overlay then advances to Step 5 confirmation, which navigates to /waitlist?applied=true on CTA click", async () => {
     await advanceToStep4();
     fillStep4Required();
 
@@ -287,15 +287,24 @@ describe("Onboarding Step 4 — successful submission", () => {
     });
     expect(screen.getByText(/Redirecting…/i)).toBeInTheDocument();
 
-    // Navigation fires after the 1200ms post-success delay.
-    await waitFor(
-      () => {
-        expect(navigateMock).toHaveBeenCalledWith("/waitlist?applied=true", {
-          replace: true,
-        });
-      },
+    // After the 1200ms post-success delay we land on Step 5 (no auto-redirect).
+    const ctaButton = await screen.findByRole(
+      "button",
+      { name: /View My Waitlist Spot/i },
       { timeout: 3000 },
     );
+    expect(navigateMock).not.toHaveBeenCalledWith(
+      "/waitlist?applied=true",
+      expect.anything(),
+    );
+
+    // User explicitly clicks the CTA → navigation fires.
+    fireEvent.click(ctaButton);
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledWith("/waitlist?applied=true", {
+        replace: true,
+      });
+    });
   });
 
   it("calls Supabase profile.update and waitlist.insert with the form values", async () => {
@@ -565,15 +574,18 @@ describe("Onboarding Step 4 — submission error banner & manual retry", () => {
       user_id: "test-user",
     });
 
-    // Eventually navigates after the post-success delay.
-    await waitFor(
-      () => {
-        expect(navigateMock).toHaveBeenCalledWith("/waitlist?applied=true", {
-          replace: true,
-        });
-      },
+    // Eventually advances to Step 5; clicking the CTA navigates.
+    const ctaButton = await screen.findByRole(
+      "button",
+      { name: /View My Waitlist Spot/i },
       { timeout: 3000 },
     );
+    fireEvent.click(ctaButton);
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledWith("/waitlist?applied=true", {
+        replace: true,
+      });
+    });
   });
 
   it("clicking 'Dismiss' clears the error banner without retrying", async () => {
