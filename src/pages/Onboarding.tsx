@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight, ArrowLeft, Camera, Check, X, Loader2, AlertTriangle, RotateCcw, Settings as SettingsIcon, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import ValidationBanner, { type ValidationBannerHandle } from "@/components/onboarding/ValidationBanner";
+import { useFieldValidation, type ValidationRule } from "@/hooks/useFieldValidation";
 import { toast } from "sonner";
 import { getAffiliateCookie, clearAffiliateCookie, getReferralData, clearReferralData } from "@/lib/affiliateCookies";
 import logoImg from "@/assets/logo.png";
@@ -246,6 +247,32 @@ export default function Onboarding() {
   const [goals, setGoals] = useState<string[]>(initialStep4?.goals ?? []);
   const [goalTimeline, setGoalTimeline] = useState<string>(initialStep4?.goalTimeline ?? "");
   const [step4AttemptedSubmit, setStep4AttemptedSubmit] = useState(false);
+  const goalsGroupRef = useRef<HTMLDivElement | null>(null);
+  const timelineGroupRef = useRef<HTMLDivElement | null>(null);
+  const step4Validation = useFieldValidation();
+  const step4TimelineBannerRef = useRef<ValidationBannerHandle | null>(null);
+
+  // Step 4 rule list — single source of truth for both submit-time validation
+  // and the per-field banners. Rules are evaluated in order; the first failing
+  // rule receives the banner-surface focus handoff.
+  const step4Rules: ValidationRule[] = [
+    {
+      isInvalid: () => goals.length === 0,
+      title: "Goals required",
+      description: "Please pick at least one goal to continue.",
+      focusTarget: () =>
+        goalsGroupRef.current?.querySelector<HTMLButtonElement>("button:not([disabled])") ?? null,
+    },
+    {
+      isInvalid: () => !goalTimeline,
+      title: "Timeline required",
+      description: "Please choose a timeline to continue.",
+      focusTarget: () =>
+        timelineGroupRef.current?.querySelector<HTMLButtonElement>("button:not([disabled])") ?? null,
+    },
+  ];
+  const showGoalsError = step4AttemptedSubmit && goals.length === 0;
+  const showTimelineError = step4AttemptedSubmit && !goalTimeline;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -1255,7 +1282,7 @@ export default function Onboarding() {
                 <label className="text-sm font-medium text-foreground mb-2 block">
                   Your top goals * <span className="text-xs text-muted-foreground font-normal">(choose 1–3)</span>
                 </label>
-                <div className="grid grid-cols-2 gap-2">
+                <div ref={goalsGroupRef} className="grid grid-cols-2 gap-2">
                   {CREATOR_GOALS.map((g) => {
                     const selected = goals.includes(g.key);
                     const atLimit = !selected && goals.length >= 3;
@@ -1288,16 +1315,19 @@ export default function Onboarding() {
                     );
                   })}
                 </div>
-                {step4AttemptedSubmit && goals.length === 0 && (
-                  <p className="text-xs text-destructive mt-2" role="alert" aria-live="polite">
-                    Please pick at least one goal to continue.
-                  </p>
-                )}
+                <ValidationBanner
+                  ref={step4Validation.bannerRef}
+                  show={showGoalsError}
+                  title="Goals required"
+                  description="Please pick at least one goal to continue."
+                  testId="step4-goals-error"
+                  className="mt-2"
+                />
               </div>
 
               <div>
                 <label className="text-sm font-medium text-foreground mb-2 block">Target timeline *</label>
-                <div className="grid grid-cols-3 gap-2">
+                <div ref={timelineGroupRef} className="grid grid-cols-3 gap-2">
                   {GOAL_TIMELINES.map((t) => {
                     const selected = goalTimeline === t.key;
                     return (
@@ -1317,23 +1347,17 @@ export default function Onboarding() {
                     );
                   })}
                 </div>
-                {step4AttemptedSubmit && !goalTimeline && (
-                  <p className="text-xs text-destructive mt-2" role="alert" aria-live="polite">
-                    Please choose a timeline to continue.
-                  </p>
-                )}
+                <ValidationBanner
+                  ref={step4TimelineBannerRef}
+                  show={showTimelineError}
+                  title="Timeline required"
+                  description="Please choose a timeline to continue."
+                  testId="step4-timeline-error"
+                  className="mt-2"
+                />
               </div>
             </div>
 
-            {submitError && (
-              <div
-                role="alert"
-                className="mb-3 flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive"
-              >
-                <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
-                <span className="flex-1">{submitError}</span>
-              </div>
-            )}
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => setStep(3)} className="gap-1">
                 <ArrowLeft className="w-4 h-4" /> Back
@@ -1344,10 +1368,8 @@ export default function Onboarding() {
                 className="flex-1"
                 disabled={saving}
                 onClick={() => {
-                  if (goals.length === 0 || !goalTimeline) {
-                    setStep4AttemptedSubmit(true);
-                    return;
-                  }
+                  setStep4AttemptedSubmit(true);
+                  if (!step4Validation.validate(step4Rules)) return;
                   finishOnboarding();
                 }}
               >
