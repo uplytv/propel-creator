@@ -272,7 +272,7 @@ export default function CreatorTour({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96 }}
           transition={{ duration: 0.2 }}
-          style={{ ...tooltipStyle, width: 340, maxWidth: "calc(100vw - 32px)" }}
+          style={{ ...tooltipStyle, ...tooltipWidthStyle }}
           className="fixed z-[9999] rounded-2xl border border-border bg-card shadow-2xl p-5"
         >
           <div className="flex items-start justify-between mb-3">
