@@ -515,9 +515,9 @@ describe("Onboarding Step 4 — submission error banner & manual retry", () => {
     expect(await screen.findByText(/Submission failed/i)).toBeInTheDocument();
 
     // Banner body surfaces the underlying error message from the rejected promise.
-    expect(
-      await screen.findByText(/Simulated DB failure/i),
-    ).toBeInTheDocument();
+    // (Rendered in both the overlay and the inline Step 4 banner — accept any.)
+    const errorMessages = await screen.findAllByText(/Simulated DB failure/i);
+    expect(errorMessages.length).toBeGreaterThan(0);
 
     // The overlay is announced as an alertdialog (role assigned when submitError is set).
     const overlay = screen.getByRole("alertdialog");
