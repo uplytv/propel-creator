@@ -1,10 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Trophy, Sparkles } from "lucide-react";
+import { Trophy, Sparkles, Search, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+
+type FilterGroup = "all" | "kpi" | "onboarding";
 
 interface Milestone {
   id: string;
