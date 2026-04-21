@@ -409,7 +409,8 @@ function ExportCsvDialog({
     () => ORDERED_KEYS.filter((k) => selected.has(k)),
     [selected]
   );
-  const previewRows = useMemo(() => rows.slice(0, 5), [rows]);
+  const [previewNonce, setPreviewNonce] = useState(0);
+  const previewRows = useMemo(() => rows.slice(0, 5), [rows, previewNonce]);
 
   const truncate = (v: unknown, max = 40) => {
     const s = v === null || v === undefined ? "" : String(v);
