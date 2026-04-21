@@ -444,3 +444,188 @@ describe("showCooldownToast — keyboard accessibility (warning & success)", () 
   }
 });
 
+describe("showCooldownToast — accessible name & ARIA live announcements", () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2025-01-01T00:00:00Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    sessionStorage.clear();
+    document.body.innerHTML = "";
+  });
+
+  const flushMount = async () => {
+    await act(async () => {
+      vi.advanceTimersByTime(50);
+    });
+  };
+
+  const advance = async (ms: number) => {
+    await act(async () => {
+      vi.advanceTimersByTime(ms);
+    });
+  };
+
+  const variants: CooldownToastVariant[] = ["error", "warning", "success"];
+
+  it.each(variants)(
+    "[%s] action button exposes a counting-down accessible name while cooling down",
+    async (variant) => {
+      writeSettingsNavLast(Date.now());
+      render(<Toaster />);
+
+      showCooldownToast({
+        title: "T",
+        description: "D",
+        variant,
+        onAction: () => {},
+      });
+      await flushMount();
+
+      // Accessible name follows the "Try again (Ns)" pattern, where N is the
+      // remaining whole-second count. Capture the initial number.
+      const initialBtn = screen.getByRole("button", {
+        name: /^Try again \(\d+s\)$/,
+      });
+      const initialMatch = initialBtn.getAttribute("aria-label") ??
+        initialBtn.textContent ?? "";
+      const initialSec = Number(/\((\d+)s\)/.exec(initialMatch)?.[1] ?? "0");
+      expect(initialSec).toBeGreaterThan(0);
+
+      // Tick forward ~1.2s so the next whole-second value is strictly lower.
+      await advance(1200);
+
+      const updatedBtn = screen.getByRole("button", {
+        name: /^Try again \(\d+s\)$/,
+      });
+      const updatedText = updatedBtn.textContent ?? "";
+      const updatedSec = Number(/\((\d+)s\)/.exec(updatedText)?.[1] ?? "0");
+      expect(updatedSec).toBeLessThan(initialSec);
+    },
+  );
+
+  it.each(variants)(
+    "[%s] action transitions from disabled-style countdown name to ready name",
+    async (variant) => {
+      writeSettingsNavLast(Date.now());
+      render(<Toaster />);
+
+      showCooldownToast({
+        title: "T",
+        description: "D",
+        variant,
+        onAction: () => {},
+      });
+      await flushMount();
+
+      // While cooling down: name includes the "(Ns)" suffix → semantically
+      // communicates the not-yet-ready state to assistive tech.
+      expect(
+        screen.queryByRole("button", { name: /^Try again$/ }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /^Try again \(\d+s\)$/ }),
+      ).toBeInTheDocument();
+
+      await advance(SETTINGS_NAV_COOLDOWN_MS);
+
+      // Once ready: countdown suffix is gone and the name reads cleanly.
+      expect(
+        screen.queryByRole("button", { name: /^Try again \(\d+s\)$/ }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /^Try again$/ }),
+      ).toBeInTheDocument();
+    },
+  );
+
+  it.each(variants)(
+    "[%s] custom actionLabel produces a matching accessible name in both states",
+    async (variant) => {
+      writeSettingsNavLast(Date.now());
+      render(<Toaster />);
+
+      showCooldownToast({
+        title: "T",
+        description: "D",
+        variant,
+        actionLabel: "Resend code",
+        onAction: () => {},
+      });
+      await flushMount();
+
+      expect(
+        screen.getByRole("button", { name: /^Resend code \(\d+s\)$/ }),
+      ).toBeInTheDocument();
+
+      await advance(SETTINGS_NAV_COOLDOWN_MS);
+
+      expect(
+        screen.getByRole("button", { name: /^Resend code$/ }),
+      ).toBeInTheDocument();
+    },
+  );
+
+  it.each(variants)(
+    "[%s] toast renders inside an aria-live region so countdown updates are announced",
+    async (variant) => {
+      writeSettingsNavLast(Date.now());
+      render(<Toaster />);
+
+      showCooldownToast({
+        title: "T",
+        description: "D",
+        variant,
+        onAction: () => {},
+      });
+      await flushMount();
+
+      // Sonner wraps each toast position in an <ol aria-live="polite">.
+      // The action button — whose name carries the countdown — must live
+      // inside that live region for AT to hear the per-second updates.
+      const btn = screen.getByRole("button", { name: /^Try again \(\d+s\)$/ });
+      const live = btn.closest("[aria-live]") as HTMLElement | null;
+      expect(live).not.toBeNull();
+      // Polite (not assertive) — countdown is informational, not interrupting.
+      expect(live!.getAttribute("aria-live")).toBe("polite");
+    },
+  );
+
+  it.each(variants)(
+    "[%s] progressbar aria-valuenow advances monotonically and reaches 100 on ready",
+    async (variant) => {
+      writeSettingsNavLast(Date.now());
+      render(<Toaster />);
+
+      showCooldownToast({
+        title: "T",
+        description: "D",
+        variant,
+        onAction: () => {},
+      });
+      await flushMount();
+
+      const initial = Number(
+        screen.getByRole("progressbar").getAttribute("aria-valuenow"),
+      );
+      expect(initial).toBeGreaterThanOrEqual(0);
+      expect(initial).toBeLessThan(100);
+
+      await advance(Math.floor(SETTINGS_NAV_COOLDOWN_MS / 2));
+
+      const mid = Number(
+        screen.getByRole("progressbar").getAttribute("aria-valuenow"),
+      );
+      expect(mid).toBeGreaterThan(initial);
+
+      await advance(SETTINGS_NAV_COOLDOWN_MS);
+
+      // Progressbar is removed at ready; absence is the "100% / done" signal.
+      expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
+    },
+  );
+});
+
