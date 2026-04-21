@@ -186,6 +186,8 @@ export default function RootRoute() {
   useEffect(() => {
     authStartRef.current = performance.now();
     reportedRef.current = false;
+    authResolvedAtRef.current = null;
+    renderReportedRef.current = false;
     skeletonShownAtRef.current = null;
     skeletonShownDurationRef.current = 0;
     skeletonWasShownRef.current = false;
