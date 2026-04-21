@@ -11,6 +11,7 @@ import { ArrowRight, ArrowLeft, Camera, Check, X, Loader2, AlertTriangle, Rotate
 import { downloadOnboardingPdf } from "@/lib/onboardingPdf";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import ValidationBanner, { type ValidationBannerHandle } from "@/components/onboarding/ValidationBanner";
+import PlanPreview from "@/components/onboarding/PlanPreview";
 import { useFieldValidation, type ValidationRule } from "@/hooks/useFieldValidation";
 import { toast } from "sonner";
 import { getAffiliateCookie, clearAffiliateCookie, getReferralData, clearReferralData } from "@/lib/affiliateCookies";
@@ -607,14 +608,14 @@ export default function Onboarding() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 py-8 relative overflow-y-auto overflow-x-hidden">
-      {step > 0 && step < 5 && (
+      {step > 0 && step < 6 && (
         <div className="absolute top-0 left-0 right-0 h-1 bg-secondary">
           <motion.div className="h-full bg-primary" animate={{ width: `${(progressStep / totalSteps) * 100}%` }} transition={{ duration: 0.4 }} />
         </div>
       )}
 
       {/* Referrer banner */}
-      {step > 0 && step < 5 && referrerName && (
+      {step > 0 && step < 6 && referrerName && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1380,10 +1381,28 @@ export default function Onboarding() {
           </motion.div>
         )}
 
-        {/* STEP 5: Final confirmation — full-screen, only reachable after a
-            successful Step 4 submission. The user explicitly chooses when to
-            leave (no auto-redirect). */}
+        {/* STEP 5: Plan preview — shown after a successful submission, before
+            the final confirmation. Lets the user review their derived tier,
+            community type, and first-30-day actions before finishing. */}
         {step === 5 && (
+          <PlanPreview
+            firstName={firstName}
+            followerCount={followerCount}
+            isMonetizing={isMonetizing}
+            monthlyEarnings={monthlyEarnings}
+            creatorStage={creatorStage}
+            creatorType={creatorType}
+            firstUseCase={firstUseCase}
+            goals={goals}
+            goalTimeline={goalTimeline}
+            onBack={() => setStep(4)}
+            onContinue={() => setStep(6)}
+          />
+        )}
+
+        {/* STEP 6: Final confirmation — full-screen, only reachable after the
+            user reviews & accepts the plan preview on Step 5. */}
+        {step === 6 && (
           <motion.div
             key="confirmation"
             initial={{ opacity: 0, scale: 0.96 }}
