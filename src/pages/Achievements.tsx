@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import AppLayout from "@/components/AppLayout";
+import AppLayout from "@/components/layout/AppLayout";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Trophy, Sparkles } from "lucide-react";
