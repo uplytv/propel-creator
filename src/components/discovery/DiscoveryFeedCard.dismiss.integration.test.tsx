@@ -6,21 +6,19 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // --- Mocks ---------------------------------------------------------------
 
 // `toast` is a function returning an id; `toast.dismiss` cancels it. We mock
-// both so we can simulate the user closing the toast early.
-const dismissed = new Set<number>();
-const toastFn = vi.fn((..._args: unknown[]) => {
-  const id = Math.floor(Math.random() * 1_000_000);
-  return id;
+// both so we can simulate the user closing the toast early. State is kept
+// inside the factory because vi.mock is hoisted above imports.
+vi.mock("sonner", () => {
+  const dismissed = new Set<number>();
+  const fn = vi.fn((..._args: unknown[]) => Math.floor(Math.random() * 1_000_000));
+  (fn as unknown as { dismiss: (id?: number) => void }).dismiss = vi.fn(
+    (id?: number) => {
+      if (typeof id === "number") dismissed.add(id);
+    },
+  );
+  (fn as unknown as { __dismissed: Set<number> }).__dismissed = dismissed;
+  return { toast: fn };
 });
-(toastFn as unknown as { dismiss: (id?: number) => void }).dismiss = vi.fn(
-  (id?: number) => {
-    if (typeof id === "number") dismissed.add(id);
-  },
-);
-
-vi.mock("sonner", () => ({
-  toast: toastFn,
-}));
 
 vi.mock("./LiveBadge", () => ({ default: () => null }));
 vi.mock("@/hooks/useLiveViewerCount", () => ({
@@ -28,6 +26,11 @@ vi.mock("@/hooks/useLiveViewerCount", () => ({
 }));
 
 import { toast } from "sonner";
+const toastFn = toast as unknown as ReturnType<typeof vi.fn> & {
+  dismiss: ReturnType<typeof vi.fn>;
+  __dismissed: Set<number>;
+};
+const dismissed = toastFn.__dismissed;
 import DiscoveryFeedCard from "./DiscoveryFeedCard";
 import { __resetBoostToastDedupeForTests } from "./boostToastDedupe";
 import { __resetInvalidatedBoostExpiriesForTests } from "./boostInvalidation";
