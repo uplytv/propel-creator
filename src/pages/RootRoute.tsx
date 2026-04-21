@@ -100,9 +100,52 @@ if (typeof window !== "undefined") {
 }
 
 const AUTH_RESOLVE_TIMEOUT_MS = 8000;
-// Wait a tick before showing the skeleton — avoids a flash when auth resolves
-// from cached session synchronously or within a frame.
-const SKELETON_DELAY_MS = 150;
+
+// Adaptive skeleton delay configuration.
+// We persist the most recent measured auth resolve duration to localStorage
+// and use it on the next mount to pick a skeleton delay that's:
+//   - near-zero for cached/instant sessions (avoids any flash)
+//   - moderate for typical network sessions
+//   - longer for known-slow sessions (avoids skeleton "blinking on" right
+//     before content arrives)
+const SKELETON_DELAY_DEFAULT_MS = 150;
+const SKELETON_DELAY_MIN_MS = 60;
+const SKELETON_DELAY_MAX_MS = 600;
+const AUTH_DURATION_STORAGE_KEY = "uply:lastAuthResolveMs";
+
+const readLastAuthDurationMs = (): number | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(AUTH_DURATION_STORAGE_KEY);
+    if (!raw) return null;
+    const n = Number(raw);
+    return Number.isFinite(n) && n >= 0 ? n : null;
+  } catch {
+    return null;
+  }
+};
+
+const persistAuthDurationMs = (ms: number) => {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(AUTH_DURATION_STORAGE_KEY, String(ms));
+  } catch {
+    // storage might be disabled (private mode) — fail silently
+  }
+};
+
+/**
+ * Pick a skeleton delay based on last measured auth duration.
+ * Strategy: wait ~80% of the previous resolve time, clamped to a sane range.
+ * This means cached sessions (~20ms) hide the skeleton entirely, while
+ * slow sessions (~3s) wait long enough that the skeleton represents a
+ * meaningful loading state instead of a brief flash.
+ */
+const computeAdaptiveSkeletonDelay = (lastMs: number | null): number => {
+  if (lastMs == null) return SKELETON_DELAY_DEFAULT_MS;
+  const target = Math.round(lastMs * 0.8);
+  return Math.min(SKELETON_DELAY_MAX_MS, Math.max(SKELETON_DELAY_MIN_MS, target));
+};
 
 const Loader = () => <PageSkeleton />;
 
