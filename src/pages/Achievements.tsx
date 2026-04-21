@@ -9,8 +9,7 @@ import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-type FilterGroup = "all" | "kpi" | "onboarding";
-type SortKey = "newest" | "oldest" | "label";
+import { parseFilter, parseSort, parseQuery, type FilterGroup, type SortKey } from "./achievements/filters";
 
 interface Milestone {
   id: string;
