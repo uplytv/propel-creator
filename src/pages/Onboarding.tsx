@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowRight, ArrowLeft, Camera, Check, X, Loader2, AlertTriangle, RotateCcw, Settings as SettingsIcon, AlertCircle } from "lucide-react";
+import { ArrowRight, ArrowLeft, Camera, Check, X, Loader2, AlertTriangle, RotateCcw, Settings as SettingsIcon, AlertCircle, Download } from "lucide-react";
+import { downloadOnboardingPdf } from "@/lib/onboardingPdf";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import ValidationBanner, { type ValidationBannerHandle } from "@/components/onboarding/ValidationBanner";
 import { useFieldValidation, type ValidationRule } from "@/hooks/useFieldValidation";
@@ -1455,6 +1456,39 @@ export default function Onboarding() {
             >
               {submittedApproved ? "Go to Dashboard" : "View My Waitlist Spot"}
               <ArrowRight className="ml-1 w-4 h-4" />
+            </Button>
+
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full mt-3"
+              onClick={() => {
+                try {
+                  downloadOnboardingPdf({
+                    firstName,
+                    lastName,
+                    socialHandle,
+                    creatorType,
+                    followerCount,
+                    primaryPlatform,
+                    isMonetizing,
+                    monthlyEarnings,
+                    creatorStage,
+                    oneSentence,
+                    challenges,
+                    firstUseCase,
+                    hearAbout,
+                    goals,
+                    goalTimeline,
+                  });
+                  toast.success("Your growth plan PDF is downloading");
+                } catch (e) {
+                  toast.error("Couldn't generate your PDF. Please try again.");
+                }
+              }}
+            >
+              <Download className="mr-1 w-4 h-4" />
+              Download my answers & growth plan (PDF)
             </Button>
 
             <p className="text-[11px] text-muted-foreground mt-4">
