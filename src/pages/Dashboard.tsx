@@ -32,6 +32,7 @@ import CreatorTour from "@/components/onboarding/CreatorTour";
 import GrowthPlanCard from "@/components/dashboard/GrowthPlanCard";
 import AICoachWidget from "@/components/dashboard/AICoachWidget";
 import { useMilestoneTracker } from "@/hooks/useMilestoneTracker";
+import MilestoneProgressPill from "@/components/onboarding/MilestoneProgressPill";
 
 function PlatformUpgradeBanner() {
   const { user } = useAuth();
@@ -122,6 +123,7 @@ export default function Dashboard() {
       <div className="max-w-5xl mx-auto pb-20 md:pb-8">
         {/* Interactive onboarding tour (auto-launches once for new creators) */}
         <CreatorTour />
+        <MilestoneProgressPill />
 
         {/* First Dollar Wizard */}
         {showWizard && !wizardDone && (
