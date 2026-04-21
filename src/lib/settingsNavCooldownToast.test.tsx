@@ -61,10 +61,7 @@ function CooldownToast({
         type="button"
         disabled={!state.ready}
         onClick={() => {
-          if (state.ready) {
-            restoreFocus();
-            onActivate?.();
-          }
+          if (state.ready) onActivate?.();
         }}
       >
         {state.actionLabel}
