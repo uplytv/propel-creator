@@ -9,10 +9,7 @@ import LiveBadge from "./LiveBadge";
 import { useLiveViewerCount } from "@/hooks/useLiveViewerCount";
 import type { DiscoveryItem } from "@/hooks/useDiscoveryAlgorithmFeed";
 import { invalidateBoostFeedOnce, boostExpiryKey } from "./boostInvalidation";
-
-// Module-level dedupe so the same boost doesn't toast twice across re-mounts/cards.
-const notifiedEndingBoosts = new Set<string>();
-const notifiedEndedBoosts = new Set<string>();
+import { notifyBoostEndingOnce, notifyBoostEndedOnce } from "./boostToastDedupe";
 
 /** Re-renders the consumer once per minute, aligned to wall-clock minute. */
 function useMinuteTick(enabled: boolean) {
