@@ -104,17 +104,26 @@ export default function Onboarding() {
 
   // Step 3: Qualifying — hydrate from localStorage so refresh mid-step keeps inputs
   const STEP3_STORAGE_KEY = "onboarding:step3";
+  const STEP3_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
   const initialStep3 = (() => {
     if (typeof window === "undefined") return null;
     try {
       const raw = window.localStorage.getItem(STEP3_STORAGE_KEY);
-      return raw ? (JSON.parse(raw) as {
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as {
+        savedAt?: number;
         creatorStage?: string;
         oneSentence?: string;
         challenges?: string[];
         firstUseCase?: string;
         hearAbout?: string;
-      }) : null;
+      };
+      // Expire drafts older than 24h
+      if (!parsed.savedAt || Date.now() - parsed.savedAt > STEP3_TTL_MS) {
+        window.localStorage.removeItem(STEP3_STORAGE_KEY);
+        return null;
+      }
+      return parsed;
     } catch {
       return null;
     }
@@ -127,13 +136,20 @@ export default function Onboarding() {
   const [firstUseCase, setFirstUseCase] = useState<string>(initialStep3?.firstUseCase ?? "");
   const [hearAbout, setHearAbout] = useState<string>(initialStep3?.hearAbout ?? "");
 
-  // Persist Step 3 inputs to survive refreshes
+  // Persist Step 3 inputs to survive refreshes (with timestamp for TTL)
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
       window.localStorage.setItem(
         STEP3_STORAGE_KEY,
-        JSON.stringify({ creatorStage, oneSentence, challenges, firstUseCase, hearAbout })
+        JSON.stringify({
+          savedAt: Date.now(),
+          creatorStage,
+          oneSentence,
+          challenges,
+          firstUseCase,
+          hearAbout,
+        })
       );
     } catch {
       // ignore quota / serialization errors
