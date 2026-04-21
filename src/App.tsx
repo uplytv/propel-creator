@@ -24,6 +24,7 @@ import { AnimatePresence } from "framer-motion";
 // Lazy-loaded pages
 const Landing = lazy(() => import("./pages/Landing"));
 const Home = lazy(() => import("./pages/Home"));
+const RootRoute = lazy(() => import("./pages/RootRoute"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
@@ -220,7 +221,8 @@ const App = () => (
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
                     {/* Public routes */}
-                    <Route path="/" element={<Landing />} />
+                    <Route path="/" element={<RootRoute />} />
+                    <Route path="/welcome" element={<Landing />} />
                     <Route path="/index" element={<Landing />} />
                     <Route path="/home" element={<Home />} />
                     <Route path="/auth" element={<Auth />} />
