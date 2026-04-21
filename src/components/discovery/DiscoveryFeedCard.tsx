@@ -87,6 +87,17 @@ export default function DiscoveryFeedCard({ item }: { item: DiscoveryItem }) {
           boost_key: key,
         });
         let toastId: string | number | undefined;
+        let dismissTracked = false;
+        const trackDismiss = (via: "action" | "user" | "auto") => {
+          if (dismissTracked) return;
+          dismissTracked = true;
+          trackEvent("boost_toast_dismissed", {
+            boost_state: "ending",
+            boost_key: key,
+            route: href,
+            via,
+          });
+        };
         const handleAction = () => {
           trackEvent("boost_toast_action_clicked", {
             boost_state: "ending",
@@ -100,19 +111,17 @@ export default function DiscoveryFeedCard({ item }: { item: DiscoveryItem }) {
           if (toastId !== undefined) {
             try {
               (toast as unknown as { dismiss?: (id: string | number) => void }).dismiss?.(toastId);
-              trackEvent("boost_toast_dismissed", {
-                boost_state: "ending",
-                boost_key: key,
-                via: "action",
-              });
             } catch {
               // dismiss is best-effort
             }
           }
+          trackDismiss("action");
         };
         toastId = toast(`Boost ending soon: ${item.title ?? "Promoted item"}`, {
           description: "Less than 5 minutes left in the promoted slot.",
           action: { label: "View", onClick: handleAction },
+          onDismiss: () => trackDismiss("user"),
+          onAutoClose: () => trackDismiss("auto"),
         }) as string | number | undefined;
       });
     } else if (state === "ended" && prev !== "ended") {
@@ -126,6 +135,17 @@ export default function DiscoveryFeedCard({ item }: { item: DiscoveryItem }) {
           boost_key: key,
         });
         let toastId: string | number | undefined;
+        let dismissTracked = false;
+        const trackDismiss = (via: "action" | "user" | "auto") => {
+          if (dismissTracked) return;
+          dismissTracked = true;
+          trackEvent("boost_toast_dismissed", {
+            boost_state: "ended",
+            boost_key: key,
+            route: href,
+            via,
+          });
+        };
         const handleAction = () => {
           trackEvent("boost_toast_action_clicked", {
             boost_state: "ended",
@@ -139,19 +159,17 @@ export default function DiscoveryFeedCard({ item }: { item: DiscoveryItem }) {
           if (toastId !== undefined) {
             try {
               (toast as unknown as { dismiss?: (id: string | number) => void }).dismiss?.(toastId);
-              trackEvent("boost_toast_dismissed", {
-                boost_state: "ended",
-                boost_key: key,
-                via: "action",
-              });
             } catch {
               // dismiss is best-effort
             }
           }
+          trackDismiss("action");
         };
         toastId = toast(`Boost ended: ${item.title ?? "Promoted item"}`, {
           description: "This promotion is no longer active.",
           action: { label: "View", onClick: handleAction },
+          onDismiss: () => trackDismiss("user"),
+          onAutoClose: () => trackDismiss("auto"),
         }) as string | number | undefined;
       });
       // Re-rank the discovery feed immediately so non-boosted items flow upward.
