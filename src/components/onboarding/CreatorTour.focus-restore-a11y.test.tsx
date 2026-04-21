@@ -1,23 +1,21 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { render, act, cleanup, fireEvent } from "@testing-library/react";
+import { render, act, cleanup } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import CreatorTour, { CREATOR_TOUR_STEPS } from "./CreatorTour";
+import {
+  getAdvanceButton,
+  expectAdvanceForStep,
+  keyboardActivate,
+  TOUR_TESTID,
+} from "./__tests__/creatorTourTestUtils";
 
 /**
- * Focus-restoration accessibility test for CreatorTour.
- *
- * Companion to the live-region announcement tests: verifies that after the
- * user's focus is disrupted (tab switch, external modal focus steal), the
- * tour's advance control (the primary "Next/CTA" button for the current
- * step) can be programmatically re-focused and is keyboard-actionable.
- *
- * Rationale: a screen-reader user who Alt-Tabs away or dismisses a system
- * dialog needs the focus ring to land on a meaningful control inside the
- * tour — otherwise they're stranded on <body> and have to Tab from the top
- * of the document to resume.
+ * Focus-restoration accessibility test. Verifies that after disruption (tab
+ * switch / external modal focus steal), the tour's advance control for the
+ * CURRENT step remains focusable and keyboard-actionable.
  */
 
-const ANNOUNCE_DELAY_MS = 100; // > 80ms internal debounce
+const ANNOUNCE_DELAY_MS = 100;
 
 const renderTour = () =>
   render(
@@ -25,28 +23,6 @@ const renderTour = () =>
       <CreatorTour forceOpen />
     </MemoryRouter>,
   );
-
-const findAdvanceButton = (ctaHint?: string): HTMLButtonElement => {
-  const buttons = Array.from(document.querySelectorAll("button")).filter(
-    (b) => !(b.getAttribute("aria-label") || "").toLowerCase().includes("skip"),
-  );
-  const wanted = (ctaHint || "next").toLowerCase();
-  const match =
-    buttons.find((b) => (b.textContent || "").toLowerCase().includes(wanted)) ||
-    buttons.find((b) => (b.textContent || "").toLowerCase().includes("next")) ||
-    buttons.find((b) => (b.textContent || "").toLowerCase().includes("got it")) ||
-    buttons.find((b) => (b.textContent || "").toLowerCase().includes("start"));
-  if (!match) throw new Error("Advance button not found");
-  return match as HTMLButtonElement;
-};
-
-const keyboardActivate = (btn: HTMLButtonElement) => {
-  btn.focus();
-  expect(document.activeElement).toBe(btn);
-  fireEvent.keyDown(btn, { key: "Enter", code: "Enter" });
-  fireEvent.keyUp(btn, { key: "Enter", code: "Enter" });
-  fireEvent.click(btn);
-};
 
 const simulateTabAway = () => {
   if (document.activeElement instanceof HTMLElement) {
@@ -80,18 +56,10 @@ const simulateModalFocusSteal = () => {
   if (document.body) document.body.focus();
 };
 
-/**
- * The accessibility contract under test: regardless of how focus was lost,
- * a keyboard user must be able to land back on the tour's advance control.
- * We assert that the button still exists, is enabled, is focusable, and
- * actually receives focus when requested — i.e. nothing in the tour has
- * trapped focus elsewhere or aria-hidden the control.
- */
-const expectAdvanceFocusRestored = (ctaHint?: string) => {
-  const btn = findAdvanceButton(ctaHint);
+const expectAdvanceFocusRestored = (stepId: string) => {
+  const btn = expectAdvanceForStep(stepId);
   expect(btn.disabled).toBe(false);
   expect(btn.getAttribute("aria-hidden")).not.toBe("true");
-  // tabIndex of -1 would make it unreachable for sequential keyboard nav.
   expect(btn.tabIndex).toBeGreaterThanOrEqual(0);
   btn.focus();
   expect(document.activeElement).toBe(btn);
@@ -113,60 +81,45 @@ describe("CreatorTour — focus restoration after re-focus scenarios", () => {
     renderTour();
     act(() => { vi.advanceTimersByTime(ANNOUNCE_DELAY_MS); });
 
-    // User starts on the advance button via keyboard.
-    const initialBtn = findAdvanceButton(CREATOR_TOUR_STEPS[0].cta);
+    const initialBtn = getAdvanceButton();
     initialBtn.focus();
     expect(document.activeElement).toBe(initialBtn);
 
-    // Tab away (focus is lost to the browser chrome / other tab).
     simulateTabAway();
     expect(document.activeElement).not.toBe(initialBtn);
 
-    // Tab back — restore focus to the same advance control.
     simulateTabReturn();
-    const restored = expectAdvanceFocusRestored(CREATOR_TOUR_STEPS[0].cta);
+    const restored = expectAdvanceFocusRestored(CREATOR_TOUR_STEPS[0].id);
 
-    // The keyboard activation that follows actually advances the step,
-    // proving the restored focus is on the *correct* control (not a
-    // disabled/skip/back button).
     keyboardActivate(restored);
     act(() => { vi.advanceTimersByTime(ANNOUNCE_DELAY_MS); });
 
-    // The next step's CTA button now exists and is focusable too.
-    expectAdvanceFocusRestored(CREATOR_TOUR_STEPS[1].cta);
+    expectAdvanceFocusRestored(CREATOR_TOUR_STEPS[1].id);
   });
 
   it("restores focus to the advance button after a modal steals + releases focus", () => {
     renderTour();
     act(() => { vi.advanceTimersByTime(ANNOUNCE_DELAY_MS); });
 
-    const initialBtn = findAdvanceButton(CREATOR_TOUR_STEPS[0].cta);
+    const initialBtn = getAdvanceButton();
     initialBtn.focus();
     expect(document.activeElement).toBe(initialBtn);
 
-    // External modal opens, steals focus, then closes.
     simulateModalFocusSteal();
     expect(document.activeElement).not.toBe(initialBtn);
 
-    // After the modal closes, the tour's advance control must be reachable
-    // again so the keyboard user can resume without re-tabbing the page.
-    const restored = expectAdvanceFocusRestored(CREATOR_TOUR_STEPS[0].cta);
+    const restored = expectAdvanceFocusRestored(CREATOR_TOUR_STEPS[0].id);
     keyboardActivate(restored);
     act(() => { vi.advanceTimersByTime(ANNOUNCE_DELAY_MS); });
 
-    expectAdvanceFocusRestored(CREATOR_TOUR_STEPS[1].cta);
+    expectAdvanceFocusRestored(CREATOR_TOUR_STEPS[1].id);
   });
 
   it("focuses the *current* step's advance control across multiple re-focus + advance cycles", () => {
     renderTour();
     act(() => { vi.advanceTimersByTime(ANNOUNCE_DELAY_MS); });
 
-    // Walk every step. Before each advance, alternate between tab-away and
-    // modal-steal interruptions, then assert the focus lands on the CURRENT
-    // step's CTA button (not a stale reference from the previous step).
     for (let i = 0; i < CREATOR_TOUR_STEPS.length - 1; i++) {
-      const currentCta = CREATOR_TOUR_STEPS[i].cta;
-
       if (i % 2 === 0) {
         simulateTabAway();
         simulateTabReturn();
@@ -174,21 +127,16 @@ describe("CreatorTour — focus restoration after re-focus scenarios", () => {
         simulateModalFocusSteal();
       }
 
-      const btn = expectAdvanceFocusRestored(currentCta);
+      const btn = expectAdvanceFocusRestored(CREATOR_TOUR_STEPS[i].id);
 
-      // Sanity: the focused element is inside the tour popover, not some
-      // sibling control elsewhere in the DOM that happens to share text.
-      const popover = btn.closest('[data-testid="creator-tour-popover"]');
+      const popover = btn.closest(`[data-testid="${TOUR_TESTID.popover}"]`);
       expect(popover).not.toBeNull();
 
       keyboardActivate(btn);
       act(() => { vi.advanceTimersByTime(ANNOUNCE_DELAY_MS); });
     }
 
-    // Final step renders a finish CTA — verify it too is focusable after a
-    // last interruption, so the user can complete the tour from the keyboard.
     simulateModalFocusSteal();
-    const finishCta = CREATOR_TOUR_STEPS[CREATOR_TOUR_STEPS.length - 1].cta;
-    expectAdvanceFocusRestored(finishCta);
+    expectAdvanceFocusRestored(CREATOR_TOUR_STEPS[CREATOR_TOUR_STEPS.length - 1].id);
   });
 });

@@ -389,6 +389,7 @@ export default function CreatorTour({
               onClick={finish}
               className="text-muted-foreground hover:text-foreground transition"
               aria-label="Skip tour"
+              data-testid="creator-tour-skip"
               type="button"
             >
               <X className="w-4 h-4" aria-hidden="true" />
@@ -436,10 +437,23 @@ export default function CreatorTour({
               onClick={prev}
               disabled={stepIdx === 0}
               className="gap-1.5"
+              data-testid="creator-tour-back"
+              aria-label="Go back to previous tour step"
             >
               <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" /> Back
             </Button>
-            <Button size="sm" onClick={next} className="gap-1.5 flex-1 max-w-[180px]">
+            <Button
+              size="sm"
+              onClick={next}
+              className="gap-1.5 flex-1 max-w-[180px]"
+              data-testid="creator-tour-advance"
+              data-tour-step={step.id}
+              aria-label={
+                stepIdx === CREATOR_TOUR_STEPS.length - 1
+                  ? `Finish tour: ${step.cta || "Finish"}`
+                  : `Advance to step ${stepIdx + 2} of ${CREATOR_TOUR_STEPS.length}: ${step.cta || "Next"}`
+              }
+            >
               {stepIdx === CREATOR_TOUR_STEPS.length - 1 ? (
                 <>
                   <Check className="w-3.5 h-3.5" aria-hidden="true" /> {step.cta || "Finish"}
