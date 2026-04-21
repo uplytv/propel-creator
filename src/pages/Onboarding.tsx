@@ -529,6 +529,7 @@ export default function Onboarding() {
     sessionStorage.setItem("waitlist_email", user.email || "");
 
     setSaving(false);
+    setSubmittedApproved(isApproved);
     setSubmitSucceeded(true);
 
     // Brief success overlay, then advance to Step 5 (final confirmation screen).
