@@ -543,7 +543,15 @@ export default function Settings() {
                   checked={autoRetryEnabled}
                   onCheckedChange={(v) => {
                     setAutoRetryEnabled(v);
-                    toast.success(v ? "Auto-retry enabled" : "Auto-retry disabled");
+                    if (v) {
+                      toast.success("Auto-retry enabled", {
+                        description: "If onboarding submission fails, we'll start a 5-second countdown and retry automatically.",
+                      });
+                    } else {
+                      toast.success("Auto-retry disabled", {
+                        description: "Failed submissions will wait for you to tap Retry — no automatic countdown.",
+                      });
+                    }
                   }}
                   aria-label="Toggle onboarding auto-retry"
                 />
