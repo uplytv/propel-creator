@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Heart, ThumbsDown, UserPlus, Check, Zap, Share2, ShoppingBag, Repeat2, ChevronDown, ChevronUp, MessageCircle, Eye, Clock, Send, BarChart3, TrendingUp } from "lucide-react";
 import { UPLYMuxPlayer } from "@/components/MuxPlayer";
@@ -17,6 +17,11 @@ import { useVideo, useVideoComments, useVideoLike, useAddComment, useVideos, typ
 import { useAuth } from "@/context/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import ChapterRail from "@/components/video/ChapterRail";
+import ChapterEditor from "@/components/video/ChapterEditor";
+import AddToPlaylistButton from "@/components/video/AddToPlaylistButton";
+import NextUpCard from "@/components/video/NextUpCard";
+import { usePlaylistItems } from "@/hooks/usePlaylists";
 
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
