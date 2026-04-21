@@ -99,26 +99,28 @@ export default function BoostToastTab() {
       `# range=${range} state=${state} route=${route} generated_at=${new Date().toISOString()}`,
     );
     rows.push("");
-    rows.push("section,bucket_or_route,shown,clicked,ctr");
+    rows.push(
+      "section,range_filter,boost_state_filter,route_filter,bucket_or_route,shown,clicked,ctr",
+    );
 
     for (const b of series) {
       const ctr = b.shown > 0 ? b.clicked / b.shown : 0;
       rows.push(
-        ["timeseries", b.bucket, b.shown, b.clicked, ctr.toFixed(4)]
+        ["timeseries", range, state, route, b.bucket, b.shown, b.clicked, ctr.toFixed(4)]
           .map(escape)
           .join(","),
       );
     }
     for (const r of routes) {
       rows.push(
-        ["route", r.route, r.shown, r.clicked, r.ctr.toFixed(4)]
+        ["route", range, state, route, r.route, r.shown, r.clicked, r.ctr.toFixed(4)]
           .map(escape)
           .join(","),
       );
     }
     if (totals) {
       rows.push(
-        ["total", "all", totals.shown, totals.clicked, totals.ctr.toFixed(4)]
+        ["total", range, state, route, "all", totals.shown, totals.clicked, totals.ctr.toFixed(4)]
           .map(escape)
           .join(","),
       );
