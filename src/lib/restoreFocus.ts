@@ -28,15 +28,26 @@ export const captureFocus = (): FocusRestorer => {
   return () => {
     if (restored) return;
     restored = true;
-    if (
-      isFocusableElement(previouslyFocused) &&
-      previouslyFocused.isConnected
-    ) {
-      try {
-        previouslyFocused.focus({ preventScroll: true });
-      } catch {
-        previouslyFocused.focus();
+    const doFocus = () => {
+      if (
+        isFocusableElement(previouslyFocused) &&
+        previouslyFocused.isConnected
+      ) {
+        try {
+          previouslyFocused.focus({ preventScroll: true });
+        } catch {
+          previouslyFocused.focus();
+        }
       }
+    };
+    // Defer to a microtask so any in-flight DOM removals (e.g. the toast
+    // action being unmounted) settle first. Otherwise the browser blurs
+    // our newly-focused element when the previously-focused (now-removed)
+    // node is detached.
+    if (typeof queueMicrotask === "function") {
+      queueMicrotask(doFocus);
+    } else {
+      Promise.resolve().then(doFocus);
     }
   };
 };
