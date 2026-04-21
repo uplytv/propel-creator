@@ -168,7 +168,11 @@ export default function AdminCommentReports() {
 
   const list = useMemo(() => reports, [reports]);
 
-  const handleExportCsv = (selected: string[], delimiter: "," | "\t" = ",") => {
+  const handleExportCsv = (
+    selected: string[],
+    delimiter: "," | "\t" = ",",
+    quoteAll = false,
+  ) => {
     if (!list.length) {
       toast.error("Nothing to export");
       return;
@@ -179,7 +183,14 @@ export default function AdminCommentReports() {
     }
     const escape = (v: unknown) => {
       const s = v === null || v === undefined ? "" : String(v);
-      return `"${s.replace(/"/g, '""').replace(/\r?\n/g, " ")}"`;
+      const cleaned = s.replace(/\r?\n/g, " ");
+      const needsQuotes =
+        quoteAll ||
+        cleaned.includes('"') ||
+        cleaned.includes(delimiter) ||
+        cleaned.includes("\n") ||
+        cleaned.includes("\r");
+      return needsQuotes ? `"${cleaned.replace(/"/g, '""')}"` : cleaned;
     };
     const fields = ORDERED_KEYS
       .filter((k) => selected.includes(k))
