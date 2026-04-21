@@ -254,6 +254,7 @@ export default function Onboarding() {
   const [saving, setSaving] = useState(false);
   const [submitSucceeded, setSubmitSucceeded] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submittedApproved, setSubmittedApproved] = useState(false);
   const [autoRetryCountdown, setAutoRetryCountdown] = useState<number | null>(null);
   const [retryAt, setRetryAt] = useState<Date | null>(null);
   const AUTO_RETRY_SECONDS = 5;
