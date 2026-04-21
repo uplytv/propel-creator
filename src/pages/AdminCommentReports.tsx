@@ -476,7 +476,7 @@ function ExportCsvDialog({
           <div className="rounded-md border border-border">
             <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/30 gap-2">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Preview
+                Preview <span className="ml-1 normal-case font-normal text-[10px] text-muted-foreground/70">· {delimiter === "\t" ? "tab" : "comma"}-separated</span>
               </p>
               <div className="flex items-center gap-2">
                 <p className="text-[10px] text-muted-foreground">
