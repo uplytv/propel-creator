@@ -268,19 +268,21 @@ export default function Achievements() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground">
-                      Page {page} of {totalPages} · {filtered.length} total
+                      {filtered.length === 0
+                        ? "0 results"
+                        : `${startIndex + 1}–${startIndex + pageItems.length} of ${filtered.length}`}
                     </span>
                     <button
-                      onClick={() => setPage(page - 1)}
-                      disabled={page <= 1}
+                      onClick={() => setCursor(prevCursor)}
+                      disabled={prevCursor === null && startIndex === 0}
                       className="p-1.5 rounded-md border border-white/10 bg-white/[0.02] text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
                       aria-label="Previous page"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => setPage(page + 1)}
-                      disabled={page >= totalPages}
+                      onClick={() => setCursor(nextCursor)}
+                      disabled={nextCursor === null}
                       className="p-1.5 rounded-md border border-white/10 bg-white/[0.02] text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
                       aria-label="Next page"
                     >
