@@ -116,9 +116,12 @@ describe("DiscoveryFeedCard — high-volume dedupe across many distinct boost ke
     // through ending -> ended within our simulated time window.
     const uniqueItems: DiscoveryItem[] = Array.from({ length: NUM_KEYS }, (_, i) => {
       const contentType = CONTENT_TYPES[i % CONTENT_TYPES.length];
-      // Start each boost in the ACTIVE state (> 5 min out) and stagger expiries
-      // between ~6 and ~7.25 minutes so they all transition active -> ending -> ended.
-      const expMs = Date.now() + 6 * 60_000 + i * 3_000;
+      // All boosts start ACTIVE (> 5 min out) but expire within a tight window
+      // so that a single minute tick lands them all in the "ending" state, and
+      // a later tick lands them all in "ended". This guarantees every key
+      // transitions active -> ending -> ended through the effect.
+      // Range: 5min 30s + i*100ms  (≈ 5.5min .. 5.54min for 25 keys).
+      const expMs = Date.now() + 5 * 60_000 + 30_000 + i * 100;
       return makeBoostedItem({
         contentType,
         contentId: `key-${i}`,
@@ -138,11 +141,12 @@ describe("DiscoveryFeedCard — high-volume dedupe across many distinct boost ke
     expect(totalCountForPrefix("Boost ending soon")).toBe(0);
     expect(totalCountForPrefix("Boost ended")).toBe(0);
 
-    // Cross every key into the ending window.
+    // First minute tick at t=60s: all keys are now ~4.5min out -> "ending".
     act(() => {
-      vi.advanceTimersByTime(2 * 60_000 + 1000);
+      vi.advanceTimersByTime(61_000);
     });
-    // Then cross every key past expiry.
+    // Advance past expiry (~5.5min mark): the precise setTimeout for each key
+    // fires (and dedupes), and the next minute tick observes "ended".
     act(() => {
       vi.advanceTimersByTime(6 * 60_000);
     });
@@ -171,8 +175,8 @@ describe("DiscoveryFeedCard — high-volume dedupe across many distinct boost ke
 
     const uniqueItems: DiscoveryItem[] = Array.from({ length: NUM_KEYS }, (_, i) => {
       const contentType = CONTENT_TYPES[i % CONTENT_TYPES.length];
-      // All start ACTIVE (> 5 min out), staggered.
-      const expMs = Date.now() + 6 * 60_000 + i * 1_500;
+      // Same tight-window strategy as above: 5min 30s + i*50ms (≈ 5.5min .. 5.54min for 50 keys).
+      const expMs = Date.now() + 5 * 60_000 + 30_000 + i * 50;
       return makeBoostedItem({
         contentType,
         contentId: `k-${i}`,
@@ -187,10 +191,11 @@ describe("DiscoveryFeedCard — high-volume dedupe across many distinct boost ke
 
     renderCards(allCards);
 
-    // Cross into ending window, then past expiry.
+    // First minute tick at t=60s -> all keys cross into "ending".
     act(() => {
-      vi.advanceTimersByTime(2 * 60_000 + 1000);
+      vi.advanceTimersByTime(61_000);
     });
+    // Advance past expiry -> precise setTimeouts fire, then next ticks see "ended".
     act(() => {
       vi.advanceTimersByTime(6 * 60_000);
     });
