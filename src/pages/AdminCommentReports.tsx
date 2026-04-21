@@ -12,6 +12,12 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ArrowLeft, Flag, EyeOff, Eye, Trash2, Check, ShieldX, MessageCircle, Download } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNowStrict } from "date-fns";
@@ -53,6 +59,7 @@ export default function AdminCommentReports() {
   const qc = useQueryClient();
   const [tab, setTab] = useState<ReportStatus>("pending");
   const [confirmDelete, setConfirmDelete] = useState<{ reportId: string; commentId: string } | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ["admin-comment-reports", tab],
@@ -161,28 +168,38 @@ export default function AdminCommentReports() {
 
   const list = useMemo(() => reports, [reports]);
 
-  const handleExportCsv = () => {
+  const handleExportCsv = (selected: string[]) => {
     if (!list.length) {
       toast.error("Nothing to export");
+      return;
+    }
+    if (!selected.length) {
+      toast.error("Select at least one column");
       return;
     }
     const escape = (v: unknown) => {
       const s = v === null || v === undefined ? "" : String(v);
       return `"${s.replace(/"/g, '""').replace(/\r?\n/g, " ")}"`;
     };
-    const headers = [
-      "report_id", "status", "reason", "details", "reported_at",
-      "reporter_id", "reporter_name",
-      "comment_id", "comment_body", "comment_source", "comment_is_hidden", "comment_posted_at",
-      "comment_author_id", "comment_author_name",
+    const allFields: { key: string; get: (r: ReportRow) => unknown }[] = [
+      { key: "report_id", get: (r) => r.id },
+      { key: "status", get: (r) => r.status },
+      { key: "reason", get: (r) => r.reason },
+      { key: "details", get: (r) => r.details ?? "" },
+      { key: "reported_at", get: (r) => r.created_at },
+      { key: "reporter_id", get: (r) => r.reporter_id },
+      { key: "reporter_name", get: (r) => r.reporter?.display_name ?? "" },
+      { key: "comment_id", get: (r) => r.comment?.id ?? "" },
+      { key: "comment_body", get: (r) => r.comment?.body ?? "" },
+      { key: "comment_source", get: (r) => r.comment?.source ?? "" },
+      { key: "comment_is_hidden", get: (r) => r.comment?.is_hidden ?? "" },
+      { key: "comment_posted_at", get: (r) => r.comment?.created_at ?? "" },
+      { key: "comment_author_id", get: (r) => r.comment?.user_id ?? "" },
+      { key: "comment_author_name", get: (r) => r.target?.display_name ?? "" },
     ];
-    const rows = list.map((r) => [
-      r.id, r.status, r.reason, r.details ?? "", r.created_at,
-      r.reporter_id, r.reporter?.display_name ?? "",
-      r.comment?.id ?? "", r.comment?.body ?? "", r.comment?.source ?? "",
-      r.comment?.is_hidden ?? "", r.comment?.created_at ?? "",
-      r.comment?.user_id ?? "", r.target?.display_name ?? "",
-    ]);
+    const fields = allFields.filter((f) => selected.includes(f.key));
+    const headers = fields.map((f) => f.key);
+    const rows = list.map((r) => fields.map((f) => f.get(r)));
     const csv = [headers, ...rows].map((row) => row.map(escape).join(",")).join("\n");
     const blob = new Blob([`\ufeff${csv}`], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -194,6 +211,7 @@ export default function AdminCommentReports() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     toast.success(`Exported ${list.length} ${tab} report${list.length === 1 ? "" : "s"}`);
+    setExportOpen(false);
   };
 
   return (
@@ -212,7 +230,7 @@ export default function AdminCommentReports() {
           <Button
             variant="outline"
             size="sm"
-            onClick={handleExportCsv}
+            onClick={() => setExportOpen(true)}
             disabled={isLoading || !list.length}
           >
             <Download className="w-3.5 h-3.5 mr-1.5" />
@@ -280,6 +298,141 @@ export default function AdminCommentReports() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ExportCsvDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        count={list.length}
+        tab={tab}
+        onExport={handleExportCsv}
+      />
+    </div>
+  );
+}
+
+const REPORT_FIELDS = [
+  { key: "report_id", label: "Report ID" },
+  { key: "status", label: "Status" },
+  { key: "reason", label: "Reason" },
+  { key: "details", label: "Reporter details" },
+  { key: "reported_at", label: "Reported at" },
+  { key: "reporter_id", label: "Reporter ID" },
+  { key: "reporter_name", label: "Reporter name" },
+];
+
+const COMMENT_FIELDS = [
+  { key: "comment_id", label: "Comment ID" },
+  { key: "comment_body", label: "Comment body" },
+  { key: "comment_source", label: "Source (clip/short)" },
+  { key: "comment_is_hidden", label: "Hidden flag" },
+  { key: "comment_posted_at", label: "Comment posted at" },
+  { key: "comment_author_id", label: "Comment author ID" },
+  { key: "comment_author_name", label: "Comment author name" },
+];
+
+function ExportCsvDialog({
+  open, onOpenChange, count, tab, onExport,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  count: number;
+  tab: ReportStatus;
+  onExport: (selected: string[]) => void;
+}) {
+  const [preset, setPreset] = useState<"both" | "report" | "comment" | "custom">("both");
+  const [selected, setSelected] = useState<Set<string>>(
+    new Set([...REPORT_FIELDS, ...COMMENT_FIELDS].map((f) => f.key))
+  );
+
+  const applyPreset = (p: "both" | "report" | "comment" | "custom") => {
+    setPreset(p);
+    if (p === "both") setSelected(new Set([...REPORT_FIELDS, ...COMMENT_FIELDS].map((f) => f.key)));
+    else if (p === "report") setSelected(new Set(REPORT_FIELDS.map((f) => f.key)));
+    else if (p === "comment") setSelected(new Set(COMMENT_FIELDS.map((f) => f.key)));
+  };
+
+  const toggle = (key: string) => {
+    setPreset("custom");
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Export {tab} reports</DialogTitle>
+          <DialogDescription>
+            Choose which columns to include. {count} row{count === 1 ? "" : "s"} will be exported.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <RadioGroup value={preset} onValueChange={(v) => applyPreset(v as typeof preset)} className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            {[
+              { v: "both", l: "Both" },
+              { v: "report", l: "Report only" },
+              { v: "comment", l: "Comment only" },
+            ].map((opt) => (
+              <Label
+                key={opt.v}
+                htmlFor={`preset-${opt.v}`}
+                className="flex items-center gap-2 rounded-md border border-border p-2.5 cursor-pointer hover:bg-muted/40 [&:has([data-state=checked])]:border-primary [&:has([data-state=checked])]:bg-primary/5"
+              >
+                <RadioGroupItem id={`preset-${opt.v}`} value={opt.v} />
+                <span className="text-sm font-medium">{opt.l}</span>
+              </Label>
+            ))}
+          </RadioGroup>
+
+          <div className="space-y-3">
+            <FieldGroup title="Report fields" fields={REPORT_FIELDS} selected={selected} onToggle={toggle} />
+            <FieldGroup title="Comment fields" fields={COMMENT_FIELDS} selected={selected} onToggle={toggle} />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button onClick={() => onExport([...selected])} disabled={!selected.size}>
+            <Download className="w-4 h-4 mr-1.5" />
+            Download CSV ({selected.size})
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function FieldGroup({
+  title, fields, selected, onToggle,
+}: {
+  title: string;
+  fields: { key: string; label: string }[];
+  selected: Set<string>;
+  onToggle: (key: string) => void;
+}) {
+  return (
+    <div className="rounded-md border border-border p-3">
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">{title}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {fields.map((f) => (
+          <Label
+            key={f.key}
+            htmlFor={`col-${f.key}`}
+            className="flex items-center gap-2 text-sm cursor-pointer rounded px-2 py-1.5 hover:bg-muted/40"
+          >
+            <Checkbox
+              id={`col-${f.key}`}
+              checked={selected.has(f.key)}
+              onCheckedChange={() => onToggle(f.key)}
+            />
+            <span className="truncate">{f.label}</span>
+          </Label>
+        ))}
+      </div>
     </div>
   );
 }
