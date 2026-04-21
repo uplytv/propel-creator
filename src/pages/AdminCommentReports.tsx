@@ -358,7 +358,7 @@ function ExportCsvDialog({
   });
 
   // Persist whenever preset or selection changes
-  React.useEffect(() => {
+  useEffect(() => {
     try {
       localStorage.setItem("admin-csv-export-preset", preset);
       localStorage.setItem("admin-csv-export-columns", JSON.stringify([...selected]));
