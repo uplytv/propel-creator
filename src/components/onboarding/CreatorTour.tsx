@@ -225,16 +225,16 @@ export default function CreatorTour({
   // Compute tooltip position
   let tooltipStyle: React.CSSProperties = {};
   const SIDE_MARGIN = 16;
-  const isNarrow = typeof window !== "undefined" && window.innerWidth < 640;
-  const TOOLTIP_W = isNarrow ? Math.min(340, window.innerWidth - SIDE_MARGIN * 2) : 340;
+  const isNarrow = viewport.w > 0 && viewport.w < 640;
+  const TOOLTIP_W = isNarrow ? Math.min(340, viewport.w - SIDE_MARGIN * 2) : 340;
   const tooltipWidthStyle: React.CSSProperties = { width: TOOLTIP_W, maxWidth: `calc(100vw - ${SIDE_MARGIN * 2}px)` };
 
   // NOTE: We avoid CSS `transform` for positioning here because framer-motion's
   // `animate` prop drives `transform` and would clobber a translate(-50%,-50%).
   // Instead we compute concrete top/left values that already account for the
   // tooltip's own size, so the card lands in the intended spot on every device.
-  const viewportW = typeof window !== "undefined" ? window.innerWidth : 0;
-  const viewportH = typeof window !== "undefined" ? window.innerHeight : 0;
+  const viewportW = viewport.w;
+  const viewportH = viewport.h;
   // Estimated tooltip height — only used for vertical clamping. Real height is
   // measured by layout; this is intentionally generous so we never under-clamp.
   const TOOLTIP_H_EST = 280;
