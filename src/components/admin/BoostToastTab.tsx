@@ -436,6 +436,43 @@ export default function BoostToastTab() {
           </div>
         )}
       </Card>
+
+      <Dialog open={sampleOpen} onOpenChange={setSampleOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Example Export JSON</DialogTitle>
+            <DialogDescription>
+              Sample payload using the current filters (range={range}, state={state}, route={route}).
+              Up to 3 timeseries buckets and 3 routes are shown for brevity.
+            </DialogDescription>
+          </DialogHeader>
+          <pre className="max-h-[60vh] overflow-auto rounded-md border border-border bg-muted/40 p-3 text-xs font-mono leading-relaxed">
+{JSON.stringify(
+  {
+    generated_at: new Date().toISOString(),
+    filters: { range, boost_state: state, route },
+    totals: totals
+      ? { shown: totals.shown, clicked: totals.clicked, ctr: totals.ctr }
+      : { shown: 0, clicked: 0, ctr: 0 },
+    timeseries: ((eventsQuery.data?.series ?? []).slice(0, 3)).map((b) => ({
+      bucket: b.bucket,
+      shown: b.shown,
+      clicked: b.clicked,
+      ctr: b.shown > 0 ? Number((b.clicked / b.shown).toFixed(4)) : 0,
+    })),
+    routes: routes.slice(0, 3).map((r) => ({
+      route: r.route,
+      shown: r.shown,
+      clicked: r.clicked,
+      ctr: Number(r.ctr.toFixed(4)),
+    })),
+  },
+  null,
+  2,
+)}
+          </pre>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
