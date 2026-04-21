@@ -7,6 +7,9 @@ const Home = lazy(() => import("./Home"));
 const Landing = lazy(() => import("./Landing"));
 
 const AUTH_RESOLVE_TIMEOUT_MS = 8000;
+// Wait a tick before showing the skeleton — avoids a flash when auth resolves
+// from cached session synchronously or within a frame.
+const SKELETON_DELAY_MS = 150;
 
 const Loader = () => (
   <div className="min-h-screen bg-[#0A0A0A] text-white animate-pulse">
@@ -99,6 +102,17 @@ export default function RootRoute() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [redirectGuest, setRedirectGuest] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
+  const [showSkeleton, setShowSkeleton] = useState(false);
+
+  // Delay skeleton display so fast auth resolution doesn't cause a flash.
+  useEffect(() => {
+    if (!loading) {
+      setShowSkeleton(false);
+      return;
+    }
+    const id = window.setTimeout(() => setShowSkeleton(true), SKELETON_DELAY_MS);
+    return () => window.clearTimeout(id);
+  }, [loading, retryKey]);
 
   // Probe the session ourselves so we can surface real errors and timeouts.
   useEffect(() => {
@@ -161,7 +175,9 @@ export default function RootRoute() {
     );
   }
 
-  if (loading) return <Loader />;
+  // Wait fully for auth to resolve. Render nothing for the first ~150ms to
+  // avoid a skeleton flash on cached sessions; then show the skeleton.
+  if (loading) return showSkeleton ? <Loader /> : null;
 
   return (
     <Suspense fallback={<Loader />}>
