@@ -12,6 +12,7 @@ export interface ShortComment {
   body: string;
   like_count: number;
   created_at: string;
+  is_hidden?: boolean;
   display_name?: string | null;
   avatar_url?: string | null;
 }
@@ -82,5 +83,64 @@ export function useAddShortComment(shortId?: string, source?: "clip" | "short") 
       qc.invalidateQueries({ queryKey: ["short-comments", shortId] });
     },
     onError: (err: Error) => toast.error("Couldn't post comment", { description: err.message }),
+  });
+}
+
+export function useDeleteShortComment(shortId?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (commentId: string) => {
+      const { error } = await (supabase as any)
+        .from("short_comments")
+        .delete()
+        .eq("id", commentId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["short-comments", shortId] });
+      toast.success("Comment deleted");
+    },
+    onError: (err: Error) => toast.error("Couldn't delete comment", { description: err.message }),
+  });
+}
+
+export function useHideShortComment(shortId?: string) {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ commentId, hide }: { commentId: string; hide: boolean }) => {
+      const { error } = await (supabase as any)
+        .from("short_comments")
+        .update({
+          is_hidden: hide,
+          hidden_by: hide ? user?.id : null,
+          hidden_at: hide ? new Date().toISOString() : null,
+        })
+        .eq("id", commentId);
+      if (error) throw error;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["short-comments", shortId] });
+      toast.success(vars.hide ? "Comment hidden" : "Comment shown");
+    },
+    onError: (err: Error) => toast.error("Action failed", { description: err.message }),
+  });
+}
+
+export function useReportShortComment() {
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async ({ commentId, reason, details }: { commentId: string; reason: string; details?: string }) => {
+      if (!user) throw new Error("Sign in to report");
+      const { error } = await (supabase as any)
+        .from("comment_reports")
+        .insert({ comment_id: commentId, reporter_id: user.id, reason, details: details || null });
+      if (error) {
+        if (error.code === "23505") throw new Error("You already reported this comment");
+        throw error;
+      }
+    },
+    onSuccess: () => toast.success("Report submitted", { description: "Thanks — our team will review it." }),
+    onError: (err: Error) => toast.error("Couldn't submit report", { description: err.message }),
   });
 }
