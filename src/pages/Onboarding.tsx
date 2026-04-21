@@ -530,13 +530,12 @@ export default function Onboarding() {
     setSaving(false);
     setSubmitSucceeded(true);
 
-    // Brief success screen, then navigate
+    // Brief success overlay, then advance to Step 5 (final confirmation screen).
+    // The user chooses when to leave Step 5 via an explicit CTA — we no longer
+    // auto-navigate to /discover or /waitlist here.
     setTimeout(() => {
-      if (isApproved) {
-        navigate("/discover", { replace: true });
-      } else {
-        navigate("/waitlist?applied=true", { replace: true });
-      }
+      setSubmitSucceeded(false);
+      setStep(5);
     }, 1200);
     } catch (err: any) {
       console.error("[Onboarding] submission failed", err);
