@@ -3476,6 +3476,41 @@ export type Database = {
           },
         ]
       }
+      event_creator_tags: {
+        Row: {
+          created_at: string
+          creator_id: string
+          event_id: string
+          id: string
+          stream_id: string | null
+          video_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          event_id: string
+          id?: string
+          stream_id?: string | null
+          video_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          event_id?: string
+          id?: string
+          stream_id?: string | null
+          video_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_creator_tags_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events_global"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_referrals: {
         Row: {
           buyer_id: string
@@ -3824,6 +3859,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      events_global: {
+        Row: {
+          artist_name: string | null
+          category: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          date: string | null
+          external_id: string
+          id: string
+          image_url: string | null
+          is_persian: boolean
+          source: string
+          synced_at: string
+          ticket_url: string | null
+          title: string
+          venue: string | null
+        }
+        Insert: {
+          artist_name?: string | null
+          category?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          date?: string | null
+          external_id: string
+          id?: string
+          image_url?: string | null
+          is_persian?: boolean
+          source: string
+          synced_at?: string
+          ticket_url?: string | null
+          title: string
+          venue?: string | null
+        }
+        Update: {
+          artist_name?: string | null
+          category?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          date?: string | null
+          external_id?: string
+          id?: string
+          image_url?: string | null
+          is_persian?: boolean
+          source?: string
+          synced_at?: string
+          ticket_url?: string | null
+          title?: string
+          venue?: string | null
+        }
+        Relationships: []
       }
       feature_audit_log: {
         Row: {

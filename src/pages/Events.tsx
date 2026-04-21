@@ -4,7 +4,9 @@ import { motion } from "framer-motion";
 import { Plus, CalendarDays, MapPin, Monitor, Globe, Loader2, Users, Ticket, BarChart3, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AppLayout from "@/components/layout/AppLayout";
+import { WorldwideEventsTab } from "@/components/events/WorldwideEventsTab";
 import { useAuth } from "@/context/AuthContext";
 import { useCreatorEvents, useEventTickets, EventRow } from "@/hooks/useEvents";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -244,27 +246,40 @@ export default function Events() {
     <AppLayout>
       <div className="max-w-4xl mx-auto px-4 py-6 pb-24">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-foreground">My Events</h1>
+          <h1 className="text-2xl font-bold text-foreground">Events</h1>
           <Button onClick={() => navigate("/events/create")} className="gap-2">
             <Plus className="w-4 h-4" /> Create Event
           </Button>
         </div>
 
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[1, 2, 3].map(i => <Skeleton key={i} className="h-64 rounded-xl" />)}
-          </div>
-        ) : !events?.length ? (
-          <EmptyState
-            icon={CalendarDays}
-            title="No events yet"
-            description="Create your first event to sell tickets and engage your community."
-          />
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {events.map(e => <EventCard key={e.id} event={e} username={dbProfile?.username || undefined} />)}
-          </div>
-        )}
+        <Tabs defaultValue="mine" className="w-full">
+          <TabsList className="mb-4">
+            <TabsTrigger value="mine">My Events</TabsTrigger>
+            <TabsTrigger value="worldwide">Worldwide</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="mine">
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[1, 2, 3].map(i => <Skeleton key={i} className="h-64 rounded-xl" />)}
+              </div>
+            ) : !events?.length ? (
+              <EmptyState
+                icon={CalendarDays}
+                title="No events yet"
+                description="Create your first event to sell tickets and engage your community."
+              />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {events.map(e => <EventCard key={e.id} event={e} username={dbProfile?.username || undefined} />)}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="worldwide">
+            <WorldwideEventsTab />
+          </TabsContent>
+        </Tabs>
       </div>
     </AppLayout>
   );

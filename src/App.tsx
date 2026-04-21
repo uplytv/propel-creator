@@ -76,6 +76,7 @@ const VideoPlayer = lazy(() => import("./pages/VideoPlayer"));
 const Events = lazy(() => import("./pages/Events"));
 const CreateEvent = lazy(() => import("./pages/CreateEvent"));
 const EventPage = lazy(() => import("./pages/EventPage"));
+const GlobalEventDetail = lazy(() => import("./pages/GlobalEventDetail"));
 const TicketDetail = lazy(() => import("./pages/TicketDetail"));
 const TicketSuccess = lazy(() => import("./pages/TicketSuccess"));
 const ContentStudio = lazy(() => import("./pages/ContentStudio"));
@@ -286,6 +287,7 @@ const App = () => (
                     <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
                     <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
                     <Route path="/events/create" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
+                    <Route path="/events/global/:eventId" element={<GlobalEventDetail />} />
                     <Route path="/invite-codes" element={<ProtectedRoute><InviteCodes /></ProtectedRoute>} />
                     <Route path="/dashboard/content-studio" element={<ProtectedRoute><ContentStudio /></ProtectedRoute>} />
                     <Route path="/dashboard/ai-team" element={<ProtectedRoute><AITeamDashboard /></ProtectedRoute>} />
