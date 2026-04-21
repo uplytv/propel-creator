@@ -334,9 +334,10 @@ export default function Onboarding() {
       })
       .eq("user_id", user.id);
 
-    // Clear persisted Step 3 draft now that onboarding is submitted
+    // Clear persisted Step 3 & Step 4 drafts now that onboarding is submitted
     try {
       window.localStorage.removeItem(STEP3_STORAGE_KEY);
+      window.localStorage.removeItem(STEP4_STORAGE_KEY);
     } catch {
       // ignore
     }
