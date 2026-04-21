@@ -498,3 +498,107 @@ describe("Onboarding Step 4 — field-level validation depth", () => {
     });
   });
 });
+
+// =================== ERROR BANNER + MANUAL RETRY ===================
+
+describe("Onboarding Step 4 — submission error banner & manual retry", () => {
+  it("shows the 'Submission failed' error banner with the simulated DB failure message", async () => {
+    autoRetryEnabledFlag = false;
+    shouldUpdateThrow = true;
+    updateThrowCount = 99; // keep failing
+
+    await advanceToStep4();
+    fillStep4Required();
+    fireEvent.click(submitButton());
+
+    // Banner header.
+    expect(await screen.findByText(/Submission failed/i)).toBeInTheDocument();
+
+    // Banner body surfaces the underlying error message from the rejected promise.
+    expect(
+      await screen.findByText(/Simulated DB failure/i),
+    ).toBeInTheDocument();
+
+    // The overlay is announced as an alertdialog (role assigned when submitError is set).
+    const overlay = screen.getByRole("alertdialog");
+    expect(overlay).toBeInTheDocument();
+
+    // "Retry now" button is present and enabled so the user can recover manually.
+    const retryBtn = screen.getByRole("button", { name: /Retry now/i }) as HTMLButtonElement;
+    expect(retryBtn).toBeInTheDocument();
+    expect(retryBtn.disabled).toBe(false);
+
+    // Auto-retry is off → no countdown number rendered.
+    expect(screen.queryByText(/^\d+s$/)).not.toBeInTheDocument();
+  });
+
+  it("clicking 'Retry now' after a failure dismisses the error and completes the submission successfully", async () => {
+    autoRetryEnabledFlag = false;
+    shouldUpdateThrow = true;
+    updateThrowCount = 1; // first attempt fails, retry succeeds
+
+    await advanceToStep4();
+    fillStep4Required();
+
+    // Initial submission fails.
+    fireEvent.click(submitButton());
+    expect(await screen.findByText(/Submission failed/i)).toBeInTheDocument();
+
+    // Click manual "Retry now".
+    fireEvent.click(screen.getByRole("button", { name: /Retry now/i }));
+
+    // Error overlay clears and success overlay appears.
+    await waitFor(() => {
+      expect(screen.queryByText(/Submission failed/i)).not.toBeInTheDocument();
+      expect(screen.getByText(/Application submitted!/i)).toBeInTheDocument();
+    });
+
+    // Two profile.update calls — failed attempt + successful retry.
+    const profileUpdates = updateCallPayloads.filter((c) => c.table === "profiles");
+    expect(profileUpdates.length).toBeGreaterThanOrEqual(2);
+
+    // Final waitlist insert went through on the retry.
+    const waitlistInsert = insertCallPayloads.find((c) => c.table === "waitlist");
+    expect(waitlistInsert).toBeDefined();
+    expect(waitlistInsert!.payload).toMatchObject({
+      email: "test@example.com",
+      user_id: "test-user",
+    });
+
+    // Eventually navigates after the post-success delay.
+    await waitFor(
+      () => {
+        expect(navigateMock).toHaveBeenCalledWith("/waitlist?applied=true", {
+          replace: true,
+        });
+      },
+      { timeout: 3000 },
+    );
+  });
+
+  it("clicking 'Dismiss' clears the error banner without retrying", async () => {
+    autoRetryEnabledFlag = false;
+    shouldUpdateThrow = true;
+    updateThrowCount = 99;
+
+    await advanceToStep4();
+    fillStep4Required();
+    fireEvent.click(submitButton());
+
+    expect(await screen.findByText(/Submission failed/i)).toBeInTheDocument();
+
+    const updatesBeforeDismiss = updateCallPayloads.filter((c) => c.table === "profiles").length;
+
+    // The dismiss button is labeled "Dismiss" when no countdown is active.
+    fireEvent.click(screen.getByRole("button", { name: /^Dismiss$/i }));
+
+    // Overlay closes.
+    await waitFor(() => {
+      expect(screen.queryByText(/Submission failed/i)).not.toBeInTheDocument();
+    });
+
+    // No additional submission attempt was triggered by Dismiss.
+    const updatesAfterDismiss = updateCallPayloads.filter((c) => c.table === "profiles").length;
+    expect(updatesAfterDismiss).toBe(updatesBeforeDismiss);
+  });
+});
