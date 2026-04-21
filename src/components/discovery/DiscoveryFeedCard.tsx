@@ -10,6 +10,7 @@ import { useLiveViewerCount } from "@/hooks/useLiveViewerCount";
 import type { DiscoveryItem } from "@/hooks/useDiscoveryAlgorithmFeed";
 import { invalidateBoostFeedOnce, boostExpiryKey } from "./boostInvalidation";
 import { notifyBoostEndingOnce, notifyBoostEndedOnce } from "./boostToastDedupe";
+import { trackEvent } from "@/lib/posthog";
 
 /** Re-renders the consumer once per minute, aligned to wall-clock minute. */
 function useMinuteTick(enabled: boolean) {
@@ -77,27 +78,65 @@ export default function DiscoveryFeedCard({ item }: { item: DiscoveryItem }) {
     const href = linkFor(item);
     if (state === "ending" && prev === "active") {
       notifyBoostEndingOnce(key, () => {
-        toast(`Boost ending soon: ${item.title ?? "Promoted item"}`, {
+        let toastId: string | number | undefined;
+        const handleAction = () => {
+          trackEvent("boost_toast_action_clicked", {
+            boost_state: "ending",
+            content_type: item.content_type,
+            content_id: item.content_id,
+            creator_id: item.creator_id,
+            route: href,
+            boost_key: key,
+          });
+          window.location.href = href;
+          if (toastId !== undefined) {
+            try {
+              (toast as unknown as { dismiss?: (id: string | number) => void }).dismiss?.(toastId);
+              trackEvent("boost_toast_dismissed", {
+                boost_state: "ending",
+                boost_key: key,
+                via: "action",
+              });
+            } catch {
+              // dismiss is best-effort
+            }
+          }
+        };
+        toastId = toast(`Boost ending soon: ${item.title ?? "Promoted item"}`, {
           description: "Less than 5 minutes left in the promoted slot.",
-          action: {
-            label: "View",
-            onClick: () => {
-              window.location.href = href;
-            },
-          },
-        });
+          action: { label: "View", onClick: handleAction },
+        }) as string | number | undefined;
       });
     } else if (state === "ended" && prev !== "ended") {
       notifyBoostEndedOnce(key, () => {
-        toast(`Boost ended: ${item.title ?? "Promoted item"}`, {
+        let toastId: string | number | undefined;
+        const handleAction = () => {
+          trackEvent("boost_toast_action_clicked", {
+            boost_state: "ended",
+            content_type: item.content_type,
+            content_id: item.content_id,
+            creator_id: item.creator_id,
+            route: href,
+            boost_key: key,
+          });
+          window.location.href = href;
+          if (toastId !== undefined) {
+            try {
+              (toast as unknown as { dismiss?: (id: string | number) => void }).dismiss?.(toastId);
+              trackEvent("boost_toast_dismissed", {
+                boost_state: "ended",
+                boost_key: key,
+                via: "action",
+              });
+            } catch {
+              // dismiss is best-effort
+            }
+          }
+        };
+        toastId = toast(`Boost ended: ${item.title ?? "Promoted item"}`, {
           description: "This promotion is no longer active.",
-          action: {
-            label: "View",
-            onClick: () => {
-              window.location.href = href;
-            },
-          },
-        });
+          action: { label: "View", onClick: handleAction },
+        }) as string | number | undefined;
       });
       // Re-rank the discovery feed immediately so non-boosted items flow upward.
       // Guarded so multiple cards sharing this boost only invalidate once.
