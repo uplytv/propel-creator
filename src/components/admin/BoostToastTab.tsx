@@ -83,6 +83,7 @@ export default function BoostToastTab() {
   const [range, setRange] = useState<BoostRangeKey>("7d");
   const [state, setState] = useState<BoostStateFilter>("all");
   const [route, setRoute] = useState<string>("all");
+  const [sampleOpen, setSampleOpen] = useState(false);
 
   const routesQuery = useBoostRoutesList(range);
   const eventsQuery = useBoostToastEvents({ range, state, route });
