@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowRight, ArrowLeft, Camera, Check, X } from "lucide-react";
+import { ArrowRight, ArrowLeft, Camera, Check, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { getAffiliateCookie, clearAffiliateCookie, getReferralData, clearReferralData } from "@/lib/affiliateCookies";
 import logoImg from "@/assets/logo.png";
@@ -272,6 +272,7 @@ export default function Onboarding() {
 
   const finishOnboarding = async () => {
     if (!user) return;
+    if (saving) return; // Prevent double-submit
     setSaving(true);
 
     let uploadedUrl = avatarUrl;
@@ -500,7 +501,21 @@ export default function Onboarding() {
         </motion.div>
       )}
 
-      {step > 0 && <MilestoneProgressPill onboardingStep={step} totalOnboardingSteps={3} />}
+      {step > 0 && <MilestoneProgressPill onboardingStep={step} totalOnboardingSteps={4} />}
+
+      {/* Full-screen submission overlay — blocks interaction so users can't double-submit */}
+      {saving && (
+        <div
+          className="fixed inset-0 z-[100] bg-background/90 backdrop-blur-sm flex flex-col items-center justify-center p-6"
+          role="status"
+          aria-live="assertive"
+          aria-busy="true"
+        >
+          <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" aria-hidden="true" />
+          <p className="text-lg font-semibold text-foreground">Submitting your application…</p>
+          <p className="text-sm text-muted-foreground mt-1">Hang tight, this only takes a moment.</p>
+        </div>
+      )}
 
       <AnimatePresence mode="wait">
         {step === 0 && (
