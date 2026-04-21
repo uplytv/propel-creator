@@ -302,7 +302,7 @@ export default function AdminCommentReports() {
       <ExportCsvDialog
         open={exportOpen}
         onOpenChange={setExportOpen}
-        count={list.length}
+        rows={list}
         tab={tab}
         onExport={handleExportCsv}
       />
