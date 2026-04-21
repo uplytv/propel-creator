@@ -347,11 +347,15 @@ describe("Settings navigation toast — cooldown UI", () => {
       const onActivate = vi.fn();
       writeSettingsNavLast(Date.now() - SETTINGS_NAV_COOLDOWN_MS - 1); // ready
 
-      function ActivationHarness() {
-        const [show, setShow] = useState(true);
+      function ActivationHarness({ initialShow }: { initialShow: boolean }) {
+        const [show, setShow] = useState(initialShow);
         return (
           <div>
-            <button type="button" data-testid="trigger">
+            <button
+              type="button"
+              data-testid="trigger"
+              onClick={() => setShow(true)}
+            >
               Enable auto-retry
             </button>
             {show && (
@@ -367,14 +371,21 @@ describe("Settings navigation toast — cooldown UI", () => {
         );
       }
 
-      render(<ActivationHarness />);
+      render(<ActivationHarness initialShow={false} />);
       const trigger = screen.getByTestId("trigger");
       trigger.focus();
       expect(trigger).toHaveFocus();
 
+      // User clicks the trigger → toast mounts while trigger has focus, so
+      // captureFocus() records the trigger as the element to restore to.
+      await act(async () => {
+        trigger.click();
+      });
+
       await user.tab();
       const action = screen.getByRole("button", { name: "Try again" });
       expect(action).toHaveFocus();
+
       await act(async () => {
         await user.keyboard("{Enter}");
       });
