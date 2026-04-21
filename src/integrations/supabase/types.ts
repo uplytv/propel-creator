@@ -1151,6 +1151,48 @@ export type Database = {
         }
         Relationships: []
       }
+      boost_toast_events: {
+        Row: {
+          boost_key: string
+          boost_state: string
+          content_id: string | null
+          content_type: string | null
+          created_at: string
+          creator_id: string | null
+          event_name: string
+          id: string
+          route: string | null
+          user_id: string | null
+          via: string | null
+        }
+        Insert: {
+          boost_key: string
+          boost_state: string
+          content_id?: string | null
+          content_type?: string | null
+          created_at?: string
+          creator_id?: string | null
+          event_name: string
+          id?: string
+          route?: string | null
+          user_id?: string | null
+          via?: string | null
+        }
+        Update: {
+          boost_key?: string
+          boost_state?: string
+          content_id?: string | null
+          content_type?: string | null
+          created_at?: string
+          creator_id?: string | null
+          event_name?: string
+          id?: string
+          route?: string | null
+          user_id?: string | null
+          via?: string | null
+        }
+        Relationships: []
+      }
       brand_campaigns: {
         Row: {
           application_count: number | null

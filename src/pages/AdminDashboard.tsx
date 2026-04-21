@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import {
   ShieldCheck, Users, DollarSign, ToggleLeft, Link2, Share2,
-  RefreshCw, BarChart3, Heart, Radio, Zap, Shield, TrendingUp, ListChecks, Settings
+  RefreshCw, BarChart3, Heart, Radio, Zap, Shield, TrendingUp, ListChecks, Settings, Rocket
 } from "lucide-react";
 import { DateRange } from "@/hooks/useAdminHealthData";
 import OverviewTab from "@/components/admin/OverviewTab";
@@ -17,6 +17,7 @@ import MembersTab from "@/components/admin/MembersTab";
 import ContentTab from "@/components/admin/ContentTab";
 import EngagementTab from "@/components/admin/EngagementTab";
 import TechnicalTab from "@/components/admin/TechnicalTab";
+import BoostToastTab from "@/components/admin/BoostToastTab";
 import AdminWaitlistTab from "@/components/waitlist/AdminWaitlistTab";
 import AdminNotificationBell from "@/components/admin/AdminNotificationBell";
 import CriticalAlertBanner from "@/components/admin/CriticalAlertBanner";
@@ -126,6 +127,7 @@ export default function AdminDashboard() {
             <TabsTrigger value="content" className="text-xs gap-1"><Radio className="w-3.5 h-3.5" /> Content</TabsTrigger>
             <TabsTrigger value="engagement" className="text-xs gap-1"><Zap className="w-3.5 h-3.5" /> Engagement</TabsTrigger>
             <TabsTrigger value="technical" className="text-xs gap-1"><Shield className="w-3.5 h-3.5" /> Technical</TabsTrigger>
+            <TabsTrigger value="boosts" className="text-xs gap-1"><Rocket className="w-3.5 h-3.5" /> Boost Toasts</TabsTrigger>
             <TabsTrigger value="waitlist" className="text-xs gap-1"><ListChecks className="w-3.5 h-3.5" /> Waitlist</TabsTrigger>
           </TabsList>
 
@@ -137,6 +139,7 @@ export default function AdminDashboard() {
           <TabsContent value="content"><ContentTab range={range} /></TabsContent>
           <TabsContent value="engagement"><EngagementTab range={range} /></TabsContent>
           <TabsContent value="technical"><TechnicalTab range={range} /></TabsContent>
+          <TabsContent value="boosts"><BoostToastTab /></TabsContent>
           <TabsContent value="waitlist"><AdminWaitlistTab /></TabsContent>
         </Tabs>
       </div>
