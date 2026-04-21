@@ -37,9 +37,31 @@ export default function Achievements() {
     })();
   }, [user?.id]);
 
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<FilterGroup>("all");
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return items.filter((i) => {
+      if (filter !== "all" && i.group_type !== filter) return false;
+      if (!q) return true;
+      return (
+        i.label.toLowerCase().includes(q) ||
+        i.milestone_key.toLowerCase().includes(q) ||
+        (i.emoji || "").includes(q)
+      );
+    });
+  }, [items, query, filter]);
+
   const groups = {
-    onboarding: items.filter((i) => i.group_type === "onboarding"),
-    kpi: items.filter((i) => i.group_type === "kpi"),
+    onboarding: filtered.filter((i) => i.group_type === "onboarding"),
+    kpi: filtered.filter((i) => i.group_type === "kpi"),
+  };
+
+  const counts = {
+    all: items.length,
+    kpi: items.filter((i) => i.group_type === "kpi").length,
+    onboarding: items.filter((i) => i.group_type === "onboarding").length,
   };
 
   return (
