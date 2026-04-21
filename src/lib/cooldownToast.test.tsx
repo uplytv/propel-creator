@@ -20,6 +20,13 @@ import {
   writeSettingsNavLast,
 } from "./settingsNavCooldown";
 
+// jsdom doesn't implement pointer capture, which sonner attaches on swipe.
+// Stub it once to silence harmless TypeError noise during user-event clicks.
+const proto = HTMLElement.prototype as unknown as Record<string, unknown>;
+if (!proto.setPointerCapture) proto.setPointerCapture = () => {};
+if (!proto.releasePointerCapture) proto.releasePointerCapture = () => {};
+if (!proto.hasPointerCapture) proto.hasPointerCapture = () => false;
+
 describe("showCooldownToast — variants", () => {
   beforeEach(() => {
     sessionStorage.clear();
