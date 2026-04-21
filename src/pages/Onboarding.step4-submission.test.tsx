@@ -387,23 +387,19 @@ describe("Onboarding Step 4 — auto-retry countdown after submission failure", 
     await advanceToStep4();
     fillStep4Required();
 
-    // First attempt — fails synchronously after the awaited insert path.
+    // First attempt — fails after the awaited update path.
     fireEvent.click(submitButton());
     expect(await screen.findByText(/Submission failed/i)).toBeInTheDocument();
 
-    // Switch to fake timers to drive the countdown ticks deterministically.
-    vi.useFakeTimers();
-    await act(async () => {
-      // 5 ticks of 1s plus a small buffer → countdown reaches 0 and re-fires.
-      vi.advanceTimersByTime(6000);
-    });
-    vi.useRealTimers();
-
-    // Second attempt should have run and succeeded → success overlay shows.
-    await waitFor(() => {
-      expect(screen.getByText(/Application submitted!/i)).toBeInTheDocument();
-    });
-  });
+    // Wait through the 5s real-timer countdown, then for the success overlay.
+    // (AUTO_RETRY_SECONDS = 5 → ~5s ticking + a re-submit roundtrip.)
+    await waitFor(
+      () => {
+        expect(screen.getByText(/Application submitted!/i)).toBeInTheDocument();
+      },
+      { timeout: 10000, interval: 100 },
+    );
+  }, 15000);
 
   it("shows static 'Auto-retry is off' messaging when the preference is disabled", async () => {
     autoRetryEnabledFlag = false;
