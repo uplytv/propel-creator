@@ -9,7 +9,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Rocket, MousePointerClick, Percent, Download } from "lucide-react";
+import {
+  Tooltip as UITooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Rocket, MousePointerClick, Percent, Download, HelpCircle } from "lucide-react";
 import {
   LineChart,
   Line,
