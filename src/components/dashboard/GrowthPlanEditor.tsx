@@ -7,8 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Trash2, Sparkles, History, Save, Loader2, RotateCcw, Bookmark, Wand2, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Trash2, Sparkles, History, Save, Loader2, RotateCcw, Bookmark, Wand2, ArrowUp, ArrowDown, LayoutTemplate } from "lucide-react";
 import { useGrowthPlan, type EditablePlan, type PlanVersion } from "@/hooks/useGrowthPlan";
+import { useApp } from "@/context/AppContext";
+import { GROWTH_PLAN_TEMPLATES } from "@/lib/growthPlanTemplates";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
@@ -16,14 +18,25 @@ type SuggestField = "task" | "milestone" | "next_action" | "title";
 
 export default function GrowthPlanEditor({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void; }) {
   const { plan, versions, loading, saving, save, restoreVersion, fetchSuggestions } = useGrowthPlan();
+  const { profile } = useApp();
   const [draft, setDraft] = useState<EditablePlan | null>(null);
   const [suggestField, setSuggestField] = useState<SuggestField | null>(null);
   const [suggestTarget, setSuggestTarget] = useState<{ index?: number; current?: string } | null>(null);
   const [suggestions, setSuggestions] = useState<{ text: string; reason: string }[]>([]);
   const [suggestLoading, setSuggestLoading] = useState(false);
   const [versionNameInput, setVersionNameInput] = useState("");
+  const [pendingTemplate, setPendingTemplate] = useState<string | null>(null);
 
   useEffect(() => { if (plan) setDraft(plan); }, [plan]);
+
+  const applyTemplate = (templateId: string) => {
+    const tpl = GROWTH_PLAN_TEMPLATES.find(t => t.id === templateId);
+    if (!tpl || !draft) return;
+    const built = tpl.build(profile.name || "Your");
+    setDraft({ ...built, id: draft.id });
+    setPendingTemplate(null);
+    toast.success(`Applied "${tpl.name}" template — review and save`);
+  };
 
   if (!open) return null;
   if (loading || !draft) {
@@ -118,8 +131,9 @@ export default function GrowthPlanEditor({ open, onOpenChange }: { open: boolean
         </DialogHeader>
 
         <Tabs defaultValue="edit" className="flex-1 flex flex-col min-h-0">
-          <TabsList className="grid grid-cols-3 mx-5 mt-3">
+          <TabsList className="grid grid-cols-4 mx-5 mt-3">
             <TabsTrigger value="edit">Edit</TabsTrigger>
+            <TabsTrigger value="templates" className="gap-1.5"><LayoutTemplate className="w-3.5 h-3.5" /> Templates</TabsTrigger>
             <TabsTrigger value="suggest" className="gap-1.5"><Wand2 className="w-3.5 h-3.5" /> AI</TabsTrigger>
             <TabsTrigger value="history" className="gap-1.5"><History className="w-3.5 h-3.5" /> History</TabsTrigger>
           </TabsList>
@@ -234,6 +248,42 @@ export default function GrowthPlanEditor({ open, onOpenChange }: { open: boolean
                     />
                   ))}
                 </Section>
+              </div>
+            </ScrollArea>
+          </TabsContent>
+
+          {/* TEMPLATES */}
+          <TabsContent value="templates" className="flex-1 min-h-0 overflow-hidden m-0">
+            <ScrollArea className="h-[55vh] px-5 py-4">
+              <p className="text-xs text-muted-foreground mb-3">
+                Pick a starter plan tuned to your creator type. You can edit everything afterwards — your current plan will be replaced (history is preserved).
+              </p>
+              <div className="space-y-2">
+                {GROWTH_PLAN_TEMPLATES.map((t) => {
+                  const isPending = pendingTemplate === t.id;
+                  return (
+                    <div key={t.id} className="rounded-lg border border-border bg-card p-3">
+                      <div className="flex items-start gap-3">
+                        <div className="text-2xl leading-none">{t.emoji}</div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-foreground">{t.name}</p>
+                          <p className="text-[11px] text-muted-foreground uppercase tracking-wide mb-1">{t.audience}</p>
+                          <p className="text-xs text-muted-foreground">{t.blurb}</p>
+                        </div>
+                        {isPending ? (
+                          <div className="flex items-center gap-1 shrink-0">
+                            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setPendingTemplate(null)}>Cancel</Button>
+                            <Button size="sm" className="h-7 text-xs" onClick={() => applyTemplate(t.id)}>Replace</Button>
+                          </div>
+                        ) : (
+                          <Button size="sm" variant="secondary" className="h-7 text-xs shrink-0" onClick={() => setPendingTemplate(t.id)}>
+                            Use
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </ScrollArea>
           </TabsContent>
