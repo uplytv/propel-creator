@@ -386,15 +386,21 @@ function ExportCsvDialog({
     } catch { /* ignore */ }
     return ",";
   });
+  const [quoteAll, setQuoteAll] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("admin-csv-export-quote-all") === "1";
+    } catch { return false; }
+  });
 
-  // Persist whenever preset or selection changes
+  // Persist whenever preset, selection, delimiter, or quoting changes
   useEffect(() => {
     try {
       localStorage.setItem("admin-csv-export-preset", preset);
       localStorage.setItem("admin-csv-export-columns", JSON.stringify([...selected]));
       localStorage.setItem("admin-csv-export-delimiter", delimiter);
+      localStorage.setItem("admin-csv-export-quote-all", quoteAll ? "1" : "0");
     } catch { /* ignore */ }
-  }, [preset, selected, delimiter]);
+  }, [preset, selected, delimiter, quoteAll]);
 
   const applyPreset = (p: "both" | "report" | "comment" | "custom") => {
     setPreset(p);
