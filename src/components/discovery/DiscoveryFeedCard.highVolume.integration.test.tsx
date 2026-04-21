@@ -147,13 +147,17 @@ describe("DiscoveryFeedCard — high-volume dedupe across many distinct boost ke
       vi.advanceTimersByTime(6 * 60_000);
     });
 
-    // Debug: log first few calls.
-    // eslint-disable-next-line no-console
-    console.log("SAMPLE CALLS:", toastFn.mock.calls.slice(0, 3).map((c) => c[0]));
+    // Verify per-key counts.
     for (const item of uniqueItems) {
       const title = titleForItem(item);
-      expect(countForTitle("Boost ending soon", title)).toBe(1);
-      expect(countForTitle("Boost ended", title)).toBe(1);
+      const endingCount = countForTitle("Boost ending soon", title);
+      const endedCount = countForTitle("Boost ended", title);
+      if (endingCount !== 1 || endedCount !== 1) {
+        // eslint-disable-next-line no-console
+        console.log("MISMATCH:", title, { endingCount, endedCount });
+      }
+      expect(endingCount).toBe(1);
+      expect(endedCount).toBe(1);
     }
 
     // Verify global totals.
