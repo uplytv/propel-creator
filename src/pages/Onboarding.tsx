@@ -130,6 +130,16 @@ export default function Onboarding() {
 
   // Step 2: Creator Profile
   const [creatorType, setCreatorType] = useState("");
+  const pendingCreatorTypeFocus = useRef<string | null>(null);
+  useEffect(() => {
+    const target = pendingCreatorTypeFocus.current;
+    if (!target) return;
+    pendingCreatorTypeFocus.current = null;
+    const el = document.querySelector<HTMLButtonElement>(
+      `[data-creator-type-card="${target}"]`
+    );
+    el?.focus();
+  }, [creatorType]);
   const [followerCount, setFollowerCount] = useState("");
   const [primaryPlatform, setPrimaryPlatform] = useState("");
   const [isMonetizing, setIsMonetizing] = useState<string | null>(null);
@@ -848,14 +858,9 @@ export default function Onboarding() {
                           if (nextIdx === null) return;
                           e.preventDefault();
                           const nextValue = CREATOR_TYPES[nextIdx].value;
+                          // Defer focus to after React commits the new tabindex/state.
+                          pendingCreatorTypeFocus.current = nextValue;
                           setCreatorType(nextValue);
-                          // Move focus to the newly selected card
-                          requestAnimationFrame(() => {
-                            const next = document.querySelector<HTMLButtonElement>(
-                              `[data-creator-type-card="${nextValue}"]`
-                            );
-                            next?.focus();
-                          });
                         }}
                         className={`rounded-xl p-3 text-center border-2 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                           selected
