@@ -123,11 +123,17 @@ export default function Settings() {
   // If linked with ?highlight=auto-retry, scroll the section into view + toast
   useEffect(() => {
     if (searchParams.get("highlight") === "auto-retry" && activeTab === "account") {
+      const fromRetry = searchParams.get("from") === "retry";
       const t = setTimeout(() => {
         autoRetryRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-        toast.success("Auto-retry section highlighted", {
-          description: "Toggle below to enable or disable automatic onboarding retries.",
-        });
+        toast.success(
+          fromRetry ? "Made it on retry — section highlighted" : "Auto-retry section highlighted",
+          {
+            description: fromRetry
+              ? "Your second attempt to open Settings worked. Toggle below to enable or disable automatic onboarding retries."
+              : "Toggle below to enable or disable automatic onboarding retries.",
+          }
+        );
       }, 200);
       return () => clearTimeout(t);
     }
