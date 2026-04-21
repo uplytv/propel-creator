@@ -227,27 +227,17 @@ export default function BoostToastTab() {
                 ))}
               </SelectContent>
             </Select>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-8 text-xs"
-              disabled={!canExport}
-              onClick={handleExportCsv}
-            >
-              <Download className="w-3.5 h-3.5 mr-1.5" />
-              Export CSV
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-8 text-xs"
-              disabled={!canExport}
-              onClick={handleExportJson}
-            >
-              <Download className="w-3.5 h-3.5 mr-1.5" />
-              Export JSON
-            </Button>
             <TooltipProvider delayDuration={150}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 text-xs"
+                disabled={!canExport}
+                onClick={handleExportCsv}
+              >
+                <Download className="w-3.5 h-3.5 mr-1.5" />
+                Export CSV
+              </Button>
               <UITooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -271,6 +261,39 @@ export default function BoostToastTab() {
                     <li><span className="font-mono">shown</span> — count of <span className="font-mono">boost_toast_shown</span> events.</li>
                     <li><span className="font-mono">clicked</span> — count of <span className="font-mono">boost_toast_action_clicked</span> events.</li>
                     <li><span className="font-mono">ctr</span> — clicked ÷ shown (0–1, 4 decimals).</li>
+                  </ul>
+                </TooltipContent>
+              </UITooltip>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 text-xs"
+                disabled={!canExport}
+                onClick={handleExportJson}
+              >
+                <Download className="w-3.5 h-3.5 mr-1.5" />
+                Export JSON
+              </Button>
+              <UITooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 text-muted-foreground"
+                    aria-label="JSON structure help"
+                  >
+                    <HelpCircle className="w-4 h-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" align="end" className="max-w-xs text-xs">
+                  <p className="font-semibold mb-1">JSON structure</p>
+                  <ul className="space-y-1">
+                    <li><span className="font-mono">generated_at</span> — ISO timestamp of the export.</li>
+                    <li><span className="font-mono">filters</span> — active <span className="font-mono">range</span>, <span className="font-mono">boost_state</span>, and <span className="font-mono">route</span>.</li>
+                    <li><span className="font-mono">totals</span> — aggregate <span className="font-mono">shown</span>, <span className="font-mono">clicked</span>, <span className="font-mono">ctr</span> across the range.</li>
+                    <li><span className="font-mono">timeseries</span> — array of buckets with <span className="font-mono">bucket</span> (ISO), <span className="font-mono">shown</span>, <span className="font-mono">clicked</span>, <span className="font-mono">ctr</span>.</li>
+                    <li><span className="font-mono">routes</span> — per-route breakdown with <span className="font-mono">route</span>, <span className="font-mono">shown</span>, <span className="font-mono">clicked</span>, <span className="font-mono">ctr</span>.</li>
                   </ul>
                 </TooltipContent>
               </UITooltip>
