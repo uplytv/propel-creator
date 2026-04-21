@@ -75,25 +75,47 @@ describe("CreatorTour — aria-live announcements", () => {
     expect(live.textContent).toBe(expectedAnnouncement(0));
   });
 
+  const findFooterButton = (label: "Back" | RegExp): HTMLButtonElement => {
+    const matcher =
+      typeof label === "string"
+        ? (text: string) => text.trim().startsWith(label)
+        : (text: string) => label.test(text);
+    const btn = Array.from(
+      document.querySelectorAll<HTMLButtonElement>(
+        '[data-testid="creator-tour-popover"] button',
+      ),
+    ).find((b) => matcher(b.textContent ?? ""));
+    if (!btn) throw new Error(`Footer button not found for ${label}`);
+    return btn;
+  };
+
+  // The "Next" CTA copy varies per step (e.g. "Start the tour", "Got it",
+  // "Next", "Let's go"). We match it by excluding the other known buttons.
+  const findNextButton = (): HTMLButtonElement => {
+    const btn = Array.from(
+      document.querySelectorAll<HTMLButtonElement>(
+        '[data-testid="creator-tour-popover"] button',
+      ),
+    ).find((b) => {
+      const text = (b.textContent ?? "").trim();
+      const aria = b.getAttribute("aria-label") ?? "";
+      return aria !== "Skip tour" && !text.startsWith("Back");
+    });
+    if (!btn) throw new Error("Next button not found in popover");
+    return btn;
+  };
+
   it("clears, then re-announces, after advancing to the next step", () => {
     renderTour();
     flushAnnouncement();
 
-    const nextBtn = document.querySelector<HTMLButtonElement>(
-      '[data-testid="creator-tour-popover"] button:last-of-type',
-    );
-    expect(nextBtn).toBeTruthy();
-
     act(() => {
-      fireEvent.click(nextBtn!);
+      fireEvent.click(findNextButton());
     });
 
-    // eslint-disable-next-line no-console
-    console.log("DOM after click:", document.body.innerHTML.slice(0, 500));
     // Immediately after the step change the region is cleared so screen
     // readers reliably treat the next message as a *new* announcement.
-    const live = getLiveRegion();
-    expect(live.textContent).toBe("");
+    expect(getLiveRegion().textContent).toBe("");
 
     flushAnnouncement();
     expect(getLiveRegion().textContent).toBe(expectedAnnouncement(1));
@@ -106,25 +128,16 @@ describe("CreatorTour — aria-live announcements", () => {
 
     // Step 0 → 1 → 2
     for (let i = 1; i <= 2; i++) {
-      const nextBtn = document.querySelector<HTMLButtonElement>(
-        '[data-testid="creator-tour-popover"] button:last-of-type',
-      );
       act(() => {
-        fireEvent.click(nextBtn!);
+        fireEvent.click(findNextButton());
       });
       flushAnnouncement();
       expect(getLiveRegion().textContent).toBe(expectedAnnouncement(i));
     }
 
-    // Step 2 → 1 (Back button is the first button in the footer row)
-    const backBtn = Array.from(
-      document.querySelectorAll<HTMLButtonElement>(
-        '[data-testid="creator-tour-popover"] button',
-      ),
-    ).find((b) => b.textContent?.trim().startsWith("Back"));
-    expect(backBtn).toBeTruthy();
+    // Step 2 → 1
     act(() => {
-      fireEvent.click(backBtn!);
+      fireEvent.click(findFooterButton("Back"));
     });
     flushAnnouncement();
     expect(getLiveRegion().textContent).toBe(expectedAnnouncement(1));
