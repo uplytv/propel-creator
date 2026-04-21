@@ -47,6 +47,8 @@ export default function VideoPlayer() {
   const resolvedSlug = slug || videoId; // /creator/:username/videos/:id uses 'id' param
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const playlistId = searchParams.get("playlist") || undefined;
   const { data: video, isLoading } = useVideo(resolvedSlug);
   const { data: comments } = useVideoComments(video?.id);
   const { isLiked, toggleLike } = useVideoLike(video?.id);
@@ -58,6 +60,8 @@ export default function VideoPlayer() {
   const [dislikeCount, setDislikeCount] = useState(0);
   const [tipOpen, setTipOpen] = useState(false);
   const [remixOpen, setRemixOpen] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [ended, setEnded] = useState(false);
   const { isFollowing, follow, unfollow } = useFollows();
   const isOwner = user?.id === video?.creator_id;
   const subscribed = video?.creator_id ? isFollowing(video.creator_id) : false;
@@ -72,6 +76,26 @@ export default function VideoPlayer() {
     getCurrentTime: () => videoElRef.current?.currentTime ?? 0,
     enabled: !!video?.id && !!video?.duration_seconds,
   });
+
+  // Attach time/ended listeners for chapter highlight + autoplay
+  useEffect(() => {
+    const el = videoElRef.current;
+    if (!el) return;
+    const onTime = () => setCurrentTime(el.currentTime);
+    const onEnded = () => setEnded(true);
+    const onPlay = () => setEnded(false);
+    el.addEventListener("timeupdate", onTime);
+    el.addEventListener("ended", onEnded);
+    el.addEventListener("play", onPlay);
+    return () => {
+      el.removeEventListener("timeupdate", onTime);
+      el.removeEventListener("ended", onEnded);
+      el.removeEventListener("play", onPlay);
+    };
+  }, [video?.id]);
+
+  // Playlist context for next-up
+  const { data: playlistItems } = usePlaylistItems(playlistId);
 
   // Fetch creator profile
   const { data: creator } = useQuery({
