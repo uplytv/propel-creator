@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { getAffiliateCookie, clearAffiliateCookie, getReferralData, clearReferralData } from "@/lib/affiliateCookies";
 import logoImg from "@/assets/logo.png";
 import MilestoneProgressPill from "@/components/onboarding/MilestoneProgressPill";
+import { useAutoRetryPreference } from "@/hooks/useAutoRetryPreference";
 
 const CREATOR_TYPES = [
   "Fitness", "Finance", "Gaming", "Lifestyle", "Business", "Education",
@@ -217,6 +218,7 @@ export default function Onboarding() {
   const [autoRetryCountdown, setAutoRetryCountdown] = useState<number | null>(null);
   const AUTO_RETRY_SECONDS = 5;
   const [referralCode, setReferralCode] = useState("");
+  const { enabled: autoRetryEnabled } = useAutoRetryPreference();
 
   // Auto-retry countdown: tick every second; at 0, fire finishOnboarding once
   useEffect(() => {
@@ -501,8 +503,10 @@ export default function Onboarding() {
         err?.message?.toString().slice(0, 200) ||
           "Something went wrong while submitting your application."
       );
-      // Kick off the auto-retry countdown
-      setAutoRetryCountdown(AUTO_RETRY_SECONDS);
+      // Kick off the auto-retry countdown only if the user has enabled it
+      if (autoRetryEnabled) {
+        setAutoRetryCountdown(AUTO_RETRY_SECONDS);
+      }
     }
   };
 
