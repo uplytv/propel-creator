@@ -203,9 +203,12 @@ export default function RootRoute() {
   const authStartRef = useRef<number>(performance.now());
   const reportedRef = useRef(false);
 
+  // Skeleton display tracking — used to verify the flash fix in production.
+  const skeletonShownAtRef = useRef<number | null>(null);
+  const skeletonShownDurationRef = useRef<number>(0);
+  const skeletonWasShownRef = useRef<boolean>(false);
+
   // Adaptive skeleton delay: derived from last-known auth resolve time.
-  // Stored in a ref so it's stable for the duration of this mount but can be
-  // refreshed on retry.
   const skeletonDelayRef = useRef<number>(
     computeAdaptiveSkeletonDelay(readLastAuthDurationMs())
   );
@@ -214,6 +217,9 @@ export default function RootRoute() {
   useEffect(() => {
     authStartRef.current = performance.now();
     reportedRef.current = false;
+    skeletonShownAtRef.current = null;
+    skeletonShownDurationRef.current = 0;
+    skeletonWasShownRef.current = false;
     skeletonDelayRef.current = computeAdaptiveSkeletonDelay(
       readLastAuthDurationMs()
     );
@@ -224,19 +230,40 @@ export default function RootRoute() {
     if (loading || reportedRef.current) return;
     reportedRef.current = true;
 
+    // Finalize skeleton timing if it was on screen at resolve time.
+    if (skeletonShownAtRef.current != null) {
+      skeletonShownDurationRef.current +=
+        performance.now() - skeletonShownAtRef.current;
+      skeletonShownAtRef.current = null;
+    }
+    const skeletonShownMs = Math.round(skeletonShownDurationRef.current);
+
     const durationMs = Math.round(performance.now() - authStartRef.current);
     const bucket = bucketAuthDuration(durationMs);
+    // A "flash" = skeleton appeared but for less than ~250ms (perceptual
+    // threshold). If this number stays near zero in production, the fix works.
+    const skeletonWasFlash =
+      skeletonWasShownRef.current && skeletonShownMs > 0 && skeletonShownMs < 250;
+
     const payload = {
       duration_ms: durationMs,
       bucket,
       authenticated: !!user,
       had_error: !!authError,
+      skeleton_shown: skeletonWasShownRef.current,
+      skeleton_shown_ms: skeletonShownMs,
+      skeleton_delay_ms: skeletonDelayRef.current,
+      skeleton_was_flash: skeletonWasFlash,
     };
 
     if (import.meta.env.DEV) {
       // eslint-disable-next-line no-console
       console.log(
-        `[RootRoute auth] resolved in ${durationMs}ms (${bucket}) — adaptive skeleton delay was ${skeletonDelayRef.current}ms`,
+        `[RootRoute auth] resolved in ${durationMs}ms (${bucket}) — skeleton ${
+          skeletonWasShownRef.current
+            ? `shown for ${skeletonShownMs}ms${skeletonWasFlash ? " ⚠ FLASH" : ""}`
+            : "not shown ✓"
+        } — adaptive delay was ${skeletonDelayRef.current}ms`,
         payload
       );
     }
@@ -261,13 +288,21 @@ export default function RootRoute() {
   // get up to 600ms before the skeleton appears.
   useEffect(() => {
     if (!loading) {
+      // Auth resolved while skeleton might be visible — capture how long it
+      // was on screen for the upcoming telemetry event.
+      if (skeletonShownAtRef.current != null) {
+        skeletonShownDurationRef.current +=
+          performance.now() - skeletonShownAtRef.current;
+        skeletonShownAtRef.current = null;
+      }
       setShowSkeleton(false);
       return;
     }
-    const id = window.setTimeout(
-      () => setShowSkeleton(true),
-      skeletonDelayRef.current
-    );
+    const id = window.setTimeout(() => {
+      setShowSkeleton(true);
+      skeletonWasShownRef.current = true;
+      skeletonShownAtRef.current = performance.now();
+    }, skeletonDelayRef.current);
     return () => window.clearTimeout(id);
   }, [loading, retryKey]);
 
