@@ -220,11 +220,12 @@ export default function Onboarding() {
   const [referralCode, setReferralCode] = useState("");
   const { enabled: autoRetryEnabled } = useAutoRetryPreference();
 
-  // Auto-retry countdown: tick every second; at 0, fire finishOnboarding once
+  // Auto-retry countdown: tick every second; at 0, fire finishOnboarding once.
+  // We leave the value at 0 (not null) so the overlay can show "Retrying now…"
+  // until finishOnboarding clears submitError or the failure overlay re-opens.
   useEffect(() => {
     if (autoRetryCountdown === null) return;
     if (autoRetryCountdown <= 0) {
-      setAutoRetryCountdown(null);
       finishOnboarding();
       return;
     }
@@ -572,6 +573,12 @@ export default function Onboarding() {
               {autoRetryCountdown !== null && autoRetryCountdown > 0 && (
                 <p className="text-xs text-muted-foreground mt-3" aria-live="polite">
                   Auto-retrying in <span className="font-semibold text-foreground">{autoRetryCountdown}s</span>…
+                </p>
+              )}
+              {autoRetryCountdown === 0 && (
+                <p className="text-xs font-semibold text-primary mt-3 flex items-center justify-center gap-1.5" aria-live="assertive">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  Retrying now…
                 </p>
               )}
               <div className="flex gap-2 mt-5 w-full">
