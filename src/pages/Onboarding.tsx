@@ -297,6 +297,7 @@ export default function Onboarding() {
     if (saving || submitSucceeded) return; // Prevent double-submit
     setSubmitError(null);
     setAutoRetryCountdown(null);
+    setRetryAt(null);
     setSaving(true);
 
     try {
