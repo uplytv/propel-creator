@@ -837,7 +837,7 @@ export default function Onboarding() {
                         aria-checked={selected}
                         tabIndex={isTabStop ? 0 : -1}
                         data-creator-type-card={t.value}
-                        onClick={() => setCreatorType(t.value)}
+                        onClick={() => { setCreatorType(t.value); setCreatorTypeError(false); }}
                         onKeyDown={(e) => {
                           const cols = 3;
                           const last = CREATOR_TYPES.length - 1;
