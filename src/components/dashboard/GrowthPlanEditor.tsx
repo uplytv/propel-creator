@@ -252,6 +252,42 @@ export default function GrowthPlanEditor({ open, onOpenChange }: { open: boolean
             </ScrollArea>
           </TabsContent>
 
+          {/* TEMPLATES */}
+          <TabsContent value="templates" className="flex-1 min-h-0 overflow-hidden m-0">
+            <ScrollArea className="h-[55vh] px-5 py-4">
+              <p className="text-xs text-muted-foreground mb-3">
+                Pick a starter plan tuned to your creator type. You can edit everything afterwards — your current plan will be replaced (history is preserved).
+              </p>
+              <div className="space-y-2">
+                {GROWTH_PLAN_TEMPLATES.map((t) => {
+                  const isPending = pendingTemplate === t.id;
+                  return (
+                    <div key={t.id} className="rounded-lg border border-border bg-card p-3">
+                      <div className="flex items-start gap-3">
+                        <div className="text-2xl leading-none">{t.emoji}</div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-foreground">{t.name}</p>
+                          <p className="text-[11px] text-muted-foreground uppercase tracking-wide mb-1">{t.audience}</p>
+                          <p className="text-xs text-muted-foreground">{t.blurb}</p>
+                        </div>
+                        {isPending ? (
+                          <div className="flex items-center gap-1 shrink-0">
+                            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setPendingTemplate(null)}>Cancel</Button>
+                            <Button size="sm" className="h-7 text-xs" onClick={() => applyTemplate(t.id)}>Replace</Button>
+                          </div>
+                        ) : (
+                          <Button size="sm" variant="secondary" className="h-7 text-xs shrink-0" onClick={() => setPendingTemplate(t.id)}>
+                            Use
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </ScrollArea>
+          </TabsContent>
+
           {/* AI suggestions */}
           <TabsContent value="suggest" className="flex-1 min-h-0 overflow-hidden m-0">
             <ScrollArea className="h-[55vh] px-5 py-4">
