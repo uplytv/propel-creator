@@ -132,6 +132,16 @@ export default function CreatorTour({
     }
   }, [forceOpen]);
 
+  // Listen for imperative launch (e.g. from a "Replay tour" button)
+  useEffect(() => {
+    const handler = () => {
+      setStepIdx(0);
+      setOpen(true);
+    };
+    window.addEventListener("uply:launch-tour", handler);
+    return () => window.removeEventListener("uply:launch-tour", handler);
+  }, []);
+
   // Navigate to step's route if needed
   useEffect(() => {
     if (!open || !step) return;
