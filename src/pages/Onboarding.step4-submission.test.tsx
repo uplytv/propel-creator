@@ -708,10 +708,10 @@ describe("Onboarding Step 4 — exact Supabase payload shapes", () => {
     expect(waitlistInsert!.payload.referrer_avatar_url).toBeNull();
   });
 
-  it("uses a different creator_type (Coach) end-to-end when the user picks it in Step 2", async () => {
+  it("uses a different creator_type (Education) end-to-end when the user picks it in Step 2", async () => {
     renderOnboarding();
-    fillStep1("Alex Coach");
-    fillStep2("Coach");
+    fillStep1("Alex Educator");
+    fillStep2("Education");
     await screen.findByText(/Where are you right now\?/i);
     fillStep3();
     await screen.findByText(/Step 4 of 4/i);
@@ -723,11 +723,11 @@ describe("Onboarding Step 4 — exact Supabase payload shapes", () => {
     });
 
     const profileUpdate = updateCallPayloads.find((c) => c.table === "profiles");
-    expect(profileUpdate!.payload.creator_type).toBe("Coach");
-    expect(profileUpdate!.payload.first_name).toBe("Alex Coach");
+    expect(profileUpdate!.payload.creator_type).toBe("Education");
+    expect(profileUpdate!.payload.first_name).toBe("Alex Educator");
 
     const waitlistInsert = insertCallPayloads.find((c) => c.table === "waitlist");
-    expect(waitlistInsert!.payload.creator_type).toBe("Coach");
-    expect(waitlistInsert!.payload.full_name).toBe("Alex Coach");
+    expect(waitlistInsert!.payload.creator_type).toBe("Education");
+    expect(waitlistInsert!.payload.full_name).toBe("Alex Educator");
   });
 });
