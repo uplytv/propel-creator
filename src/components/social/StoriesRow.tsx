@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useStories } from "@/hooks/useStories";
 import { useAuth } from "@/context/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -15,6 +16,7 @@ interface StoriesRowProps {
 
 export default function StoriesRow({ filterLocal, filterFriends }: StoriesRowProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { groupedStories, isLoading } = useStories();
   const [viewingUserId, setViewingUserId] = useState<string | null>(null);
   const [showCreator, setShowCreator] = useState(false);
@@ -57,7 +59,7 @@ export default function StoriesRow({ filterLocal, filterFriends }: StoriesRowPro
       <div className="flex gap-3 overflow-x-auto scrollbar-hide px-4 py-3">
         {/* Your Plan / Story */}
         <button
-          onClick={() => (myStories ? setViewingUserId(user!.id) : setShowCreator(true))}
+          onClick={() => (myStories ? setViewingUserId(user!.id) : navigate("/camera?mode=STORY"))}
           className="flex flex-col items-center gap-1.5 flex-shrink-0"
           style={{ minWidth: 64 }}
         >

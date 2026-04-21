@@ -198,7 +198,7 @@ export default function ContentLibrary() {
               </h1>
               <p className="text-muted-foreground mt-1">Manage your videos, recordings, and clips</p>
             </div>
-            <Button onClick={() => navigate("/go-live")} className="gap-2">
+            <Button onClick={() => navigate("/camera?mode=VIDEO")} className="gap-2">
               <Upload className="w-4 h-4" /> Record New
             </Button>
           </div>
@@ -228,8 +228,8 @@ export default function ContentLibrary() {
                 <Film className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No videos yet</h3>
                 <p className="text-muted-foreground mb-6">Record your first video using the Broadcast Studio.</p>
-                <Button onClick={() => navigate("/go-live")} className="gap-2">
-                  <Play className="w-4 h-4" /> Go to Studio
+                <Button onClick={() => navigate("/camera?mode=VIDEO")} className="gap-2">
+                  <Play className="w-4 h-4" /> Open Camera
                 </Button>
               </motion.div>
             ) : (
