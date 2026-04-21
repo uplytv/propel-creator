@@ -195,6 +195,10 @@ export default function RootRoute() {
     if (loading || reportedRef.current) return;
     reportedRef.current = true;
 
+    // Targeted prefetch: only warm the bundle we're actually about to render.
+    // Saves bandwidth vs. eagerly prefetching both Home and Landing.
+    prefetchTarget(user ? "home" : "landing", "auth-resolved");
+
     // Finalize skeleton timing if it was on screen at resolve time.
     if (skeletonShownAtRef.current != null) {
       skeletonShownDurationRef.current +=
