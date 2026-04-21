@@ -339,10 +339,31 @@ function ExportCsvDialog({
   tab: ReportStatus;
   onExport: (selected: string[]) => void;
 }) {
-  const [preset, setPreset] = useState<"both" | "report" | "comment" | "custom">("both");
-  const [selected, setSelected] = useState<Set<string>>(
-    new Set([...REPORT_FIELDS, ...COMMENT_FIELDS].map((f) => f.key))
-  );
+  const [preset, setPreset] = useState<"both" | "report" | "comment" | "custom">(() => {
+    try {
+      const v = localStorage.getItem("admin-csv-export-preset");
+      if (v === "both" || v === "report" || v === "comment" || v === "custom") return v;
+    } catch { /* ignore */ }
+    return "both";
+  });
+  const [selected, setSelected] = useState<Set<string>>(() => {
+    try {
+      const raw = localStorage.getItem("admin-csv-export-columns");
+      if (raw) {
+        const arr = JSON.parse(raw) as string[];
+        if (Array.isArray(arr) && arr.length) return new Set(arr);
+      }
+    } catch { /* ignore */ }
+    return new Set([...REPORT_FIELDS, ...COMMENT_FIELDS].map((f) => f.key));
+  });
+
+  // Persist whenever preset or selection changes
+  React.useEffect(() => {
+    try {
+      localStorage.setItem("admin-csv-export-preset", preset);
+      localStorage.setItem("admin-csv-export-columns", JSON.stringify([...selected]));
+    } catch { /* ignore */ }
+  }, [preset, selected]);
 
   const applyPreset = (p: "both" | "report" | "comment" | "custom") => {
     setPreset(p);
