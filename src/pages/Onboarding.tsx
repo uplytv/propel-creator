@@ -506,6 +506,13 @@ export default function Onboarding() {
       // Kick off the auto-retry countdown only if the user has enabled it
       if (autoRetryEnabled) {
         setAutoRetryCountdown(AUTO_RETRY_SECONDS);
+        toast.error("Submission failed", {
+          description: `Auto-retry is on — we'll try again in ${AUTO_RETRY_SECONDS} seconds. You can cancel anytime.`,
+        });
+      } else {
+        toast.error("Submission failed", {
+          description: "Auto-retry is off. Tap Retry to try again, or enable auto-retry in Settings.",
+        });
       }
     }
   };
