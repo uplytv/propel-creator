@@ -19,19 +19,6 @@ vi.mock("sonner", () => {
   const fn = vi.fn((..._args: unknown[]) => {
     const id = nextId++;
     live.add(id);
-    const opts = _args[1] as
-      | { action?: { onClick?: (e?: unknown) => void } }
-      | undefined;
-    if (opts?.action?.onClick) {
-      const original = opts.action.onClick;
-      opts.action.onClick = (e?: unknown) => {
-        original(e);
-        // Real sonner auto-dismisses on action click; our component's own
-        // dismiss() call would be a no-op duplicate in this case, but we still
-        // want to detect that it was attempted, so we leave dismissal up to
-        // whatever the component invokes via toast.dismiss().
-      };
-    }
     return id;
   });
   (fn as unknown as { dismiss: (id?: number) => void }).dismiss = vi.fn(
@@ -137,10 +124,14 @@ function installLocationSpy() {
   };
 }
 
+function titleForItem(item: DiscoveryItem) {
+  return `Promoted ${item.content_type} ${item.content_id}`;
+}
+
 function callsForExact(prefix: string, title: string) {
   const expected = `${prefix}: ${title}`;
   return toastFn.mock.calls
-    .map((c, i) => ({ c, i }))
+    .map((c, i) => ({ c, i, id: toastFn.mock.results[i]?.value as number }))
     .filter(({ c }) => c[0] === expected);
 }
 
@@ -191,44 +182,33 @@ describe("DiscoveryFeedCard — analytics tracking for boost toast actions", () 
   });
 
   afterEach(() => {
-    cleanup();
     locSpy.restore();
+    cleanup();
     vi.useRealTimers();
   });
 
-  it("fires boost_toast_action_clicked with route + state on ending toast click", () => {
-    // Start with > 5 min remaining (active state)
-    const expiresAt = new Date(Date.now() + 6 * 60_000).toISOString();
+  it("ENDING click: emits action event with route+state and a paired dismiss event (via=action)", () => {
     const item = makeBoostedItem({
       contentType: "video",
       contentId: "vid-1",
-      expiresAt,
+      expiresAt: new Date(Date.now() + 6 * 60_000).toISOString(),
       slug: "promo-video-1",
     });
+    renderCards([item]);
 
-    const { rerender } = renderCards([item]);
-
-    // Move into ending window (≤ 5 min) and re-render so the effect runs.
     act(() => {
-      vi.setSystemTime(new Date(Date.now() + 2 * 60_000));
+      vi.advanceTimersByTime(2 * 60_000 + 1000);
     });
-    rerender(
-      <QueryClientProvider
-        client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
-      >
-        <MemoryRouter>
-          <DiscoveryFeedCard item={item} />
-        </MemoryRouter>
-      </QueryClientProvider>,
-    );
 
-    const endingCalls = callsForExact("Boost ending soon", item.title!);
-    expect(endingCalls.length).toBeGreaterThanOrEqual(1);
+    const calls = callsForExact("Boost ending soon", titleForItem(item));
+    expect(calls).toHaveLength(1);
+    const toastId = calls[0]!.id;
 
-    // No analytics yet (action not clicked).
     expect(eventsNamed("boost_toast_action_clicked")).toHaveLength(0);
 
-    clickActionForExact("Boost ending soon", item.title!);
+    act(() => {
+      clickActionForExact("Boost ending soon", titleForItem(item));
+    });
 
     const clicks = eventsNamed("boost_toast_action_clicked");
     expect(clicks).toHaveLength(1);
@@ -241,161 +221,125 @@ describe("DiscoveryFeedCard — analytics tracking for boost toast actions", () 
     });
     expect(clicks[0].boost_key).toEqual(expect.any(String));
 
-    // Navigation actually happened to the right route.
     expect(locSpy.hrefs).toEqual([expectedHrefFor(item)]);
 
-    // Dismiss event fired with via=action.
-    const dismissed = eventsNamed("boost_toast_dismissed");
-    expect(dismissed).toHaveLength(1);
-    expect(dismissed[0]).toMatchObject({
+    const dismisses = eventsNamed("boost_toast_dismissed");
+    expect(dismisses).toHaveLength(1);
+    expect(dismisses[0]).toMatchObject({
       boost_state: "ending",
       via: "action",
+      boost_key: clicks[0].boost_key,
     });
-    expect(dismissed[0].boost_key).toEqual(clicks[0].boost_key);
 
-    // toast.dismiss() was actually called for the toast id.
-    expect(toastFn.dismiss).toHaveBeenCalledTimes(1);
-    expect(toastFn.__live.size).toBe(0);
-    expect(toastFn.__dismissed.size).toBe(1);
+    expect(toastFn.dismiss).toHaveBeenCalledWith(toastId);
+    expect(toastFn.__live.has(toastId)).toBe(false);
+    expect(toastFn.__dismissed.has(toastId)).toBe(true);
   });
 
-  it("fires boost_toast_action_clicked with state='ended' and route on ended toast click", () => {
-    // Start with 1 min remaining (ending), then expire fully.
-    const expiresAt = new Date(Date.now() + 60_000).toISOString();
+  it("ENDED click: emits action event with state='ended' and dismiss event with via=action", () => {
     const item = makeBoostedItem({
-      contentType: "clip",
-      contentId: "clip-99",
-      expiresAt,
-      slug: "promo-clip-99",
-      creatorId: "creator-xyz",
+      contentType: "post",
+      contentId: "post-XYZ",
+      creatorId: "creator-Z",
+      expiresAt: new Date(Date.now() + 60_000).toISOString(),
+      slug: null,
     });
+    renderCards([item]);
 
-    const { rerender } = renderCards([item]);
-
-    // Cross into ended (past expiry).
     act(() => {
-      vi.setSystemTime(new Date(Date.now() + 2 * 60_000));
-    });
-    rerender(
-      <QueryClientProvider
-        client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
-      >
-        <MemoryRouter>
-          <DiscoveryFeedCard item={item} />
-        </MemoryRouter>
-      </QueryClientProvider>,
-    );
-
-    const endedCalls = callsForExact("Boost ended", item.title!);
-    expect(endedCalls.length).toBeGreaterThanOrEqual(1);
-
-    clickActionForExact("Boost ended", item.title!);
-
-    const clicks = eventsNamed("boost_toast_action_clicked");
-    // Could be 1 (ended only) or 2 (ending + ended) depending on transitions.
-    const endedClicks = clicks.filter((e) => e.boost_state === "ended");
-    expect(endedClicks).toHaveLength(1);
-    expect(endedClicks[0]).toMatchObject({
-      content_type: "clip",
-      content_id: "clip-99",
-      creator_id: "creator-xyz",
-      route: expectedHrefFor(item),
+      vi.advanceTimersByTime(2 * 60_000 + 1000);
     });
 
-    expect(locSpy.hrefs).toContain(expectedHrefFor(item));
+    const calls = callsForExact("Boost ended", titleForItem(item));
+    expect(calls).toHaveLength(1);
+    const toastId = calls[0]!.id;
 
-    const dismissed = eventsNamed("boost_toast_dismissed").filter(
+    act(() => {
+      clickActionForExact("Boost ended", titleForItem(item));
+    });
+
+    const endedClicks = eventsNamed("boost_toast_action_clicked").filter(
       (e) => e.boost_state === "ended",
     );
-    expect(dismissed).toHaveLength(1);
-    expect(dismissed[0]).toMatchObject({ via: "action" });
+    expect(endedClicks).toHaveLength(1);
+    expect(endedClicks[0]).toMatchObject({
+      content_type: "post",
+      content_id: "post-XYZ",
+      creator_id: "creator-Z",
+      route: `/community/creator-Z?post=post-XYZ`,
+    });
+
+    expect(locSpy.hrefs).toContain(`/community/creator-Z?post=post-XYZ`);
+
+    const endedDismisses = eventsNamed("boost_toast_dismissed").filter(
+      (e) => e.boost_state === "ended",
+    );
+    expect(endedDismisses).toHaveLength(1);
+    expect(endedDismisses[0]).toMatchObject({ via: "action" });
+
+    expect(toastFn.dismiss).toHaveBeenCalledWith(toastId);
+    expect(toastFn.__dismissed.has(toastId)).toBe(true);
   });
 
-  it("deduplicates: many cards for the same key fire only one click + one dismiss event per user click", () => {
-    const expiresAt = new Date(Date.now() + 6 * 60_000).toISOString();
-    const items = Array.from({ length: 4 }, () =>
-      makeBoostedItem({
-        contentType: "stream",
-        contentId: "stream-dup",
-        expiresAt,
-        slug: "promo-stream-dup",
-      }),
-    );
-
-    const { rerender } = renderCards(items);
+  it("dedupes across duplicate cards: 4 cards for one key still produce only 1 click + 1 dismiss event", () => {
+    const item = makeBoostedItem({
+      contentType: "stream",
+      contentId: "stream-dup",
+      expiresAt: new Date(Date.now() + 6 * 60_000).toISOString(),
+      slug: "promo-stream-dup",
+    });
+    renderCards(Array(4).fill(item));
 
     act(() => {
-      vi.setSystemTime(new Date(Date.now() + 2 * 60_000));
+      vi.advanceTimersByTime(2 * 60_000 + 1000);
     });
-    rerender(
-      <QueryClientProvider
-        client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
-      >
-        <MemoryRouter>
-          {items.map((item, i) => (
-            <DiscoveryFeedCard key={i} item={item} />
-          ))}
-        </MemoryRouter>
-      </QueryClientProvider>,
-    );
 
-    // Only one ending toast despite 4 cards (dedupe).
-    const endingCalls = callsForExact("Boost ending soon", items[0].title!);
-    expect(endingCalls).toHaveLength(1);
+    expect(callsForExact("Boost ending soon", titleForItem(item))).toHaveLength(1);
 
-    clickActionForExact("Boost ending soon", items[0].title!);
+    act(() => {
+      clickActionForExact("Boost ending soon", titleForItem(item));
+    });
 
     expect(eventsNamed("boost_toast_action_clicked")).toHaveLength(1);
     expect(eventsNamed("boost_toast_dismissed")).toHaveLength(1);
-    expect(locSpy.hrefs).toHaveLength(1);
-    expect(locSpy.hrefs[0]).toBe(expectedHrefFor(items[0]));
+    expect(locSpy.hrefs).toEqual([expectedHrefFor(item)]);
   });
 
-  it("emits a unique route per distinct boost key when multiple toasts are clicked", () => {
-    const expiresAt = new Date(Date.now() + 6 * 60_000).toISOString();
+  it("emits a unique route + boost_key per distinct boost when multiple toasts are clicked", () => {
     const items: DiscoveryItem[] = [
-      makeBoostedItem({ contentType: "video", contentId: "v1", expiresAt, slug: "v-1" }),
-      makeBoostedItem({ contentType: "clip", contentId: "c1", expiresAt, slug: "c-1" }),
-      makeBoostedItem({ contentType: "post", contentId: "p1", expiresAt, slug: null, creatorId: "creator-z" }),
+      makeBoostedItem({ contentType: "video", contentId: "v1", expiresAt: new Date(Date.now() + 6 * 60_000).toISOString(), slug: "v-1" }),
+      makeBoostedItem({ contentType: "clip", contentId: "c1", expiresAt: new Date(Date.now() + 6 * 60_000).toISOString(), slug: "c-1" }),
+      makeBoostedItem({ contentType: "post", contentId: "p1", expiresAt: new Date(Date.now() + 6 * 60_000).toISOString(), slug: null, creatorId: "creator-z" }),
     ];
-
-    const { rerender } = renderCards(items);
+    renderCards(items);
 
     act(() => {
-      vi.setSystemTime(new Date(Date.now() + 2 * 60_000));
+      vi.advanceTimersByTime(2 * 60_000 + 1000);
     });
-    rerender(
-      <QueryClientProvider
-        client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
-      >
-        <MemoryRouter>
-          {items.map((item, i) => (
-            <DiscoveryFeedCard key={i} item={item} />
-          ))}
-        </MemoryRouter>
-      </QueryClientProvider>,
-    );
 
     for (const item of items) {
-      clickActionForExact("Boost ending soon", item.title!);
+      act(() => {
+        clickActionForExact("Boost ending soon", titleForItem(item));
+      });
     }
 
     const clicks = eventsNamed("boost_toast_action_clicked");
     expect(clicks).toHaveLength(3);
 
     const routes = clicks.map((c) => c.route).sort();
-    const expected = items.map(expectedHrefFor).sort();
-    expect(routes).toEqual(expected);
+    expect(routes).toEqual(items.map(expectedHrefFor).sort());
 
-    // Every click event has a distinct boost_key.
-    const keys = new Set(clicks.map((c) => c.boost_key));
+    const keys = new Set(clicks.map((c) => c.boost_key as string));
     expect(keys.size).toBe(3);
 
-    // Every click is paired with a dismiss event for the same key+state.
     const dismisses = eventsNamed("boost_toast_dismissed");
     expect(dismisses).toHaveLength(3);
-    expect(new Set(dismisses.map((d) => d.boost_key))).toEqual(keys);
+    expect(new Set(dismisses.map((d) => d.boost_key as string))).toEqual(keys);
     expect(dismisses.every((d) => d.via === "action")).toBe(true);
     expect(dismisses.every((d) => d.boost_state === "ending")).toBe(true);
+
+    // Every toast was actually dismissed.
+    expect(toastFn.__live.size).toBe(0);
+    expect(toastFn.__dismissed.size).toBe(3);
   });
 });
