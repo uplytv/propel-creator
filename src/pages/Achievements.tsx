@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 type FilterGroup = "all" | "kpi" | "onboarding";
+type SortKey = "newest" | "oldest" | "label";
 
 interface Milestone {
   id: string;
@@ -39,10 +40,11 @@ export default function Achievements() {
 
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<FilterGroup>("all");
+  const [sort, setSort] = useState<SortKey>("newest");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return items.filter((i) => {
+    const result = items.filter((i) => {
       if (filter !== "all" && i.group_type !== filter) return false;
       if (!q) return true;
       return (
@@ -51,7 +53,16 @@ export default function Achievements() {
         (i.emoji || "").includes(q)
       );
     });
-  }, [items, query, filter]);
+    const sorted = [...result];
+    if (sort === "newest") {
+      sorted.sort((a, b) => +new Date(b.reached_at) - +new Date(a.reached_at));
+    } else if (sort === "oldest") {
+      sorted.sort((a, b) => +new Date(a.reached_at) - +new Date(b.reached_at));
+    } else {
+      sorted.sort((a, b) => a.label.localeCompare(b.label));
+    }
+    return sorted;
+  }, [items, query, filter, sort]);
 
   const groups = {
     onboarding: filtered.filter((i) => i.group_type === "onboarding"),
@@ -128,6 +139,27 @@ export default function Achievements() {
                   >
                     {opt.label}
                     <span className="ml-1.5 opacity-70">({counts[opt.key]})</span>
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-muted-foreground">Sort:</span>
+                {([
+                  { key: "newest" as const, label: "Newest" },
+                  { key: "oldest" as const, label: "Oldest" },
+                  { key: "label" as const, label: "Label A–Z" },
+                ]).map((opt) => (
+                  <button
+                    key={opt.key}
+                    onClick={() => setSort(opt.key)}
+                    className={cn(
+                      "px-2.5 py-1 rounded-md font-medium border transition-colors",
+                      sort === opt.key
+                        ? "bg-primary/15 border-primary/40 text-primary"
+                        : "bg-white/[0.02] border-white/10 text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {opt.label}
                   </button>
                 ))}
               </div>
