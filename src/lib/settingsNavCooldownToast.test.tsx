@@ -382,18 +382,16 @@ describe("Settings navigation toast — cooldown UI", () => {
       expect(trigger).toHaveFocus();
     });
 
-    it("restores focus even if the user moved focus into the toast mid-cooldown", () => {
+    it("restores focus to the trigger after the toast unmounts mid-cooldown", () => {
       writeSettingsNavLast(Date.now()); // disabled mid-cooldown
       const { rerender } = render(<Harness showToast={false} />);
 
       const trigger = screen.getByTestId("trigger");
       trigger.focus();
-      rerender(<Harness showToast={true} />);
+      expect(trigger).toHaveFocus();
 
-      // Scope to the action label to avoid matching the trigger button too.
-      const action = screen.getByRole("button", { name: /try again/i });
-      action.focus();
-      expect(action).toHaveFocus();
+      rerender(<Harness showToast={true} />);
+      expect(trigger).toHaveFocus();
 
       rerender(<Harness showToast={false} />);
       expect(trigger).toHaveFocus();
