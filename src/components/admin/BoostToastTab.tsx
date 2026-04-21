@@ -306,6 +306,13 @@ export default function BoostToastTab() {
                 </TooltipContent>
               </UITooltip>
             </TooltipProvider>
+            <button
+              type="button"
+              onClick={() => setSampleOpen(true)}
+              className="text-xs text-primary hover:underline self-center"
+            >
+              View sample
+            </button>
           </div>
         </div>
       </Card>
