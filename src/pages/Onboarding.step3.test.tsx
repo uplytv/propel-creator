@@ -173,9 +173,9 @@ function fillStep1(name = "Jane Doe") {
 }
 
 function fillStep2(creatorType = "Fitness") {
-  // First mocked native select on Step 2 is "What type of creator are you?"
-  const selects = screen.getAllByTestId("mock-select");
-  fireEvent.change(selects[0], { target: { value: creatorType } });
+  // Step 2 now uses a card grid (radiogroup) for creator type instead of a select
+  const card = screen.getByRole("radio", { name: new RegExp(creatorType, "i") });
+  fireEvent.click(card);
   clickContinue();
 }
 
