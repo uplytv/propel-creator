@@ -3,8 +3,9 @@ import { motion } from "framer-motion";
 import {
   User, Bell, Shield, CreditCard, Palette, Mail,
   Camera, Save, Eye, EyeOff, Trash2, Download, Megaphone, Loader2, Users, Ticket, Bot,
-  Sun, Moon, Monitor, Radio, Cast, Share2, Heart
+  Sun, Moon, Monitor, Radio, Cast, Share2, Heart, Info
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import AppLayout from "@/components/layout/AppLayout";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
