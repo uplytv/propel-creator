@@ -17,7 +17,7 @@ import {
 import CreatorProfileEditDrawer from "@/components/creator-profile/CreatorProfileEditDrawer";
 import CreatorMilestones from "@/components/creator-profile/CreatorMilestones";
 import CreatorTestimonials from "@/components/creator-profile/CreatorTestimonials";
-import SEOHead from "@/components/SEOHead";
+import SEOHead, { buildPersonSchema } from "@/components/SEOHead";
 import { toast } from "sonner";
 import { CalendarDays } from "lucide-react";
 import { useInviteCodes } from "@/hooks/useInviteCodes";
@@ -463,6 +463,13 @@ export default function CreatorProfile() {
         title={profile.display_name || profile.username || "Creator"}
         description={profile.bio || `Check out ${profile.display_name || profile.username}'s community, courses, and live streams on Uply.`}
         image={profile.avatar_url || undefined}
+        type="profile"
+        jsonLd={buildPersonSchema({
+          name: profile.display_name || profile.username || "Creator",
+          url: `https://uply.tv/${profile.username || profile.user_id}`,
+          image: profile.avatar_url || undefined,
+          description: profile.bio || undefined,
+        })}
       />
       {/* NAVBAR */}
       <nav className="sticky top-0 z-50 flex items-center justify-between px-4 h-14 backdrop-blur-xl bg-background/85 border-b border-border">
