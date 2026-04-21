@@ -195,37 +195,32 @@ describe("Onboarding Step 3 — creator-stage mouse interaction", () => {
   it("switches selection when a different card is clicked", async () => {
     await advanceToStep3();
 
-    const exploring = getStage(/Just exploring/i);
-    const scaling = getStage(/Scaling a business/i);
+    fireEvent.click(getStage(/Just exploring/i));
+    expect(getStage(/Just exploring/i).getAttribute("aria-checked")).toBe("true");
 
-    fireEvent.click(exploring);
-    expect(exploring.getAttribute("aria-checked")).toBe("true");
-
-    fireEvent.click(scaling);
-    expect(scaling.getAttribute("aria-checked")).toBe("true");
-    expect(exploring.getAttribute("aria-checked")).toBe("false");
+    fireEvent.click(getStage(/Scaling a business/i));
+    expect(getStage(/Scaling a business/i).getAttribute("aria-checked")).toBe("true");
+    expect(getStage(/Just exploring/i).getAttribute("aria-checked")).toBe("false");
   });
 
   it("moves the roving tabIndex to the clicked card so keyboard focus follows the mouse", async () => {
     await advanceToStep3();
 
-    const radios = getStageRadios();
+    const initial = getStageRadios();
     // Initial roving tab stop: first card (none selected yet).
-    expect(radios[0].getAttribute("tabindex")).toBe("0");
-    for (let i = 1; i < radios.length; i++) {
-      expect(radios[i].getAttribute("tabindex")).toBe("-1");
+    expect(initial[0].getAttribute("tabindex")).toBe("0");
+    for (let i = 1; i < initial.length; i++) {
+      expect(initial[i].getAttribute("tabindex")).toBe("-1");
     }
 
     // Click the third card.
-    const earning = getStage(/Earning consistently/i);
-    fireEvent.click(earning);
+    fireEvent.click(getStage(/Earning consistently/i));
 
-    // Now the clicked (selected) card is the sole tab stop.
-    const updated = getStageRadios();
-    for (const r of updated) {
-      if (r === earning) {
-        expect(r.getAttribute("tabindex")).toBe("0");
-      } else {
+    // Re-query — roving tab stop now sits on the selected card.
+    const earning = getStage(/Earning consistently/i);
+    expect(earning.getAttribute("tabindex")).toBe("0");
+    for (const r of getStageRadios()) {
+      if (r !== earning) {
         expect(r.getAttribute("tabindex")).toBe("-1");
       }
     }
