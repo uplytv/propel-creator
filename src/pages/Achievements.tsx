@@ -142,6 +142,27 @@ export default function Achievements() {
                   </button>
                 ))}
               </div>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-muted-foreground">Sort:</span>
+                {([
+                  { key: "newest" as const, label: "Newest" },
+                  { key: "oldest" as const, label: "Oldest" },
+                  { key: "label" as const, label: "Label A–Z" },
+                ]).map((opt) => (
+                  <button
+                    key={opt.key}
+                    onClick={() => setSort(opt.key)}
+                    className={cn(
+                      "px-2.5 py-1 rounded-md font-medium border transition-colors",
+                      sort === opt.key
+                        ? "bg-primary/15 border-primary/40 text-primary"
+                        : "bg-white/[0.02] border-white/10 text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {filtered.length === 0 ? (
