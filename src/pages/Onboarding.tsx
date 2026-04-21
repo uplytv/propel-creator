@@ -79,6 +79,19 @@ const CREATOR_STAGES = [
   },
 ];
 
+const CREATOR_GOALS = [
+  { key: "grow_audience", emoji: "📈", label: "Grow my audience" },
+  { key: "monetize", emoji: "💰", label: "Start monetizing" },
+  { key: "launch_product", emoji: "🚀", label: "Launch a product" },
+  { key: "build_community", emoji: "🤝", label: "Build a community" },
+];
+
+const GOAL_TIMELINES = [
+  { key: "30", label: "Next 30 days" },
+  { key: "60", label: "Next 60 days" },
+  { key: "90", label: "Next 90 days" },
+];
+
 const slideVariants = {
   enter: { opacity: 0, x: 40 },
   center: { opacity: 1, x: 0 },
@@ -155,6 +168,45 @@ export default function Onboarding() {
       // ignore quota / serialization errors
     }
   }, [creatorStage, oneSentence, challenges, firstUseCase, hearAbout]);
+
+  // Step 4: Goals & timeline — same TTL pattern as Step 3
+  const STEP4_STORAGE_KEY = "onboarding:step4";
+  const STEP4_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+  const initialStep4 = (() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const raw = window.localStorage.getItem(STEP4_STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as {
+        savedAt?: number;
+        goals?: string[];
+        goalTimeline?: string;
+      };
+      if (!parsed.savedAt || Date.now() - parsed.savedAt > STEP4_TTL_MS) {
+        window.localStorage.removeItem(STEP4_STORAGE_KEY);
+        return null;
+      }
+      return parsed;
+    } catch {
+      return null;
+    }
+  })();
+
+  const [goals, setGoals] = useState<string[]>(initialStep4?.goals ?? []);
+  const [goalTimeline, setGoalTimeline] = useState<string>(initialStep4?.goalTimeline ?? "");
+  const [step4AttemptedSubmit, setStep4AttemptedSubmit] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(
+        STEP4_STORAGE_KEY,
+        JSON.stringify({ savedAt: Date.now(), goals, goalTimeline })
+      );
+    } catch {
+      // ignore
+    }
+  }, [goals, goalTimeline]);
 
   // Photo & state
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -282,9 +334,10 @@ export default function Onboarding() {
       })
       .eq("user_id", user.id);
 
-    // Clear persisted Step 3 draft now that onboarding is submitted
+    // Clear persisted Step 3 & Step 4 drafts now that onboarding is submitted
     try {
       window.localStorage.removeItem(STEP3_STORAGE_KEY);
+      window.localStorage.removeItem(STEP4_STORAGE_KEY);
     } catch {
       // ignore
     }
@@ -585,7 +638,7 @@ export default function Onboarding() {
         {/* STEP 3: Qualifying Questions */}
         {step === 3 && (
           <motion.div key="qualifying" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md">
-            <p className="text-xs text-muted-foreground text-center mb-1 uppercase tracking-wider">Step 3 of 3 — Almost there! 🏁</p>
+            <p className="text-xs text-muted-foreground text-center mb-1 uppercase tracking-wider">Step 3 of 4 — Almost there! 🏁</p>
             <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">One Last Thing</h1>
             <p className="text-muted-foreground text-center text-sm mb-1">These help us match you with the right tools.</p>
             <p className="text-xs text-primary text-center mb-6 font-medium">✨ Detailed answers = faster approval</p>
@@ -703,10 +756,115 @@ export default function Onboarding() {
                 variant="hero"
                 size="xl"
                 className="flex-1"
-                disabled={!oneSentence.trim() || saving}
+                disabled={!oneSentence.trim()}
                 onClick={() => {
                   if (!creatorStage) {
                     setAttemptedSubmit(true);
+                    return;
+                  }
+                  setStep(4);
+                }}
+              >
+                Continue <ArrowRight className="ml-1 w-4 h-4" />
+              </Button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* STEP 4: Goals & Timeline */}
+        {step === 4 && (
+          <motion.div key="goals" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md">
+            <p className="text-xs text-muted-foreground text-center mb-1 uppercase tracking-wider">Step 4 of 4 — Final step 🎯</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">What are you focused on?</h1>
+            <p className="text-muted-foreground text-center text-sm mb-6">Pick up to 3 goals and a target timeline so we can prioritize your tools.</p>
+
+            <div className="space-y-5 mb-6">
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">
+                  Your top goals * <span className="text-xs text-muted-foreground font-normal">(choose 1–3)</span>
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {CREATOR_GOALS.map((g) => {
+                    const selected = goals.includes(g.key);
+                    const atLimit = !selected && goals.length >= 3;
+                    return (
+                      <button
+                        key={g.key}
+                        type="button"
+                        disabled={atLimit}
+                        aria-pressed={selected}
+                        onClick={() => {
+                          setStep4AttemptedSubmit(false);
+                          setGoals((prev) =>
+                            selected ? prev.filter((k) => k !== g.key) : [...prev, g.key]
+                          );
+                        }}
+                        className={`text-left rounded-xl border p-3 transition-all ${
+                          selected
+                            ? "border-primary bg-primary/10 ring-1 ring-primary/40"
+                            : atLimit
+                              ? "border-border bg-card opacity-50 cursor-not-allowed"
+                              : "border-border bg-card hover:border-primary/40"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">{g.emoji}</span>
+                          <span className="text-sm font-medium text-foreground">{g.label}</span>
+                          {selected && <Check className="w-4 h-4 text-primary ml-auto shrink-0" />}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+                {step4AttemptedSubmit && goals.length === 0 && (
+                  <p className="text-xs text-destructive mt-2" role="alert" aria-live="polite">
+                    Please pick at least one goal to continue.
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">Target timeline *</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {GOAL_TIMELINES.map((t) => {
+                    const selected = goalTimeline === t.key;
+                    return (
+                      <button
+                        key={t.key}
+                        type="button"
+                        aria-pressed={selected}
+                        onClick={() => { setGoalTimeline(t.key); setStep4AttemptedSubmit(false); }}
+                        className={`rounded-xl border p-3 text-center transition-all ${
+                          selected
+                            ? "border-primary bg-primary/10 ring-1 ring-primary/40"
+                            : "border-border bg-card hover:border-primary/40"
+                        }`}
+                      >
+                        <span className="text-sm font-medium text-foreground">{t.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {step4AttemptedSubmit && !goalTimeline && (
+                  <p className="text-xs text-destructive mt-2" role="alert" aria-live="polite">
+                    Please choose a timeline to continue.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => setStep(3)} className="gap-1">
+                <ArrowLeft className="w-4 h-4" /> Back
+              </Button>
+              <Button
+                variant="hero"
+                size="xl"
+                className="flex-1"
+                disabled={saving}
+                onClick={() => {
+                  if (goals.length === 0 || !goalTimeline) {
+                    setStep4AttemptedSubmit(true);
                     return;
                   }
                   finishOnboarding();
