@@ -323,17 +323,9 @@ export default function RootRoute() {
   if (redirectGuest) return <Navigate to="/welcome" replace />;
 
   if (authError) {
-    return (
-      <ErrorState
-        message={authError}
-        onRetry={() => {
-          handleRetry();
-          // If retry doesn't resolve quickly, the timeout will fire again;
-          // meanwhile let users escape to the guest landing.
-          setRedirectGuest(false);
-        }}
-      />
-    );
+    // Hand off to the dedicated /auth-retry route so the retry flow doesn't
+    // remount RootRoute (which would re-trigger skeleton timing & prefetch).
+    return <Navigate to="/auth-retry" replace state={{ from: "/", message: authError }} />;
   }
 
   // Wait fully for auth to resolve. Render nothing for the first ~150ms to
