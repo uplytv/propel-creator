@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Trophy, Sparkles, Search, X } from "lucide-react";
+import { Trophy, Sparkles, Search, X, RotateCcw } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
@@ -162,6 +162,19 @@ export default function Achievements() {
                     {opt.label}
                   </button>
                 ))}
+                {(query || filter !== "all" || sort !== "newest") && (
+                  <button
+                    onClick={() => {
+                      setQuery("");
+                      setFilter("all");
+                      setSort("newest");
+                    }}
+                    className="ml-auto inline-flex items-center gap-1 px-2.5 py-1 rounded-md font-medium border border-white/10 bg-white/[0.02] text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    Reset
+                  </button>
+                )}
               </div>
             </div>
 
