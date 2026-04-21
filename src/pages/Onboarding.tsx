@@ -643,13 +643,8 @@ export default function Onboarding() {
                   const showErrorWithCountdown = (description: string) => {
                     const toastId = `settings-nav-error-${Date.now()}`;
                     const tick = () => {
-                      const last = readSettingsNavLast();
-                      const remainingMs = Math.max(0, last + SETTINGS_NAV_COOLDOWN_MS - Date.now());
-                      const remainingSec = Math.ceil(remainingMs / 1000);
-                      const ready = remainingMs <= 0;
-                      const elapsedPct = ready
-                        ? 100
-                        : Math.min(100, Math.max(0, ((SETTINGS_NAV_COOLDOWN_MS - remainingMs) / SETTINGS_NAV_COOLDOWN_MS) * 100));
+                      const state = computeCooldownState(readSettingsNavLast());
+                      const { remainingMs, ready, elapsedPct, actionLabel } = state;
                       toast.error("Couldn't open Settings", {
                         id: toastId,
                         description: (
@@ -674,7 +669,7 @@ export default function Onboarding() {
                         ),
                         duration: ready ? 8000 : 1500,
                         action: {
-                          label: ready ? "Try again" : `Try again (${remainingSec}s)`,
+                          label: actionLabel,
                           onClick: () => {
                             if (!ready) return;
                             attemptNavigate(true);
