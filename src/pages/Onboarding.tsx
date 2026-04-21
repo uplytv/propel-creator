@@ -788,16 +788,76 @@ export default function Onboarding() {
                   aria-required="true"
                   className="grid grid-cols-3 gap-2"
                 >
-                  {CREATOR_TYPES.map(t => {
+                  {CREATOR_TYPES.map((t, idx) => {
                     const selected = creatorType === t.value;
+                    // Single tab stop: focused card is the selected one, or the first when none selected
+                    const isTabStop = creatorType ? selected : idx === 0;
                     return (
                       <button
                         key={t.value}
                         type="button"
                         role="radio"
                         aria-checked={selected}
+                        tabIndex={isTabStop ? 0 : -1}
+                        data-creator-type-card={t.value}
                         onClick={() => setCreatorType(t.value)}
-                        className={`rounded-xl p-3 text-center border-2 transition-all ${
+                        onKeyDown={(e) => {
+                          const cols = 3;
+                          const last = CREATOR_TYPES.length - 1;
+                          let nextIdx: number | null = null;
+                          switch (e.key) {
+                            case "ArrowRight":
+                            case "ArrowDown": {
+                              const delta = e.key === "ArrowDown" ? cols : 1;
+                              nextIdx = idx + delta;
+                              if (nextIdx > last) nextIdx = e.key === "ArrowDown" ? idx % cols : 0;
+                              break;
+                            }
+                            case "ArrowLeft":
+                            case "ArrowUp": {
+                              const delta = e.key === "ArrowUp" ? cols : 1;
+                              nextIdx = idx - delta;
+                              if (nextIdx < 0) {
+                                if (e.key === "ArrowUp") {
+                                  // jump to bottom of same column
+                                  const col = idx % cols;
+                                  const rows = Math.ceil(CREATOR_TYPES.length / cols);
+                                  let candidate = col + (rows - 1) * cols;
+                                  if (candidate > last) candidate -= cols;
+                                  nextIdx = candidate;
+                                } else {
+                                  nextIdx = last;
+                                }
+                              }
+                              break;
+                            }
+                            case "Home":
+                              nextIdx = 0;
+                              break;
+                            case "End":
+                              nextIdx = last;
+                              break;
+                            case " ":
+                            case "Enter":
+                              e.preventDefault();
+                              setCreatorType(t.value);
+                              return;
+                            default:
+                              return;
+                          }
+                          if (nextIdx === null) return;
+                          e.preventDefault();
+                          const nextValue = CREATOR_TYPES[nextIdx].value;
+                          setCreatorType(nextValue);
+                          // Move focus to the newly selected card
+                          requestAnimationFrame(() => {
+                            const next = document.querySelector<HTMLButtonElement>(
+                              `[data-creator-type-card="${nextValue}"]`
+                            );
+                            next?.focus();
+                          });
+                        }}
+                        className={`rounded-xl p-3 text-center border-2 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                           selected
                             ? "border-primary bg-primary/5"
                             : "border-border bg-card hover:border-primary/30"
