@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Eye, Play } from "lucide-react";
+import { Sparkles, Eye, Play, Rocket } from "lucide-react";
 import LiveBadge from "./LiveBadge";
 import { useLiveViewerCount } from "@/hooks/useLiveViewerCount";
 import type { DiscoveryItem } from "@/hooks/useDiscoveryAlgorithmFeed";
@@ -38,7 +38,12 @@ export default function DiscoveryFeedCard({ item }: { item: DiscoveryItem }) {
         {isStream && (
           <LiveBadge count={liveCount} className="absolute top-2 left-2" />
         )}
-        {!isStream && item.is_new_creator_boosted && (
+        {!isStream && item.is_boosted && (
+          <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground gap-1 shadow-lg">
+            <Rocket className="w-3 h-3" /> Promoted
+          </Badge>
+        )}
+        {!isStream && !item.is_boosted && item.is_new_creator_boosted && (
           <Badge className="absolute top-2 left-2 bg-primary/90 backdrop-blur-sm gap-1">
             <Sparkles className="w-3 h-3" /> Rising
           </Badge>
