@@ -1278,3 +1278,239 @@ describe("showCooldownToast — accessible name lifecycle (regression)", () => {
   );
 });
 
+describe("showCooldownToast — async failure → toast (regression)", () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2025-01-01T00:00:00Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    sessionStorage.clear();
+    document.body.innerHTML = "";
+  });
+
+  const flushMount = async () => {
+    await act(async () => {
+      vi.advanceTimersByTime(50);
+    });
+  };
+
+  const advance = async (ms: number) => {
+    await act(async () => {
+      vi.advanceTimersByTime(ms);
+    });
+  };
+
+  // Models a real caller: a button that performs an async request, awaits
+  // failure, then surfaces the cooldown toast. Mirrors the Onboarding /
+  // settings-nav patterns where the toast follows a thrown API error.
+  const renderApiHarness = (
+    variant: CooldownToastVariant,
+    opts?: { actionLabel?: string },
+  ) => {
+    const onAction = vi.fn();
+    const apiCall = vi
+      .fn<() => Promise<void>>()
+      .mockRejectedValue(new Error(`simulated-${variant}-error`));
+
+    const Trigger = () => (
+      <button
+        type="button"
+        onClick={async () => {
+          try {
+            await apiCall();
+          } catch {
+            writeSettingsNavLast(Date.now());
+            showCooldownToast({
+              title: `Couldn't load (${variant})`,
+              description: "The server returned an error.",
+              variant,
+              actionLabel: opts?.actionLabel,
+              onAction,
+            });
+          }
+        }}
+      >
+        do-request-{variant}
+      </button>
+    );
+
+    render(
+      <>
+        <Trigger />
+        <Toaster />
+      </>,
+    );
+
+    return {
+      user: userEvent.setup({
+        advanceTimers: vi.advanceTimersByTime.bind(vi),
+      }),
+      trigger: screen.getByRole("button", {
+        name: `do-request-${variant}`,
+      }),
+      apiCall,
+      onAction,
+    };
+  };
+
+  // Click the trigger and let the rejected promise + sonner mount settle.
+  const triggerAndSettle = async (trigger: HTMLElement) => {
+    await act(async () => {
+      trigger.click();
+      // Drain the rejected microtask so the .catch() runs synchronously
+      // before our assertions.
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    await flushMount();
+  };
+
+  const variants: CooldownToastVariant[] = ["error", "warning", "success"];
+
+  it.each(variants)(
+    "[%s] after a rejected API call, the action button shows the counting-down name",
+    async (variant) => {
+      const { trigger, apiCall } = renderApiHarness(variant);
+      trigger.focus();
+      await triggerAndSettle(trigger);
+
+      expect(apiCall).toHaveBeenCalledTimes(1);
+
+      // Pre-elapse: countdown form is present, ready form is not.
+      const countingDown = screen.getByRole("button", {
+        name: /^Try again \(\d+s\)$/,
+      });
+      expect(countingDown).toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: /^Try again$/ }),
+      ).not.toBeInTheDocument();
+    },
+  );
+
+  it.each(variants)(
+    "[%s] progressbar ARIA contract is intact when the toast follows a rejection",
+    async (variant) => {
+      const { trigger } = renderApiHarness(variant);
+      trigger.focus();
+      await triggerAndSettle(trigger);
+
+      const bar = screen.getByRole("progressbar", { name: "Cooldown progress" });
+      expect(bar).toHaveAttribute("aria-valuemin", "0");
+      expect(bar).toHaveAttribute("aria-valuemax", "100");
+      expect(Number(bar.getAttribute("aria-valuenow"))).toBeGreaterThanOrEqual(0);
+      expect(Number(bar.getAttribute("aria-valuenow"))).toBeLessThan(100);
+    },
+  );
+
+  it.each(variants)(
+    "[%s] action transitions to the ready accessible name after cooldown elapses",
+    async (variant) => {
+      const { trigger } = renderApiHarness(variant);
+      trigger.focus();
+      await triggerAndSettle(trigger);
+
+      await advance(SETTINGS_NAV_COOLDOWN_MS);
+
+      expect(
+        screen.queryByRole("button", { name: /^Try again \(\d+s\)$/ }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /^Try again$/ }),
+      ).toBeInTheDocument();
+      // Progressbar is gone in the ready state.
+      expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
+    },
+  );
+
+  it.each(variants)(
+    "[%s] activating the ready action invokes onAction (retry path)",
+    async (variant) => {
+      const { user, trigger, onAction } = renderApiHarness(variant);
+      trigger.focus();
+      await triggerAndSettle(trigger);
+
+      await advance(SETTINGS_NAV_COOLDOWN_MS);
+
+      const retry = screen.getByRole("button", { name: /^Try again$/ });
+      await user.click(retry);
+
+      expect(onAction).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it.each(variants)(
+    "[%s] custom actionLabel ('Retry') is honored across both name states after a rejection",
+    async (variant) => {
+      const { trigger } = renderApiHarness(variant, { actionLabel: "Retry" });
+      trigger.focus();
+      await triggerAndSettle(trigger);
+
+      // Counting-down state uses the custom label.
+      expect(
+        screen.getByRole("button", { name: /^Retry \(\d+s\)$/ }),
+      ).toBeInTheDocument();
+
+      await advance(SETTINGS_NAV_COOLDOWN_MS);
+
+      // Ready state uses the custom label.
+      expect(
+        screen.getByRole("button", { name: /^Retry$/ }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: /^Try again/ }),
+      ).not.toBeInTheDocument();
+    },
+  );
+
+  it.each(variants)(
+    "[%s] back-to-back rejections surface a single live toast (no duplicates) when id is stable",
+    async (variant) => {
+      const onAction = vi.fn();
+      const apiCall = vi
+        .fn<() => Promise<void>>()
+        .mockRejectedValue(new Error("boom"));
+
+      render(
+        <>
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                await apiCall();
+              } catch {
+                writeSettingsNavLast(Date.now());
+                showCooldownToast({
+                  title: "Couldn't load",
+                  description: "Try again shortly.",
+                  variant,
+                  id: `api-fail-${variant}`,
+                  onAction,
+                });
+              }
+            }}
+          >
+            do-request
+          </button>
+          <Toaster />
+        </>,
+      );
+      const trigger = screen.getByRole("button", { name: "do-request" });
+
+      // Two rapid failures back-to-back.
+      trigger.focus();
+      await triggerAndSettle(trigger);
+      await triggerAndSettle(trigger);
+
+      // Only a single live action button — and a single progressbar — even
+      // after the second rejection re-runs showCooldownToast under the same id.
+      expect(
+        screen.getAllByRole("button", { name: /^Try again \(\d+s\)$/ }),
+      ).toHaveLength(1);
+      expect(screen.getAllByRole("progressbar")).toHaveLength(1);
+    },
+  );
+});
+
