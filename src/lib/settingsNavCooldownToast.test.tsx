@@ -8,6 +8,7 @@ import {
   readSettingsNavLast,
   writeSettingsNavLast,
 } from "./settingsNavCooldown";
+import { captureFocus, type FocusRestorer } from "./restoreFocus";
 
 /**
  * Mirrors the toast body rendered by Onboarding.tsx's `showErrorWithCountdown`.
@@ -23,6 +24,9 @@ function CooldownToast({
   onActivate?: () => void;
 }) {
   const [, force] = useState(0);
+  // Capture focus once when the toast first mounts; restore on unmount or
+  // when the action is activated. Mirrors Onboarding.tsx behavior.
+  const [restoreFocus] = useState<FocusRestorer>(() => captureFocus());
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | null = null;
@@ -34,8 +38,9 @@ function CooldownToast({
     tick();
     return () => {
       if (timer) clearTimeout(timer);
+      restoreFocus();
     };
-  }, []);
+  }, [restoreFocus]);
 
   const state = computeCooldownState(readSettingsNavLast());
   return (
@@ -294,6 +299,168 @@ describe("Settings navigation toast — cooldown UI", () => {
 
       await user.keyboard(" ");
       expect(onActivate).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("focus restoration", () => {
+    function Harness({
+      showToast,
+      onActivate,
+    }: {
+      showToast: boolean;
+      onActivate?: () => void;
+    }) {
+      return (
+        <div>
+          <button type="button" data-testid="trigger">
+            Enable auto-retry
+          </button>
+          {showToast && (
+            <CooldownToast
+              description="Navigation didn't complete."
+              onActivate={onActivate}
+            />
+          )}
+        </div>
+      );
+    }
+
+    it("restores focus to the previously focused element when the toast unmounts", () => {
+      writeSettingsNavLast(Date.now() - SETTINGS_NAV_COOLDOWN_MS - 1); // ready
+      const { rerender } = render(<Harness showToast={false} />);
+
+      const trigger = screen.getByTestId("trigger");
+      trigger.focus();
+      expect(trigger).toHaveFocus();
+
+      rerender(<Harness showToast={true} />);
+      expect(trigger).toHaveFocus();
+
+      rerender(<Harness showToast={false} />);
+      expect(trigger).toHaveFocus();
+    });
+
+    it("returns focus to the trigger after the user activates 'Try again' and the toast unmounts", async () => {
+      const user = userEvent.setup({
+        advanceTimers: vi.advanceTimersByTime.bind(vi),
+      });
+      const onActivate = vi.fn();
+      writeSettingsNavLast(Date.now() - SETTINGS_NAV_COOLDOWN_MS - 1); // ready
+
+      function ActivationHarness({ initialShow }: { initialShow: boolean }) {
+        const [show, setShow] = useState(initialShow);
+        return (
+          <div>
+            <button
+              type="button"
+              data-testid="trigger"
+              onClick={() => setShow(true)}
+            >
+              Enable auto-retry
+            </button>
+            {show && (
+              <CooldownToast
+                description="Navigation didn't complete."
+                onActivate={() => {
+                  onActivate();
+                  setShow(false); // simulates toast dismissing on action
+                }}
+              />
+            )}
+          </div>
+        );
+      }
+
+      render(<ActivationHarness initialShow={false} />);
+      const trigger = screen.getByTestId("trigger");
+      trigger.focus();
+      expect(trigger).toHaveFocus();
+
+      // User clicks the trigger → toast mounts while trigger has focus, so
+      // captureFocus() records the trigger as the element to restore to.
+      await act(async () => {
+        trigger.click();
+      });
+
+      await user.tab();
+      const action = screen.getByRole("button", { name: "Try again" });
+      expect(action).toHaveFocus();
+
+      await act(async () => {
+        await user.keyboard("{Enter}");
+      });
+      // Flush React commit + the deferred microtask + macrotask in restoreFocus.
+      await act(async () => {
+        await Promise.resolve();
+        vi.advanceTimersByTime(0);
+        await Promise.resolve();
+      });
+
+      expect(onActivate).toHaveBeenCalledTimes(1);
+      expect(trigger).toHaveFocus();
+    });
+
+    it("restores focus to the trigger after the toast unmounts mid-cooldown", () => {
+      writeSettingsNavLast(Date.now()); // disabled mid-cooldown
+      const { rerender } = render(<Harness showToast={false} />);
+
+      const trigger = screen.getByTestId("trigger");
+      trigger.focus();
+      expect(trigger).toHaveFocus();
+
+      rerender(<Harness showToast={true} />);
+      expect(trigger).toHaveFocus();
+
+      rerender(<Harness showToast={false} />);
+      expect(trigger).toHaveFocus();
+    });
+
+    it("does not throw if the previously focused element was removed before unmount", () => {
+      writeSettingsNavLast(Date.now() - SETTINGS_NAV_COOLDOWN_MS - 1);
+      function Removable() {
+        const [showTrigger, setShowTrigger] = useState(true);
+        const [showToast, setShowToast] = useState(false);
+        return (
+          <div>
+            {showTrigger && (
+              <button
+                type="button"
+                data-testid="trigger"
+                onClick={() => {
+                  setShowToast(true);
+                  setShowTrigger(false);
+                }}
+              >
+                open
+              </button>
+            )}
+            {showToast && (
+              <CooldownToast description="Navigation didn't complete." />
+            )}
+            <button
+              type="button"
+              data-testid="dismiss"
+              onClick={() => setShowToast(false)}
+            >
+              close
+            </button>
+          </div>
+        );
+      }
+
+      render(<Removable />);
+      const open = screen.getByTestId("trigger");
+      open.focus();
+      act(() => {
+        open.click();
+      });
+
+      // Trigger is gone after the click handler ran.
+      expect(screen.queryByTestId("trigger")).not.toBeInTheDocument();
+
+      const dismiss = screen.getByTestId("dismiss");
+      // Restoring focus to a detached element must be a safe no-op.
+      expect(() => act(() => { dismiss.click(); })).not.toThrow();
     });
   });
 });
