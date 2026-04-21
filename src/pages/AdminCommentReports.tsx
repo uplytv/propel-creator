@@ -168,7 +168,7 @@ export default function AdminCommentReports() {
 
   const list = useMemo(() => reports, [reports]);
 
-  const handleExportCsv = (selected: string[]) => {
+  const handleExportCsv = (selected: string[], delimiter: "," | "\t" = ",") => {
     if (!list.length) {
       toast.error("Nothing to export");
       return;
@@ -181,31 +181,19 @@ export default function AdminCommentReports() {
       const s = v === null || v === undefined ? "" : String(v);
       return `"${s.replace(/"/g, '""').replace(/\r?\n/g, " ")}"`;
     };
-    const allFields: { key: string; get: (r: ReportRow) => unknown }[] = [
-      { key: "report_id", get: (r) => r.id },
-      { key: "status", get: (r) => r.status },
-      { key: "reason", get: (r) => r.reason },
-      { key: "details", get: (r) => r.details ?? "" },
-      { key: "reported_at", get: (r) => r.created_at },
-      { key: "reporter_id", get: (r) => r.reporter_id },
-      { key: "reporter_name", get: (r) => r.reporter?.display_name ?? "" },
-      { key: "comment_id", get: (r) => r.comment?.id ?? "" },
-      { key: "comment_body", get: (r) => r.comment?.body ?? "" },
-      { key: "comment_source", get: (r) => r.comment?.source ?? "" },
-      { key: "comment_is_hidden", get: (r) => r.comment?.is_hidden ?? "" },
-      { key: "comment_posted_at", get: (r) => r.comment?.created_at ?? "" },
-      { key: "comment_author_id", get: (r) => r.comment?.user_id ?? "" },
-      { key: "comment_author_name", get: (r) => r.target?.display_name ?? "" },
-    ];
-    const fields = allFields.filter((f) => selected.includes(f.key));
+    const fields = ORDERED_KEYS
+      .filter((k) => selected.includes(k))
+      .map((k) => ({ key: k, get: FIELD_GETTERS[k] }));
     const headers = fields.map((f) => f.key);
     const rows = list.map((r) => fields.map((f) => f.get(r)));
-    const csv = [headers, ...rows].map((row) => row.map(escape).join(",")).join("\n");
-    const blob = new Blob([`\ufeff${csv}`], { type: "text/csv;charset=utf-8;" });
+    const csv = [headers, ...rows].map((row) => row.map(escape).join(delimiter)).join("\n");
+    const ext = delimiter === "\t" ? "tsv" : "csv";
+    const mime = delimiter === "\t" ? "text/tab-separated-values" : "text/csv";
+    const blob = new Blob([`\ufeff${csv}`], { type: `${mime};charset=utf-8;` });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `comment-reports-${tab}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `comment-reports-${tab}-${new Date().toISOString().slice(0, 10)}.${ext}`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
