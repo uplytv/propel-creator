@@ -209,4 +209,91 @@ describe("Settings navigation toast — cooldown UI", () => {
       expect(screen.getAllByRole("button")).toHaveLength(1);
     });
   });
+
+  describe("keyboard accessibility", () => {
+    /**
+     * user-event v14 must be told to schedule its delays via vi's fake timers,
+     * otherwise tab/keyboard waits hang forever in jsdom.
+     */
+    const setupUser = () =>
+      userEvent.setup({ advanceTimers: vi.advanceTimersByTime.bind(vi) });
+
+    it("is reachable via Tab and receives focus", async () => {
+      const user = setupUser();
+      writeSettingsNavLast(Date.now() - SETTINGS_NAV_COOLDOWN_MS - 1); // already ready
+      render(<CooldownToast description="Navigation didn't complete." />);
+
+      const btn = screen.getByRole("button", { name: "Try again" });
+      expect(btn).not.toHaveFocus();
+
+      await user.tab();
+      expect(btn).toHaveFocus();
+    });
+
+    it("does NOT activate on Enter while the cooldown is still running", async () => {
+      const user = setupUser();
+      const onActivate = vi.fn();
+      writeSettingsNavLast(Date.now());
+      render(
+        <CooldownToast
+          description="Navigation didn't complete."
+          onActivate={onActivate}
+        />,
+      );
+
+      await user.tab();
+      const btn = screen.getByRole("button");
+      expect(btn).toBeDisabled();
+      // Disabled buttons don't receive focus on tab in jsdom; focus directly
+      // and confirm the keypress is a no-op.
+      btn.focus();
+      await user.keyboard("{Enter}");
+      await user.keyboard(" ");
+      expect(onActivate).not.toHaveBeenCalled();
+    });
+
+    it("activates with Enter exactly when the cooldown elapses", async () => {
+      const user = setupUser();
+      const onActivate = vi.fn();
+      writeSettingsNavLast(Date.now());
+      render(
+        <CooldownToast
+          description="Navigation didn't complete."
+          onActivate={onActivate}
+        />,
+      );
+
+      // Wait out the cooldown.
+      await act(async () => {
+        vi.advanceTimersByTime(SETTINGS_NAV_COOLDOWN_MS);
+      });
+
+      const btn = screen.getByRole("button", { name: "Try again" });
+      expect(btn).toBeEnabled();
+
+      await user.tab();
+      expect(btn).toHaveFocus();
+
+      await user.keyboard("{Enter}");
+      expect(onActivate).toHaveBeenCalledTimes(1);
+    });
+
+    it("activates with Space when ready", async () => {
+      const user = setupUser();
+      const onActivate = vi.fn();
+      writeSettingsNavLast(Date.now() - SETTINGS_NAV_COOLDOWN_MS - 1); // already ready
+      render(
+        <CooldownToast
+          description="Navigation didn't complete."
+          onActivate={onActivate}
+        />,
+      );
+
+      await user.tab();
+      expect(screen.getByRole("button")).toHaveFocus();
+
+      await user.keyboard(" ");
+      expect(onActivate).toHaveBeenCalledTimes(1);
+    });
+  });
 });
