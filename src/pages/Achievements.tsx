@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,9 +39,23 @@ export default function Achievements() {
     })();
   }, [user?.id]);
 
-  const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<FilterGroup>("all");
-  const [sort, setSort] = useState<SortKey>("newest");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const query = searchParams.get("q") ?? "";
+  const filter = ((searchParams.get("group") as FilterGroup) || "all");
+  const sort = ((searchParams.get("sort") as SortKey) || "newest");
+
+  const updateParams = (patch: Record<string, string | null>) => {
+    const next = new URLSearchParams(searchParams);
+    Object.entries(patch).forEach(([k, v]) => {
+      if (!v) next.delete(k);
+      else next.set(k, v);
+    });
+    setSearchParams(next, { replace: true });
+  };
+
+  const setQuery = (v: string) => updateParams({ q: v || null });
+  const setFilter = (v: FilterGroup) => updateParams({ group: v === "all" ? null : v });
+  const setSort = (v: SortKey) => updateParams({ sort: v === "newest" ? null : v });
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
