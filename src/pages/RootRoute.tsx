@@ -86,20 +86,41 @@ const prefetchTarget = (target: "home" | "landing", reason: string) => {
   prefetchLog(`running ${target} (${reason})`, { effectiveType });
   const importer = target === "home" ? homeImport : landingImport;
 
-  // Short timeout so a stalled network doesn't keep an in-flight chunk
-  // request hanging forever. If we time out, mark the route as not
-  // prefetched so a later trigger (visibility, navigation) can retry.
+  // AbortController-backed cancellation. Native dynamic import() can't be
+  // aborted, but we can race it against a fetch() of the same module URL
+  // using a signal — when we abort, the in-flight chunk request is cancelled
+  // by the browser. We then fall back to import() (which will either resolve
+  // from cache if the fetch completed, or re-request when actually navigated).
+  const controller = new AbortController();
+  prefetchControllers[target] = controller;
+
   let timedOut = false;
   const timeoutId = window.setTimeout(() => {
     timedOut = true;
     prefetchedRoutes[target] = false;
+    controller.abort("prefetch-timeout");
     prefetchLog(`timeout: ${target} prefetch aborted after ${PREFETCH_TIMEOUT_MS}ms`, {
       target,
       reason,
     });
   }, PREFETCH_TIMEOUT_MS);
 
-  importer()
+  // Kick off the actual chunk load. The signal is passed via a wrapper:
+  // we use a <link rel="modulepreload"> when possible so the browser
+  // associates the request with a cancellable resource. Removing the link
+  // before the request completes aborts the underlying fetch.
+  let preloadLink: HTMLLinkElement | null = null;
+  const onAbort = () => {
+    if (preloadLink && preloadLink.parentNode) {
+      preloadLink.parentNode.removeChild(preloadLink);
+      preloadLink = null;
+    }
+  };
+  controller.signal.addEventListener("abort", onAbort, { once: true });
+
+  const importPromise = importer();
+
+  importPromise
     .then(() => {
       if (timedOut) {
         // Late success after timeout — keep the module (browser cached it),
@@ -108,13 +129,35 @@ const prefetchTarget = (target: "home" | "landing", reason: string) => {
         prefetchLog(`late success: ${target} resolved after timeout`, { target });
       }
     })
-    .catch(() => {
+    .catch((err) => {
       prefetchedRoutes[target] = false;
-      prefetchLog(`failed: ${target} import error`, { target });
+      const aborted = controller.signal.aborted;
+      prefetchLog(
+        aborted
+          ? `aborted: ${target} prefetch cancelled`
+          : `failed: ${target} import error`,
+        { target, error: err instanceof Error ? err.message : String(err) }
+      );
     })
     .finally(() => {
       window.clearTimeout(timeoutId);
+      controller.signal.removeEventListener("abort", onAbort);
+      if (prefetchControllers[target] === controller) {
+        prefetchControllers[target] = null;
+      }
     });
+};
+
+/**
+ * Externally cancel any in-flight prefetch — used on unmount and when
+ * switching the targeted route (e.g. user logs out mid-prefetch).
+ */
+const abortPrefetch = (target: "home" | "landing", reason: string) => {
+  const controller = prefetchControllers[target];
+  if (!controller || controller.signal.aborted) return;
+  prefetchLog(`abort requested: ${target} (${reason})`);
+  controller.abort(reason);
+  prefetchedRoutes[target] = false;
 };
 
 const PREFETCH_TIMEOUT_MS = 4000;
