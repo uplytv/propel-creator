@@ -683,20 +683,52 @@ function ReentryRequestButton({
       const eventId = ticket.events?.id;
       const eventTitle = ticket.events?.title || "your event";
       if (eventId) {
-        const { data: ev } = await (supabase as any)
-          .from("events")
-          .select("creator_id")
-          .eq("id", eventId)
-          .maybeSingle();
+        // Fetch organizer + guest profile in parallel
+        const [{ data: ev }, { data: guestProfile }] = await Promise.all([
+          (supabase as any)
+            .from("events")
+            .select("creator_id, slug")
+            .eq("id", eventId)
+            .maybeSingle(),
+          user?.id
+            ? (supabase as any)
+                .from("profiles")
+                .select("display_name, username")
+                .eq("user_id", user.id)
+                .maybeSingle()
+            : Promise.resolve({ data: null }),
+        ]);
+
         const organizerId = ev?.creator_id;
+        const guestName =
+          guestProfile?.display_name ||
+          guestProfile?.username ||
+          user?.email?.split("@")[0] ||
+          "A guest";
+        const eventPath = ev?.slug ? `/event/${ev.slug}` : `/event/${eventId}`;
+        const ticketPath = `/tickets/${ticket.id}`;
+        const shortToken = ticket.qr_code_token.slice(0, 8);
+
         if (organizerId) {
           await (supabase as any).from("notifications").insert({
             user_id: organizerId,
             type: "ticket_reentry_request",
-            title: "🔁 Re-entry requested",
-            message: `A guest is requesting re-entry for "${eventTitle}". Ticket #${ticket.qr_code_token.slice(0, 8)}.`,
+            title: `🔁 ${guestName} needs re-entry`,
+            message: `${guestName} is requesting re-entry to "${eventTitle}" · Ticket #${shortToken}. Tap to view.`,
             actor_id: user?.id ?? null,
             reference_id: ticket.id,
+            link: ticketPath,
+            metadata: {
+              guest_name: guestName,
+              guest_user_id: user?.id ?? null,
+              event_id: eventId,
+              event_title: eventTitle,
+              event_url: eventPath,
+              ticket_id: ticket.id,
+              ticket_url: ticketPath,
+              ticket_token: ticket.qr_code_token,
+              requested_at: at,
+            },
           });
         }
       }
