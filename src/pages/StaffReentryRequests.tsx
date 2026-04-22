@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, BellRing, Check, X, Clock, Ticket, Loader2, Inbox, RefreshCw, Search, History, ShieldCheck, ShieldX, User as UserIcon } from "lucide-react";
+import { ArrowLeft, BellRing, Check, X, Clock, Ticket, Loader2, Inbox, RefreshCw, Search, History, ShieldCheck, ShieldX, User as UserIcon, CheckSquare, Square } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,9 @@ export default function StaffReentryRequests() {
   const [tab, setTab] = useState<FilterTab>(focusRequestId || focusTicketId ? "all" : "pending");
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState<null | "approve" | "deny">(null);
+  const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number } | null>(null);
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const load = async () => {
@@ -202,47 +205,70 @@ export default function StaffReentryRequests() {
     return nextLog;
   };
 
-  const approve = async (req: ReentryNotification) => {
-    if (actionId) return;
-    setActionId(req.id);
+  // Core approve — no UI guards/toasts so it can be reused for bulk
+  const approveCore = async (req: ReentryNotification) => {
     const ticketId = req.metadata?.ticket_id || req.reference_id;
     const eventTitle = req.metadata?.event_title || "the event";
     const guestUserId = req.metadata?.guest_user_id;
     const ticketUrl = req.metadata?.ticket_url || (ticketId ? `/tickets/${ticketId}` : null);
 
+    if (ticketId) {
+      const { error } = await (supabase as any)
+        .from("tickets")
+        .update({
+          status: "active",
+          checked_in: false,
+          checked_in_at: null,
+          scanned_at: null,
+        })
+        .eq("id", ticketId);
+      if (error) throw error;
+    }
+
+    const nextLog = await recordAudit(req, "approved");
+    await notifyGuest(guestUserId, true, eventTitle, ticketUrl);
+
+    setRequests((prev) =>
+      prev.map((r) =>
+        r.id === req.id
+          ? {
+              ...r,
+              read: true,
+              _resolved: "approved",
+              metadata: { ...(r.metadata || {}), audit_log: nextLog },
+            }
+          : r
+      )
+    );
+  };
+
+  const denyCore = async (req: ReentryNotification) => {
+    const eventTitle = req.metadata?.event_title || "the event";
+    const guestUserId = req.metadata?.guest_user_id;
+    const ticketUrl = req.metadata?.ticket_url || null;
+
+    const nextLog = await recordAudit(req, "denied");
+    await notifyGuest(guestUserId, false, eventTitle, ticketUrl);
+
+    setRequests((prev) =>
+      prev.map((r) =>
+        r.id === req.id
+          ? {
+              ...r,
+              read: true,
+              _resolved: "denied",
+              metadata: { ...(r.metadata || {}), audit_log: nextLog },
+            }
+          : r
+      )
+    );
+  };
+
+  const approve = async (req: ReentryNotification) => {
+    if (actionId) return;
+    setActionId(req.id);
     try {
-      if (ticketId) {
-        // Re-activate the ticket so the QR scans clean again
-        const { error } = await (supabase as any)
-          .from("tickets")
-          .update({
-            status: "active",
-            checked_in: false,
-            checked_in_at: null,
-            scanned_at: null,
-          })
-          .eq("id", ticketId);
-        if (error) throw error;
-      }
-
-      // Mark notification as handled + write audit entry
-      const nextLog = await recordAudit(req, "approved");
-
-      // Best-effort guest notification
-      await notifyGuest(guestUserId, true, eventTitle, ticketUrl);
-
-      setRequests((prev) =>
-        prev.map((r) =>
-          r.id === req.id
-            ? {
-                ...r,
-                read: true,
-                _resolved: "approved",
-                metadata: { ...(r.metadata || {}), audit_log: nextLog },
-              }
-            : r
-        )
-      );
+      await approveCore(req);
       if (navigator.vibrate) navigator.vibrate(60);
       toast.success("Re-entry approved", { description: "Ticket reactivated for scanning." });
     } catch (e: any) {
@@ -255,25 +281,8 @@ export default function StaffReentryRequests() {
   const deny = async (req: ReentryNotification) => {
     if (actionId) return;
     setActionId(req.id);
-    const eventTitle = req.metadata?.event_title || "the event";
-    const guestUserId = req.metadata?.guest_user_id;
-    const ticketUrl = req.metadata?.ticket_url || null;
-
     try {
-      const nextLog = await recordAudit(req, "denied");
-      await notifyGuest(guestUserId, false, eventTitle, ticketUrl);
-      setRequests((prev) =>
-        prev.map((r) =>
-          r.id === req.id
-            ? {
-                ...r,
-                read: true,
-                _resolved: "denied",
-                metadata: { ...(r.metadata || {}), audit_log: nextLog },
-              }
-            : r
-        )
-      );
+      await denyCore(req);
       if (navigator.vibrate) navigator.vibrate(40);
       toast.success("Request denied", { description: "We've let the guest know." });
     } catch (e: any) {
@@ -282,6 +291,90 @@ export default function StaffReentryRequests() {
       setActionId(null);
     }
   };
+
+  // ---------- Selection + Bulk actions ----------
+  const pendingFilteredIds = useMemo(
+    () => filtered.filter((r) => !r.read && !r._resolved).map((r) => r.id),
+    [filtered]
+  );
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const allVisibleSelected =
+    pendingFilteredIds.length > 0 &&
+    pendingFilteredIds.every((id) => selectedIds.has(id));
+
+  const toggleSelectAllVisible = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) {
+        pendingFilteredIds.forEach((id) => next.delete(id));
+      } else {
+        pendingFilteredIds.forEach((id) => next.add(id));
+      }
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const runBulk = async (mode: "approve" | "deny") => {
+    if (bulkBusy) return;
+    const targets = requests.filter(
+      (r) => selectedIds.has(r.id) && !r.read && !r._resolved
+    );
+    if (targets.length === 0) {
+      toast.info("Nothing to process", { description: "Select pending requests first." });
+      return;
+    }
+
+    setBulkBusy(mode);
+    setBulkProgress({ done: 0, total: targets.length });
+    let success = 0;
+    let failed = 0;
+
+    for (let i = 0; i < targets.length; i++) {
+      const req = targets[i];
+      try {
+        if (mode === "approve") await approveCore(req);
+        else await denyCore(req);
+        success++;
+      } catch {
+        failed++;
+      }
+      setBulkProgress({ done: i + 1, total: targets.length });
+    }
+
+    setBulkBusy(null);
+    setBulkProgress(null);
+    setSelectedIds(new Set());
+    if (navigator.vibrate) navigator.vibrate(80);
+
+    const verb = mode === "approve" ? "approved" : "denied";
+    if (failed === 0) {
+      toast.success(`Bulk ${verb}`, {
+        description: `${success} request${success === 1 ? "" : "s"} ${verb}.`,
+      });
+    } else {
+      toast.warning(`Bulk ${verb} with errors`, {
+        description: `${success} ok · ${failed} failed`,
+      });
+    }
+  };
+
+  const selectedPendingCount = useMemo(
+    () =>
+      requests.filter((r) => selectedIds.has(r.id) && !r.read && !r._resolved)
+        .length,
+    [requests, selectedIds]
+  );
 
   if (!user) {
     return (
@@ -367,6 +460,33 @@ export default function StaffReentryRequests() {
             )}
           </div>
         </div>
+
+        {/* Select all (only when there are pending requests visible) */}
+        {pendingFilteredIds.length > 0 && (
+          <div className="px-4 pb-3 flex items-center justify-between">
+            <button
+              onClick={toggleSelectAllVisible}
+              className="inline-flex items-center gap-2 text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {allVisibleSelected ? (
+                <CheckSquare className="w-3.5 h-3.5 text-primary" />
+              ) : (
+                <Square className="w-3.5 h-3.5" />
+              )}
+              {allVisibleSelected
+                ? `Deselect all (${pendingFilteredIds.length})`
+                : `Select all pending (${pendingFilteredIds.length})`}
+            </button>
+            {selectedPendingCount > 0 && (
+              <button
+                onClick={clearSelection}
+                className="text-[11px] font-semibold text-muted-foreground hover:text-foreground"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        )}
       </header>
 
       {/* Body */}
@@ -408,9 +528,27 @@ export default function StaffReentryRequests() {
                   isResolved
                     ? "border-border bg-muted/30"
                     : "border-primary/30 bg-primary/5"
+                } ${
+                  selectedIds.has(req.id) && !isResolved
+                    ? "ring-2 ring-primary/60"
+                    : ""
                 } ${isHighlighted ? "ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg" : ""}`}
               >
                 <div className="flex items-start gap-3">
+                  {!isResolved && (
+                    <button
+                      onClick={() => toggleSelect(req.id)}
+                      className="mt-1 flex-shrink-0 p-0.5 -ml-0.5 rounded hover:bg-muted transition-colors"
+                      aria-label={selectedIds.has(req.id) ? "Deselect" : "Select"}
+                      disabled={!!bulkBusy}
+                    >
+                      {selectedIds.has(req.id) ? (
+                        <CheckSquare className="w-4 h-4 text-primary" />
+                      ) : (
+                        <Square className="w-4 h-4 text-muted-foreground" />
+                      )}
+                    </button>
+                  )}
                   <div
                     className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
                       isResolved ? "bg-muted" : "bg-primary/15 text-primary"
@@ -567,6 +705,59 @@ export default function StaffReentryRequests() {
           })
         )}
       </div>
+
+      {/* Sticky bulk action bar */}
+      {selectedPendingCount > 0 && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-md">
+          <div className="rounded-2xl border border-primary/30 bg-background/95 backdrop-blur shadow-2xl px-3 py-2.5 flex items-center gap-2">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold truncate">
+                {selectedPendingCount} selected
+              </p>
+              {bulkProgress ? (
+                <p className="text-[10px] text-muted-foreground">
+                  Processing {bulkProgress.done}/{bulkProgress.total}…
+                </p>
+              ) : (
+                <p className="text-[10px] text-muted-foreground">
+                  Approve reactivates tickets · Deny notifies guests
+                </p>
+              )}
+            </div>
+            <Button
+              onClick={() => runBulk("deny")}
+              disabled={!!bulkBusy}
+              variant="outline"
+              size="sm"
+              className="h-9"
+            >
+              {bulkBusy === "deny" ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <>
+                  <X className="w-3.5 h-3.5 mr-1" />
+                  Deny
+                </>
+              )}
+            </Button>
+            <Button
+              onClick={() => runBulk("approve")}
+              disabled={!!bulkBusy}
+              size="sm"
+              className="h-9"
+            >
+              {bulkBusy === "approve" ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <>
+                  <Check className="w-3.5 h-3.5 mr-1" />
+                  Approve
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
