@@ -443,6 +443,58 @@ export default function StaffReentryRequests() {
     [requests, selectedIds]
   );
 
+  // Robust copy with execCommand fallback for blocked/unavailable clipboard API
+  const copyToClipboard = async (text: string): Promise<boolean> => {
+    // Preferred: async clipboard API (requires secure context + permission)
+    if (
+      typeof navigator !== "undefined" &&
+      navigator.clipboard &&
+      typeof navigator.clipboard.writeText === "function" &&
+      window.isSecureContext
+    ) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        // fall through to legacy fallback
+      }
+    }
+
+    // Fallback: hidden textarea + document.execCommand('copy')
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.setAttribute("aria-hidden", "true");
+      ta.style.position = "fixed";
+      ta.style.top = "0";
+      ta.style.left = "0";
+      ta.style.opacity = "0";
+      ta.style.pointerEvents = "none";
+      document.body.appendChild(ta);
+
+      // iOS needs an editable, focused, fully-selected element
+      const isIOS = /ipad|iphone|ipod/i.test(navigator.userAgent);
+      if (isIOS) {
+        const range = document.createRange();
+        range.selectNodeContents(ta);
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+        ta.setSelectionRange(0, text.length);
+      } else {
+        ta.focus();
+        ta.select();
+      }
+
+      const ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      return ok;
+    } catch {
+      return false;
+    }
+  };
+
   const exportAudit = (req: ReentryNotification, format: "csv" | "json") => {
     const log: any[] = Array.isArray(req.metadata?.audit_log) ? req.metadata.audit_log : [];
     if (log.length === 0) {
@@ -524,11 +576,13 @@ export default function StaffReentryRequests() {
       action: {
         label: "Copy",
         onClick: async () => {
-          try {
-            await navigator.clipboard.writeText(clipboardText);
+          const ok = await copyToClipboard(clipboardText);
+          if (ok) {
             toast.success("Copied to clipboard", { description: clipboardText });
-          } catch {
-            toast.error("Couldn't copy", { description: "Clipboard access was blocked." });
+          } else {
+            toast.error("Couldn't copy", {
+              description: "Your browser blocked clipboard access.",
+            });
           }
         },
       },
