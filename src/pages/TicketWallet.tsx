@@ -161,23 +161,36 @@ export default function TicketWallet() {
               const isPast = event ? isBefore(new Date(event.ends_at), new Date()) : false;
               return (
                 <li key={t.id}>
-                  <button
-                    onClick={() => navigate(`/tickets/${t.qr_code_token}`)}
-                    className="w-full text-left flex gap-3 p-3 rounded-xl bg-card border border-border hover:border-primary/40 transition-colors group"
-                  >
-                    {event?.cover_image_url ? (
-                      <img
-                        src={event.cover_image_url}
-                        alt={event.title}
-                        loading="lazy"
-                        className="w-24 h-24 rounded-lg object-cover flex-shrink-0"
-                      />
-                    ) : (
-                      <div className="w-24 h-24 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                        <QrCode className="w-8 h-8 text-muted-foreground" />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+                  <div className="flex gap-3 p-3 rounded-xl bg-card border border-border hover:border-primary/40 transition-colors group">
+                    <button
+                      type="button"
+                      onClick={() => setQrTicket(t)}
+                      aria-label="Show QR code"
+                      className="relative flex-shrink-0 rounded-lg overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      {event?.cover_image_url ? (
+                        <img
+                          src={event.cover_image_url}
+                          alt={event.title}
+                          loading="lazy"
+                          className="w-24 h-24 object-cover"
+                        />
+                      ) : (
+                        <div className="w-24 h-24 bg-muted flex items-center justify-center">
+                          <QrCode className="w-8 h-8 text-muted-foreground" />
+                        </div>
+                      )}
+                      <span className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <span className="flex items-center gap-1 text-[10px] font-bold text-foreground">
+                          <QrCode className="w-3.5 h-3.5" /> Tap for QR
+                        </span>
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/tickets/${t.qr_code_token}`)}
+                      className="flex-1 min-w-0 flex flex-col justify-between py-0.5 text-left"
+                    >
                       <div>
                         <h3 className="text-sm md:text-base font-semibold text-foreground truncate">
                           {event?.title || "Event"}
@@ -214,15 +227,93 @@ export default function TicketWallet() {
                           <span className="text-[10px] text-muted-foreground ml-auto">${t.amount_paid.toFixed(2)}</span>
                         )}
                       </div>
+                    </button>
+                    <div className="flex flex-col items-center justify-center gap-1 flex-shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setQrTicket(t)}
+                        aria-label="Show QR code"
+                        className="p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                      >
+                        <QrCode className="w-5 h-5" />
+                      </button>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
                     </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground self-center flex-shrink-0 group-hover:text-foreground transition-colors" />
-                  </button>
+                  </div>
                 </li>
               );
             })}
           </ul>
         )}
       </div>
+
+      {/* Full-screen QR preview */}
+      <Dialog open={!!qrTicket} onOpenChange={(open) => !open && setQrTicket(null)}>
+        <DialogContent
+          className="max-w-md p-0 border-0 bg-background sm:rounded-2xl overflow-hidden"
+        >
+          <VisuallyHidden>
+            <DialogTitle>Ticket QR Code</DialogTitle>
+          </VisuallyHidden>
+          {qrTicket && (
+            <div className="flex flex-col items-center p-6 gap-4">
+              <div className="w-full flex items-center justify-between">
+                <div className="min-w-0">
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground">Check-in pass</p>
+                  <h2 className="text-lg font-bold text-foreground truncate">
+                    {qrTicket.events?.title || "Event"}
+                  </h2>
+                  {qrTicket.events && (
+                    <p className="text-xs text-primary mt-0.5">
+                      {format(new Date(qrTicket.events.starts_at), "EEE MMM d · h:mm a")}
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={() => setQrTicket(null)}
+                  className="p-2 rounded-full hover:bg-muted transition-colors flex-shrink-0"
+                  aria-label="Close"
+                >
+                  <X className="w-5 h-5 text-foreground" />
+                </button>
+              </div>
+              <div className="bg-white p-5 rounded-2xl shadow-2xl">
+                <QRCodeSVG
+                  value={qrTicket.qr_code_token}
+                  size={272}
+                  level="H"
+                  includeMargin={false}
+                />
+              </div>
+              <div className="text-center">
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Ticket ID</p>
+                <p className="font-mono text-xs text-foreground mt-1 break-all">
+                  {qrTicket.qr_code_token}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 w-full">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    const t = qrTicket;
+                    setQrTicket(null);
+                    navigate(`/tickets/${t.qr_code_token}`);
+                  }}
+                >
+                  <Maximize2 className="w-4 h-4 mr-1.5" /> View details
+                </Button>
+                <Button className="flex-1" onClick={() => setQrTicket(null)}>
+                  Done
+                </Button>
+              </div>
+              <p className="text-[11px] text-muted-foreground text-center">
+                Hold steady at the entrance scanner. Brightness up for best results.
+              </p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
