@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { format, isToday, isTomorrow } from "date-fns";
 import EventCountdown from "./EventCountdown";
 import EventHypeMeter from "./EventHypeMeter";
+import GoingButton from "./GoingButton";
 
 interface EventDiscoveryCardProps {
   event: any;
@@ -10,7 +11,13 @@ interface EventDiscoveryCardProps {
 export default function EventDiscoveryCard({ event }: EventDiscoveryCardProps) {
   const navigate = useNavigate();
 
-  const dateStr = event.starts_at || event.event_date;
+  const isGlobal = event._source === "global";
+  const dateStr = event.starts_at || event.event_date || event.date;
+
+  const handleClick = () => {
+    if (isGlobal) navigate(`/global-events/${event.id}`);
+    else navigate(`/events/${event.id}`);
+  };
 
   const formatEventDate = (d: string) => {
     const date = new Date(d);
@@ -26,7 +33,7 @@ export default function EventDiscoveryCard({ event }: EventDiscoveryCardProps) {
 
   return (
     <div
-      onClick={() => navigate(`/events/${event.id}`)}
+      onClick={handleClick}
       className="rounded-xl overflow-hidden cursor-pointer transition-transform active:scale-[0.98]"
       style={{
         backgroundColor: "rgba(255,255,255,0.04)",
@@ -108,9 +115,30 @@ export default function EventDiscoveryCard({ event }: EventDiscoveryCardProps) {
         {dateStr && (
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
             <EventCountdown startsAt={dateStr} compact />
-            <EventHypeMeter eventId={event.id} compact />
+            {!isGlobal && <EventHypeMeter eventId={event.id} compact />}
           </div>
         )}
+
+        {/* Going button */}
+        <div className="mt-2" onClick={(e) => e.stopPropagation()}>
+          {isGlobal ? (
+            <GoingButton
+              globalEventId={event.id}
+              eventTitle={event.title}
+              eventDate={dateStr}
+              size="sm"
+              variant="compact"
+            />
+          ) : (
+            <GoingButton
+              eventId={event.id}
+              eventTitle={event.title}
+              eventDate={dateStr}
+              size="sm"
+              variant="compact"
+            />
+          )}
+        </div>
       </div>
     </div>
   );

@@ -7,6 +7,8 @@ import { formatDistanceToNow, format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import SEOHead from "@/components/SEOHead";
 import StoriesRow from "@/components/social/StoriesRow";
+import FriendRequestsSection from "@/components/social/FriendRequestsSection";
+import PeopleYouMayKnowSection from "@/components/social/PeopleYouMayKnowSection";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface FeedItem {
@@ -114,6 +116,9 @@ export default function SocialFriends() {
       <SEOHead title="Friends — UPLY" description="See what your friends are up to" />
       <div className="pb-20">
         <StoriesRow filterFriends />
+
+        <FriendRequestsSection />
+        <PeopleYouMayKnowSection />
 
         {isLoading ? (
           <div className="space-y-3 px-4 py-3">
