@@ -257,23 +257,38 @@ function EventGalleryTab({ eventId }: { eventId: string }) {
 
   if (isLoading) return <p className="text-center text-xs text-white/40 py-12">Loading…</p>;
 
+  const navigate = useNavigate();
+  const PostCta = (
+    <button
+      onClick={() => navigate(`/social?compose=story&event=${eventId}`)}
+      className="w-full mt-2 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-transform active:scale-95"
+      style={{ backgroundColor: "rgba(0,255,133,0.12)", color: "#00FF85", border: "1px solid rgba(0,255,133,0.3)" }}
+    >
+      <Camera className="w-3.5 h-3.5" /> Add to Gallery — Post a Story
+    </button>
+  );
+
   if (media.length === 0) {
     return (
-      <div className="text-center py-12 px-4">
+      <div className="px-4 py-10 text-center">
         <span className="text-3xl block mb-2">📸</span>
         <p className="text-sm text-white/60">No photos yet</p>
         <p className="text-[11px] text-white/40 mt-1">Post a story tagged to this event to fill the gallery</p>
+        <div className="max-w-[260px] mx-auto mt-4">{PostCta}</div>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-3 gap-0.5 p-0.5">
-      {media.map((m: any) => (
-        <div key={`${m._kind}-${m.id}`} className="aspect-square overflow-hidden">
-          <img src={m.media_url} alt="" className="w-full h-full object-cover" loading="lazy" />
-        </div>
-      ))}
+    <div className="px-2 py-2">
+      <div className="grid grid-cols-3 gap-0.5">
+        {media.map((m: any) => (
+          <div key={`${m._kind}-${m.id}`} className="aspect-square overflow-hidden">
+            <img src={m.media_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+          </div>
+        ))}
+      </div>
+      <div className="px-2 mt-2">{PostCta}</div>
     </div>
   );
 }
