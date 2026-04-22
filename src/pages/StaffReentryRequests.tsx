@@ -5,8 +5,59 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+
+const EXPORT_COLUMNS = [
+  { key: "request_id", label: "Request ID" },
+  { key: "guest_name", label: "Guest name" },
+  { key: "event_title", label: "Event" },
+  { key: "ticket_token", label: "Ticket token" },
+  { key: "action", label: "Action" },
+  { key: "actor_name", label: "Actor name" },
+  { key: "actor_id", label: "Actor ID" },
+  { key: "at", label: "Timestamp" },
+] as const;
+type ExportColumnKey = (typeof EXPORT_COLUMNS)[number]["key"];
+const DEFAULT_COLUMNS: ExportColumnKey[] = EXPORT_COLUMNS.map((c) => c.key);
+
+type ExportPrefs = {
+  format: "csv" | "json";
+  columns: ExportColumnKey[];
+};
+
+const prefsKey = (uid: string) => `staffReentry:exportPrefs:${uid}`;
+
+const loadExportPrefs = (uid: string | undefined): ExportPrefs => {
+  const fallback: ExportPrefs = { format: "csv", columns: DEFAULT_COLUMNS };
+  if (!uid || typeof window === "undefined") return fallback;
+  try {
+    const raw = window.localStorage.getItem(prefsKey(uid));
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw);
+    const validKeys = new Set(DEFAULT_COLUMNS);
+    const cols = Array.isArray(parsed?.columns)
+      ? (parsed.columns.filter((k: any) => validKeys.has(k)) as ExportColumnKey[])
+      : DEFAULT_COLUMNS;
+    return {
+      format: parsed?.format === "json" ? "json" : "csv",
+      columns: cols.length > 0 ? cols : DEFAULT_COLUMNS,
+    };
+  } catch {
+    return fallback;
+  }
+};
+
+const saveExportPrefs = (uid: string | undefined, prefs: ExportPrefs) => {
+  if (!uid || typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(prefsKey(uid), JSON.stringify(prefs));
+  } catch {
+    // ignore quota / private mode errors
+  }
+};
 
 type ReentryNotification = {
   id: string;
@@ -39,6 +90,25 @@ export default function StaffReentryRequests() {
   const [bulkBusy, setBulkBusy] = useState<null | "approve" | "deny">(null);
   const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number } | null>(null);
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const [exportPrefs, setExportPrefs] = useState<ExportPrefs>(() => loadExportPrefs(user?.id));
+  const [columnPickerOpen, setColumnPickerOpen] = useState<string | null>(null);
+
+  // Reload prefs when staff user changes
+  useEffect(() => {
+    setExportPrefs(loadExportPrefs(user?.id));
+  }, [user?.id]);
+
+  const updateExportPrefs = (next: Partial<ExportPrefs>) => {
+    setExportPrefs((prev) => {
+      const merged: ExportPrefs = {
+        format: next.format ?? prev.format,
+        columns:
+          next.columns && next.columns.length > 0 ? next.columns : prev.columns,
+      };
+      saveExportPrefs(user?.id, merged);
+      return merged;
+    });
+  };
 
   const load = async () => {
     if (!user?.id) return;
@@ -495,12 +565,40 @@ export default function StaffReentryRequests() {
     }
   };
 
-  const exportAudit = (req: ReentryNotification, format: "csv" | "json") => {
+  const buildRowValue = (
+    key: ExportColumnKey,
+    req: ReentryNotification,
+    entry: any,
+    guestName: string,
+    eventTitle: string,
+    ticketToken: string
+  ) => {
+    switch (key) {
+      case "request_id": return req.id;
+      case "guest_name": return guestName;
+      case "event_title": return eventTitle;
+      case "ticket_token": return ticketToken;
+      case "action": return entry?.action ?? "";
+      case "actor_name": return entry?.actor_name ?? "";
+      case "actor_id": return entry?.actor_id ?? "";
+      case "at": return entry?.at ?? "";
+      default: return "";
+    }
+  };
+
+  const exportAudit = (
+    req: ReentryNotification,
+    format: "csv" | "json" = exportPrefs.format,
+    columns: ExportColumnKey[] = exportPrefs.columns
+  ) => {
     const log: any[] = Array.isArray(req.metadata?.audit_log) ? req.metadata.audit_log : [];
     if (log.length === 0) {
       toast.info("Nothing to export", { description: "No activity recorded yet." });
       return;
     }
+    // Persist the choices so next export defaults to the same format + columns
+    updateExportPrefs({ format, columns });
+
     const guestName = req.metadata?.guest_name || "guest";
     const eventTitle = req.metadata?.event_title || "event";
     const ticketToken = req.metadata?.ticket_token || "";
@@ -508,6 +606,8 @@ export default function StaffReentryRequests() {
       String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "request";
     const stamp = new Date().toISOString().slice(0, 10);
     const baseName = `reentry-activity_${safe(guestName)}_${safe(eventTitle)}_${stamp}`;
+
+    const activeColumns = columns.length > 0 ? columns : DEFAULT_COLUMNS;
 
     let blob: Blob;
     let filename: string;
@@ -519,7 +619,13 @@ export default function StaffReentryRequests() {
         event_title: eventTitle,
         ticket_token: ticketToken,
         ticket_id: req.metadata?.ticket_id || req.reference_id || null,
-        audit_log: log,
+        columns: activeColumns,
+        audit_log: log.map((e) =>
+          activeColumns.reduce<Record<string, any>>((acc, key) => {
+            acc[key] = buildRowValue(key, req, e, guestName, eventTitle, ticketToken);
+            return acc;
+          }, {})
+        ),
         exported_at: new Date().toISOString(),
         exported_by: user?.id ?? null,
       };
@@ -530,26 +636,10 @@ export default function StaffReentryRequests() {
         const s = v == null ? "" : String(v);
         return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
       };
-      const headers = [
-        "request_id",
-        "guest_name",
-        "event_title",
-        "ticket_token",
-        "action",
-        "actor_name",
-        "actor_id",
-        "at",
-      ];
-      const rows = log.map((e) => [
-        req.id,
-        guestName,
-        eventTitle,
-        ticketToken,
-        e.action,
-        e.actor_name || "",
-        e.actor_id || "",
-        e.at || "",
-      ]);
+      const headers = activeColumns;
+      const rows = log.map((e) =>
+        activeColumns.map((k) => buildRowValue(k, req, e, guestName, eventTitle, ticketToken))
+      );
       const csv = [headers, ...rows].map((r) => r.map(escape).join(",")).join("\n");
       blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
       filename = `${baseName}.csv`;
@@ -571,7 +661,7 @@ export default function StaffReentryRequests() {
     });
     const clipboardText = `${filename} · ${format.toUpperCase()} · ${exportedAt.toLocaleString()}`;
     toast.success(`Exported as ${format.toUpperCase()}`, {
-      description: `${filename} · ${timeLabel}`,
+      description: `${filename} · ${timeLabel} · ${activeColumns.length} column${activeColumns.length === 1 ? "" : "s"}`,
       duration: 6000,
       action: {
         label: "Copy",
@@ -871,22 +961,80 @@ export default function StaffReentryRequests() {
                         Activity log
                       </p>
                       <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => exportAudit(req, "csv")}
-                          className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-md bg-muted hover:bg-muted/70 text-foreground transition-colors"
-                          aria-label="Export activity as CSV"
+                        {(["csv", "json"] as const).map((fmt) => {
+                          const isPreferred = exportPrefs.format === fmt;
+                          return (
+                            <button
+                              key={fmt}
+                              onClick={() => exportAudit(req, fmt)}
+                              className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-md transition-colors ${
+                                isPreferred
+                                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                  : "bg-muted hover:bg-muted/70 text-foreground"
+                              }`}
+                              aria-label={`Export activity as ${fmt.toUpperCase()}${isPreferred ? " (last used)" : ""}`}
+                              title={isPreferred ? "Last used format" : `Export as ${fmt.toUpperCase()}`}
+                            >
+                              <Download className="w-2.5 h-2.5" />
+                              {fmt.toUpperCase()}
+                            </button>
+                          );
+                        })}
+                        <Popover
+                          open={columnPickerOpen === req.id}
+                          onOpenChange={(open) => setColumnPickerOpen(open ? req.id : null)}
                         >
-                          <Download className="w-2.5 h-2.5" />
-                          CSV
-                        </button>
-                        <button
-                          onClick={() => exportAudit(req, "json")}
-                          className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-md bg-muted hover:bg-muted/70 text-foreground transition-colors"
-                          aria-label="Export activity as JSON"
-                        >
-                          <Download className="w-2.5 h-2.5" />
-                          JSON
-                        </button>
+                          <PopoverTrigger asChild>
+                            <button
+                              className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-md bg-muted hover:bg-muted/70 text-foreground transition-colors"
+                              aria-label="Choose export columns"
+                              title={`Columns (${exportPrefs.columns.length}/${EXPORT_COLUMNS.length})`}
+                            >
+                              Columns · {exportPrefs.columns.length}
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent align="end" className="w-56 p-2">
+                            <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground px-1 pb-1.5">
+                              Export columns
+                            </p>
+                            <div className="space-y-1">
+                              {EXPORT_COLUMNS.map((col) => {
+                                const checked = exportPrefs.columns.includes(col.key);
+                                return (
+                                  <label
+                                    key={col.key}
+                                    className="flex items-center gap-2 px-1.5 py-1 rounded hover:bg-muted cursor-pointer text-xs"
+                                  >
+                                    <Checkbox
+                                      checked={checked}
+                                      onCheckedChange={(v) => {
+                                        const isOn = v === true;
+                                        const next = isOn
+                                          ? Array.from(new Set([...exportPrefs.columns, col.key]))
+                                          : exportPrefs.columns.filter((k) => k !== col.key);
+                                        if (next.length === 0) return;
+                                        const ordered = DEFAULT_COLUMNS.filter((k) => next.includes(k));
+                                        updateExportPrefs({ columns: ordered });
+                                      }}
+                                    />
+                                    <span className="flex-1">{col.label}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                            <div className="flex items-center justify-between gap-2 mt-2 pt-2 border-t border-border">
+                              <button
+                                onClick={() => updateExportPrefs({ columns: DEFAULT_COLUMNS })}
+                                className="text-[10px] font-semibold text-muted-foreground hover:text-foreground"
+                              >
+                                Reset
+                              </button>
+                              <span className="text-[10px] text-muted-foreground">
+                                Saved for next time
+                              </span>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     </div>
                     <ul className="space-y-1">
