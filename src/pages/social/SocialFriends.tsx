@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import SEOHead from "@/components/SEOHead";
 import StoriesRow from "@/components/social/StoriesRow";
 import FriendRequestsSection from "@/components/social/FriendRequestsSection";
+import OutgoingFriendRequestsSection from "@/components/social/OutgoingFriendRequestsSection";
 import PeopleYouMayKnowSection from "@/components/social/PeopleYouMayKnowSection";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -118,6 +119,7 @@ export default function SocialFriends() {
         <StoriesRow filterFriends />
 
         <FriendRequestsSection />
+        <OutgoingFriendRequestsSection />
         <PeopleYouMayKnowSection />
 
         {isLoading ? (
