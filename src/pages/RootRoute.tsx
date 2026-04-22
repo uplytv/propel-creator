@@ -105,16 +105,15 @@ const prefetchTarget = (target: "home" | "landing", reason: string) => {
     });
   }, PREFETCH_TIMEOUT_MS);
 
-  // Kick off the actual chunk load. The signal is passed via a wrapper:
-  // we use a <link rel="modulepreload"> when possible so the browser
-  // associates the request with a cancellable resource. Removing the link
-  // before the request completes aborts the underlying fetch.
-  let preloadLink: HTMLLinkElement | null = null;
+  // Kick off the actual chunk load. Native dynamic import() can't be aborted
+  // mid-flight, but we still call abort() on timeout/unmount so:
+  //   1. We immediately mark the route as un-prefetched (so retries work)
+  //   2. Any awaiters of controller.signal (future fetch-based warmers,
+  //      analytics, etc.) get notified
+  //   3. Late-arriving chunks are logged distinctly from real failures
   const onAbort = () => {
-    if (preloadLink && preloadLink.parentNode) {
-      preloadLink.parentNode.removeChild(preloadLink);
-      preloadLink = null;
-    }
+    // Reserved for future fetch-based preload cancellation. Today this is
+    // a state-reset signal only.
   };
   controller.signal.addEventListener("abort", onAbort, { once: true });
 
