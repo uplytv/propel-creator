@@ -90,6 +90,25 @@ export default function StaffReentryRequests() {
   const [bulkBusy, setBulkBusy] = useState<null | "approve" | "deny">(null);
   const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number } | null>(null);
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const [exportPrefs, setExportPrefs] = useState<ExportPrefs>(() => loadExportPrefs(user?.id));
+  const [columnPickerOpen, setColumnPickerOpen] = useState<string | null>(null);
+
+  // Reload prefs when staff user changes
+  useEffect(() => {
+    setExportPrefs(loadExportPrefs(user?.id));
+  }, [user?.id]);
+
+  const updateExportPrefs = (next: Partial<ExportPrefs>) => {
+    setExportPrefs((prev) => {
+      const merged: ExportPrefs = {
+        format: next.format ?? prev.format,
+        columns:
+          next.columns && next.columns.length > 0 ? next.columns : prev.columns,
+      };
+      saveExportPrefs(user?.id, merged);
+      return merged;
+    });
+  };
 
   const load = async () => {
     if (!user?.id) return;
