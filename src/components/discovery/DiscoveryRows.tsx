@@ -36,12 +36,19 @@ function CarouselRow({ title, subtitle, items, isLoading }: RowProps) {
 /**
  * Netflix-style horizontal carousels grouped into rows.
  * Reuses the existing discovery data hook + filters — no new endpoints.
- * Three rows render in parallel: Trending, New, Recommended (For You).
+ * All three rows respect the same `category` and `tags` filters so the
+ * Trending / New / Recommended carousels stay in sync with the active selection.
  */
-export default function DiscoveryRows({ category }: { category?: string }) {
-  const trending = useDiscoveryAlgorithmFeed("trending", category);
-  const fresh = useDiscoveryAlgorithmFeed("new", category);
-  const forYou = useDiscoveryAlgorithmFeed("for-you", category);
+export default function DiscoveryRows({
+  category,
+  tags,
+}: {
+  category?: string;
+  tags?: string[];
+}) {
+  const trending = useDiscoveryAlgorithmFeed("trending", category, tags);
+  const fresh = useDiscoveryAlgorithmFeed("new", category, tags);
+  const forYou = useDiscoveryAlgorithmFeed("for-you", category, tags);
 
   return (
     <div className="space-y-5 md:space-y-7 py-3">
