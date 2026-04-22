@@ -205,47 +205,70 @@ export default function StaffReentryRequests() {
     return nextLog;
   };
 
-  const approve = async (req: ReentryNotification) => {
-    if (actionId) return;
-    setActionId(req.id);
+  // Core approve — no UI guards/toasts so it can be reused for bulk
+  const approveCore = async (req: ReentryNotification) => {
     const ticketId = req.metadata?.ticket_id || req.reference_id;
     const eventTitle = req.metadata?.event_title || "the event";
     const guestUserId = req.metadata?.guest_user_id;
     const ticketUrl = req.metadata?.ticket_url || (ticketId ? `/tickets/${ticketId}` : null);
 
+    if (ticketId) {
+      const { error } = await (supabase as any)
+        .from("tickets")
+        .update({
+          status: "active",
+          checked_in: false,
+          checked_in_at: null,
+          scanned_at: null,
+        })
+        .eq("id", ticketId);
+      if (error) throw error;
+    }
+
+    const nextLog = await recordAudit(req, "approved");
+    await notifyGuest(guestUserId, true, eventTitle, ticketUrl);
+
+    setRequests((prev) =>
+      prev.map((r) =>
+        r.id === req.id
+          ? {
+              ...r,
+              read: true,
+              _resolved: "approved",
+              metadata: { ...(r.metadata || {}), audit_log: nextLog },
+            }
+          : r
+      )
+    );
+  };
+
+  const denyCore = async (req: ReentryNotification) => {
+    const eventTitle = req.metadata?.event_title || "the event";
+    const guestUserId = req.metadata?.guest_user_id;
+    const ticketUrl = req.metadata?.ticket_url || null;
+
+    const nextLog = await recordAudit(req, "denied");
+    await notifyGuest(guestUserId, false, eventTitle, ticketUrl);
+
+    setRequests((prev) =>
+      prev.map((r) =>
+        r.id === req.id
+          ? {
+              ...r,
+              read: true,
+              _resolved: "denied",
+              metadata: { ...(r.metadata || {}), audit_log: nextLog },
+            }
+          : r
+      )
+    );
+  };
+
+  const approve = async (req: ReentryNotification) => {
+    if (actionId) return;
+    setActionId(req.id);
     try {
-      if (ticketId) {
-        // Re-activate the ticket so the QR scans clean again
-        const { error } = await (supabase as any)
-          .from("tickets")
-          .update({
-            status: "active",
-            checked_in: false,
-            checked_in_at: null,
-            scanned_at: null,
-          })
-          .eq("id", ticketId);
-        if (error) throw error;
-      }
-
-      // Mark notification as handled + write audit entry
-      const nextLog = await recordAudit(req, "approved");
-
-      // Best-effort guest notification
-      await notifyGuest(guestUserId, true, eventTitle, ticketUrl);
-
-      setRequests((prev) =>
-        prev.map((r) =>
-          r.id === req.id
-            ? {
-                ...r,
-                read: true,
-                _resolved: "approved",
-                metadata: { ...(r.metadata || {}), audit_log: nextLog },
-              }
-            : r
-        )
-      );
+      await approveCore(req);
       if (navigator.vibrate) navigator.vibrate(60);
       toast.success("Re-entry approved", { description: "Ticket reactivated for scanning." });
     } catch (e: any) {
@@ -258,25 +281,8 @@ export default function StaffReentryRequests() {
   const deny = async (req: ReentryNotification) => {
     if (actionId) return;
     setActionId(req.id);
-    const eventTitle = req.metadata?.event_title || "the event";
-    const guestUserId = req.metadata?.guest_user_id;
-    const ticketUrl = req.metadata?.ticket_url || null;
-
     try {
-      const nextLog = await recordAudit(req, "denied");
-      await notifyGuest(guestUserId, false, eventTitle, ticketUrl);
-      setRequests((prev) =>
-        prev.map((r) =>
-          r.id === req.id
-            ? {
-                ...r,
-                read: true,
-                _resolved: "denied",
-                metadata: { ...(r.metadata || {}), audit_log: nextLog },
-              }
-            : r
-        )
-      );
+      await denyCore(req);
       if (navigator.vibrate) navigator.vibrate(40);
       toast.success("Request denied", { description: "We've let the guest know." });
     } catch (e: any) {
@@ -285,6 +291,7 @@ export default function StaffReentryRequests() {
       setActionId(null);
     }
   };
+
 
   if (!user) {
     return (
