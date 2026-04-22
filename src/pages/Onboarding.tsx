@@ -864,7 +864,7 @@ export default function Onboarding() {
         {/* STEP 2: Creator Profile */}
         {step === 2 && (
           <motion.div key="profile" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md">
-            <p className="text-xs text-muted-foreground text-center mb-1 uppercase tracking-wider">Step 2 of 3</p>
+            <p className="text-xs text-muted-foreground text-center mb-1 uppercase tracking-wider">Step 2 of 4</p>
             <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">Your Creator Profile</h1>
             <p className="text-muted-foreground text-center text-sm mb-1">Help us understand your audience.</p>
             <p className="text-xs text-primary text-center mb-6 font-medium">🎯 This helps us prioritize your application</p>
@@ -1038,26 +1038,25 @@ export default function Onboarding() {
                 variant="hero"
                 size="xl"
                 className="flex-1"
+                aria-disabled={!creatorType}
                 onClick={() => {
                   if (!creatorType) {
                     setCreatorTypeError(true);
                     requestAnimationFrame(() => {
                       creatorTypeErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-                      // Move focus to the first actionable element near the banner
-                      // (the first creator-type radio card) so keyboard/screen-reader
-                      // users land on a usable control immediately.
                       const firstCard = document.querySelector<HTMLButtonElement>(
                         `[data-creator-type-card="${CREATOR_TYPES[0].value}"]`
                       );
                       firstCard?.focus();
                     });
+                    toast.error("Pick a creator type to continue");
                     return;
                   }
                   setCreatorTypeError(false);
                   setStep(3);
                 }}
               >
-                Continue <ArrowRight className="ml-1 w-4 h-4" />
+                {creatorType ? "Continue" : "Pick a category to continue"} <ArrowRight className="ml-1 w-4 h-4" />
               </Button>
             </div>
           </motion.div>
@@ -1262,6 +1261,7 @@ export default function Onboarding() {
                 variant="hero"
                 size="xl"
                 className="flex-1"
+                aria-disabled={!creatorStage || !oneSentence.trim()}
                 onClick={() => {
                   if (!creatorStage) {
                     setAttemptedSubmit(true);
@@ -1270,12 +1270,14 @@ export default function Onboarding() {
                       `[data-creator-stage-card="${CREATOR_STAGES[0].key}"]`
                     );
                     step3BannerRef.current?.surface(firstStageCard);
+                    toast.error("Pick where you are right now to continue");
                     return;
                   }
                   if (!oneSentence.trim()) {
                     setOneSentenceError(true);
                     setAttemptedSubmit(false);
                     step3BannerRef.current?.surface(oneSentenceInputRef.current);
+                    toast.error("Add a one-sentence description to continue");
                     return;
                   }
                   setOneSentenceError(false);
@@ -1283,7 +1285,11 @@ export default function Onboarding() {
                   setStep(4);
                 }}
               >
-                Continue <ArrowRight className="ml-1 w-4 h-4" />
+                {!creatorStage
+                  ? "Pick your stage to continue"
+                  : !oneSentence.trim()
+                  ? "Add one sentence to continue"
+                  : "Continue"} <ArrowRight className="ml-1 w-4 h-4" />
               </Button>
             </div>
           </motion.div>

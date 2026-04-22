@@ -39,25 +39,25 @@ export default function Home() {
         <Hero />
 
         {/* Pull rows above the hero fade */}
-        <div className="relative z-10 -mt-16 flex flex-col gap-14 pb-20">
+        <div className="relative z-10 -mt-16 flex flex-col gap-8 pb-20">
           <Row title="Live Now" subtitle="Creators streaming right now — one tap to join">
             {liveDemo.map((d) => <LiveTile key={d.id} data={d} />)}
-          </Row>
-
-          <Row title="Upcoming Events" subtitle="Tickets, meetups, and drops from your creators">
-            {eventsDemo.map((d) => <EventTile key={d.id} data={d} />)}
           </Row>
 
           <Row title="Your Feed" subtitle="Posts from the creators you follow">
             {socialDemo.map((d) => <SocialTile key={d.id} data={d} />)}
           </Row>
 
-          <Row title="Continue Learning" subtitle="Masterclasses from working creators">
-            {coursesDemo.map((d) => <CourseTile key={d.id} data={d} />)}
-          </Row>
-
           <Row title="Trending Shorts" subtitle="60-second clips. Auto-made from live streams">
             {shortsDemo.map((d) => <ShortTile key={d.id} data={d} />)}
+          </Row>
+
+          <Row title="Upcoming Events" subtitle="Tickets, meetups, and drops from your creators">
+            {eventsDemo.map((d) => <EventTile key={d.id} data={d} />)}
+          </Row>
+
+          <Row title="Continue Learning" subtitle="Masterclasses from working creators">
+            {coursesDemo.map((d) => <CourseTile key={d.id} data={d} />)}
           </Row>
         </div>
 

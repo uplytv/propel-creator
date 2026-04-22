@@ -38,7 +38,7 @@ export default function Row({ title, subtitle, children, seeAllHref = "#" }: Row
 
   return (
     <div
-      className="group/row relative px-6 lg:px-12"
+      className="group/row relative px-4 lg:px-12"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -46,7 +46,7 @@ export default function Row({ title, subtitle, children, seeAllHref = "#" }: Row
       <div className="flex items-end justify-between mb-3">
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
-            <h2 className="text-white text-lg md:text-xl font-bold tracking-tight">
+            <h2 className="text-white text-[18px] leading-tight font-bold tracking-tight">
               {title}
             </h2>
             <ChevronRight
@@ -56,12 +56,12 @@ export default function Row({ title, subtitle, children, seeAllHref = "#" }: Row
             />
           </div>
           {subtitle && (
-            <p className="text-white/50 text-[13px] mt-0.5">{subtitle}</p>
+            <p className="text-[#888] text-[12px] mt-0.5">{subtitle}</p>
           )}
         </div>
         <a
           href={seeAllHref}
-          className="hidden md:inline text-white/60 hover:text-white text-xs font-medium transition cursor-pointer"
+          className="text-white/60 hover:text-white text-xs font-medium transition cursor-pointer whitespace-nowrap"
         >
           See all →
         </a>
