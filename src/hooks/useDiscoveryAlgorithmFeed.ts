@@ -129,7 +129,7 @@ export function useDiscoveryAlgorithmFeed(
       };
       const pMap = new Map((profiles.data ?? []).map((p: any) => [p.user_id, p]));
 
-      return ranked
+      const items = ranked
         .map((r: any): DiscoveryItem | null => {
           const meta: any = maps[r.content_type]?.get(r.content_id);
           if (!meta && r.content_type !== "post") {
@@ -154,6 +154,14 @@ export function useDiscoveryAlgorithmFeed(
           };
         })
         .filter(Boolean) as DiscoveryItem[];
+
+      // Client-side tag filter — matches against title + category (case-insensitive substring).
+      // Schema has no tags column on video_discovery_scores, so this is a soft match.
+      if (normalizedTags.length === 0) return items;
+      return items.filter((it) => {
+        const haystack = `${it.title ?? ""} ${it.category ?? ""}`.toLowerCase();
+        return normalizedTags.some((t) => haystack.includes(t));
+      });
     },
     staleTime: 30_000,
   });
