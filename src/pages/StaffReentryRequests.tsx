@@ -565,12 +565,40 @@ export default function StaffReentryRequests() {
     }
   };
 
-  const exportAudit = (req: ReentryNotification, format: "csv" | "json") => {
+  const buildRowValue = (
+    key: ExportColumnKey,
+    req: ReentryNotification,
+    entry: any,
+    guestName: string,
+    eventTitle: string,
+    ticketToken: string
+  ) => {
+    switch (key) {
+      case "request_id": return req.id;
+      case "guest_name": return guestName;
+      case "event_title": return eventTitle;
+      case "ticket_token": return ticketToken;
+      case "action": return entry?.action ?? "";
+      case "actor_name": return entry?.actor_name ?? "";
+      case "actor_id": return entry?.actor_id ?? "";
+      case "at": return entry?.at ?? "";
+      default: return "";
+    }
+  };
+
+  const exportAudit = (
+    req: ReentryNotification,
+    format: "csv" | "json" = exportPrefs.format,
+    columns: ExportColumnKey[] = exportPrefs.columns
+  ) => {
     const log: any[] = Array.isArray(req.metadata?.audit_log) ? req.metadata.audit_log : [];
     if (log.length === 0) {
       toast.info("Nothing to export", { description: "No activity recorded yet." });
       return;
     }
+    // Persist the choices so next export defaults to the same format + columns
+    updateExportPrefs({ format, columns });
+
     const guestName = req.metadata?.guest_name || "guest";
     const eventTitle = req.metadata?.event_title || "event";
     const ticketToken = req.metadata?.ticket_token || "";
@@ -578,6 +606,8 @@ export default function StaffReentryRequests() {
       String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "request";
     const stamp = new Date().toISOString().slice(0, 10);
     const baseName = `reentry-activity_${safe(guestName)}_${safe(eventTitle)}_${stamp}`;
+
+    const activeColumns = columns.length > 0 ? columns : DEFAULT_COLUMNS;
 
     let blob: Blob;
     let filename: string;
@@ -589,7 +619,13 @@ export default function StaffReentryRequests() {
         event_title: eventTitle,
         ticket_token: ticketToken,
         ticket_id: req.metadata?.ticket_id || req.reference_id || null,
-        audit_log: log,
+        columns: activeColumns,
+        audit_log: log.map((e) =>
+          activeColumns.reduce<Record<string, any>>((acc, key) => {
+            acc[key] = buildRowValue(key, req, e, guestName, eventTitle, ticketToken);
+            return acc;
+          }, {})
+        ),
         exported_at: new Date().toISOString(),
         exported_by: user?.id ?? null,
       };
@@ -600,26 +636,10 @@ export default function StaffReentryRequests() {
         const s = v == null ? "" : String(v);
         return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
       };
-      const headers = [
-        "request_id",
-        "guest_name",
-        "event_title",
-        "ticket_token",
-        "action",
-        "actor_name",
-        "actor_id",
-        "at",
-      ];
-      const rows = log.map((e) => [
-        req.id,
-        guestName,
-        eventTitle,
-        ticketToken,
-        e.action,
-        e.actor_name || "",
-        e.actor_id || "",
-        e.at || "",
-      ]);
+      const headers = activeColumns;
+      const rows = log.map((e) =>
+        activeColumns.map((k) => buildRowValue(k, req, e, guestName, eventTitle, ticketToken))
+      );
       const csv = [headers, ...rows].map((r) => r.map(escape).join(",")).join("\n");
       blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
       filename = `${baseName}.csv`;
@@ -641,7 +661,7 @@ export default function StaffReentryRequests() {
     });
     const clipboardText = `${filename} · ${format.toUpperCase()} · ${exportedAt.toLocaleString()}`;
     toast.success(`Exported as ${format.toUpperCase()}`, {
-      description: `${filename} · ${timeLabel}`,
+      description: `${filename} · ${timeLabel} · ${activeColumns.length} column${activeColumns.length === 1 ? "" : "s"}`,
       duration: 6000,
       action: {
         label: "Copy",
