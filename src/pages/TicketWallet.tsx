@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { format, isBefore, isAfter } from "date-fns";
@@ -277,14 +277,7 @@ export default function TicketWallet() {
                   <X className="w-5 h-5 text-foreground" />
                 </button>
               </div>
-              <div className="bg-white p-5 rounded-2xl shadow-2xl">
-                <QRCodeSVG
-                  value={qrTicket.qr_code_token}
-                  size={272}
-                  level="H"
-                  includeMargin={false}
-                />
-              </div>
+              <RotatingQR token={qrTicket.qr_code_token} ticketId={qrTicket.id} />
               <div className="text-center">
                 <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Ticket ID</p>
                 <p className="font-mono text-xs text-foreground mt-1 break-all">
@@ -315,5 +308,67 @@ export default function TicketWallet() {
         </DialogContent>
       </Dialog>
     </AppLayout>
+  );
+}
+
+const REFRESH_SECONDS = 30;
+
+function RotatingQR({ token, ticketId }: { token: string; ticketId: string }) {
+  const [tick, setTick] = useState(0);
+  const [secondsLeft, setSecondsLeft] = useState(REFRESH_SECONDS);
+
+  useEffect(() => {
+    setTick(0);
+    setSecondsLeft(REFRESH_SECONDS);
+    const interval = setInterval(() => {
+      setSecondsLeft((s) => {
+        if (s <= 1) {
+          setTick((n) => n + 1);
+          return REFRESH_SECONDS;
+        }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [token]);
+
+  // Wrap the static ticket token with a time-bound nonce so scanners that
+  // validate freshness see a new payload every cycle, while servers that only
+  // care about the underlying token still resolve correctly.
+  const payload = useMemo(() => {
+    const issuedAt = Math.floor(Date.now() / 1000);
+    return JSON.stringify({
+      v: 1,
+      t: token,
+      tid: ticketId,
+      iat: issuedAt,
+      exp: issuedAt + REFRESH_SECONDS,
+      n: tick,
+    });
+  }, [token, ticketId, tick]);
+
+  const progress = secondsLeft / REFRESH_SECONDS;
+  const circumference = 2 * Math.PI * 18;
+
+  return (
+    <div className="relative bg-white p-5 rounded-2xl shadow-2xl">
+      <QRCodeSVG value={payload} size={272} level="H" includeMargin={false} />
+      <div className="absolute -top-2 -right-2 w-12 h-12 rounded-full bg-background border border-border flex items-center justify-center shadow-lg">
+        <svg className="absolute inset-0 w-12 h-12 -rotate-90" viewBox="0 0 44 44">
+          <circle cx="22" cy="22" r="18" className="fill-none stroke-muted" strokeWidth="3" />
+          <circle
+            cx="22"
+            cy="22"
+            r="18"
+            className="fill-none stroke-primary transition-all duration-1000 ease-linear"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={circumference * (1 - progress)}
+          />
+        </svg>
+        <span className="text-[11px] font-bold text-foreground tabular-nums">{secondsLeft}s</span>
+      </div>
+    </div>
   );
 }
