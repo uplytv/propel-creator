@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import SEOHead from "@/components/SEOHead";
 import BackNav from "@/components/BackNav";
 import AppLayout from "@/components/layout/AppLayout";
+import EventTabs from "@/components/social/EventTabs";
 import { useAuth } from "@/context/AuthContext";
 import { useEvent, useMyTicketForEvent, useClaimFreeTicket, useSetEventReminder } from "@/hooks/useEvents";
 import { useProfile } from "@/hooks/useProfile";
