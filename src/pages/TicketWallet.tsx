@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { format, isBefore, isAfter } from "date-fns";
-import { Ticket, CalendarDays, MapPin, ChevronRight, QrCode, Search, X, Maximize2 } from "lucide-react";
+import { Ticket, CalendarDays, MapPin, ChevronRight, QrCode, Search, X, Maximize2, CheckCircle2, AlertTriangle, XCircle, Loader2 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
