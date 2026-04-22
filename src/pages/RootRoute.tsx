@@ -126,6 +126,7 @@ const prefetchTarget = (target: "home" | "landing", reason: string) => {
   const { skip, reason: skipReason, effectiveType } = isSlowOrSavingData();
   if (skip) {
     prefetchLog(`skipped: ${skipReason}`, { effectiveType, target, reason });
+    setPrefetchStatus(target, "skipped", skipReason);
     return;
   }
 
@@ -137,6 +138,7 @@ const prefetchTarget = (target: "home" | "landing", reason: string) => {
       target,
       reason,
     });
+    setPrefetchStatus(target, "deferred", `tab:${document.visibilityState}`);
     const onVisible = () => {
       if (document.visibilityState === "visible") {
         document.removeEventListener("visibilitychange", onVisible);
@@ -149,6 +151,7 @@ const prefetchTarget = (target: "home" | "landing", reason: string) => {
 
   prefetchedRoutes[target] = true;
   prefetchLog(`running ${target} (${reason})`, { effectiveType });
+  setPrefetchStatus(target, "running", reason);
   const importer = target === "home" ? homeImport : landingImport;
 
   // AbortController-backed cancellation. Native dynamic import() can't be
@@ -168,6 +171,7 @@ const prefetchTarget = (target: "home" | "landing", reason: string) => {
       target,
       reason,
     });
+    setPrefetchStatus(target, "timeout", `${PREFETCH_TIMEOUT_MS}ms`);
   }, PREFETCH_TIMEOUT_MS);
 
   // Kick off the actual chunk load. Native dynamic import() can't be aborted
@@ -191,6 +195,9 @@ const prefetchTarget = (target: "home" | "landing", reason: string) => {
         // but log so we can see stalls in dev.
         prefetchedRoutes[target] = true;
         prefetchLog(`late success: ${target} resolved after timeout`, { target });
+        setPrefetchStatus(target, "late-success", reason);
+      } else {
+        setPrefetchStatus(target, "success", reason);
       }
     })
     .catch((err) => {
@@ -202,6 +209,15 @@ const prefetchTarget = (target: "home" | "landing", reason: string) => {
           : `failed: ${target} import error`,
         { target, error: err instanceof Error ? err.message : String(err) }
       );
+      // Don't overwrite a "timeout" status with "aborted" (timeout already
+      // called abort itself — keep the more informative status).
+      if (!timedOut) {
+        setPrefetchStatus(
+          target,
+          aborted ? "aborted" : "failed",
+          err instanceof Error ? err.message : String(err)
+        );
+      }
     })
     .finally(() => {
       window.clearTimeout(timeoutId);
@@ -222,6 +238,7 @@ const abortPrefetch = (target: "home" | "landing", reason: string) => {
   prefetchLog(`abort requested: ${target} (${reason})`);
   controller.abort(reason);
   prefetchedRoutes[target] = false;
+  setPrefetchStatus(target, "aborted", reason);
 };
 
 const PREFETCH_TIMEOUT_MS = 4000;
