@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { CalendarDays } from "lucide-react";
 import { useInviteCodes } from "@/hooks/useInviteCodes";
 import { fireMetaEvent, fireGoogleEvent } from "@/lib/adTracking";
+import AddFriendButton from "@/components/social/AddFriendButton";
 
 // Social platform icons as simple SVG components
 const socialIcons: Record<string, React.FC<{ className?: string }>> = {
@@ -688,12 +689,15 @@ export default function CreatorProfile() {
                   )}
                 </button>
                 {!isOwner && user && (
-                  <button
-                    onClick={() => navigate(`/messages?to=${profile.user_id}`)}
-                    className="px-4 py-3 rounded-xl text-sm font-semibold bg-secondary border border-border text-muted-foreground"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                  </button>
+                  <>
+                    <AddFriendButton targetUserId={profile.user_id} size="md" />
+                    <button
+                      onClick={() => navigate(`/messages?to=${profile.user_id}`)}
+                      className="px-4 py-3 rounded-xl text-sm font-semibold bg-secondary border border-border text-muted-foreground"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                    </button>
+                  </>
                 )}
               </div>
             )}

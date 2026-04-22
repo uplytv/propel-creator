@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
+import { trackRecentProducer } from "@/components/social/RecentlyViewedProducers";
 
 export default function ProducerCarousel() {
   const navigate = useNavigate();
@@ -47,7 +48,10 @@ export default function ProducerCarousel() {
         {producers.map((p: any) => (
           <button
             key={p.user_id}
-            onClick={() => navigate(`/${p.username || p.user_id}`)}
+            onClick={() => {
+              trackRecentProducer(p.user_id);
+              navigate(`/${p.username || p.user_id}`);
+            }}
             className="flex flex-col items-center gap-1.5 flex-shrink-0"
           >
             <Avatar className="w-16 h-16 border-2" style={{ borderColor: "#00FF85" }}>

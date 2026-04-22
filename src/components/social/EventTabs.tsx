@@ -3,10 +3,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { MessageCircle, Users, Image as ImageIcon, ShoppingBag, Send, Loader2 } from "lucide-react";
+import { MessageCircle, Users, Image as ImageIcon, ShoppingBag, Send, Loader2, Camera } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import MarketplaceComposer from "@/components/social/MarketplaceComposer";
 
 type Tab = "chat" | "people" | "gallery" | "marketplace";
 
@@ -256,41 +257,65 @@ function EventGalleryTab({ eventId }: { eventId: string }) {
 
   if (isLoading) return <p className="text-center text-xs text-white/40 py-12">Loading…</p>;
 
+  const navigate = useNavigate();
+  const PostCta = (
+    <button
+      onClick={() => navigate(`/social?compose=story&event=${eventId}`)}
+      className="w-full mt-2 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-transform active:scale-95"
+      style={{ backgroundColor: "rgba(0,255,133,0.12)", color: "#00FF85", border: "1px solid rgba(0,255,133,0.3)" }}
+    >
+      <Camera className="w-3.5 h-3.5" /> Add to Gallery — Post a Story
+    </button>
+  );
+
   if (media.length === 0) {
     return (
-      <div className="text-center py-12 px-4">
+      <div className="px-4 py-10 text-center">
         <span className="text-3xl block mb-2">📸</span>
         <p className="text-sm text-white/60">No photos yet</p>
         <p className="text-[11px] text-white/40 mt-1">Post a story tagged to this event to fill the gallery</p>
+        <div className="max-w-[260px] mx-auto mt-4">{PostCta}</div>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-3 gap-0.5 p-0.5">
-      {media.map((m: any) => (
-        <div key={`${m._kind}-${m.id}`} className="aspect-square overflow-hidden">
-          <img src={m.media_url} alt="" className="w-full h-full object-cover" loading="lazy" />
-        </div>
-      ))}
+    <div className="px-2 py-2">
+      <div className="grid grid-cols-3 gap-0.5">
+        {media.map((m: any) => (
+          <div key={`${m._kind}-${m.id}`} className="aspect-square overflow-hidden">
+            <img src={m.media_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+          </div>
+        ))}
+      </div>
+      <div className="px-2 mt-2">{PostCta}</div>
     </div>
   );
 }
 
 // -------- MARKETPLACE --------
 function EventMarketplaceTab({ eventId, eventTitle }: { eventId: string; eventTitle?: string }) {
-  // Reuse social_posts with type 'marketplace' tagged to event_id
+  const { user } = useAuth();
+  const [composerOpen, setComposerOpen] = useState(false);
+
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["event-marketplace", eventId],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data: posts } = await (supabase as any)
         .from("social_posts")
-        .select("*, profiles:user_id(display_name, avatar_url, username)")
+        .select("*")
         .eq("event_id", eventId)
-        .eq("type", "marketplace")
+        .eq("post_type", "marketplace")
         .order("created_at", { ascending: false })
         .limit(40);
-      return data || [];
+      const userIds = Array.from(new Set((posts || []).map((p: any) => p.user_id))) as string[];
+      if (userIds.length === 0) return [];
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("user_id, display_name, avatar_url, username")
+        .in("user_id", userIds);
+      const map = new Map((profs || []).map((p: any) => [p.user_id, p]));
+      return (posts || []).map((p: any) => ({ ...p, profile: map.get(p.user_id) }));
     },
     staleTime: 30_000,
   });
@@ -299,6 +324,7 @@ function EventMarketplaceTab({ eventId, eventTitle }: { eventId: string; eventTi
 
   return (
     <div className="px-4 py-3">
+      {composerOpen && <MarketplaceComposer eventId={eventId} onClose={() => setComposerOpen(false)} />}
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs text-white/50">
           Buy or sell tickets, gear, and rides for {eventTitle ? <span className="text-white/80">{eventTitle}</span> : "this event"}
@@ -306,7 +332,10 @@ function EventMarketplaceTab({ eventId, eventTitle }: { eventId: string; eventTi
         <button
           className="px-3 py-1.5 rounded-full text-[11px] font-bold transition-transform active:scale-95"
           style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}
-          onClick={() => toast.info("Buy/Sell posting coming soon")}
+          onClick={() => {
+            if (!user) return toast.error("Sign in to post");
+            setComposerOpen(true);
+          }}
         >
           + Post
         </button>
@@ -327,12 +356,24 @@ function EventMarketplaceTab({ eventId, eventTitle }: { eventId: string; eventTi
               style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
             >
               {it.media_urls?.[0] && (
-                <img src={it.media_urls[0]} alt="" className="w-full aspect-square object-cover" />
+                <img src={it.media_urls[0]} alt="" className="w-full aspect-square object-cover" loading="lazy" />
               )}
               <div className="p-2.5">
+                <div className="flex items-center justify-between gap-1 mb-1">
+                  {it.marketplace_category && (
+                    <span className="text-[9px] uppercase tracking-wider text-white/50 font-bold">
+                      {it.marketplace_category}
+                    </span>
+                  )}
+                  {it.price != null && (
+                    <span className="text-xs font-bold" style={{ color: "#00FF85" }}>
+                      ${Number(it.price).toFixed(0)}
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-white font-semibold line-clamp-2">{it.content}</p>
                 <p className="text-[10px] text-white/40 mt-1">
-                  {it.profiles?.display_name || "User"}
+                  {it.profile?.display_name || "User"}
                 </p>
               </div>
             </div>

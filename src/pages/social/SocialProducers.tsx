@@ -5,6 +5,8 @@ import ProducerRegistration from "@/components/social/ProducerRegistration";
 import EventCreator from "@/components/social/EventCreator";
 import EventDiscoveryGrid from "@/components/social/EventDiscoveryGrid";
 import VenueSpecialsFeed from "@/components/social/VenueSpecialsFeed";
+import RecentlyViewedProducers from "@/components/social/RecentlyViewedProducers";
+import AdminTicketmasterSync from "@/components/social/AdminTicketmasterSync";
 import { useAuth } from "@/context/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -81,6 +83,10 @@ export default function SocialProducers() {
             </div>
           </div>
         )}
+
+        <AdminTicketmasterSync />
+
+        <RecentlyViewedProducers />
 
         <ProducerCarousel />
 
