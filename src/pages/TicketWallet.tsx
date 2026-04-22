@@ -147,7 +147,8 @@ export default function TicketWallet() {
             icon={Ticket}
             title={bucket === "upcoming" ? "No upcoming tickets" : bucket === "past" ? "No past tickets" : "No tickets yet"}
             description="When you buy or claim a ticket, it'll show up here."
-            action={<Button onClick={() => navigate("/events")}>Browse events</Button>}
+            actionLabel="Browse events"
+            onAction={() => navigate("/events")}
           />
         ) : (
           <ul className="space-y-3">

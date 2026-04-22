@@ -88,6 +88,7 @@ const EventPage = lazy(() => import("./pages/EventPage"));
 const GlobalEventDetail = lazy(() => import("./pages/GlobalEventDetail"));
 const TicketDetail = lazy(() => import("./pages/TicketDetail"));
 const TicketSuccess = lazy(() => import("./pages/TicketSuccess"));
+const TicketWallet = lazy(() => import("./pages/TicketWallet"));
 const ContentStudio = lazy(() => import("./pages/ContentStudio"));
 const AITeamDashboard = lazy(() => import("./pages/AITeamDashboard"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
@@ -225,6 +226,7 @@ const App = () => (
                     <Route path="/p/:slug" element={<JointProduct isPublic />} />
                     <Route path="/live" element={<Live />} />
                     <Route path="/stream/:id" element={<Stream />} />
+                    <Route path="/tickets" element={<TicketWallet />} />
                     <Route path="/tickets/success" element={<TicketSuccess />} />
                     <Route path="/stream/:id/countdown" element={<StreamCountdown />} />
                     <Route path="/creator/:username/videos/:id" element={<VideoPlayer />} />
