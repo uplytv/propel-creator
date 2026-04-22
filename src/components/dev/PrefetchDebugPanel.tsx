@@ -123,6 +123,7 @@ export const PrefetchDebugPanel = () => {
           {(["home", "landing"] as const).map((target) => {
             const entry = state[target];
             const enabled = toggles[target];
+            const lastChanged = changedAt[target];
             return (
               <div key={target} className="space-y-0.5">
                 <div className="flex items-center gap-2">
@@ -133,6 +134,7 @@ export const PrefetchDebugPanel = () => {
                       onChange={(e) => {
                         setPrefetchToggle(target, e.target.checked);
                         setToggles(getPrefetchToggles());
+                        setChangedAt(getPrefetchTogglesChangedAt());
                       }}
                       className="h-3 w-3 accent-emerald-400 cursor-pointer"
                     />
@@ -151,6 +153,12 @@ export const PrefetchDebugPanel = () => {
                     </span>
                   )}
                 </div>
+                <div
+                  className="text-white/30 text-[10px] truncate pl-[68px]"
+                  title={formatAbsolute(lastChanged) ?? "toggle never changed"}
+                >
+                  toggle: {formatRelative(lastChanged)}
+                </div>
                 {entry.reason && (
                   <div
                     className="text-white/40 text-[10px] truncate pl-[68px]"
@@ -166,6 +174,7 @@ export const PrefetchDebugPanel = () => {
             onClick={() => {
               resetPrefetchToggles();
               setToggles(getPrefetchToggles());
+              setChangedAt(getPrefetchTogglesChangedAt());
             }}
             className="mt-1 w-full rounded border border-white/10 px-2 py-1 text-[10px] uppercase tracking-wide text-white/60 hover:bg-white/5 hover:text-white/80 transition"
           >
