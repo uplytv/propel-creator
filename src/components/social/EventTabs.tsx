@@ -3,10 +3,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { MessageCircle, Users, Image as ImageIcon, ShoppingBag, Send, Loader2 } from "lucide-react";
+import { MessageCircle, Users, Image as ImageIcon, ShoppingBag, Send, Loader2, Camera } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import MarketplaceComposer from "@/components/social/MarketplaceComposer";
 
 type Tab = "chat" | "people" | "gallery" | "marketplace";
 
@@ -279,18 +280,27 @@ function EventGalleryTab({ eventId }: { eventId: string }) {
 
 // -------- MARKETPLACE --------
 function EventMarketplaceTab({ eventId, eventTitle }: { eventId: string; eventTitle?: string }) {
-  // Reuse social_posts with type 'marketplace' tagged to event_id
+  const { user } = useAuth();
+  const [composerOpen, setComposerOpen] = useState(false);
+
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["event-marketplace", eventId],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data: posts } = await (supabase as any)
         .from("social_posts")
-        .select("*, profiles:user_id(display_name, avatar_url, username)")
+        .select("*")
         .eq("event_id", eventId)
-        .eq("type", "marketplace")
+        .eq("post_type", "marketplace")
         .order("created_at", { ascending: false })
         .limit(40);
-      return data || [];
+      const userIds = Array.from(new Set((posts || []).map((p: any) => p.user_id)));
+      if (userIds.length === 0) return [];
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("user_id, display_name, avatar_url, username")
+        .in("user_id", userIds);
+      const map = new Map((profs || []).map((p: any) => [p.user_id, p]));
+      return (posts || []).map((p: any) => ({ ...p, profile: map.get(p.user_id) }));
     },
     staleTime: 30_000,
   });
@@ -299,6 +309,7 @@ function EventMarketplaceTab({ eventId, eventTitle }: { eventId: string; eventTi
 
   return (
     <div className="px-4 py-3">
+      {composerOpen && <MarketplaceComposer eventId={eventId} onClose={() => setComposerOpen(false)} />}
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs text-white/50">
           Buy or sell tickets, gear, and rides for {eventTitle ? <span className="text-white/80">{eventTitle}</span> : "this event"}
@@ -306,7 +317,10 @@ function EventMarketplaceTab({ eventId, eventTitle }: { eventId: string; eventTi
         <button
           className="px-3 py-1.5 rounded-full text-[11px] font-bold transition-transform active:scale-95"
           style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}
-          onClick={() => toast.info("Buy/Sell posting coming soon")}
+          onClick={() => {
+            if (!user) return toast.error("Sign in to post");
+            setComposerOpen(true);
+          }}
         >
           + Post
         </button>
