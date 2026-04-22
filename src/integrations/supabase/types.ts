@@ -3120,6 +3120,51 @@ export type Database = {
           },
         ]
       }
+      discover_stories: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          cta_label: string | null
+          expires_at: string | null
+          id: string
+          image_url: string
+          is_active: boolean
+          link_url: string | null
+          position: number
+          subtitle: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          expires_at?: string | null
+          id?: string
+          image_url: string
+          is_active?: boolean
+          link_url?: string | null
+          position?: number
+          subtitle?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          expires_at?: string | null
+          id?: string
+          image_url?: string
+          is_active?: boolean
+          link_url?: string | null
+          position?: number
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       drip_sequence_enrollments: {
         Row: {
           completed_at: string | null
@@ -3990,6 +4035,110 @@ export type Database = {
             columns: ["space_id"]
             isOneToOne: false
             referencedRelation: "creator_spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events_external: {
+        Row: {
+          affiliate_url: string
+          category: string | null
+          city: string | null
+          click_count: number
+          country: string | null
+          created_at: string
+          currency: string | null
+          description: string | null
+          end_date: string | null
+          external_id: string | null
+          id: string
+          image_url: string | null
+          is_featured: boolean
+          last_synced_at: string
+          max_price: number | null
+          min_price: number | null
+          source: string
+          start_date: string | null
+          title: string
+          updated_at: string
+          venue_name: string | null
+        }
+        Insert: {
+          affiliate_url: string
+          category?: string | null
+          city?: string | null
+          click_count?: number
+          country?: string | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          end_date?: string | null
+          external_id?: string | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean
+          last_synced_at?: string
+          max_price?: number | null
+          min_price?: number | null
+          source?: string
+          start_date?: string | null
+          title: string
+          updated_at?: string
+          venue_name?: string | null
+        }
+        Update: {
+          affiliate_url?: string
+          category?: string | null
+          city?: string | null
+          click_count?: number
+          country?: string | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          end_date?: string | null
+          external_id?: string | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean
+          last_synced_at?: string
+          max_price?: number | null
+          min_price?: number | null
+          source?: string
+          start_date?: string | null
+          title?: string
+          updated_at?: string
+          venue_name?: string | null
+        }
+        Relationships: []
+      }
+      events_external_clicks: {
+        Row: {
+          created_at: string
+          event_external_id: string
+          id: string
+          referrer: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_external_id: string
+          id?: string
+          referrer?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_external_id?: string
+          id?: string
+          referrer?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_external_clicks_event_external_id_fkey"
+            columns: ["event_external_id"]
+            isOneToOne: false
+            referencedRelation: "events_external"
             referencedColumns: ["id"]
           },
         ]
