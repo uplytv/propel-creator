@@ -16,6 +16,7 @@ export const tables = {
   videos: () => untypedFrom("videos"),
   videoLikes: () => untypedFrom("video_likes"),
   videoComments: () => untypedFrom("video_comments"),
+  videoCommentLikes: () => untypedFrom("video_comment_likes"),
   shorts: () => untypedFrom("shorts"),
   clips: () => untypedFrom("clips"),
 
