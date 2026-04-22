@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
+import { PrefetchDebugPanel } from "@/components/dev/PrefetchDebugPanel";
 
 // Cache the dynamic imports so we can both lazy-load and imperatively prefetch
 // the same module without triggering a second network request.
@@ -23,6 +24,71 @@ const prefetchedRoutes = {
 const prefetchControllers: Record<"home" | "landing", AbortController | null> = {
   home: null,
   landing: null,
+};
+
+// Observable status for the dev-only debug panel.
+export type PrefetchStatus =
+  | "idle"
+  | "deferred"
+  | "skipped"
+  | "running"
+  | "success"
+  | "late-success"
+  | "timeout"
+  | "aborted"
+  | "failed";
+
+type PrefetchStatusEntry = {
+  status: PrefetchStatus;
+  reason?: string;
+  updatedAt: number;
+  durationMs?: number;
+};
+
+const prefetchStatus: Record<"home" | "landing", PrefetchStatusEntry> = {
+  home: { status: "idle", updatedAt: Date.now() },
+  landing: { status: "idle", updatedAt: Date.now() },
+};
+
+const prefetchStartedAt: Record<"home" | "landing", number | null> = {
+  home: null,
+  landing: null,
+};
+
+const PREFETCH_STATUS_EVENT = "uply:prefetch_status";
+
+const setPrefetchStatus = (
+  target: "home" | "landing",
+  status: PrefetchStatus,
+  reason?: string
+) => {
+  const now = Date.now();
+  let durationMs: number | undefined;
+  if (status === "running") {
+    prefetchStartedAt[target] = performance.now();
+  } else if (
+    prefetchStartedAt[target] != null &&
+    (status === "success" ||
+      status === "late-success" ||
+      status === "timeout" ||
+      status === "aborted" ||
+      status === "failed")
+  ) {
+    durationMs = Math.round(performance.now() - (prefetchStartedAt[target] as number));
+    prefetchStartedAt[target] = null;
+  }
+  prefetchStatus[target] = { status, reason, updatedAt: now, durationMs };
+  if (typeof window !== "undefined") {
+    try {
+      window.dispatchEvent(
+        new CustomEvent(PREFETCH_STATUS_EVENT, {
+          detail: { target, ...prefetchStatus[target] },
+        })
+      );
+    } catch {
+      // no-op
+    }
+  }
 };
 
 const prefetchLog = (msg: string, data?: unknown) => {
@@ -61,6 +127,7 @@ const prefetchTarget = (target: "home" | "landing", reason: string) => {
   const { skip, reason: skipReason, effectiveType } = isSlowOrSavingData();
   if (skip) {
     prefetchLog(`skipped: ${skipReason}`, { effectiveType, target, reason });
+    setPrefetchStatus(target, "skipped", skipReason);
     return;
   }
 
@@ -72,6 +139,7 @@ const prefetchTarget = (target: "home" | "landing", reason: string) => {
       target,
       reason,
     });
+    setPrefetchStatus(target, "deferred", `tab:${document.visibilityState}`);
     const onVisible = () => {
       if (document.visibilityState === "visible") {
         document.removeEventListener("visibilitychange", onVisible);
@@ -84,6 +152,7 @@ const prefetchTarget = (target: "home" | "landing", reason: string) => {
 
   prefetchedRoutes[target] = true;
   prefetchLog(`running ${target} (${reason})`, { effectiveType });
+  setPrefetchStatus(target, "running", reason);
   const importer = target === "home" ? homeImport : landingImport;
 
   // AbortController-backed cancellation. Native dynamic import() can't be
@@ -103,6 +172,7 @@ const prefetchTarget = (target: "home" | "landing", reason: string) => {
       target,
       reason,
     });
+    setPrefetchStatus(target, "timeout", `${PREFETCH_TIMEOUT_MS}ms`);
   }, PREFETCH_TIMEOUT_MS);
 
   // Kick off the actual chunk load. Native dynamic import() can't be aborted
@@ -126,6 +196,9 @@ const prefetchTarget = (target: "home" | "landing", reason: string) => {
         // but log so we can see stalls in dev.
         prefetchedRoutes[target] = true;
         prefetchLog(`late success: ${target} resolved after timeout`, { target });
+        setPrefetchStatus(target, "late-success", reason);
+      } else {
+        setPrefetchStatus(target, "success", reason);
       }
     })
     .catch((err) => {
@@ -137,6 +210,15 @@ const prefetchTarget = (target: "home" | "landing", reason: string) => {
           : `failed: ${target} import error`,
         { target, error: err instanceof Error ? err.message : String(err) }
       );
+      // Don't overwrite a "timeout" status with "aborted" (timeout already
+      // called abort itself — keep the more informative status).
+      if (!timedOut) {
+        setPrefetchStatus(
+          target,
+          aborted ? "aborted" : "failed",
+          err instanceof Error ? err.message : String(err)
+        );
+      }
     })
     .finally(() => {
       window.clearTimeout(timeoutId);
@@ -157,6 +239,7 @@ const abortPrefetch = (target: "home" | "landing", reason: string) => {
   prefetchLog(`abort requested: ${target} (${reason})`);
   controller.abort(reason);
   prefetchedRoutes[target] = false;
+  setPrefetchStatus(target, "aborted", reason);
 };
 
 const PREFETCH_TIMEOUT_MS = 4000;
@@ -486,11 +569,21 @@ export default function RootRoute() {
 
   // Wait fully for auth to resolve. Render nothing for the first ~150ms to
   // avoid a skeleton flash on cached sessions; then show the skeleton.
-  if (loading) return showSkeleton ? <Loader /> : null;
+  if (loading) {
+    return (
+      <>
+        {showSkeleton ? <Loader /> : null}
+        <PrefetchDebugPanel />
+      </>
+    );
+  }
 
   return (
-    <Suspense fallback={<Loader />}>
-      {user ? <Home /> : <Landing />}
-    </Suspense>
+    <>
+      <Suspense fallback={<Loader />}>
+        {user ? <Home /> : <Landing />}
+      </Suspense>
+      <PrefetchDebugPanel />
+    </>
   );
 }
