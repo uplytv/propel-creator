@@ -239,16 +239,59 @@ export const PrefetchDebugPanel = () => {
                     download
                   </button>
                 </div>
-                <button
-                  onClick={() => {
-                    resetPrefetchToggles();
-                    setToggles(getPrefetchToggles());
-                    setChangedAt(getPrefetchTogglesChangedAt());
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="application/json,.json"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    // Reset so re-selecting the same file fires onChange again.
+                    e.target.value = "";
+                    if (!file) return;
+                    try {
+                      const text = await file.text();
+                      const parsed = JSON.parse(text);
+                      if (typeof parsed !== "object" || parsed == null) {
+                        throw new Error("snapshot is not an object");
+                      }
+                      importPrefetchToggles({
+                        toggles: parsed.toggles,
+                        togglesChangedAt: parsed.togglesChangedAt,
+                      });
+                      setToggles(getPrefetchToggles());
+                      setChangedAt(getPrefetchTogglesChangedAt());
+                      setImportStatus("imported");
+                    } catch (err) {
+                      // eslint-disable-next-line no-console
+                      console.error("[PrefetchDebugPanel] import failed", err);
+                      setImportStatus("error");
+                    }
+                    window.setTimeout(() => setImportStatus("idle"), 1500);
                   }}
-                  className="w-full rounded border border-white/10 px-2 py-1 text-[10px] uppercase tracking-wide text-white/60 hover:bg-white/5 hover:text-white/80 transition"
-                >
-                  reset toggles
-                </button>
+                />
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex-1 rounded border border-white/10 px-2 py-1 text-[10px] uppercase tracking-wide text-white/60 hover:bg-white/5 hover:text-white/80 transition"
+                  >
+                    {importStatus === "imported"
+                      ? "imported ✓"
+                      : importStatus === "error"
+                        ? "invalid file"
+                        : "import snapshot"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      resetPrefetchToggles();
+                      setToggles(getPrefetchToggles());
+                      setChangedAt(getPrefetchTogglesChangedAt());
+                    }}
+                    className="flex-1 rounded border border-white/10 px-2 py-1 text-[10px] uppercase tracking-wide text-white/60 hover:bg-white/5 hover:text-white/80 transition"
+                  >
+                    reset toggles
+                  </button>
+                </div>
               </div>
             );
           })()}
