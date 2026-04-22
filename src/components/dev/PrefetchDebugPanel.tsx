@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   PREFETCH_TOGGLES_EVENT,
   getPrefetchToggles,
+  getPrefetchTogglesChangedAt,
   resetPrefetchToggles,
   setPrefetchToggle,
 } from "@/lib/devPrefetchToggles";
@@ -46,6 +47,25 @@ const statusColor: Record<PrefetchStatus, string> = {
   failed: "bg-red-500/20 text-red-300",
 };
 
+const formatRelative = (ts: number | null): string => {
+  if (ts == null) return "never";
+  const diff = Math.max(0, Date.now() - ts);
+  if (diff < 1000) return "just now";
+  if (diff < 60_000) return `${Math.floor(diff / 1000)}s ago`;
+  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`;
+  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h ago`;
+  return `${Math.floor(diff / 86_400_000)}d ago`;
+};
+
+const formatAbsolute = (ts: number | null): string | undefined => {
+  if (ts == null) return undefined;
+  try {
+    return new Date(ts).toLocaleString();
+  } catch {
+    return undefined;
+  }
+};
+
 /**
  * Dev-only floating panel showing the live prefetch status for the home and
  * landing route bundles. Renders nothing in production.
@@ -54,6 +74,9 @@ export const PrefetchDebugPanel = () => {
   const [state, setState] = useState<State>(initial);
   const [collapsed, setCollapsed] = useState(false);
   const [toggles, setToggles] = useState(() => getPrefetchToggles());
+  const [changedAt, setChangedAt] = useState(() => getPrefetchTogglesChangedAt());
+  // Tick once a second so the relative "changed Xs ago" label stays fresh.
+  const [, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     if (!import.meta.env.DEV) return;
@@ -63,15 +86,21 @@ export const PrefetchDebugPanel = () => {
       setState((prev) => ({ ...prev, [detail.target]: detail }));
     };
     const onTogglesChange = (e: Event) => {
-      const detail = (e as CustomEvent<{ home: boolean; landing: boolean }>).detail;
+      const detail = (e as CustomEvent<{
+        toggles: { home: boolean; landing: boolean };
+        changedAt: { home: number | null; landing: number | null };
+      }>).detail;
       if (!detail) return;
-      setToggles(detail);
+      setToggles(detail.toggles);
+      setChangedAt(detail.changedAt);
     };
     window.addEventListener(PREFETCH_STATUS_EVENT, onEvent);
     window.addEventListener(PREFETCH_TOGGLES_EVENT, onTogglesChange);
+    const tick = window.setInterval(() => setNow(Date.now()), 1000);
     return () => {
       window.removeEventListener(PREFETCH_STATUS_EVENT, onEvent);
       window.removeEventListener(PREFETCH_TOGGLES_EVENT, onTogglesChange);
+      window.clearInterval(tick);
     };
   }, []);
 
@@ -94,6 +123,7 @@ export const PrefetchDebugPanel = () => {
           {(["home", "landing"] as const).map((target) => {
             const entry = state[target];
             const enabled = toggles[target];
+            const lastChanged = changedAt[target];
             return (
               <div key={target} className="space-y-0.5">
                 <div className="flex items-center gap-2">
@@ -104,6 +134,7 @@ export const PrefetchDebugPanel = () => {
                       onChange={(e) => {
                         setPrefetchToggle(target, e.target.checked);
                         setToggles(getPrefetchToggles());
+                        setChangedAt(getPrefetchTogglesChangedAt());
                       }}
                       className="h-3 w-3 accent-emerald-400 cursor-pointer"
                     />
@@ -122,6 +153,12 @@ export const PrefetchDebugPanel = () => {
                     </span>
                   )}
                 </div>
+                <div
+                  className="text-white/30 text-[10px] truncate pl-[68px]"
+                  title={formatAbsolute(lastChanged) ?? "toggle never changed"}
+                >
+                  toggle: {formatRelative(lastChanged)}
+                </div>
                 {entry.reason && (
                   <div
                     className="text-white/40 text-[10px] truncate pl-[68px]"
@@ -137,6 +174,7 @@ export const PrefetchDebugPanel = () => {
             onClick={() => {
               resetPrefetchToggles();
               setToggles(getPrefetchToggles());
+              setChangedAt(getPrefetchTogglesChangedAt());
             }}
             className="mt-1 w-full rounded border border-white/10 px-2 py-1 text-[10px] uppercase tracking-wide text-white/60 hover:bg-white/5 hover:text-white/80 transition"
           >
