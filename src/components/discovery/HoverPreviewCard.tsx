@@ -5,51 +5,91 @@ import type { DiscoveryItem } from "@/hooks/useDiscoveryAlgorithmFeed";
 
 interface Props {
   item: DiscoveryItem;
-  /** ms to wait before starting preview after hover (Netflix uses ~600ms) */
+  /** ms to wait before prefetching + playing preview after hover (Netflix uses ~600ms) */
   hoverDelay?: number;
 }
 
 /**
  * Netflix-style hover preview wrapper for carousel cards.
- * - Wraps the existing DiscoveryFeedCard (no changes to card behavior).
- * - On hover, after a short delay, plays a muted Mux preview video over the thumbnail.
- * - On mouse leave / blur / scroll, stops and resets.
- * - Falls back to the static card when no playback_id is available.
+ *
+ * Loading strategy (optimized):
+ *  - On hover: start a delay timer. Do NOT touch the network yet.
+ *  - After delay: prefetch ONE low-res Mux frame via fetch() with an AbortController.
+ *  - When the frame finishes loading, mount the <video> and play.
+ *  - On mouse leave / blur / scroll: abort any in-flight prefetch, clear the timer,
+ *    pause + reset the video, and unmount the overlay.
+ *  - Falls back to the static card when no playback_id is available.
  */
 export default function HoverPreviewCard({ item, hoverDelay = 600 }: Props) {
-  const [isHovering, setIsHovering] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [muted, setMuted] = useState(true);
+  const [posterUrl, setPosterUrl] = useState<string | null>(null);
+
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const timerRef = useRef<number | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const objectUrlRef = useRef<string | null>(null);
 
-  const previewSrc = item.playback_id
-    ? `https://stream.mux.com/${item.playback_id}/low.mp4`
+  const playbackId = item.playback_id ?? null;
+  const previewSrc = playbackId ? `https://stream.mux.com/${playbackId}/low.mp4` : null;
+  // Single low-res frame from Mux — tiny (~5–15 KB) and serves as both prefetch probe + poster
+  const frameUrl = playbackId
+    ? `https://image.mux.com/${playbackId}/thumbnail.jpg?width=320&fit_mode=preserve`
     : null;
 
-  // Start/stop preview based on hover state
-  useEffect(() => {
-    if (!previewSrc) return;
-    if (isHovering) {
-      timerRef.current = window.setTimeout(() => setIsPlaying(true), hoverDelay);
-    } else {
-      if (timerRef.current) window.clearTimeout(timerRef.current);
-      setIsPlaying(false);
-      const v = videoRef.current;
-      if (v) {
-        v.pause();
-        v.currentTime = 0;
-      }
+  const cancelAll = () => {
+    if (timerRef.current) {
+      window.clearTimeout(timerRef.current);
+      timerRef.current = null;
     }
-    return () => {
-      if (timerRef.current) window.clearTimeout(timerRef.current);
-    };
-  }, [isHovering, hoverDelay, previewSrc]);
+    if (abortRef.current) {
+      abortRef.current.abort();
+      abortRef.current = null;
+    }
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+    setPosterUrl(null);
+    setIsPlaying(false);
+    const v = videoRef.current;
+    if (v) {
+      v.pause();
+      v.currentTime = 0;
+    }
+  };
+
+  const startPreview = () => {
+    if (!previewSrc || !frameUrl) return;
+    cancelAll();
+    timerRef.current = window.setTimeout(async () => {
+      const controller = new AbortController();
+      abortRef.current = controller;
+      try {
+        const res = await fetch(frameUrl, { signal: controller.signal, cache: "force-cache" });
+        if (!res.ok) return;
+        const blob = await res.blob();
+        if (controller.signal.aborted) return;
+        const url = URL.createObjectURL(blob);
+        objectUrlRef.current = url;
+        setPosterUrl(url);
+        setIsPlaying(true);
+      } catch {
+        // aborted or network error — silently no-op
+      }
+    }, hoverDelay);
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => cancelAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Stop preview if user scrolls (mouseleave isn't always fired during scroll)
   useEffect(() => {
     if (!isPlaying) return;
-    const onScroll = () => setIsHovering(false);
+    const onScroll = () => cancelAll();
     window.addEventListener("scroll", onScroll, { passive: true, capture: true });
     return () => window.removeEventListener("scroll", onScroll, true);
   }, [isPlaying]);
@@ -57,10 +97,10 @@ export default function HoverPreviewCard({ item, hoverDelay = 600 }: Props) {
   return (
     <div
       className="relative"
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
-      onFocus={() => setIsHovering(true)}
-      onBlur={() => setIsHovering(false)}
+      onMouseEnter={startPreview}
+      onMouseLeave={cancelAll}
+      onFocus={startPreview}
+      onBlur={cancelAll}
     >
       <DiscoveryFeedCard item={item} />
 
@@ -72,11 +112,12 @@ export default function HoverPreviewCard({ item, hoverDelay = 600 }: Props) {
           <video
             ref={videoRef}
             src={previewSrc}
+            poster={posterUrl ?? undefined}
             autoPlay
             muted={muted}
             loop
             playsInline
-            preload="none"
+            preload="metadata"
             className="w-full h-full object-cover"
           />
           <button
