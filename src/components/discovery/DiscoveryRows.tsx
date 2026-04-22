@@ -1,5 +1,5 @@
 import { useDiscoveryAlgorithmFeed, type DiscoveryItem } from "@/hooks/useDiscoveryAlgorithmFeed";
-import DiscoveryFeedCard from "./DiscoveryFeedCard";
+import HoverPreviewCard from "./HoverPreviewCard";
 import DiscoverRow from "@/components/discover/DiscoverRow";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -26,7 +26,7 @@ function CarouselRow({ title, subtitle, items, isLoading }: RowProps) {
               key={`${item.content_type}-${item.content_id}`}
               className="shrink-0 snap-start w-[260px] md:w-[320px] transition-transform duration-300 ease-out hover:scale-[1.06] hover:z-20 origin-center"
             >
-              <DiscoveryFeedCard item={item} />
+              <HoverPreviewCard item={item} />
             </div>
           ))}
     </DiscoverRow>
