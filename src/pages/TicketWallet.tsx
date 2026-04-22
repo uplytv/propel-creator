@@ -289,14 +289,63 @@ function TicketQrModalBody({
 }) {
   const [liveStatus, setLiveStatus] = useState<LiveStatus>(ticket.status);
   const [justChanged, setJustChanged] = useState(false);
-  const [checkInAt, setCheckInAt] = useState<string | null>(null);
+  const [checkInAt, setCheckInAt] = useState<string | null>(ticket.checked_in_at);
+
+  type HistoryEntry = {
+    id: string;
+    status: LiveStatus | "purchased";
+    label: string;
+    at: string;
+    source?: string;
+  };
+
+  const seedHistory = useMemo<HistoryEntry[]>(() => {
+    const items: HistoryEntry[] = [
+      {
+        id: `purchased-${ticket.id}`,
+        status: "purchased",
+        label: "Ticket purchased",
+        at: ticket.created_at,
+      },
+    ];
+    const scanAt = ticket.checked_in_at || ticket.scanned_at;
+    if (ticket.status === "used" && scanAt) {
+      items.push({
+        id: `checkin-${ticket.id}`,
+        status: "used",
+        label: "Checked in at gate",
+        at: scanAt,
+        source: "Scanner",
+      });
+    }
+    if (ticket.status === "refunded") {
+      items.push({
+        id: `refund-${ticket.id}`,
+        status: "refunded",
+        label: "Refund processed",
+        at: ticket.created_at,
+      });
+    }
+    if (ticket.status === "canceled") {
+      items.push({
+        id: `cancel-${ticket.id}`,
+        status: "canceled",
+        label: "Ticket canceled",
+        at: ticket.created_at,
+      });
+    }
+    return items.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
+  }, [ticket]);
+
+  const [history, setHistory] = useState<HistoryEntry[]>(seedHistory);
 
   // Reset when modal opens with a new ticket
   useEffect(() => {
     setLiveStatus(ticket.status);
     setJustChanged(false);
-    setCheckInAt(null);
-  }, [ticket.id, ticket.status]);
+    setCheckInAt(ticket.checked_in_at);
+    setHistory(seedHistory);
+  }, [ticket.id, ticket.status, ticket.checked_in_at, seedHistory]);
 
   // Subscribe to realtime updates for this ticket
   useEffect(() => {
@@ -311,13 +360,32 @@ function TicketQrModalBody({
           filter: `id=eq.${ticket.id}`,
         },
         (payload: any) => {
-          const next = payload.new as { status: LiveStatus; updated_at?: string };
+          const next = payload.new as {
+            status: LiveStatus;
+            checked_in_at?: string | null;
+            scanned_at?: string | null;
+          };
           if (next.status && next.status !== liveStatus) {
             setLiveStatus(next.status);
             setJustChanged(true);
-            if (next.status === "used") {
-              setCheckInAt(new Date().toISOString());
-            }
+            const at = next.checked_in_at || next.scanned_at || new Date().toISOString();
+            if (next.status === "used") setCheckInAt(at);
+            const labelMap: Record<LiveStatus, string> = {
+              active: "Reactivated",
+              used: "Checked in at gate",
+              refunded: "Refund processed",
+              canceled: "Ticket canceled",
+            };
+            setHistory((prev) => [
+              {
+                id: `evt-${Date.now()}`,
+                status: next.status,
+                label: labelMap[next.status] || next.status,
+                at,
+                source: next.status === "used" ? "Scanner" : undefined,
+              },
+              ...prev,
+            ]);
             if (navigator.vibrate) navigator.vibrate(120);
           }
         }
@@ -328,11 +396,15 @@ function TicketQrModalBody({
     (async () => {
       const { data } = await (supabase as any)
         .from("tickets")
-        .select("status")
+        .select("status, checked_in_at, scanned_at")
         .eq("id", ticket.id)
         .maybeSingle();
       if (data?.status && data.status !== liveStatus) {
         setLiveStatus(data.status);
+        if (data.status === "used") {
+          const at = data.checked_in_at || data.scanned_at;
+          if (at) setCheckInAt(at);
+        }
       }
     })();
 
