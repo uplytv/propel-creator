@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, BellRing, Check, X, Clock, Ticket, Loader2, Inbox, RefreshCw, Search, History, ShieldCheck, ShieldX, User as UserIcon, CheckSquare, Square } from "lucide-react";
+import { ArrowLeft, BellRing, Check, X, Clock, Ticket, Loader2, Inbox, RefreshCw, Search, History, ShieldCheck, ShieldX, User as UserIcon, CheckSquare, Square, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -376,6 +376,77 @@ export default function StaffReentryRequests() {
     [requests, selectedIds]
   );
 
+  const exportAudit = (req: ReentryNotification, format: "csv" | "json") => {
+    const log: any[] = Array.isArray(req.metadata?.audit_log) ? req.metadata.audit_log : [];
+    if (log.length === 0) {
+      toast.info("Nothing to export", { description: "No activity recorded yet." });
+      return;
+    }
+    const guestName = req.metadata?.guest_name || "guest";
+    const eventTitle = req.metadata?.event_title || "event";
+    const ticketToken = req.metadata?.ticket_token || "";
+    const safe = (s: string) =>
+      String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "request";
+    const stamp = new Date().toISOString().slice(0, 10);
+    const baseName = `reentry-activity_${safe(guestName)}_${safe(eventTitle)}_${stamp}`;
+
+    let blob: Blob;
+    let filename: string;
+    if (format === "json") {
+      const payload = {
+        request_id: req.id,
+        created_at: req.created_at,
+        guest_name: guestName,
+        event_title: eventTitle,
+        ticket_token: ticketToken,
+        ticket_id: req.metadata?.ticket_id || req.reference_id || null,
+        audit_log: log,
+        exported_at: new Date().toISOString(),
+        exported_by: user?.id ?? null,
+      };
+      blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      filename = `${baseName}.json`;
+    } else {
+      const escape = (v: any) => {
+        const s = v == null ? "" : String(v);
+        return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+      };
+      const headers = [
+        "request_id",
+        "guest_name",
+        "event_title",
+        "ticket_token",
+        "action",
+        "actor_name",
+        "actor_id",
+        "at",
+      ];
+      const rows = log.map((e) => [
+        req.id,
+        guestName,
+        eventTitle,
+        ticketToken,
+        e.action,
+        e.actor_name || "",
+        e.actor_id || "",
+        e.at || "",
+      ]);
+      const csv = [headers, ...rows].map((r) => r.map(escape).join(",")).join("\n");
+      blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      filename = `${baseName}.csv`;
+    }
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast.success("Activity exported", { description: filename });
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
@@ -652,10 +723,30 @@ export default function StaffReentryRequests() {
                 {/* Audit log */}
                 {auditLog.length > 0 && (
                   <div className="mt-3 pt-3 border-t border-border/60">
-                    <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground flex items-center gap-1 mb-1.5">
-                      <History className="w-3 h-3" />
-                      Activity log
-                    </p>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground flex items-center gap-1">
+                        <History className="w-3 h-3" />
+                        Activity log
+                      </p>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => exportAudit(req, "csv")}
+                          className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-md bg-muted hover:bg-muted/70 text-foreground transition-colors"
+                          aria-label="Export activity as CSV"
+                        >
+                          <Download className="w-2.5 h-2.5" />
+                          CSV
+                        </button>
+                        <button
+                          onClick={() => exportAudit(req, "json")}
+                          className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-md bg-muted hover:bg-muted/70 text-foreground transition-colors"
+                          aria-label="Export activity as JSON"
+                        >
+                          <Download className="w-2.5 h-2.5" />
+                          JSON
+                        </button>
+                      </div>
+                    </div>
                     <ul className="space-y-1">
                       {auditLog.map((entry, i) => {
                         const approved = entry.action === "approved";
