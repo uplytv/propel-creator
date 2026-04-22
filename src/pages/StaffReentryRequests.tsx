@@ -961,22 +961,80 @@ export default function StaffReentryRequests() {
                         Activity log
                       </p>
                       <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => exportAudit(req, "csv")}
-                          className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-md bg-muted hover:bg-muted/70 text-foreground transition-colors"
-                          aria-label="Export activity as CSV"
+                        {(["csv", "json"] as const).map((fmt) => {
+                          const isPreferred = exportPrefs.format === fmt;
+                          return (
+                            <button
+                              key={fmt}
+                              onClick={() => exportAudit(req, fmt)}
+                              className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-md transition-colors ${
+                                isPreferred
+                                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                  : "bg-muted hover:bg-muted/70 text-foreground"
+                              }`}
+                              aria-label={`Export activity as ${fmt.toUpperCase()}${isPreferred ? " (last used)" : ""}`}
+                              title={isPreferred ? "Last used format" : `Export as ${fmt.toUpperCase()}`}
+                            >
+                              <Download className="w-2.5 h-2.5" />
+                              {fmt.toUpperCase()}
+                            </button>
+                          );
+                        })}
+                        <Popover
+                          open={columnPickerOpen === req.id}
+                          onOpenChange={(open) => setColumnPickerOpen(open ? req.id : null)}
                         >
-                          <Download className="w-2.5 h-2.5" />
-                          CSV
-                        </button>
-                        <button
-                          onClick={() => exportAudit(req, "json")}
-                          className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-md bg-muted hover:bg-muted/70 text-foreground transition-colors"
-                          aria-label="Export activity as JSON"
-                        >
-                          <Download className="w-2.5 h-2.5" />
-                          JSON
-                        </button>
+                          <PopoverTrigger asChild>
+                            <button
+                              className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-md bg-muted hover:bg-muted/70 text-foreground transition-colors"
+                              aria-label="Choose export columns"
+                              title={`Columns (${exportPrefs.columns.length}/${EXPORT_COLUMNS.length})`}
+                            >
+                              Columns · {exportPrefs.columns.length}
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent align="end" className="w-56 p-2">
+                            <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground px-1 pb-1.5">
+                              Export columns
+                            </p>
+                            <div className="space-y-1">
+                              {EXPORT_COLUMNS.map((col) => {
+                                const checked = exportPrefs.columns.includes(col.key);
+                                return (
+                                  <label
+                                    key={col.key}
+                                    className="flex items-center gap-2 px-1.5 py-1 rounded hover:bg-muted cursor-pointer text-xs"
+                                  >
+                                    <Checkbox
+                                      checked={checked}
+                                      onCheckedChange={(v) => {
+                                        const isOn = v === true;
+                                        const next = isOn
+                                          ? Array.from(new Set([...exportPrefs.columns, col.key]))
+                                          : exportPrefs.columns.filter((k) => k !== col.key);
+                                        if (next.length === 0) return;
+                                        const ordered = DEFAULT_COLUMNS.filter((k) => next.includes(k));
+                                        updateExportPrefs({ columns: ordered });
+                                      }}
+                                    />
+                                    <span className="flex-1">{col.label}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                            <div className="flex items-center justify-between gap-2 mt-2 pt-2 border-t border-border">
+                              <button
+                                onClick={() => updateExportPrefs({ columns: DEFAULT_COLUMNS })}
+                                className="text-[10px] font-semibold text-muted-foreground hover:text-foreground"
+                              >
+                                Reset
+                              </button>
+                              <span className="text-[10px] text-muted-foreground">
+                                Saved for next time
+                              </span>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     </div>
                     <ul className="space-y-1">
