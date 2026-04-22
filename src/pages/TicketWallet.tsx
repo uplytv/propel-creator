@@ -515,6 +515,40 @@ function TicketQrModalBody({
         </div>
       )}
 
+      {/* Activity history */}
+      <div className="w-full">
+        <div className="flex items-center gap-1.5 mb-2 px-1">
+          <History className="w-3.5 h-3.5 text-muted-foreground" />
+          <p className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground">
+            Activity
+          </p>
+        </div>
+        <ul className="rounded-xl border border-border bg-muted/30 divide-y divide-border max-h-44 overflow-y-auto">
+          {history.slice(0, 5).map((h, i) => {
+            const Icon = statusIcon(h.status);
+            const tone = statusTone(h.status);
+            return (
+              <li
+                key={h.id}
+                className={`flex items-start gap-2.5 px-3 py-2 ${
+                  i === 0 && justChanged ? "animate-in fade-in slide-in-from-top-1 duration-300" : ""
+                }`}
+              >
+                <Icon className={`w-4 h-4 flex-shrink-0 mt-0.5 ${tone}`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-foreground truncate">{h.label}</p>
+                  <p className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                    <Clock className="w-2.5 h-2.5" />
+                    {format(new Date(h.at), "MMM d · h:mm:ss a")}
+                    {h.source && <span className="opacity-70">· {h.source}</span>}
+                  </p>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
       <div className="text-center">
         <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Ticket ID</p>
         <p className="font-mono text-xs text-foreground mt-1 break-all">
