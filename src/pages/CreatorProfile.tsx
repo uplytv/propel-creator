@@ -688,12 +688,15 @@ export default function CreatorProfile() {
                   )}
                 </button>
                 {!isOwner && user && (
-                  <button
-                    onClick={() => navigate(`/messages?to=${profile.user_id}`)}
-                    className="px-4 py-3 rounded-xl text-sm font-semibold bg-secondary border border-border text-muted-foreground"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                  </button>
+                  <>
+                    <AddFriendButton targetUserId={profile.user_id} size="md" />
+                    <button
+                      onClick={() => navigate(`/messages?to=${profile.user_id}`)}
+                      className="px-4 py-3 rounded-xl text-sm font-semibold bg-secondary border border-border text-muted-foreground"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                    </button>
+                  </>
                 )}
               </div>
             )}
