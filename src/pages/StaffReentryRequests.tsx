@@ -292,6 +292,89 @@ export default function StaffReentryRequests() {
     }
   };
 
+  // ---------- Selection + Bulk actions ----------
+  const pendingFilteredIds = useMemo(
+    () => filtered.filter((r) => !r.read && !r._resolved).map((r) => r.id),
+    [filtered]
+  );
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const allVisibleSelected =
+    pendingFilteredIds.length > 0 &&
+    pendingFilteredIds.every((id) => selectedIds.has(id));
+
+  const toggleSelectAllVisible = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) {
+        pendingFilteredIds.forEach((id) => next.delete(id));
+      } else {
+        pendingFilteredIds.forEach((id) => next.add(id));
+      }
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const runBulk = async (mode: "approve" | "deny") => {
+    if (bulkBusy) return;
+    const targets = requests.filter(
+      (r) => selectedIds.has(r.id) && !r.read && !r._resolved
+    );
+    if (targets.length === 0) {
+      toast.info("Nothing to process", { description: "Select pending requests first." });
+      return;
+    }
+
+    setBulkBusy(mode);
+    setBulkProgress({ done: 0, total: targets.length });
+    let success = 0;
+    let failed = 0;
+
+    for (let i = 0; i < targets.length; i++) {
+      const req = targets[i];
+      try {
+        if (mode === "approve") await approveCore(req);
+        else await denyCore(req);
+        success++;
+      } catch {
+        failed++;
+      }
+      setBulkProgress({ done: i + 1, total: targets.length });
+    }
+
+    setBulkBusy(null);
+    setBulkProgress(null);
+    setSelectedIds(new Set());
+    if (navigator.vibrate) navigator.vibrate(80);
+
+    const verb = mode === "approve" ? "approved" : "denied";
+    if (failed === 0) {
+      toast.success(`Bulk ${verb}`, {
+        description: `${success} request${success === 1 ? "" : "s"} ${verb}.`,
+      });
+    } else {
+      toast.warning(`Bulk ${verb} with errors`, {
+        description: `${success} ok · ${failed} failed`,
+      });
+    }
+  };
+
+  const selectedPendingCount = useMemo(
+    () =>
+      requests.filter((r) => selectedIds.has(r.id) && !r.read && !r._resolved)
+        .length,
+    [requests, selectedIds]
+  );
 
   if (!user) {
     return (
