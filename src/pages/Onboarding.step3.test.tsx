@@ -192,16 +192,16 @@ describe("Onboarding Step 3 — iPhone layout", () => {
     await advanceToStep3();
 
     const titles = [
-      "Just exploring",
-      "Building momentum",
-      "Earning consistently",
-      "Scaling a business",
+      "Just Starting Out",
+      "Early Traction",
+      "Growing",
+      "Scaling",
     ];
     for (const t of titles) {
       expect(screen.getByText(t)).toBeInTheDocument();
     }
 
-    const firstOption = screen.getByText("Just exploring").closest("button");
+    const firstOption = screen.getByText("Just Starting Out").closest("button");
     expect(firstOption).not.toBeNull();
     const container = firstOption!.parentElement!;
     expect(container.className).toContain("overflow-y-auto");
