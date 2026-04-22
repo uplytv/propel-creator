@@ -60,21 +60,15 @@ export function usePeopleSwipe() {
         if (a.global_event_id && a.event_title) eventTitleMap.set(a.global_event_id, a.event_title);
       });
 
-      // Build profile query with optional gender filter
-      let profileQuery = (supabase as any)
+      // Build profile query (gender column not present yet — filter is a no-op for women_local/men_local)
+      const profileQuery = (supabase as any)
         .from("profiles")
         .select(
-          "user_id, display_name, avatar_url, age, location, interests, username, people_photos, show_in_people, gender"
+          "user_id, display_name, avatar_url, age, location, interests, username, people_photos, show_in_people"
         )
         .eq("show_in_people", true)
         .neq("user_id", user.id)
         .limit(150);
-
-      if (filter === "women_local") {
-        profileQuery = profileQuery.in("gender", ["female", "woman", "F", "f"]);
-      } else if (filter === "men_local") {
-        profileQuery = profileQuery.in("gender", ["male", "man", "M", "m"]);
-      }
 
       const { data: profiles } = await profileQuery;
       if (!profiles) return [];
