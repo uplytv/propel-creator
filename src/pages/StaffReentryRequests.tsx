@@ -528,6 +528,10 @@ export default function StaffReentryRequests() {
                   isResolved
                     ? "border-border bg-muted/30"
                     : "border-primary/30 bg-primary/5"
+                } ${
+                  selectedIds.has(req.id) && !isResolved
+                    ? "ring-2 ring-primary/60"
+                    : ""
                 } ${isHighlighted ? "ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg" : ""}`}
               >
                 <div className="flex items-start gap-3">
