@@ -84,8 +84,12 @@ export default function Row({ title, subtitle, children, seeAllHref = "#" }: Row
 
         <div
           ref={scrollerRef}
-          className="flex gap-3 overflow-x-auto pb-2 scroll-smooth"
-          style={{ scrollbarWidth: "none" }}
+          className="flex gap-3 overflow-x-auto pb-2 scroll-smooth snap-x snap-mandatory pr-8"
+          style={{
+            scrollbarWidth: "none",
+            WebkitOverflowScrolling: "touch",
+            scrollPaddingLeft: "16px",
+          }}
         >
           {children}
         </div>
