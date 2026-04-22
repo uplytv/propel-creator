@@ -275,7 +275,7 @@ export const PrefetchDebugPanel = () => {
                             setImportErrors([]);
                           } else {
                             setValidateStatus("fail");
-                            setImportErrors(result.errors);
+                            setImportErrors((result as { ok: false; errors: string[] }).errors);
                           }
                           window.setTimeout(() => setValidateStatus("idle"), 2000);
                         }}
