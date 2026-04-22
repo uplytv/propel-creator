@@ -705,6 +705,59 @@ export default function StaffReentryRequests() {
           })
         )}
       </div>
+
+      {/* Sticky bulk action bar */}
+      {selectedPendingCount > 0 && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-md">
+          <div className="rounded-2xl border border-primary/30 bg-background/95 backdrop-blur shadow-2xl px-3 py-2.5 flex items-center gap-2">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold truncate">
+                {selectedPendingCount} selected
+              </p>
+              {bulkProgress ? (
+                <p className="text-[10px] text-muted-foreground">
+                  Processing {bulkProgress.done}/{bulkProgress.total}…
+                </p>
+              ) : (
+                <p className="text-[10px] text-muted-foreground">
+                  Approve reactivates tickets · Deny notifies guests
+                </p>
+              )}
+            </div>
+            <Button
+              onClick={() => runBulk("deny")}
+              disabled={!!bulkBusy}
+              variant="outline"
+              size="sm"
+              className="h-9"
+            >
+              {bulkBusy === "deny" ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <>
+                  <X className="w-3.5 h-3.5 mr-1" />
+                  Deny
+                </>
+              )}
+            </Button>
+            <Button
+              onClick={() => runBulk("approve")}
+              disabled={!!bulkBusy}
+              size="sm"
+              className="h-9"
+            >
+              {bulkBusy === "approve" ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <>
+                  <Check className="w-3.5 h-3.5 mr-1" />
+                  Approve
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
