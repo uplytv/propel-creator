@@ -22,6 +22,8 @@ type TicketRow = {
   status: "active" | "used" | "refunded" | "canceled";
   amount_paid: number;
   created_at: string;
+  checked_in_at: string | null;
+  scanned_at: string | null;
   events: {
     id: string;
     title: string;
