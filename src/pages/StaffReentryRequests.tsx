@@ -121,10 +121,20 @@ export default function StaffReentryRequests() {
   }, [focusRequestId, focusTicketId, loading, requests, searchParams, setSearchParams]);
 
   const filtered = useMemo(() => {
-    if (tab === "all") return requests;
-    if (tab === "pending") return requests.filter((r) => !r.read && !r._resolved);
-    return requests.filter((r) => r.read || !!r._resolved);
-  }, [requests, tab]);
+    let list = requests;
+    if (tab === "pending") list = list.filter((r) => !r.read && !r._resolved);
+    else if (tab === "resolved") list = list.filter((r) => r.read || !!r._resolved);
+    const q = search.trim().toLowerCase();
+    if (q) {
+      list = list.filter((r) => {
+        const name = (r.metadata?.guest_name || "").toLowerCase();
+        const token = (r.metadata?.ticket_token || "").toLowerCase();
+        const evt = (r.metadata?.event_title || "").toLowerCase();
+        return name.includes(q) || token.includes(q) || evt.includes(q);
+      });
+    }
+    return list;
+  }, [requests, tab, search]);
 
   const pendingCount = requests.filter((r) => !r.read && !r._resolved).length;
 
