@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { useDirectMessages } from "@/hooks/useDirectMessages";
 import { toast } from "sonner";
 
 const EMOJI_OPTIONS = ["🔥", "❤️", "👀", "👏", "😍"];
@@ -13,6 +14,7 @@ interface StoryReactionsProps {
 
 export default function StoryReactions({ storyId, storyOwnerId, onReply }: StoryReactionsProps) {
   const { user } = useAuth();
+  const { getOrCreateConversation, sendMessage } = useDirectMessages();
   const [showEmojis, setShowEmojis] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [sending, setSending] = useState(false);
@@ -35,18 +37,13 @@ export default function StoryReactions({ storyId, storyOwnerId, onReply }: Story
     if (!user || !replyText.trim()) return;
     setSending(true);
     try {
-      // Send as a DM notification to the story owner
-      await (supabase as any).from("notifications").insert({
-        user_id: storyOwnerId,
-        type: "story_reply",
-        title: "Story Reply 💬",
-        message: replyText.trim(),
-        actor_id: user.id,
-        reference_id: storyId,
-        read: false,
-      });
+      // Send as a real DM linked to the story → surfaces in unified inbox
+      const conversationId = await getOrCreateConversation(storyOwnerId);
+      if (!conversationId) throw new Error("Could not start conversation");
+      await sendMessage(conversationId, replyText.trim(), { replyToStoryId: storyId });
       setReplyText("");
       toast.success("Reply sent!");
+      onReply?.();
     } catch {
       toast.error("Failed to send reply");
     } finally {

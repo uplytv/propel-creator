@@ -46,16 +46,31 @@ export function useSocialPosts(options?: { friendsOnly?: boolean }) {
   const posts = (data?.pages || []).flat();
 
   const createPost = useMutation({
-    mutationFn: async (params: { content: string; mediaUrls?: string[]; eventId?: string; postType?: string }) => {
+    mutationFn: async (params: { content: string; mediaUrls?: string[]; eventId?: string; postType?: string; mentionedUserIds?: string[] }) => {
       if (!user) throw new Error("Not authenticated");
-      const { error } = await (supabase as any).from("social_posts").insert({
+      const { data: inserted, error } = await (supabase as any).from("social_posts").insert({
         user_id: user.id,
         content: params.content,
         media_urls: params.mediaUrls || [],
         event_id: params.eventId || null,
         post_type: params.postType || "general",
-      });
+      }).select("id").single();
       if (error) throw error;
+
+      // Persist @mentions for the unified inbox
+      const mentionIds = (params.mentionedUserIds ?? []).filter((id) => id && id !== user.id);
+      if (inserted?.id && mentionIds.length > 0) {
+        await (supabase as any).from("mentions").insert(
+          [...new Set(mentionIds)].map((mentioned_user_id) => ({
+            mentioned_user_id,
+            actor_id: user.id,
+            source_type: "social_post",
+            source_id: inserted.id,
+            preview: params.content.slice(0, 200),
+            link: `/social`,
+          }))
+        );
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["social-posts"] });
@@ -89,13 +104,27 @@ export function useSocialPosts(options?: { friendsOnly?: boolean }) {
   });
 
   const addComment = useMutation({
-    mutationFn: async (params: { postId: string; content: string }) => {
+    mutationFn: async (params: { postId: string; content: string; mentionedUserIds?: string[] }) => {
       if (!user) throw new Error("Not authenticated");
-      await (supabase as any).from("social_post_comments").insert({
+      const { data: inserted } = await (supabase as any).from("social_post_comments").insert({
         post_id: params.postId,
         user_id: user.id,
         content: params.content,
-      });
+      }).select("id").single();
+
+      const mentionIds = (params.mentionedUserIds ?? []).filter((id) => id && id !== user.id);
+      if (inserted?.id && mentionIds.length > 0) {
+        await (supabase as any).from("mentions").insert(
+          [...new Set(mentionIds)].map((mentioned_user_id) => ({
+            mentioned_user_id,
+            actor_id: user.id,
+            source_type: "social_post_comment",
+            source_id: inserted.id,
+            preview: params.content.slice(0, 200),
+            link: `/social`,
+          }))
+        );
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["social-posts"] });
