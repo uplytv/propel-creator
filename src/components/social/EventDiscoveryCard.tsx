@@ -33,7 +33,7 @@ export default function EventDiscoveryCard({ event }: EventDiscoveryCardProps) {
 
   return (
     <div
-      onClick={() => navigate(`/events/${event.id}`)}
+      onClick={handleClick}
       className="rounded-xl overflow-hidden cursor-pointer transition-transform active:scale-[0.98]"
       style={{
         backgroundColor: "rgba(255,255,255,0.04)",
