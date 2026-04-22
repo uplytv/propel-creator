@@ -40,6 +40,7 @@ export default function TicketWallet() {
   const navigate = useNavigate();
   const [bucket, setBucket] = useState<Bucket>("upcoming");
   const [search, setSearch] = useState("");
+  const [qrTicket, setQrTicket] = useState<TicketRow | null>(null);
 
   const { data: tickets, isLoading } = useQuery({
     queryKey: ["my-tickets", user?.id],
