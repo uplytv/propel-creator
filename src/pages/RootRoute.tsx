@@ -18,6 +18,13 @@ const prefetchedRoutes = {
   landing: false,
 };
 
+// Track in-flight prefetch AbortControllers so we can actually cancel a
+// stalled chunk fetch instead of letting it linger in the background.
+const prefetchControllers: Record<"home" | "landing", AbortController | null> = {
+  home: null,
+  landing: null,
+};
+
 const prefetchLog = (msg: string, data?: unknown) => {
   if (!import.meta.env.DEV) return;
   // eslint-disable-next-line no-console
