@@ -6,6 +6,7 @@ import {
   importPrefetchToggles,
   resetPrefetchToggles,
   setPrefetchToggle,
+  validatePrefetchSnapshot,
 } from "@/lib/devPrefetchToggles";
 
 type PrefetchStatus =
