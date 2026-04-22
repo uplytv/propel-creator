@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Loader2, Lock } from "lucide-react";
+import { X, Loader2, Lock, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -53,6 +53,7 @@ export default function PaywallModal({
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [purchased, setPurchased] = useState(false);
 
   const handlePurchase = async () => {
     if (!user) {
@@ -63,7 +64,6 @@ export default function PaywallModal({
     setError(null);
 
     try {
-      // Use existing edge functions based on billing type
       const fnName = billingType === "recurring"
         ? "stripe-create-checkout"
         : "stripe-create-product-checkout";
@@ -94,8 +94,12 @@ export default function PaywallModal({
       if (fnError) throw fnError;
 
       if (data?.already_purchased) {
-        onSuccess?.();
-        onClose();
+        setPurchased(true);
+        // Brief success confirmation before closing
+        setTimeout(() => {
+          onSuccess?.();
+          onClose();
+        }, 900);
         return;
       }
 
@@ -110,11 +114,17 @@ export default function PaywallModal({
         throw new Error("No checkout URL returned");
       }
     } catch (err: any) {
-      setError(err.message || "Something went wrong. Please try again.");
+      const msg = err?.message || "Payment failed — please try again.";
+      setError(msg);
       Sentry.captureException(err, { tags: { context: "paywall" } });
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRetry = () => {
+    setError(null);
+    handlePurchase();
   };
 
   return (
@@ -180,11 +190,13 @@ export default function PaywallModal({
 
                 {/* CTA */}
                 <Button
-                  onClick={handlePurchase}
-                  disabled={loading}
+                  onClick={purchased ? undefined : handlePurchase}
+                  disabled={loading || purchased}
                   className="w-full h-12 text-base font-bold"
                 >
-                  {loading ? (
+                  {purchased ? (
+                    <><CheckCircle2 className="w-5 h-5" /> Access granted</>
+                  ) : loading ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : billingType === "recurring" ? (
                     `Subscribe · $${price}/mo`
@@ -193,9 +205,23 @@ export default function PaywallModal({
                   )}
                 </Button>
 
-                {/* Error */}
-                {error && (
-                  <p className="text-sm text-destructive text-center">{error}</p>
+                {/* Error with retry */}
+                {error && !purchased && (
+                  <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 space-y-2">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
+                      <p className="text-xs text-destructive flex-1">{error}</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleRetry}
+                      disabled={loading}
+                      className="w-full"
+                    >
+                      Try again
+                    </Button>
+                  </div>
                 )}
 
                 {/* Footer */}

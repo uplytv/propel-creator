@@ -551,3 +551,17 @@ select {
     font-size: 16px !important;
   }
 }
+
+/* Performance: lazy paint off-screen content */
+@layer utilities {
+  .scroll-feed {
+    contain: layout style;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .cv-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: 320px;
+  }
+}
+

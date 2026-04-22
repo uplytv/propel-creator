@@ -13,7 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useVideo, useVideoComments, useVideoLike, useAddComment, useVideos, type Video } from "@/hooks/useVideos";
+import { useVideo, useVideoComments, useVideoLike, useAddComment, type Video, type CommentSort } from "@/hooks/useVideos";
+import CommentThread from "@/components/video/CommentThread";
 import { useAuth } from "@/context/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -51,7 +52,8 @@ export default function VideoPlayer() {
   const [searchParams] = useSearchParams();
   const playlistId = searchParams.get("playlist") || undefined;
   const { data: video, isLoading } = useVideo(resolvedSlug);
-  const { data: comments } = useVideoComments(video?.id);
+  const [commentSort, setCommentSort] = useState<CommentSort>("top");
+  const { data: comments } = useVideoComments(video?.id, commentSort);
   const { isLiked, toggleLike } = useVideoLike(video?.id);
   const addComment = useAddComment(video?.id);
   const [descExpanded, setDescExpanded] = useState(false);
@@ -161,9 +163,14 @@ export default function VideoPlayer() {
   }, [video?.id]);
 
   const handleSubmitComment = async () => {
-    if (!commentText.trim()) return;
-    await addComment.mutateAsync(commentText.trim());
-    setCommentText("");
+    const text = commentText.trim();
+    if (!text) return;
+    try {
+      await addComment.mutateAsync({ body: text });
+      setCommentText("");
+    } catch {
+      /* toast already handled */
+    }
   };
 
   const creatorName = creator?.display_name || "Creator";
@@ -378,9 +385,33 @@ export default function VideoPlayer() {
 
           {/* Comments */}
           <div className="space-y-4 pt-2">
-            <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-              <MessageCircle className="w-4 h-4" /> {video.comment_count} Comments
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                <MessageCircle className="w-4 h-4" /> {video.comment_count} Comments
+              </h3>
+              <div className="flex items-center gap-1 text-xs">
+                <button
+                  onClick={() => setCommentSort("top")}
+                  className={`px-2.5 py-1 rounded-full font-semibold transition-colors ${
+                    commentSort === "top"
+                      ? "bg-primary/15 text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Top
+                </button>
+                <button
+                  onClick={() => setCommentSort("newest")}
+                  className={`px-2.5 py-1 rounded-full font-semibold transition-colors ${
+                    commentSort === "newest"
+                      ? "bg-primary/15 text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Newest
+                </button>
+              </div>
+            </div>
 
             {user && (
               <div className="flex items-center gap-2">
@@ -395,27 +426,16 @@ export default function VideoPlayer() {
                   size="sm"
                   onClick={handleSubmitComment}
                   disabled={!commentText.trim() || addComment.isPending}
+                  aria-label="Post comment"
                 >
                   <Send className="w-4 h-4" />
                 </Button>
               </div>
             )}
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               {comments?.map((c) => (
-                <div key={c.id} className="flex gap-2.5">
-                  <Avatar className="w-8 h-8 shrink-0">
-                    <AvatarImage src={c.profiles?.avatar_url || undefined} />
-                    <AvatarFallback>{(c.profiles?.display_name || "U").charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-foreground">{c.profiles?.display_name || "User"}</span>
-                      <span className="text-[10px] text-muted-foreground">{timeAgo(c.created_at)}</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-0.5">{c.body}</p>
-                  </div>
-                </div>
+                <CommentThread key={c.id} comment={c} videoId={video.id} />
               ))}
               {(!comments || comments.length === 0) && (
                 <p className="text-sm text-muted-foreground text-center py-6">No comments yet. Be the first!</p>

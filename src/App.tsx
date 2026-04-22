@@ -13,6 +13,7 @@ import TierCelebration from "@/components/TierCelebration";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import RouteErrorBoundary from "@/components/RouteErrorBoundary";
 import InstallPrompt from "@/components/InstallPrompt";
 import PushNotificationPermission from "@/components/PushNotificationPermission";
 import UploadRecovery from "@/components/UploadRecovery";
@@ -224,6 +225,7 @@ const App = () => (
                 <ScrollToTop />
                 <ErrorBoundary>
                 <Suspense fallback={<PageLoader />}>
+                  <RouteErrorBoundary section="Page">
                   <Routes>
                     {/* Public routes */}
                     <Route path="/" element={<Landing />} />
@@ -354,6 +356,7 @@ const App = () => (
 
                     <Route path="*" element={<NotFound />} />
                   </Routes>
+                  </RouteErrorBoundary>
                 </Suspense>
                 </ErrorBoundary>
               </BrowserRouter>
