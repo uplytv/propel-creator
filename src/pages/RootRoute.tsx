@@ -463,6 +463,15 @@ export default function RootRoute() {
     };
   }, [loading, retryKey]);
 
+  // Abort any in-flight prefetch when this route unmounts (user navigated
+  // away before the chunk finished loading).
+  useEffect(() => {
+    return () => {
+      abortPrefetch("home", "rootroute-unmount");
+      abortPrefetch("landing", "rootroute-unmount");
+    };
+  }, []);
+
   const handleRetry = useCallback(() => {
     setAuthError(null);
     setRetryKey((k) => k + 1);
