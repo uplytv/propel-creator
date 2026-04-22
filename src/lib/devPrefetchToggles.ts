@@ -103,3 +103,40 @@ export const resetPrefetchToggles = () => {
   persistChangedAt();
   dispatch();
 };
+
+/**
+ * Bulk-apply toggle values and their changed-at timestamps. Used by the
+ * dev-only "import snapshot" button. Unknown targets are ignored.
+ */
+export const importPrefetchToggles = (input: {
+  toggles?: Partial<Toggles>;
+  togglesChangedAt?: Partial<Record<PrefetchTarget, number | string | null>>;
+}) => {
+  if (!import.meta.env.DEV) return;
+  const nextToggles: Toggles = { ...cache };
+  const nextChangedAt: ChangedAt = { ...changedAtCache };
+
+  (["home", "landing"] as const).forEach((target) => {
+    if (input.toggles && typeof input.toggles[target] === "boolean") {
+      nextToggles[target] = input.toggles[target] as boolean;
+    }
+    const raw = input.togglesChangedAt?.[target];
+    if (raw == null) return;
+    if (typeof raw === "number" && Number.isFinite(raw)) {
+      nextChangedAt[target] = raw;
+    } else if (typeof raw === "string") {
+      const parsed = Date.parse(raw);
+      if (Number.isFinite(parsed)) nextChangedAt[target] = parsed;
+    }
+  });
+
+  cache = nextToggles;
+  changedAtCache = nextChangedAt;
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(cache));
+  } catch {
+    // no-op
+  }
+  persistChangedAt();
+  dispatch();
+};
