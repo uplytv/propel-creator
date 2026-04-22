@@ -269,12 +269,13 @@ export const PrefetchDebugPanel = () => {
                     }
                     const result = importPrefetchToggles(parsed);
                     if (!result.ok) {
+                      const errs = (result as { ok: false; errors: string[] }).errors;
                       // eslint-disable-next-line no-console
                       console.error(
                         "[PrefetchDebugPanel] snapshot validation failed",
-                        result.errors
+                        errs
                       );
-                      setImportErrors(result.errors);
+                      setImportErrors(errs);
                       setImportStatus("error");
                       window.setTimeout(() => setImportStatus("idle"), 2000);
                       return;
