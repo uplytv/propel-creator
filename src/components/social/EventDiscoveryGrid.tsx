@@ -34,40 +34,74 @@ export default function EventDiscoveryGrid({
   const navigate = useNavigate();
 
   const { data: events = [], isLoading } = useQuery({
-    queryKey: ["social-events", filter, user?.id, profile?.location],
+    queryKey: ["social-events-union", filter, user?.id, profile?.location],
     queryFn: async () => {
-      let query = supabase
+      const nowIso = new Date().toISOString();
+
+      // 1. UPLY-native events
+      let uplyQ = supabase
         .from("events")
         .select("*")
-        .gte("starts_at", new Date().toISOString())
+        .gte("starts_at", nowIso)
         .order("starts_at", { ascending: true })
         .limit(limit);
-
-      // Filter by user's city if available
       if (profile?.location && (filter === "active" || !filter)) {
-        query = query.ilike("location_city", `%${profile.location}%`);
+        uplyQ = uplyQ.ilike("location_city", `%${profile.location}%`);
       }
-
       if (filter === "new") {
         const threeDaysAgo = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
-        query = query.gte("created_at", threeDaysAgo);
+        uplyQ = uplyQ.gte("created_at", threeDaysAgo);
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
-
-      // If location filter returned nothing, fetch all
-      if (data && data.length === 0 && profile?.location && filter === "active") {
-        const { data: allData } = await supabase
-          .from("events")
-          .select("*")
-          .gte("starts_at", new Date().toISOString())
-          .order("starts_at", { ascending: true })
-          .limit(limit);
-        return allData || [];
+      // 2. Global events (Ticketmaster/Eventbrite)
+      let globalQ = (supabase as any)
+        .from("events_global")
+        .select("*")
+        .gte("date", nowIso)
+        .order("date", { ascending: true })
+        .limit(limit);
+      if (profile?.location && (filter === "active" || !filter)) {
+        globalQ = globalQ.ilike("city", `%${profile.location}%`);
+      }
+      if (filter === "new") {
+        const threeDaysAgo = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
+        globalQ = globalQ.gte("created_at", threeDaysAgo);
       }
 
-      return data || [];
+      const [uplyRes, globalRes] = await Promise.all([uplyQ, globalQ]);
+
+      const uply = (uplyRes.data || []).map((e: any) => ({ ...e, _source: "uply" as const }));
+      let global = (globalRes.data || []).map((e: any) => ({
+        ...e,
+        _source: "global" as const,
+        starts_at: e.date,
+        cover_image: e.image_url,
+        location_city: e.city,
+        location_name: e.venue,
+        ticket_price: null,
+        genre_tags: e.genre ? [e.genre] : [],
+      }));
+
+      // Fallback: if location filter returned nothing for active, drop it
+      if (uply.length === 0 && global.length === 0 && profile?.location && filter === "active") {
+        const [u2, g2] = await Promise.all([
+          supabase.from("events").select("*").gte("starts_at", nowIso).order("starts_at", { ascending: true }).limit(limit),
+          (supabase as any).from("events_global").select("*").gte("date", nowIso).order("date", { ascending: true }).limit(limit),
+        ]);
+        const uplyAll = (u2.data || []).map((e: any) => ({ ...e, _source: "uply" as const }));
+        const globalAll = (g2.data || []).map((e: any) => ({
+          ...e, _source: "global" as const, starts_at: e.date, cover_image: e.image_url,
+          location_city: e.city, location_name: e.venue, ticket_price: null,
+          genre_tags: e.genre ? [e.genre] : [],
+        }));
+        return [...uplyAll, ...globalAll]
+          .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())
+          .slice(0, limit);
+      }
+
+      return [...uply, ...global]
+        .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())
+        .slice(0, limit);
     },
     staleTime: 30_000,
     retry: 2,

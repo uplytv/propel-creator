@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { format, isToday, isTomorrow } from "date-fns";
 import EventCountdown from "./EventCountdown";
 import EventHypeMeter from "./EventHypeMeter";
+import GoingButton from "./GoingButton";
 
 interface EventDiscoveryCardProps {
   event: any;
@@ -10,7 +11,13 @@ interface EventDiscoveryCardProps {
 export default function EventDiscoveryCard({ event }: EventDiscoveryCardProps) {
   const navigate = useNavigate();
 
-  const dateStr = event.starts_at || event.event_date;
+  const isGlobal = event._source === "global";
+  const dateStr = event.starts_at || event.event_date || event.date;
+
+  const handleClick = () => {
+    if (isGlobal) navigate(`/global-events/${event.id}`);
+    else navigate(`/events/${event.id}`);
+  };
 
   const formatEventDate = (d: string) => {
     const date = new Date(d);
