@@ -5,8 +5,59 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+
+const EXPORT_COLUMNS = [
+  { key: "request_id", label: "Request ID" },
+  { key: "guest_name", label: "Guest name" },
+  { key: "event_title", label: "Event" },
+  { key: "ticket_token", label: "Ticket token" },
+  { key: "action", label: "Action" },
+  { key: "actor_name", label: "Actor name" },
+  { key: "actor_id", label: "Actor ID" },
+  { key: "at", label: "Timestamp" },
+] as const;
+type ExportColumnKey = (typeof EXPORT_COLUMNS)[number]["key"];
+const DEFAULT_COLUMNS: ExportColumnKey[] = EXPORT_COLUMNS.map((c) => c.key);
+
+type ExportPrefs = {
+  format: "csv" | "json";
+  columns: ExportColumnKey[];
+};
+
+const prefsKey = (uid: string) => `staffReentry:exportPrefs:${uid}`;
+
+const loadExportPrefs = (uid: string | undefined): ExportPrefs => {
+  const fallback: ExportPrefs = { format: "csv", columns: DEFAULT_COLUMNS };
+  if (!uid || typeof window === "undefined") return fallback;
+  try {
+    const raw = window.localStorage.getItem(prefsKey(uid));
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw);
+    const validKeys = new Set(DEFAULT_COLUMNS);
+    const cols = Array.isArray(parsed?.columns)
+      ? (parsed.columns.filter((k: any) => validKeys.has(k)) as ExportColumnKey[])
+      : DEFAULT_COLUMNS;
+    return {
+      format: parsed?.format === "json" ? "json" : "csv",
+      columns: cols.length > 0 ? cols : DEFAULT_COLUMNS,
+    };
+  } catch {
+    return fallback;
+  }
+};
+
+const saveExportPrefs = (uid: string | undefined, prefs: ExportPrefs) => {
+  if (!uid || typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(prefsKey(uid), JSON.stringify(prefs));
+  } catch {
+    // ignore quota / private mode errors
+  }
+};
 
 type ReentryNotification = {
   id: string;
