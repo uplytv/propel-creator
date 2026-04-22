@@ -723,10 +723,30 @@ export default function StaffReentryRequests() {
                 {/* Audit log */}
                 {auditLog.length > 0 && (
                   <div className="mt-3 pt-3 border-t border-border/60">
-                    <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground flex items-center gap-1 mb-1.5">
-                      <History className="w-3 h-3" />
-                      Activity log
-                    </p>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground flex items-center gap-1">
+                        <History className="w-3 h-3" />
+                        Activity log
+                      </p>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => exportAudit(req, "csv")}
+                          className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-md bg-muted hover:bg-muted/70 text-foreground transition-colors"
+                          aria-label="Export activity as CSV"
+                        >
+                          <Download className="w-2.5 h-2.5" />
+                          CSV
+                        </button>
+                        <button
+                          onClick={() => exportAudit(req, "json")}
+                          className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-md bg-muted hover:bg-muted/70 text-foreground transition-colors"
+                          aria-label="Export activity as JSON"
+                        >
+                          <Download className="w-2.5 h-2.5" />
+                          JSON
+                        </button>
+                      </div>
+                    </div>
                     <ul className="space-y-1">
                       {auditLog.map((entry, i) => {
                         const approved = entry.action === "approved";
