@@ -12,6 +12,7 @@ export interface Short {
   view_count: number;
   created_at: string;
   source: "short" | "clip";
+  featured_product_id: string | null;
   // joined
   creator_name?: string;
   creator_avatar?: string;
