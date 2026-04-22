@@ -376,6 +376,77 @@ export default function StaffReentryRequests() {
     [requests, selectedIds]
   );
 
+  const exportAudit = (req: ReentryNotification, format: "csv" | "json") => {
+    const log: any[] = Array.isArray(req.metadata?.audit_log) ? req.metadata.audit_log : [];
+    if (log.length === 0) {
+      toast.info("Nothing to export", { description: "No activity recorded yet." });
+      return;
+    }
+    const guestName = req.metadata?.guest_name || "guest";
+    const eventTitle = req.metadata?.event_title || "event";
+    const ticketToken = req.metadata?.ticket_token || "";
+    const safe = (s: string) =>
+      String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "request";
+    const stamp = new Date().toISOString().slice(0, 10);
+    const baseName = `reentry-activity_${safe(guestName)}_${safe(eventTitle)}_${stamp}`;
+
+    let blob: Blob;
+    let filename: string;
+    if (format === "json") {
+      const payload = {
+        request_id: req.id,
+        created_at: req.created_at,
+        guest_name: guestName,
+        event_title: eventTitle,
+        ticket_token: ticketToken,
+        ticket_id: req.metadata?.ticket_id || req.reference_id || null,
+        audit_log: log,
+        exported_at: new Date().toISOString(),
+        exported_by: user?.id ?? null,
+      };
+      blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      filename = `${baseName}.json`;
+    } else {
+      const escape = (v: any) => {
+        const s = v == null ? "" : String(v);
+        return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+      };
+      const headers = [
+        "request_id",
+        "guest_name",
+        "event_title",
+        "ticket_token",
+        "action",
+        "actor_name",
+        "actor_id",
+        "at",
+      ];
+      const rows = log.map((e) => [
+        req.id,
+        guestName,
+        eventTitle,
+        ticketToken,
+        e.action,
+        e.actor_name || "",
+        e.actor_id || "",
+        e.at || "",
+      ]);
+      const csv = [headers, ...rows].map((r) => r.map(escape).join(",")).join("\n");
+      blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      filename = `${baseName}.csv`;
+    }
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast.success("Activity exported", { description: filename });
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
