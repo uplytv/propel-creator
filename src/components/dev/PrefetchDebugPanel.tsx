@@ -78,6 +78,7 @@ export const PrefetchDebugPanel = () => {
   const [changedAt, setChangedAt] = useState(() => getPrefetchTogglesChangedAt());
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
   const [importStatus, setImportStatus] = useState<"idle" | "imported" | "error">("idle");
+  const [importErrors, setImportErrors] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   // Tick once a second so the relative "changed Xs ago" label stays fresh.
   const [, setNow] = useState(() => Date.now());
