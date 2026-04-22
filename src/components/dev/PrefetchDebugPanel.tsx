@@ -6,6 +6,7 @@ import {
   importPrefetchToggles,
   resetPrefetchToggles,
   setPrefetchToggle,
+  validatePrefetchSnapshot,
 } from "@/lib/devPrefetchToggles";
 
 type PrefetchStatus =
@@ -101,6 +102,7 @@ export const PrefetchDebugPanel = () => {
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
   const [importStatus, setImportStatus] = useState<"idle" | "imported" | "error">("idle");
   const [importErrors, setImportErrors] = useState<string[]>([]);
+  const [validateStatus, setValidateStatus] = useState<"idle" | "pass" | "fail">("idle");
   const fileInputRef = useRef<HTMLInputElement>(null);
   // Tick once a second so the relative "changed Xs ago" label stays fresh.
   const [, setNow] = useState(() => Date.now());
@@ -243,25 +245,57 @@ export const PrefetchDebugPanel = () => {
                     download
                   </button>
                 </div>
-                <button
-                  onClick={() => {
-                    const example = {
-                      capturedAt: new Date().toISOString(),
-                      toggles: { home: true, landing: true },
-                      togglesChangedAt: {
-                        home: new Date().toISOString(),
-                        landing: null,
-                      },
-                    };
-                    downloadJson(
-                      JSON.stringify(example, null, 2),
-                      "prefetch-snapshot-example"
-                    );
-                  }}
-                  className="w-full rounded border border-white/10 px-2 py-1 text-[10px] uppercase tracking-wide text-white/60 hover:bg-white/5 hover:text-white/80 transition"
-                >
-                  download example snapshot
-                </button>
+                {(() => {
+                  const buildExample = () => ({
+                    capturedAt: new Date().toISOString(),
+                    toggles: { home: true, landing: true },
+                    togglesChangedAt: {
+                      home: new Date().toISOString(),
+                      landing: null as string | null,
+                    },
+                  });
+                  return (
+                    <div className="flex gap-1.5">
+                      <button
+                        onClick={() => {
+                          downloadJson(
+                            JSON.stringify(buildExample(), null, 2),
+                            "prefetch-snapshot-example"
+                          );
+                        }}
+                        className="flex-1 rounded border border-white/10 px-2 py-1 text-[10px] uppercase tracking-wide text-white/60 hover:bg-white/5 hover:text-white/80 transition"
+                      >
+                        download example
+                      </button>
+                      <button
+                        onClick={() => {
+                          const result = validatePrefetchSnapshot(buildExample());
+                          if (result.ok) {
+                            setValidateStatus("pass");
+                            setImportErrors([]);
+                          } else {
+                            setValidateStatus("fail");
+                            setImportErrors((result as { ok: false; errors: string[] }).errors);
+                          }
+                          window.setTimeout(() => setValidateStatus("idle"), 2000);
+                        }}
+                        className={`flex-1 rounded border px-2 py-1 text-[10px] uppercase tracking-wide transition ${
+                          validateStatus === "pass"
+                            ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
+                            : validateStatus === "fail"
+                              ? "border-red-500/40 bg-red-500/10 text-red-300"
+                              : "border-white/10 text-white/60 hover:bg-white/5 hover:text-white/80"
+                        }`}
+                      >
+                        {validateStatus === "pass"
+                          ? "valid ✓"
+                          : validateStatus === "fail"
+                            ? "invalid ✗"
+                            : "validate example"}
+                      </button>
+                    </div>
+                  );
+                })()}
                 <input
                   ref={fileInputRef}
                   type="file"
