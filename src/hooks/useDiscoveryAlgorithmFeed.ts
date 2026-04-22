@@ -43,10 +43,15 @@ export interface DiscoveryItem {
 
 const PAGE = 50;
 
-export function useDiscoveryAlgorithmFeed(tab: DiscoveryTab, category?: string) {
+export function useDiscoveryAlgorithmFeed(
+  tab: DiscoveryTab,
+  category?: string,
+  tags?: string[],
+) {
   const { user } = useAuth();
+  const normalizedTags = (tags ?? []).map((t) => t.toLowerCase().trim()).filter(Boolean);
   return useQuery({
-    queryKey: ["discovery-feed", tab, category, user?.id],
+    queryKey: ["discovery-feed", tab, category, normalizedTags.join(","), user?.id],
     queryFn: async (): Promise<DiscoveryItem[]> => {
       let q = supabase.from("video_discovery_scores").select("*");
 
