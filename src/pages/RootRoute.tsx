@@ -569,11 +569,21 @@ export default function RootRoute() {
 
   // Wait fully for auth to resolve. Render nothing for the first ~150ms to
   // avoid a skeleton flash on cached sessions; then show the skeleton.
-  if (loading) return showSkeleton ? <Loader /> : null;
+  if (loading) {
+    return (
+      <>
+        {showSkeleton ? <Loader /> : null}
+        <PrefetchDebugPanel />
+      </>
+    );
+  }
 
   return (
-    <Suspense fallback={<Loader />}>
-      {user ? <Home /> : <Landing />}
-    </Suspense>
+    <>
+      <Suspense fallback={<Loader />}>
+        {user ? <Home /> : <Landing />}
+      </Suspense>
+      <PrefetchDebugPanel />
+    </>
   );
 }
