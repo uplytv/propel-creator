@@ -92,26 +92,42 @@ export const PrefetchDebugPanel = () => {
         <div className="p-2 space-y-1.5">
           {(["home", "landing"] as const).map((target) => {
             const entry = state[target];
+            const enabled = toggles[target];
             return (
-              <div key={target} className="flex items-center gap-2">
-                <span className="w-14 text-white/50">{target}</span>
-                <span
-                  className={`px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wide ${statusColor[entry.status]}`}
-                >
-                  {entry.status}
-                </span>
-                {entry.durationMs != null && (
-                  <span className="text-white/40 text-[10px]">
-                    {entry.durationMs}ms
-                  </span>
-                )}
-                {entry.reason && (
+              <div key={target} className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <label className="flex items-center gap-1.5 w-14 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={enabled}
+                      onChange={(e) => {
+                        setPrefetchToggle(target, e.target.checked);
+                        setToggles(getPrefetchToggles());
+                      }}
+                      className="h-3 w-3 accent-emerald-400 cursor-pointer"
+                    />
+                    <span className={enabled ? "text-white/70" : "text-white/30 line-through"}>
+                      {target}
+                    </span>
+                  </label>
                   <span
-                    className="text-white/40 text-[10px] truncate"
+                    className={`px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wide ${statusColor[entry.status]}`}
+                  >
+                    {entry.status}
+                  </span>
+                  {entry.durationMs != null && (
+                    <span className="text-white/40 text-[10px]">
+                      {entry.durationMs}ms
+                    </span>
+                  )}
+                </div>
+                {entry.reason && (
+                  <div
+                    className="text-white/40 text-[10px] truncate pl-[68px]"
                     title={entry.reason}
                   >
                     {entry.reason}
-                  </span>
+                  </div>
                 )}
               </div>
             );
