@@ -223,6 +223,23 @@ export default function NetworkFeed() {
                   {tab === "following" && <Button variant="outline" size="sm" className="mt-3" onClick={() => setTab("foryou")}>Discover Creators</Button>}
                 </div>
               )}
+
+              {/* Infinite scroll sentinel */}
+              {!loading && items.length > 0 && (
+                <>
+                  <div ref={sentinelRef} className="h-1 mt-6" />
+                  {loadingMore && (
+                    <div className="flex items-center justify-center py-6">
+                      <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                    </div>
+                  )}
+                  {!hasMore && (
+                    <p className="text-center text-xs text-muted-foreground py-6">
+                      You've seen everything ✨
+                    </p>
+                  )}
+                </>
+              )}
             </div>
 
             {/* Right sidebar — hidden on mobile */}
