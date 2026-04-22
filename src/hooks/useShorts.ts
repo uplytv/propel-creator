@@ -54,6 +54,7 @@ export function useShorts(batchSize = 10) {
       view_count: s.view_count || 0,
       created_at: s.created_at,
       source: "short" as const,
+      featured_product_id: s.featured_product_id ?? null,
     }));
 
     const clipsData = (clipsRes.data || []).map((c: any) => ({
@@ -63,10 +64,11 @@ export function useShorts(batchSize = 10) {
       creator_type_tag: null,
       mux_asset_id: c.clip_asset_id,
       playback_id: c.clip_playback_id,
-      like_count: c.view_count || 0, // clips don't have like_count in main table
+      like_count: c.view_count || 0,
       view_count: c.view_count || 0,
       created_at: c.created_at,
       source: "clip" as const,
+      featured_product_id: c.featured_product_id ?? null,
     }));
 
     // Merge and sort by date
