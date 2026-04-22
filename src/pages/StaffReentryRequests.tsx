@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, BellRing, Check, X, Clock, Ticket, Loader2, Inbox, RefreshCw, Search } from "lucide-react";
+import { ArrowLeft, BellRing, Check, X, Clock, Ticket, Loader2, Inbox, RefreshCw, Search, History, ShieldCheck, ShieldX, User as UserIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -161,6 +161,47 @@ export default function StaffReentryRequests() {
     }
   };
 
+  const recordAudit = async (
+    req: ReentryNotification,
+    action: "approved" | "denied"
+  ): Promise<any[]> => {
+    // Resolve current actor's display name (best-effort)
+    let actorName = "Staff";
+    try {
+      const { data: prof } = await (supabase as any)
+        .from("profiles")
+        .select("display_name, username")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      actorName =
+        prof?.display_name ||
+        prof?.username ||
+        user?.email?.split("@")[0] ||
+        "Staff";
+    } catch {
+      // fall back to default
+    }
+
+    const existingLog: any[] = Array.isArray(req.metadata?.audit_log)
+      ? req.metadata.audit_log
+      : [];
+    const entry = {
+      action,
+      actor_id: user?.id ?? null,
+      actor_name: actorName,
+      at: new Date().toISOString(),
+    };
+    const nextLog = [...existingLog, entry];
+    const nextMetadata = { ...(req.metadata || {}), audit_log: nextLog };
+
+    await (supabase as any)
+      .from("notifications")
+      .update({ read: true, metadata: nextMetadata })
+      .eq("id", req.id);
+
+    return nextLog;
+  };
+
   const approve = async (req: ReentryNotification) => {
     if (actionId) return;
     setActionId(req.id);
@@ -184,14 +225,23 @@ export default function StaffReentryRequests() {
         if (error) throw error;
       }
 
-      // Mark notification as handled
-      await (supabase as any).from("notifications").update({ read: true }).eq("id", req.id);
+      // Mark notification as handled + write audit entry
+      const nextLog = await recordAudit(req, "approved");
 
       // Best-effort guest notification
       await notifyGuest(guestUserId, true, eventTitle, ticketUrl);
 
       setRequests((prev) =>
-        prev.map((r) => (r.id === req.id ? { ...r, read: true, _resolved: "approved" } : r))
+        prev.map((r) =>
+          r.id === req.id
+            ? {
+                ...r,
+                read: true,
+                _resolved: "approved",
+                metadata: { ...(r.metadata || {}), audit_log: nextLog },
+              }
+            : r
+        )
       );
       if (navigator.vibrate) navigator.vibrate(60);
       toast.success("Re-entry approved", { description: "Ticket reactivated for scanning." });
@@ -210,10 +260,19 @@ export default function StaffReentryRequests() {
     const ticketUrl = req.metadata?.ticket_url || null;
 
     try {
-      await (supabase as any).from("notifications").update({ read: true }).eq("id", req.id);
+      const nextLog = await recordAudit(req, "denied");
       await notifyGuest(guestUserId, false, eventTitle, ticketUrl);
       setRequests((prev) =>
-        prev.map((r) => (r.id === req.id ? { ...r, read: true, _resolved: "denied" } : r))
+        prev.map((r) =>
+          r.id === req.id
+            ? {
+                ...r,
+                read: true,
+                _resolved: "denied",
+                metadata: { ...(r.metadata || {}), audit_log: nextLog },
+              }
+            : r
+        )
       );
       if (navigator.vibrate) navigator.vibrate(40);
       toast.success("Request denied", { description: "We've let the guest know." });
@@ -335,6 +394,9 @@ export default function StaffReentryRequests() {
             const eventUrl = req.metadata?.event_url || null;
             const ticketUrl = req.metadata?.ticket_url || null;
             const shortToken = (req.metadata?.ticket_token || "")?.slice(0, 8);
+            const auditLog: any[] = Array.isArray(req.metadata?.audit_log)
+              ? req.metadata.audit_log
+              : [];
             const isBusy = actionId === req.id;
 
             const isHighlighted = highlightedId === req.id;
@@ -446,6 +508,58 @@ export default function StaffReentryRequests() {
                         </>
                       )}
                     </Button>
+                  </div>
+                )}
+
+                {/* Audit log */}
+                {auditLog.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-border/60">
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground flex items-center gap-1 mb-1.5">
+                      <History className="w-3 h-3" />
+                      Activity log
+                    </p>
+                    <ul className="space-y-1">
+                      {auditLog.map((entry, i) => {
+                        const approved = entry.action === "approved";
+                        return (
+                          <li
+                            key={`${req.id}-audit-${i}`}
+                            className="flex items-start gap-2 text-[11px]"
+                          >
+                            <span
+                              className={`mt-0.5 inline-flex items-center justify-center w-4 h-4 rounded-full flex-shrink-0 ${
+                                approved
+                                  ? "bg-primary/15 text-primary"
+                                  : "bg-destructive/15 text-destructive"
+                              }`}
+                            >
+                              {approved ? (
+                                <ShieldCheck className="w-2.5 h-2.5" />
+                              ) : (
+                                <ShieldX className="w-2.5 h-2.5" />
+                              )}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-foreground">
+                                <span className="font-semibold inline-flex items-center gap-1">
+                                  <UserIcon className="w-2.5 h-2.5" />
+                                  {entry.actor_name || "Staff"}
+                                </span>{" "}
+                                <span className="text-muted-foreground">
+                                  {approved ? "approved" : "denied"} this request
+                                </span>
+                              </p>
+                              <p className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                                <Clock className="w-2.5 h-2.5" />
+                                {entry.at
+                                  ? formatDistanceToNow(new Date(entry.at), { addSuffix: true })
+                                  : "just now"}
+                              </p>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
                   </div>
                 )}
               </div>
