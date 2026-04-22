@@ -1,13 +1,31 @@
+import { useEffect, useRef } from "react";
 import { useSocialPosts } from "@/hooks/useSocialPosts";
 import SocialPostCard from "./SocialPostCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Loader2 } from "lucide-react";
 
 interface SocialFeedProps {
   friendsOnly?: boolean;
 }
 
 export default function SocialFeed({ friendsOnly }: SocialFeedProps) {
-  const { posts, isLoading } = useSocialPosts({ friendsOnly });
+  const { posts, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useSocialPosts({ friendsOnly });
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || !hasNextPage) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { rootMargin: "600px 0px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   if (isLoading) {
     return (
@@ -32,6 +50,20 @@ export default function SocialFeed({ friendsOnly }: SocialFeedProps) {
       {posts.map((post: any) => (
         <SocialPostCard key={post.id} post={post} />
       ))}
+
+      <div ref={sentinelRef} className="h-1" />
+
+      {isFetchingNextPage && (
+        <div className="flex items-center justify-center py-6">
+          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+        </div>
+      )}
+
+      {!hasNextPage && posts.length > 10 && (
+        <p className="text-center text-xs text-muted-foreground py-6">
+          You're all caught up ✨
+        </p>
+      )}
     </div>
   );
 }
