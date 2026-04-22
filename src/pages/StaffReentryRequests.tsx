@@ -394,6 +394,9 @@ export default function StaffReentryRequests() {
             const eventUrl = req.metadata?.event_url || null;
             const ticketUrl = req.metadata?.ticket_url || null;
             const shortToken = (req.metadata?.ticket_token || "")?.slice(0, 8);
+            const auditLog: any[] = Array.isArray(req.metadata?.audit_log)
+              ? req.metadata.audit_log
+              : [];
             const isBusy = actionId === req.id;
 
             const isHighlighted = highlightedId === req.id;
