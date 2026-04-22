@@ -1,5 +1,5 @@
 import { useDiscoveryAlgorithmFeed, type DiscoveryItem } from "@/hooks/useDiscoveryAlgorithmFeed";
-import DiscoveryFeedCard from "./DiscoveryFeedCard";
+import HoverPreviewCard from "./HoverPreviewCard";
 import DiscoverRow from "@/components/discover/DiscoverRow";
 import { Skeleton } from "@/components/ui/skeleton";
 
