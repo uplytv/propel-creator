@@ -123,6 +123,10 @@ const SocialFriends = lazy(() => import("./pages/social/SocialFriends"));
 const SocialProducers = lazy(() => import("./pages/social/SocialProducers"));
 const SocialPeople = lazy(() => import("./pages/social/SocialPeople"));
 import SocialLayout from "./components/social/SocialLayout";
+import { CartProvider } from "@/context/CartContext";
+import CartDrawer from "@/components/shop/CartDrawer";
+const Shop = lazy(() => import("./pages/Shop"));
+const Inbox = lazy(() => import("./pages/Inbox"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -206,10 +210,12 @@ const App = () => (
           <AppProvider>
             <FeatureProvider>
               <NetworkProvider>
+              <CartProvider>
               <NativeShell>
               <Toaster />
               <Sonner />
               <TierCelebration />
+              <CartDrawer />
               <InstallPrompt />
               <PushNotificationPermission />
               <AppWithSplash>
