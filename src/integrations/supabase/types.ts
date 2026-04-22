@@ -1694,6 +1694,54 @@ export type Database = {
         }
         Relationships: []
       }
+      cart_items: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          quantity: number
+          source_content_id: string | null
+          source_content_type: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          quantity?: number
+          source_content_id?: string | null
+          source_content_type?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          quantity?: number
+          source_content_id?: string | null
+          source_content_type?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cart_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cart_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       category_feature_defaults: {
         Row: {
           category_id: string
@@ -1919,6 +1967,7 @@ export type Database = {
           created_at: string
           creator_id: string
           duration_seconds: number
+          featured_product_id: string | null
           id: string
           is_auto_short: boolean
           is_public: boolean
@@ -1938,6 +1987,7 @@ export type Database = {
           created_at?: string
           creator_id: string
           duration_seconds?: number
+          featured_product_id?: string | null
           id?: string
           is_auto_short?: boolean
           is_public?: boolean
@@ -1957,6 +2007,7 @@ export type Database = {
           created_at?: string
           creator_id?: string
           duration_seconds?: number
+          featured_product_id?: string | null
           id?: string
           is_auto_short?: boolean
           is_public?: boolean
@@ -1968,7 +2019,22 @@ export type Database = {
           trending_score?: number | null
           view_count?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "clips_featured_product_id_fkey"
+            columns: ["featured_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clips_featured_product_id_fkey"
+            columns: ["featured_product_id"]
+            isOneToOne: false
+            referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       collaborations: {
         Row: {
@@ -3092,6 +3158,7 @@ export type Database = {
           created_at: string | null
           id: string
           read: boolean
+          reply_to_story_id: string | null
           sender_id: string
         }
         Insert: {
@@ -3100,6 +3167,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           read?: boolean
+          reply_to_story_id?: string | null
           sender_id: string
         }
         Update: {
@@ -3108,6 +3176,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           read?: boolean
+          reply_to_story_id?: string | null
           sender_id?: string
         }
         Relationships: [
@@ -6203,6 +6272,42 @@ export type Database = {
           },
         ]
       }
+      mentions: {
+        Row: {
+          actor_id: string
+          created_at: string
+          id: string
+          link: string | null
+          mentioned_user_id: string
+          preview: string | null
+          read: boolean
+          source_id: string
+          source_type: string
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          id?: string
+          link?: string | null
+          mentioned_user_id: string
+          preview?: string | null
+          read?: boolean
+          source_id: string
+          source_type: string
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          id?: string
+          link?: string | null
+          mentioned_user_id?: string
+          preview?: string | null
+          read?: boolean
+          source_id?: string
+          source_type?: string
+        }
+        Relationships: []
+      }
       message_reactions: {
         Row: {
           created_at: string | null
@@ -7673,6 +7778,7 @@ export type Database = {
           created_at: string
           creator_id: string
           creator_type_tag: string | null
+          featured_product_id: string | null
           id: string
           like_count: number
           mux_asset_id: string | null
@@ -7684,6 +7790,7 @@ export type Database = {
           created_at?: string
           creator_id: string
           creator_type_tag?: string | null
+          featured_product_id?: string | null
           id?: string
           like_count?: number
           mux_asset_id?: string | null
@@ -7695,13 +7802,29 @@ export type Database = {
           created_at?: string
           creator_id?: string
           creator_type_tag?: string | null
+          featured_product_id?: string | null
           id?: string
           like_count?: number
           mux_asset_id?: string | null
           playback_id?: string | null
           view_count?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "shorts_featured_product_id_fkey"
+            columns: ["featured_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shorts_featured_product_id_fkey"
+            columns: ["featured_product_id"]
+            isOneToOne: false
+            referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       shorts_queue: {
         Row: {
