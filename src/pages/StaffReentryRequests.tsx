@@ -34,6 +34,7 @@ export default function StaffReentryRequests() {
   const [actionId, setActionId] = useState<string | null>(null);
   const [tab, setTab] = useState<FilterTab>(focusRequestId || focusTicketId ? "all" : "pending");
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const load = async () => {
