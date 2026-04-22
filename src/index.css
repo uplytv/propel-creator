@@ -425,6 +425,13 @@
   border-radius: 4px;
 }
 
+/* Netflix-style dark shimmer for home rows (Upgrade 8) */
+.shimmer {
+  background: linear-gradient(90deg, #1A1A1A 0%, #2A2A2A 50%, #1A1A1A 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s linear infinite;
+}
+
 /* Skeleton pulse */
 @keyframes skeleton-pulse {
   0%, 100% { opacity: 0.4; }
