@@ -511,7 +511,16 @@ export default function StaffReentryRequests() {
     a.click();
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    toast.success("Activity exported", { description: filename });
+    const exportedAt = new Date();
+    const timeLabel = exportedAt.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+    toast.success(`Exported as ${format.toUpperCase()}`, {
+      description: `${filename} · ${timeLabel}`,
+      duration: 6000,
+    });
   };
 
   if (!user) {
