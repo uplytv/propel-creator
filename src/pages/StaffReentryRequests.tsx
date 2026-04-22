@@ -510,6 +510,58 @@ export default function StaffReentryRequests() {
                     </Button>
                   </div>
                 )}
+
+                {/* Audit log */}
+                {auditLog.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-border/60">
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground flex items-center gap-1 mb-1.5">
+                      <History className="w-3 h-3" />
+                      Activity log
+                    </p>
+                    <ul className="space-y-1">
+                      {auditLog.map((entry, i) => {
+                        const approved = entry.action === "approved";
+                        return (
+                          <li
+                            key={`${req.id}-audit-${i}`}
+                            className="flex items-start gap-2 text-[11px]"
+                          >
+                            <span
+                              className={`mt-0.5 inline-flex items-center justify-center w-4 h-4 rounded-full flex-shrink-0 ${
+                                approved
+                                  ? "bg-primary/15 text-primary"
+                                  : "bg-destructive/15 text-destructive"
+                              }`}
+                            >
+                              {approved ? (
+                                <ShieldCheck className="w-2.5 h-2.5" />
+                              ) : (
+                                <ShieldX className="w-2.5 h-2.5" />
+                              )}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-foreground">
+                                <span className="font-semibold inline-flex items-center gap-1">
+                                  <UserIcon className="w-2.5 h-2.5" />
+                                  {entry.actor_name || "Staff"}
+                                </span>{" "}
+                                <span className="text-muted-foreground">
+                                  {approved ? "approved" : "denied"} this request
+                                </span>
+                              </p>
+                              <p className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                                <Clock className="w-2.5 h-2.5" />
+                                {entry.at
+                                  ? formatDistanceToNow(new Date(entry.at), { addSuffix: true })
+                                  : "just now"}
+                              </p>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
               </div>
             );
           })
