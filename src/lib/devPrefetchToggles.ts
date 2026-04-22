@@ -119,7 +119,8 @@ export type SnapshotValidationResult =
     }
   | { ok: false; errors: string[] };
 
-const TARGETS = ["home", "landing"] as const;
+export const PREFETCH_TARGETS = ["home", "landing"] as const;
+const TARGETS = PREFETCH_TARGETS;
 
 /**
  * Strict schema validator for snapshot JSON. Returns specific errors for
