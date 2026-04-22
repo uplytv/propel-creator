@@ -201,17 +201,25 @@ export default function SwipeCard({ person, index, onSwipeRight, onSwipeLeft, on
               className="inline-block px-2.5 py-1 rounded-lg text-xs font-semibold mb-2"
               style={{ backgroundColor: "rgba(0,255,133,0.15)", color: "#00FF85" }}
             >
-              📅 Going to {person.shared_event}
+              📍 Going to {person.shared_event}
             </span>
           )}
 
-          {/* Music match */}
           {musicMatch !== null && musicMatch > 0 && (
             <span
               className="inline-block px-2.5 py-1 rounded-lg text-xs font-semibold mb-2 ml-1"
               style={{ backgroundColor: "rgba(168,85,247,0.15)", color: "#A855F7" }}
             >
               🎵 {musicMatch}% match
+            </span>
+          )}
+
+          {(person.shared_interests_count ?? 0) > 0 && (
+            <span
+              className="inline-block px-2.5 py-1 rounded-lg text-xs font-semibold mb-2 ml-1"
+              style={{ backgroundColor: "rgba(0,200,255,0.15)", color: "#00C8FF" }}
+            >
+              ✨ {person.shared_interests_count} shared
             </span>
           )}
 
