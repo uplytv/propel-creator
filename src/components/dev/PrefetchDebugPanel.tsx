@@ -67,6 +67,28 @@ const formatAbsolute = (ts: number | null): string | undefined => {
   }
 };
 
+const downloadJson = (json: string, baseName: string) => {
+  try {
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const ts = new Date()
+      .toISOString()
+      .replace(/[:.]/g, "-")
+      .replace("T", "_")
+      .slice(0, 19);
+    a.href = url;
+    a.download = `${baseName}_${ts}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch {
+    // eslint-disable-next-line no-console
+    console.error("[PrefetchDebugPanel] download failed");
+  }
+};
+
 /**
  * Dev-only floating panel showing the live prefetch status for the home and
  * landing route bundles. Renders nothing in production.
@@ -214,32 +236,32 @@ export const PrefetchDebugPanel = () => {
                   <button
                     onClick={() => {
                       const json = JSON.stringify(buildSnapshot(), null, 2);
-                      try {
-                        const blob = new Blob([json], { type: "application/json" });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement("a");
-                        const ts = new Date()
-                          .toISOString()
-                          .replace(/[:.]/g, "-")
-                          .replace("T", "_")
-                          .slice(0, 19);
-                        a.href = url;
-                        a.download = `prefetch-snapshot_${ts}.json`;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        // Defer revoke so the download has time to start.
-                        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-                      } catch {
-                        // eslint-disable-next-line no-console
-                        console.error("[PrefetchDebugPanel] download failed");
-                      }
+                      downloadJson(json, "prefetch-snapshot");
                     }}
                     className="flex-1 rounded border border-white/10 px-2 py-1 text-[10px] uppercase tracking-wide text-white/60 hover:bg-white/5 hover:text-white/80 transition"
                   >
                     download
                   </button>
                 </div>
+                <button
+                  onClick={() => {
+                    const example = {
+                      capturedAt: new Date().toISOString(),
+                      toggles: { home: true, landing: true },
+                      togglesChangedAt: {
+                        home: new Date().toISOString(),
+                        landing: null,
+                      },
+                    };
+                    downloadJson(
+                      JSON.stringify(example, null, 2),
+                      "prefetch-snapshot-example"
+                    );
+                  }}
+                  className="w-full rounded border border-white/10 px-2 py-1 text-[10px] uppercase tracking-wide text-white/60 hover:bg-white/5 hover:text-white/80 transition"
+                >
+                  download example snapshot
+                </button>
                 <input
                   ref={fileInputRef}
                   type="file"
