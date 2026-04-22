@@ -1048,7 +1048,10 @@ export type Database = {
         Row: {
           attend_date: string
           created_at: string | null
+          event_date: string | null
           event_id: string | null
+          event_title: string | null
+          global_event_id: string | null
           id: string
           status: string | null
           user_id: string
@@ -1057,7 +1060,10 @@ export type Database = {
         Insert: {
           attend_date: string
           created_at?: string | null
+          event_date?: string | null
           event_id?: string | null
+          event_title?: string | null
+          global_event_id?: string | null
           id?: string
           status?: string | null
           user_id: string
@@ -1066,7 +1072,10 @@ export type Database = {
         Update: {
           attend_date?: string
           created_at?: string | null
+          event_date?: string | null
           event_id?: string | null
+          event_title?: string | null
+          global_event_id?: string | null
           id?: string
           status?: string | null
           user_id?: string
@@ -1078,6 +1087,13 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_global_event_id_fkey"
+            columns: ["global_event_id"]
+            isOneToOne: false
+            referencedRelation: "events_global"
             referencedColumns: ["id"]
           },
         ]
