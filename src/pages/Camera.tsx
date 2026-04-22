@@ -47,7 +47,7 @@ export default function Camera() {
   const longPressTimer = useRef<number | null>(null);
   const longPressFiredRef = useRef(false);
 
-  const { videoRef, streamRef, isReady, error } = useCameraStream({
+  const { videoRef, streamRef, isReady, error, errorKind, restart } = useCameraStream({
     facing,
     resolution,
     enabled: mode !== "LIVE", // LIVE routes immediately
