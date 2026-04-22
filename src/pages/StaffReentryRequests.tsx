@@ -161,6 +161,47 @@ export default function StaffReentryRequests() {
     }
   };
 
+  const recordAudit = async (
+    req: ReentryNotification,
+    action: "approved" | "denied"
+  ): Promise<any[]> => {
+    // Resolve current actor's display name (best-effort)
+    let actorName = "Staff";
+    try {
+      const { data: prof } = await (supabase as any)
+        .from("profiles")
+        .select("display_name, username")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      actorName =
+        prof?.display_name ||
+        prof?.username ||
+        user?.email?.split("@")[0] ||
+        "Staff";
+    } catch {
+      // fall back to default
+    }
+
+    const existingLog: any[] = Array.isArray(req.metadata?.audit_log)
+      ? req.metadata.audit_log
+      : [];
+    const entry = {
+      action,
+      actor_id: user?.id ?? null,
+      actor_name: actorName,
+      at: new Date().toISOString(),
+    };
+    const nextLog = [...existingLog, entry];
+    const nextMetadata = { ...(req.metadata || {}), audit_log: nextLog };
+
+    await (supabase as any)
+      .from("notifications")
+      .update({ read: true, metadata: nextMetadata })
+      .eq("id", req.id);
+
+    return nextLog;
+  };
+
   const approve = async (req: ReentryNotification) => {
     if (actionId) return;
     setActionId(req.id);
@@ -184,14 +225,23 @@ export default function StaffReentryRequests() {
         if (error) throw error;
       }
 
-      // Mark notification as handled
-      await (supabase as any).from("notifications").update({ read: true }).eq("id", req.id);
+      // Mark notification as handled + write audit entry
+      const nextLog = await recordAudit(req, "approved");
 
       // Best-effort guest notification
       await notifyGuest(guestUserId, true, eventTitle, ticketUrl);
 
       setRequests((prev) =>
-        prev.map((r) => (r.id === req.id ? { ...r, read: true, _resolved: "approved" } : r))
+        prev.map((r) =>
+          r.id === req.id
+            ? {
+                ...r,
+                read: true,
+                _resolved: "approved",
+                metadata: { ...(r.metadata || {}), audit_log: nextLog },
+              }
+            : r
+        )
       );
       if (navigator.vibrate) navigator.vibrate(60);
       toast.success("Re-entry approved", { description: "Ticket reactivated for scanning." });
@@ -210,10 +260,19 @@ export default function StaffReentryRequests() {
     const ticketUrl = req.metadata?.ticket_url || null;
 
     try {
-      await (supabase as any).from("notifications").update({ read: true }).eq("id", req.id);
+      const nextLog = await recordAudit(req, "denied");
       await notifyGuest(guestUserId, false, eventTitle, ticketUrl);
       setRequests((prev) =>
-        prev.map((r) => (r.id === req.id ? { ...r, read: true, _resolved: "denied" } : r))
+        prev.map((r) =>
+          r.id === req.id
+            ? {
+                ...r,
+                read: true,
+                _resolved: "denied",
+                metadata: { ...(r.metadata || {}), audit_log: nextLog },
+              }
+            : r
+        )
       );
       if (navigator.vibrate) navigator.vibrate(40);
       toast.success("Request denied", { description: "We've let the guest know." });
