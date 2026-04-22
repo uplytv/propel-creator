@@ -120,6 +120,11 @@ const isSlowOrSavingData = (): { skip: boolean; reason?: string; effectiveType?:
  */
 const prefetchTarget = (target: "home" | "landing", reason: string) => {
   if (typeof window === "undefined") return;
+  if (!isPrefetchEnabled(target)) {
+    prefetchLog(`skipped: ${target} disabled via dev toggle`, { reason });
+    setPrefetchStatus(target, "skipped", "dev-toggle-off");
+    return;
+  }
   if (prefetchedRoutes[target]) {
     prefetchLog(`skipped: ${target} already prefetched`, { reason });
     return;
