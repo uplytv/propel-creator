@@ -171,16 +171,52 @@ export const PrefetchDebugPanel = () => {
               </div>
             );
           })}
-          <button
-            onClick={() => {
-              resetPrefetchToggles();
-              setToggles(getPrefetchToggles());
-              setChangedAt(getPrefetchTogglesChangedAt());
-            }}
-            className="mt-1 w-full rounded border border-white/10 px-2 py-1 text-[10px] uppercase tracking-wide text-white/60 hover:bg-white/5 hover:text-white/80 transition"
-          >
-            reset toggles
-          </button>
+          <div className="flex gap-1.5 mt-1">
+            <button
+              onClick={async () => {
+                const snapshot = {
+                  capturedAt: new Date().toISOString(),
+                  status: state,
+                  toggles,
+                  togglesChangedAt: {
+                    home: changedAt.home ? new Date(changedAt.home).toISOString() : null,
+                    landing: changedAt.landing
+                      ? new Date(changedAt.landing).toISOString()
+                      : null,
+                  },
+                };
+                const json = JSON.stringify(snapshot, null, 2);
+                try {
+                  await navigator.clipboard.writeText(json);
+                  setCopyStatus("copied");
+                } catch {
+                  // Clipboard API can fail (insecure context, permissions).
+                  // Log so the dev still has the snapshot to grab manually.
+                  // eslint-disable-next-line no-console
+                  console.log("[PrefetchDebugPanel] snapshot:\n" + json);
+                  setCopyStatus("error");
+                }
+                window.setTimeout(() => setCopyStatus("idle"), 1500);
+              }}
+              className="flex-1 rounded border border-white/10 px-2 py-1 text-[10px] uppercase tracking-wide text-white/60 hover:bg-white/5 hover:text-white/80 transition"
+            >
+              {copyStatus === "copied"
+                ? "copied ✓"
+                : copyStatus === "error"
+                  ? "see console"
+                  : "copy snapshot"}
+            </button>
+            <button
+              onClick={() => {
+                resetPrefetchToggles();
+                setToggles(getPrefetchToggles());
+                setChangedAt(getPrefetchTogglesChangedAt());
+              }}
+              className="flex-1 rounded border border-white/10 px-2 py-1 text-[10px] uppercase tracking-wide text-white/60 hover:bg-white/5 hover:text-white/80 transition"
+            >
+              reset toggles
+            </button>
+          </div>
         </div>
       )}
     </div>
