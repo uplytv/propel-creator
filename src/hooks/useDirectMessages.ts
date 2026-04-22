@@ -124,13 +124,18 @@ export function useDirectMessages() {
     return created.id;
   }, [user]);
 
-  const sendMessage = useCallback(async (conversationId: string, content: string) => {
+  const sendMessage = useCallback(async (
+    conversationId: string,
+    content: string,
+    opts?: { replyToStoryId?: string }
+  ) => {
     if (!user) return;
     await supabase.from("direct_messages").insert({
       conversation_id: conversationId,
       sender_id: user.id,
       content,
-    });
+      ...(opts?.replyToStoryId ? { reply_to_story_id: opts.replyToStoryId } : {}),
+    } as any);
     await supabase
       .from("direct_conversations")
       .update({ last_message_at: new Date().toISOString() })

@@ -9,6 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import SEOHead from "@/components/SEOHead";
+import ShopProductOverlay from "@/components/shop/ShopProductOverlay";
 
 export default function Shorts() {
   const { shorts, loading, hasMore, loadMore } = useShorts(8);
@@ -221,6 +222,17 @@ export default function Shorts() {
                 </div>
               </div>
               <p className="text-white text-sm leading-relaxed line-clamp-3">{currentShort.caption}</p>
+
+              {currentShort.featured_product_id && (
+                <div className="mt-3">
+                  <ShopProductOverlay
+                    productId={currentShort.featured_product_id}
+                    contentType={currentShort.source}
+                    contentId={currentShort.id}
+                    variant="card"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Right action bar */}

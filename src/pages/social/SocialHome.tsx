@@ -1,14 +1,15 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/context/AuthContext";
 import { useFollows } from "@/hooks/useFollows";
 import { tables } from "@/lib/supabaseTyped";
-import { defaultQueryOptions } from "@/lib/queryUtils";
 import GoingOutWeekCard from "@/components/social/GoingOutWeekCard";
 import StoriesRow from "@/components/social/StoriesRow";
 import EventDiscoveryGrid from "@/components/social/EventDiscoveryGrid";
 import SocialFeed from "@/components/social/SocialFeed";
 import TrendingEventsWidget from "@/components/social/TrendingEventsWidget";
 import LiveEventStreamsSection from "@/components/social/LiveEventStreamsSection";
+import FeedToggle from "@/components/social/FeedToggle";
 import SEOHead from "@/components/SEOHead";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
@@ -16,6 +17,7 @@ import { format } from "date-fns";
 export default function SocialHome() {
   const { user } = useAuth();
   const { followingIds } = useFollows();
+  const [feed, setFeed] = useState<"for-you" | "following">("for-you");
 
   // Friends going out this week
   const { data: friendsGoingOut = [] } = useQuery({
@@ -43,17 +45,17 @@ export default function SocialHome() {
     <>
       <SEOHead title="Social — UPLY" description="Your social scene on UPLY" />
       <div className="pb-24">
+        <FeedToggle value={feed} onChange={setFeed} />
+
         <StoriesRow />
         <GoingOutWeekCard />
 
-        {/* Going Off Right Now — followed users' live event streams */}
         <LiveEventStreamsSection
           title="Going Off Right Now"
           filterFollowing
           followingIds={followingIds}
         />
 
-        {/* Friends going out */}
         {friendsGoingOut.length > 0 && (
           <div className="px-4 py-3">
             <h3 className="text-sm font-bold text-white mb-2">
@@ -78,7 +80,7 @@ export default function SocialHome() {
 
         <TrendingEventsWidget />
         <EventDiscoveryGrid title="Events Near You" showSeeAll limit={6} />
-        <SocialFeed />
+        <SocialFeed friendsOnly={feed === "following"} />
       </div>
     </>
   );
