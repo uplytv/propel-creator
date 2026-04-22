@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, memo } from "react";
+import { useState, useEffect, useRef, useCallback, memo, forwardRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Compass, Radio, Upload, Film, BookOpen, Users, CalendarDays, X } from "lucide-react";
@@ -35,9 +35,9 @@ function categoryToFilter(cat: DiscoverCategory) {
 }
 
 // Skeleton card component
-const SkeletonCard = memo(function SkeletonCard() {
+const SkeletonCard = memo(forwardRef<HTMLDivElement>(function SkeletonCard(_, ref) {
   return (
-    <div className="space-y-2.5">
+    <div ref={ref} className="space-y-2.5">
       <div className="rounded-lg overflow-hidden" style={{ aspectRatio: "16/9" }}>
         <div className="w-full h-full" style={{
           background: "linear-gradient(90deg, hsl(var(--card)) 25%, hsl(var(--card)/0.5) 50%, hsl(var(--card)) 75%)",
@@ -66,7 +66,9 @@ const SkeletonCard = memo(function SkeletonCard() {
       </div>
     </div>
   );
-});
+}));
+
+(SkeletonCard as any).displayName = "SkeletonCard";
 
 // Empty state component
 function EmptyState({ category }: { category: DiscoverCategory }) {

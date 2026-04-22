@@ -1,4 +1,4 @@
-import { memo, useState, useCallback, useRef, useEffect } from "react";
+import { memo, useState, useCallback, useRef, useEffect, forwardRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, Users, BookOpen, MoreVertical, Flag, Bookmark, Share2, EyeOff, Heart } from "lucide-react";
 import { type FeedItem, type FeedItemType } from "@/hooks/useDiscoveryFeed";
@@ -34,7 +34,7 @@ interface FeedCardProps {
   isLiveSection?: boolean;
 }
 
-const FeedCard = memo(function FeedCard({ item, index, isLiveSection }: FeedCardProps) {
+const FeedCard = memo(forwardRef<HTMLDivElement, FeedCardProps>(function FeedCard({ item, index, isLiveSection }, ref) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [imgLoaded, setImgLoaded] = useState(false);
@@ -169,6 +169,7 @@ const FeedCard = memo(function FeedCard({ item, index, isLiveSection }: FeedCard
 
   return (
     <div
+      ref={ref}
       className="group cursor-pointer"
       onClick={handleClick}
       onTouchStart={handleDoubleTap}
@@ -367,8 +368,8 @@ const FeedCard = memo(function FeedCard({ item, index, isLiveSection }: FeedCard
       </div>
     </div>
   );
-});
+}));
 
-FeedCard.displayName = "FeedCard";
+(FeedCard as any).displayName = "FeedCard";
 
 export default FeedCard;

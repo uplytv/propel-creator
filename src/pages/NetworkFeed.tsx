@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Radio, Flame, ShoppingBag, Users, Sparkles, Play, Eye, Heart, TrendingUp, Zap } from "lucide-react";
+import { Radio, Flame, ShoppingBag, Users, Sparkles, Play, Eye, Heart, TrendingUp, Zap, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useFollows } from "@/hooks/useFollows";
@@ -97,6 +97,10 @@ export default function NetworkFeed() {
   const [products, setProducts] = useState<any[]>([]);
   const [creators, setCreators] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const PAGE = 24;
 
   const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
     { id: "foryou", label: "For You", icon: Sparkles },
@@ -106,35 +110,57 @@ export default function NetworkFeed() {
     { id: "following", label: "Following", icon: Users },
   ];
 
-  useEffect(() => { load(); }, [tab]);
+  useEffect(() => { setItems([]); setHasMore(true); load(0); }, [tab]);
   useEffect(() => { loadSidebar(); }, []);
 
-  const load = async () => {
-    setLoading(true);
+  const load = async (offset: number) => {
+    if (offset === 0) setLoading(true); else setLoadingMore(true);
     try {
+      let newItems: any[] = [];
       if (tab === "live" || tab === "foryou") {
-        const { data: live } = await supabase.from("mux_live_streams_public").select("id, title, mux_playback_id, viewer_count, category, user_id").eq("status", "active").eq("is_public", true).order("viewer_count", { ascending: false }).limit(tab === "live" ? 24 : 8);
+        const { data: live } = await supabase.from("mux_live_streams_public").select("id, title, mux_playback_id, viewer_count, category, user_id").eq("status", "active").eq("is_public", true).order("viewer_count", { ascending: false }).range(offset, offset + (tab === "live" ? PAGE : 8) - 1);
         const enrichedLive = await enrich((live || []).map((s: any) => ({ ...s, playback_id: s.mux_playback_id, type: "live" })), "user_id", "user_id");
-        if (tab === "live") { setItems(enrichedLive); setLoading(false); return; }
-        const { data: recs } = await supabase.from("stream_recordings").select("id, title, playback_id, duration_seconds, view_count, creator_id").eq("is_published", true).order("view_count", { ascending: false }).limit(16);
-        const enrichedRecs = await enrich((recs || []).map((r: any) => ({ ...r, type: "recording" })), "creator_id", "id");
-        setItems([...enrichedLive, ...enrichedRecs]);
+        if (tab === "live") {
+          newItems = enrichedLive;
+        } else {
+          const { data: recs } = await supabase.from("stream_recordings").select("id, title, playback_id, duration_seconds, view_count, creator_id").eq("is_published", true).order("view_count", { ascending: false }).range(offset, offset + 16 - 1);
+          const enrichedRecs = await enrich((recs || []).map((r: any) => ({ ...r, type: "recording" })), "creator_id", "id");
+          newItems = [...enrichedLive, ...enrichedRecs];
+        }
       } else if (tab === "trending") {
-        const { data: vids } = await supabase.from("videos").select("id, title, playback_id, thumbnail_url, duration_seconds, view_count, like_count, creator_id").eq("is_public", true).order("trending_score", { ascending: false }).limit(24);
-        setItems(await enrich((vids || []).map((v: any) => ({ ...v, type: "video" })), "creator_id", "user_id"));
+        const { data: vids } = await supabase.from("videos").select("id, title, playback_id, thumbnail_url, duration_seconds, view_count, like_count, creator_id").eq("is_public", true).order("trending_score", { ascending: false }).range(offset, offset + PAGE - 1);
+        newItems = await enrich((vids || []).map((v: any) => ({ ...v, type: "video" })), "creator_id", "user_id");
       } else if (tab === "shop") {
-        const { data: p } = await supabase.from("live_products").select("id, title, price, image_url, stream_id, creator_id").eq("is_active", true).eq("is_sold_out", false).limit(24);
-        setItems(p || []);
+        const { data: p } = await supabase.from("live_products").select("id, title, price, image_url, stream_id, creator_id").eq("is_active", true).eq("is_sold_out", false).range(offset, offset + PAGE - 1);
+        newItems = p || [];
       } else if (tab === "following" && user) {
         const { data: follows } = await supabase.from("follows").select("following_id").eq("follower_id", user.id).limit(100);
         const ids = (follows || []).map((f: any) => f.following_id);
-        if (!ids.length) { setItems([]); setLoading(false); return; }
-        const { data: live } = await supabase.from("mux_live_streams_public").select("id, title, mux_playback_id, viewer_count, user_id").in("user_id", ids).eq("status", "active").limit(24);
-        setItems(await enrich((live || []).map((s: any) => ({ ...s, playback_id: s.mux_playback_id, type: "live" })), "user_id", "user_id"));
+        if (!ids.length) { setItems([]); setHasMore(false); setLoading(false); setLoadingMore(false); return; }
+        const { data: live } = await supabase.from("mux_live_streams_public").select("id, title, mux_playback_id, viewer_count, user_id").in("user_id", ids).eq("status", "active").range(offset, offset + PAGE - 1);
+        newItems = await enrich((live || []).map((s: any) => ({ ...s, playback_id: s.mux_playback_id, type: "live" })), "user_id", "user_id");
       }
+      if (newItems.length < PAGE / 2) setHasMore(false);
+      setItems((prev) => offset === 0 ? newItems : [...prev, ...newItems]);
     } catch {}
     setLoading(false);
+    setLoadingMore(false);
   };
+
+  const loadMore = useCallback(() => {
+    if (!loadingMore && hasMore && !loading) load(items.length);
+  }, [items.length, loadingMore, hasMore, loading, tab]);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => { if (entries[0].isIntersecting) loadMore(); },
+      { rootMargin: "800px 0px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [loadMore]);
 
   const loadSidebar = async () => {
     const [{ data: p }, { data: c }] = await Promise.all([
@@ -196,6 +222,23 @@ export default function NetworkFeed() {
                   <p className="text-sm font-medium text-foreground">{tab === "following" ? "Follow creators to see their content" : "Nothing here yet"}</p>
                   {tab === "following" && <Button variant="outline" size="sm" className="mt-3" onClick={() => setTab("foryou")}>Discover Creators</Button>}
                 </div>
+              )}
+
+              {/* Infinite scroll sentinel */}
+              {!loading && items.length > 0 && (
+                <>
+                  <div ref={sentinelRef} className="h-1 mt-6" />
+                  {loadingMore && (
+                    <div className="flex items-center justify-center py-6">
+                      <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                    </div>
+                  )}
+                  {!hasMore && (
+                    <p className="text-center text-xs text-muted-foreground py-6">
+                      You've seen everything ✨
+                    </p>
+                  )}
+                </>
               )}
             </div>
 
