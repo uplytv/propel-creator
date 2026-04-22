@@ -4,6 +4,7 @@ import {
   getPrefetchToggles,
   getPrefetchTogglesChangedAt,
   importPrefetchToggles,
+  PREFETCH_TARGETS,
   resetPrefetchToggles,
   setPrefetchToggle,
   validatePrefetchSnapshot,
