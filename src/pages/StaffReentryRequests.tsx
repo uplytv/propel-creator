@@ -87,6 +87,38 @@ export default function StaffReentryRequests() {
     };
   }, [user?.id]);
 
+  // Deep-link focus: when arriving with ?request=<id> or ?ticket=<id>, scroll to and highlight it
+  useEffect(() => {
+    if (!focusRequestId && !focusTicketId) return;
+    if (loading || requests.length === 0) return;
+    const target = requests.find(
+      (r) =>
+        (focusRequestId && r.id === focusRequestId) ||
+        (focusTicketId &&
+          (r.metadata?.ticket_id === focusTicketId || r.reference_id === focusTicketId))
+    );
+    if (!target) return;
+    setHighlightedId(target.id);
+    // Wait one frame for the card to mount in the filtered list
+    requestAnimationFrame(() => {
+      const el = cardRefs.current[target.id];
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+    // Auto-fade highlight after a few seconds
+    const t = setTimeout(() => setHighlightedId(null), 4000);
+    // Clear query params so refresh doesn't re-trigger
+    const tidy = setTimeout(() => {
+      const next = new URLSearchParams(searchParams);
+      next.delete("request");
+      next.delete("ticket");
+      setSearchParams(next, { replace: true });
+    }, 1500);
+    return () => {
+      clearTimeout(t);
+      clearTimeout(tidy);
+    };
+  }, [focusRequestId, focusTicketId, loading, requests, searchParams, setSearchParams]);
+
   const filtered = useMemo(() => {
     if (tab === "all") return requests;
     if (tab === "pending") return requests.filter((r) => !r.read && !r._resolved);
@@ -271,14 +303,16 @@ export default function StaffReentryRequests() {
             const shortToken = (req.metadata?.ticket_token || "")?.slice(0, 8);
             const isBusy = actionId === req.id;
 
+            const isHighlighted = highlightedId === req.id;
             return (
               <div
                 key={req.id}
-                className={`rounded-2xl border p-4 transition-colors ${
+                ref={(el) => (cardRefs.current[req.id] = el)}
+                className={`rounded-2xl border p-4 transition-all ${
                   isResolved
                     ? "border-border bg-muted/30"
                     : "border-primary/30 bg-primary/5"
-                }`}
+                } ${isHighlighted ? "ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg" : ""}`}
               >
                 <div className="flex items-start gap-3">
                   <div
