@@ -67,6 +67,28 @@ const formatAbsolute = (ts: number | null): string | undefined => {
   }
 };
 
+const downloadJson = (json: string, baseName: string) => {
+  try {
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const ts = new Date()
+      .toISOString()
+      .replace(/[:.]/g, "-")
+      .replace("T", "_")
+      .slice(0, 19);
+    a.href = url;
+    a.download = `${baseName}_${ts}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch {
+    // eslint-disable-next-line no-console
+    console.error("[PrefetchDebugPanel] download failed");
+  }
+};
+
 /**
  * Dev-only floating panel showing the live prefetch status for the home and
  * landing route bundles. Renders nothing in production.
