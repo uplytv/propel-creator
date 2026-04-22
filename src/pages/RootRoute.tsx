@@ -25,6 +25,71 @@ const prefetchControllers: Record<"home" | "landing", AbortController | null> = 
   landing: null,
 };
 
+// Observable status for the dev-only debug panel.
+export type PrefetchStatus =
+  | "idle"
+  | "deferred"
+  | "skipped"
+  | "running"
+  | "success"
+  | "late-success"
+  | "timeout"
+  | "aborted"
+  | "failed";
+
+type PrefetchStatusEntry = {
+  status: PrefetchStatus;
+  reason?: string;
+  updatedAt: number;
+  durationMs?: number;
+};
+
+const prefetchStatus: Record<"home" | "landing", PrefetchStatusEntry> = {
+  home: { status: "idle", updatedAt: Date.now() },
+  landing: { status: "idle", updatedAt: Date.now() },
+};
+
+const prefetchStartedAt: Record<"home" | "landing", number | null> = {
+  home: null,
+  landing: null,
+};
+
+const PREFETCH_STATUS_EVENT = "uply:prefetch_status";
+
+const setPrefetchStatus = (
+  target: "home" | "landing",
+  status: PrefetchStatus,
+  reason?: string
+) => {
+  const now = Date.now();
+  let durationMs: number | undefined;
+  if (status === "running") {
+    prefetchStartedAt[target] = performance.now();
+  } else if (
+    prefetchStartedAt[target] != null &&
+    (status === "success" ||
+      status === "late-success" ||
+      status === "timeout" ||
+      status === "aborted" ||
+      status === "failed")
+  ) {
+    durationMs = Math.round(performance.now() - (prefetchStartedAt[target] as number));
+    prefetchStartedAt[target] = null;
+  }
+  prefetchStatus[target] = { status, reason, updatedAt: now, durationMs };
+  if (typeof window !== "undefined") {
+    try {
+      window.dispatchEvent(
+        new CustomEvent(PREFETCH_STATUS_EVENT, {
+          detail: { target, ...prefetchStatus[target] },
+        })
+      );
+    } catch {
+      // no-op
+    }
+  }
+};
+
 const prefetchLog = (msg: string, data?: unknown) => {
   if (!import.meta.env.DEV) return;
   // eslint-disable-next-line no-console
