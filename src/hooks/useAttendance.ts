@@ -94,6 +94,70 @@ export function useAttendance() {
     },
   });
 
+  // ============ GLOBAL (Ticketmaster/Eventbrite) EVENTS ============
+  const markAttendingGlobal = useMutation({
+    mutationFn: async (params: {
+      globalEventId: string;
+      eventTitle: string;
+      eventDate?: string;
+      status?: "going" | "maybe";
+    }) => {
+      if (!user) throw new Error("Not authenticated");
+      const date = params.eventDate
+        ? new Date(params.eventDate).toISOString().split("T")[0]
+        : new Date().toISOString().split("T")[0];
+      const { error } = await (supabase as any).from("attendance").upsert(
+        {
+          user_id: user.id,
+          global_event_id: params.globalEventId,
+          event_title: params.eventTitle,
+          event_date: params.eventDate || null,
+          status: params.status || "going",
+          attend_date: date,
+        },
+        { onConflict: "user_id,global_event_id" }
+      );
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["attendance"] });
+      queryClient.invalidateQueries({ queryKey: ["global-event-attendees"] });
+    },
+  });
+
+  const removeGlobalAttendance = useMutation({
+    mutationFn: async (globalEventId: string) => {
+      if (!user) return;
+      await (supabase as any)
+        .from("attendance")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("global_event_id", globalEventId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["attendance"] });
+      queryClient.invalidateQueries({ queryKey: ["global-event-attendees"] });
+    },
+  });
+
+  const isGoingToGlobalEvent = (globalEventId: string): boolean =>
+    (myAttendance as any[]).some(
+      (a) => a.global_event_id === globalEventId && a.status === "going"
+    );
+
+  const isGoingToEvent = (eventId: string): boolean =>
+    (myAttendance as any[]).some(
+      (a) => a.event_id === eventId && a.status === "going"
+    );
+
+  const getGlobalEventAttendees = async (globalEventId: string) => {
+    const { data } = await (supabase as any)
+      .from("attendance")
+      .select("*, profiles:user_id(display_name, avatar_url, username)")
+      .eq("global_event_id", globalEventId);
+    return data || [];
+  };
+
   const getAttendees = async (eventId: string) => {
     const { data } = await (supabase as any)
       .from("attendance")
@@ -119,5 +183,11 @@ export function useAttendance() {
     removeAttendance: removeAttendance.mutate,
     getAttendees,
     getGoingOutCount,
+    // Global events
+    markAttendingGlobal: markAttendingGlobal.mutateAsync,
+    removeGlobalAttendance: removeGlobalAttendance.mutateAsync,
+    isGoingToGlobalEvent,
+    isGoingToEvent,
+    getGlobalEventAttendees,
   };
 }
