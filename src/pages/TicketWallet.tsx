@@ -50,7 +50,7 @@ export default function TicketWallet() {
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from("tickets")
-        .select("id, qr_code_token, status, amount_paid, created_at, events:event_id(id,title,starts_at,ends_at,cover_image_url,location_name,event_type)")
+        .select("id, qr_code_token, status, amount_paid, created_at, checked_in_at, scanned_at, events:event_id(id,title,starts_at,ends_at,cover_image_url,location_name,event_type)")
         .eq("buyer_id", user!.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
