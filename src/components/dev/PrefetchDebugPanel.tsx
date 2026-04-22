@@ -75,6 +75,7 @@ export const PrefetchDebugPanel = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [toggles, setToggles] = useState(() => getPrefetchToggles());
   const [changedAt, setChangedAt] = useState(() => getPrefetchTogglesChangedAt());
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
   // Tick once a second so the relative "changed Xs ago" label stays fresh.
   const [, setNow] = useState(() => Date.now());
 
