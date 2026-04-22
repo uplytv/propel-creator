@@ -89,6 +89,7 @@ const GlobalEventDetail = lazy(() => import("./pages/GlobalEventDetail"));
 const TicketDetail = lazy(() => import("./pages/TicketDetail"));
 const TicketSuccess = lazy(() => import("./pages/TicketSuccess"));
 const TicketWallet = lazy(() => import("./pages/TicketWallet"));
+const StaffReentryRequests = lazy(() => import("./pages/StaffReentryRequests"));
 const ContentStudio = lazy(() => import("./pages/ContentStudio"));
 const AITeamDashboard = lazy(() => import("./pages/AITeamDashboard"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
@@ -228,6 +229,7 @@ const App = () => (
                     <Route path="/stream/:id" element={<Stream />} />
                     <Route path="/tickets" element={<TicketWallet />} />
                     <Route path="/tickets/success" element={<TicketSuccess />} />
+                    <Route path="/staff/reentry-requests" element={<ProtectedRoute><StaffReentryRequests /></ProtectedRoute>} />
                     <Route path="/stream/:id/countdown" element={<StreamCountdown />} />
                     <Route path="/creator/:username/videos/:id" element={<VideoPlayer />} />
                     <Route path="/:username/live/:slug" element={<Stream />} />

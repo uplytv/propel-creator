@@ -287,12 +287,12 @@ export default function StaffReentryRequests() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-sm font-bold truncate">{guestName}</p>
                       {req._resolved === "approved" && (
-                        <Badge className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/15">
+                        <Badge className="bg-primary/15 text-primary border-primary/30 hover:bg-primary/15">
                           Approved
                         </Badge>
                       )}
                       {req._resolved === "denied" && (
-                        <Badge className="bg-rose-500/15 text-rose-600 border-rose-500/30 hover:bg-rose-500/15">
+                        <Badge className="bg-destructive/15 text-destructive border-destructive/30 hover:bg-destructive/15">
                           Denied
                         </Badge>
                       )}
