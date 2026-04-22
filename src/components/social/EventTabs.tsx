@@ -341,12 +341,24 @@ function EventMarketplaceTab({ eventId, eventTitle }: { eventId: string; eventTi
               style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
             >
               {it.media_urls?.[0] && (
-                <img src={it.media_urls[0]} alt="" className="w-full aspect-square object-cover" />
+                <img src={it.media_urls[0]} alt="" className="w-full aspect-square object-cover" loading="lazy" />
               )}
               <div className="p-2.5">
+                <div className="flex items-center justify-between gap-1 mb-1">
+                  {it.marketplace_category && (
+                    <span className="text-[9px] uppercase tracking-wider text-white/50 font-bold">
+                      {it.marketplace_category}
+                    </span>
+                  )}
+                  {it.price != null && (
+                    <span className="text-xs font-bold" style={{ color: "#00FF85" }}>
+                      ${Number(it.price).toFixed(0)}
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-white font-semibold line-clamp-2">{it.content}</p>
                 <p className="text-[10px] text-white/40 mt-1">
-                  {it.profiles?.display_name || "User"}
+                  {it.profile?.display_name || "User"}
                 </p>
               </div>
             </div>
