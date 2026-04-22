@@ -8,6 +8,7 @@ import { useFollows } from "@/hooks/useFollows";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import DiscoverShowcase from "@/components/discover/DiscoverShowcase";
 
 type Tab = "foryou" | "live" | "trending" | "shop" | "following";
 
@@ -148,6 +149,9 @@ export default function NetworkFeed() {
     <AppLayout>
       <div className="max-w-6xl mx-auto pb-20 md:pb-8">
         <div className="px-4 md:px-8 pt-4 md:pt-8 pb-2">
+          {/* Netflix-style discovery layer (additive — does not affect tabs/grid below) */}
+          <DiscoverShowcase />
+
           {/* Header */}
           <div className="flex items-center justify-between mb-3">
             <div>
