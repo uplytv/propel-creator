@@ -293,7 +293,7 @@ function EventMarketplaceTab({ eventId, eventTitle }: { eventId: string; eventTi
         .eq("post_type", "marketplace")
         .order("created_at", { ascending: false })
         .limit(40);
-      const userIds = Array.from(new Set((posts || []).map((p: any) => p.user_id)));
+      const userIds = Array.from(new Set((posts || []).map((p: any) => p.user_id))) as string[];
       if (userIds.length === 0) return [];
       const { data: profs } = await supabase
         .from("profiles")
