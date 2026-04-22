@@ -460,6 +460,33 @@ export default function StaffReentryRequests() {
             )}
           </div>
         </div>
+
+        {/* Select all (only when there are pending requests visible) */}
+        {pendingFilteredIds.length > 0 && (
+          <div className="px-4 pb-3 flex items-center justify-between">
+            <button
+              onClick={toggleSelectAllVisible}
+              className="inline-flex items-center gap-2 text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {allVisibleSelected ? (
+                <CheckSquare className="w-3.5 h-3.5 text-primary" />
+              ) : (
+                <Square className="w-3.5 h-3.5" />
+              )}
+              {allVisibleSelected
+                ? `Deselect all (${pendingFilteredIds.length})`
+                : `Select all pending (${pendingFilteredIds.length})`}
+            </button>
+            {selectedPendingCount > 0 && (
+              <button
+                onClick={clearSelection}
+                className="text-[11px] font-semibold text-muted-foreground hover:text-foreground"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        )}
       </header>
 
       {/* Body */}
