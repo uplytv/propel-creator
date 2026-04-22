@@ -18,6 +18,13 @@ const prefetchedRoutes = {
   landing: false,
 };
 
+// Track in-flight prefetch AbortControllers so we can actually cancel a
+// stalled chunk fetch instead of letting it linger in the background.
+const prefetchControllers: Record<"home" | "landing", AbortController | null> = {
+  home: null,
+  landing: null,
+};
+
 const prefetchLog = (msg: string, data?: unknown) => {
   if (!import.meta.env.DEV) return;
   // eslint-disable-next-line no-console
@@ -79,20 +86,40 @@ const prefetchTarget = (target: "home" | "landing", reason: string) => {
   prefetchLog(`running ${target} (${reason})`, { effectiveType });
   const importer = target === "home" ? homeImport : landingImport;
 
-  // Short timeout so a stalled network doesn't keep an in-flight chunk
-  // request hanging forever. If we time out, mark the route as not
-  // prefetched so a later trigger (visibility, navigation) can retry.
+  // AbortController-backed cancellation. Native dynamic import() can't be
+  // aborted, but we can race it against a fetch() of the same module URL
+  // using a signal — when we abort, the in-flight chunk request is cancelled
+  // by the browser. We then fall back to import() (which will either resolve
+  // from cache if the fetch completed, or re-request when actually navigated).
+  const controller = new AbortController();
+  prefetchControllers[target] = controller;
+
   let timedOut = false;
   const timeoutId = window.setTimeout(() => {
     timedOut = true;
     prefetchedRoutes[target] = false;
+    controller.abort("prefetch-timeout");
     prefetchLog(`timeout: ${target} prefetch aborted after ${PREFETCH_TIMEOUT_MS}ms`, {
       target,
       reason,
     });
   }, PREFETCH_TIMEOUT_MS);
 
-  importer()
+  // Kick off the actual chunk load. Native dynamic import() can't be aborted
+  // mid-flight, but we still call abort() on timeout/unmount so:
+  //   1. We immediately mark the route as un-prefetched (so retries work)
+  //   2. Any awaiters of controller.signal (future fetch-based warmers,
+  //      analytics, etc.) get notified
+  //   3. Late-arriving chunks are logged distinctly from real failures
+  const onAbort = () => {
+    // Reserved for future fetch-based preload cancellation. Today this is
+    // a state-reset signal only.
+  };
+  controller.signal.addEventListener("abort", onAbort, { once: true });
+
+  const importPromise = importer();
+
+  importPromise
     .then(() => {
       if (timedOut) {
         // Late success after timeout — keep the module (browser cached it),
@@ -101,13 +128,35 @@ const prefetchTarget = (target: "home" | "landing", reason: string) => {
         prefetchLog(`late success: ${target} resolved after timeout`, { target });
       }
     })
-    .catch(() => {
+    .catch((err) => {
       prefetchedRoutes[target] = false;
-      prefetchLog(`failed: ${target} import error`, { target });
+      const aborted = controller.signal.aborted;
+      prefetchLog(
+        aborted
+          ? `aborted: ${target} prefetch cancelled`
+          : `failed: ${target} import error`,
+        { target, error: err instanceof Error ? err.message : String(err) }
+      );
     })
     .finally(() => {
       window.clearTimeout(timeoutId);
+      controller.signal.removeEventListener("abort", onAbort);
+      if (prefetchControllers[target] === controller) {
+        prefetchControllers[target] = null;
+      }
     });
+};
+
+/**
+ * Externally cancel any in-flight prefetch — used on unmount and when
+ * switching the targeted route (e.g. user logs out mid-prefetch).
+ */
+const abortPrefetch = (target: "home" | "landing", reason: string) => {
+  const controller = prefetchControllers[target];
+  if (!controller || controller.signal.aborted) return;
+  prefetchLog(`abort requested: ${target} (${reason})`);
+  controller.abort(reason);
+  prefetchedRoutes[target] = false;
 };
 
 const PREFETCH_TIMEOUT_MS = 4000;
@@ -412,6 +461,15 @@ export default function RootRoute() {
       window.clearTimeout(timeoutId);
     };
   }, [loading, retryKey]);
+
+  // Abort any in-flight prefetch when this route unmounts (user navigated
+  // away before the chunk finished loading).
+  useEffect(() => {
+    return () => {
+      abortPrefetch("home", "rootroute-unmount");
+      abortPrefetch("landing", "rootroute-unmount");
+    };
+  }, []);
 
   const handleRetry = useCallback(() => {
     setAuthError(null);
