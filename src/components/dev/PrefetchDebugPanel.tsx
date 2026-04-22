@@ -247,14 +247,25 @@ export const PrefetchDebugPanel = () => {
                   </button>
                 </div>
                 {(() => {
-                  const buildExample = () => ({
-                    capturedAt: new Date().toISOString(),
-                    toggles: { home: true, landing: true },
-                    togglesChangedAt: {
-                      home: new Date().toISOString(),
-                      landing: null as string | null,
-                    },
-                  });
+                  const buildExample = () => {
+                    const now = Date.now();
+                    const toggles: Record<string, boolean> = {};
+                    const togglesChangedAt: Record<string, string | null> = {};
+                    PREFETCH_TARGETS.forEach((target, i) => {
+                      // Alternate true/false and provide a realistic mix of
+                      // recent ISO timestamps and `null` (never changed).
+                      toggles[target] = i % 2 === 0;
+                      togglesChangedAt[target] =
+                        i % 3 === 2
+                          ? null
+                          : new Date(now - (i + 1) * 60_000).toISOString();
+                    });
+                    return {
+                      capturedAt: new Date(now).toISOString(),
+                      toggles,
+                      togglesChangedAt,
+                    };
+                  };
                   return (
                     <div className="flex gap-1.5">
                       <button
