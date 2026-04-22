@@ -710,26 +710,39 @@ function ReentryRequestButton({
         const shortToken = ticket.qr_code_token.slice(0, 8);
 
         if (organizerId) {
-          await (supabase as any).from("notifications").insert({
-            user_id: organizerId,
-            type: "ticket_reentry_request",
-            title: `🔁 ${guestName} needs re-entry`,
-            message: `${guestName} is requesting re-entry to "${eventTitle}" · Ticket #${shortToken}. Tap to view.`,
-            actor_id: user?.id ?? null,
-            reference_id: ticket.id,
-            link: ticketPath,
-            metadata: {
-              guest_name: guestName,
-              guest_user_id: user?.id ?? null,
-              event_id: eventId,
-              event_title: eventTitle,
-              event_url: eventPath,
-              ticket_id: ticket.id,
-              ticket_url: ticketPath,
-              ticket_token: ticket.qr_code_token,
-              requested_at: at,
-            },
-          });
+          const { data: inserted } = await (supabase as any)
+            .from("notifications")
+            .insert({
+              user_id: organizerId,
+              type: "ticket_reentry_request",
+              title: `🔁 ${guestName} needs re-entry`,
+              message: `${guestName} is requesting re-entry to "${eventTitle}" · Ticket #${shortToken}. Tap to view.`,
+              actor_id: user?.id ?? null,
+              reference_id: ticket.id,
+              // Deep-link straight to the staff review screen, focused on this request
+              link: `/staff/reentry-requests?ticket=${ticket.id}`,
+              metadata: {
+                guest_name: guestName,
+                guest_user_id: user?.id ?? null,
+                event_id: eventId,
+                event_title: eventTitle,
+                event_url: eventPath,
+                ticket_id: ticket.id,
+                ticket_url: ticketPath,
+                ticket_token: ticket.qr_code_token,
+                requested_at: at,
+              },
+            })
+            .select("id")
+            .maybeSingle();
+
+          // Patch the link with the notification id so staff can focus it
+          if (inserted?.id) {
+            await (supabase as any)
+              .from("notifications")
+              .update({ link: `/staff/reentry-requests?request=${inserted.id}&ticket=${ticket.id}` })
+              .eq("id", inserted.id);
+          }
         }
       }
     } catch {
