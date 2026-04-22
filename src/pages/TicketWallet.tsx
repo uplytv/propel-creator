@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { format, isBefore, isAfter } from "date-fns";
-import { Ticket, CalendarDays, MapPin, ChevronRight, QrCode, Search, X, Maximize2, CheckCircle2, AlertTriangle, XCircle, Loader2, History, Clock } from "lucide-react";
+import { Ticket, CalendarDays, MapPin, ChevronRight, QrCode, Search, X, Maximize2, CheckCircle2, AlertTriangle, XCircle, Loader2, History, Clock, BellRing, HelpCircle } from "lucide-react";
+import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
@@ -502,20 +503,31 @@ function TicketQrModalBody({
       )}
 
       {isInvalid ? (
-        <div className="bg-muted/50 border border-border rounded-2xl w-[312px] h-[312px] flex flex-col items-center justify-center gap-3 text-center px-6">
-          {liveStatus === "used" ? (
-            <CheckCircle2 className="w-16 h-16 text-primary" />
-          ) : (
-            <AlertTriangle className="w-16 h-16 text-destructive" />
+        <div className="w-full flex flex-col items-center gap-3">
+          <div className="bg-muted/50 border border-border rounded-2xl w-[312px] h-[312px] flex flex-col items-center justify-center gap-3 text-center px-6">
+            {liveStatus === "used" ? (
+              <CheckCircle2 className="w-16 h-16 text-primary" />
+            ) : (
+              <AlertTriangle className="w-16 h-16 text-destructive" />
+            )}
+            <p className="text-sm font-semibold text-foreground">
+              {liveStatus === "used" ? "Already checked in" : "QR no longer valid"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {liveStatus === "used"
+                ? "Need to step out and come back? Request re-entry below."
+                : "Contact the event organizer for help."}
+            </p>
+          </div>
+          {liveStatus === "used" && (
+            <ReentryRequestButton
+              ticket={ticket}
+              onRequested={(entry) => {
+                setHistory((prev) => [entry, ...prev]);
+                setJustChanged(true);
+              }}
+            />
           )}
-          <p className="text-sm font-semibold text-foreground">
-            {liveStatus === "used" ? "Already checked in" : "QR no longer valid"}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {liveStatus === "used"
-              ? "Show staff this screen if you need re-entry."
-              : "Contact the event organizer for help."}
-          </p>
         </div>
       ) : (
         <RotatingQR token={ticket.qr_code_token} ticketId={ticket.id} />
@@ -641,5 +653,121 @@ function RotatingQR({ token, ticketId }: { token: string; ticketId: string }) {
         <span className="text-[11px] font-bold text-foreground tabular-nums">{secondsLeft}s</span>
       </div>
     </div>
+  );
+}
+
+function ReentryRequestButton({
+  ticket,
+  onRequested,
+}: {
+  ticket: TicketRow;
+  onRequested: (entry: {
+    id: string;
+    status: "purchased";
+    label: string;
+    at: string;
+    source?: string;
+  }) => void;
+}) {
+  const { user } = useAuth();
+  const [requesting, setRequesting] = useState(false);
+  const [requestedAt, setRequestedAt] = useState<string | null>(null);
+
+  const handleRequest = async () => {
+    if (requesting || requestedAt) return;
+    setRequesting(true);
+    const at = new Date().toISOString();
+
+    // Best-effort notify the event organizer. Don't block UX on failure.
+    try {
+      const eventId = ticket.events?.id;
+      const eventTitle = ticket.events?.title || "your event";
+      if (eventId) {
+        const { data: ev } = await (supabase as any)
+          .from("events")
+          .select("creator_id")
+          .eq("id", eventId)
+          .maybeSingle();
+        const organizerId = ev?.creator_id;
+        if (organizerId) {
+          await (supabase as any).from("notifications").insert({
+            user_id: organizerId,
+            type: "ticket_reentry_request",
+            title: "🔁 Re-entry requested",
+            message: `A guest is requesting re-entry for "${eventTitle}". Ticket #${ticket.qr_code_token.slice(0, 8)}.`,
+            actor_id: user?.id ?? null,
+            reference_id: ticket.id,
+          });
+        }
+      }
+    } catch {
+      // Silent — guest still sees confirmation and staff guidance.
+    }
+
+    setRequestedAt(at);
+    setRequesting(false);
+    if (navigator.vibrate) navigator.vibrate(60);
+    toast.success("Re-entry requested", {
+      description: "We've notified the organizer. Show this screen to staff.",
+    });
+    onRequested({
+      id: `reentry-${Date.now()}`,
+      status: "purchased",
+      label: "Re-entry requested",
+      at,
+      source: "Guest",
+    });
+  };
+
+  if (requestedAt) {
+    return (
+      <div className="w-full max-w-[312px] flex flex-col gap-2">
+        <div className="flex items-start gap-2 p-3 rounded-xl border border-primary/30 bg-primary/10 text-primary">
+          <BellRing className="w-4 h-4 mt-0.5 flex-shrink-0" />
+          <div className="min-w-0">
+            <p className="text-xs font-bold">Organizer notified</p>
+            <p className="text-[11px] opacity-90 mt-0.5">
+              Sent {format(new Date(requestedAt), "h:mm:ss a")} · Show this to staff at the door.
+            </p>
+          </div>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          onClick={() => {
+            const subject = encodeURIComponent(`Re-entry help: ${ticket.events?.title || "event"}`);
+            const body = encodeURIComponent(
+              `Hi, I need re-entry assistance for ticket ${ticket.qr_code_token}.`
+            );
+            window.location.href = `mailto:?subject=${subject}&body=${body}`;
+          }}
+        >
+          <HelpCircle className="w-4 h-4 mr-1.5" />
+          Contact support
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <Button
+      onClick={handleRequest}
+      disabled={requesting}
+      className="w-full max-w-[312px]"
+      size="lg"
+    >
+      {requesting ? (
+        <>
+          <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+          Notifying organizer…
+        </>
+      ) : (
+        <>
+          <BellRing className="w-4 h-4 mr-1.5" />
+          Request re-entry
+        </>
+      )}
+    </Button>
   );
 }
