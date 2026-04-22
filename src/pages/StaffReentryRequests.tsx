@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, BellRing, Check, X, Clock, Ticket, Loader2, Inbox, RefreshCw } from "lucide-react";
+import { ArrowLeft, BellRing, Check, X, Clock, Ticket, Loader2, Inbox, RefreshCw, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,7 @@ export default function StaffReentryRequests() {
   const [actionId, setActionId] = useState<string | null>(null);
   const [tab, setTab] = useState<FilterTab>(focusRequestId || focusTicketId ? "all" : "pending");
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const load = async () => {
@@ -120,10 +121,20 @@ export default function StaffReentryRequests() {
   }, [focusRequestId, focusTicketId, loading, requests, searchParams, setSearchParams]);
 
   const filtered = useMemo(() => {
-    if (tab === "all") return requests;
-    if (tab === "pending") return requests.filter((r) => !r.read && !r._resolved);
-    return requests.filter((r) => r.read || !!r._resolved);
-  }, [requests, tab]);
+    let list = requests;
+    if (tab === "pending") list = list.filter((r) => !r.read && !r._resolved);
+    else if (tab === "resolved") list = list.filter((r) => r.read || !!r._resolved);
+    const q = search.trim().toLowerCase();
+    if (q) {
+      list = list.filter((r) => {
+        const name = (r.metadata?.guest_name || "").toLowerCase();
+        const token = (r.metadata?.ticket_token || "").toLowerCase();
+        const evt = (r.metadata?.event_title || "").toLowerCase();
+        return name.includes(q) || token.includes(q) || evt.includes(q);
+      });
+    }
+    return list;
+  }, [requests, tab, search]);
 
   const pendingCount = requests.filter((r) => !r.read && !r._resolved).length;
 
@@ -273,6 +284,29 @@ export default function StaffReentryRequests() {
               )}
             </button>
           ))}
+        </div>
+
+        {/* Search */}
+        <div className="px-4 pb-3">
+          <div className="relative">
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by guest name or ticket #"
+              className="w-full h-9 pl-8 pr-8 rounded-lg bg-muted text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-background/60 text-muted-foreground"
+                aria-label="Clear search"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
