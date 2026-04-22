@@ -115,9 +115,30 @@ export default function EventDiscoveryCard({ event }: EventDiscoveryCardProps) {
         {dateStr && (
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
             <EventCountdown startsAt={dateStr} compact />
-            <EventHypeMeter eventId={event.id} compact />
+            {!isGlobal && <EventHypeMeter eventId={event.id} compact />}
           </div>
         )}
+
+        {/* Going button */}
+        <div className="mt-2" onClick={(e) => e.stopPropagation()}>
+          {isGlobal ? (
+            <GoingButton
+              globalEventId={event.id}
+              eventTitle={event.title}
+              eventDate={dateStr}
+              size="sm"
+              variant="compact"
+            />
+          ) : (
+            <GoingButton
+              eventId={event.id}
+              eventTitle={event.title}
+              eventDate={dateStr}
+              size="sm"
+              variant="compact"
+            />
+          )}
+        </div>
       </div>
     </div>
   );
