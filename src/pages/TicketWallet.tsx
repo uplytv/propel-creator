@@ -503,20 +503,31 @@ function TicketQrModalBody({
       )}
 
       {isInvalid ? (
-        <div className="bg-muted/50 border border-border rounded-2xl w-[312px] h-[312px] flex flex-col items-center justify-center gap-3 text-center px-6">
-          {liveStatus === "used" ? (
-            <CheckCircle2 className="w-16 h-16 text-primary" />
-          ) : (
-            <AlertTriangle className="w-16 h-16 text-destructive" />
+        <div className="w-full flex flex-col items-center gap-3">
+          <div className="bg-muted/50 border border-border rounded-2xl w-[312px] h-[312px] flex flex-col items-center justify-center gap-3 text-center px-6">
+            {liveStatus === "used" ? (
+              <CheckCircle2 className="w-16 h-16 text-primary" />
+            ) : (
+              <AlertTriangle className="w-16 h-16 text-destructive" />
+            )}
+            <p className="text-sm font-semibold text-foreground">
+              {liveStatus === "used" ? "Already checked in" : "QR no longer valid"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {liveStatus === "used"
+                ? "Need to step out and come back? Request re-entry below."
+                : "Contact the event organizer for help."}
+            </p>
+          </div>
+          {liveStatus === "used" && (
+            <ReentryRequestButton
+              ticket={ticket}
+              onRequested={(entry) => {
+                setHistory((prev) => [entry, ...prev]);
+                setJustChanged(true);
+              }}
+            />
           )}
-          <p className="text-sm font-semibold text-foreground">
-            {liveStatus === "used" ? "Already checked in" : "QR no longer valid"}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {liveStatus === "used"
-              ? "Show staff this screen if you need re-entry."
-              : "Contact the event organizer for help."}
-          </p>
         </div>
       ) : (
         <RotatingQR token={ticket.qr_code_token} ticketId={ticket.id} />
