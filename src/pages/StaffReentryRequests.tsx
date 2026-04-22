@@ -517,9 +517,21 @@ export default function StaffReentryRequests() {
       minute: "2-digit",
       second: "2-digit",
     });
+    const clipboardText = `${filename} · ${format.toUpperCase()} · ${exportedAt.toLocaleString()}`;
     toast.success(`Exported as ${format.toUpperCase()}`, {
       description: `${filename} · ${timeLabel}`,
       duration: 6000,
+      action: {
+        label: "Copy",
+        onClick: async () => {
+          try {
+            await navigator.clipboard.writeText(clipboardText);
+            toast.success("Copied to clipboard", { description: clipboardText });
+          } catch {
+            toast.error("Couldn't copy", { description: "Clipboard access was blocked." });
+          }
+        },
+      },
     });
   };
 
