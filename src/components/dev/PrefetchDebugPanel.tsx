@@ -133,6 +133,15 @@ export const PrefetchDebugPanel = () => {
               </div>
             );
           })}
+          <button
+            onClick={() => {
+              resetPrefetchToggles();
+              setToggles(getPrefetchToggles());
+            }}
+            className="mt-1 w-full rounded border border-white/10 px-2 py-1 text-[10px] uppercase tracking-wide text-white/60 hover:bg-white/5 hover:text-white/80 transition"
+          >
+            reset toggles
+          </button>
         </div>
       )}
     </div>
