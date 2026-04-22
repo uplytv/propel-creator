@@ -274,6 +274,195 @@ export default function TicketWallet() {
 
 const REFRESH_SECONDS = 30;
 
+type LiveStatus = TicketRow["status"];
+
+function TicketQrModalBody({
+  ticket,
+  onClose,
+  onViewDetails,
+}: {
+  ticket: TicketRow;
+  onClose: () => void;
+  onViewDetails: () => void;
+}) {
+  const [liveStatus, setLiveStatus] = useState<LiveStatus>(ticket.status);
+  const [justChanged, setJustChanged] = useState(false);
+  const [checkInAt, setCheckInAt] = useState<string | null>(null);
+
+  // Reset when modal opens with a new ticket
+  useEffect(() => {
+    setLiveStatus(ticket.status);
+    setJustChanged(false);
+    setCheckInAt(null);
+  }, [ticket.id, ticket.status]);
+
+  // Subscribe to realtime updates for this ticket
+  useEffect(() => {
+    const channel = supabase
+      .channel(`ticket-status-${ticket.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "tickets",
+          filter: `id=eq.${ticket.id}`,
+        },
+        (payload: any) => {
+          const next = payload.new as { status: LiveStatus; updated_at?: string };
+          if (next.status && next.status !== liveStatus) {
+            setLiveStatus(next.status);
+            setJustChanged(true);
+            if (next.status === "used") {
+              setCheckInAt(new Date().toISOString());
+            }
+            if (navigator.vibrate) navigator.vibrate(120);
+          }
+        }
+      )
+      .subscribe();
+
+    // Refetch on mount in case scanner updated while modal was closed
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("tickets")
+        .select("status")
+        .eq("id", ticket.id)
+        .maybeSingle();
+      if (data?.status && data.status !== liveStatus) {
+        setLiveStatus(data.status);
+      }
+    })();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ticket.id]);
+
+  const banner = useMemo(() => {
+    switch (liveStatus) {
+      case "used":
+        return {
+          icon: CheckCircle2,
+          tone: "success" as const,
+          title: "✓ Checked In",
+          body: checkInAt
+            ? `Welcome in! Scanned ${format(new Date(checkInAt), "h:mm a")}`
+            : "Welcome in — your ticket has been validated.",
+        };
+      case "refunded":
+        return {
+          icon: XCircle,
+          tone: "destructive" as const,
+          title: "Refunded",
+          body: "This ticket has been refunded and is no longer valid.",
+        };
+      case "canceled":
+        return {
+          icon: XCircle,
+          tone: "destructive" as const,
+          title: "Canceled",
+          body: "This ticket was canceled and cannot be used for entry.",
+        };
+      case "active":
+      default:
+        return null;
+    }
+  }, [liveStatus, checkInAt]);
+
+  const isInvalid = liveStatus !== "active";
+
+  return (
+    <div className="flex flex-col items-center p-6 gap-4">
+      <div className="w-full flex items-center justify-between">
+        <div className="min-w-0">
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">Check-in pass</p>
+          <h2 className="text-lg font-bold text-foreground truncate">
+            {ticket.events?.title || "Event"}
+          </h2>
+          {ticket.events && (
+            <p className="text-xs text-primary mt-0.5">
+              {format(new Date(ticket.events.starts_at), "EEE MMM d · h:mm a")}
+            </p>
+          )}
+        </div>
+        <button
+          onClick={onClose}
+          className="p-2 rounded-full hover:bg-muted transition-colors flex-shrink-0"
+          aria-label="Close"
+        >
+          <X className="w-5 h-5 text-foreground" />
+        </button>
+      </div>
+
+      {banner && (
+        <div
+          role="status"
+          aria-live="polite"
+          className={`w-full flex items-start gap-3 p-3 rounded-xl border ${
+            banner.tone === "success"
+              ? "bg-primary/10 border-primary/30 text-primary"
+              : "bg-destructive/10 border-destructive/30 text-destructive"
+          } ${justChanged ? "animate-in fade-in zoom-in-95 duration-300" : ""}`}
+        >
+          <banner.icon className="w-5 h-5 flex-shrink-0 mt-0.5" />
+          <div className="min-w-0">
+            <p className="font-bold text-sm">{banner.title}</p>
+            <p className="text-xs opacity-90 mt-0.5">{banner.body}</p>
+          </div>
+        </div>
+      )}
+
+      {isInvalid ? (
+        <div className="bg-muted/50 border border-border rounded-2xl w-[312px] h-[312px] flex flex-col items-center justify-center gap-3 text-center px-6">
+          {liveStatus === "used" ? (
+            <CheckCircle2 className="w-16 h-16 text-primary" />
+          ) : (
+            <AlertTriangle className="w-16 h-16 text-destructive" />
+          )}
+          <p className="text-sm font-semibold text-foreground">
+            {liveStatus === "used" ? "Already checked in" : "QR no longer valid"}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {liveStatus === "used"
+              ? "Show staff this screen if you need re-entry."
+              : "Contact the event organizer for help."}
+          </p>
+        </div>
+      ) : (
+        <RotatingQR token={ticket.qr_code_token} ticketId={ticket.id} />
+      )}
+
+      {!banner && (
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Loader2 className="w-3 h-3 animate-spin" />
+          Waiting for scanner…
+        </div>
+      )}
+
+      <div className="text-center">
+        <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Ticket ID</p>
+        <p className="font-mono text-xs text-foreground mt-1 break-all">
+          {ticket.qr_code_token}
+        </p>
+      </div>
+      <div className="flex items-center gap-2 w-full">
+        <Button variant="outline" className="flex-1" onClick={onViewDetails}>
+          <Maximize2 className="w-4 h-4 mr-1.5" /> View details
+        </Button>
+        <Button className="flex-1" onClick={onClose}>
+          Done
+        </Button>
+      </div>
+      <p className="text-[11px] text-muted-foreground text-center">
+        Hold steady at the entrance scanner. Brightness up for best results.
+      </p>
+    </div>
+  );
+}
+
+
 function RotatingQR({ token, ticketId }: { token: string; ticketId: string }) {
   const [tick, setTick] = useState(0);
   const [secondsLeft, setSecondsLeft] = useState(REFRESH_SECONDS);
