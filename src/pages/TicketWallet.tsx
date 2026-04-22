@@ -278,6 +278,19 @@ const REFRESH_SECONDS = 30;
 
 type LiveStatus = TicketRow["status"];
 
+function statusIcon(s: LiveStatus | "purchased") {
+  if (s === "used") return CheckCircle2;
+  if (s === "refunded" || s === "canceled") return XCircle;
+  if (s === "purchased") return Ticket;
+  return QrCode;
+}
+
+function statusTone(s: LiveStatus | "purchased") {
+  if (s === "used") return "text-primary";
+  if (s === "refunded" || s === "canceled") return "text-destructive";
+  return "text-muted-foreground";
+}
+
 function TicketQrModalBody({
   ticket,
   onClose,
