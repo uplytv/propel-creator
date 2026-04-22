@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import BackNav from "@/components/BackNav";
 import { Skeleton } from "@/components/ui/skeleton";
+import FestivalsSection from "@/components/social/FestivalsSection";
 
 const typeIcon: Record<string, typeof Users> = {
   creator: Users,
@@ -182,10 +183,13 @@ export default function SearchPage() {
         </AnimatePresence>
 
         {query.length < 2 && (
-          <div className="text-center py-16 text-muted-foreground">
-            <SearchIcon className="w-12 h-12 mx-auto mb-3 opacity-20" />
-            <p className="text-sm">Type at least 2 characters to search</p>
-          </div>
+          <>
+            <FestivalsSection />
+            <div className="text-center py-10 text-muted-foreground">
+              <SearchIcon className="w-10 h-10 mx-auto mb-2 opacity-20" />
+              <p className="text-xs">Type at least 2 characters to search</p>
+            </div>
+          </>
         )}
       </div>
     </AppLayout>
