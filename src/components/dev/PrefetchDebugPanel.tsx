@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   PREFETCH_TOGGLES_EVENT,
   getPrefetchToggles,
   getPrefetchTogglesChangedAt,
+  importPrefetchToggles,
   resetPrefetchToggles,
   setPrefetchToggle,
 } from "@/lib/devPrefetchToggles";
