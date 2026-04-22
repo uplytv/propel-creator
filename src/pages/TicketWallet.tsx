@@ -277,14 +277,7 @@ export default function TicketWallet() {
                   <X className="w-5 h-5 text-foreground" />
                 </button>
               </div>
-              <div className="bg-white p-5 rounded-2xl shadow-2xl">
-                <QRCodeSVG
-                  value={qrTicket.qr_code_token}
-                  size={272}
-                  level="H"
-                  includeMargin={false}
-                />
-              </div>
+              <RotatingQR token={qrTicket.qr_code_token} ticketId={qrTicket.id} />
               <div className="text-center">
                 <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Ticket ID</p>
                 <p className="font-mono text-xs text-foreground mt-1 break-all">
