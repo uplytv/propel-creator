@@ -1,4 +1,9 @@
 import { useEffect, useState } from "react";
+import {
+  PREFETCH_TOGGLES_EVENT,
+  getPrefetchToggles,
+  setPrefetchToggle,
+} from "@/lib/devPrefetchToggles";
 
 type PrefetchStatus =
   | "idle"
