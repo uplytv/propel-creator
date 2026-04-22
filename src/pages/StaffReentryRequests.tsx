@@ -576,11 +576,13 @@ export default function StaffReentryRequests() {
       action: {
         label: "Copy",
         onClick: async () => {
-          try {
-            await navigator.clipboard.writeText(clipboardText);
+          const ok = await copyToClipboard(clipboardText);
+          if (ok) {
             toast.success("Copied to clipboard", { description: clipboardText });
-          } catch {
-            toast.error("Couldn't copy", { description: "Clipboard access was blocked." });
+          } else {
+            toast.error("Couldn't copy", {
+              description: "Your browser blocked clipboard access.",
+            });
           }
         },
       },
