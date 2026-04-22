@@ -256,54 +256,15 @@ export default function TicketWallet() {
             <DialogTitle>Ticket QR Code</DialogTitle>
           </VisuallyHidden>
           {qrTicket && (
-            <div className="flex flex-col items-center p-6 gap-4">
-              <div className="w-full flex items-center justify-between">
-                <div className="min-w-0">
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground">Check-in pass</p>
-                  <h2 className="text-lg font-bold text-foreground truncate">
-                    {qrTicket.events?.title || "Event"}
-                  </h2>
-                  {qrTicket.events && (
-                    <p className="text-xs text-primary mt-0.5">
-                      {format(new Date(qrTicket.events.starts_at), "EEE MMM d · h:mm a")}
-                    </p>
-                  )}
-                </div>
-                <button
-                  onClick={() => setQrTicket(null)}
-                  className="p-2 rounded-full hover:bg-muted transition-colors flex-shrink-0"
-                  aria-label="Close"
-                >
-                  <X className="w-5 h-5 text-foreground" />
-                </button>
-              </div>
-              <RotatingQR token={qrTicket.qr_code_token} ticketId={qrTicket.id} />
-              <div className="text-center">
-                <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Ticket ID</p>
-                <p className="font-mono text-xs text-foreground mt-1 break-all">
-                  {qrTicket.qr_code_token}
-                </p>
-              </div>
-              <div className="flex items-center gap-2 w-full">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => {
-                    const t = qrTicket;
-                    setQrTicket(null);
-                    navigate(`/tickets/${t.qr_code_token}`);
-                  }}
-                >
-                  <Maximize2 className="w-4 h-4 mr-1.5" /> View details
-                </Button>
-                <Button className="flex-1" onClick={() => setQrTicket(null)}>
-                  Done
-                </Button>
-              </div>
-              <p className="text-[11px] text-muted-foreground text-center">
-                Hold steady at the entrance scanner. Brightness up for best results.
-              </p>
-            </div>
+            <TicketQrModalBody
+              ticket={qrTicket}
+              onClose={() => setQrTicket(null)}
+              onViewDetails={() => {
+                const t = qrTicket;
+                setQrTicket(null);
+                navigate(`/tickets/${t.qr_code_token}`);
+              }}
+            />
           )}
         </DialogContent>
       </Dialog>
