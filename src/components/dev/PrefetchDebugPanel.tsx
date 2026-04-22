@@ -55,6 +55,9 @@ export const PrefetchDebugPanel = () => {
   const [state, setState] = useState<State>(initial);
   const [collapsed, setCollapsed] = useState(false);
   const [toggles, setToggles] = useState(() => getPrefetchToggles());
+  const [changedAt, setChangedAt] = useState(() => getPrefetchTogglesChangedAt());
+  // Tick once a second so the relative "changed Xs ago" label stays fresh.
+  const [, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     if (!import.meta.env.DEV) return;
@@ -64,15 +67,21 @@ export const PrefetchDebugPanel = () => {
       setState((prev) => ({ ...prev, [detail.target]: detail }));
     };
     const onTogglesChange = (e: Event) => {
-      const detail = (e as CustomEvent<{ home: boolean; landing: boolean }>).detail;
+      const detail = (e as CustomEvent<{
+        toggles: { home: boolean; landing: boolean };
+        changedAt: { home: number | null; landing: number | null };
+      }>).detail;
       if (!detail) return;
-      setToggles(detail);
+      setToggles(detail.toggles);
+      setChangedAt(detail.changedAt);
     };
     window.addEventListener(PREFETCH_STATUS_EVENT, onEvent);
     window.addEventListener(PREFETCH_TOGGLES_EVENT, onTogglesChange);
+    const tick = window.setInterval(() => setNow(Date.now()), 1000);
     return () => {
       window.removeEventListener(PREFETCH_STATUS_EVENT, onEvent);
       window.removeEventListener(PREFETCH_TOGGLES_EVENT, onTogglesChange);
+      window.clearInterval(tick);
     };
   }, []);
 
