@@ -61,27 +61,27 @@ const HEAR_ABOUT = [
 
 const CREATOR_STAGES = [
   {
-    key: "exploring",
+    key: "just-starting",
     emoji: "🌱",
-    title: "Just exploring",
+    title: "Just Starting Out",
     desc: "I'm new and figuring things out — no audience yet.",
   },
   {
-    key: "building",
+    key: "early-traction",
     emoji: "🛠️",
-    title: "Building momentum",
+    title: "Early Traction",
     desc: "I post regularly and have a small but growing audience.",
   },
   {
-    key: "earning",
-    emoji: "💸",
-    title: "Earning consistently",
+    key: "growing",
+    emoji: "📈",
+    title: "Growing",
     desc: "I make money from my work, but I want to scale.",
   },
   {
     key: "scaling",
     emoji: "🚀",
-    title: "Scaling a business",
+    title: "Scaling",
     desc: "I run a real creator business and want better tools.",
   },
 ];
