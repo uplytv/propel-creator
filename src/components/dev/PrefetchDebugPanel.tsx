@@ -47,6 +47,25 @@ const statusColor: Record<PrefetchStatus, string> = {
   failed: "bg-red-500/20 text-red-300",
 };
 
+const formatRelative = (ts: number | null): string => {
+  if (ts == null) return "never";
+  const diff = Math.max(0, Date.now() - ts);
+  if (diff < 1000) return "just now";
+  if (diff < 60_000) return `${Math.floor(diff / 1000)}s ago`;
+  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`;
+  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h ago`;
+  return `${Math.floor(diff / 86_400_000)}d ago`;
+};
+
+const formatAbsolute = (ts: number | null): string | undefined => {
+  if (ts == null) return undefined;
+  try {
+    return new Date(ts).toLocaleString();
+  } catch {
+    return undefined;
+  }
+};
+
 /**
  * Dev-only floating panel showing the live prefetch status for the home and
  * landing route bundles. Renders nothing in production.
