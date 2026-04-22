@@ -26,10 +26,15 @@ type FilterTab = "pending" | "resolved" | "all";
 export default function StaffReentryRequests() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const focusRequestId = searchParams.get("request");
+  const focusTicketId = searchParams.get("ticket");
   const [loading, setLoading] = useState(true);
   const [requests, setRequests] = useState<ReentryNotification[]>([]);
   const [actionId, setActionId] = useState<string | null>(null);
-  const [tab, setTab] = useState<FilterTab>("pending");
+  const [tab, setTab] = useState<FilterTab>(focusRequestId || focusTicketId ? "all" : "pending");
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const load = async () => {
     if (!user?.id) return;
