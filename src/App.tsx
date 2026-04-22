@@ -255,6 +255,8 @@ const App = () => (
                     <Route path="/space/:creatorId/:tab" element={<CreatorSpace />} />
                     <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
                     <Route path="/shorts" element={<Shorts />} />
+                    <Route path="/shop" element={<Shop />} />
+                    <Route path="/inbox" element={<ProtectedRoute><Inbox /></ProtectedRoute>} />
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/event/rsvp/:eventId" element={<EventRSVP />} />
 
@@ -357,6 +359,7 @@ const App = () => (
               </BrowserRouter>
               </AppWithSplash>
               </NativeShell>
+              </CartProvider>
               </NetworkProvider>
             </FeatureProvider>
           </AppProvider>
