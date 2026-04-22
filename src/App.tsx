@@ -360,6 +360,7 @@ const App = () => (
               </AppWithSplash>
               </NativeShell>
               </NetworkProvider>
+              </CartProvider>
             </FeatureProvider>
           </AppProvider>
         </AuthProvider>
