@@ -52,3 +52,20 @@ export const setPrefetchToggle = (target: PrefetchTarget, enabled: boolean) => {
     // no-op
   }
 };
+
+export const resetPrefetchToggles = () => {
+  if (!import.meta.env.DEV) return;
+  cache = { home: true, landing: true };
+  try {
+    window.localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // no-op
+  }
+  try {
+    window.dispatchEvent(
+      new CustomEvent(PREFETCH_TOGGLES_EVENT, { detail: { ...cache } })
+    );
+  } catch {
+    // no-op
+  }
+};
