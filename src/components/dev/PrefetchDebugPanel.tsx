@@ -52,6 +52,7 @@ const statusColor: Record<PrefetchStatus, string> = {
 export const PrefetchDebugPanel = () => {
   const [state, setState] = useState<State>(initial);
   const [collapsed, setCollapsed] = useState(false);
+  const [toggles, setToggles] = useState(() => getPrefetchToggles());
 
   useEffect(() => {
     if (!import.meta.env.DEV) return;
@@ -60,8 +61,17 @@ export const PrefetchDebugPanel = () => {
       if (!detail) return;
       setState((prev) => ({ ...prev, [detail.target]: detail }));
     };
+    const onTogglesChange = (e: Event) => {
+      const detail = (e as CustomEvent<{ home: boolean; landing: boolean }>).detail;
+      if (!detail) return;
+      setToggles(detail);
+    };
     window.addEventListener(PREFETCH_STATUS_EVENT, onEvent);
-    return () => window.removeEventListener(PREFETCH_STATUS_EVENT, onEvent);
+    window.addEventListener(PREFETCH_TOGGLES_EVENT, onTogglesChange);
+    return () => {
+      window.removeEventListener(PREFETCH_STATUS_EVENT, onEvent);
+      window.removeEventListener(PREFETCH_TOGGLES_EVENT, onTogglesChange);
+    };
   }, []);
 
   if (!import.meta.env.DEV) return null;
