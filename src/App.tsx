@@ -23,10 +23,7 @@ import { AnimatePresence } from "framer-motion";
 
 // Lazy-loaded pages
 const Landing = lazy(() => import("./pages/Landing"));
-const Home = lazy(() => import("./pages/Home"));
-const RootRoute = lazy(() => import("./pages/RootRoute"));
 const Auth = lazy(() => import("./pages/Auth"));
-const AuthRetry = lazy(() => import("./pages/AuthRetry"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const WaitlistPage = lazy(() => import("./pages/WaitlistPage"));
@@ -72,7 +69,6 @@ const CreatorSpace = lazy(() => import("./pages/CreatorSpace"));
 const Launchpad = lazy(() => import("./pages/Launchpad"));
 const AdminAffiliates = lazy(() => import("./pages/AdminAffiliates"));
 const AdminReferrals = lazy(() => import("./pages/AdminReferrals"));
-const AdminCommentReports = lazy(() => import("./pages/AdminCommentReports"));
 const ReferralRedirect = lazy(() => import("./pages/ReferralRedirect"));
 const GrowthReports = lazy(() => import("./pages/GrowthReports"));
 const Shorts = lazy(() => import("./pages/Shorts"));
@@ -222,12 +218,9 @@ const App = () => (
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
                     {/* Public routes */}
-                    <Route path="/" element={<RootRoute />} />
-                    <Route path="/welcome" element={<Landing />} />
+                    <Route path="/" element={<Landing />} />
                     <Route path="/index" element={<Landing />} />
-                    <Route path="/home" element={<Home />} />
                     <Route path="/auth" element={<Auth />} />
-                    <Route path="/auth-retry" element={<AuthRetry />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/p/:slug" element={<JointProduct isPublic />} />
                     <Route path="/live" element={<Live />} />
@@ -339,7 +332,6 @@ const App = () => (
                     <Route path="/admin/features" element={<AdminRoute><AdminFeatureToggles /></AdminRoute>} />
                     <Route path="/admin/affiliates" element={<AdminRoute><AdminAffiliates /></AdminRoute>} />
                     <Route path="/admin/referrals" element={<AdminRoute><AdminReferrals /></AdminRoute>} />
-                    <Route path="/admin/comment-reports" element={<AdminRoute><AdminCommentReports /></AdminRoute>} />
 
                     {/* In-app camera & post-capture editors */}
                     <Route path="/camera" element={<ProtectedRoute><Camera /></ProtectedRoute>} />

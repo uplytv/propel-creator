@@ -7,12 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowRight, ArrowLeft, Camera, Check, X, Loader2, AlertTriangle, RotateCcw, Settings as SettingsIcon, AlertCircle, Download } from "lucide-react";
-import { downloadOnboardingPdf } from "@/lib/onboardingPdf";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import ValidationBanner, { type ValidationBannerHandle } from "@/components/onboarding/ValidationBanner";
-import PlanPreview from "@/components/onboarding/PlanPreview";
-import { useFieldValidation, type ValidationRule } from "@/hooks/useFieldValidation";
+import { ArrowRight, ArrowLeft, Camera, Check, X, Loader2, AlertTriangle, RotateCcw, Settings as SettingsIcon } from "lucide-react";
 import { toast } from "sonner";
 import { getAffiliateCookie, clearAffiliateCookie, getReferralData, clearReferralData } from "@/lib/affiliateCookies";
 import logoImg from "@/assets/logo.png";
@@ -25,22 +20,9 @@ import {
 } from "@/lib/settingsNavCooldown";
 import { showCooldownToast } from "@/lib/cooldownToast";
 
-const CREATOR_TYPES: { value: string; emoji: string }[] = [
-  { value: "Fitness", emoji: "💪" },
-  { value: "Finance", emoji: "💸" },
-  { value: "Gaming", emoji: "🎮" },
-  { value: "Lifestyle", emoji: "✨" },
-  { value: "Business", emoji: "💼" },
-  { value: "Education", emoji: "📚" },
-  { value: "Music", emoji: "🎵" },
-  { value: "Cooking", emoji: "🍳" },
-  { value: "Sports", emoji: "🏆" },
-  { value: "Beauty", emoji: "💄" },
-  { value: "Travel", emoji: "✈️" },
-  { value: "Tech", emoji: "💻" },
-  { value: "Real Estate", emoji: "🏠" },
-  { value: "IRL", emoji: "📷" },
-  { value: "Other", emoji: "🎨" },
+const CREATOR_TYPES = [
+  "Fitness", "Finance", "Gaming", "Lifestyle", "Business", "Education",
+  "Music", "Cooking", "Sports", "Beauty", "Travel", "Tech", "Real Estate", "IRL", "Other"
 ];
 
 const FOLLOWER_RANGES = [
@@ -132,25 +114,9 @@ export default function Onboarding() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [socialHandle, setSocialHandle] = useState("");
-  const [firstNameError, setFirstNameError] = useState(false);
-  const firstNameInputRef = useRef<HTMLInputElement | null>(null);
-  const step1BannerRef = useRef<ValidationBannerHandle | null>(null);
 
   // Step 2: Creator Profile
   const [creatorType, setCreatorType] = useState("");
-  const [creatorTypeError, setCreatorTypeError] = useState(false);
-  const creatorTypeErrorRef = useRef<HTMLDivElement | null>(null);
-  const step2BannerRef = useRef<ValidationBannerHandle | null>(null);
-  const pendingCreatorTypeFocus = useRef<string | null>(null);
-  useEffect(() => {
-    const target = pendingCreatorTypeFocus.current;
-    if (!target) return;
-    pendingCreatorTypeFocus.current = null;
-    const el = document.querySelector<HTMLButtonElement>(
-      `[data-creator-type-card="${target}"]`
-    );
-    el?.focus();
-  }, [creatorType]);
   const [followerCount, setFollowerCount] = useState("");
   const [primaryPlatform, setPrimaryPlatform] = useState("");
   const [isMonetizing, setIsMonetizing] = useState<string | null>(null);
@@ -184,24 +150,11 @@ export default function Onboarding() {
   })();
 
   const [creatorStage, setCreatorStage] = useState<string>(initialStep3?.creatorStage ?? "");
-  const pendingCreatorStageFocus = useRef<string | null>(null);
-  useEffect(() => {
-    const target = pendingCreatorStageFocus.current;
-    if (!target) return;
-    pendingCreatorStageFocus.current = null;
-    const el = document.querySelector<HTMLButtonElement>(
-      `[data-creator-stage-card="${target}"]`
-    );
-    el?.focus();
-  }, [creatorStage]);
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const [oneSentence, setOneSentence] = useState<string>(initialStep3?.oneSentence ?? "");
   const [challenges, setChallenges] = useState<string[]>(initialStep3?.challenges ?? []);
   const [firstUseCase, setFirstUseCase] = useState<string>(initialStep3?.firstUseCase ?? "");
   const [hearAbout, setHearAbout] = useState<string>(initialStep3?.hearAbout ?? "");
-  const [oneSentenceError, setOneSentenceError] = useState(false);
-  const oneSentenceInputRef = useRef<HTMLTextAreaElement | null>(null);
-  const step3BannerRef = useRef<ValidationBannerHandle | null>(null);
 
   // Persist Step 3 inputs to survive refreshes (with timestamp for TTL)
   useEffect(() => {
@@ -249,32 +202,6 @@ export default function Onboarding() {
   const [goals, setGoals] = useState<string[]>(initialStep4?.goals ?? []);
   const [goalTimeline, setGoalTimeline] = useState<string>(initialStep4?.goalTimeline ?? "");
   const [step4AttemptedSubmit, setStep4AttemptedSubmit] = useState(false);
-  const goalsGroupRef = useRef<HTMLDivElement | null>(null);
-  const timelineGroupRef = useRef<HTMLDivElement | null>(null);
-  const step4Validation = useFieldValidation();
-  const step4TimelineBannerRef = useRef<ValidationBannerHandle | null>(null);
-
-  // Step 4 rule list — single source of truth for both submit-time validation
-  // and the per-field banners. Rules are evaluated in order; the first failing
-  // rule receives the banner-surface focus handoff.
-  const step4Rules: ValidationRule[] = [
-    {
-      isInvalid: () => goals.length === 0,
-      title: "Goals required",
-      description: "Please pick at least one goal to continue.",
-      focusTarget: () =>
-        goalsGroupRef.current?.querySelector<HTMLButtonElement>("button:not([disabled])") ?? null,
-    },
-    {
-      isInvalid: () => !goalTimeline,
-      title: "Timeline required",
-      description: "Please choose a timeline to continue.",
-      focusTarget: () =>
-        timelineGroupRef.current?.querySelector<HTMLButtonElement>("button:not([disabled])") ?? null,
-    },
-  ];
-  const showGoalsError = step4AttemptedSubmit && goals.length === 0;
-  const showTimelineError = step4AttemptedSubmit && !goalTimeline;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -294,7 +221,6 @@ export default function Onboarding() {
   const [saving, setSaving] = useState(false);
   const [submitSucceeded, setSubmitSucceeded] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [submittedApproved, setSubmittedApproved] = useState(false);
   const [autoRetryCountdown, setAutoRetryCountdown] = useState<number | null>(null);
   const [retryAt, setRetryAt] = useState<Date | null>(null);
   const AUTO_RETRY_SECONDS = 5;
@@ -569,15 +495,15 @@ export default function Onboarding() {
     sessionStorage.setItem("waitlist_email", user.email || "");
 
     setSaving(false);
-    setSubmittedApproved(isApproved);
     setSubmitSucceeded(true);
 
-    // Brief success overlay, then advance to Step 5 (final confirmation screen).
-    // The user chooses when to leave Step 5 via an explicit CTA — we no longer
-    // auto-navigate to /discover or /waitlist here.
+    // Brief success screen, then navigate
     setTimeout(() => {
-      setSubmitSucceeded(false);
-      setStep(5);
+      if (isApproved) {
+        navigate("/discover", { replace: true });
+      } else {
+        navigate("/waitlist?applied=true", { replace: true });
+      }
     }, 1200);
     } catch (err: any) {
       console.error("[Onboarding] submission failed", err);
@@ -608,14 +534,14 @@ export default function Onboarding() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 py-8 relative overflow-y-auto overflow-x-hidden">
-      {step > 0 && step < 6 && (
+      {step > 0 && step < 5 && (
         <div className="absolute top-0 left-0 right-0 h-1 bg-secondary">
           <motion.div className="h-full bg-primary" animate={{ width: `${(progressStep / totalSteps) * 100}%` }} transition={{ duration: 0.4 }} />
         </div>
       )}
 
       {/* Referrer banner */}
-      {step > 0 && step < 6 && referrerName && (
+      {step > 0 && step < 5 && referrerName && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -633,7 +559,7 @@ export default function Onboarding() {
         </motion.div>
       )}
 
-      {step > 0 && step < 5 && <MilestoneProgressPill onboardingStep={step} totalOnboardingSteps={4} />}
+      {step > 0 && <MilestoneProgressPill onboardingStep={step} totalOnboardingSteps={4} />}
 
       {/* Full-screen submission overlay — blocks interaction & shows progress / success / failure */}
       {(saving || submitSucceeded || submitError) && (
@@ -803,26 +729,8 @@ export default function Onboarding() {
             <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">The Basics</h1>
             <p className="text-muted-foreground text-center text-sm mb-2">Tell us a little about yourself.</p>
             <p className="text-xs text-primary text-center mb-6 font-medium">⚡ Takes less than 2 minutes</p>
-
-            <ValidationBanner
-              ref={step1BannerRef}
-              show={firstNameError && !firstName.trim()}
-              title="Full name required"
-              description="Please enter your full name to continue."
-              testId="full-name-error"
-            />
-
             <div className="space-y-4 mb-4">
-              <Input
-                ref={firstNameInputRef}
-                placeholder="Full name *"
-                value={firstName}
-                onChange={(e) => { setFirstName(e.target.value); if (firstNameError) setFirstNameError(false); }}
-                autoFocus
-                aria-invalid={firstNameError && !firstName.trim()}
-                aria-required="true"
-                className="text-center text-lg py-6"
-              />
+              <Input placeholder="Full name *" value={firstName} onChange={(e) => setFirstName(e.target.value)} autoFocus className="text-center text-lg py-6" />
               <Input placeholder="Email" value={user?.email || ""} disabled className="text-center text-sm py-4 opacity-60" />
               <Input placeholder="@yourhandle or youtube.com/c/yourchannel" value={socialHandle} onChange={(e) => setSocialHandle(e.target.value)} className="text-center text-sm py-4" />
             </div>
@@ -841,20 +749,7 @@ export default function Onboarding() {
               )}
             </div>
 
-            <Button
-              variant="hero"
-              size="xl"
-              className="w-full"
-              onClick={() => {
-                if (!firstName.trim()) {
-                  setFirstNameError(true);
-                  step1BannerRef.current?.surface(firstNameInputRef.current);
-                  return;
-                }
-                setFirstNameError(false);
-                setStep(2);
-              }}
-            >
+            <Button variant="hero" size="xl" className="w-full" disabled={!firstName.trim()} onClick={() => setStep(2)}>
               Continue <ArrowRight className="ml-1 w-4 h-4" />
             </Button>
             <p className="text-[10px] text-muted-foreground text-center mt-3">🔒 Your info is private and never shared</p>
@@ -864,115 +759,20 @@ export default function Onboarding() {
         {/* STEP 2: Creator Profile */}
         {step === 2 && (
           <motion.div key="profile" variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.35 }} className="w-full max-w-md">
-            <p className="text-xs text-muted-foreground text-center mb-1 uppercase tracking-wider">Step 2 of 4</p>
+            <p className="text-xs text-muted-foreground text-center mb-1 uppercase tracking-wider">Step 2 of 3</p>
             <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">Your Creator Profile</h1>
             <p className="text-muted-foreground text-center text-sm mb-1">Help us understand your audience.</p>
             <p className="text-xs text-primary text-center mb-6 font-medium">🎯 This helps us prioritize your application</p>
 
-            {/* Wrapper kept for legacy ref-based scroll target; banner is now reusable. */}
-            <div ref={creatorTypeErrorRef}>
-              <ValidationBanner
-                ref={step2BannerRef}
-                show={creatorTypeError && !creatorType}
-                title="Creator type required"
-                description="Please select a creator type below before continuing."
-                testId="creator-type-error"
-              />
-            </div>
-
             <div className="space-y-4 mb-6">
               <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">
-                  What type of creator are you? <span className="text-destructive">*</span>
-                </label>
-                <div
-                  role="radiogroup"
-                  aria-label="Creator type"
-                  aria-required="true"
-                  aria-invalid={creatorTypeError && !creatorType}
-                  className="grid grid-cols-3 gap-2"
-                >
-                  {CREATOR_TYPES.map((t, idx) => {
-                    const selected = creatorType === t.value;
-                    // Single tab stop: focused card is the selected one, or the first when none selected
-                    const isTabStop = creatorType ? selected : idx === 0;
-                    return (
-                      <button
-                        key={t.value}
-                        type="button"
-                        role="radio"
-                        aria-checked={selected}
-                        tabIndex={isTabStop ? 0 : -1}
-                        data-creator-type-card={t.value}
-                        onClick={() => { setCreatorType(t.value); setCreatorTypeError(false); }}
-                        onKeyDown={(e) => {
-                          const cols = 3;
-                          const last = CREATOR_TYPES.length - 1;
-                          let nextIdx: number | null = null;
-                          switch (e.key) {
-                            case "ArrowRight":
-                            case "ArrowDown": {
-                              const delta = e.key === "ArrowDown" ? cols : 1;
-                              nextIdx = idx + delta;
-                              if (nextIdx > last) nextIdx = e.key === "ArrowDown" ? idx % cols : 0;
-                              break;
-                            }
-                            case "ArrowLeft":
-                            case "ArrowUp": {
-                              const delta = e.key === "ArrowUp" ? cols : 1;
-                              nextIdx = idx - delta;
-                              if (nextIdx < 0) {
-                                if (e.key === "ArrowUp") {
-                                  // jump to bottom of same column
-                                  const col = idx % cols;
-                                  const rows = Math.ceil(CREATOR_TYPES.length / cols);
-                                  let candidate = col + (rows - 1) * cols;
-                                  if (candidate > last) candidate -= cols;
-                                  nextIdx = candidate;
-                                } else {
-                                  nextIdx = last;
-                                }
-                              }
-                              break;
-                            }
-                            case "Home":
-                              nextIdx = 0;
-                              break;
-                            case "End":
-                              nextIdx = last;
-                              break;
-                            case " ":
-                            case "Enter":
-                              e.preventDefault();
-                              setCreatorType(t.value);
-                              setCreatorTypeError(false);
-                              return;
-                            default:
-                              return;
-                          }
-                          if (nextIdx === null) return;
-                          e.preventDefault();
-                          const nextValue = CREATOR_TYPES[nextIdx].value;
-                          // Defer focus to after React commits the new tabindex/state.
-                          pendingCreatorTypeFocus.current = nextValue;
-                          setCreatorType(nextValue);
-                          setCreatorTypeError(false);
-                        }}
-                        className={`rounded-xl p-3 text-center border-2 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
-                          selected
-                            ? "border-primary bg-primary/5"
-                            : "border-border bg-card hover:border-primary/30"
-                        }`}
-                      >
-                        <span className="text-xl block mb-1">{t.emoji}</span>
-                        <span className="text-xs font-medium text-foreground">{t.value}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-                {!creatorType && (
-                  <p className="text-[11px] text-muted-foreground mt-1.5">Select one to continue</p>
-                )}
+                <label className="text-sm font-medium text-foreground mb-1.5 block">What type of creator are you?</label>
+                <Select value={creatorType} onValueChange={setCreatorType}>
+                  <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                  <SelectContent>
+                    {CREATOR_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>
@@ -1034,29 +834,8 @@ export default function Onboarding() {
               <Button variant="outline" onClick={() => setStep(1)} className="gap-1">
                 <ArrowLeft className="w-4 h-4" /> Back
               </Button>
-              <Button
-                variant="hero"
-                size="xl"
-                className="flex-1"
-                aria-disabled={!creatorType}
-                onClick={() => {
-                  if (!creatorType) {
-                    setCreatorTypeError(true);
-                    requestAnimationFrame(() => {
-                      creatorTypeErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-                      const firstCard = document.querySelector<HTMLButtonElement>(
-                        `[data-creator-type-card="${CREATOR_TYPES[0].value}"]`
-                      );
-                      firstCard?.focus();
-                    });
-                    toast.error("Pick a creator type to continue");
-                    return;
-                  }
-                  setCreatorTypeError(false);
-                  setStep(3);
-                }}
-              >
-                {creatorType ? "Continue" : "Pick a category to continue"} <ArrowRight className="ml-1 w-4 h-4" />
+              <Button variant="hero" size="xl" className="flex-1" disabled={!creatorType} onClick={() => setStep(3)}>
+                Continue <ArrowRight className="ml-1 w-4 h-4" />
               </Button>
             </div>
           </motion.div>
@@ -1070,77 +849,22 @@ export default function Onboarding() {
             <p className="text-muted-foreground text-center text-sm mb-1">These help us match you with the right tools.</p>
             <p className="text-xs text-primary text-center mb-6 font-medium">✨ Detailed answers = faster approval</p>
 
-            <ValidationBanner
-              ref={step3BannerRef}
-              show={(attemptedSubmit && !creatorStage) || (oneSentenceError && !oneSentence.trim())}
-              title={!creatorStage ? "Creator stage required" : "One-sentence description required"}
-              description={
-                !creatorStage
-                  ? "Please choose where you are right now before continuing."
-                  : "Tell us in one sentence what you create — this is required to continue."
-              }
-              testId="step3-error"
-            />
-
             <div className="space-y-4 mb-6">
               <div>
                 <label className="text-sm font-medium text-foreground mb-2 block">
                   Where are you right now? *
                 </label>
-                <div
-                  role="radiogroup"
-                  aria-label="Creator stage"
-                  aria-required="true"
-                  className="space-y-2 max-h-[55vh] sm:max-h-none overflow-y-auto pr-1 -mr-1"
-                >
-                  {CREATOR_STAGES.map((s, idx) => {
+                <div className="space-y-2 max-h-[55vh] sm:max-h-none overflow-y-auto pr-1 -mr-1">
+                  {CREATOR_STAGES.map((s) => {
                     const selected = creatorStage === s.key;
                     const showError = attemptedSubmit && !creatorStage;
-                    const isTabStop = creatorStage ? selected : idx === 0;
                     return (
                       <button
                         key={s.key}
                         type="button"
-                        role="radio"
-                        aria-checked={selected}
-                        tabIndex={isTabStop ? 0 : -1}
-                        data-creator-stage-card={s.key}
                         onClick={() => { setCreatorStage(s.key); setAttemptedSubmit(false); }}
-                        onKeyDown={(e) => {
-                          const last = CREATOR_STAGES.length - 1;
-                          let nextIdx: number | null = null;
-                          switch (e.key) {
-                            case "ArrowDown":
-                            case "ArrowRight":
-                              nextIdx = idx === last ? 0 : idx + 1;
-                              break;
-                            case "ArrowUp":
-                            case "ArrowLeft":
-                              nextIdx = idx === 0 ? last : idx - 1;
-                              break;
-                            case "Home":
-                              nextIdx = 0;
-                              break;
-                            case "End":
-                              nextIdx = last;
-                              break;
-                            case " ":
-                            case "Enter":
-                              e.preventDefault();
-                              setCreatorStage(s.key);
-                              setAttemptedSubmit(false);
-                              return;
-                            default:
-                              return;
-                          }
-                          if (nextIdx === null) return;
-                          e.preventDefault();
-                          const nextValue = CREATOR_STAGES[nextIdx].key;
-                          pendingCreatorStageFocus.current = nextValue;
-                          setCreatorStage(nextValue);
-                          setAttemptedSubmit(false);
-                        }}
-                        className={`w-full text-left flex items-start gap-2.5 sm:gap-3 rounded-xl border p-3 sm:p-4 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                        aria-pressed={selected}
+                        className={`w-full text-left flex items-start gap-2.5 sm:gap-3 rounded-xl border p-3 sm:p-4 transition-all ${
                           selected
                             ? "border-primary bg-primary/10 ring-1 ring-primary/40"
                             : showError
@@ -1170,18 +894,12 @@ export default function Onboarding() {
               <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">In one sentence, what do you create? *</label>
                 <Textarea
-                  ref={oneSentenceInputRef}
                   value={oneSentence}
-                  onChange={(e) => {
-                    setOneSentence(e.target.value.slice(0, 120));
-                    if (oneSentenceError) setOneSentenceError(false);
-                  }}
+                  onChange={(e) => setOneSentence(e.target.value.slice(0, 120))}
                   placeholder='e.g. "I teach first-generation investors how to build wealth from zero."'
                   rows={2}
                   className="text-sm resize-none"
                   maxLength={120}
-                  aria-invalid={oneSentenceError && !oneSentence.trim()}
-                  aria-required="true"
                 />
                 <p className="text-xs text-muted-foreground text-right mt-1">{oneSentence.length}/120</p>
               </div>
@@ -1236,60 +954,24 @@ export default function Onboarding() {
               </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <Button variant="outline" onClick={() => setStep(2)} className="gap-1">
                 <ArrowLeft className="w-4 h-4" /> Back
-              </Button>
-              <Button
-                variant="ghost"
-                data-testid="save-draft-step3"
-                onClick={() => {
-                  try {
-                    window.localStorage.setItem(
-                      STEP3_STORAGE_KEY,
-                      JSON.stringify({ savedAt: Date.now(), creatorStage, oneSentence, challenges, firstUseCase, hearAbout })
-                    );
-                    toast.success("Draft saved", { description: "Your answers are stored on this device for 24 hours." });
-                  } catch {
-                    toast.error("Couldn't save draft");
-                  }
-                }}
-              >
-                Save draft
               </Button>
               <Button
                 variant="hero"
                 size="xl"
                 className="flex-1"
-                aria-disabled={!creatorStage || !oneSentence.trim()}
+                disabled={!oneSentence.trim()}
                 onClick={() => {
                   if (!creatorStage) {
                     setAttemptedSubmit(true);
-                    setOneSentenceError(false);
-                    const firstStageCard = document.querySelector<HTMLButtonElement>(
-                      `[data-creator-stage-card="${CREATOR_STAGES[0].key}"]`
-                    );
-                    step3BannerRef.current?.surface(firstStageCard);
-                    toast.error("Pick where you are right now to continue");
                     return;
                   }
-                  if (!oneSentence.trim()) {
-                    setOneSentenceError(true);
-                    setAttemptedSubmit(false);
-                    step3BannerRef.current?.surface(oneSentenceInputRef.current);
-                    toast.error("Add a one-sentence description to continue");
-                    return;
-                  }
-                  setOneSentenceError(false);
-                  setAttemptedSubmit(false);
                   setStep(4);
                 }}
               >
-                {!creatorStage
-                  ? "Pick your stage to continue"
-                  : !oneSentence.trim()
-                  ? "Add one sentence to continue"
-                  : "Continue"} <ArrowRight className="ml-1 w-4 h-4" />
+                Continue <ArrowRight className="ml-1 w-4 h-4" />
               </Button>
             </div>
           </motion.div>
@@ -1307,7 +989,7 @@ export default function Onboarding() {
                 <label className="text-sm font-medium text-foreground mb-2 block">
                   Your top goals * <span className="text-xs text-muted-foreground font-normal">(choose 1–3)</span>
                 </label>
-                <div ref={goalsGroupRef} className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   {CREATOR_GOALS.map((g) => {
                     const selected = goals.includes(g.key);
                     const atLimit = !selected && goals.length >= 3;
@@ -1340,19 +1022,16 @@ export default function Onboarding() {
                     );
                   })}
                 </div>
-                <ValidationBanner
-                  ref={step4Validation.bannerRef}
-                  show={showGoalsError}
-                  title="Goals required"
-                  description="Please pick at least one goal to continue."
-                  testId="step4-goals-error"
-                  className="mt-2"
-                />
+                {step4AttemptedSubmit && goals.length === 0 && (
+                  <p className="text-xs text-destructive mt-2" role="alert" aria-live="polite">
+                    Please pick at least one goal to continue.
+                  </p>
+                )}
               </div>
 
               <div>
                 <label className="text-sm font-medium text-foreground mb-2 block">Target timeline *</label>
-                <div ref={timelineGroupRef} className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   {GOAL_TIMELINES.map((t) => {
                     const selected = goalTimeline === t.key;
                     return (
@@ -1372,37 +1051,26 @@ export default function Onboarding() {
                     );
                   })}
                 </div>
-                <ValidationBanner
-                  ref={step4TimelineBannerRef}
-                  show={showTimelineError}
-                  title="Timeline required"
-                  description="Please choose a timeline to continue."
-                  testId="step4-timeline-error"
-                  className="mt-2"
-                />
+                {step4AttemptedSubmit && !goalTimeline && (
+                  <p className="text-xs text-destructive mt-2" role="alert" aria-live="polite">
+                    Please choose a timeline to continue.
+                  </p>
+                )}
               </div>
             </div>
 
-            <div className="flex gap-2">
+            {submitError && (
+              <div
+                role="alert"
+                className="mb-3 flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive"
+              >
+                <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
+                <span className="flex-1">{submitError}</span>
+              </div>
+            )}
+            <div className="flex gap-3">
               <Button variant="outline" onClick={() => setStep(3)} className="gap-1">
                 <ArrowLeft className="w-4 h-4" /> Back
-              </Button>
-              <Button
-                variant="ghost"
-                data-testid="save-draft-step4"
-                onClick={() => {
-                  try {
-                    window.localStorage.setItem(
-                      STEP4_STORAGE_KEY,
-                      JSON.stringify({ savedAt: Date.now(), goals, goalTimeline })
-                    );
-                    toast.success("Draft saved", { description: "Your goals are stored on this device for 24 hours." });
-                  } catch {
-                    toast.error("Couldn't save draft");
-                  }
-                }}
-              >
-                Save draft
               </Button>
               <Button
                 variant="hero"
@@ -1410,150 +1078,16 @@ export default function Onboarding() {
                 className="flex-1"
                 disabled={saving}
                 onClick={() => {
-                  setStep4AttemptedSubmit(true);
-                  if (!step4Validation.validate(step4Rules)) return;
+                  if (goals.length === 0 || !goalTimeline) {
+                    setStep4AttemptedSubmit(true);
+                    return;
+                  }
                   finishOnboarding();
                 }}
               >
                 {saving ? "Submitting..." : "Submit Application"} <ArrowRight className="ml-1 w-4 h-4" />
               </Button>
             </div>
-          </motion.div>
-        )}
-
-        {/* STEP 5: Plan preview — shown after a successful submission, before
-            the final confirmation. Lets the user review their derived tier,
-            community type, and first-30-day actions before finishing. */}
-        {step === 5 && (
-          <PlanPreview
-            firstName={firstName}
-            followerCount={followerCount}
-            isMonetizing={isMonetizing}
-            monthlyEarnings={monthlyEarnings}
-            creatorStage={creatorStage}
-            creatorType={creatorType}
-            firstUseCase={firstUseCase}
-            goals={goals}
-            goalTimeline={goalTimeline}
-            onBack={() => setStep(4)}
-            onContinue={() => setStep(6)}
-            onEditStep={(s) => setStep(s)}
-          />
-        )}
-
-        {/* STEP 6: Final confirmation — full-screen, only reachable after the
-            user reviews & accepts the plan preview on Step 5. */}
-        {step === 6 && (
-          <motion.div
-            key="confirmation"
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.02 }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="w-full max-w-md flex flex-col items-center text-center"
-            role="status"
-            aria-live="polite"
-          >
-            <motion.div
-              initial={{ scale: 0.4, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: "spring", stiffness: 220, damping: 16, delay: 0.1 }}
-              className="w-20 h-20 rounded-full bg-primary/15 ring-4 ring-primary/30 flex items-center justify-center mb-5"
-            >
-              <Check className="w-10 h-10 text-primary" aria-hidden="true" />
-            </motion.div>
-
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">
-              {submittedApproved ? "You're in! 🎉" : "Application submitted 🎉"}
-            </h1>
-            <p className="text-muted-foreground text-sm mb-6 max-w-sm">
-              {submittedApproved
-                ? `Welcome to UPLY${firstName ? `, ${firstName.trim().split(" ")[0]}` : ""}. Your account is approved and ready to go.`
-                : `Thanks${firstName ? `, ${firstName.trim().split(" ")[0]}` : ""}! We've received your application and you're on the waitlist. We'll email you the moment a spot opens up.`}
-            </p>
-
-            <div className="w-full rounded-xl border border-border bg-card p-4 mb-6 text-left space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">1</div>
-                <div>
-                  <p className="text-sm font-medium text-foreground">Check your inbox</p>
-                  <p className="text-xs text-muted-foreground">We just sent a confirmation email with your details.</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">2</div>
-                <div>
-                  <p className="text-sm font-medium text-foreground">
-                    {submittedApproved ? "Set up your creator space" : "Skip the line with referrals"}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {submittedApproved
-                      ? "Customize your profile, go live, and start earning."
-                      : "Share your unique link — every signup moves you up the waitlist."}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">3</div>
-                <div>
-                  <p className="text-sm font-medium text-foreground">Stay in the loop</p>
-                  <p className="text-xs text-muted-foreground">Follow @uply on social for launch updates and creator tips.</p>
-                </div>
-              </div>
-            </div>
-
-            <Button
-              variant="hero"
-              size="xl"
-              className="w-full"
-              onClick={() => {
-                if (submittedApproved) {
-                  navigate("/discover", { replace: true });
-                } else {
-                  navigate("/waitlist?applied=true", { replace: true });
-                }
-              }}
-            >
-              {submittedApproved ? "Go to Dashboard" : "View My Waitlist Spot"}
-              <ArrowRight className="ml-1 w-4 h-4" />
-            </Button>
-
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-full mt-3"
-              onClick={() => {
-                try {
-                  downloadOnboardingPdf({
-                    firstName,
-                    lastName,
-                    socialHandle,
-                    creatorType,
-                    followerCount,
-                    primaryPlatform,
-                    isMonetizing,
-                    monthlyEarnings,
-                    creatorStage,
-                    oneSentence,
-                    challenges,
-                    firstUseCase,
-                    hearAbout,
-                    goals,
-                    goalTimeline,
-                  });
-                  toast.success("Your growth plan PDF is downloading");
-                } catch (e) {
-                  toast.error("Couldn't generate your PDF. Please try again.");
-                }
-              }}
-            >
-              <Download className="mr-1 w-4 h-4" />
-              Download my answers & growth plan (PDF)
-            </Button>
-
-            <p className="text-[11px] text-muted-foreground mt-4">
-              You can always come back to this from your email confirmation.
-            </p>
           </motion.div>
         )}
       </AnimatePresence>

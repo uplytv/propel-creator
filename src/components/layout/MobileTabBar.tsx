@@ -223,15 +223,9 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
             }
 
             const active = isActive(tab.path);
-            const tourKey =
-              tab.path === "/discover" ? "nav-discover"
-              : tab.path === "/wallet" ? "nav-products"
-              : tab.path.startsWith("/community") || tab.path.startsWith("/space") ? "nav-grow"
-              : undefined;
             return (
               <button
                 key={tab.label}
-                data-tour={tourKey}
                 onClick={() => { setCreateOpen(false); setAriaOpen(false); navigate(tab.path); }}
                 aria-label={tab.label}
                 aria-current={active ? "page" : undefined}

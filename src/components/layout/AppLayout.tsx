@@ -25,7 +25,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useInviteCodes } from "@/hooks/useInviteCodes";
-import CreatorTour from "@/components/onboarding/CreatorTour";
 
 type NavItem = { label: string; icon: React.ElementType; path: string; desc: string; requiresTier?: number; badgeKey?: string; featureKey?: string };
 
@@ -575,9 +574,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
       {/* Mobile Tab Bar */}
       <MobileTabBar onUploadVideo={() => setUploadSheetOpen(true)} />
-
-      {/* Creator onboarding tour — mounted at layout level so it persists across route changes */}
-      {user && <CreatorTour />}
 
       {/* Video Upload Sheet */}
       <VideoUploadSheet open={uploadSheetOpen} onClose={() => setUploadSheetOpen(false)} />

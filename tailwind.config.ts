@@ -138,10 +138,6 @@ export default {
           "80%": { transform: "scale(0.95)" },
           "100%": { transform: "scale(1)" },
         },
-        shimmer: {
-          "0%": { transform: "translateX(-100%)" },
-          "100%": { transform: "translateX(100%)" },
-        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -156,7 +152,6 @@ export default {
         "check-in": "check-in 0.4s ease-out forwards",
         "particle-burst": "particle-burst 0.5s ease-out forwards",
         "badge-bounce": "badge-bounce 0.6s ease-out forwards",
-        shimmer: "shimmer 2.2s ease-in-out infinite",
       },
     },
   },

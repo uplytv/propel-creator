@@ -113,58 +113,9 @@ export default function CreatorTour({
   const [open, setOpen] = useState(false);
   const [stepIdx, setStepIdx] = useState(0);
   const [rect, setRect] = useState<Rect | null>(null);
-  // Track viewport size in state so positioning recalculates on resize and
-  // orientation change (e.g. phone rotation). Without this, `tooltipStyle` is
-  // computed during render using stale `window.innerWidth/Height` snapshots.
-  const [viewport, setViewport] = useState<{ w: number; h: number }>(() => ({
-    w: typeof window !== "undefined" ? window.innerWidth : 0,
-    h: typeof window !== "undefined" ? window.innerHeight : 0,
-  }));
   const rafRef = useRef<number | null>(null);
-  const viewportRafRef = useRef<number | null>(null);
-
-  // Subscribe to resize + orientationchange so the tooltip never clips after
-  // the user rotates their device or the visual viewport shrinks (e.g. when
-  // the mobile browser chrome or keyboard appears/disappears).
-  useEffect(() => {
-    const update = () => {
-      if (viewportRafRef.current) cancelAnimationFrame(viewportRafRef.current);
-      viewportRafRef.current = requestAnimationFrame(() => {
-        setViewport({ w: window.innerWidth, h: window.innerHeight });
-      });
-    };
-    window.addEventListener("resize", update);
-    window.addEventListener("orientationchange", update);
-    // visualViewport fires more reliably on iOS when the URL bar collapses.
-    window.visualViewport?.addEventListener("resize", update);
-    return () => {
-      window.removeEventListener("resize", update);
-      window.removeEventListener("orientationchange", update);
-      window.visualViewport?.removeEventListener("resize", update);
-    };
-  }, []);
 
   const step = CREATOR_TOUR_STEPS[stepIdx];
-
-  // Live-region announcement for screen readers. We deliberately drive this
-  // with a small delay (and a momentary clear) so assistive tech reliably
-  // re-announces the new step even when the new text is similar to the
-  // previous one — most screen readers only fire when the live region's
-  // text content actually changes.
-  const [liveMessage, setLiveMessage] = useState("");
-  useEffect(() => {
-    if (!open || !step) {
-      setLiveMessage("");
-      return;
-    }
-    setLiveMessage("");
-    const t = setTimeout(() => {
-      setLiveMessage(
-        `Step ${stepIdx + 1} of ${CREATOR_TOUR_STEPS.length}. ${step.title}. ${step.body}`,
-      );
-    }, 80);
-    return () => clearTimeout(t);
-  }, [open, step, stepIdx]);
 
   // Decide whether to auto-open for new users
   useEffect(() => {
@@ -245,47 +196,30 @@ export default function CreatorTour({
   // Compute tooltip position
   let tooltipStyle: React.CSSProperties = {};
   const SIDE_MARGIN = 16;
-  const isNarrow = viewport.w > 0 && viewport.w < 640;
-  const TOOLTIP_W = isNarrow ? Math.min(340, viewport.w - SIDE_MARGIN * 2) : 340;
+  const isNarrow = typeof window !== "undefined" && window.innerWidth < 640;
+  const TOOLTIP_W = isNarrow ? Math.min(340, window.innerWidth - SIDE_MARGIN * 2) : 340;
   const tooltipWidthStyle: React.CSSProperties = { width: TOOLTIP_W, maxWidth: `calc(100vw - ${SIDE_MARGIN * 2}px)` };
 
-  // NOTE: We avoid CSS `transform` for positioning here because framer-motion's
-  // `animate` prop drives `transform` and would clobber a translate(-50%,-50%).
-  // Instead we compute concrete top/left values that already account for the
-  // tooltip's own size, so the card lands in the intended spot on every device.
-  const viewportW = viewport.w;
-  const viewportH = viewport.h;
-  // Estimated tooltip height — only used for vertical clamping. Real height is
-  // measured by layout; this is intentionally generous so we never under-clamp.
-  const TOOLTIP_H_EST = 280;
-
   if (isCenter) {
-    tooltipStyle = {
-      top: Math.max(SIDE_MARGIN, (viewportH - TOOLTIP_H_EST) / 2),
-      left: Math.max(SIDE_MARGIN, (viewportW - TOOLTIP_W) / 2),
-    };
+    tooltipStyle = { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
   } else if (rect) {
     const PAD = 12;
     const clampLeft = (l: number) =>
-      Math.max(SIDE_MARGIN, Math.min(viewportW - TOOLTIP_W - SIDE_MARGIN, l));
-    const clampTop = (t: number) =>
-      Math.max(SIDE_MARGIN, Math.min(viewportH - TOOLTIP_H_EST - SIDE_MARGIN, t));
+      Math.max(SIDE_MARGIN, Math.min(window.innerWidth - TOOLTIP_W - SIDE_MARGIN, l));
     // On narrow screens (mobile), always place top/bottom and center horizontally
     // so left/right placements don't push the card off-screen.
-    let placement = step.placement || (rect.top > viewportH / 2 ? "top" : "bottom");
+    let placement = step.placement || (rect.top > window.innerHeight / 2 ? "top" : "bottom");
     if (isNarrow && (placement === "left" || placement === "right")) {
-      placement = rect.top > viewportH / 2 ? "top" : "bottom";
+      placement = rect.top > window.innerHeight / 2 ? "top" : "bottom";
     }
     if (placement === "bottom") {
-      tooltipStyle = { top: clampTop(rect.top + rect.height + PAD), left: clampLeft(rect.left) };
+      tooltipStyle = { top: rect.top + rect.height + PAD, left: clampLeft(rect.left) };
     } else if (placement === "top") {
-      // Manually subtract estimated height instead of using translateY(-100%),
-      // which would be overridden by framer-motion's transform animation.
-      tooltipStyle = { top: clampTop(rect.top - PAD - TOOLTIP_H_EST), left: clampLeft(rect.left) };
+      tooltipStyle = { top: rect.top - PAD, left: clampLeft(rect.left), transform: "translateY(-100%)" };
     } else if (placement === "right") {
-      tooltipStyle = { top: clampTop(rect.top), left: clampLeft(rect.left + rect.width + PAD) };
+      tooltipStyle = { top: rect.top, left: clampLeft(rect.left + rect.width + PAD) };
     } else {
-      tooltipStyle = { top: clampTop(rect.top), left: clampLeft(rect.left - PAD - TOOLTIP_W) };
+      tooltipStyle = { top: rect.top, left: clampLeft(rect.left - PAD - TOOLTIP_W) };
     }
   }
 
@@ -298,25 +232,8 @@ export default function CreatorTour({
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[9998]"
       >
-        {/* Visually-hidden live region — announces step changes to screen
-            readers. Lives outside the dialog so it isn't torn down on each
-            step transition (the dialog re-mounts via key={step.id}). */}
-        <div
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
-          data-testid="creator-tour-live-region"
-          className="sr-only"
-        >
-          {liveMessage}
-        </div>
         {/* Spotlight via SVG mask */}
-        <svg
-          className="absolute inset-0 w-full h-full pointer-events-auto"
-          onClick={isCenter ? undefined : next}
-          aria-hidden="true"
-          focusable="false"
-        >
+        <svg className="absolute inset-0 w-full h-full pointer-events-auto" onClick={isCenter ? undefined : next}>
           <defs>
             <mask id="tour-mask">
               <rect width="100%" height="100%" fill="white" />
@@ -357,30 +274,14 @@ export default function CreatorTour({
           transition={{ duration: 0.2 }}
           style={{ ...tooltipStyle, ...tooltipWidthStyle }}
           className="fixed z-[9999] rounded-2xl border border-border bg-card shadow-2xl p-5"
-          data-testid="creator-tour-popover"
-          // Dialog semantics: announce as a non-modal dialog (the rest of the
-          // page is still visually dimmed but not aria-hidden, so screen
-          // reader users keep their place). `aria-labelledby` /
-          // `aria-describedby` point at the title + body so VoiceOver / NVDA
-          // read the step heading and explanation as soon as it opens.
-          role="dialog"
-          aria-modal="false"
-          aria-labelledby={`tour-step-${step.id}-title`}
-          aria-describedby={`tour-step-${step.id}-body`}
         >
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center gap-2.5">
-              <div
-                className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center"
-                aria-hidden="true"
-              >
+              <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center">
                 <Icon className="w-4.5 h-4.5 text-primary" />
               </div>
               <div>
-                <p
-                  className="text-xs font-semibold text-muted-foreground uppercase tracking-wide"
-                  aria-label={`Step ${stepIdx + 1} of ${CREATOR_TOUR_STEPS.length}`}
-                >
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                   Step {stepIdx + 1} of {CREATOR_TOUR_STEPS.length}
                 </p>
               </div>
@@ -389,40 +290,19 @@ export default function CreatorTour({
               onClick={finish}
               className="text-muted-foreground hover:text-foreground transition"
               aria-label="Skip tour"
-              data-testid="creator-tour-skip"
-              type="button"
             >
-              <X className="w-4 h-4" aria-hidden="true" />
+              <X className="w-4 h-4" />
             </button>
           </div>
 
-          <h3
-            id={`tour-step-${step.id}-title`}
-            className="text-base font-bold text-foreground mb-1.5"
-          >
-            {step.title}
-          </h3>
-          <p
-            id={`tour-step-${step.id}-body`}
-            className="text-sm text-muted-foreground leading-relaxed mb-4"
-          >
-            {step.body}
-          </p>
+          <h3 className="text-base font-bold text-foreground mb-1.5">{step.title}</h3>
+          <p className="text-sm text-muted-foreground leading-relaxed mb-4">{step.body}</p>
 
-          {/* Progress dots — purely decorative; the textual "Step X of N"
-              above already communicates progress to assistive tech. */}
-          <div
-            className="flex items-center gap-1 mb-4"
-            role="progressbar"
-            aria-valuemin={1}
-            aria-valuemax={CREATOR_TOUR_STEPS.length}
-            aria-valuenow={stepIdx + 1}
-            aria-label="Tour progress"
-          >
+          {/* Progress dots */}
+          <div className="flex items-center gap-1 mb-4">
             {CREATOR_TOUR_STEPS.map((_, i) => (
               <div
                 key={i}
-                aria-hidden="true"
                 className={`h-1 rounded-full transition-all ${
                   i === stepIdx ? "w-6 bg-primary" : i < stepIdx ? "w-3 bg-primary/50" : "w-3 bg-border"
                 }`}
@@ -437,30 +317,17 @@ export default function CreatorTour({
               onClick={prev}
               disabled={stepIdx === 0}
               className="gap-1.5"
-              data-testid="creator-tour-back"
-              aria-label="Go back to previous tour step"
             >
-              <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" /> Back
+              <ArrowLeft className="w-3.5 h-3.5" /> Back
             </Button>
-            <Button
-              size="sm"
-              onClick={next}
-              className="gap-1.5 flex-1 max-w-[180px]"
-              data-testid="creator-tour-advance"
-              data-tour-step={step.id}
-              aria-label={
-                stepIdx === CREATOR_TOUR_STEPS.length - 1
-                  ? `Finish tour: ${step.cta || "Finish"}`
-                  : `Advance to step ${stepIdx + 2} of ${CREATOR_TOUR_STEPS.length}: ${step.cta || "Next"}`
-              }
-            >
+            <Button size="sm" onClick={next} className="gap-1.5 flex-1 max-w-[180px]">
               {stepIdx === CREATOR_TOUR_STEPS.length - 1 ? (
                 <>
-                  <Check className="w-3.5 h-3.5" aria-hidden="true" /> {step.cta || "Finish"}
+                  <Check className="w-3.5 h-3.5" /> {step.cta || "Finish"}
                 </>
               ) : (
                 <>
-                  {step.cta || "Next"} <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+                  {step.cta || "Next"} <ArrowRight className="w-3.5 h-3.5" />
                 </>
               )}
             </Button>

@@ -2,8 +2,6 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, MessageCircle, Share2, ChevronUp, ChevronDown, Play, Volume2, VolumeX, Scissors, Copy, Check } from "lucide-react";
 import SharePanel from "@/components/share/SharePanel";
-import ShortsCommentSheet from "@/components/shorts/ShortsCommentSheet";
-import { useShortComments } from "@/hooks/useShortComments";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useShorts, Short } from "@/hooks/useShorts";
 import { useClipLikes } from "@/hooks/useClipLikes";
@@ -22,7 +20,6 @@ export default function Shorts() {
   const [localLiked, setLocalLiked] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  const [commentsOpen, setCommentsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
 
@@ -239,10 +236,10 @@ export default function Shorts() {
                   {getShortLikeCount(currentShort)}
                 </span>
               </button>
-              <CommentButton
-                shortId={currentShort.id}
-                onOpen={() => setCommentsOpen(true)}
-              />
+              <button className="flex flex-col items-center gap-1">
+                <MessageCircle className="w-7 h-7 text-white" />
+                <span className="text-white text-[10px] font-semibold">0</span>
+              </button>
               <button onClick={handleShare} className="flex flex-col items-center gap-1">
                 {copied ? <Check className="w-7 h-7 text-primary" /> : <Share2 className="w-7 h-7 text-white" />}
                 <span className="text-white text-[10px] font-semibold">{copied ? "Copied" : "Share"}</span>
@@ -294,26 +291,6 @@ export default function Shorts() {
           creatorUsername={currentShort.creator_name}
         />
       )}
-
-      {currentShort && (
-        <ShortsCommentSheet
-          open={commentsOpen}
-          onClose={() => setCommentsOpen(false)}
-          shortId={currentShort.id}
-          source={currentShort.source}
-          creatorId={currentShort.creator_id}
-        />
-      )}
     </div>
-  );
-}
-
-function CommentButton({ shortId, onOpen }: { shortId: string; onOpen: () => void }) {
-  const { data: comments } = useShortComments(shortId);
-  return (
-    <button onClick={onOpen} aria-label="Open comments" className="flex flex-col items-center gap-1">
-      <MessageCircle className="w-7 h-7 text-white" />
-      <span className="text-white text-[10px] font-semibold">{comments?.length ?? 0}</span>
-    </button>
   );
 }

@@ -31,9 +31,6 @@ export interface DiscoveryItem {
   likes: number;
   is_new_creator_boosted: boolean;
   is_live?: boolean;
-  is_boosted?: boolean;
-  boost_tier?: string | null;
-  boost_expires_at?: string | null;
   created_at: string;
   // joined
   title?: string;
@@ -89,40 +86,6 @@ export function useDiscoveryAlgorithmFeed(tab: DiscoveryTab, category?: string) 
         ranked = scores
           .map((s: any) => ({ ...s, score: boosted.has(s.category) ? s.score * 1.4 : s.score }))
           .sort((a: any, b: any) => b.score - a.score);
-      }
-
-      // Paid Discovery Boost: promote active-boosted content to the top.
-      // Tier weight: pro > growth > starter. Skipped for "following" feed.
-      if (tab !== "following") {
-        const nowIso = new Date().toISOString();
-        const { data: boosts } = await supabase
-          .from("content_boosts")
-          .select("content_id, content_type, tier, starts_at, expires_at, status")
-          .eq("status", "active")
-          .gt("expires_at", nowIso);
-
-        const tierWeight: Record<string, number> = { pro: 3, growth: 2, starter: 1 };
-        const boostMap = new Map<string, { tier: string; weight: number; expires_at: string }>();
-        (boosts ?? []).forEach((b: any) => {
-          const key = `${b.content_type}:${b.content_id}`;
-          const w = tierWeight[b.tier] ?? 1;
-          const existing = boostMap.get(key);
-          if (!existing || w > existing.weight) boostMap.set(key, { tier: b.tier, weight: w, expires_at: b.expires_at });
-        });
-
-        if (boostMap.size > 0) {
-          ranked = ranked.map((r: any) => {
-            const b = boostMap.get(`${r.content_type}:${r.content_id}`);
-            return b ? { ...r, is_boosted: true, boost_tier: b.tier, boost_expires_at: b.expires_at, _boostWeight: b.weight } : r;
-          });
-          // Stable sort: boosted first by weight desc, then by score desc
-          ranked.sort((a: any, b: any) => {
-            const aw = a._boostWeight ?? 0;
-            const bw = b._boostWeight ?? 0;
-            if (aw !== bw) return bw - aw;
-            return (b.score ?? 0) - (a.score ?? 0);
-          });
-        }
       }
 
       // Bucket IDs by content_type for hydration

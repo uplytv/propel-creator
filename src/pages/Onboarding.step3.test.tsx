@@ -173,9 +173,9 @@ function fillStep1(name = "Jane Doe") {
 }
 
 function fillStep2(creatorType = "Fitness") {
-  // Step 2 now uses a card grid (radiogroup) for creator type instead of a select
-  const card = screen.getByRole("radio", { name: new RegExp(creatorType, "i") });
-  fireEvent.click(card);
+  // First mocked native select on Step 2 is "What type of creator are you?"
+  const selects = screen.getAllByTestId("mock-select");
+  fireEvent.change(selects[0], { target: { value: creatorType } });
   clickContinue();
 }
 
@@ -207,8 +207,7 @@ describe("Onboarding Step 3 — iPhone layout", () => {
     expect(container.className).toContain("overflow-y-auto");
     expect(container.className).toContain("max-h-[55vh]");
 
-    // Stage cards are now a radiogroup (role="radio")
-    const radios = within(container as HTMLElement).getAllByRole("radio");
-    expect(radios.length).toBe(4);
+    const buttons = within(container as HTMLElement).getAllByRole("button");
+    expect(buttons.length).toBe(4);
   });
 });
