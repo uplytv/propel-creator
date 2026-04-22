@@ -4,6 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { PrefetchDebugPanel } from "@/components/dev/PrefetchDebugPanel";
+import { isPrefetchEnabled } from "@/lib/devPrefetchToggles";
 
 // Cache the dynamic imports so we can both lazy-load and imperatively prefetch
 // the same module without triggering a second network request.
@@ -119,6 +120,11 @@ const isSlowOrSavingData = (): { skip: boolean; reason?: string; effectiveType?:
  */
 const prefetchTarget = (target: "home" | "landing", reason: string) => {
   if (typeof window === "undefined") return;
+  if (!isPrefetchEnabled(target)) {
+    prefetchLog(`skipped: ${target} disabled via dev toggle`, { reason });
+    setPrefetchStatus(target, "skipped", "dev-toggle-off");
+    return;
+  }
   if (prefetchedRoutes[target]) {
     prefetchLog(`skipped: ${target} already prefetched`, { reason });
     return;
