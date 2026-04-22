@@ -359,8 +359,8 @@ const App = () => (
               </BrowserRouter>
               </AppWithSplash>
               </NativeShell>
-              </NetworkProvider>
               </CartProvider>
+              </NetworkProvider>
             </FeatureProvider>
           </AppProvider>
         </AuthProvider>
