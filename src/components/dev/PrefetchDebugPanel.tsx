@@ -78,6 +78,7 @@ export const PrefetchDebugPanel = () => {
   const [changedAt, setChangedAt] = useState(() => getPrefetchTogglesChangedAt());
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
   const [importStatus, setImportStatus] = useState<"idle" | "imported" | "error">("idle");
+  const [importErrors, setImportErrors] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   // Tick once a second so the relative "changed Xs ago" label stays fresh.
   const [, setNow] = useState(() => Date.now());
@@ -249,24 +250,39 @@ export const PrefetchDebugPanel = () => {
                     // Reset so re-selecting the same file fires onChange again.
                     e.target.value = "";
                     if (!file) return;
+                    setImportErrors([]);
+                    let parsed: unknown;
                     try {
                       const text = await file.text();
-                      const parsed = JSON.parse(text);
-                      if (typeof parsed !== "object" || parsed == null) {
-                        throw new Error("snapshot is not an object");
-                      }
-                      importPrefetchToggles({
-                        toggles: parsed.toggles,
-                        togglesChangedAt: parsed.togglesChangedAt,
-                      });
-                      setToggles(getPrefetchToggles());
-                      setChangedAt(getPrefetchTogglesChangedAt());
-                      setImportStatus("imported");
+                      parsed = JSON.parse(text);
                     } catch (err) {
+                      const msg =
+                        err instanceof Error
+                          ? `Invalid JSON: ${err.message}`
+                          : "Invalid JSON file.";
                       // eslint-disable-next-line no-console
-                      console.error("[PrefetchDebugPanel] import failed", err);
+                      console.error("[PrefetchDebugPanel] import parse failed", err);
+                      setImportErrors([msg]);
                       setImportStatus("error");
+                      window.setTimeout(() => setImportStatus("idle"), 2000);
+                      return;
                     }
+                    const result = importPrefetchToggles(parsed);
+                    if (!result.ok) {
+                      const errs = (result as { ok: false; errors: string[] }).errors;
+                      // eslint-disable-next-line no-console
+                      console.error(
+                        "[PrefetchDebugPanel] snapshot validation failed",
+                        errs
+                      );
+                      setImportErrors(errs);
+                      setImportStatus("error");
+                      window.setTimeout(() => setImportStatus("idle"), 2000);
+                      return;
+                    }
+                    setToggles(getPrefetchToggles());
+                    setChangedAt(getPrefetchTogglesChangedAt());
+                    setImportStatus("imported");
                     window.setTimeout(() => setImportStatus("idle"), 1500);
                   }}
                 />
@@ -286,12 +302,35 @@ export const PrefetchDebugPanel = () => {
                       resetPrefetchToggles();
                       setToggles(getPrefetchToggles());
                       setChangedAt(getPrefetchTogglesChangedAt());
+                      setImportErrors([]);
                     }}
                     className="flex-1 rounded border border-white/10 px-2 py-1 text-[10px] uppercase tracking-wide text-white/60 hover:bg-white/5 hover:text-white/80 transition"
                   >
                     reset toggles
                   </button>
                 </div>
+                {importErrors.length > 0 && (
+                  <div className="rounded border border-red-500/30 bg-red-500/10 p-1.5 space-y-0.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[10px] uppercase tracking-wide text-red-300 font-semibold">
+                        import errors
+                      </span>
+                      <button
+                        onClick={() => setImportErrors([])}
+                        className="text-[10px] text-red-300/60 hover:text-red-300"
+                      >
+                        dismiss
+                      </button>
+                    </div>
+                    <ul className="text-[10px] text-red-200/90 space-y-0.5 list-disc pl-3">
+                      {importErrors.map((err, i) => (
+                        <li key={i} className="break-words">
+                          {err}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             );
           })()}

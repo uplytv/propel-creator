@@ -105,33 +105,133 @@ export const resetPrefetchToggles = () => {
 };
 
 /**
- * Bulk-apply toggle values and their changed-at timestamps. Used by the
- * dev-only "import snapshot" button. Unknown targets are ignored.
+ * Result of validating an imported snapshot. `ok: true` includes the
+ * normalized payload (numeric timestamps); `ok: false` includes a list of
+ * human-readable errors describing exactly what's wrong.
  */
-export const importPrefetchToggles = (input: {
-  toggles?: Partial<Toggles>;
-  togglesChangedAt?: Partial<Record<PrefetchTarget, number | string | null>>;
-}) => {
-  if (!import.meta.env.DEV) return;
+export type SnapshotValidationResult =
+  | {
+      ok: true;
+      value: {
+        toggles: Toggles;
+        togglesChangedAt: ChangedAt;
+      };
+    }
+  | { ok: false; errors: string[] };
+
+const TARGETS = ["home", "landing"] as const;
+
+/**
+ * Strict schema validator for snapshot JSON. Returns specific errors for
+ * missing/malformed required keys so the UI can surface them clearly.
+ *
+ * Required shape:
+ *   {
+ *     toggles: { home: boolean, landing: boolean },
+ *     togglesChangedAt: {
+ *       home: string | number | null,
+ *       landing: string | number | null
+ *     }
+ *   }
+ */
+export const validatePrefetchSnapshot = (
+  input: unknown
+): SnapshotValidationResult => {
+  const errors: string[] = [];
+
+  if (typeof input !== "object" || input === null || Array.isArray(input)) {
+    return { ok: false, errors: ["Snapshot root must be a JSON object."] };
+  }
+
+  const root = input as Record<string, unknown>;
+
+  // toggles
+  if (!("toggles" in root)) {
+    errors.push("Missing required key: `toggles`.");
+  } else if (
+    typeof root.toggles !== "object" ||
+    root.toggles === null ||
+    Array.isArray(root.toggles)
+  ) {
+    errors.push("`toggles` must be an object with `home` and `landing` booleans.");
+  }
+
+  // togglesChangedAt
+  if (!("togglesChangedAt" in root)) {
+    errors.push("Missing required key: `togglesChangedAt`.");
+  } else if (
+    typeof root.togglesChangedAt !== "object" ||
+    root.togglesChangedAt === null ||
+    Array.isArray(root.togglesChangedAt)
+  ) {
+    errors.push(
+      "`togglesChangedAt` must be an object with `home` and `landing` entries."
+    );
+  }
+
+  if (errors.length > 0) return { ok: false, errors };
+
+  const togglesIn = root.toggles as Record<string, unknown>;
+  const changedIn = root.togglesChangedAt as Record<string, unknown>;
   const nextToggles: Toggles = { ...cache };
   const nextChangedAt: ChangedAt = { ...changedAtCache };
 
-  (["home", "landing"] as const).forEach((target) => {
-    if (input.toggles && typeof input.toggles[target] === "boolean") {
-      nextToggles[target] = input.toggles[target] as boolean;
+  TARGETS.forEach((target) => {
+    if (!(target in togglesIn)) {
+      errors.push(`\`toggles.${target}\` is required.`);
+    } else if (typeof togglesIn[target] !== "boolean") {
+      errors.push(
+        `\`toggles.${target}\` must be a boolean (got ${typeof togglesIn[target]}).`
+      );
+    } else {
+      nextToggles[target] = togglesIn[target] as boolean;
     }
-    const raw = input.togglesChangedAt?.[target];
-    if (raw == null) return;
-    if (typeof raw === "number" && Number.isFinite(raw)) {
+
+    if (!(target in changedIn)) {
+      errors.push(`\`togglesChangedAt.${target}\` is required (use null if unset).`);
+      return;
+    }
+    const raw = changedIn[target];
+    if (raw === null) {
+      nextChangedAt[target] = null;
+    } else if (typeof raw === "number" && Number.isFinite(raw)) {
       nextChangedAt[target] = raw;
     } else if (typeof raw === "string") {
       const parsed = Date.parse(raw);
-      if (Number.isFinite(parsed)) nextChangedAt[target] = parsed;
+      if (Number.isFinite(parsed)) {
+        nextChangedAt[target] = parsed;
+      } else {
+        errors.push(
+          `\`togglesChangedAt.${target}\` is not a parseable ISO date string.`
+        );
+      }
+    } else {
+      errors.push(
+        `\`togglesChangedAt.${target}\` must be null, a number, or an ISO date string (got ${typeof raw}).`
+      );
     }
   });
 
-  cache = nextToggles;
-  changedAtCache = nextChangedAt;
+  if (errors.length > 0) return { ok: false, errors };
+  return { ok: true, value: { toggles: nextToggles, togglesChangedAt: nextChangedAt } };
+};
+
+/**
+ * Bulk-apply toggle values and their changed-at timestamps. Used by the
+ * dev-only "import snapshot" button. Validates the input first and returns
+ * the validation result so callers can surface specific errors.
+ */
+export const importPrefetchToggles = (
+  input: unknown
+): SnapshotValidationResult => {
+  if (!import.meta.env.DEV) {
+    return { ok: false, errors: ["Import is only available in development."] };
+  }
+  const result = validatePrefetchSnapshot(input);
+  if (!result.ok) return result;
+
+  cache = result.value.toggles;
+  changedAtCache = result.value.togglesChangedAt;
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(cache));
   } catch {
@@ -139,4 +239,5 @@ export const importPrefetchToggles = (input: {
   }
   persistChangedAt();
   dispatch();
+  return result;
 };
