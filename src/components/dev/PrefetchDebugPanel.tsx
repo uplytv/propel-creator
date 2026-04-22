@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   PREFETCH_TOGGLES_EVENT,
   getPrefetchToggles,
+  getPrefetchTogglesChangedAt,
   resetPrefetchToggles,
   setPrefetchToggle,
 } from "@/lib/devPrefetchToggles";
