@@ -325,6 +325,51 @@ export default function StaffReentryRequests() {
 
   const clearSelection = () => setSelectedIds(new Set());
 
+  const undoBulk = async (
+    snapshots: ReentryNotification[],
+    mode: "approve" | "deny"
+  ) => {
+    try {
+      // Roll the notifications back to their pre-bulk state (read=false, prior metadata)
+      await Promise.all(
+        snapshots.map((s) =>
+          (supabase as any)
+            .from("notifications")
+            .update({ read: false, metadata: s.metadata ?? {} })
+            .eq("id", s.id)
+        )
+      );
+
+      // For approve: revert ticket reactivation back to a used state
+      if (mode === "approve") {
+        await Promise.all(
+          snapshots.map((s) => {
+            const ticketId = s.metadata?.ticket_id || s.reference_id;
+            if (!ticketId) return Promise.resolve();
+            return (supabase as any)
+              .from("tickets")
+              .update({ status: "used", checked_in: true, checked_in_at: new Date().toISOString() })
+              .eq("id", ticketId);
+          })
+        );
+      }
+
+      // Restore local state from snapshots
+      setRequests((prev) =>
+        prev.map((r) => {
+          const snap = snapshots.find((s) => s.id === r.id);
+          return snap ? { ...snap, _resolved: null } : r;
+        })
+      );
+
+      toast.success("Action undone", {
+        description: `${snapshots.length} request${snapshots.length === 1 ? "" : "s"} restored.`,
+      });
+    } catch (e: any) {
+      toast.error("Couldn't undo", { description: e?.message || "Try again." });
+    }
+  };
+
   const runBulk = async (mode: "approve" | "deny") => {
     if (bulkBusy) return;
     const targets = requests.filter(
@@ -335,10 +380,17 @@ export default function StaffReentryRequests() {
       return;
     }
 
+    // Snapshot pre-bulk state for undo
+    const snapshots: ReentryNotification[] = targets.map((t) => ({
+      ...t,
+      metadata: t.metadata ? JSON.parse(JSON.stringify(t.metadata)) : {},
+    }));
+
     setBulkBusy(mode);
     setBulkProgress({ done: 0, total: targets.length });
     let success = 0;
     let failed = 0;
+    const succeededIds: string[] = [];
 
     for (let i = 0; i < targets.length; i++) {
       const req = targets[i];
@@ -346,6 +398,7 @@ export default function StaffReentryRequests() {
         if (mode === "approve") await approveCore(req);
         else await denyCore(req);
         success++;
+        succeededIds.push(req.id);
       } catch {
         failed++;
       }
@@ -358,13 +411,27 @@ export default function StaffReentryRequests() {
     if (navigator.vibrate) navigator.vibrate(80);
 
     const verb = mode === "approve" ? "approved" : "denied";
+    const undoSnapshots = snapshots.filter((s) => succeededIds.includes(s.id));
+    const undoOpts =
+      undoSnapshots.length > 0
+        ? {
+            duration: 8000,
+            action: {
+              label: "Undo",
+              onClick: () => undoBulk(undoSnapshots, mode),
+            },
+          }
+        : {};
+
     if (failed === 0) {
       toast.success(`Bulk ${verb}`, {
         description: `${success} request${success === 1 ? "" : "s"} ${verb}.`,
+        ...undoOpts,
       });
     } else {
       toast.warning(`Bulk ${verb} with errors`, {
         description: `${success} ok · ${failed} failed`,
+        ...undoOpts,
       });
     }
   };
