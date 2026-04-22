@@ -531,6 +531,20 @@ export default function StaffReentryRequests() {
                 } ${isHighlighted ? "ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg" : ""}`}
               >
                 <div className="flex items-start gap-3">
+                  {!isResolved && (
+                    <button
+                      onClick={() => toggleSelect(req.id)}
+                      className="mt-1 flex-shrink-0 p-0.5 -ml-0.5 rounded hover:bg-muted transition-colors"
+                      aria-label={selectedIds.has(req.id) ? "Deselect" : "Select"}
+                      disabled={!!bulkBusy}
+                    >
+                      {selectedIds.has(req.id) ? (
+                        <CheckSquare className="w-4 h-4 text-primary" />
+                      ) : (
+                        <Square className="w-4 h-4 text-muted-foreground" />
+                      )}
+                    </button>
+                  )}
                   <div
                     className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
                       isResolved ? "bg-muted" : "bg-primary/15 text-primary"
