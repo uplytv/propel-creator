@@ -265,6 +265,9 @@ END:VCALENDAR`;
           )}
         </div>
 
+        {/* Event tabs: Chat / People / Gallery / Buy-Sell */}
+        <EventTabs eventId={event.id} eventTitle={event.title} />
+
         {/* Bottom sticky ticket card */}
         {!isPast && (
           <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 z-40 md:relative md:border-t-0 md:mt-6">
