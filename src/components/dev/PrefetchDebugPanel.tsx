@@ -308,6 +308,37 @@ export const PrefetchDebugPanel = () => {
                     </div>
                   );
                 })()}
+                <details className="rounded border border-white/10 bg-white/5 px-2 py-1 text-[10px] text-white/60">
+                  <summary className="cursor-pointer uppercase tracking-wide text-white/70 hover:text-white/90">
+                    schema preview
+                  </summary>
+                  <div className="mt-1.5 space-y-1">
+                    <div className="text-white/50">
+                      Required keys: <code className="text-white/80">toggles</code>,{" "}
+                      <code className="text-white/80">togglesChangedAt</code>
+                    </div>
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="text-white/40 text-left">
+                          <th className="font-normal pr-2 py-0.5">key</th>
+                          <th className="font-normal pr-2 py-0.5">toggles</th>
+                          <th className="font-normal py-0.5">togglesChangedAt</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {PREFETCH_TARGETS.map((target) => (
+                          <tr key={target} className="border-t border-white/5">
+                            <td className="pr-2 py-0.5 text-white/80">{target}</td>
+                            <td className="pr-2 py-0.5 text-emerald-300/90">boolean</td>
+                            <td className="py-0.5 text-amber-300/90">
+                              ISO string | number | null
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </details>
                 <input
                   ref={fileInputRef}
                   type="file"
