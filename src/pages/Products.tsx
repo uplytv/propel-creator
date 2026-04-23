@@ -32,7 +32,7 @@ const templates = [
 ];
 
 type CreateMode = null | "ai" | "url" | "template" | "scratch";
-type EditingProduct = { id: string; name: string; description: string | null; type: string; price: number; status: string; image_url: string | null } | null;
+type EditingProduct = { id: string; name: string; description: string | null; type: string; price: number; status: string; image_url: string | null; download_url?: string | null; download_file_name?: string | null } | null;
 
 export default function Products() {
   const [view, setView] = useState<"grid" | "list">("grid");
@@ -89,6 +89,12 @@ export default function Products() {
   const [editImageUploading, setEditImageUploading] = useState(false);
   const editImageInputRef = useRef<HTMLInputElement>(null);
 
+  // Edit: digital download
+  const editDownloadInputRef = useRef<HTMLInputElement>(null);
+  const [editDownloadUploading, setEditDownloadUploading] = useState(false);
+  const [editDownloadPath, setEditDownloadPath] = useState<string | null>(null);
+  const [editDownloadName, setEditDownloadName] = useState<string | null>(null);
+
   const openEdit = (p: any) => {
     setEditingProduct(p);
     setEditName(p.name);
@@ -97,6 +103,8 @@ export default function Products() {
     setEditPrice(String(p.price));
     setEditImagePreview(p.image_url || null);
     setEditImageFile(null);
+    setEditDownloadPath(p.download_url || null);
+    setEditDownloadName(p.download_file_name || null);
   };
 
   const closeEdit = () => {
@@ -104,6 +112,9 @@ export default function Products() {
     setEditImageFile(null);
     setEditImagePreview(null);
     setEditImageUploading(false);
+    setEditDownloadPath(null);
+    setEditDownloadName(null);
+    setEditDownloadUploading(false);
   };
 
   const handleEditImageSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,6 +124,31 @@ export default function Products() {
     const reader = new FileReader();
     reader.onload = () => setEditImagePreview(reader.result as string);
     reader.readAsDataURL(file);
+  };
+
+  const handleEditDownloadSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    if (file.size > 500 * 1024 * 1024) {
+      toast.error("File too large", { description: "Max 500MB per download." });
+      return;
+    }
+    setEditDownloadUploading(true);
+    try {
+      const safeBase = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80);
+      const path = `${user.id}/${Date.now()}-${safeBase}`;
+      const { error } = await supabase.storage
+        .from('digital-products')
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (error) throw error;
+      setEditDownloadPath(path);
+      setEditDownloadName(file.name);
+      toast.success("Download file uploaded");
+    } catch (err: any) {
+      toast.error("Upload failed", { description: err.message });
+    } finally {
+      setEditDownloadUploading(false);
+    }
   };
 
   const handleEditSubmit = async () => {
@@ -138,6 +174,11 @@ export default function Products() {
       image_url = null; // removed
     }
 
+    if (editType === "digital" && !editDownloadPath) {
+      toast.error("Add a download file", { description: "Digital products need a file buyers can download." });
+      return;
+    }
+
     const updates: any = {
       id: editingProduct.id,
       name: editName,
@@ -146,6 +187,15 @@ export default function Products() {
       price: parseFloat(editPrice) || 0,
     };
     if (image_url !== undefined) updates.image_url = image_url;
+
+    // Persist download fields when product is digital; clear when switching away
+    if (editType === "digital") {
+      updates.download_url = editDownloadPath;
+      updates.download_file_name = editDownloadName;
+    } else if (editingProduct.download_url) {
+      updates.download_url = null;
+      updates.download_file_name = null;
+    }
 
     updateProduct.mutate(updates, { onSuccess: closeEdit });
   };
@@ -827,8 +877,59 @@ export default function Products() {
                     />
                   </div>
 
-                  <Button onClick={handleEditSubmit} disabled={updateProduct.isPending || editImageUploading || !editName.trim()} className="w-full">
-                    {updateProduct.isPending || editImageUploading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {editImageUploading ? "Uploading image..." : "Saving..."}</> : "Save Changes"}
+                  {/* Digital download file (only for digital type) */}
+                  {editType === "digital" && (
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2"><Upload className="w-4 h-4" /> Download File</Label>
+                      {editDownloadPath ? (
+                        <div className="flex items-center justify-between gap-2 p-3 rounded-lg border border-border bg-secondary/30">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Package className="w-4 h-4 text-primary flex-shrink-0" />
+                            <span className="text-sm truncate">{editDownloadName || "Download file attached"}</span>
+                          </div>
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => editDownloadInputRef.current?.click()}
+                              className="text-xs text-primary hover:underline px-2 py-1"
+                            >
+                              Replace
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => { setEditDownloadPath(null); setEditDownloadName(null); }}
+                              className="p-1 rounded hover:bg-background text-muted-foreground hover:text-foreground"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => editDownloadInputRef.current?.click()}
+                          disabled={editDownloadUploading}
+                          className="w-full flex flex-col items-center justify-center gap-1.5 p-4 rounded-lg border border-dashed border-border hover:border-primary/30 hover:bg-secondary/30 transition-colors cursor-pointer disabled:opacity-50"
+                        >
+                          {editDownloadUploading ? (
+                            <><Loader2 className="w-5 h-5 animate-spin text-primary" /><span className="text-xs text-muted-foreground">Uploading…</span></>
+                          ) : (
+                            <><Upload className="w-5 h-5 text-primary" /><span className="text-xs text-muted-foreground">Click to upload (max 500MB)</span></>
+                          )}
+                        </button>
+                      )}
+                      <input
+                        ref={editDownloadInputRef}
+                        type="file"
+                        className="hidden"
+                        onChange={handleEditDownloadSelected}
+                      />
+                      <p className="text-xs text-muted-foreground">Buyers receive a 1h signed download link via email after purchase.</p>
+                    </div>
+                  )}
+
+                  <Button onClick={handleEditSubmit} disabled={updateProduct.isPending || editImageUploading || editDownloadUploading || !editName.trim()} className="w-full">
+                    {updateProduct.isPending || editImageUploading || editDownloadUploading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {editImageUploading ? "Uploading image..." : editDownloadUploading ? "Uploading file..." : "Saving..."}</> : "Save Changes"}
                   </Button>
                 </div>
               </motion.div>
