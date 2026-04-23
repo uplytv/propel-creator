@@ -67,6 +67,12 @@ export default function Products() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
 
+  // Digital download upload state
+  const downloadInputRef = useRef<HTMLInputElement>(null);
+  const [downloadFile, setDownloadFile] = useState<File | null>(null);
+  const [downloadUploading, setDownloadUploading] = useState(false);
+  const [downloadStoragePath, setDownloadStoragePath] = useState<string | null>(null);
+
   const { data: products, isLoading } = useProducts();
   const createProduct = useCreateProduct();
   const deleteProduct = useDeleteProduct();
@@ -174,6 +180,7 @@ export default function Products() {
     setVideoUploading(false); setVideoProgress(0);
     setVideoStatus(null); setVideoPlaybackId(null);
     setImageFile(null); setImagePreview(null); setImageUploading(false);
+    setDownloadFile(null); setDownloadStoragePath(null); setDownloadUploading(false);
   };
 
   const closeSheet = () => { setShowCreate(false); resetForm(); };
@@ -205,15 +212,55 @@ export default function Products() {
     reader.readAsDataURL(file);
   };
 
+  const handleDownloadFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    if (file.size > 500 * 1024 * 1024) {
+      toast.error("File too large", { description: "Max 500MB per download." });
+      return;
+    }
+    setDownloadFile(file);
+    setDownloadUploading(true);
+    try {
+      const ext = file.name.split('.').pop() || 'bin';
+      const safeBase = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80);
+      const path = `${user.id}/${Date.now()}-${safeBase}`;
+      const { error } = await supabase.storage
+        .from('digital-products')
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (error) throw error;
+      setDownloadStoragePath(path);
+      toast.success("Download file uploaded");
+    } catch (err: any) {
+      toast.error("Upload failed", { description: err.message });
+      setDownloadFile(null);
+    } finally {
+      setDownloadUploading(false);
+    }
+  };
+
   const handleScratchSubmit = async () => {
     if (!name.trim()) return;
+    if (type === "digital" && !downloadStoragePath) {
+      toast.error("Add a download file", { description: "Digital products need a file buyers can download." });
+      return;
+    }
     let image_url: string | undefined;
     if (imageFile) {
       const url = await uploadImage();
       if (url) image_url = url;
     }
     createProduct.mutate(
-      { name, description, type, price: parseFloat(price) || 0, status: "active", image_url },
+      {
+        name,
+        description,
+        type,
+        price: parseFloat(price) || 0,
+        status: "active",
+        image_url,
+        download_url: type === "digital" ? downloadStoragePath : null,
+        download_file_name: type === "digital" ? (downloadFile?.name ?? null) : null,
+      },
       { onSuccess: closeSheet },
     );
   };
