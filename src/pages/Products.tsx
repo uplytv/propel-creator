@@ -89,6 +89,12 @@ export default function Products() {
   const [editImageUploading, setEditImageUploading] = useState(false);
   const editImageInputRef = useRef<HTMLInputElement>(null);
 
+  // Edit: digital download
+  const editDownloadInputRef = useRef<HTMLInputElement>(null);
+  const [editDownloadUploading, setEditDownloadUploading] = useState(false);
+  const [editDownloadPath, setEditDownloadPath] = useState<string | null>(null);
+  const [editDownloadName, setEditDownloadName] = useState<string | null>(null);
+
   const openEdit = (p: any) => {
     setEditingProduct(p);
     setEditName(p.name);
@@ -97,6 +103,8 @@ export default function Products() {
     setEditPrice(String(p.price));
     setEditImagePreview(p.image_url || null);
     setEditImageFile(null);
+    setEditDownloadPath(p.download_url || null);
+    setEditDownloadName(p.download_file_name || null);
   };
 
   const closeEdit = () => {
@@ -104,6 +112,9 @@ export default function Products() {
     setEditImageFile(null);
     setEditImagePreview(null);
     setEditImageUploading(false);
+    setEditDownloadPath(null);
+    setEditDownloadName(null);
+    setEditDownloadUploading(false);
   };
 
   const handleEditImageSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,6 +124,31 @@ export default function Products() {
     const reader = new FileReader();
     reader.onload = () => setEditImagePreview(reader.result as string);
     reader.readAsDataURL(file);
+  };
+
+  const handleEditDownloadSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    if (file.size > 500 * 1024 * 1024) {
+      toast.error("File too large", { description: "Max 500MB per download." });
+      return;
+    }
+    setEditDownloadUploading(true);
+    try {
+      const safeBase = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80);
+      const path = `${user.id}/${Date.now()}-${safeBase}`;
+      const { error } = await supabase.storage
+        .from('digital-products')
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (error) throw error;
+      setEditDownloadPath(path);
+      setEditDownloadName(file.name);
+      toast.success("Download file uploaded");
+    } catch (err: any) {
+      toast.error("Upload failed", { description: err.message });
+    } finally {
+      setEditDownloadUploading(false);
+    }
   };
 
   const handleEditSubmit = async () => {
