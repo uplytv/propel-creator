@@ -7202,6 +7202,8 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
+          download_file_name: string | null
+          download_url: string | null
           id: string
           image_url: string | null
           name: string
@@ -7217,6 +7219,8 @@ export type Database = {
         Insert: {
           created_at?: string
           description?: string | null
+          download_file_name?: string | null
+          download_url?: string | null
           id?: string
           image_url?: string | null
           name: string
@@ -7232,6 +7236,8 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string | null
+          download_file_name?: string | null
+          download_url?: string | null
           id?: string
           image_url?: string | null
           name?: string

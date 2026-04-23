@@ -67,6 +67,12 @@ export default function Products() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
 
+  // Digital download upload state
+  const downloadInputRef = useRef<HTMLInputElement>(null);
+  const [downloadFile, setDownloadFile] = useState<File | null>(null);
+  const [downloadUploading, setDownloadUploading] = useState(false);
+  const [downloadStoragePath, setDownloadStoragePath] = useState<string | null>(null);
+
   const { data: products, isLoading } = useProducts();
   const createProduct = useCreateProduct();
   const deleteProduct = useDeleteProduct();
@@ -174,6 +180,7 @@ export default function Products() {
     setVideoUploading(false); setVideoProgress(0);
     setVideoStatus(null); setVideoPlaybackId(null);
     setImageFile(null); setImagePreview(null); setImageUploading(false);
+    setDownloadFile(null); setDownloadStoragePath(null); setDownloadUploading(false);
   };
 
   const closeSheet = () => { setShowCreate(false); resetForm(); };
@@ -205,15 +212,86 @@ export default function Products() {
     reader.readAsDataURL(file);
   };
 
+  // Verify digital purchase on return from Stripe
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get("session_id");
+    const productId = params.get("product_id");
+    const purchased = params.get("purchased");
+    if (purchased === "true" && sessionId && productId && user) {
+      supabase.functions
+        .invoke("verify-product-purchase", { body: { session_id: sessionId, product_id: productId } })
+        .then(({ data }: any) => {
+          if (data?.is_digital) {
+            toast.success("Purchase complete! 📥", {
+              description: "Check your email for the download link (expires in 1h).",
+            });
+          } else if (data?.paid) {
+            toast.success("Purchase complete! 🎉");
+          }
+        })
+        .catch(() => {
+          toast.success("Payment received", { description: "Your purchase is being processed." });
+        })
+        .finally(() => {
+          const url = new URL(window.location.href);
+          url.searchParams.delete("session_id");
+          url.searchParams.delete("purchased");
+          url.searchParams.delete("product_id");
+          window.history.replaceState({}, "", url.toString());
+        });
+    }
+  }, [user]);
+
+  const handleDownloadFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    if (file.size > 500 * 1024 * 1024) {
+      toast.error("File too large", { description: "Max 500MB per download." });
+      return;
+    }
+    setDownloadFile(file);
+    setDownloadUploading(true);
+    try {
+      const ext = file.name.split('.').pop() || 'bin';
+      const safeBase = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80);
+      const path = `${user.id}/${Date.now()}-${safeBase}`;
+      const { error } = await supabase.storage
+        .from('digital-products')
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (error) throw error;
+      setDownloadStoragePath(path);
+      toast.success("Download file uploaded");
+    } catch (err: any) {
+      toast.error("Upload failed", { description: err.message });
+      setDownloadFile(null);
+    } finally {
+      setDownloadUploading(false);
+    }
+  };
+
   const handleScratchSubmit = async () => {
     if (!name.trim()) return;
+    if (type === "digital" && !downloadStoragePath) {
+      toast.error("Add a download file", { description: "Digital products need a file buyers can download." });
+      return;
+    }
     let image_url: string | undefined;
     if (imageFile) {
       const url = await uploadImage();
       if (url) image_url = url;
     }
     createProduct.mutate(
-      { name, description, type, price: parseFloat(price) || 0, status: "active", image_url },
+      {
+        name,
+        description,
+        type,
+        price: parseFloat(price) || 0,
+        status: "active",
+        image_url,
+        download_url: type === "digital" ? downloadStoragePath : null,
+        download_file_name: type === "digital" ? (downloadFile?.name ?? null) : null,
+      },
       { onSuccess: closeSheet },
     );
   };
@@ -543,6 +621,49 @@ export default function Products() {
                         <Input type="number" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="0" min="0" />
                       </div>
                     </div>
+
+                    {/* Digital Download File (only for digital products) */}
+                    {type === "digital" && (
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Upload className="w-4 h-4" /> Download File
+                        </Label>
+                        {downloadStoragePath && downloadFile ? (
+                          <div className="flex items-center justify-between px-3 py-2 rounded-lg border border-border bg-secondary/30">
+                            <span className="text-xs text-foreground truncate">{downloadFile.name}</span>
+                            <button
+                              type="button"
+                              onClick={() => { setDownloadFile(null); setDownloadStoragePath(null); }}
+                              className="text-muted-foreground hover:text-foreground"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : downloadUploading ? (
+                          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/30 text-sm text-muted-foreground">
+                            <Loader2 className="w-4 h-4 animate-spin" /> Uploading file...
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => downloadInputRef.current?.click()}
+                            className="w-full flex flex-col items-center justify-center gap-1.5 p-4 rounded-lg border border-dashed border-border hover:border-primary/30 hover:bg-secondary/30 transition-colors cursor-pointer"
+                          >
+                            <Upload className="w-5 h-5 text-primary" />
+                            <span className="text-xs text-muted-foreground">Upload the file buyers will download (max 500MB)</span>
+                          </button>
+                        )}
+                        <input
+                          ref={downloadInputRef}
+                          type="file"
+                          className="hidden"
+                          onChange={handleDownloadFileSelected}
+                        />
+                        <p className="text-[11px] text-muted-foreground">
+                          Buyers receive a secure 1-hour download link by email after purchase.
+                        </p>
+                      </div>
+                    )}
 
                     {/* Image Upload Section */}
                     <div className="space-y-2">

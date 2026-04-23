@@ -1,9 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Link, useNavigate } from "react-router-dom";
-import { Calendar, MapPin, Ticket, Plus, Globe, Radio, Music, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Calendar, MapPin, Ticket, Plus, Globe, Radio, Music, Users, Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import { useAuth } from "@/context/AuthContext";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface Props {
   creatorId: string;
@@ -132,6 +135,76 @@ function AttendingEventCard({ attendance }: { attendance: any }) {
   );
 }
 
+function DigitalProductCard({ product, isOwner }: { product: any; isOwner: boolean }) {
+  const { user } = useAuth();
+  const [buying, setBuying] = useState(false);
+
+  const handleBuy = async () => {
+    if (!user) {
+      window.location.href = "/auth";
+      return;
+    }
+    setBuying(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("stripe-create-product-checkout", {
+        body: { product_id: product.id, purchase_type: "digital", creator_id: product.user_id },
+      });
+      if (error) throw error;
+      if ((data as any)?.already_purchased) {
+        toast.success("You already own this — check your inbox for the download link.");
+        setBuying(false);
+        return;
+      }
+      if ((data as any)?.url) {
+        window.location.href = (data as any).url;
+      }
+    } catch (err: any) {
+      toast.error("Checkout failed", { description: err.message });
+      setBuying(false);
+    }
+  };
+
+  return (
+    <div className="rounded-xl overflow-hidden border border-surface-border bg-surface-raised">
+      <div className="relative aspect-video bg-secondary">
+        {product.image_url ? (
+          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" loading="lazy" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <Download className="w-10 h-10 text-muted-foreground" />
+          </div>
+        )}
+        <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 flex items-center gap-1">
+          <Download className="w-3 h-3" /> DOWNLOAD
+        </div>
+      </div>
+      <div className="p-3 space-y-1.5">
+        <h3 className="text-sm font-semibold text-foreground line-clamp-2">{product.name}</h3>
+        {product.description && (
+          <p className="text-xs text-muted-foreground line-clamp-2">{product.description}</p>
+        )}
+        <div className="flex items-center justify-between pt-1.5">
+          <span className="text-xs font-bold text-foreground">
+            {Number(product.price) > 0 ? `$${Number(product.price).toFixed(2)}` : "Free"}
+          </span>
+          {isOwner ? (
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Yours</span>
+          ) : (
+            <Button
+              size="sm"
+              className="h-7 rounded-full text-xs px-3"
+              onClick={handleBuy}
+              disabled={buying}
+            >
+              {buying ? <Loader2 className="w-3 h-3 animate-spin" /> : <><Download className="w-3 h-3 mr-1" /> Buy</>}
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SpaceEventsTab({ creatorId, isOwner }: Props) {
   const navigate = useNavigate();
 
@@ -171,12 +244,34 @@ export default function SpaceEventsTab({ creatorId, isOwner }: Props) {
     },
   });
 
-  const isEmpty = !loadingOwn && ownEvents.length === 0 && attendingEvents.length === 0;
+  const { data: digitalProducts = [] } = useQuery({
+    queryKey: ["space-digital-products", creatorId],
+    enabled: !!creatorId,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("products")
+        .select("*")
+        .eq("user_id", creatorId)
+        .eq("type", "digital")
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(20);
+      return data || [];
+    },
+  });
+
+  const isEmpty =
+    !loadingOwn && ownEvents.length === 0 && attendingEvents.length === 0 && digitalProducts.length === 0;
 
   return (
     <div className="px-4 pt-4 space-y-6">
       {isOwner && (
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+          <Button size="sm" variant="outline" onClick={() => navigate("/products")} className="rounded-full">
+            <Download className="w-4 h-4 mr-1" />
+            Manage Downloads
+          </Button>
           <Button size="sm" onClick={() => navigate("/create-event")} className="rounded-full">
             <Plus className="w-4 h-4 mr-1" />
             New Event
@@ -210,11 +305,24 @@ export default function SpaceEventsTab({ creatorId, isOwner }: Props) {
         </section>
       )}
 
+      {digitalProducts.length > 0 && (
+        <section>
+          <h2 className="text-sm font-bold text-foreground mb-3 uppercase tracking-wider">
+            Digital Products
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {digitalProducts.map((p: any) => (
+              <DigitalProductCard key={p.id} product={p} isOwner={isOwner} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {isEmpty && (
         <div className="p-12 text-center rounded-xl border border-surface-border bg-surface-raised">
           <Calendar className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
           <p className="font-semibold text-foreground mb-1">
-            {isOwner ? "No upcoming events" : "No upcoming events"}
+            {isOwner ? "Nothing here yet" : "No upcoming events"}
           </p>
           {isOwner ? (
             <button
