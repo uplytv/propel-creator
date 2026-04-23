@@ -37,7 +37,7 @@ const BuyCredits = () => {
 
   const handlePurchase = async (pkg: any) => {
     if (!pkg.stripe_price_id) {
-      toast.error("Not configured", { description: "This package needs a Stripe price ID." });
+      // Silent — button is rendered as disabled "Coming Soon" instead.
       return;
     }
     setSelectedPkg(pkg.id);
@@ -102,6 +102,7 @@ const BuyCredits = () => {
               const badge = badgeMap[i];
               const isSelected = selectedPkg === pkg.id;
               const isProcessing = isSelected && purchaseState === "processing";
+              const isUnavailable = !pkg.stripe_price_id;
 
               return (
                 <motion.div
@@ -111,12 +112,14 @@ const BuyCredits = () => {
                   transition={{ delay: i * 0.08 }}
                 >
                   <Card
-                    className={`relative overflow-hidden p-5 cursor-pointer transition-all duration-200 border-2 ${
-                      isSelected
-                        ? "border-primary shadow-[var(--glow-shadow)]"
-                        : "border-border hover:border-primary/40"
+                    className={`relative overflow-hidden p-5 transition-all duration-200 border-2 ${
+                      isUnavailable
+                        ? "border-border opacity-60 cursor-not-allowed"
+                        : isSelected
+                        ? "border-primary shadow-[var(--glow-shadow)] cursor-pointer"
+                        : "border-border hover:border-primary/40 cursor-pointer"
                     }`}
-                    onClick={() => purchaseState === "idle" && handlePurchase(pkg)}
+                    onClick={() => !isUnavailable && purchaseState === "idle" && handlePurchase(pkg)}
                   >
                     <div className="relative z-10 space-y-3">
                       <div className="flex items-center justify-between">
@@ -145,10 +148,19 @@ const BuyCredits = () => {
                         </div>
                         {isProcessing ? (
                           <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                        ) : isUnavailable ? (
+                          <Button size="sm" variant="secondary" disabled className="rounded-full px-4">
+                            Coming Soon
+                          </Button>
                         ) : (
                           <Button size="sm" className="rounded-full px-4">Buy</Button>
                         )}
                       </div>
+                      {isUnavailable && (
+                        <p className="text-[11px] text-muted-foreground pt-1">
+                          Contact support to purchase
+                        </p>
+                      )}
                     </div>
                   </Card>
                 </motion.div>
