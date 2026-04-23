@@ -174,6 +174,11 @@ export default function Products() {
       image_url = null; // removed
     }
 
+    if (editType === "digital" && !editDownloadPath) {
+      toast.error("Add a download file", { description: "Digital products need a file buyers can download." });
+      return;
+    }
+
     const updates: any = {
       id: editingProduct.id,
       name: editName,
@@ -182,6 +187,15 @@ export default function Products() {
       price: parseFloat(editPrice) || 0,
     };
     if (image_url !== undefined) updates.image_url = image_url;
+
+    // Persist download fields when product is digital; clear when switching away
+    if (editType === "digital") {
+      updates.download_url = editDownloadPath;
+      updates.download_file_name = editDownloadName;
+    } else if (editingProduct.download_url) {
+      updates.download_url = null;
+      updates.download_file_name = null;
+    }
 
     updateProduct.mutate(updates, { onSuccess: closeEdit });
   };
