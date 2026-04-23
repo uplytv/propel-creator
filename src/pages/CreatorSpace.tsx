@@ -9,6 +9,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import SpaceCommunityTab from "@/components/space/SpaceCommunityTab";
 import SpaceClassroomTab from "@/components/space/SpaceClassroomTab";
 import SpaceCalendarTab from "@/components/space/SpaceCalendarTab";
+import SpaceEventsTab from "@/components/space/SpaceEventsTab";
 import SpaceMembersTab from "@/components/space/SpaceMembersTab";
 import SpaceLeaderboardTab from "@/components/space/SpaceLeaderboardTab";
 import SpaceAboutTab from "@/components/space/SpaceAboutTab";
@@ -21,17 +22,18 @@ import { PricingTab } from "@/components/space/PricingTab";
 import { useSubscriptionTiers } from "@/hooks/useStripeAccount";
 import TierSelectionModal from "@/components/TierSelectionModal";
 import { Button } from "@/components/ui/button";
-import { Users, Loader2, Sparkles } from "lucide-react";
+import { Users, Loader2, Sparkles, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { usePaymentReturn, useMemberSubscriptionStatus } from "@/hooks/usePaymentReturn";
 
-const VALID_TABS = ["community", "classroom", "calendar", "members", "leaderboard", "pricing", "earn", "blasts", "about"] as const;
+const VALID_TABS = ["community", "classroom", "calendar", "events", "members", "leaderboard", "pricing", "earn", "blasts", "about"] as const;
 type TabSlug = typeof VALID_TABS[number];
 
 const TAB_LABELS: Record<TabSlug, string> = {
   community: "Community",
   classroom: "Classroom",
   calendar: "Calendar",
+  events: "Events",
   members: "Members",
   leaderboard: "Leaderboard",
   pricing: "Pricing",
@@ -39,6 +41,9 @@ const TAB_LABELS: Record<TabSlug, string> = {
   blasts: "Blasts",
   about: "About",
 };
+
+// Tabs that require active membership when the space has paid tiers.
+const GATED_TABS: TabSlug[] = ["classroom", "calendar", "events", "members", "leaderboard", "earn"];
 
 function resolveTabFromUrl(tabParam?: string): TabSlug {
   const slug = tabParam?.toLowerCase();
@@ -163,7 +168,22 @@ export default function CreatorSpace() {
     }
   };
 
+  const canAccessTab = (tab: TabSlug): boolean => {
+    if (isOwner) return true;
+    if (!GATED_TABS.includes(tab)) return true;
+    if (!hasPaidTiers) return true; // free community = no gating
+    return !!isMember;
+  };
+
   const switchTab = (slug: TabSlug) => {
+    if (!canAccessTab(slug)) {
+      if (!user) {
+        navigate("/auth");
+        return;
+      }
+      setShowTierModal(true);
+      return;
+    }
     navigate(`/community/${rawCreatorId}/${slug}`, { replace: true });
   };
 
@@ -213,20 +233,24 @@ export default function CreatorSpace() {
             // Only show "blasts" tab to the space owner
             if (slug === "blasts" && !isOwner) return false;
             return true;
-          }).map((slug) => (
-            <button
-              key={slug}
-              onClick={() => switchTab(slug)}
-              className={`relative px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
-                activeTab === slug ? "text-foreground" : "text-text-dim"
-              }`}
-            >
-              {slug === "members" ? `Members (${memberCount})` : TAB_LABELS[slug]}
-              {activeTab === slug && (
-                <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-accent-green" />
-              )}
-            </button>
-          ))}
+          }).map((slug) => {
+            const locked = !canAccessTab(slug);
+            return (
+              <button
+                key={slug}
+                onClick={() => switchTab(slug)}
+                className={`relative px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 flex items-center gap-1 ${
+                  activeTab === slug ? "text-foreground" : "text-text-dim"
+                }`}
+              >
+                {slug === "members" ? `Members (${memberCount})` : TAB_LABELS[slug]}
+                {locked && <Lock className="w-3 h-3 opacity-70" />}
+                {activeTab === slug && (
+                  <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-accent-green" />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -235,6 +259,7 @@ export default function CreatorSpace() {
         {activeTab === "community" && <SpaceCommunityTab creatorId={creatorId!} isOwner={isOwner} />}
         {activeTab === "classroom" && <SpaceClassroomTab creatorId={creatorId!} isOwner={isOwner} />}
         {activeTab === "calendar" && <SpaceCalendarTab creatorId={creatorId!} isOwner={isOwner} />}
+        {activeTab === "events" && <SpaceEventsTab creatorId={creatorId!} isOwner={isOwner} />}
         {activeTab === "members" && <SpaceMembersTab creatorId={creatorId!} />}
         {activeTab === "leaderboard" && <SpaceLeaderboardTab creatorId={creatorId!} />}
         {activeTab === "about" && <SpaceAboutTab creatorId={creatorId!} isOwner={isOwner} />}
