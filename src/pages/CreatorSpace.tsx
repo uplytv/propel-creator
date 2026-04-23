@@ -9,6 +9,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import SpaceCommunityTab from "@/components/space/SpaceCommunityTab";
 import SpaceClassroomTab from "@/components/space/SpaceClassroomTab";
 import SpaceCalendarTab from "@/components/space/SpaceCalendarTab";
+import SpaceEventsTab from "@/components/space/SpaceEventsTab";
 import SpaceMembersTab from "@/components/space/SpaceMembersTab";
 import SpaceLeaderboardTab from "@/components/space/SpaceLeaderboardTab";
 import SpaceAboutTab from "@/components/space/SpaceAboutTab";
@@ -21,17 +22,18 @@ import { PricingTab } from "@/components/space/PricingTab";
 import { useSubscriptionTiers } from "@/hooks/useStripeAccount";
 import TierSelectionModal from "@/components/TierSelectionModal";
 import { Button } from "@/components/ui/button";
-import { Users, Loader2, Sparkles } from "lucide-react";
+import { Users, Loader2, Sparkles, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { usePaymentReturn, useMemberSubscriptionStatus } from "@/hooks/usePaymentReturn";
 
-const VALID_TABS = ["community", "classroom", "calendar", "members", "leaderboard", "pricing", "earn", "blasts", "about"] as const;
+const VALID_TABS = ["community", "classroom", "calendar", "events", "members", "leaderboard", "pricing", "earn", "blasts", "about"] as const;
 type TabSlug = typeof VALID_TABS[number];
 
 const TAB_LABELS: Record<TabSlug, string> = {
   community: "Community",
   classroom: "Classroom",
   calendar: "Calendar",
+  events: "Events",
   members: "Members",
   leaderboard: "Leaderboard",
   pricing: "Pricing",
@@ -39,6 +41,9 @@ const TAB_LABELS: Record<TabSlug, string> = {
   blasts: "Blasts",
   about: "About",
 };
+
+// Tabs that require active membership when the space has paid tiers.
+const GATED_TABS: TabSlug[] = ["classroom", "calendar", "events", "members", "leaderboard", "earn"];
 
 function resolveTabFromUrl(tabParam?: string): TabSlug {
   const slug = tabParam?.toLowerCase();
