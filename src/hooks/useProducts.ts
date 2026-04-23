@@ -35,6 +35,8 @@ export function useCreateProduct() {
       price: number;
       status?: string;
       image_url?: string;
+      download_url?: string | null;
+      download_file_name?: string | null;
     }) => {
       const { data, error } = await supabase
         .from("products")
@@ -73,6 +75,8 @@ export function useUpdateProduct() {
       price?: number;
       status?: string;
       image_url?: string | null;
+      download_url?: string | null;
+      download_file_name?: string | null;
     }) => {
       const { data, error } = await supabase
         .from("products")
