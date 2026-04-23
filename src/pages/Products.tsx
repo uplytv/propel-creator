@@ -877,8 +877,59 @@ export default function Products() {
                     />
                   </div>
 
-                  <Button onClick={handleEditSubmit} disabled={updateProduct.isPending || editImageUploading || !editName.trim()} className="w-full">
-                    {updateProduct.isPending || editImageUploading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {editImageUploading ? "Uploading image..." : "Saving..."}</> : "Save Changes"}
+                  {/* Digital download file (only for digital type) */}
+                  {editType === "digital" && (
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2"><Upload className="w-4 h-4" /> Download File</Label>
+                      {editDownloadPath ? (
+                        <div className="flex items-center justify-between gap-2 p-3 rounded-lg border border-border bg-secondary/30">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Package className="w-4 h-4 text-primary flex-shrink-0" />
+                            <span className="text-sm truncate">{editDownloadName || "Download file attached"}</span>
+                          </div>
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => editDownloadInputRef.current?.click()}
+                              className="text-xs text-primary hover:underline px-2 py-1"
+                            >
+                              Replace
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => { setEditDownloadPath(null); setEditDownloadName(null); }}
+                              className="p-1 rounded hover:bg-background text-muted-foreground hover:text-foreground"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => editDownloadInputRef.current?.click()}
+                          disabled={editDownloadUploading}
+                          className="w-full flex flex-col items-center justify-center gap-1.5 p-4 rounded-lg border border-dashed border-border hover:border-primary/30 hover:bg-secondary/30 transition-colors cursor-pointer disabled:opacity-50"
+                        >
+                          {editDownloadUploading ? (
+                            <><Loader2 className="w-5 h-5 animate-spin text-primary" /><span className="text-xs text-muted-foreground">Uploading…</span></>
+                          ) : (
+                            <><Upload className="w-5 h-5 text-primary" /><span className="text-xs text-muted-foreground">Click to upload (max 500MB)</span></>
+                          )}
+                        </button>
+                      )}
+                      <input
+                        ref={editDownloadInputRef}
+                        type="file"
+                        className="hidden"
+                        onChange={handleEditDownloadSelected}
+                      />
+                      <p className="text-xs text-muted-foreground">Buyers receive a 1h signed download link via email after purchase.</p>
+                    </div>
+                  )}
+
+                  <Button onClick={handleEditSubmit} disabled={updateProduct.isPending || editImageUploading || editDownloadUploading || !editName.trim()} className="w-full">
+                    {updateProduct.isPending || editImageUploading || editDownloadUploading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {editImageUploading ? "Uploading image..." : editDownloadUploading ? "Uploading file..." : "Saving..."}</> : "Save Changes"}
                   </Button>
                 </div>
               </motion.div>
