@@ -168,7 +168,22 @@ export default function CreatorSpace() {
     }
   };
 
+  const canAccessTab = (tab: TabSlug): boolean => {
+    if (isOwner) return true;
+    if (!GATED_TABS.includes(tab)) return true;
+    if (!hasPaidTiers) return true; // free community = no gating
+    return !!isMember;
+  };
+
   const switchTab = (slug: TabSlug) => {
+    if (!canAccessTab(slug)) {
+      if (!user) {
+        navigate("/auth");
+        return;
+      }
+      setShowTierModal(true);
+      return;
+    }
     navigate(`/community/${rawCreatorId}/${slug}`, { replace: true });
   };
 
@@ -218,20 +233,24 @@ export default function CreatorSpace() {
             // Only show "blasts" tab to the space owner
             if (slug === "blasts" && !isOwner) return false;
             return true;
-          }).map((slug) => (
-            <button
-              key={slug}
-              onClick={() => switchTab(slug)}
-              className={`relative px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
-                activeTab === slug ? "text-foreground" : "text-text-dim"
-              }`}
-            >
-              {slug === "members" ? `Members (${memberCount})` : TAB_LABELS[slug]}
-              {activeTab === slug && (
-                <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-accent-green" />
-              )}
-            </button>
-          ))}
+          }).map((slug) => {
+            const locked = !canAccessTab(slug);
+            return (
+              <button
+                key={slug}
+                onClick={() => switchTab(slug)}
+                className={`relative px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 flex items-center gap-1 ${
+                  activeTab === slug ? "text-foreground" : "text-text-dim"
+                }`}
+              >
+                {slug === "members" ? `Members (${memberCount})` : TAB_LABELS[slug]}
+                {locked && <Lock className="w-3 h-3 opacity-70" />}
+                {activeTab === slug && (
+                  <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-accent-green" />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -240,6 +259,7 @@ export default function CreatorSpace() {
         {activeTab === "community" && <SpaceCommunityTab creatorId={creatorId!} isOwner={isOwner} />}
         {activeTab === "classroom" && <SpaceClassroomTab creatorId={creatorId!} isOwner={isOwner} />}
         {activeTab === "calendar" && <SpaceCalendarTab creatorId={creatorId!} isOwner={isOwner} />}
+        {activeTab === "events" && <SpaceEventsTab creatorId={creatorId!} isOwner={isOwner} />}
         {activeTab === "members" && <SpaceMembersTab creatorId={creatorId!} />}
         {activeTab === "leaderboard" && <SpaceLeaderboardTab creatorId={creatorId!} />}
         {activeTab === "about" && <SpaceAboutTab creatorId={creatorId!} isOwner={isOwner} />}
