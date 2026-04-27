@@ -464,6 +464,22 @@ serve(async (req) => {
         }
         break
       }
+
+      case 'video.asset.deleted': {
+        await supabase.from('mux_assets')
+          .update({ status: 'deleted', updated_at: new Date().toISOString() })
+          .eq('mux_asset_id', data.id)
+        console.log(`Asset deleted: ${data.id}`)
+        break
+      }
+
+      case 'video.live_stream.disconnected': {
+        console.log(`Stream disconnected (reconnect window open): mux_stream_id=${data.id}`)
+        await supabase.from('mux_live_streams')
+          .update({ status: 'reconnecting', updated_at: new Date().toISOString() })
+          .eq('mux_stream_id', data.id)
+        break
+      }
     }
 
     return new Response(JSON.stringify({ received: true }), {
