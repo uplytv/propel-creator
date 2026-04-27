@@ -1,0 +1,1 @@
+ALTER TABLE public.mux_live_streams ADD COLUMN IF NOT EXISTS orientation text DEFAULT 'landscape' CHECK (orientation IN ('landscape', 'portrait'));

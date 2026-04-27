@@ -74,34 +74,38 @@ export function constrainBandwidth(sdp: string, maxBitrateKbps: number): string 
 
 /**
  * Optimal MediaRecorder settings for browser recording.
+ * Landscape uses higher bitrate for full 1080p quality.
  */
-export function getRecorderOptions(): { mimeType: string; videoBitsPerSecond: number } {
+export function getRecorderOptions(
+  orientation: 'landscape' | 'portrait' = 'landscape'
+): { mimeType: string; videoBitsPerSecond: number } {
+  const bitrate = orientation === 'landscape' ? 5_000_000 : 2_500_000;
   const codecs = [
+    'video/webm;codecs=h264,opus',
     'video/webm;codecs=vp9,opus',
     'video/webm;codecs=vp8,opus',
-    'video/webm;codecs=h264,opus',
     'video/webm',
   ];
   const mimeType = codecs.find(c => MediaRecorder.isTypeSupported(c)) || 'video/webm';
-  return {
-    mimeType,
-    // 2.5 Mbps for high-quality recording (balanced file size vs quality)
-    videoBitsPerSecond: 2_500_000,
-  };
+  return { mimeType, videoBitsPerSecond: bitrate };
 }
 
 /**
  * Optimal camera constraints for live streaming.
+ * Ideal hints only — browser honors when hardware supports it. Never use `exact`.
  */
-export function getCameraConstraints(facingMode: 'user' | 'environment'): MediaStreamConstraints {
+export function getCameraConstraints(
+  facingMode: 'user' | 'environment',
+  orientation: 'landscape' | 'portrait' = 'landscape'
+): MediaStreamConstraints {
+  const isLandscape = orientation === 'landscape';
   return {
     video: {
       facingMode,
-      // Do NOT specify fixed width/height — they cause track renegotiation
-      // when device rotates, which severs the WebRTC connection mid-stream.
-      // Let the browser handle dimensions natively across orientations.
-      aspectRatio: { ideal: 16 / 9 },
+      aspectRatio: { ideal: isLandscape ? 16 / 9 : 9 / 16 },
       frameRate: { ideal: 30, max: 30 },
+      width: { ideal: isLandscape ? 1920 : 1080 },
+      height: { ideal: isLandscape ? 1080 : 1920 },
       ...(typeof window !== 'undefined' && { latency: { ideal: 0 } }),
     },
     audio: {

@@ -8,6 +8,7 @@ import {
   Gamepad2, PenTool, Palette,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
@@ -73,6 +74,7 @@ interface BroadcastStudioProps {
   onFeaturedProductChange?: (productId: string | null) => void;
   creatorUsername?: string | null;
   hasQueuedShopProducts?: boolean;
+  orientation?: 'landscape' | 'portrait';
 }
 
 type StudioMode = "select" | "browser-record" | "external-encoder";
@@ -87,6 +89,7 @@ export default function BroadcastStudio({
   onFeaturedProductChange,
   creatorUsername,
   hasQueuedShopProducts = false,
+  orientation = 'landscape',
 }: BroadcastStudioProps) {
   const { user } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -239,7 +242,7 @@ export default function BroadcastStudio({
         // Only recover if the track actually died — don't interrupt a healthy stream
         if (!videoTrack || videoTrack.readyState === 'live') return;
         try {
-          const constraints = getCameraConstraints(facingMode);
+          const constraints = getCameraConstraints(facingMode, orientation);
           const newStream = await navigator.mediaDevices.getUserMedia(constraints);
           const newTrack = newStream.getVideoTracks()[0];
           streamRef.current.removeTrack(videoTrack);
@@ -310,7 +313,7 @@ export default function BroadcastStudio({
     stopCurrentStream();
     setMediaError(null);
     try {
-      const constraints = getCameraConstraints(facing);
+      const constraints = getCameraConstraints(facing, orientation);
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
       if (videoRef.current) videoRef.current.srcObject = stream;
@@ -383,7 +386,7 @@ export default function BroadcastStudio({
     if (!cameraOn || !streamRef.current) return;
     if (isRecording || peerConnectionsRef.current.size > 0) {
       try {
-        const newVideoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: next }, audio: false });
+        const newVideoStream = await navigator.mediaDevices.getUserMedia({ ...getCameraConstraints(next, orientation), audio: false });
         const newVideoTrack = newVideoStream.getVideoTracks()[0];
         const oldVideoTrack = streamRef.current.getVideoTracks()[0];
         if (oldVideoTrack) { streamRef.current.removeTrack(oldVideoTrack); oldVideoTrack.stop(); }
@@ -468,7 +471,7 @@ export default function BroadcastStudio({
     await clearChunks();
     chunksRef.current = [];
     pendingWritesRef.current = [];
-    const { mimeType, videoBitsPerSecond } = getRecorderOptions();
+    const { mimeType, videoBitsPerSecond } = getRecorderOptions(orientation);
     const recorder = new MediaRecorder(streamRef.current, { mimeType, videoBitsPerSecond });
     recorder.ondataavailable = (e) => {
       if (e.data.size > 0) {
@@ -716,7 +719,26 @@ export default function BroadcastStudio({
                 </div>
               ) : (
                 <>
-                  <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className={cn(
+                      "w-full h-full",
+                      orientation === 'portrait' ? "object-contain bg-black" : "object-cover"
+                    )}
+                  />
+                  {/* Orientation indicator (non-removable while live) */}
+                  <div className="absolute top-2 left-2 z-20 flex items-center gap-1.5 bg-black/60 rounded-full px-2 py-0.5">
+                    <div className={cn(
+                      "border border-white/60 rounded-sm",
+                      orientation === 'landscape' ? "w-4 h-2.5" : "w-2.5 h-4"
+                    )} />
+                    <span className="text-white text-[10px] font-medium opacity-80">
+                      {orientation === 'landscape' ? '16:9' : '9:16'}
+                    </span>
+                  </div>
 
                   {/* Top bar — LIVE indicator */}
                   <div className="absolute inset-x-0 top-0 z-20 pointer-events-none">

@@ -96,6 +96,13 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
+  // Health check — GET /mux-webhook returns 200 so Mux can verify the endpoint
+  if (req.method === 'GET') {
+    return new Response(JSON.stringify({ ok: true, service: 'mux-webhook', timestamp: new Date().toISOString() }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
   try {
     const rawBody = await req.text()
 
@@ -455,6 +462,22 @@ serve(async (req) => {
             console.error('Failed to trigger auto-shorts:', shortsErr)
           }
         }
+        break
+      }
+
+      case 'video.asset.deleted': {
+        await supabase.from('mux_assets')
+          .update({ status: 'deleted', updated_at: new Date().toISOString() })
+          .eq('mux_asset_id', data.id)
+        console.log(`Asset deleted: ${data.id}`)
+        break
+      }
+
+      case 'video.live_stream.disconnected': {
+        console.log(`Stream disconnected (reconnect window open): mux_stream_id=${data.id}`)
+        await supabase.from('mux_live_streams')
+          .update({ status: 'reconnecting', updated_at: new Date().toISOString() })
+          .eq('mux_stream_id', data.id)
         break
       }
     }

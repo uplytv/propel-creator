@@ -71,8 +71,8 @@ export async function uploadToMuxWithRetry(opts: UploadOptions): Promise<string>
         const upload = createUpload({
           endpoint: uploadUrl,
           file,
-          chunkSize: opts.chunkSize ?? 5120, // 5 MB chunks (in KB)
-          maxFileSize: undefined as any, // no limit
+          chunkSize: opts.chunkSize ?? 10240, // 10 MB chunks (in KB) — faster on good connections
+          maxFileSize: undefined as any, // no limit (matches YouTube)
           attempts: 5,            // retry each chunk up to 5 times
           delayBeforeAttempt: 3,  // wait 3 seconds between retries
         });
