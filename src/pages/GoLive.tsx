@@ -90,6 +90,7 @@ export default function GoLive() {
   const [mode, setMode] = useState<"public" | "private">("public");
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState(categories[0]);
+  const [orientation, setOrientation] = useState<'landscape' | 'portrait'>('landscape');
   const [isSettingUp, setIsSettingUp] = useState(false);
   const [featuredProductId, setFeaturedProductId] = useState<string | null>(null);
   const [streamData, setStreamData] = useState<{
@@ -223,6 +224,7 @@ export default function GoLive() {
           description: `${mode === "public" ? "Public" : "Members-only"} stream`,
           category,
           isPublic: mode === "public",
+          orientation,
         },
       });
       if (error) throw error;
@@ -383,6 +385,44 @@ export default function GoLive() {
                 <CategoryDropdown value={category} onChange={setCategory} />
               </div>
 
+              {/* Stream Orientation */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Stream Format</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => setOrientation('landscape')}
+                    className={cn(
+                      "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all min-h-[44px]",
+                      orientation === 'landscape'
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-secondary/30 text-muted-foreground"
+                    )}
+                  >
+                    <div className="w-12 h-7 rounded border-2 border-current" />
+                    <span className="text-xs font-semibold">Landscape</span>
+                    <span className="text-xs opacity-70">16:9 · Twitch / Kick style</span>
+                  </button>
+                  <button
+                    onClick={() => setOrientation('portrait')}
+                    className={cn(
+                      "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all min-h-[44px]",
+                      orientation === 'portrait'
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-secondary/30 text-muted-foreground"
+                    )}
+                  >
+                    <div className="w-7 h-12 rounded border-2 border-current" />
+                    <span className="text-xs font-semibold">Portrait</span>
+                    <span className="text-xs opacity-70">9:16 · TikTok / Mobile style</span>
+                  </button>
+                </div>
+                {orientation === 'landscape' && (
+                  <p className="text-xs text-muted-foreground">
+                    ✓ Recommended for professional streams like iShowSpeed and Adin Ross on Twitch & Kick
+                  </p>
+                )}
+              </div>
+
               {/* Featured Product Selector */}
               <div>
                 <label className="text-sm font-medium text-foreground mb-2 block flex items-center gap-2">
@@ -465,6 +505,7 @@ export default function GoLive() {
               streamData={streamData}
               streamStatus={streamStatus}
               title={title}
+              orientation={orientation}
               onEndStream={handleEndStream}
               products={[
                 ...activeProducts.map((p: any) => ({
