@@ -385,7 +385,7 @@ export default function BroadcastStudio({
     if (!cameraOn || !streamRef.current) return;
     if (isRecording || peerConnectionsRef.current.size > 0) {
       try {
-        const newVideoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: next }, audio: false });
+        const newVideoStream = await navigator.mediaDevices.getUserMedia({ ...getCameraConstraints(next, orientation), audio: false });
         const newVideoTrack = newVideoStream.getVideoTracks()[0];
         const oldVideoTrack = streamRef.current.getVideoTracks()[0];
         if (oldVideoTrack) { streamRef.current.removeTrack(oldVideoTrack); oldVideoTrack.stop(); }
@@ -718,7 +718,26 @@ export default function BroadcastStudio({
                 </div>
               ) : (
                 <>
-                  <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className={cn(
+                      "w-full h-full",
+                      orientation === 'portrait' ? "object-contain bg-black" : "object-cover"
+                    )}
+                  />
+                  {/* Orientation indicator (non-removable while live) */}
+                  <div className="absolute top-2 left-2 z-20 flex items-center gap-1.5 bg-black/60 rounded-full px-2 py-0.5">
+                    <div className={cn(
+                      "border border-white/60 rounded-sm",
+                      orientation === 'landscape' ? "w-4 h-2.5" : "w-2.5 h-4"
+                    )} />
+                    <span className="text-white text-[10px] font-medium opacity-80">
+                      {orientation === 'landscape' ? '16:9' : '9:16'}
+                    </span>
+                  </div>
 
                   {/* Top bar — LIVE indicator */}
                   <div className="absolute inset-x-0 top-0 z-20 pointer-events-none">
