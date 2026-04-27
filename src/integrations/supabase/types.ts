@@ -6468,6 +6468,7 @@ export type Database = {
           is_public: boolean | null
           mux_playback_id: string | null
           mux_stream_id: string
+          orientation: string | null
           slug: string | null
           started_at: string | null
           status: string | null
@@ -6497,6 +6498,7 @@ export type Database = {
           is_public?: boolean | null
           mux_playback_id?: string | null
           mux_stream_id: string
+          orientation?: string | null
           slug?: string | null
           started_at?: string | null
           status?: string | null
@@ -6526,6 +6528,7 @@ export type Database = {
           is_public?: boolean | null
           mux_playback_id?: string | null
           mux_stream_id?: string
+          orientation?: string | null
           slug?: string | null
           started_at?: string | null
           status?: string | null
