@@ -96,6 +96,13 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
+  // Health check — GET /mux-webhook returns 200 so Mux can verify the endpoint
+  if (req.method === 'GET') {
+    return new Response(JSON.stringify({ ok: true, service: 'mux-webhook', timestamp: new Date().toISOString() }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
   try {
     const rawBody = await req.text()
 

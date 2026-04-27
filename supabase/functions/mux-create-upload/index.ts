@@ -36,7 +36,13 @@ serve(async (req) => {
       body: JSON.stringify({
         cors_origin: '*',
         new_asset_settings: {
-          playback_policy: ['public']
+          playback_policy: ['public'],
+          max_resolution_tier: '2160p',        // Allow 4K uploads like YouTube
+          mp4_support: 'capped-1080p',         // Generate downloadable MP4 (offline + VOD download)
+          per_title_encode: true,              // Per-content encoding optimization (same as YouTube)
+          master_access: 'temporary',          // Allow temporary master access for downloading originals
+          normalize_audio: true,               // Auto-normalize audio levels across all uploads
+          passthrough: userId,                 // Tag assets with creator ID for easier debugging
         }
       })
     })
@@ -74,7 +80,8 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({
       uploadUrl: muxData.data.url,
-      uploadId: uploadId
+      uploadId: uploadId,
+      suggestedChunkSize: 10240,  // 10MB chunks for faster uploads on good connections
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })

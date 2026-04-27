@@ -12,7 +12,9 @@ serve(async (req) => {
   }
 
   try {
-    const { userId, title, description, category, isPublic } = await req.json()
+    const { userId, title, description, category, isPublic, orientation } = await req.json()
+    // orientation: 'landscape' | 'portrait' — defaults to 'landscape'
+    const streamOrientation = orientation === 'portrait' ? 'portrait' : 'landscape'
 
     const muxTokenId = Deno.env.get('MUX_TOKEN_ID')
     const muxTokenSecret = Deno.env.get('MUX_TOKEN_SECRET')
@@ -30,12 +32,17 @@ serve(async (req) => {
       body: JSON.stringify({
         playback_policy: ['public'],
         new_asset_settings: {
-          playback_policy: ['public']
+          playback_policy: ['public'],
+          mp4_support: 'capped-1080p',     // Auto-save recording as downloadable MP4
+          normalize_audio: true,
         },
-        reconnect_window: 300,
-        max_continuous_duration: 43200,
-        reduced_latency: true,
-        record: true
+        reconnect_window: 300,             // 5 min reconnect window (unchanged)
+        max_continuous_duration: 86400,    // 24 hours — no stream length cap
+        reduced_latency: true,             // Low-latency mode (unchanged)
+        latency_mode: 'reduced',           // Explicit low-latency mode setting
+        record: true,                      // Auto-record all streams (unchanged)
+        // Store orientation as passthrough metadata
+        passthrough: JSON.stringify({ userId, orientation: streamOrientation }),
       })
     })
 
@@ -60,7 +67,8 @@ serve(async (req) => {
       description,
       category,
       is_public: isPublic,
-      status: 'idle'
+      status: 'idle',
+      orientation: streamOrientation,
     }).select().single()
 
     if (dbError) throw dbError
@@ -78,6 +86,7 @@ serve(async (req) => {
       playbackId: muxData.data.playback_ids[0].id,
       rtmpUrl: 'rtmps://global-live.mux.com:443/app',
       slug: stream.slug || stream.id,
+      orientation: streamOrientation,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
