@@ -118,4 +118,6 @@ Deno.test({
       await admin.auth.admin.deleteUser(createdUserId);
     }
   }
+  },
 });
+
