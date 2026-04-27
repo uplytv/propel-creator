@@ -73,6 +73,7 @@ interface BroadcastStudioProps {
   onFeaturedProductChange?: (productId: string | null) => void;
   creatorUsername?: string | null;
   hasQueuedShopProducts?: boolean;
+  orientation?: 'landscape' | 'portrait';
 }
 
 type StudioMode = "select" | "browser-record" | "external-encoder";
@@ -87,6 +88,7 @@ export default function BroadcastStudio({
   onFeaturedProductChange,
   creatorUsername,
   hasQueuedShopProducts = false,
+  orientation = 'landscape',
 }: BroadcastStudioProps) {
   const { user } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -239,7 +241,7 @@ export default function BroadcastStudio({
         // Only recover if the track actually died — don't interrupt a healthy stream
         if (!videoTrack || videoTrack.readyState === 'live') return;
         try {
-          const constraints = getCameraConstraints(facingMode);
+          const constraints = getCameraConstraints(facingMode, orientation);
           const newStream = await navigator.mediaDevices.getUserMedia(constraints);
           const newTrack = newStream.getVideoTracks()[0];
           streamRef.current.removeTrack(videoTrack);
@@ -310,7 +312,7 @@ export default function BroadcastStudio({
     stopCurrentStream();
     setMediaError(null);
     try {
-      const constraints = getCameraConstraints(facing);
+      const constraints = getCameraConstraints(facing, orientation);
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
       if (videoRef.current) videoRef.current.srcObject = stream;
@@ -468,7 +470,7 @@ export default function BroadcastStudio({
     await clearChunks();
     chunksRef.current = [];
     pendingWritesRef.current = [];
-    const { mimeType, videoBitsPerSecond } = getRecorderOptions();
+    const { mimeType, videoBitsPerSecond } = getRecorderOptions(orientation);
     const recorder = new MediaRecorder(streamRef.current, { mimeType, videoBitsPerSecond });
     recorder.ondataavailable = (e) => {
       if (e.data.size > 0) {
