@@ -381,8 +381,11 @@ export default function SmartLinks() {
                   <Button size="icon" variant="ghost" asChild title="Open">
                     <Link to={`/link/${link.slug}`} target="_blank"><ExternalLink className="h-4 w-4" /></Link>
                   </Button>
-                  <Button size="icon" variant="ghost" onClick={() => setAnalyticsLinkId(link.id)} title="Analytics">
-                    <BarChart3 className="h-4 w-4" />
+                  <Button size="icon" variant="ghost" asChild title="Analytics">
+                    <Link to={`/smart-links/${link.id}/analytics`}><BarChart3 className="h-4 w-4" /></Link>
+                  </Button>
+                  <Button size="icon" variant="ghost" asChild title="Promote with ads">
+                    <Link to={`/smart-links/campaign?link_id=${link.id}`}><Sparkles className="h-4 w-4 text-primary" /></Link>
                   </Button>
                   <Button size="icon" variant="ghost" onClick={() => openEdit(link)} title="Edit">
                     <Sparkles className="h-4 w-4" />
