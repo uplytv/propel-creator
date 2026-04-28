@@ -27,13 +27,27 @@ export default function PresaveCallback() {
       return;
     }
 
-    let parsedState: { slug: string; email: string | null };
+    let parsedState: { slug: string; email: string | null; nonce?: string };
     try {
       parsedState = JSON.parse(atob(stateParam));
     } catch {
       setStatus("error");
       setMessage("Invalid state");
       return;
+    }
+
+    // CSRF verification: compare nonce to value stored when we built the auth URL.
+    try {
+      const storedNonce = sessionStorage.getItem("spotify_presave_nonce");
+      if (storedNonce && parsedState.nonce && storedNonce !== parsedState.nonce) {
+        setStatus("error");
+        setMessage("Invalid state — please try again");
+        return;
+      }
+      sessionStorage.removeItem("spotify_presave_nonce");
+      sessionStorage.removeItem("spotify_presave_slug");
+    } catch {
+      // sessionStorage unavailable — proceed without strict CSRF (legacy behavior)
     }
 
     (async () => {
