@@ -392,6 +392,131 @@ export default function SmartLinks() {
                   </div>
                 </div>
 
+                {/* Social Unlock */}
+                <div className="space-y-3 border-t pt-4">
+                  <div>
+                    <Label className="text-base">Social Unlock (optional)</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Require fans to take an action before they get a reward.
+                      Hypeddit charges $10/mo for this — free on UPLY.
+                    </p>
+                  </div>
+                  <Select
+                    value={form.unlock_type}
+                    onValueChange={(v) => setForm({ ...form, unlock_type: v as typeof form.unlock_type })}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No unlock — anyone can access</SelectItem>
+                      <SelectItem value="email">Email gate — enter email to unlock</SelectItem>
+                      <SelectItem value="spotify_follow">Follow on Spotify to unlock</SelectItem>
+                      <SelectItem value="social_share">Share to unlock</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  {form.unlock_type === "spotify_follow" && (
+                    <div>
+                      <Label>Spotify Artist ID</Label>
+                      <Input
+                        value={form.unlock_spotify_artist_id}
+                        onChange={(e) => setForm({ ...form, unlock_spotify_artist_id: e.target.value })}
+                        placeholder="e.g. 06HL4z0CvFAxyc27GXpf02"
+                        style={{ fontSize: "16px" }}
+                      />
+                      <p className="text-[11px] text-muted-foreground mt-1">
+                        Found in open.spotify.com/artist/<b>[ID]</b>
+                      </p>
+                    </div>
+                  )}
+
+                  {form.unlock_type !== "none" && (
+                    <>
+                      <div>
+                        <Label>Reward type</Label>
+                        <Select
+                          value={form.unlock_reward_type}
+                          onValueChange={(v) => setForm({ ...form, unlock_reward_type: v as typeof form.unlock_reward_type })}
+                        >
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="download">Free download</SelectItem>
+                            <SelectItem value="content">Exclusive content link</SelectItem>
+                            <SelectItem value="discount">Discount code</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Reward URL or code</Label>
+                        <Input
+                          value={form.unlock_reward_url}
+                          onChange={(e) => setForm({ ...form, unlock_reward_url: e.target.value })}
+                          placeholder="https://... or DISCOUNT20"
+                          style={{ fontSize: "16px" }}
+                        />
+                      </div>
+                      <div>
+                        <Label>Reward button label</Label>
+                        <Input
+                          value={form.unlock_reward_label}
+                          onChange={(e) => setForm({ ...form, unlock_reward_label: e.target.value })}
+                          placeholder="Download Free Track"
+                          style={{ fontSize: "16px" }}
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Contest / Giveaway */}
+                <div className="space-y-3 border-t pt-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="text-base">Contest / Giveaway</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Fans enter by email. Each referral = +1 entry.
+                      </p>
+                    </div>
+                    <Switch
+                      checked={form.contest_enabled}
+                      onCheckedChange={(v) => setForm({ ...form, contest_enabled: v })}
+                    />
+                  </div>
+                  {form.contest_enabled && (
+                    <>
+                      <div>
+                        <Label>Prize description</Label>
+                        <Input
+                          value={form.contest_prize}
+                          onChange={(e) => setForm({ ...form, contest_prize: e.target.value })}
+                          placeholder="VIP tickets, signed merch, exclusive session..."
+                          style={{ fontSize: "16px" }}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <Label>End date</Label>
+                          <Input
+                            type="datetime-local"
+                            value={form.contest_end_date}
+                            onChange={(e) => setForm({ ...form, contest_end_date: e.target.value })}
+                            style={{ fontSize: "16px" }}
+                          />
+                        </div>
+                        <div>
+                          <Label>Winners</Label>
+                          <Input
+                            type="number"
+                            min={1}
+                            value={form.contest_winner_count}
+                            onChange={(e) => setForm({ ...form, contest_winner_count: Number(e.target.value) || 1 })}
+                            style={{ fontSize: "16px" }}
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+
                 <Button onClick={handleSubmit} disabled={submitting} className="w-full min-h-[44px]">
                   {submitting ? "Saving..." : editing ? "Save changes" : "Create SmartLink"}
                 </Button>
