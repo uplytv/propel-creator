@@ -10,6 +10,49 @@ const corsHeaders = {
 
 const SPOTIFY_CLIENT_ID = "c79c4446c81e4e26a55fd421d8c34fde";
 const SPOTIFY_CLIENT_SECRET = Deno.env.get("SPOTIFY_CLIENT_SECRET")!;
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+
+function buildReleaseEmailHtml(link: any, listenUrl: string | null): string {
+  const safeTitle = String(link.title || "Your track").replace(/</g, "&lt;");
+  const safeArtist = link.artist ? String(link.artist).replace(/</g, "&lt;") : "";
+  const cover = link.cover_image_url
+    ? `<img src="${link.cover_image_url}" alt="" width="320" height="320" style="display:block;margin:0 auto 24px;border-radius:16px;max-width:320px;width:100%;height:auto;" />`
+    : "";
+  const ctaHref = listenUrl || `https://uply.tv/link/${link.slug}`;
+  return `
+    <div style="font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,sans-serif;background:#0A0A0A;color:#fff;padding:32px 16px;max-width:560px;margin:0 auto;text-align:center;">
+      ${cover}
+      <h1 style="font-size:26px;font-weight:700;margin:0 0 8px;color:#fff;">${safeTitle}</h1>
+      ${safeArtist ? `<p style="font-size:15px;color:rgba(255,255,255,0.7);margin:0 0 16px;">${safeArtist}</p>` : ""}
+      <p style="font-size:15px;color:#fff;margin:0 0 28px;">It's finally here. You pre-saved this — now it's time to listen.</p>
+      <a href="${ctaHref}" style="display:inline-block;background:#00FF85;color:#0A0A0A;font-weight:700;padding:14px 28px;border-radius:999px;text-decoration:none;font-size:15px;">Listen Now →</a>
+      <p style="font-size:12px;color:rgba(255,255,255,0.5);margin:32px 0 0;">You're receiving this because you pre-saved on UPLY SmartLinks.</p>
+    </div>
+  `;
+}
+
+async function sendReleaseEmail(toEmail: string, link: any) {
+  if (!RESEND_API_KEY) return;
+  const platforms = (link.platforms || {}) as Record<string, string>;
+  const listenUrl = platforms.spotify || platforms.apple_music || platforms.youtube || null;
+  try {
+    await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "UPLY <notify@notify.uply.tv>",
+        to: toEmail,
+        subject: `🎵 ${link.title} is out now${link.artist ? ` — ${link.artist}` : ""}`,
+        html: buildReleaseEmailHtml(link, listenUrl),
+      }),
+    });
+  } catch (e) {
+    console.error("[release-cron] release email failed:", e);
+  }
+}
 
 async function refreshSpotifyToken(refreshToken: string): Promise<string | null> {
   const res = await fetch("https://accounts.spotify.com/api/token", {
