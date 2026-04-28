@@ -514,7 +514,21 @@ export default function SmartLinkPage() {
                     );
                   })}
 
-                  {platformEntries.length === 0 && !showPresave && (
+                  {link.tiktok_sound_url && (
+                    <Button
+                      onClick={() => {
+                        trackClick("tiktok_sound");
+                        window.open(link.tiktok_sound_url!, "_blank", "noopener,noreferrer");
+                      }}
+                      className="w-full h-12 bg-black hover:bg-neutral-800 text-white font-semibold"
+                    >
+                      <Music2 className="h-4 w-4 mr-2" />
+                      Use This Sound on TikTok
+                      <ExternalLink className="h-4 w-4 ml-auto opacity-70" />
+                    </Button>
+                  )}
+
+                  {platformEntries.length === 0 && !showPresave && !link.tiktok_sound_url && (
                     <p className="text-center text-sm text-muted-foreground py-4">
                       No platforms configured yet.
                     </p>
