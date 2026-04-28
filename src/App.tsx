@@ -110,6 +110,7 @@ const BioPage = lazy(() => import("./pages/BioPage"));
 const PodcastRSS = lazy(() => import("./pages/PodcastRSS"));
 const NetworkFeed = lazy(() => import("./pages/NetworkFeed"));
 const Distribution = lazy(() => import("./pages/Distribution"));
+const AdsHub = lazy(() => import("./pages/AdsHub"));
 const DeveloperAPI = lazy(() => import("./pages/DeveloperAPI"));
 const EmailUnsubscribe = lazy(() => import("./pages/EmailUnsubscribe"));
 const Subscribers = lazy(() => import("./pages/Subscribers"));
@@ -347,6 +348,7 @@ const App = () => (
                     <Route path="/podcast-rss" element={<ProtectedRoute><PodcastRSS /></ProtectedRoute>} />
                     <Route path="/network" element={<ProtectedRoute><NetworkFeed /></ProtectedRoute>} />
                     <Route path="/distribution" element={<ProtectedRoute><Distribution /></ProtectedRoute>} />
+                    <Route path="/ads" element={<ProtectedRoute><AdsHub /></ProtectedRoute>} />
                     <Route path="/developer" element={<ProtectedRoute><DeveloperAPI /></ProtectedRoute>} />
                     <Route path="/dashboard/subscribers" element={<ProtectedRoute><Subscribers /></ProtectedRoute>} />
                     <Route path="/dashboard/broadcast" element={<ProtectedRoute><EmailBroadcast /></ProtectedRoute>} />
