@@ -361,7 +361,7 @@ export default function CreatorProfile() {
 
   const {
     profile, profileLoading, socialLinks, liveStream,
-    memberCount, posts, modules, totalLessons, isMember, space, tiers, products,
+    memberCount, posts, modules, totalLessons, isMember, space, tiers, products, smartLinks,
   } = useCreatorProfileData(username);
 
   const { data: inviteData } = useInviteCodes();
