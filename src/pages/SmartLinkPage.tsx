@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Music, ExternalLink, Calendar, Headphones, ShoppingBag, Sparkles } from "lucide-react";
-import { buildSpotifyAuthUrl } from "@/lib/spotifyConfig";
+import { Music, ExternalLink, Calendar, Headphones, ShoppingBag, Sparkles, Lock, Gift, Copy } from "lucide-react";
+import { buildSpotifyAuthUrl, buildSpotifyFollowUrl } from "@/lib/spotifyConfig";
 import SEOHead from "@/components/SEOHead";
 import { toast } from "sonner";
 
