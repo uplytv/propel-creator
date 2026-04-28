@@ -127,6 +127,7 @@ export default function SmartLinkPage() {
     }
     setPresaving(true);
     try {
+      fireCapi("SmartLinkPresave", "spotify");
       const url = buildSpotifyAuthUrl(link.slug, emailInput || undefined);
       window.location.href = url;
     } finally {
