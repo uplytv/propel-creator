@@ -222,6 +222,33 @@ export default function SmartLinks() {
         contest_prize: form.contest_prize.trim() || null,
         contest_end_date: form.contest_end_date ? new Date(form.contest_end_date).toISOString() : null,
         contest_winner_count: form.contest_winner_count,
+        itunes_affiliate_token: form.itunes_affiliate_token.trim() || null,
+        tiktok_sound_url: form.tiktok_sound_url.trim() || null,
+        ...(() => {
+          const newDomain = form.custom_domain.trim().toLowerCase() || null;
+          const oldDomain = (editing as any)?.custom_domain || null;
+          if (!newDomain) {
+            return {
+              custom_domain: null,
+              custom_domain_verified: false,
+              custom_domain_verification_token: null,
+            };
+          }
+          if (newDomain !== oldDomain) {
+            // New or changed domain → fresh token, reset verified
+            const token =
+              typeof crypto !== "undefined" && "randomUUID" in crypto
+                ? crypto.randomUUID().replace(/-/g, "")
+                : Math.random().toString(36).slice(2) + Date.now().toString(36);
+            return {
+              custom_domain: newDomain,
+              custom_domain_verified: false,
+              custom_domain_verification_token: token,
+            };
+          }
+          // Same domain — preserve token & verified state
+          return { custom_domain: newDomain };
+        })(),
       };
 
       if (editing) {
