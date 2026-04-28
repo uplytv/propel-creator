@@ -130,6 +130,7 @@ export default function SmartLinks() {
 
   const openEdit = (link: SmartLink) => {
     setEditing(link);
+    const anyLink = link as any;
     setForm({
       title: link.title,
       artist: link.artist || "",
@@ -140,8 +141,17 @@ export default function SmartLinks() {
       capture_email: link.capture_email,
       release_date: link.release_date ? link.release_date.slice(0, 16) : "",
       cover_image_url: link.cover_image_url || "",
-      spotify_uri: (link as any).spotify_uri || "",
+      spotify_uri: anyLink.spotify_uri || "",
       platforms: link.platforms || {},
+      unlock_type: anyLink.unlock_type || "none",
+      unlock_spotify_artist_id: anyLink.unlock_spotify_artist_id || "",
+      unlock_reward_type: anyLink.unlock_reward_type || "download",
+      unlock_reward_url: anyLink.unlock_reward_url || "",
+      unlock_reward_label: anyLink.unlock_reward_label || "",
+      contest_enabled: !!anyLink.contest_enabled,
+      contest_prize: anyLink.contest_prize || "",
+      contest_end_date: anyLink.contest_end_date ? String(anyLink.contest_end_date).slice(0, 16) : "",
+      contest_winner_count: anyLink.contest_winner_count || 1,
     });
     setOpen(true);
   };
