@@ -179,7 +179,7 @@ export function buildTikTokBrief(b: CampaignBrief) {
             : b.audience.genders[0] === "male"
             ? "GENDER_MALE"
             : "GENDER_FEMALE",
-        languages: b.audience.languages ?? b.targeting.languages ?? [],
+        languages: b.targeting.languages ?? [],
         interest_keywords: b.audience.interests ?? [],
       },
     },
