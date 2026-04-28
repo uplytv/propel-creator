@@ -127,10 +127,16 @@ export default function SmartLinks() {
       contest_prize: "",
       contest_end_date: "",
       contest_winner_count: 1,
+      itunes_affiliate_token: "",
+      tiktok_sound_url: "",
+      custom_domain: "",
     });
     setCoverFile(null);
     setEditing(null);
+    setEditingVerification({ token: null, verified: false });
   };
+
+  const _resetTrailing = () => {
 
   const openNew = () => {
     resetForm();
