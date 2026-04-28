@@ -7911,6 +7911,198 @@ export type Database = {
         }
         Relationships: []
       }
+      smart_link_clicks: {
+        Row: {
+          clicked_at: string
+          country: string | null
+          id: string
+          ip_hash: string | null
+          link_id: string
+          platform: string | null
+          referrer: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          clicked_at?: string
+          country?: string | null
+          id?: string
+          ip_hash?: string | null
+          link_id: string
+          platform?: string | null
+          referrer?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          clicked_at?: string
+          country?: string | null
+          id?: string
+          ip_hash?: string | null
+          link_id?: string
+          platform?: string | null
+          referrer?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "smart_link_clicks_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "smart_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      smart_link_email_captures: {
+        Row: {
+          captured_at: string
+          email: string
+          id: string
+          link_id: string
+          source: string | null
+        }
+        Insert: {
+          captured_at?: string
+          email: string
+          id?: string
+          link_id: string
+          source?: string | null
+        }
+        Update: {
+          captured_at?: string
+          email?: string
+          id?: string
+          link_id?: string
+          source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "smart_link_email_captures_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "smart_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      smart_link_presaves: {
+        Row: {
+          converted_at: string | null
+          created_at: string
+          fan_email: string | null
+          fan_name: string | null
+          id: string
+          link_id: string
+          provider: string
+          spotify_access_token: string | null
+          spotify_album_id: string | null
+          spotify_refresh_token: string | null
+          spotify_token_expires_at: string | null
+          spotify_track_id: string | null
+          spotify_user_id: string | null
+        }
+        Insert: {
+          converted_at?: string | null
+          created_at?: string
+          fan_email?: string | null
+          fan_name?: string | null
+          id?: string
+          link_id: string
+          provider?: string
+          spotify_access_token?: string | null
+          spotify_album_id?: string | null
+          spotify_refresh_token?: string | null
+          spotify_token_expires_at?: string | null
+          spotify_track_id?: string | null
+          spotify_user_id?: string | null
+        }
+        Update: {
+          converted_at?: string | null
+          created_at?: string
+          fan_email?: string | null
+          fan_name?: string | null
+          id?: string
+          link_id?: string
+          provider?: string
+          spotify_access_token?: string | null
+          spotify_album_id?: string | null
+          spotify_refresh_token?: string | null
+          spotify_token_expires_at?: string | null
+          spotify_track_id?: string | null
+          spotify_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "smart_link_presaves_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "smart_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      smart_links: {
+        Row: {
+          artist: string | null
+          capture_email: boolean
+          click_count: number
+          cover_image_url: string | null
+          created_at: string
+          creator_id: string
+          description: string | null
+          fallback_url: string | null
+          id: string
+          is_presave: boolean
+          link_type: string
+          platforms: Json
+          presave_converted: boolean
+          release_date: string | null
+          slug: string
+          theme: Json
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist?: string | null
+          capture_email?: boolean
+          click_count?: number
+          cover_image_url?: string | null
+          created_at?: string
+          creator_id: string
+          description?: string | null
+          fallback_url?: string | null
+          id?: string
+          is_presave?: boolean
+          link_type?: string
+          platforms?: Json
+          presave_converted?: boolean
+          release_date?: string | null
+          slug: string
+          theme?: Json
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist?: string | null
+          capture_email?: boolean
+          click_count?: number
+          cover_image_url?: string | null
+          created_at?: string
+          creator_id?: string
+          description?: string | null
+          fallback_url?: string | null
+          id?: string
+          is_presave?: boolean
+          link_type?: string
+          platforms?: Json
+          presave_converted?: boolean
+          release_date?: string | null
+          slug?: string
+          theme?: Json
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       social_links: {
         Row: {
           created_at: string
