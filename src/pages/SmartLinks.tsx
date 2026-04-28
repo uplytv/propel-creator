@@ -331,23 +331,38 @@ export default function SmartLinks() {
   return (
     <div className="min-h-screen bg-background mobile-safe-content">
       <div className="max-w-5xl mx-auto p-4 sm:p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
-              <Sparkles className="h-6 w-6 text-primary" />
-              SmartLinks
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              One link. Every platform. Track every click.
-            </p>
-          </div>
-          <Sheet open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
-            <SheetTrigger asChild>
-              <Button onClick={openNew} className="min-h-[44px]">
-                <Plus className="h-4 w-4 mr-2" />
-                New Link
+        {/* Hero */}
+        <div className="mb-6 rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-5 sm:p-6">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <Sparkles className="h-5 w-5 text-primary" />
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">SmartLinks</h1>
+                <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-primary/15 text-primary">Free on UPLY</span>
+              </div>
+              <p className="text-sm text-muted-foreground max-w-md">
+                One link → every platform. Pre-saves, social unlocks, contests, analytics — built in.
+              </p>
+              <div className="flex items-center gap-3 mt-3 flex-wrap text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-1"><Music className="h-3 w-3" /> Music</span>
+                <span className="inline-flex items-center gap-1"><Lock className="h-3 w-3" /> Unlocks</span>
+                <span className="inline-flex items-center gap-1"><Gift className="h-3 w-3" /> Contests</span>
+                <span className="inline-flex items-center gap-1"><Mail className="h-3 w-3" /> Email capture</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button asChild variant="outline" className="min-h-[44px]">
+                <Link to="/smart-links/domains"><Globe className="h-4 w-4 mr-1.5" /> Domains</Link>
               </Button>
-            </SheetTrigger>
+              <Button asChild variant="outline" className="min-h-[44px]">
+                <Link to="/ads"><Zap className="h-4 w-4 mr-1.5" /> Ads</Link>
+              </Button>
+              <Sheet open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
+                <SheetTrigger asChild>
+                  <Button onClick={openNew} className="min-h-[44px]">
+                    <Plus className="h-4 w-4 mr-1.5" /> New SmartLink
+                  </Button>
+                </SheetTrigger>
             <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
               <SheetHeader>
                 <SheetTitle>{editing ? "Edit SmartLink" : "Create SmartLink"}</SheetTitle>
