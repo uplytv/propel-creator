@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, Download, BarChart3, MousePointerClick, Mail, Music, Sparkles } from "lucide-react";
+import { ChevronLeft, Download, BarChart3, MousePointerClick, Mail, Music, Sparkles, Lock, Gift, Trophy } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { toast } from "sonner";
 
@@ -33,6 +33,13 @@ interface EmailRow {
   captured_at: string;
 }
 
+interface ContestEntry {
+  fan_email: string;
+  fan_name: string | null;
+  referral_code: string | null;
+  referral_count: number | null;
+}
+
 const PLATFORM_LABELS: Record<string, string> = {
   spotify: "Spotify",
   apple_music: "Apple Music",
@@ -54,6 +61,9 @@ export default function SmartLinkAnalyticsPage() {
   const [clicks, setClicks] = useState<Click[]>([]);
   const [emails, setEmails] = useState<EmailRow[]>([]);
   const [presaveCount, setPresaveCount] = useState(0);
+  const [unlockCount, setUnlockCount] = useState(0);
+  const [contestCount, setContestCount] = useState(0);
+  const [topReferrers, setTopReferrers] = useState<ContestEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -87,6 +97,29 @@ export default function SmartLinkAnalyticsPage() {
         .select("*", { head: true, count: "exact" })
         .eq("link_id", id);
       setPresaveCount(count || 0);
+
+      const { count: unlockCt } = await supabase
+        .from("smart_link_unlocks" as any)
+        .select("*", { head: true, count: "exact" })
+        .eq("link_id", id);
+      setUnlockCount(unlockCt || 0);
+
+      const { count: contestCt } = await supabase
+        .from("smart_link_contest_entries" as any)
+        .select("*", { head: true, count: "exact" })
+        .eq("link_id", id);
+      setContestCount(contestCt || 0);
+
+      const { data: refs } = await supabase
+        .from("smart_link_contest_entries" as any)
+        .select("fan_email, fan_name, referral_code, referral_count")
+        .eq("link_id", id)
+        .order("referral_count", { ascending: false })
+        .limit(10);
+      setTopReferrers(
+        ((refs || []) as unknown as ContestEntry[]).filter((e) => (e.referral_count || 0) > 0),
+      );
+
       setLoading(false);
     })();
   }, [id, user]);
@@ -213,7 +246,55 @@ export default function SmartLinkAnalyticsPage() {
             </div>
             <div className="text-2xl font-bold">{emails.length}</div>
           </Card>
+          <Card className="p-4">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+              <Lock className="h-3 w-3" /> Unlocks
+            </div>
+            <div className="text-2xl font-bold">{unlockCount}</div>
+          </Card>
+          <Card className="p-4">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+              <Gift className="h-3 w-3" /> Contest entries
+            </div>
+            <div className="text-2xl font-bold">{contestCount}</div>
+          </Card>
         </div>
+
+        {topReferrers.length > 0 && (
+          <Card className="p-4 mb-6">
+            <h2 className="text-sm font-semibold mb-3 flex items-center gap-2">
+              <Trophy className="h-4 w-4 text-primary" />
+              Top contest referrers
+            </h2>
+            <ol className="space-y-2">
+              {topReferrers.map((entry, idx) => {
+                const maskEmail = (email: string) => {
+                  const [u, d] = email.split("@");
+                  if (!u || !d) return email;
+                  const mu = u.length <= 2 ? u[0] + "*" : u.slice(0, 2) + "***";
+                  return `${mu}@${d}`;
+                };
+                return (
+                  <li
+                    key={entry.referral_code || idx}
+                    className="flex items-center justify-between text-sm"
+                  >
+                    <span className="flex items-center gap-2 min-w-0">
+                      <span className="text-muted-foreground w-5 text-right">{idx + 1}.</span>
+                      <span className="truncate">
+                        {entry.fan_name || maskEmail(entry.fan_email)}
+                      </span>
+                    </span>
+                    <span className="font-semibold tabular-nums">
+                      {entry.referral_count || 0}{" "}
+                      {(entry.referral_count || 0) === 1 ? "referral" : "referrals"}
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
+          </Card>
+        )}
 
         {/* Time series */}
         <Card className="p-4 mb-6">

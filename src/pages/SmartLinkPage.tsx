@@ -32,6 +32,7 @@ interface SmartLink {
   contest_prize?: string | null;
   contest_end_date?: string | null;
   itunes_affiliate_token?: string | null;
+  amazon_affiliate_tag?: string | null;
   tiktok_sound_url?: string | null;
 }
 
@@ -151,18 +152,22 @@ export default function SmartLinkPage() {
   };
 
   const decorateUrl = (platform: string, url: string): string => {
-    if (platform === "apple_music" && link?.itunes_affiliate_token) {
-      try {
-        const u = new URL(url);
+    try {
+      const u = new URL(url);
+      if (platform === "apple_music" && link?.itunes_affiliate_token) {
         if (!u.searchParams.has("at")) {
           u.searchParams.set("at", link.itunes_affiliate_token);
         }
-        return u.toString();
-      } catch {
-        return url;
       }
+      if (platform === "amazon_music" && link?.amazon_affiliate_tag) {
+        if (!u.searchParams.has("tag")) {
+          u.searchParams.set("tag", link.amazon_affiliate_tag);
+        }
+      }
+      return u.toString();
+    } catch {
+      return url;
     }
-    return url;
   };
 
   const handlePlatformClick = (platform: string, url: string) => {
@@ -260,12 +265,35 @@ export default function SmartLinkPage() {
         toast.success("Unlocked! 🎉");
       }
       if (link.unlock_type === "social_share") {
-        try {
-          await navigator.share?.({ title: link.title, url: window.location.href });
-        } catch {
-          navigator.clipboard.writeText(window.location.href);
-          toast.success("Link copied — share it to unlock!");
+        let shared = false;
+        if (typeof navigator.share === "function") {
+          try {
+            await navigator.share({ title: link.title, url: window.location.href });
+            shared = true;
+          } catch (err: any) {
+            // AbortError = user cancelled the share sheet → do NOT unlock
+            if (err?.name === "AbortError") {
+              shared = false;
+            } else {
+              shared = false;
+            }
+          }
+        } else {
+          // No native share — copy link as a fallback share action
+          try {
+            await navigator.clipboard.writeText(window.location.href);
+            toast.success("Link copied — paste it anywhere to share!");
+            shared = true;
+          } catch {
+            shared = false;
+          }
         }
+
+        if (!shared) {
+          toast.error("Share cancelled — share to unlock your reward");
+          return;
+        }
+
         await supabase.from("smart_link_unlocks").insert({
           link_id: link.id,
           unlock_type: "social_share",

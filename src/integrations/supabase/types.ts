@@ -8245,6 +8245,7 @@ export type Database = {
       }
       smart_links: {
         Row: {
+          amazon_affiliate_tag: string | null
           artist: string | null
           capture_email: boolean
           click_count: number
@@ -8280,6 +8281,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          amazon_affiliate_tag?: string | null
           artist?: string | null
           capture_email?: boolean
           click_count?: number
@@ -8315,6 +8317,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          amazon_affiliate_tag?: string | null
           artist?: string | null
           capture_email?: boolean
           click_count?: number
