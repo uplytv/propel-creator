@@ -190,6 +190,7 @@ export default function SmartLinkPage() {
         title={`${link.title}${link.artist ? ` — ${link.artist}` : ""} | UPLY`}
         description={link.description || `Listen to ${link.title} on every major platform.`}
         image={link.cover_image_url || undefined}
+        type={link.link_type === "music" ? "music.song" : "website"}
       />
       <div
         className="min-h-screen flex items-center justify-center p-4 mobile-safe-content relative overflow-hidden"
