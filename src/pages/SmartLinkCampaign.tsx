@@ -86,8 +86,9 @@ export default function SmartLinkCampaign() {
       .then(({ data }) => setSmartLinks(data || []));
   }, [user]);
 
-  // Auto-fill creative from selected SmartLink
+  // Auto-fill creative from selected SmartLink (skip when editing existing campaign)
   useEffect(() => {
+    if (editId) return;
     const sl = smartLinks.find((s) => s.id === form.smart_link_id);
     if (sl && !form.headline) {
       setForm((f) => ({
@@ -98,7 +99,7 @@ export default function SmartLinkCampaign() {
         name: f.name || `${sl.title} — ${new Date().toLocaleDateString()}`,
       }));
     }
-  }, [form.smart_link_id, smartLinks]);
+  }, [form.smart_link_id, smartLinks, editId]);
 
   // Load existing campaign if editing
   useEffect(() => {
