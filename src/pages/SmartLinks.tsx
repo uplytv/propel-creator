@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Music, ExternalLink, BarChart3, Trash2, Copy, Sparkles, Pencil } from "lucide-react";
+import { Plus, Music, ExternalLink, BarChart3, Trash2, Copy, Sparkles, Pencil, Globe, Lock, Gift, Mail, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { slugify } from "@/lib/slugs";
 import SmartLinkAnalytics from "@/components/smartlinks/SmartLinkAnalytics";
@@ -331,23 +331,38 @@ export default function SmartLinks() {
   return (
     <div className="min-h-screen bg-background mobile-safe-content">
       <div className="max-w-5xl mx-auto p-4 sm:p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
-              <Sparkles className="h-6 w-6 text-primary" />
-              SmartLinks
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              One link. Every platform. Track every click.
-            </p>
-          </div>
-          <Sheet open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
-            <SheetTrigger asChild>
-              <Button onClick={openNew} className="min-h-[44px]">
-                <Plus className="h-4 w-4 mr-2" />
-                New Link
+        {/* Hero */}
+        <div className="mb-6 rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-5 sm:p-6">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <Sparkles className="h-5 w-5 text-primary" />
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">SmartLinks</h1>
+                <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-primary/15 text-primary">Free on UPLY</span>
+              </div>
+              <p className="text-sm text-muted-foreground max-w-md">
+                One link → every platform. Pre-saves, social unlocks, contests, analytics — built in.
+              </p>
+              <div className="flex items-center gap-3 mt-3 flex-wrap text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-1"><Music className="h-3 w-3" /> Music</span>
+                <span className="inline-flex items-center gap-1"><Lock className="h-3 w-3" /> Unlocks</span>
+                <span className="inline-flex items-center gap-1"><Gift className="h-3 w-3" /> Contests</span>
+                <span className="inline-flex items-center gap-1"><Mail className="h-3 w-3" /> Email capture</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button asChild variant="outline" className="min-h-[44px]">
+                <Link to="/smart-links/domains"><Globe className="h-4 w-4 mr-1.5" /> Domains</Link>
               </Button>
-            </SheetTrigger>
+              <Button asChild variant="outline" className="min-h-[44px]">
+                <Link to="/ads"><Zap className="h-4 w-4 mr-1.5" /> Ads</Link>
+              </Button>
+              <Sheet open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
+                <SheetTrigger asChild>
+                  <Button onClick={openNew} className="min-h-[44px]">
+                    <Plus className="h-4 w-4 mr-1.5" /> New SmartLink
+                  </Button>
+                </SheetTrigger>
             <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
               <SheetHeader>
                 <SheetTitle>{editing ? "Edit SmartLink" : "Create SmartLink"}</SheetTitle>
@@ -735,6 +750,8 @@ export default function SmartLinks() {
               </div>
             </SheetContent>
           </Sheet>
+            </div>
+          </div>
         </div>
 
         {/* List */}
@@ -744,59 +761,81 @@ export default function SmartLinks() {
             <Skeleton className="h-24" />
           </div>
         ) : links.length === 0 ? (
-          <Card className="p-12 text-center">
-            <Music className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-            <h2 className="text-lg font-semibold mb-1">No SmartLinks yet</h2>
-            <p className="text-sm text-muted-foreground mb-4">
-              Create your first link in seconds. Replaces ToneDen, Feature.fm, Linkfire.
+          <Card className="p-10 sm:p-12 text-center bg-gradient-to-b from-card to-muted/20">
+            <div className="inline-flex w-14 h-14 rounded-2xl bg-primary/15 items-center justify-center mb-4">
+              <Music className="h-7 w-7 text-primary" />
+            </div>
+            <h2 className="text-lg font-bold mb-1">Create your first SmartLink</h2>
+            <p className="text-sm text-muted-foreground mb-5 max-w-sm mx-auto">
+              Drop your release links once. Fans land on a beautiful page with every platform — and you keep every click, email, and pre-save.
             </p>
-            <Button onClick={openNew}><Plus className="h-4 w-4 mr-2" />Create one</Button>
+            <Button onClick={openNew} size="lg" className="min-h-[44px]">
+              <Plus className="h-4 w-4 mr-2" /> Create SmartLink
+            </Button>
+            <p className="text-[11px] text-muted-foreground mt-3">
+              Replaces ToneDen, Feature.fm, Linkfire — free.
+            </p>
           </Card>
         ) : (
           <div className="space-y-3">
-            {links.map((link) => (
-              <Card key={link.id} className="p-4 flex items-center gap-4">
-                <div className="w-14 h-14 rounded bg-muted overflow-hidden flex-shrink-0">
-                  {link.cover_image_url ? (
-                    <img src={link.cover_image_url} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center"><Music className="h-6 w-6 text-muted-foreground" /></div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold truncate">{link.title}</h3>
-                    {link.is_presave && (
-                      <span className="text-xs bg-primary/15 text-primary px-2 py-0.5 rounded">Pre-save</span>
-                    )}
+            {links.map((link) => {
+              const platformCount = Object.keys(link.platforms || {}).filter(k => link.platforms[k]).length;
+              return (
+                <Card key={link.id} className="p-4 hover:border-primary/40 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-lg bg-muted overflow-hidden flex-shrink-0 ring-1 ring-border">
+                      {link.cover_image_url ? (
+                        <img src={link.cover_image_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center"><Music className="h-6 w-6 text-muted-foreground" /></div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-semibold truncate">{link.title}</h3>
+                        {link.is_presave && (
+                          <span className="text-[10px] uppercase tracking-wider bg-primary/15 text-primary px-1.5 py-0.5 rounded">Pre-save</span>
+                        )}
+                      </div>
+                      {link.artist && <p className="text-xs text-muted-foreground truncate">{link.artist}</p>}
+                      <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
+                        <span className="font-mono truncate">/link/{link.slug}</span>
+                        <span className="hidden sm:inline">·</span>
+                        <span className="hidden sm:inline tabular-nums"><b className="text-foreground">{link.click_count}</b> clicks</span>
+                        <span className="hidden sm:inline">·</span>
+                        <span className="hidden sm:inline">{platformCount} platforms</span>
+                      </div>
+                    </div>
+                    <div className="hidden md:flex flex-col items-end shrink-0">
+                      <span className="text-xl font-extrabold tabular-nums">{link.click_count}</span>
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">clicks</span>
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground truncate">/link/{link.slug}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {link.click_count} clicks · {Object.keys(link.platforms || {}).filter(k => link.platforms[k]).length} platforms
-                  </p>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Button size="icon" variant="ghost" onClick={() => copyUrl(link.slug)} title="Copy link">
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                  <Button size="icon" variant="ghost" asChild title="Open">
-                    <Link to={`/link/${link.slug}`} target="_blank"><ExternalLink className="h-4 w-4" /></Link>
-                  </Button>
-                  <Button size="icon" variant="ghost" asChild title="Analytics">
-                    <Link to={`/smart-links/${link.id}/analytics`}><BarChart3 className="h-4 w-4" /></Link>
-                  </Button>
-                  <Button size="icon" variant="ghost" asChild title="Promote with ads">
-                    <Link to={`/smart-links/campaign?link_id=${link.id}`}><Sparkles className="h-4 w-4 text-primary" /></Link>
-                  </Button>
-                  <Button size="icon" variant="ghost" onClick={() => openEdit(link)} title="Edit">
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button size="icon" variant="ghost" onClick={() => handleDelete(link.id)} title="Delete">
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
-              </Card>
-            ))}
+                  <div className="flex items-center gap-1 mt-3 pt-3 border-t border-border/60 flex-wrap">
+                    <Button size="sm" variant="ghost" onClick={() => copyUrl(link.slug)} className="h-9 gap-1.5">
+                      <Copy className="h-3.5 w-3.5" /> <span className="text-xs">Copy</span>
+                    </Button>
+                    <Button size="sm" variant="ghost" asChild className="h-9 gap-1.5">
+                      <Link to={`/link/${link.slug}`} target="_blank"><ExternalLink className="h-3.5 w-3.5" /> <span className="text-xs">Open</span></Link>
+                    </Button>
+                    <Button size="sm" variant="ghost" asChild className="h-9 gap-1.5">
+                      <Link to={`/smart-links/${link.id}/analytics`}><BarChart3 className="h-3.5 w-3.5" /> <span className="text-xs">Stats</span></Link>
+                    </Button>
+                    <Button size="sm" variant="ghost" asChild className="h-9 gap-1.5 text-primary">
+                      <Link to={`/smart-links/campaign?link_id=${link.id}`}><Zap className="h-3.5 w-3.5" /> <span className="text-xs">Promote</span></Link>
+                    </Button>
+                    <div className="ml-auto flex items-center gap-0.5">
+                      <Button size="icon" variant="ghost" onClick={() => openEdit(link)} title="Edit" className="h-9 w-9">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button size="icon" variant="ghost" onClick={() => handleDelete(link.id)} title="Delete" className="h-9 w-9">
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         )}
 

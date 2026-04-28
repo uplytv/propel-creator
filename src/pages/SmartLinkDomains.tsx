@@ -128,15 +128,16 @@ export default function SmartLinkDomains() {
           <ChevronLeft className="h-4 w-4" /> Back to SmartLinks
         </Link>
 
-        <div className="space-y-2">
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Globe className="h-6 w-6 text-primary" />
-            Custom Domains
-          </h1>
+        <div className="rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-5 sm:p-6">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <Globe className="h-5 w-5 text-primary" />
+            <h1 className="text-2xl font-bold tracking-tight">Custom Domains</h1>
+            <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-primary/15 text-primary">Free on UPLY</span>
+          </div>
           <p className="text-sm text-muted-foreground">
-            Use your own domain for all your SmartLinks (e.g.{" "}
-            <span className="font-mono text-foreground">links.yourartistname.com</span>
-            ). Feature.fm charges $29/mo for this — free on UPLY.
+            Serve your SmartLinks from your own domain like{" "}
+            <span className="font-mono text-foreground">links.yourartistname.com</span>.
+            Linkfire and Feature.fm charge $29–$36/mo for this.
           </p>
         </div>
 
