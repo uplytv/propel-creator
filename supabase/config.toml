@@ -111,3 +111,7 @@ project_id = "dbjlhmbgskvhuzqvqfrl"
     verify_jwt = false
   [functions.smartlink-track-click]
     verify_jwt = false
+  [functions.apple-presave]
+    verify_jwt = false
+  [functions.spotify-follow-callback]
+    verify_jwt = false
