@@ -293,6 +293,37 @@ export default function SmartLinks() {
     toast.success("Link copied");
   };
 
+  const handleVerifyDomain = async () => {
+    if (!editing) {
+      toast.error("Save the SmartLink first, then verify your domain");
+      return;
+    }
+    if (!editingVerification.token) {
+      toast.error("No verification token found — re-save the link");
+      return;
+    }
+    setVerifyingDomain(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("smartlink-verify-domain", {
+        body: { link_id: editing.id },
+      });
+      if (error) throw error;
+      if ((data as any)?.verified) {
+        toast.success("Domain verified! 🎉");
+        setEditingVerification((s) => ({ ...s, verified: true }));
+        loadLinks();
+      } else {
+        toast.error("Not verified yet", {
+          description: (data as any)?.message || "DNS may take a few minutes to propagate.",
+        });
+      }
+    } catch (err: any) {
+      toast.error("Verification failed", { description: err.message });
+    } finally {
+      setVerifyingDomain(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background mobile-safe-content">
       <div className="max-w-5xl mx-auto p-4 sm:p-6">
