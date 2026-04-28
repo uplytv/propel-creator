@@ -126,6 +126,11 @@ Deno.serve(async (req) => {
           .update({ converted_at: new Date().toISOString() })
           .eq("id", p.id);
         totalConverted++;
+
+        // Notify the fan their pre-saved track is out now (fire-and-forget)
+        if (p.fan_email) {
+          await sendReleaseEmail(p.fan_email, link);
+        }
       }
     }
 
