@@ -65,6 +65,17 @@ export default function SmartLinks() {
     cover_image_url: "",
     spotify_uri: "",
     platforms: {} as Record<string, string>,
+    // Social unlock
+    unlock_type: "none" as "none" | "spotify_follow" | "email" | "social_share",
+    unlock_spotify_artist_id: "",
+    unlock_reward_type: "download" as "download" | "content" | "discount",
+    unlock_reward_url: "",
+    unlock_reward_label: "",
+    // Contest
+    contest_enabled: false,
+    contest_prize: "",
+    contest_end_date: "",
+    contest_winner_count: 1,
   });
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
