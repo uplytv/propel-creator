@@ -76,9 +76,18 @@ export default function SmartLinks() {
     contest_prize: "",
     contest_end_date: "",
     contest_winner_count: 1,
+    // Distribution / extras
+    itunes_affiliate_token: "",
+    tiktok_sound_url: "",
+    custom_domain: "",
   });
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [verifyingDomain, setVerifyingDomain] = useState(false);
+  const [editingVerification, setEditingVerification] = useState<{
+    token: string | null;
+    verified: boolean;
+  }>({ token: null, verified: false });
 
   const loadLinks = async () => {
     if (!user) return;
