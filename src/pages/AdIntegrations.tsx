@@ -42,7 +42,7 @@ const googleEvents: PixelEvent[] = [
 /* ─────── component ─────── */
 export default function AdIntegrations() {
   const { campaigns, launchCampaign, updateStatus, deleteCampaign, duplicateCampaign } = useCampaigns();
-  const { getIntegration, saveIntegration, disconnectIntegration, loading } = useAdIntegrations();
+  const { getIntegration, saveIntegration, disconnectIntegration, updateCapiCredentials, loading } = useAdIntegrations();
 
   const [boostOpen, setBoostOpen] = useState(false);
   const [metaPixelInput, setMetaPixelInput] = useState("");
@@ -182,8 +182,21 @@ export default function AdIntegrations() {
                       extraInfo={[
                         { icon: Users, label: "Custom Audiences", value: "Available" },
                         { icon: Globe, label: "Installed On", value: "All creator pages" },
+                        { icon: Activity, label: "Server-side CAPI", value: metaIntegration.access_token ? "Configured" : "Not set" },
                       ]}
                       onDisconnect={() => handleDisconnect("meta")}
+                    />
+                    <CapiCredentialsForm
+                      currentToken={metaIntegration.access_token || ""}
+                      currentTestCode={metaIntegration.test_event_code || ""}
+                      onSave={async (token, testCode) => {
+                        try {
+                          await updateCapiCredentials(token, testCode);
+                          toast.success("CAPI credentials saved", { description: "Server-side events will now fire to Meta." });
+                        } catch (e: any) {
+                          toast.error(e?.message || "Failed to save CAPI credentials");
+                        }
+                      }}
                     />
                   </motion.div>
                 )}
@@ -379,6 +392,86 @@ function ConnectedDetails({
         <Trash2 className="w-3.5 h-3.5 mr-2" />
         Disconnect
       </Button>
+    </div>
+  );
+}
+
+function CapiCredentialsForm({
+  currentToken,
+  currentTestCode,
+  onSave,
+}: {
+  currentToken: string;
+  currentTestCode: string;
+  onSave: (token: string, testCode: string) => Promise<void>;
+}) {
+  const [token, setToken] = useState(currentToken);
+  const [testCode, setTestCode] = useState(currentTestCode);
+  const [saving, setSaving] = useState(false);
+  const [open, setOpen] = useState(!currentToken);
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="mt-4 w-full text-xs text-primary hover:underline text-left"
+      >
+        {currentToken ? "Edit Conversions API credentials →" : "+ Add Conversions API credentials"}
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-5 pt-5 border-t border-border space-y-3">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+          Conversions API (Server-side)
+        </p>
+        <p className="text-xs text-muted-foreground">
+          Paste your Meta CAPI access token to fire events server-side from SmartLinks. Get one from{" "}
+          <a
+            href="https://business.facebook.com/events_manager"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary underline"
+          >
+            Events Manager → Settings → Conversions API
+          </a>
+          .
+        </p>
+      </div>
+      <Input
+        type="password"
+        placeholder="CAPI Access Token (EAAG...)"
+        value={token}
+        onChange={(e) => setToken(e.target.value)}
+        className="font-mono text-xs"
+      />
+      <Input
+        placeholder="Test Event Code (optional, e.g. TEST12345)"
+        value={testCode}
+        onChange={(e) => setTestCode(e.target.value)}
+        className="font-mono text-xs"
+      />
+      <div className="flex gap-2">
+        <Button
+          variant="hero"
+          size="sm"
+          className="flex-1"
+          disabled={saving || !token.trim()}
+          onClick={async () => {
+            setSaving(true);
+            await onSave(token.trim(), testCode.trim());
+            setSaving(false);
+            setOpen(false);
+          }}
+        >
+          {saving ? "Saving..." : "Save CAPI Credentials"}
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setOpen(false)}>
+          Cancel
+        </Button>
+      </div>
     </div>
   );
 }

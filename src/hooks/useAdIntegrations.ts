@@ -12,6 +12,8 @@ interface AdIntegration {
   platform: Platform;
   pixel_id: string;
   is_active: boolean;
+  access_token?: string | null;
+  test_event_code?: string | null;
 }
 
 export function useAdIntegrations() {
@@ -88,11 +90,31 @@ export function useAdIntegrations() {
     await fetchIntegrations();
   };
 
+  const updateCapiCredentials = async (
+    accessToken: string,
+    testEventCode: string | null
+  ) => {
+    if (!user) return;
+    const existing = getIntegration("meta");
+    if (!existing) throw new Error("Connect Meta Pixel first");
+    const { error } = await supabase
+      .from("ad_integrations")
+      .update({
+        access_token: accessToken || null,
+        test_event_code: testEventCode || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", existing.id);
+    if (error) throw error;
+    await fetchIntegrations();
+  };
+
   return {
     integrations,
     loading,
     getIntegration,
     saveIntegration,
     disconnectIntegration,
+    updateCapiCredentials,
   };
 }
