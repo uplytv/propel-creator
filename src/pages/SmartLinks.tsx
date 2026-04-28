@@ -78,6 +78,7 @@ export default function SmartLinks() {
     contest_winner_count: 1,
     // Distribution / extras
     itunes_affiliate_token: "",
+    amazon_affiliate_tag: "",
     tiktok_sound_url: "",
     custom_domain: "",
   });
@@ -128,6 +129,7 @@ export default function SmartLinks() {
       contest_end_date: "",
       contest_winner_count: 1,
       itunes_affiliate_token: "",
+      amazon_affiliate_tag: "",
       tiktok_sound_url: "",
       custom_domain: "",
     });
@@ -166,6 +168,7 @@ export default function SmartLinks() {
       contest_end_date: anyLink.contest_end_date ? String(anyLink.contest_end_date).slice(0, 16) : "",
       contest_winner_count: anyLink.contest_winner_count || 1,
       itunes_affiliate_token: anyLink.itunes_affiliate_token || "",
+      amazon_affiliate_tag: anyLink.amazon_affiliate_tag || "",
       tiktok_sound_url: anyLink.tiktok_sound_url || "",
       custom_domain: anyLink.custom_domain || "",
     });
@@ -223,6 +226,7 @@ export default function SmartLinks() {
         contest_end_date: form.contest_end_date ? new Date(form.contest_end_date).toISOString() : null,
         contest_winner_count: form.contest_winner_count,
         itunes_affiliate_token: form.itunes_affiliate_token.trim() || null,
+        amazon_affiliate_tag: form.amazon_affiliate_tag.trim() || null,
         tiktok_sound_url: form.tiktok_sound_url.trim() || null,
         ...(() => {
           const newDomain = form.custom_domain.trim().toLowerCase() || null;
@@ -621,6 +625,28 @@ export default function SmartLinks() {
                         className="underline"
                       >
                         Apple Affiliates
+                      </a>
+                      .
+                    </p>
+                  </div>
+                  <div>
+                    <Label>Amazon Associates Tag</Label>
+                    <Input
+                      value={form.amazon_affiliate_tag}
+                      onChange={(e) => setForm({ ...form, amazon_affiliate_tag: e.target.value })}
+                      placeholder="e.g. mysite-20"
+                      style={{ fontSize: "16px" }}
+                    />
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      Auto-appended as <code>?tag=</code> to Amazon Music links.
+                      Get yours at{" "}
+                      <a
+                        href="https://affiliate-program.amazon.com/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline"
+                      >
+                        Amazon Associates
                       </a>
                       .
                     </p>
