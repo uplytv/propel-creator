@@ -96,6 +96,7 @@ export default function SmartLinks() {
       capture_email: false,
       release_date: "",
       cover_image_url: "",
+      spotify_uri: "",
       platforms: {},
     });
     setCoverFile(null);
