@@ -86,11 +86,20 @@ Deno.serve(async (req) => {
 
     const platforms = (link.platforms || {}) as Record<string, string>;
     const spotifyUrl: string | undefined = platforms.spotify;
+    const spotifyUri: string | undefined = (link as any).spotify_uri || undefined;
 
-    // Extract Spotify track or album ID from URL if present
+    // Extract Spotify track or album ID — prefer the explicit URI (unreleased tracks),
+    // fall back to parsing a public Spotify URL.
     let trackId: string | null = null;
     let albumId: string | null = null;
-    if (spotifyUrl) {
+    if (spotifyUri) {
+      const uriMatch = spotifyUri.match(/spotify:(track|album):([a-zA-Z0-9]+)/);
+      if (uriMatch) {
+        if (uriMatch[1] === "track") trackId = uriMatch[2];
+        if (uriMatch[1] === "album") albumId = uriMatch[2];
+      }
+    }
+    if (!trackId && !albumId && spotifyUrl) {
       const trackMatch = spotifyUrl.match(/\/track\/([a-zA-Z0-9]+)/);
       const albumMatch = spotifyUrl.match(/\/album\/([a-zA-Z0-9]+)/);
       if (trackMatch) trackId = trackMatch[1];
