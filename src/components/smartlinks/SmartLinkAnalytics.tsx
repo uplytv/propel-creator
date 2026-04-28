@@ -3,31 +3,68 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, BarChart, Bar } from "recharts";
-import { Mail, MousePointerClick, Sparkles } from "lucide-react";
+import { Mail, MousePointerClick, Sparkles, Lock, Gift, Trophy } from "lucide-react";
 
 interface Props { linkId: string; }
 
 interface Click { platform: string | null; clicked_at: string; }
+interface ContestEntry {
+  fan_email: string;
+  fan_name: string | null;
+  referral_code: string | null;
+  referral_count: number | null;
+}
 
 export default function SmartLinkAnalytics({ linkId }: Props) {
   const [loading, setLoading] = useState(true);
   const [clicks, setClicks] = useState<Click[]>([]);
   const [emailCount, setEmailCount] = useState(0);
   const [presaveCount, setPresaveCount] = useState(0);
+  const [unlockCount, setUnlockCount] = useState(0);
+  const [contestCount, setContestCount] = useState(0);
+  const [topReferrers, setTopReferrers] = useState<ContestEntry[]>([]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const [clicksRes, emailsRes, presavesRes] = await Promise.all([
-        supabase.from("smart_link_clicks").select("platform, clicked_at").eq("link_id", linkId).order("clicked_at", { ascending: false }).limit(1000),
-        supabase.from("smart_link_email_captures").select("id", { count: "exact", head: true }).eq("link_id", linkId),
-        supabase.from("smart_link_presaves").select("id", { count: "exact", head: true }).eq("link_id", linkId),
+      const [clicksRes, emailsRes, presavesRes, unlocksRes, contestRes, topRefsRes] = await Promise.all([
+        supabase
+          .from("smart_link_clicks")
+          .select("platform, clicked_at")
+          .eq("link_id", linkId)
+          .order("clicked_at", { ascending: false })
+          .limit(1000),
+        supabase
+          .from("smart_link_email_captures")
+          .select("id", { count: "exact", head: true })
+          .eq("link_id", linkId),
+        supabase
+          .from("smart_link_presaves")
+          .select("id", { count: "exact", head: true })
+          .eq("link_id", linkId),
+        supabase
+          .from("smart_link_unlocks" as any)
+          .select("id", { count: "exact", head: true })
+          .eq("link_id", linkId),
+        supabase
+          .from("smart_link_contest_entries" as any)
+          .select("id", { count: "exact", head: true })
+          .eq("link_id", linkId),
+        supabase
+          .from("smart_link_contest_entries" as any)
+          .select("fan_email, fan_name, referral_code, referral_count")
+          .eq("link_id", linkId)
+          .order("referral_count", { ascending: false })
+          .limit(10),
       ]);
       if (cancelled) return;
       setClicks((clicksRes.data || []) as Click[]);
       setEmailCount(emailsRes.count || 0);
       setPresaveCount(presavesRes.count || 0);
+      setUnlockCount(unlocksRes.count || 0);
+      setContestCount(contestRes.count || 0);
+      setTopReferrers(((topRefsRes.data || []) as unknown as ContestEntry[]).filter((e) => (e.referral_count || 0) > 0));
       setLoading(false);
     })();
     return () => { cancelled = true; };
@@ -68,6 +105,13 @@ export default function SmartLinkAnalytics({ linkId }: Props) {
   const totalClicks = clicks.filter((c) => c.platform !== "view").length;
   const totalViews = clicks.filter((c) => c.platform === "view").length;
 
+  const maskEmail = (email: string) => {
+    const [user, domain] = email.split("@");
+    if (!user || !domain) return email;
+    const maskedUser = user.length <= 2 ? user[0] + "*" : user.slice(0, 2) + "***";
+    return `${maskedUser}@${domain}`;
+  };
+
   return (
     <div className="space-y-4 mt-6">
       <div className="grid grid-cols-2 gap-3">
@@ -79,6 +123,14 @@ export default function SmartLinkAnalytics({ linkId }: Props) {
         <Card className="p-4">
           <div className="flex items-center gap-2 text-muted-foreground text-xs"><Sparkles className="h-3 w-3" />Pre-saves</div>
           <p className="text-2xl font-bold mt-1">{presaveCount}</p>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center gap-2 text-muted-foreground text-xs"><Lock className="h-3 w-3" />Unlocks</div>
+          <p className="text-2xl font-bold mt-1">{unlockCount}</p>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center gap-2 text-muted-foreground text-xs"><Gift className="h-3 w-3" />Contest entries</div>
+          <p className="text-2xl font-bold mt-1">{contestCount}</p>
         </Card>
         <Card className="p-4 col-span-2">
           <div className="flex items-center gap-2 text-muted-foreground text-xs"><Mail className="h-3 w-3" />Emails captured</div>
@@ -114,7 +166,34 @@ export default function SmartLinkAnalytics({ linkId }: Props) {
         </Card>
       )}
 
-      {totalClicks === 0 && presaveCount === 0 && (
+      {topReferrers.length > 0 && (
+        <Card className="p-4">
+          <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <Trophy className="h-4 w-4 text-primary" />
+            Top referrers
+          </h3>
+          <ol className="space-y-2">
+            {topReferrers.map((entry, idx) => (
+              <li
+                key={entry.referral_code || idx}
+                className="flex items-center justify-between text-sm"
+              >
+                <span className="flex items-center gap-2 min-w-0">
+                  <span className="text-muted-foreground w-5 text-right">{idx + 1}.</span>
+                  <span className="truncate">
+                    {entry.fan_name || maskEmail(entry.fan_email)}
+                  </span>
+                </span>
+                <span className="font-semibold tabular-nums">
+                  {entry.referral_count || 0} {(entry.referral_count || 0) === 1 ? "referral" : "referrals"}
+                </span>
+              </li>
+            ))}
+          </ol>
+        </Card>
+      )}
+
+      {totalClicks === 0 && presaveCount === 0 && unlockCount === 0 && contestCount === 0 && (
         <Card className="p-8 text-center text-sm text-muted-foreground">
           No activity yet. Share your link to start tracking.
         </Card>
