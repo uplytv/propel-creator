@@ -8117,6 +8117,55 @@ export type Database = {
           },
         ]
       }
+      smart_link_domains: {
+        Row: {
+          created_at: string
+          creator_id: string
+          domain: string
+          id: string
+          verification_token: string
+          verified: boolean
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          domain: string
+          id?: string
+          verification_token?: string
+          verified?: boolean
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          domain?: string
+          id?: string
+          verification_token?: string
+          verified?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "smart_link_domains_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "smart_link_domains_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "smart_link_domains_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "unified_referral_leaderboard"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       smart_link_email_captures: {
         Row: {
           captured_at: string
