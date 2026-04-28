@@ -235,22 +235,10 @@ export default function SmartLinkShareHub({ links }: Props) {
 
             {/* QR */}
             <TabsContent value="qr" className="mt-4">
-              <div className="flex flex-col sm:flex-row items-center gap-4">
-                <div className="p-3 rounded-2xl bg-white">
-                  {qrUrl && <img src={qrUrl} alt="QR" width={200} height={200} />}
-                </div>
-                <div className="flex-1 min-w-0 text-center sm:text-left">
-                  <h4 className="font-semibold text-sm mb-1">Scan to open</h4>
-                  <p className="text-xs text-muted-foreground mb-3">
-                    Print on flyers, merch, or posters. Fans scan and land directly on your SmartLink.
-                  </p>
-                  <Button size="sm" variant="outline" asChild className="min-h-[40px]">
-                    <a href={qrUrl} download={`smartlink-${selected.slug}.png`} target="_blank" rel="noopener noreferrer">
-                      <QrCode className="h-3.5 w-3.5 mr-1.5" /> Download PNG
-                    </a>
-                  </Button>
-                </div>
-              </div>
+              <BrandedQRBuilder url={url} filenameSlug={selected.slug} />
+              <p className="text-[11px] text-muted-foreground mt-4 text-center">
+                Print on flyers, merch, or posters. Fans scan and land directly on your SmartLink.
+              </p>
             </TabsContent>
 
             {/* SOCIAL */}
