@@ -8073,6 +8073,50 @@ export type Database = {
           },
         ]
       }
+      smart_link_contest_entries: {
+        Row: {
+          entered_at: string | null
+          fan_email: string
+          fan_name: string | null
+          id: string
+          link_id: string | null
+          referral_code: string
+          referral_count: number | null
+          referred_by: string | null
+          total_points: number | null
+        }
+        Insert: {
+          entered_at?: string | null
+          fan_email: string
+          fan_name?: string | null
+          id?: string
+          link_id?: string | null
+          referral_code?: string
+          referral_count?: number | null
+          referred_by?: string | null
+          total_points?: number | null
+        }
+        Update: {
+          entered_at?: string | null
+          fan_email?: string
+          fan_name?: string | null
+          id?: string
+          link_id?: string | null
+          referral_code?: string
+          referral_count?: number | null
+          referred_by?: string | null
+          total_points?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "smart_link_contest_entries_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "smart_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       smart_link_email_captures: {
         Row: {
           captured_at: string
@@ -8107,6 +8151,7 @@ export type Database = {
       }
       smart_link_presaves: {
         Row: {
+          apple_music_user_token: string | null
           converted_at: string | null
           created_at: string
           fan_email: string | null
@@ -8122,6 +8167,7 @@ export type Database = {
           spotify_user_id: string | null
         }
         Insert: {
+          apple_music_user_token?: string | null
           converted_at?: string | null
           created_at?: string
           fan_email?: string | null
@@ -8137,6 +8183,7 @@ export type Database = {
           spotify_user_id?: string | null
         }
         Update: {
+          apple_music_user_token?: string | null
           converted_at?: string | null
           created_at?: string
           fan_email?: string | null
@@ -8161,11 +8208,50 @@ export type Database = {
           },
         ]
       }
+      smart_link_unlocks: {
+        Row: {
+          fan_email: string | null
+          id: string
+          link_id: string | null
+          spotify_user_id: string | null
+          unlock_type: string
+          unlocked_at: string | null
+        }
+        Insert: {
+          fan_email?: string | null
+          id?: string
+          link_id?: string | null
+          spotify_user_id?: string | null
+          unlock_type: string
+          unlocked_at?: string | null
+        }
+        Update: {
+          fan_email?: string | null
+          id?: string
+          link_id?: string | null
+          spotify_user_id?: string | null
+          unlock_type?: string
+          unlocked_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "smart_link_unlocks_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "smart_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       smart_links: {
         Row: {
           artist: string | null
           capture_email: boolean
           click_count: number
+          contest_enabled: boolean | null
+          contest_end_date: string | null
+          contest_prize: string | null
+          contest_winner_count: number | null
           cover_image_url: string | null
           created_at: string
           creator_id: string
@@ -8181,12 +8267,21 @@ export type Database = {
           spotify_uri: string | null
           theme: Json
           title: string
+          unlock_reward_label: string | null
+          unlock_reward_type: string | null
+          unlock_reward_url: string | null
+          unlock_spotify_artist_id: string | null
+          unlock_type: string | null
           updated_at: string
         }
         Insert: {
           artist?: string | null
           capture_email?: boolean
           click_count?: number
+          contest_enabled?: boolean | null
+          contest_end_date?: string | null
+          contest_prize?: string | null
+          contest_winner_count?: number | null
           cover_image_url?: string | null
           created_at?: string
           creator_id: string
@@ -8202,12 +8297,21 @@ export type Database = {
           spotify_uri?: string | null
           theme?: Json
           title: string
+          unlock_reward_label?: string | null
+          unlock_reward_type?: string | null
+          unlock_reward_url?: string | null
+          unlock_spotify_artist_id?: string | null
+          unlock_type?: string | null
           updated_at?: string
         }
         Update: {
           artist?: string | null
           capture_email?: boolean
           click_count?: number
+          contest_enabled?: boolean | null
+          contest_end_date?: string | null
+          contest_prize?: string | null
+          contest_winner_count?: number | null
           cover_image_url?: string | null
           created_at?: string
           creator_id?: string
@@ -8223,6 +8327,11 @@ export type Database = {
           spotify_uri?: string | null
           theme?: Json
           title?: string
+          unlock_reward_label?: string | null
+          unlock_reward_type?: string | null
+          unlock_reward_url?: string | null
+          unlock_spotify_artist_id?: string | null
+          unlock_type?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -10569,6 +10678,7 @@ export type Database = {
         Args: { p_amount?: number; p_id: string }
         Returns: undefined
       }
+      increment_referral_count: { Args: { p_code: string }; Returns: undefined }
       increment_subscriber_engagement: {
         Args: { p_email: string; p_field: string }
         Returns: undefined
