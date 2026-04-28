@@ -162,6 +162,7 @@ export default function SmartLinks() {
         release_date: form.release_date ? new Date(form.release_date).toISOString() : null,
         is_presave: form.is_presave,
         capture_email: form.capture_email,
+        spotify_uri: form.spotify_uri.trim() || null,
       };
 
       if (editing) {
