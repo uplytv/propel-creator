@@ -750,6 +750,8 @@ export default function SmartLinks() {
               </div>
             </SheetContent>
           </Sheet>
+            </div>
+          </div>
         </div>
 
         {/* List */}
