@@ -224,39 +224,43 @@ export default function SmartLinkAnalyticsPage() {
           </Button>
         </div>
 
-        {/* KPI cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-          <Card className="p-4">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-              <MousePointerClick className="h-3 w-3" /> Total clicks
+        {/* Hero KPIs — primary engagement */}
+        <div className="grid grid-cols-3 gap-3 mb-3">
+          <Card className="p-4 bg-gradient-to-br from-primary/15 via-card to-card border-primary/30">
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
+              <MousePointerClick className="h-3 w-3" /> Clicks
             </div>
-            <div className="text-2xl font-bold">{clicks.length}</div>
+            <div className="text-3xl font-extrabold tabular-nums">{clicks.length.toLocaleString()}</div>
           </Card>
           <Card className="p-4">
-            <div className="text-xs text-muted-foreground mb-1">Page views</div>
-            <div className="text-2xl font-bold">{link.click_count}</div>
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Page views</div>
+            <div className="text-3xl font-extrabold tabular-nums">{link.click_count.toLocaleString()}</div>
           </Card>
           <Card className="p-4">
-            <div className="text-xs text-muted-foreground mb-1">Pre-saves</div>
-            <div className="text-2xl font-bold">{presaveCount}</div>
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Pre-saves</div>
+            <div className="text-3xl font-extrabold tabular-nums text-primary">{presaveCount.toLocaleString()}</div>
           </Card>
-          <Card className="p-4">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-              <Mail className="h-3 w-3" /> Emails captured
+        </div>
+
+        {/* Secondary KPIs */}
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          <Card className="p-3">
+            <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
+              <Mail className="h-3 w-3" /> Emails
             </div>
-            <div className="text-2xl font-bold">{emails.length}</div>
+            <div className="text-xl font-bold tabular-nums">{emails.length.toLocaleString()}</div>
           </Card>
-          <Card className="p-4">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+          <Card className="p-3">
+            <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
               <Lock className="h-3 w-3" /> Unlocks
             </div>
-            <div className="text-2xl font-bold">{unlockCount}</div>
+            <div className="text-xl font-bold tabular-nums">{unlockCount.toLocaleString()}</div>
           </Card>
-          <Card className="p-4">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-              <Gift className="h-3 w-3" /> Contest entries
+          <Card className="p-3">
+            <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
+              <Gift className="h-3 w-3" /> Contest
             </div>
-            <div className="text-2xl font-bold">{contestCount}</div>
+            <div className="text-xl font-bold tabular-nums">{contestCount.toLocaleString()}</div>
           </Card>
         </div>
 
