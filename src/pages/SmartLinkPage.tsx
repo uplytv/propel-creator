@@ -77,6 +77,23 @@ export default function SmartLinkPage() {
     };
   }, [slug]);
 
+  const fireCapi = (eventName: string, platform?: string) => {
+    if (!link) return;
+    // Fire-and-forget server-side Meta CAPI event
+    supabase.functions
+      .invoke("smartlink-meta-capi", {
+        body: {
+          link_id: link.id,
+          event_name: eventName,
+          platform: platform || null,
+          email: emailInput || null,
+          event_source_url: window.location.href,
+          user_agent: navigator.userAgent,
+        },
+      })
+      .then(() => {}, () => {});
+  };
+
   const trackClick = async (platform: string) => {
     if (!link) return;
     supabase
@@ -88,6 +105,7 @@ export default function SmartLinkPage() {
         user_agent: navigator.userAgent,
       })
       .then(() => {}, () => {});
+    fireCapi("SmartLinkClick", platform);
   };
 
   const handlePlatformClick = (platform: string, url: string) => {
