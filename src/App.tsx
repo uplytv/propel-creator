@@ -78,6 +78,9 @@ const Trending = lazy(() => import("./pages/Trending"));
 const ForYou = lazy(() => import("./pages/ForYou"));
 const Following = lazy(() => import("./pages/Following"));
 const NewCreators = lazy(() => import("./pages/NewCreators"));
+const SmartLinkPage = lazy(() => import("./pages/SmartLinkPage"));
+const PresaveCallback = lazy(() => import("./pages/PresaveCallback"));
+const SmartLinks = lazy(() => import("./pages/SmartLinks"));
 const CategoryFeed = lazy(() => import("./pages/CategoryFeed"));
 const Messages = lazy(() => import("./pages/Messages"));
 const Analytics = lazy(() => import("./pages/Analytics"));
@@ -274,6 +277,12 @@ const App = () => (
                     <Route path="/:username/events/:slug" element={<EventPage />} />
                     <Route path="/creator/:username/events/:slug" element={<EventPage />} />
                     <Route path="/tickets/:token" element={<TicketDetail />} />
+
+                    {/* SmartLinks — MUST be before /:username catch-all */}
+                    <Route path="/link/:slug" element={<SmartLinkPage />} />
+                    <Route path="/presave/callback" element={<PresaveCallback />} />
+                    <Route path="/smart-links" element={<ProtectedRoute><SmartLinks /></ProtectedRoute>} />
+
                     <Route path="/:username" element={<BioPage />} />
                     <Route path="/:username/page" element={<BioPage />} />
 

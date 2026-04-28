@@ -103,3 +103,7 @@ project_id = "dbjlhmbgskvhuzqvqfrl"
     verify_jwt = false
   [functions.sitemap]
     verify_jwt = false
+  [functions.spotify-presave-callback]
+    verify_jwt = false
+  [functions.smartlink-release-cron]
+    verify_jwt = false
