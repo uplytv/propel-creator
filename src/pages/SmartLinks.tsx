@@ -120,6 +120,7 @@ export default function SmartLinks() {
       capture_email: link.capture_email,
       release_date: link.release_date ? link.release_date.slice(0, 16) : "",
       cover_image_url: link.cover_image_url || "",
+      spotify_uri: (link as any).spotify_uri || "",
       platforms: link.platforms || {},
     });
     setOpen(true);
