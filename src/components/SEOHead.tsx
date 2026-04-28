@@ -70,6 +70,8 @@ export default function SEOHead({
     setMeta("property", "og:type", type);
     setMeta("property", "og:url", canonical);
     setMeta("property", "og:image", img);
+    setMeta("property", "og:image:width", "1200");
+    setMeta("property", "og:image:height", "1200");
     setMeta("property", "og:site_name", "Uply");
 
     // Twitter
