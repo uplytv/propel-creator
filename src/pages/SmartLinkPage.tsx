@@ -393,107 +393,136 @@ export default function SmartLinkPage() {
             : undefined,
         }}
       >
-        <div className="absolute inset-0 bg-background/85 backdrop-blur-2xl" />
+        {/* Layered backdrop: dimmed gradient → blurred image */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/85 to-background/95 backdrop-blur-3xl" />
 
         <div className="relative z-10 w-full max-w-md">
-          <div className="bg-card/60 backdrop-blur-xl border border-border rounded-2xl p-6 shadow-2xl">
-            <div className="aspect-square rounded-xl overflow-hidden bg-muted mb-5 flex items-center justify-center">
-              {link.cover_image_url ? (
-                <img
-                  src={link.cover_image_url}
-                  alt={link.title}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <TypeIcon className="h-20 w-20 text-muted-foreground" />
+          <div className="bg-card/70 backdrop-blur-xl border border-border rounded-3xl p-5 sm:p-6 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)]">
+            {/* Cover art with subtle glow */}
+            <div className="relative mb-5">
+              <div className="aspect-square rounded-2xl overflow-hidden bg-muted flex items-center justify-center shadow-2xl ring-1 ring-white/5">
+                {link.cover_image_url ? (
+                  <img
+                    src={link.cover_image_url}
+                    alt={link.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <TypeIcon className="h-20 w-20 text-muted-foreground" />
+                )}
+              </div>
+              {showPresave && (
+                <div className="absolute top-3 left-3 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1">
+                  <Sparkles className="h-3 w-3" />
+                  Pre-save
+                </div>
               )}
             </div>
 
+            {/* Title block */}
             <div className="text-center mb-5">
               {link.artist && (
-                <p className="text-sm text-muted-foreground uppercase tracking-wider">{link.artist}</p>
+                <p className="text-xs sm:text-sm text-primary font-semibold uppercase tracking-[0.15em]">{link.artist}</p>
               )}
-              <h1 className="text-2xl font-bold mt-1">{link.title}</h1>
+              <h1 className="text-2xl sm:text-3xl font-extrabold mt-1 leading-tight tracking-tight">{link.title}</h1>
               {link.description && (
-                <p className="text-sm text-muted-foreground mt-2">{link.description}</p>
+                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{link.description}</p>
               )}
               {showPresave && link.release_date && (
-                <p className="text-xs text-primary mt-2 flex items-center justify-center gap-1">
-                  <Sparkles className="h-3 w-3" />
+                <p className="text-xs text-primary mt-2 inline-flex items-center justify-center gap-1.5 bg-primary/10 px-3 py-1 rounded-full">
+                  <Calendar className="h-3 w-3" />
                   Out {new Date(link.release_date).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}
+                </p>
+              )}
+              {showPresave && presaveCount > 0 && (
+                <p className="text-center text-xs text-muted-foreground mt-3">
+                  🎵{" "}
+                  <span className="text-foreground font-bold">
+                    {presaveCount.toLocaleString()}
+                  </span>{" "}
+                  fan{presaveCount === 1 ? "" : "s"} pre-saved
                 </p>
               )}
             </div>
 
-            {link.capture_email && (
-              <Input
-                type="email"
-                placeholder="your@email.com"
-                value={emailInput}
-                onChange={(e) => setEmailInput(e.target.value)}
-                className="mb-3 text-base"
-                style={{ fontSize: "16px" }}
-              />
+            {link.capture_email && !hasUnlock && (
+              <div className="mb-3">
+                <Input
+                  type="email"
+                  placeholder="your@email.com"
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  className="h-12 text-base text-center"
+                  style={{ fontSize: "16px" }}
+                />
+                <p className="text-[11px] text-muted-foreground text-center mt-1.5">
+                  We'll let you know when it drops — no spam.
+                </p>
+              </div>
             )}
 
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {hasUnlock && !unlocked ? (
-                <div className="text-center py-6 px-2 space-y-3">
-                  <div className="text-5xl">🔒</div>
-                  <p className="text-lg font-bold">
-                    {link.unlock_type === "spotify_follow" && "Follow on Spotify to unlock"}
-                    {link.unlock_type === "email" && "Enter your email to unlock"}
-                    {link.unlock_type === "social_share" && "Share this link to unlock"}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {link.unlock_reward_label || "Get your exclusive reward"}
-                  </p>
+                <div className="text-center py-4 px-1 space-y-3 bg-primary/5 border border-primary/20 rounded-2xl">
+                  <div className="mx-auto w-14 h-14 rounded-full bg-primary/15 flex items-center justify-center">
+                    <Lock className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-base font-bold">
+                      {link.unlock_type === "spotify_follow" && "Follow to unlock"}
+                      {link.unlock_type === "email" && "Drop your email to unlock"}
+                      {link.unlock_type === "social_share" && "Share to unlock"}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1 px-3">
+                      {link.unlock_reward_label || "Unlock your exclusive reward"}
+                    </p>
+                  </div>
                   {link.unlock_type === "email" && (
                     <Input
                       type="email"
                       placeholder="your@email.com"
                       value={emailInput}
                       onChange={(e) => setEmailInput(e.target.value)}
-                      className="text-base"
-                      style={{ fontSize: "16px" }}
+                      className="h-12 text-base mx-3"
+                      style={{ fontSize: "16px", width: "calc(100% - 1.5rem)" }}
                     />
                   )}
-                  <Button
-                    onClick={handleUnlock}
-                    disabled={unlocking}
-                    className="w-full h-12 font-semibold"
-                  >
-                    {unlocking
-                      ? "Unlocking..."
-                      : link.unlock_type === "spotify_follow"
-                      ? "Follow on Spotify →"
-                      : link.unlock_type === "social_share"
-                      ? "Share to Unlock →"
-                      : "Unlock Now →"}
-                  </Button>
+                  <div className="px-3 pb-1">
+                    <Button
+                      onClick={handleUnlock}
+                      disabled={unlocking}
+                      className="w-full h-12 font-bold text-base"
+                    >
+                      {unlocking
+                        ? "Unlocking..."
+                        : link.unlock_type === "spotify_follow"
+                        ? "Follow on Spotify →"
+                        : link.unlock_type === "social_share"
+                        ? "Share to Unlock →"
+                        : "Unlock Now →"}
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <>
                   {unlocked && link.unlock_reward_url && (
-                    <Button
-                      onClick={() =>
-                        window.open(link.unlock_reward_url!, "_blank", "noopener,noreferrer")
-                      }
-                      className="w-full h-12 font-bold mb-1"
-                    >
-                      🎁 {link.unlock_reward_label || "Get your reward"}
-                    </Button>
+                    <div className="bg-primary/10 border border-primary/30 rounded-2xl p-3 mb-2">
+                      <div className="flex items-center gap-2 mb-2 text-primary text-xs font-semibold">
+                        <Check className="h-4 w-4" /> Unlocked
+                      </div>
+                      <Button
+                        onClick={() =>
+                          window.open(link.unlock_reward_url!, "_blank", "noopener,noreferrer")
+                        }
+                        className="w-full h-12 font-bold"
+                      >
+                        <Gift className="h-4 w-4 mr-2" />
+                        {link.unlock_reward_label || "Get your reward"}
+                      </Button>
+                    </div>
                   )}
 
-                  {showPresave && presaveCount > 0 && (
-                    <p className="text-center text-xs text-muted-foreground pb-1">
-                      🎵{" "}
-                      <span className="text-foreground font-semibold">
-                        {presaveCount.toLocaleString()}
-                      </span>{" "}
-                      fan{presaveCount === 1 ? "" : "s"} already pre-saved this
-                    </p>
-                  )}
+                  {/* Primary presave CTAs */}
                   {showPresave && link.platforms.spotify && (
                     <Button
                       onClick={handlePresave}
@@ -501,7 +530,7 @@ export default function SmartLinkPage() {
                       className="w-full h-12 bg-[#1DB954] hover:bg-[#1ed760] text-white font-semibold"
                     >
                       <Sparkles className="h-4 w-4 mr-2" />
-                      {presaving ? "Redirecting..." : "Pre-save on Spotify"}
+                      {presaving ? "Redirecting…" : "Pre-save on Spotify"}
                     </Button>
                   )}
                   {showPresave &&
@@ -512,7 +541,7 @@ export default function SmartLinkPage() {
                         className="w-full h-12 bg-[#FA243C] hover:bg-[#ff3a52] text-white font-semibold"
                       >
                         <Sparkles className="h-4 w-4 mr-2" />
-                        {applePresaving ? "Connecting to Apple Music..." : "Pre-add on Apple Music"}
+                        {applePresaving ? "Connecting…" : "Pre-add on Apple Music"}
                       </Button>
                     ) : (
                       <Button
@@ -522,6 +551,15 @@ export default function SmartLinkPage() {
                         Apple Music — Coming Soon
                       </Button>
                     ))}
+
+                  {/* "Or stream on" divider when both presave + other platforms exist */}
+                  {showPresave && platformEntries.filter(([p]) => p !== "spotify").length > 0 && (
+                    <div className="flex items-center gap-3 py-2">
+                      <div className="flex-1 h-px bg-border" />
+                      <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Or stream on</span>
+                      <div className="flex-1 h-px bg-border" />
+                    </div>
+                  )}
 
                   {platformEntries.map(([platform, url]) => {
                     const meta =
@@ -573,26 +611,32 @@ export default function SmartLinkPage() {
             </div>
 
             {link.contest_enabled && (
-              <div className="mt-6 pt-6 border-t border-border">
+              <div className="mt-5 pt-5 border-t border-border">
                 {!contestEntered ? (
-                  <div className="space-y-3">
-                    <h3 className="text-center font-bold text-lg">
-                      🎁 {link.contest_prize || "Enter to win"}
-                    </h3>
-                    {link.contest_end_date && (
-                      <p className="text-center text-xs text-muted-foreground">
-                        Ends{" "}
-                        {new Date(link.contest_end_date).toLocaleDateString(undefined, {
-                          month: "long",
-                          day: "numeric",
-                        })}
-                      </p>
-                    )}
+                  <div className="space-y-3 bg-gradient-to-br from-primary/10 to-transparent rounded-2xl p-4 -m-1 border border-primary/20">
+                    <div className="text-center">
+                      <div className="inline-flex w-12 h-12 rounded-full bg-primary/15 items-center justify-center mb-2">
+                        <Gift className="h-6 w-6 text-primary" />
+                      </div>
+                      <h3 className="font-bold text-base">
+                        {link.contest_prize || "Enter to win"}
+                      </h3>
+                      {link.contest_end_date && (
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Ends{" "}
+                          {new Date(link.contest_end_date).toLocaleDateString(undefined, {
+                            month: "long",
+                            day: "numeric",
+                          })}
+                        </p>
+                      )}
+                    </div>
                     <Input
                       type="text"
                       placeholder="Your name (optional)"
                       value={contestName}
                       onChange={(e) => setContestName(e.target.value)}
+                      className="h-11"
                       style={{ fontSize: "16px" }}
                     />
                     {!link.capture_email && (
@@ -601,25 +645,36 @@ export default function SmartLinkPage() {
                         placeholder="your@email.com"
                         value={emailInput}
                         onChange={(e) => setEmailInput(e.target.value)}
+                        className="h-11"
                         style={{ fontSize: "16px" }}
                       />
                     )}
-                    <Button onClick={handleContestEntry} className="w-full h-12 font-semibold">
-                      Enter to Win 🎁
+                    <Button onClick={handleContestEntry} className="w-full h-12 font-bold">
+                      Enter to Win
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-3 text-center">
-                    <p className="font-bold">You're in! Get more entries by sharing:</p>
+                  <div className="space-y-3 text-center bg-primary/10 border border-primary/30 rounded-2xl p-4">
+                    <div className="inline-flex w-12 h-12 rounded-full bg-primary items-center justify-center">
+                      <Check className="h-6 w-6 text-primary-foreground" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-base">You're in! 🎉</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Share your link — every friend who enters = +1 entry for you
+                      </p>
+                    </div>
                     <div className="flex items-center gap-2">
                       <Input
                         readOnly
                         value={`${window.location.origin}/link/${link.slug}?ref=${contestCode}`}
+                        className="h-11 font-mono text-xs"
                         style={{ fontSize: "16px" }}
                       />
                       <Button
                         size="icon"
                         variant="outline"
+                        className="h-11 w-11 shrink-0"
                         onClick={() => {
                           navigator.clipboard.writeText(
                             `${window.location.origin}/link/${link.slug}?ref=${contestCode}`,
@@ -629,16 +684,29 @@ export default function SmartLinkPage() {
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
+                      {typeof navigator.share === "function" && (
+                        <Button
+                          size="icon"
+                          className="h-11 w-11 shrink-0"
+                          onClick={() => {
+                            navigator
+                              .share({
+                                title: link.title,
+                                url: `${window.location.origin}/link/${link.slug}?ref=${contestCode}`,
+                              })
+                              .catch(() => {});
+                          }}
+                        >
+                          <Share2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      Each friend who enters via your link = +1 entry for you
-                    </p>
                   </div>
                 )}
               </div>
             )}
 
-            <p className="text-center text-xs text-muted-foreground mt-6">
+            <p className="text-center text-[11px] text-muted-foreground mt-5">
               Powered by{" "}
               <a href="/" className="font-semibold hover:text-foreground">
                 UPLY SmartLinks
