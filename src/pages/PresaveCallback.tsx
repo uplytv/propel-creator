@@ -52,7 +52,8 @@ export default function PresaveCallback() {
     }
 
     (async () => {
-      const { data, error: fnErr } = await supabase.functions.invoke("spotify-presave-callback", {
+      const fnName = flow === "follow" ? "spotify-follow-callback" : "spotify-presave-callback";
+      const { data, error: fnErr } = await supabase.functions.invoke(fnName, {
         body: {
           code,
           redirect_uri: getSpotifyRedirectUri(),
@@ -73,14 +74,22 @@ export default function PresaveCallback() {
         cover: data.cover_image_url,
       });
       setStatus("success");
-      setMessage(
-        data.converted
-          ? "Saved to your Spotify library! 🎉"
-          : "You're all set — we'll save it the moment it drops."
-      );
+      if (flow === "follow") {
+        setMessage(
+          data.followed
+            ? "You're following — your reward is unlocked! 🎉"
+            : "You're all set — your reward is unlocked!",
+        );
+      } else {
+        setMessage(
+          data.converted
+            ? "Saved to your Spotify library! 🎉"
+            : "You're all set — we'll save it the moment it drops.",
+        );
+      }
 
       setTimeout(() => {
-        navigate(`/link/${parsedState.slug}`);
+        navigate(`/link/${parsedState.slug}${flow === "follow" ? "?unlocked=1" : ""}`);
       }, 3500);
     })();
   }, [params, navigate]);
