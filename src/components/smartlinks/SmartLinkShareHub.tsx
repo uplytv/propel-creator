@@ -7,10 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
-  Copy, ExternalLink, Code2, Eye, Share2, Music, QrCode,
+  Copy, ExternalLink, Code2, Eye, Share2, Music,
   Twitter, Facebook, Send, MessageCircle, Mail,
 } from "lucide-react";
 import { toast } from "sonner";
+import BrandedQRBuilder from "./BrandedQRBuilder";
 
 interface ShareLink {
   id: string;
@@ -48,9 +49,7 @@ export default function SmartLinkShareHub({ links }: Props) {
     ? `<iframe src="${url}?embed=1" width="100%" height="520" frameborder="0" style="border-radius:16px;max-width:420px;" allow="autoplay; encrypted-media"></iframe>`
     : "";
 
-  const qrUrl = url
-    ? `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(url)}&bgcolor=0A0A0A&color=00FF85&qzone=2`
-    : "";
+  // (legacy server-rendered QR removed in favor of BrandedQRBuilder)
 
   const copy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -236,22 +235,10 @@ export default function SmartLinkShareHub({ links }: Props) {
 
             {/* QR */}
             <TabsContent value="qr" className="mt-4">
-              <div className="flex flex-col sm:flex-row items-center gap-4">
-                <div className="p-3 rounded-2xl bg-white">
-                  {qrUrl && <img src={qrUrl} alt="QR" width={200} height={200} />}
-                </div>
-                <div className="flex-1 min-w-0 text-center sm:text-left">
-                  <h4 className="font-semibold text-sm mb-1">Scan to open</h4>
-                  <p className="text-xs text-muted-foreground mb-3">
-                    Print on flyers, merch, or posters. Fans scan and land directly on your SmartLink.
-                  </p>
-                  <Button size="sm" variant="outline" asChild className="min-h-[40px]">
-                    <a href={qrUrl} download={`smartlink-${selected.slug}.png`} target="_blank" rel="noopener noreferrer">
-                      <QrCode className="h-3.5 w-3.5 mr-1.5" /> Download PNG
-                    </a>
-                  </Button>
-                </div>
-              </div>
+              <BrandedQRBuilder url={url} filenameSlug={selected.slug} />
+              <p className="text-[11px] text-muted-foreground mt-4 text-center">
+                Print on flyers, merch, or posters. Fans scan and land directly on your SmartLink.
+              </p>
             </TabsContent>
 
             {/* SOCIAL */}
