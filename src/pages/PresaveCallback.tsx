@@ -27,7 +27,7 @@ export default function PresaveCallback() {
       return;
     }
 
-    let parsedState: { slug: string; email: string | null; nonce?: string };
+    let parsedState: { slug: string; email: string | null; nonce?: string; flow?: "presave" | "follow" };
     try {
       parsedState = JSON.parse(atob(stateParam));
     } catch {
@@ -35,6 +35,7 @@ export default function PresaveCallback() {
       setMessage("Invalid state");
       return;
     }
+    const flow: "presave" | "follow" = parsedState.flow === "follow" ? "follow" : "presave";
 
     // CSRF verification: compare nonce to value stored when we built the auth URL.
     try {
