@@ -318,15 +318,30 @@ export default function SmartLinks() {
                   </div>
 
                   {form.is_presave && (
-                    <div>
-                      <Label>Release date</Label>
-                      <Input
-                        type="datetime-local"
-                        value={form.release_date}
-                        onChange={(e) => setForm({ ...form, release_date: e.target.value })}
-                        style={{ fontSize: "16px" }}
-                      />
-                    </div>
+                    <>
+                      <div>
+                        <Label>Release date</Label>
+                        <Input
+                          type="datetime-local"
+                          value={form.release_date}
+                          onChange={(e) => setForm({ ...form, release_date: e.target.value })}
+                          style={{ fontSize: "16px" }}
+                        />
+                      </div>
+                      <div>
+                        <Label>Spotify URI (for unreleased tracks)</Label>
+                        <Input
+                          value={form.spotify_uri}
+                          onChange={(e) => setForm({ ...form, spotify_uri: e.target.value })}
+                          placeholder="spotify:track:4uLU6hMCjMI75M1A2tKUQC"
+                          style={{ fontSize: "16px" }}
+                        />
+                        <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
+                          Get this from your distributor (DistroKid, TuneCore, etc.) 3–7 days before release.
+                          Leave blank if you have a public Spotify URL above.
+                        </p>
+                      </div>
+                    </>
                   )}
 
                   <div className="flex items-center justify-between">
