@@ -86,10 +86,19 @@ Deno.serve(async (req) => {
       }
     }
 
-    await supabase
-      .from("smart_links")
-      .update({ presave_converted: true })
-      .eq("id", link.id);
+    // Only flip the link-level flag once ALL pending presaves have converted
+    const { count: pendingCount } = await supabase
+      .from("smart_link_presaves")
+      .select("*", { head: true, count: "exact" })
+      .eq("link_id", link.id)
+      .is("converted_at", null);
+
+    if ((pendingCount ?? 0) === 0) {
+      await supabase
+        .from("smart_links")
+        .update({ presave_converted: true })
+        .eq("id", link.id);
+    }
   }
 
   return new Response(
