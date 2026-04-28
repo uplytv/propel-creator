@@ -42,7 +42,7 @@ const googleEvents: PixelEvent[] = [
 /* ─────── component ─────── */
 export default function AdIntegrations() {
   const { campaigns, launchCampaign, updateStatus, deleteCampaign, duplicateCampaign } = useCampaigns();
-  const { getIntegration, saveIntegration, disconnectIntegration, loading } = useAdIntegrations();
+  const { getIntegration, saveIntegration, disconnectIntegration, updateCapiCredentials, loading } = useAdIntegrations();
 
   const [boostOpen, setBoostOpen] = useState(false);
   const [metaPixelInput, setMetaPixelInput] = useState("");
@@ -182,8 +182,21 @@ export default function AdIntegrations() {
                       extraInfo={[
                         { icon: Users, label: "Custom Audiences", value: "Available" },
                         { icon: Globe, label: "Installed On", value: "All creator pages" },
+                        { icon: Activity, label: "Server-side CAPI", value: metaIntegration.access_token ? "Configured" : "Not set" },
                       ]}
                       onDisconnect={() => handleDisconnect("meta")}
+                    />
+                    <CapiCredentialsForm
+                      currentToken={metaIntegration.access_token || ""}
+                      currentTestCode={metaIntegration.test_event_code || ""}
+                      onSave={async (token, testCode) => {
+                        try {
+                          await updateCapiCredentials(token, testCode);
+                          toast.success("CAPI credentials saved", { description: "Server-side events will now fire to Meta." });
+                        } catch (e: any) {
+                          toast.error(e?.message || "Failed to save CAPI credentials");
+                        }
+                      }}
                     />
                   </motion.div>
                 )}
