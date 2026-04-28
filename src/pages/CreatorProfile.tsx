@@ -223,6 +223,20 @@ function useCreatorProfileData(username: string | undefined) {
     enabled: !!userId,
   });
 
+  const smartLinksQuery = useQuery({
+    queryKey: ["creator-public-smartlinks", userId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("smart_links")
+        .select("id, slug, title, artist, cover_image_url, is_presave, link_type")
+        .eq("creator_id", userId!)
+        .order("created_at", { ascending: false })
+        .limit(6);
+      return (data as any[]) || [];
+    },
+    enabled: !!userId,
+  });
+
   return {
     profile: profileQuery.data,
     profileLoading: profileQuery.isLoading,
@@ -236,6 +250,7 @@ function useCreatorProfileData(username: string | undefined) {
     space: spaceQuery.data,
     tiers: tiersQuery.data || [],
     products: productsQuery.data || [],
+    smartLinks: smartLinksQuery.data || [],
   };
 }
 
@@ -346,7 +361,7 @@ export default function CreatorProfile() {
 
   const {
     profile, profileLoading, socialLinks, liveStream,
-    memberCount, posts, modules, totalLessons, isMember, space, tiers, products,
+    memberCount, posts, modules, totalLessons, isMember, space, tiers, products, smartLinks,
   } = useCreatorProfileData(username);
 
   const { data: inviteData } = useInviteCodes();
@@ -916,6 +931,50 @@ export default function CreatorProfile() {
                 </div>
               );
             })}
+          </div>
+        </section>
+      )}
+
+      {/* SMARTLINKS — Music & Links */}
+      {smartLinks.length > 0 && (
+        <section className="max-w-[720px] mx-auto px-4 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-white text-xl font-bold">🎵 Music & Links</h2>
+            <span className="text-muted-foreground text-sm">
+              {smartLinks.length} link{smartLinks.length !== 1 ? "s" : ""}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {smartLinks.map((sl: any) => (
+              <a
+                key={sl.id}
+                href={`/link/${sl.slug}`}
+                className="block rounded-xl overflow-hidden transition-transform active:scale-95"
+                style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}
+              >
+                <div className="aspect-square bg-muted flex items-center justify-center overflow-hidden relative">
+                  {sl.cover_image_url ? (
+                    <img src={sl.cover_image_url} alt={sl.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-3xl">🎵</span>
+                  )}
+                  {sl.is_presave && (
+                    <span
+                      className="absolute top-2 right-2 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                      style={{ background: "hsl(var(--primary))", color: "hsl(var(--background))" }}
+                    >
+                      Pre-save
+                    </span>
+                  )}
+                </div>
+                <div className="p-2.5">
+                  <p className="text-white text-xs font-bold truncate">{sl.title}</p>
+                  {sl.artist && (
+                    <p className="text-muted-foreground text-[11px] truncate mt-0.5">{sl.artist}</p>
+                  )}
+                </div>
+              </a>
+            ))}
           </div>
         </section>
       )}

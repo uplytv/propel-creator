@@ -86,11 +86,20 @@ Deno.serve(async (req) => {
 
     const platforms = (link.platforms || {}) as Record<string, string>;
     const spotifyUrl: string | undefined = platforms.spotify;
+    const spotifyUri: string | undefined = (link as any).spotify_uri || undefined;
 
-    // Extract Spotify track or album ID from URL if present
+    // Extract Spotify track or album ID — prefer the explicit URI (unreleased tracks),
+    // fall back to parsing a public Spotify URL.
     let trackId: string | null = null;
     let albumId: string | null = null;
-    if (spotifyUrl) {
+    if (spotifyUri) {
+      const uriMatch = spotifyUri.match(/spotify:(track|album):([a-zA-Z0-9]+)/);
+      if (uriMatch) {
+        if (uriMatch[1] === "track") trackId = uriMatch[2];
+        if (uriMatch[1] === "album") albumId = uriMatch[2];
+      }
+    }
+    if (!trackId && !albumId && spotifyUrl) {
       const trackMatch = spotifyUrl.match(/\/track\/([a-zA-Z0-9]+)/);
       const albumMatch = spotifyUrl.match(/\/album\/([a-zA-Z0-9]+)/);
       if (trackMatch) trackId = trackMatch[1];
@@ -145,15 +154,53 @@ Deno.serve(async (req) => {
     }
 
     // 6. Optional: capture email
-    if (fan_email || profile.email) {
+    const fanEmailAddr = fan_email || profile.email || null;
+    if (fanEmailAddr) {
       await supabase
         .from("smart_link_email_captures")
         .insert({
           link_id: link.id,
-          email: fan_email || profile.email,
+          email: fanEmailAddr,
           source: "presave_spotify",
         })
         .then(() => {}, () => {}); // ignore unique conflict
+    }
+
+    // 7. Send pre-save confirmation email (only for unreleased tracks).
+    // Fire-and-forget — never block the OAuth callback on email delivery.
+    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+    if (fanEmailAddr && !isReleased && RESEND_API_KEY) {
+      const releaseFormatted = releaseDate
+        ? releaseDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+        : "soon";
+      const safeTitle = String(link.title || "Your track").replace(/</g, "&lt;");
+      const safeArtist = link.artist ? String(link.artist).replace(/</g, "&lt;") : "";
+      const cover = link.cover_image_url
+        ? `<img src="${link.cover_image_url}" alt="" width="280" height="280" style="display:block;margin:0 auto 20px;border-radius:16px;max-width:280px;width:100%;height:auto;" />`
+        : "";
+
+      const html = `
+        <div style="font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,sans-serif;background:#0A0A0A;color:#fff;padding:32px 16px;max-width:560px;margin:0 auto;text-align:center;">
+          ${cover}
+          <h1 style="font-size:22px;font-weight:700;margin:0 0 8px;color:#fff;">You're on the list ✓</h1>
+          <p style="font-size:16px;color:#fff;margin:0 0 6px;font-weight:600;">${safeTitle}${safeArtist ? ` — ${safeArtist}` : ""}</p>
+          <p style="font-size:14px;color:rgba(255,255,255,0.7);margin:0 0 24px;">Drops ${releaseFormatted}. We'll email you the moment it's out.</p>
+          <p style="font-size:12px;color:rgba(255,255,255,0.5);margin:32px 0 0;">Powered by <a href="https://uply.tv" style="color:#00FF85;text-decoration:none;">UPLY SmartLinks</a></p>
+        </div>
+      `;
+      fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "UPLY <notify@notify.uply.tv>",
+          to: fanEmailAddr,
+          subject: `✓ Pre-saved: ${link.title}${link.artist ? ` by ${link.artist}` : ""}`,
+          html,
+        }),
+      }).catch((e) => console.error("[presave-callback] confirmation email failed:", e));
     }
 
     return new Response(

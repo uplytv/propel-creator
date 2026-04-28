@@ -8178,6 +8178,7 @@ export type Database = {
           presave_converted: boolean
           release_date: string | null
           slug: string
+          spotify_uri: string | null
           theme: Json
           title: string
           updated_at: string
@@ -8198,6 +8199,7 @@ export type Database = {
           presave_converted?: boolean
           release_date?: string | null
           slug: string
+          spotify_uri?: string | null
           theme?: Json
           title: string
           updated_at?: string
@@ -8218,6 +8220,7 @@ export type Database = {
           presave_converted?: boolean
           release_date?: string | null
           slug?: string
+          spotify_uri?: string | null
           theme?: Json
           title?: string
           updated_at?: string

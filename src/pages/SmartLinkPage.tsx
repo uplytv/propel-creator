@@ -44,6 +44,7 @@ export default function SmartLinkPage() {
   const [loading, setLoading] = useState(true);
   const [emailInput, setEmailInput] = useState("");
   const [presaving, setPresaving] = useState(false);
+  const [presaveCount, setPresaveCount] = useState(0);
   const viewTrackedRef = useRef(false);
 
   useEffect(() => {
@@ -75,6 +76,16 @@ export default function SmartLinkPage() {
             },
           })
           .then(() => {}, () => {});
+      }
+      // Social proof: count of pre-saves for this link (only meaningful while pre-save is active)
+      if ((data as any).is_presave) {
+        supabase
+          .from("smart_link_presaves")
+          .select("*", { head: true, count: "exact" })
+          .eq("link_id", (data as any).id)
+          .then(({ count }) => {
+            if (!cancelled) setPresaveCount(count || 0);
+          }, () => {});
       }
     })();
     return () => {
@@ -179,6 +190,7 @@ export default function SmartLinkPage() {
         title={`${link.title}${link.artist ? ` — ${link.artist}` : ""} | UPLY`}
         description={link.description || `Listen to ${link.title} on every major platform.`}
         image={link.cover_image_url || undefined}
+        type={link.link_type === "music" ? "music.song" : "website"}
       />
       <div
         className="min-h-screen flex items-center justify-center p-4 mobile-safe-content relative overflow-hidden"
@@ -237,6 +249,12 @@ export default function SmartLinkPage() {
 
             {/* Buttons */}
             <div className="space-y-2">
+              {showPresave && presaveCount > 0 && (
+                <p className="text-center text-xs text-muted-foreground pb-1">
+                  🎵 <span className="text-foreground font-semibold">{presaveCount.toLocaleString()}</span>{" "}
+                  fan{presaveCount === 1 ? "" : "s"} already pre-saved this
+                </p>
+              )}
               {showPresave && link.platforms.spotify && (
                 <Button
                   onClick={handlePresave}

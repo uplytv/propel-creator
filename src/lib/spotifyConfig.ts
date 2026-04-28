@@ -13,9 +13,28 @@ export function getSpotifyRedirectUri(): string {
   return `${window.location.origin}/presave/callback`;
 }
 
-/** Build the Spotify authorize URL with state encoding link slug */
+/** Build the Spotify authorize URL with state encoding link slug + CSRF nonce */
 export function buildSpotifyAuthUrl(linkSlug: string, fanEmail?: string): string {
-  const state = btoa(JSON.stringify({ slug: linkSlug, email: fanEmail || null, t: Date.now() }));
+  const nonce = (typeof crypto !== "undefined" && "randomUUID" in crypto)
+    ? crypto.randomUUID()
+    : Math.random().toString(36).slice(2) + Date.now().toString(36);
+
+  const statePayload = {
+    slug: linkSlug,
+    email: fanEmail || null,
+    nonce,
+    t: Date.now(),
+  };
+  const state = btoa(JSON.stringify(statePayload));
+
+  // Persist nonce so the callback page can verify it (CSRF protection)
+  try {
+    sessionStorage.setItem("spotify_presave_nonce", nonce);
+    sessionStorage.setItem("spotify_presave_slug", linkSlug);
+  } catch {
+    // sessionStorage may be unavailable (Safari private mode, etc.) — fall back to no-verify
+  }
+
   const params = new URLSearchParams({
     client_id: SPOTIFY_CLIENT_ID,
     response_type: "code",

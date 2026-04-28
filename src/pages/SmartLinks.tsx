@@ -63,6 +63,7 @@ export default function SmartLinks() {
     capture_email: false,
     release_date: "",
     cover_image_url: "",
+    spotify_uri: "",
     platforms: {} as Record<string, string>,
   });
   const [coverFile, setCoverFile] = useState<File | null>(null);
@@ -95,6 +96,7 @@ export default function SmartLinks() {
       capture_email: false,
       release_date: "",
       cover_image_url: "",
+      spotify_uri: "",
       platforms: {},
     });
     setCoverFile(null);
@@ -118,6 +120,7 @@ export default function SmartLinks() {
       capture_email: link.capture_email,
       release_date: link.release_date ? link.release_date.slice(0, 16) : "",
       cover_image_url: link.cover_image_url || "",
+      spotify_uri: (link as any).spotify_uri || "",
       platforms: link.platforms || {},
     });
     setOpen(true);
@@ -159,6 +162,7 @@ export default function SmartLinks() {
         release_date: form.release_date ? new Date(form.release_date).toISOString() : null,
         is_presave: form.is_presave,
         capture_email: form.capture_email,
+        spotify_uri: form.spotify_uri.trim() || null,
       };
 
       if (editing) {
@@ -314,15 +318,30 @@ export default function SmartLinks() {
                   </div>
 
                   {form.is_presave && (
-                    <div>
-                      <Label>Release date</Label>
-                      <Input
-                        type="datetime-local"
-                        value={form.release_date}
-                        onChange={(e) => setForm({ ...form, release_date: e.target.value })}
-                        style={{ fontSize: "16px" }}
-                      />
-                    </div>
+                    <>
+                      <div>
+                        <Label>Release date</Label>
+                        <Input
+                          type="datetime-local"
+                          value={form.release_date}
+                          onChange={(e) => setForm({ ...form, release_date: e.target.value })}
+                          style={{ fontSize: "16px" }}
+                        />
+                      </div>
+                      <div>
+                        <Label>Spotify URI (for unreleased tracks)</Label>
+                        <Input
+                          value={form.spotify_uri}
+                          onChange={(e) => setForm({ ...form, spotify_uri: e.target.value })}
+                          placeholder="spotify:track:4uLU6hMCjMI75M1A2tKUQC"
+                          style={{ fontSize: "16px" }}
+                        />
+                        <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
+                          Get this from your distributor (DistroKid, TuneCore, etc.) 3–7 days before release.
+                          Leave blank if you have a public Spotify URL above.
+                        </p>
+                      </div>
+                    </>
                   )}
 
                   <div className="flex items-center justify-between">
