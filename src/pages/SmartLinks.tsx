@@ -755,6 +755,9 @@ export default function SmartLinks() {
           </div>
         </div>
 
+        {/* Share Hub */}
+        {!loading && links.length > 0 && <SmartLinkShareHub links={links} />}
+
         {/* List */}
         {loading ? (
           <div className="space-y-3">
