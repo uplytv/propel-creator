@@ -41,7 +41,17 @@ export default function AdsHub() {
   const [pixels, setPixels] = useState<AdIntegration[]>([]);
   const [clicks, setClicks] = useState<ClickRow[]>([]);
   const [loadingPixels, setLoadingPixels] = useState(true);
+  const [wizardPlatform, setWizardPlatform] = useState<AdPlatform | null>(null);
   const { campaigns, isLoading: loadingCampaigns } = useCampaigns();
+
+  const reloadPixels = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("ad_integrations")
+      .select("id, platform, pixel_id, is_active")
+      .eq("user_id", user.id);
+    if (data) setPixels(data as AdIntegration[]);
+  };
 
   useEffect(() => {
     if (!user) return;
