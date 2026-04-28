@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Music, ExternalLink, Calendar, Headphones, ShoppingBag, Sparkles, Copy } from "lucide-react";
+import { Music, ExternalLink, Calendar, Headphones, ShoppingBag, Sparkles, Copy, Music2 } from "lucide-react";
 import { buildSpotifyAuthUrl, buildSpotifyFollowUrl } from "@/lib/spotifyConfig";
 import SEOHead from "@/components/SEOHead";
 import { toast } from "sonner";
@@ -31,6 +31,8 @@ interface SmartLink {
   contest_enabled?: boolean;
   contest_prize?: string | null;
   contest_end_date?: string | null;
+  itunes_affiliate_token?: string | null;
+  tiktok_sound_url?: string | null;
 }
 
 const PLATFORM_META: Record<string, { label: string; color: string }> = {
@@ -148,6 +150,21 @@ export default function SmartLinkPage() {
     fireCapi("SmartLinkClick", platform);
   };
 
+  const decorateUrl = (platform: string, url: string): string => {
+    if (platform === "apple_music" && link?.itunes_affiliate_token) {
+      try {
+        const u = new URL(url);
+        if (!u.searchParams.has("at")) {
+          u.searchParams.set("at", link.itunes_affiliate_token);
+        }
+        return u.toString();
+      } catch {
+        return url;
+      }
+    }
+    return url;
+  };
+
   const handlePlatformClick = (platform: string, url: string) => {
     trackClick(platform);
     if (link?.capture_email && emailInput) {
@@ -156,7 +173,7 @@ export default function SmartLinkPage() {
         .insert({ link_id: link.id, email: emailInput, source: platform })
         .then(() => {}, () => {});
     }
-    window.open(url, "_blank", "noopener,noreferrer");
+    window.open(decorateUrl(platform, url), "_blank", "noopener,noreferrer");
   };
 
   const handlePresave = async () => {
@@ -497,7 +514,21 @@ export default function SmartLinkPage() {
                     );
                   })}
 
-                  {platformEntries.length === 0 && !showPresave && (
+                  {link.tiktok_sound_url && (
+                    <Button
+                      onClick={() => {
+                        trackClick("tiktok_sound");
+                        window.open(link.tiktok_sound_url!, "_blank", "noopener,noreferrer");
+                      }}
+                      className="w-full h-12 bg-black hover:bg-neutral-800 text-white font-semibold"
+                    >
+                      <Music2 className="h-4 w-4 mr-2" />
+                      Use This Sound on TikTok
+                      <ExternalLink className="h-4 w-4 ml-auto opacity-70" />
+                    </Button>
+                  )}
+
+                  {platformEntries.length === 0 && !showPresave && !link.tiktok_sound_url && (
                     <p className="text-center text-sm text-muted-foreground py-4">
                       No platforms configured yet.
                     </p>

@@ -76,9 +76,18 @@ export default function SmartLinks() {
     contest_prize: "",
     contest_end_date: "",
     contest_winner_count: 1,
+    // Distribution / extras
+    itunes_affiliate_token: "",
+    tiktok_sound_url: "",
+    custom_domain: "",
   });
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [verifyingDomain, setVerifyingDomain] = useState(false);
+  const [editingVerification, setEditingVerification] = useState<{
+    token: string | null;
+    verified: boolean;
+  }>({ token: null, verified: false });
 
   const loadLinks = async () => {
     if (!user) return;
@@ -118,9 +127,13 @@ export default function SmartLinks() {
       contest_prize: "",
       contest_end_date: "",
       contest_winner_count: 1,
+      itunes_affiliate_token: "",
+      tiktok_sound_url: "",
+      custom_domain: "",
     });
     setCoverFile(null);
     setEditing(null);
+    setEditingVerification({ token: null, verified: false });
   };
 
   const openNew = () => {
@@ -152,6 +165,13 @@ export default function SmartLinks() {
       contest_prize: anyLink.contest_prize || "",
       contest_end_date: anyLink.contest_end_date ? String(anyLink.contest_end_date).slice(0, 16) : "",
       contest_winner_count: anyLink.contest_winner_count || 1,
+      itunes_affiliate_token: anyLink.itunes_affiliate_token || "",
+      tiktok_sound_url: anyLink.tiktok_sound_url || "",
+      custom_domain: anyLink.custom_domain || "",
+    });
+    setEditingVerification({
+      token: anyLink.custom_domain_verification_token || null,
+      verified: !!anyLink.custom_domain_verified,
     });
     setOpen(true);
   };
@@ -202,6 +222,33 @@ export default function SmartLinks() {
         contest_prize: form.contest_prize.trim() || null,
         contest_end_date: form.contest_end_date ? new Date(form.contest_end_date).toISOString() : null,
         contest_winner_count: form.contest_winner_count,
+        itunes_affiliate_token: form.itunes_affiliate_token.trim() || null,
+        tiktok_sound_url: form.tiktok_sound_url.trim() || null,
+        ...(() => {
+          const newDomain = form.custom_domain.trim().toLowerCase() || null;
+          const oldDomain = (editing as any)?.custom_domain || null;
+          if (!newDomain) {
+            return {
+              custom_domain: null,
+              custom_domain_verified: false,
+              custom_domain_verification_token: null,
+            };
+          }
+          if (newDomain !== oldDomain) {
+            // New or changed domain → fresh token, reset verified
+            const token =
+              typeof crypto !== "undefined" && "randomUUID" in crypto
+                ? crypto.randomUUID().replace(/-/g, "")
+                : Math.random().toString(36).slice(2) + Date.now().toString(36);
+            return {
+              custom_domain: newDomain,
+              custom_domain_verified: false,
+              custom_domain_verification_token: token,
+            };
+          }
+          // Same domain — preserve token & verified state
+          return { custom_domain: newDomain };
+        })(),
       };
 
       if (editing) {
@@ -244,6 +291,37 @@ export default function SmartLinks() {
     const url = `${window.location.origin}/link/${slug}`;
     navigator.clipboard.writeText(url);
     toast.success("Link copied");
+  };
+
+  const handleVerifyDomain = async () => {
+    if (!editing) {
+      toast.error("Save the SmartLink first, then verify your domain");
+      return;
+    }
+    if (!editingVerification.token) {
+      toast.error("No verification token found — re-save the link");
+      return;
+    }
+    setVerifyingDomain(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("smartlink-verify-domain", {
+        body: { link_id: editing.id },
+      });
+      if (error) throw error;
+      if ((data as any)?.verified) {
+        toast.success("Domain verified! 🎉");
+        setEditingVerification((s) => ({ ...s, verified: true }));
+        loadLinks();
+      } else {
+        toast.error("Not verified yet", {
+          description: (data as any)?.message || "DNS may take a few minutes to propagate.",
+        });
+      }
+    } catch (err: any) {
+      toast.error("Verification failed", { description: err.message });
+    } finally {
+      setVerifyingDomain(false);
+    }
   };
 
   return (
@@ -514,6 +592,114 @@ export default function SmartLinks() {
                         </div>
                       </div>
                     </>
+                  )}
+                </div>
+
+                {/* Distribution / Affiliates */}
+                <div className="space-y-3 border-t pt-4">
+                  <div>
+                    <Label className="text-base">Distribution & Affiliates</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Earn affiliate revenue and surface a TikTok sound for fans to use.
+                    </p>
+                  </div>
+                  <div>
+                    <Label>iTunes Affiliate Token</Label>
+                    <Input
+                      value={form.itunes_affiliate_token}
+                      onChange={(e) => setForm({ ...form, itunes_affiliate_token: e.target.value })}
+                      placeholder="e.g. 1010lLVK"
+                      style={{ fontSize: "16px" }}
+                    />
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      Auto-appended as <code>?at=</code> to Apple Music links.
+                      Get yours at{" "}
+                      <a
+                        href="https://www.apple.com/itunes/affiliates/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline"
+                      >
+                        Apple Affiliates
+                      </a>
+                      .
+                    </p>
+                  </div>
+                  <div>
+                    <Label>TikTok Sound URL</Label>
+                    <Input
+                      value={form.tiktok_sound_url}
+                      onChange={(e) => setForm({ ...form, tiktok_sound_url: e.target.value })}
+                      placeholder="https://www.tiktok.com/music/..."
+                      style={{ fontSize: "16px" }}
+                    />
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      Adds a "Use This Sound on TikTok" button — perfect for going viral.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Custom Domain */}
+                <div className="space-y-3 border-t pt-4">
+                  <div>
+                    <Label className="text-base">Custom Domain</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Serve this SmartLink from your own domain (e.g. links.myband.com).
+                      Linkfire charges $36/mo — free on UPLY.
+                    </p>
+                  </div>
+                  <div>
+                    <Label>Domain</Label>
+                    <Input
+                      value={form.custom_domain}
+                      onChange={(e) =>
+                        setForm({ ...form, custom_domain: e.target.value.trim().toLowerCase() })
+                      }
+                      placeholder="links.myband.com"
+                      style={{ fontSize: "16px" }}
+                    />
+                  </div>
+                  {editing && form.custom_domain && editingVerification.token && (
+                    <div className="rounded-lg border border-border bg-muted/40 p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold">DNS verification</span>
+                        {editingVerification.verified ? (
+                          <span className="text-[11px] px-2 py-0.5 rounded bg-primary/15 text-primary">
+                            ✓ Verified
+                          </span>
+                        ) : (
+                          <span className="text-[11px] px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                            Pending
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">
+                        Add this TXT record at your DNS provider (Cloudflare, Namecheap, GoDaddy):
+                      </p>
+                      <div className="grid grid-cols-[auto,1fr] gap-x-3 gap-y-1 text-[11px] font-mono">
+                        <span className="text-muted-foreground">Type:</span>
+                        <span>TXT</span>
+                        <span className="text-muted-foreground">Host:</span>
+                        <span className="break-all">{form.custom_domain}</span>
+                        <span className="text-muted-foreground">Value:</span>
+                        <span className="break-all">uply-verify={editingVerification.token}</span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleVerifyDomain}
+                        disabled={verifyingDomain}
+                        className="w-full min-h-[40px]"
+                      >
+                        {verifyingDomain ? "Checking DNS..." : "Verify domain"}
+                      </Button>
+                    </div>
+                  )}
+                  {!editing && form.custom_domain && (
+                    <p className="text-[11px] text-muted-foreground">
+                      Save the SmartLink first — verification instructions will appear after you create it.
+                    </p>
                   )}
                 </div>
 

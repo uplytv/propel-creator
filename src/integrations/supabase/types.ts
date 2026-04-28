@@ -8255,10 +8255,14 @@ export type Database = {
           cover_image_url: string | null
           created_at: string
           creator_id: string
+          custom_domain: string | null
+          custom_domain_verification_token: string | null
+          custom_domain_verified: boolean
           description: string | null
           fallback_url: string | null
           id: string
           is_presave: boolean
+          itunes_affiliate_token: string | null
           link_type: string
           platforms: Json
           presave_converted: boolean
@@ -8266,6 +8270,7 @@ export type Database = {
           slug: string
           spotify_uri: string | null
           theme: Json
+          tiktok_sound_url: string | null
           title: string
           unlock_reward_label: string | null
           unlock_reward_type: string | null
@@ -8285,10 +8290,14 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string
           creator_id: string
+          custom_domain?: string | null
+          custom_domain_verification_token?: string | null
+          custom_domain_verified?: boolean
           description?: string | null
           fallback_url?: string | null
           id?: string
           is_presave?: boolean
+          itunes_affiliate_token?: string | null
           link_type?: string
           platforms?: Json
           presave_converted?: boolean
@@ -8296,6 +8305,7 @@ export type Database = {
           slug: string
           spotify_uri?: string | null
           theme?: Json
+          tiktok_sound_url?: string | null
           title: string
           unlock_reward_label?: string | null
           unlock_reward_type?: string | null
@@ -8315,10 +8325,14 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string
           creator_id?: string
+          custom_domain?: string | null
+          custom_domain_verification_token?: string | null
+          custom_domain_verified?: boolean
           description?: string | null
           fallback_url?: string | null
           id?: string
           is_presave?: boolean
+          itunes_affiliate_token?: string | null
           link_type?: string
           platforms?: Json
           presave_converted?: boolean
@@ -8326,6 +8340,7 @@ export type Database = {
           slug?: string
           spotify_uri?: string | null
           theme?: Json
+          tiktok_sound_url?: string | null
           title?: string
           unlock_reward_label?: string | null
           unlock_reward_type?: string | null
