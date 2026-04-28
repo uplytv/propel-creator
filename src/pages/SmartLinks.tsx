@@ -15,6 +15,7 @@ import { Plus, Music, ExternalLink, BarChart3, Trash2, Copy, Sparkles, Pencil, G
 import { toast } from "sonner";
 import { slugify } from "@/lib/slugs";
 import SmartLinkAnalytics from "@/components/smartlinks/SmartLinkAnalytics";
+import SmartLinkShareHub from "@/components/smartlinks/SmartLinkShareHub";
 
 interface SmartLink {
   id: string;
