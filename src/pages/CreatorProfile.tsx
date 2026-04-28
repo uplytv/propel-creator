@@ -223,6 +223,20 @@ function useCreatorProfileData(username: string | undefined) {
     enabled: !!userId,
   });
 
+  const smartLinksQuery = useQuery({
+    queryKey: ["creator-public-smartlinks", userId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("smart_links")
+        .select("id, slug, title, artist, cover_image_url, is_presave, link_type")
+        .eq("creator_id", userId!)
+        .order("created_at", { ascending: false })
+        .limit(6);
+      return (data as any[]) || [];
+    },
+    enabled: !!userId,
+  });
+
   return {
     profile: profileQuery.data,
     profileLoading: profileQuery.isLoading,
@@ -236,6 +250,7 @@ function useCreatorProfileData(username: string | undefined) {
     space: spaceQuery.data,
     tiers: tiersQuery.data || [],
     products: productsQuery.data || [],
+    smartLinks: smartLinksQuery.data || [],
   };
 }
 
