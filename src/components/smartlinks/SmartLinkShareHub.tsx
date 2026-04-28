@@ -49,9 +49,7 @@ export default function SmartLinkShareHub({ links }: Props) {
     ? `<iframe src="${url}?embed=1" width="100%" height="520" frameborder="0" style="border-radius:16px;max-width:420px;" allow="autoplay; encrypted-media"></iframe>`
     : "";
 
-  const qrUrl = url
-    ? `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(url)}&bgcolor=0A0A0A&color=00FF85&qzone=2`
-    : "";
+  // (legacy server-rendered QR removed in favor of BrandedQRBuilder)
 
   const copy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
