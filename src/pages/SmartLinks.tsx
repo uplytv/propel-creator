@@ -109,6 +109,15 @@ export default function SmartLinks() {
       cover_image_url: "",
       spotify_uri: "",
       platforms: {},
+      unlock_type: "none",
+      unlock_spotify_artist_id: "",
+      unlock_reward_type: "download",
+      unlock_reward_url: "",
+      unlock_reward_label: "",
+      contest_enabled: false,
+      contest_prize: "",
+      contest_end_date: "",
+      contest_winner_count: 1,
     });
     setCoverFile(null);
     setEditing(null);
