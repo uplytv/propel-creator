@@ -277,6 +277,12 @@ const App = () => (
                     <Route path="/:username/events/:slug" element={<EventPage />} />
                     <Route path="/creator/:username/events/:slug" element={<EventPage />} />
                     <Route path="/tickets/:token" element={<TicketDetail />} />
+
+                    {/* SmartLinks — MUST be before /:username catch-all */}
+                    <Route path="/link/:slug" element={<SmartLinkPage />} />
+                    <Route path="/presave/callback" element={<PresaveCallback />} />
+                    <Route path="/smart-links" element={<ProtectedRoute><SmartLinks /></ProtectedRoute>} />
+
                     <Route path="/:username" element={<BioPage />} />
                     <Route path="/:username/page" element={<BioPage />} />
 
