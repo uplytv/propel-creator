@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Music, ExternalLink, Calendar, Headphones, ShoppingBag, Sparkles, Copy } from "lucide-react";
+import { Music, ExternalLink, Calendar, Headphones, ShoppingBag, Sparkles, Copy, Music2 } from "lucide-react";
 import { buildSpotifyAuthUrl, buildSpotifyFollowUrl } from "@/lib/spotifyConfig";
 import SEOHead from "@/components/SEOHead";
 import { toast } from "sonner";
@@ -31,6 +31,8 @@ interface SmartLink {
   contest_enabled?: boolean;
   contest_prize?: string | null;
   contest_end_date?: string | null;
+  itunes_affiliate_token?: string | null;
+  tiktok_sound_url?: string | null;
 }
 
 const PLATFORM_META: Record<string, { label: string; color: string }> = {
