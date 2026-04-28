@@ -357,6 +357,13 @@ export default function AdsHub() {
           </div>
         </div>
       </div>
+
+      <PixelSetupWizard
+        platform={wizardPlatform}
+        open={!!wizardPlatform}
+        onOpenChange={(o) => !o && setWizardPlatform(null)}
+        onSaved={reloadPixels}
+      />
     </AppLayout>
   );
 }
