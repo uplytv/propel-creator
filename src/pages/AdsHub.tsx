@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import SEOHead from "@/components/SEOHead";
+import PixelSetupWizard, { type AdPlatform } from "@/components/ads/PixelSetupWizard";
 
 type TabId = "campaigns" | "attribution" | "pixels";
 
