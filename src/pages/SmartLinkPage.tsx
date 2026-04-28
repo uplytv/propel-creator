@@ -248,6 +248,12 @@ export default function SmartLinkPage() {
 
             {/* Buttons */}
             <div className="space-y-2">
+              {showPresave && presaveCount > 0 && (
+                <p className="text-center text-xs text-muted-foreground pb-1">
+                  🎵 <span className="text-foreground font-semibold">{presaveCount.toLocaleString()}</span>{" "}
+                  fan{presaveCount === 1 ? "" : "s"} already pre-saved this
+                </p>
+              )}
               {showPresave && link.platforms.spotify && (
                 <Button
                   onClick={handlePresave}
