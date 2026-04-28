@@ -193,6 +193,15 @@ export default function SmartLinks() {
         is_presave: form.is_presave,
         capture_email: form.capture_email,
         spotify_uri: form.spotify_uri.trim() || null,
+        unlock_type: form.unlock_type,
+        unlock_spotify_artist_id: form.unlock_spotify_artist_id.trim() || null,
+        unlock_reward_type: form.unlock_reward_type,
+        unlock_reward_url: form.unlock_reward_url.trim() || null,
+        unlock_reward_label: form.unlock_reward_label.trim() || null,
+        contest_enabled: form.contest_enabled,
+        contest_prize: form.contest_prize.trim() || null,
+        contest_end_date: form.contest_end_date ? new Date(form.contest_end_date).toISOString() : null,
+        contest_winner_count: form.contest_winner_count,
       };
 
       if (editing) {
