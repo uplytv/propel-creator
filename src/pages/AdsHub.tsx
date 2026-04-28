@@ -135,15 +135,35 @@ export default function AdsHub() {
         {/* CAMPAIGNS TAB */}
         {tab === "campaigns" && (
           <div className="px-4 md:px-8 space-y-4">
-            <div className="rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h2 className="font-bold text-foreground">Boost a SmartLink or stream</h2>
-                  <p className="text-xs text-muted-foreground mt-1">Pick what to promote, set a budget, choose your audience. UPLY launches it on Meta, TikTok, or both.</p>
+            <div className="rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-5">
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div className="min-w-0">
+                  <h2 className="font-bold text-foreground">Launch a paid campaign</h2>
+                  <p className="text-xs text-muted-foreground mt-1 max-w-md">Pick a SmartLink, set a budget, choose your audience. UPLY ships it to Meta, TikTok, or both — and tracks every conversion server-side.</p>
                 </div>
                 <Button onClick={() => navigate("/smart-links/campaign")} className="shrink-0 min-h-[44px]">
                   <Plus className="w-4 h-4 mr-1.5" /> New campaign
                 </Button>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
+                {[
+                  { id: "meta", label: "Meta", color: "#1877F2" },
+                  { id: "tiktok", label: "TikTok", color: "#FF0050" },
+                  { id: "google", label: "Google", color: "#FBBC04" },
+                  { id: "snapchat", label: "Snap", color: "#FFFC00" },
+                ].map(p => (
+                  <button
+                    key={p.id}
+                    onClick={() => navigate(`/smart-links/campaign?platform=${p.id}`)}
+                    className="rounded-xl border border-border bg-card hover:border-primary/40 transition-colors p-3 text-left min-h-[64px]"
+                  >
+                    <div className="w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold mb-1.5" style={{ background: `${p.color}22`, color: p.color }}>
+                      {p.label[0]}
+                    </div>
+                    <p className="text-xs font-semibold">{p.label}</p>
+                    <p className="text-[10px] text-muted-foreground">Quick launch</p>
+                  </button>
+                ))}
               </div>
             </div>
 
