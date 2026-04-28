@@ -74,6 +74,7 @@ export default function SmartLinkCampaign() {
     cta: "LISTEN_NOW",
     image_url: "",
     landing_url: "",
+    google_campaign_type: "Performance Max" as string,
   });
 
   useEffect(() => {
@@ -135,6 +136,7 @@ export default function SmartLinkCampaign() {
           cta: (data.creative as any)?.cta ?? "LISTEN_NOW",
           image_url: (data.creative as any)?.image_url ?? "",
           landing_url: (data.creative as any)?.landing_url ?? "",
+          google_campaign_type: (data.brief as any)?.google_campaign_type ?? "Performance Max",
         }));
       });
   }, [editId, user]);
@@ -147,6 +149,7 @@ export default function SmartLinkCampaign() {
       total_budget: form.total_budget || null,
       start_date: form.start_date ? new Date(form.start_date).toISOString() : null,
       end_date: form.end_date ? new Date(form.end_date).toISOString() : null,
+      google_campaign_type: form.google_campaign_type,
       audience: {
         age_min: form.age_min,
         age_max: form.age_max,
@@ -333,6 +336,23 @@ export default function SmartLinkCampaign() {
                   </Select>
                 </div>
               </div>
+              {form.platform === "google" && (
+                <div>
+                  <Label>Google campaign type</Label>
+                  <Select
+                    value={form.google_campaign_type}
+                    onValueChange={(v) => setForm({ ...form, google_campaign_type: v })}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Performance Max">Performance Max (Recommended)</SelectItem>
+                      <SelectItem value="Display">Display</SelectItem>
+                      <SelectItem value="Search">Search</SelectItem>
+                      <SelectItem value="Video">Video (YouTube)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </>
           )}
 
