@@ -282,21 +282,25 @@ export default function AdsHub() {
         {/* PIXELS TAB */}
         {tab === "pixels" && (
           <div className="px-4 md:px-8 space-y-4">
-            <div className="rounded-2xl border border-border bg-card p-5">
-              <h2 className="font-bold text-foreground">Connect your ad pixels</h2>
-              <p className="text-xs text-muted-foreground mt-1">
-                Drop in a Pixel ID and conversion token. UPLY fires Meta CAPI events server-side from every SmartLink click.
+            <div className="rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-5">
+              <h2 className="font-bold text-foreground flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-primary" /> Connect your ad pixels
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1 max-w-md">
+                Click any platform below for a 4-step guided setup. UPLY fires Conversions API events server-side from every SmartLink click — no copy-paste, no broken pixels.
               </p>
-              <Button onClick={() => navigate("/ad-integrations")} className="mt-3 min-h-[44px]">
-                <Plus className="w-4 h-4 mr-1.5" /> Manage integrations
-              </Button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {Object.entries(PLATFORM_META).map(([id, meta]) => {
-                const conn = pixels.find(p => p.platform === id && p.is_active);
+              {(Object.entries(PLATFORM_META) as [AdPlatform, typeof PLATFORM_META[keyof typeof PLATFORM_META]][]).map(([id, meta]) => {
+                const conn = pixels.find(p => p.platform === id);
+                const live = conn?.is_active;
                 return (
-                  <div key={id} className="rounded-xl border border-border bg-card p-4">
+                  <button
+                    key={id}
+                    onClick={() => setWizardPlatform(id)}
+                    className="text-left rounded-xl border border-border bg-card hover:border-primary/40 hover:bg-card/80 transition-all p-4 group"
+                  >
                     <div className="flex items-center justify-between gap-2 mb-2">
                       <div className="flex items-center gap-2 min-w-0">
                         <div className="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold shrink-0" style={{ background: `${meta.color}22`, color: meta.color }}>
@@ -304,20 +308,23 @@ export default function AdsHub() {
                         </div>
                         <p className="text-sm font-semibold text-foreground truncate">{meta.label}</p>
                       </div>
-                      {conn ? (
-                        <Badge className="text-[10px] gap-1"><ShieldCheck className="w-3 h-3" /> Live</Badge>
+                      {live ? (
+                        <Badge className="text-[10px] gap-1"><ShieldCheck className="w-3 h-3" /> Ready</Badge>
+                      ) : conn ? (
+                        <Badge variant="outline" className="text-[10px] border-amber-500/40 text-amber-400">Saved</Badge>
                       ) : (
                         <Badge variant="outline" className="text-[10px]">Not set</Badge>
                       )}
                     </div>
-                    {conn ? (
-                      <p className="text-[11px] text-muted-foreground font-mono truncate">Pixel · {conn.pixel_id}</p>
+                    {conn?.pixel_id ? (
+                      <p className="text-[11px] text-muted-foreground font-mono truncate">{conn.pixel_id}</p>
                     ) : (
-                      <a href={meta.helpUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] text-primary hover:underline inline-flex items-center gap-1">
-                        Where do I find this? <ExternalLink className="w-3 h-3" />
-                      </a>
+                      <p className="text-[11px] text-muted-foreground">Tap to start 4-step setup</p>
                     )}
-                  </div>
+                    <div className="mt-2 text-[11px] text-primary inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {conn ? "Re-verify" : "Set up now"} <ArrowRight className="w-3 h-3" />
+                    </div>
+                  </button>
                 );
               })}
             </div>
