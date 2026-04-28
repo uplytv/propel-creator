@@ -7,6 +7,7 @@ export interface CampaignBrief {
   total_budget?: number | null;
   start_date?: string | null;
   end_date?: string | null;
+  google_campaign_type?: string;
   audience: {
     age_min?: number;
     age_max?: number;
@@ -17,7 +18,7 @@ export interface CampaignBrief {
     custom_audiences?: string[];
   };
   targeting: {
-    placements?: string[]; // e.g. ['facebook_feed','instagram_reels']
+    placements?: string[];
     devices?: ("desktop" | "mobile")[];
     languages?: string[];
   };
@@ -25,7 +26,7 @@ export interface CampaignBrief {
     headline?: string;
     primary_text?: string;
     description?: string;
-    cta?: string; // 'LISTEN_NOW' | 'LEARN_MORE' | etc.
+    cta?: string;
     image_url?: string;
     landing_url: string;
   };
@@ -110,15 +111,16 @@ export function buildMetaBrief(b: CampaignBrief) {
 }
 
 export function buildGoogleCSV(b: CampaignBrief): string {
+  const campaignType = b.google_campaign_type || "Performance Max";
   const rows = [
     ["Campaign", "Campaign Type", "Status", "Budget", "Bid Strategy Type", "Networks", "Languages"],
     [
       b.name,
-      "Search",
+      campaignType,
       "Paused",
       b.daily_budget.toString(),
       "Maximize Clicks",
-      "Google Search",
+      campaignType === "Search" ? "Google Search" : "All",
       (b.targeting.languages ?? ["en"]).join(";"),
     ],
     [],
@@ -140,6 +142,14 @@ export function buildGoogleCSV(b: CampaignBrief): string {
     .map((r) => r.map((c) => `"${(c ?? "").toString().replace(/"/g, '""')}"`).join(","))
     .join("\n");
 }
+
+// TikTok requires numeric location IDs (not ISO codes). Top markets covered;
+// unknown ISO codes are dropped silently.
+const TIKTOK_COUNTRY_IDS: Record<string, number> = {
+  US: 6252001, CA: 6251999, GB: 2635167, AU: 2077456, DE: 2921044, FR: 3017382,
+  MX: 3996063, BR: 3469034, JP: 1861060, ES: 2510769, IT: 3175395, NL: 2750405,
+  SE: 2661886, KR: 1835841, IN: 1269750, PH: 1694008, ID: 1643084, SG: 1880251,
+};
 
 const TIKTOK_OBJECTIVES: Record<string, string> = {
   TRAFFIC: "TRAFFIC",
@@ -171,7 +181,9 @@ export function buildTikTokBrief(b: CampaignBrief) {
       billing_event: "CPC",
       pacing: "PACING_MODE_SMOOTH",
       audience: {
-        location_ids: b.audience.countries ?? [],
+        location_ids: (b.audience.countries ?? [])
+          .map((c) => TIKTOK_COUNTRY_IDS[c])
+          .filter((v): v is number => typeof v === "number"),
         age_groups: ageRangeToTikTok(b.audience.age_min, b.audience.age_max),
         gender:
           b.audience.genders?.includes("all") || !b.audience.genders?.length

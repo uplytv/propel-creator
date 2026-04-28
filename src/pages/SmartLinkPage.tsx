@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -44,6 +44,7 @@ export default function SmartLinkPage() {
   const [loading, setLoading] = useState(true);
   const [emailInput, setEmailInput] = useState("");
   const [presaving, setPresaving] = useState(false);
+  const viewTrackedRef = useRef(false);
 
   useEffect(() => {
     if (!slug) return;
@@ -61,16 +62,20 @@ export default function SmartLinkPage() {
       }
       setLink(data as unknown as SmartLink);
       setLoading(false);
-      // log a generic page-view click (platform = null)
-      supabase
-        .from("smart_link_clicks")
-        .insert({
-          link_id: (data as any).id,
-          platform: "view",
-          referrer: document.referrer || null,
-          user_agent: navigator.userAgent,
-        })
-        .then(() => {}, () => {});
+      // Log a single page-view via the edge function (captures country + dedupes).
+      // Ref guard prevents StrictMode double-invocation in dev.
+      if (!viewTrackedRef.current) {
+        viewTrackedRef.current = true;
+        supabase.functions
+          .invoke("smartlink-track-click", {
+            body: {
+              link_id: (data as any).id,
+              platform: "view",
+              referrer: document.referrer || null,
+            },
+          })
+          .then(() => {}, () => {});
+      }
     })();
     return () => {
       cancelled = true;
@@ -96,13 +101,14 @@ export default function SmartLinkPage() {
 
   const trackClick = async (platform: string) => {
     if (!link) return;
-    supabase
-      .from("smart_link_clicks")
-      .insert({
-        link_id: link.id,
-        platform,
-        referrer: document.referrer || null,
-        user_agent: navigator.userAgent,
+    // Server-side click logger captures country and dedupes per IP.
+    supabase.functions
+      .invoke("smartlink-track-click", {
+        body: {
+          link_id: link.id,
+          platform,
+          referrer: document.referrer || null,
+        },
       })
       .then(() => {}, () => {});
     fireCapi("SmartLinkClick", platform);

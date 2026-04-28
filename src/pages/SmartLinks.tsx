@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Music, ExternalLink, BarChart3, Trash2, Copy, Sparkles } from "lucide-react";
+import { Plus, Music, ExternalLink, BarChart3, Trash2, Copy, Sparkles, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { slugify } from "@/lib/slugs";
 import SmartLinkAnalytics from "@/components/smartlinks/SmartLinkAnalytics";
@@ -174,7 +174,13 @@ export default function SmartLinks() {
       resetForm();
       loadLinks();
     } catch (err: any) {
-      toast.error(err.message || "Failed to save");
+      if (err?.code === "23505" || /unique/i.test(err?.message || "")) {
+        toast.error("That URL slug is already taken", {
+          description: "Try a different slug in the URL field.",
+        });
+      } else {
+        toast.error(err.message || "Failed to save");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -388,7 +394,7 @@ export default function SmartLinks() {
                     <Link to={`/smart-links/campaign?link_id=${link.id}`}><Sparkles className="h-4 w-4 text-primary" /></Link>
                   </Button>
                   <Button size="icon" variant="ghost" onClick={() => openEdit(link)} title="Edit">
-                    <Sparkles className="h-4 w-4" />
+                    <Pencil className="h-4 w-4" />
                   </Button>
                   <Button size="icon" variant="ghost" onClick={() => handleDelete(link.id)} title="Delete">
                     <Trash2 className="h-4 w-4 text-destructive" />
