@@ -115,3 +115,5 @@ project_id = "dbjlhmbgskvhuzqvqfrl"
     verify_jwt = false
   [functions.spotify-follow-callback]
     verify_jwt = false
+  [functions.smartlink-verify-domain]
+    verify_jwt = false
