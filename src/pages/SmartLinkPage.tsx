@@ -44,6 +44,7 @@ export default function SmartLinkPage() {
   const [loading, setLoading] = useState(true);
   const [emailInput, setEmailInput] = useState("");
   const [presaving, setPresaving] = useState(false);
+  const [presaveCount, setPresaveCount] = useState(0);
   const viewTrackedRef = useRef(false);
 
   useEffect(() => {
