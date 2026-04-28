@@ -595,6 +595,114 @@ export default function SmartLinks() {
                   )}
                 </div>
 
+                {/* Distribution / Affiliates */}
+                <div className="space-y-3 border-t pt-4">
+                  <div>
+                    <Label className="text-base">Distribution & Affiliates</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Earn affiliate revenue and surface a TikTok sound for fans to use.
+                    </p>
+                  </div>
+                  <div>
+                    <Label>iTunes Affiliate Token</Label>
+                    <Input
+                      value={form.itunes_affiliate_token}
+                      onChange={(e) => setForm({ ...form, itunes_affiliate_token: e.target.value })}
+                      placeholder="e.g. 1010lLVK"
+                      style={{ fontSize: "16px" }}
+                    />
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      Auto-appended as <code>?at=</code> to Apple Music links.
+                      Get yours at{" "}
+                      <a
+                        href="https://www.apple.com/itunes/affiliates/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline"
+                      >
+                        Apple Affiliates
+                      </a>
+                      .
+                    </p>
+                  </div>
+                  <div>
+                    <Label>TikTok Sound URL</Label>
+                    <Input
+                      value={form.tiktok_sound_url}
+                      onChange={(e) => setForm({ ...form, tiktok_sound_url: e.target.value })}
+                      placeholder="https://www.tiktok.com/music/..."
+                      style={{ fontSize: "16px" }}
+                    />
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      Adds a "Use This Sound on TikTok" button — perfect for going viral.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Custom Domain */}
+                <div className="space-y-3 border-t pt-4">
+                  <div>
+                    <Label className="text-base">Custom Domain</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Serve this SmartLink from your own domain (e.g. links.myband.com).
+                      Linkfire charges $36/mo — free on UPLY.
+                    </p>
+                  </div>
+                  <div>
+                    <Label>Domain</Label>
+                    <Input
+                      value={form.custom_domain}
+                      onChange={(e) =>
+                        setForm({ ...form, custom_domain: e.target.value.trim().toLowerCase() })
+                      }
+                      placeholder="links.myband.com"
+                      style={{ fontSize: "16px" }}
+                    />
+                  </div>
+                  {editing && form.custom_domain && editingVerification.token && (
+                    <div className="rounded-lg border border-border bg-muted/40 p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold">DNS verification</span>
+                        {editingVerification.verified ? (
+                          <span className="text-[11px] px-2 py-0.5 rounded bg-primary/15 text-primary">
+                            ✓ Verified
+                          </span>
+                        ) : (
+                          <span className="text-[11px] px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                            Pending
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">
+                        Add this TXT record at your DNS provider (Cloudflare, Namecheap, GoDaddy):
+                      </p>
+                      <div className="grid grid-cols-[auto,1fr] gap-x-3 gap-y-1 text-[11px] font-mono">
+                        <span className="text-muted-foreground">Type:</span>
+                        <span>TXT</span>
+                        <span className="text-muted-foreground">Host:</span>
+                        <span className="break-all">{form.custom_domain}</span>
+                        <span className="text-muted-foreground">Value:</span>
+                        <span className="break-all">uply-verify={editingVerification.token}</span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleVerifyDomain}
+                        disabled={verifyingDomain}
+                        className="w-full min-h-[40px]"
+                      >
+                        {verifyingDomain ? "Checking DNS..." : "Verify domain"}
+                      </Button>
+                    </div>
+                  )}
+                  {!editing && form.custom_domain && (
+                    <p className="text-[11px] text-muted-foreground">
+                      Save the SmartLink first — verification instructions will appear after you create it.
+                    </p>
+                  )}
+                </div>
+
                 <Button onClick={handleSubmit} disabled={submitting} className="w-full min-h-[44px]">
                   {submitting ? "Saving..." : editing ? "Save changes" : "Create SmartLink"}
                 </Button>
