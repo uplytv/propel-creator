@@ -150,6 +150,21 @@ export default function SmartLinkPage() {
     fireCapi("SmartLinkClick", platform);
   };
 
+  const decorateUrl = (platform: string, url: string): string => {
+    if (platform === "apple_music" && link?.itunes_affiliate_token) {
+      try {
+        const u = new URL(url);
+        if (!u.searchParams.has("at")) {
+          u.searchParams.set("at", link.itunes_affiliate_token);
+        }
+        return u.toString();
+      } catch {
+        return url;
+      }
+    }
+    return url;
+  };
+
   const handlePlatformClick = (platform: string, url: string) => {
     trackClick(platform);
     if (link?.capture_email && emailInput) {
@@ -158,7 +173,7 @@ export default function SmartLinkPage() {
         .insert({ link_id: link.id, email: emailInput, source: platform })
         .then(() => {}, () => {});
     }
-    window.open(url, "_blank", "noopener,noreferrer");
+    window.open(decorateUrl(platform, url), "_blank", "noopener,noreferrer");
   };
 
   const handlePresave = async () => {
