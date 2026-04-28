@@ -7,10 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
-  Copy, ExternalLink, Code2, Eye, Share2, Music, QrCode,
+  Copy, ExternalLink, Code2, Eye, Share2, Music,
   Twitter, Facebook, Send, MessageCircle, Mail,
 } from "lucide-react";
 import { toast } from "sonner";
+import BrandedQRBuilder from "./BrandedQRBuilder";
 
 interface ShareLink {
   id: string;
