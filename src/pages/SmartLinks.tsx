@@ -165,6 +165,13 @@ export default function SmartLinks() {
       contest_prize: anyLink.contest_prize || "",
       contest_end_date: anyLink.contest_end_date ? String(anyLink.contest_end_date).slice(0, 16) : "",
       contest_winner_count: anyLink.contest_winner_count || 1,
+      itunes_affiliate_token: anyLink.itunes_affiliate_token || "",
+      tiktok_sound_url: anyLink.tiktok_sound_url || "",
+      custom_domain: anyLink.custom_domain || "",
+    });
+    setEditingVerification({
+      token: anyLink.custom_domain_verification_token || null,
+      verified: !!anyLink.custom_domain_verified,
     });
     setOpen(true);
   };
