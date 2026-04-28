@@ -23,6 +23,14 @@ interface SmartLink {
   presave_converted: boolean;
   capture_email: boolean;
   theme: Record<string, any>;
+  unlock_type?: "none" | "spotify_follow" | "email" | "social_share" | null;
+  unlock_spotify_artist_id?: string | null;
+  unlock_reward_type?: "download" | "content" | "discount" | null;
+  unlock_reward_url?: string | null;
+  unlock_reward_label?: string | null;
+  contest_enabled?: boolean;
+  contest_prize?: string | null;
+  contest_end_date?: string | null;
 }
 
 const PLATFORM_META: Record<string, { label: string; color: string }> = {
