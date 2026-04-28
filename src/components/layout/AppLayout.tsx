@@ -50,6 +50,7 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
       { label: "Podcast", icon: Mic, path: "/podcast", desc: "Host your podcast", featureKey: "podcast" },
       { label: "Podcast RSS", icon: Rss, path: "/podcast-rss", desc: "Submit to Apple Podcasts & Spotify", featureKey: "content" },
       { label: "Distribution", icon: Globe, path: "/distribution", desc: "Publish everywhere at once" },
+      { label: "SmartLinks", icon: Share2, path: "/smart-links", desc: "Music smart links & pre-saves" },
     ],
   },
   {
