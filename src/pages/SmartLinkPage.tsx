@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Music, ExternalLink, Calendar, Headphones, ShoppingBag, Sparkles, Lock, Gift, Copy } from "lucide-react";
+import { Music, ExternalLink, Calendar, Headphones, ShoppingBag, Sparkles, Copy } from "lucide-react";
 import { buildSpotifyAuthUrl, buildSpotifyFollowUrl } from "@/lib/spotifyConfig";
 import SEOHead from "@/components/SEOHead";
 import { toast } from "sonner";
@@ -55,6 +55,23 @@ export default function SmartLinkPage() {
   const [presaveCount, setPresaveCount] = useState(0);
   const viewTrackedRef = useRef(false);
 
+  // Apple Music presave
+  const [applePresaving, setApplePresaving] = useState(false);
+  const appleTokenConfigured = !!import.meta.env.VITE_APPLE_MUSIC_DEVELOPER_TOKEN;
+
+  // Social unlock
+  const [unlocked, setUnlocked] = useState(false);
+  const [unlocking, setUnlocking] = useState(false);
+  const referralCodeParam =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("ref")
+      : null;
+
+  // Contest entry
+  const [contestEntered, setContestEntered] = useState(false);
+  const [contestCode, setContestCode] = useState("");
+  const [contestName, setContestName] = useState("");
+
   useEffect(() => {
     if (!slug) return;
     let cancelled = false;
@@ -71,8 +88,9 @@ export default function SmartLinkPage() {
       }
       setLink(data as unknown as SmartLink);
       setLoading(false);
-      // Log a single page-view via the edge function (captures country + dedupes).
-      // Ref guard prevents StrictMode double-invocation in dev.
+      if (window.location.search.includes("unlocked=1")) {
+        setUnlocked(true);
+      }
       if (!viewTrackedRef.current) {
         viewTrackedRef.current = true;
         supabase.functions
@@ -85,7 +103,6 @@ export default function SmartLinkPage() {
           })
           .then(() => {}, () => {});
       }
-      // Social proof: count of pre-saves for this link (only meaningful while pre-save is active)
       if ((data as any).is_presave) {
         supabase
           .from("smart_link_presaves")
@@ -103,7 +120,6 @@ export default function SmartLinkPage() {
 
   const fireCapi = (eventName: string, platform?: string) => {
     if (!link) return;
-    // Fire-and-forget server-side Meta CAPI event
     supabase.functions
       .invoke("smartlink-meta-capi", {
         body: {
@@ -120,7 +136,6 @@ export default function SmartLinkPage() {
 
   const trackClick = async (platform: string) => {
     if (!link) return;
-    // Server-side click logger captures country and dedupes per IP.
     supabase.functions
       .invoke("smartlink-track-click", {
         body: {
@@ -160,6 +175,130 @@ export default function SmartLinkPage() {
     }
   };
 
+  const handleApplePresave = async () => {
+    if (!link) return;
+    if (link.capture_email && !emailInput) {
+      toast.error("Please enter your email first");
+      return;
+    }
+    setApplePresaving(true);
+    try {
+      if (!window.MusicKit) {
+        await new Promise<void>((resolve, reject) => {
+          const s = document.createElement("script");
+          s.src = "https://js-cdn.music.apple.com/musickit/v3/musickit.js";
+          s.onload = () => resolve();
+          s.onerror = () => reject(new Error("Failed to load MusicKit"));
+          document.head.appendChild(s);
+        });
+      }
+      const music = await window.MusicKit!.configure({
+        developerToken: import.meta.env.VITE_APPLE_MUSIC_DEVELOPER_TOKEN as string,
+        app: { name: "UPLY SmartLinks", build: "1.0" },
+      });
+      const userToken = await music.authorize();
+      const { data, error } = await supabase.functions.invoke("apple-presave", {
+        body: { link_slug: link.slug, user_token: userToken, fan_email: emailInput || undefined },
+      });
+      if (error || (data as any)?.error) throw new Error((data as any)?.error || error?.message);
+      setPresaveCount((c) => c + 1);
+      toast.success("Added to Apple Music! 🍎", { description: "We'll notify you when it drops." });
+      fireCapi("SmartLinkPresave", "apple_music");
+    } catch (err: any) {
+      if (err.message?.includes("AUTHORIZATION_ERROR") || err.message?.includes("cancelled")) {
+        toast.error("Apple Music authorization cancelled");
+      } else {
+        toast.error("Apple Music presave failed", { description: err.message });
+      }
+    } finally {
+      setApplePresaving(false);
+    }
+  };
+
+  const handleUnlock = async () => {
+    if (!link) return;
+    setUnlocking(true);
+    try {
+      if (link.unlock_type === "spotify_follow") {
+        const url = buildSpotifyFollowUrl(link.slug, emailInput || undefined);
+        window.location.href = url;
+        return;
+      }
+      if (link.unlock_type === "email") {
+        if (!emailInput) {
+          toast.error("Enter your email to unlock");
+          setUnlocking(false);
+          return;
+        }
+        await supabase.from("smart_link_unlocks").insert({
+          link_id: link.id,
+          fan_email: emailInput,
+          unlock_type: "email",
+        });
+        await supabase
+          .from("smart_link_email_captures")
+          .insert({ link_id: link.id, email: emailInput, source: "unlock_email" })
+          .then(() => {}, () => {});
+        setUnlocked(true);
+        toast.success("Unlocked! 🎉");
+      }
+      if (link.unlock_type === "social_share") {
+        try {
+          await navigator.share?.({ title: link.title, url: window.location.href });
+        } catch {
+          navigator.clipboard.writeText(window.location.href);
+          toast.success("Link copied — share it to unlock!");
+        }
+        await supabase.from("smart_link_unlocks").insert({
+          link_id: link.id,
+          unlock_type: "social_share",
+        });
+        setUnlocked(true);
+        toast.success("Thanks for sharing! 🎉");
+      }
+    } finally {
+      setUnlocking(false);
+    }
+  };
+
+  const handleContestEntry = async () => {
+    if (!link) return;
+    const email = emailInput;
+    if (!email) {
+      toast.error("Enter your email to enter the contest");
+      return;
+    }
+    const { data, error } = await supabase
+      .from("smart_link_contest_entries")
+      .insert({
+        link_id: link.id,
+        fan_email: email,
+        fan_name: contestName || null,
+        referred_by: referralCodeParam || null,
+      })
+      .select("referral_code")
+      .single();
+
+    if ((error as any)?.code === "23505") {
+      toast.error("You've already entered!");
+      return;
+    }
+    if (error) {
+      toast.error("Entry failed — please try again");
+      return;
+    }
+
+    if (referralCodeParam) {
+      supabase
+        .rpc("increment_referral_count" as any, { p_code: referralCodeParam })
+        .then(() => {}, () => {});
+    }
+
+    setContestCode((data as any).referral_code);
+    setContestEntered(true);
+    toast.success("You're in! 🎉 Share your link for more entries.");
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -191,6 +330,7 @@ export default function SmartLinkPage() {
 
   const showPresave = link.is_presave && !link.presave_converted;
   const platformEntries = Object.entries(link.platforms || {}).filter(([, url]) => !!url);
+  const hasUnlock = !!link.unlock_type && link.unlock_type !== "none";
 
   return (
     <>
@@ -208,12 +348,10 @@ export default function SmartLinkPage() {
             : undefined,
         }}
       >
-        {/* Backdrop */}
         <div className="absolute inset-0 bg-background/85 backdrop-blur-2xl" />
 
         <div className="relative z-10 w-full max-w-md">
           <div className="bg-card/60 backdrop-blur-xl border border-border rounded-2xl p-6 shadow-2xl">
-            {/* Cover */}
             <div className="aspect-square rounded-xl overflow-hidden bg-muted mb-5 flex items-center justify-center">
               {link.cover_image_url ? (
                 <img
@@ -226,7 +364,6 @@ export default function SmartLinkPage() {
               )}
             </div>
 
-            {/* Title */}
             <div className="text-center mb-5">
               {link.artist && (
                 <p className="text-sm text-muted-foreground uppercase tracking-wider">{link.artist}</p>
@@ -243,7 +380,6 @@ export default function SmartLinkPage() {
               )}
             </div>
 
-            {/* Email capture */}
             {link.capture_email && (
               <Input
                 type="email"
@@ -255,49 +391,192 @@ export default function SmartLinkPage() {
               />
             )}
 
-            {/* Buttons */}
             <div className="space-y-2">
-              {showPresave && presaveCount > 0 && (
-                <p className="text-center text-xs text-muted-foreground pb-1">
-                  🎵 <span className="text-foreground font-semibold">{presaveCount.toLocaleString()}</span>{" "}
-                  fan{presaveCount === 1 ? "" : "s"} already pre-saved this
-                </p>
-              )}
-              {showPresave && link.platforms.spotify && (
-                <Button
-                  onClick={handlePresave}
-                  disabled={presaving}
-                  className="w-full h-12 bg-[#1DB954] hover:bg-[#1ed760] text-white font-semibold"
-                >
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Pre-save on Spotify
-                </Button>
-              )}
-
-              {platformEntries.map(([platform, url]) => {
-                const meta = PLATFORM_META[platform] || { label: platform, color: "bg-secondary hover:bg-secondary/80" };
-                if (showPresave && platform === "spotify") return null;
-                return (
+              {hasUnlock && !unlocked ? (
+                <div className="text-center py-6 px-2 space-y-3">
+                  <div className="text-5xl">🔒</div>
+                  <p className="text-lg font-bold">
+                    {link.unlock_type === "spotify_follow" && "Follow on Spotify to unlock"}
+                    {link.unlock_type === "email" && "Enter your email to unlock"}
+                    {link.unlock_type === "social_share" && "Share this link to unlock"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {link.unlock_reward_label || "Get your exclusive reward"}
+                  </p>
+                  {link.unlock_type === "email" && (
+                    <Input
+                      type="email"
+                      placeholder="your@email.com"
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
+                      className="text-base"
+                      style={{ fontSize: "16px" }}
+                    />
+                  )}
                   <Button
-                    key={platform}
-                    onClick={() => handlePlatformClick(platform, url)}
-                    className={`w-full h-12 text-white font-semibold ${meta.color}`}
+                    onClick={handleUnlock}
+                    disabled={unlocking}
+                    className="w-full h-12 font-semibold"
                   >
-                    {meta.label}
-                    <ExternalLink className="h-4 w-4 ml-auto opacity-70" />
+                    {unlocking
+                      ? "Unlocking..."
+                      : link.unlock_type === "spotify_follow"
+                      ? "Follow on Spotify →"
+                      : link.unlock_type === "social_share"
+                      ? "Share to Unlock →"
+                      : "Unlock Now →"}
                   </Button>
-                );
-              })}
+                </div>
+              ) : (
+                <>
+                  {unlocked && link.unlock_reward_url && (
+                    <Button
+                      onClick={() =>
+                        window.open(link.unlock_reward_url!, "_blank", "noopener,noreferrer")
+                      }
+                      className="w-full h-12 font-bold mb-1"
+                    >
+                      🎁 {link.unlock_reward_label || "Get your reward"}
+                    </Button>
+                  )}
 
-              {platformEntries.length === 0 && !showPresave && (
-                <p className="text-center text-sm text-muted-foreground py-4">
-                  No platforms configured yet.
-                </p>
+                  {showPresave && presaveCount > 0 && (
+                    <p className="text-center text-xs text-muted-foreground pb-1">
+                      🎵{" "}
+                      <span className="text-foreground font-semibold">
+                        {presaveCount.toLocaleString()}
+                      </span>{" "}
+                      fan{presaveCount === 1 ? "" : "s"} already pre-saved this
+                    </p>
+                  )}
+                  {showPresave && link.platforms.spotify && (
+                    <Button
+                      onClick={handlePresave}
+                      disabled={presaving}
+                      className="w-full h-12 bg-[#1DB954] hover:bg-[#1ed760] text-white font-semibold"
+                    >
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      {presaving ? "Redirecting..." : "Pre-save on Spotify"}
+                    </Button>
+                  )}
+                  {showPresave &&
+                    (appleTokenConfigured ? (
+                      <Button
+                        onClick={handleApplePresave}
+                        disabled={applePresaving}
+                        className="w-full h-12 bg-[#FA243C] hover:bg-[#ff3a52] text-white font-semibold"
+                      >
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        {applePresaving ? "Connecting to Apple Music..." : "Pre-add on Apple Music"}
+                      </Button>
+                    ) : (
+                      <Button
+                        disabled
+                        className="w-full h-12 bg-[#FA243C]/40 text-white/80 font-semibold cursor-not-allowed"
+                      >
+                        Apple Music — Coming Soon
+                      </Button>
+                    ))}
+
+                  {platformEntries.map(([platform, url]) => {
+                    const meta =
+                      PLATFORM_META[platform] || {
+                        label: platform,
+                        color: "bg-secondary hover:bg-secondary/80",
+                      };
+                    if (showPresave && platform === "spotify") return null;
+                    return (
+                      <Button
+                        key={platform}
+                        onClick={() => handlePlatformClick(platform, url)}
+                        className={`w-full h-12 text-white font-semibold ${meta.color}`}
+                      >
+                        {meta.label}
+                        <ExternalLink className="h-4 w-4 ml-auto opacity-70" />
+                      </Button>
+                    );
+                  })}
+
+                  {platformEntries.length === 0 && !showPresave && (
+                    <p className="text-center text-sm text-muted-foreground py-4">
+                      No platforms configured yet.
+                    </p>
+                  )}
+                </>
               )}
             </div>
 
+            {link.contest_enabled && (
+              <div className="mt-6 pt-6 border-t border-border">
+                {!contestEntered ? (
+                  <div className="space-y-3">
+                    <h3 className="text-center font-bold text-lg">
+                      🎁 {link.contest_prize || "Enter to win"}
+                    </h3>
+                    {link.contest_end_date && (
+                      <p className="text-center text-xs text-muted-foreground">
+                        Ends{" "}
+                        {new Date(link.contest_end_date).toLocaleDateString(undefined, {
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </p>
+                    )}
+                    <Input
+                      type="text"
+                      placeholder="Your name (optional)"
+                      value={contestName}
+                      onChange={(e) => setContestName(e.target.value)}
+                      style={{ fontSize: "16px" }}
+                    />
+                    {!link.capture_email && (
+                      <Input
+                        type="email"
+                        placeholder="your@email.com"
+                        value={emailInput}
+                        onChange={(e) => setEmailInput(e.target.value)}
+                        style={{ fontSize: "16px" }}
+                      />
+                    )}
+                    <Button onClick={handleContestEntry} className="w-full h-12 font-semibold">
+                      Enter to Win 🎁
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3 text-center">
+                    <p className="font-bold">You're in! Get more entries by sharing:</p>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        readOnly
+                        value={`${window.location.origin}/link/${link.slug}?ref=${contestCode}`}
+                        style={{ fontSize: "16px" }}
+                      />
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        onClick={() => {
+                          navigator.clipboard.writeText(
+                            `${window.location.origin}/link/${link.slug}?ref=${contestCode}`,
+                          );
+                          toast.success("Referral link copied!");
+                        }}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Each friend who enters via your link = +1 entry for you
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
             <p className="text-center text-xs text-muted-foreground mt-6">
-              Powered by <a href="/" className="font-semibold hover:text-foreground">UPLY SmartLinks</a>
+              Powered by{" "}
+              <a href="/" className="font-semibold hover:text-foreground">
+                UPLY SmartLinks
+              </a>
             </p>
           </div>
         </div>

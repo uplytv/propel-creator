@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { getSpotifyRedirectUri } from "@/lib/spotifyConfig";
-import { Loader2, CheckCircle2, XCircle, Sparkles } from "lucide-react";
+import { Loader2, XCircle, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function PresaveCallback() {
