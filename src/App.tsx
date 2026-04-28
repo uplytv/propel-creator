@@ -81,6 +81,8 @@ const NewCreators = lazy(() => import("./pages/NewCreators"));
 const SmartLinkPage = lazy(() => import("./pages/SmartLinkPage"));
 const PresaveCallback = lazy(() => import("./pages/PresaveCallback"));
 const SmartLinks = lazy(() => import("./pages/SmartLinks"));
+const SmartLinkCampaign = lazy(() => import("./pages/SmartLinkCampaign"));
+const SmartLinkAnalyticsPage = lazy(() => import("./pages/SmartLinkAnalyticsPage"));
 const CategoryFeed = lazy(() => import("./pages/CategoryFeed"));
 const Messages = lazy(() => import("./pages/Messages"));
 const Analytics = lazy(() => import("./pages/Analytics"));
@@ -282,6 +284,8 @@ const App = () => (
                     <Route path="/link/:slug" element={<SmartLinkPage />} />
                     <Route path="/presave/callback" element={<PresaveCallback />} />
                     <Route path="/smart-links" element={<ProtectedRoute><SmartLinks /></ProtectedRoute>} />
+                    <Route path="/smart-links/campaign" element={<ProtectedRoute><SmartLinkCampaign /></ProtectedRoute>} />
+                    <Route path="/smart-links/:id/analytics" element={<ProtectedRoute><SmartLinkAnalyticsPage /></ProtectedRoute>} />
 
                     <Route path="/:username" element={<BioPage />} />
                     <Route path="/:username/page" element={<BioPage />} />

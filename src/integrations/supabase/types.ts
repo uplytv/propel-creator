@@ -70,29 +70,35 @@ export type Database = {
       }
       ad_integrations: {
         Row: {
+          access_token: string | null
           created_at: string
           id: string
           is_active: boolean
           pixel_id: string
           platform: string
+          test_event_code: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          access_token?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
           pixel_id: string
           platform: string
+          test_event_code?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          access_token?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
           pixel_id?: string
           platform?: string
+          test_event_code?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -7910,6 +7916,121 @@ export type Database = {
           tested_at?: string | null
         }
         Relationships: []
+      }
+      smart_link_campaigns: {
+        Row: {
+          audience: Json
+          brief: Json
+          created_at: string
+          creative: Json
+          creator_id: string
+          daily_budget: number
+          end_date: string | null
+          id: string
+          name: string
+          objective: string
+          platform: string
+          smart_link_id: string | null
+          start_date: string | null
+          status: string
+          targeting: Json
+          total_budget: number | null
+          updated_at: string
+        }
+        Insert: {
+          audience?: Json
+          brief?: Json
+          created_at?: string
+          creative?: Json
+          creator_id: string
+          daily_budget?: number
+          end_date?: string | null
+          id?: string
+          name: string
+          objective?: string
+          platform?: string
+          smart_link_id?: string | null
+          start_date?: string | null
+          status?: string
+          targeting?: Json
+          total_budget?: number | null
+          updated_at?: string
+        }
+        Update: {
+          audience?: Json
+          brief?: Json
+          created_at?: string
+          creative?: Json
+          creator_id?: string
+          daily_budget?: number
+          end_date?: string | null
+          id?: string
+          name?: string
+          objective?: string
+          platform?: string
+          smart_link_id?: string | null
+          start_date?: string | null
+          status?: string
+          targeting?: Json
+          total_budget?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "smart_link_campaigns_smart_link_id_fkey"
+            columns: ["smart_link_id"]
+            isOneToOne: false
+            referencedRelation: "smart_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      smart_link_capi_events: {
+        Row: {
+          created_at: string
+          creator_id: string
+          event_id: string
+          event_name: string
+          id: string
+          link_id: string | null
+          payload: Json
+          pixel_id: string
+          response_body: Json | null
+          response_status: number | null
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          event_id: string
+          event_name: string
+          id?: string
+          link_id?: string | null
+          payload?: Json
+          pixel_id: string
+          response_body?: Json | null
+          response_status?: number | null
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          event_id?: string
+          event_name?: string
+          id?: string
+          link_id?: string | null
+          payload?: Json
+          pixel_id?: string
+          response_body?: Json | null
+          response_status?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "smart_link_capi_events_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "smart_links"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       smart_link_clicks: {
         Row: {
