@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Music, ExternalLink, BarChart3, Trash2, Copy, Sparkles, Pencil } from "lucide-react";
+import { Plus, Music, ExternalLink, BarChart3, Trash2, Copy, Sparkles, Pencil, Globe, Lock, Gift, Mail, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { slugify } from "@/lib/slugs";
 import SmartLinkAnalytics from "@/components/smartlinks/SmartLinkAnalytics";
