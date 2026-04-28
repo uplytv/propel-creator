@@ -136,8 +136,6 @@ export default function SmartLinks() {
     setEditingVerification({ token: null, verified: false });
   };
 
-  const _resetTrailing = () => {
-
   const openNew = () => {
     resetForm();
     setOpen(true);
