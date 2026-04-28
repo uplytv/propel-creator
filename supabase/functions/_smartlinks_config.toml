@@ -1,5 +1,0 @@
-[functions.spotify-presave-callback]
-verify_jwt = false
-
-[functions.smartlink-release-cron]
-verify_jwt = false
