@@ -196,6 +196,45 @@ Deno.serve(async (req) => {
       }
     }
 
+    // SmartLink: /link/:slug
+    const smartLinkMatch = path.match(/^\/link\/([^/]+)$/);
+    if (smartLinkMatch) {
+      const [, slug] = smartLinkMatch;
+      const { data: link } = await supabase
+        .from("smart_links")
+        .select("title, artist, description, cover_image_url, is_presave")
+        .eq("slug", slug)
+        .maybeSingle();
+
+      if (link) {
+        const titlePrefix = link.is_presave ? "Pre-save" : "Listen now";
+        const ogTitle = link.artist
+          ? `${link.title} — ${link.artist}`
+          : link.title;
+        const ogDesc =
+          link.description ||
+          `${titlePrefix}: ${link.title}${link.artist ? ` by ${link.artist}` : ""} on every streaming platform.`;
+        return new Response(
+          buildHtml({
+            title: `${ogTitle} | UPLY SmartLink`,
+            description: ogDesc,
+            image: link.cover_image_url || DEFAULT_IMAGE,
+            url: canonicalUrl,
+            type: "music.song",
+            twitterCard: "summary_large_image",
+            siteName: "Uply",
+          }),
+          {
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "text/html; charset=utf-8",
+              "Cache-Control": "public, max-age=3600, s-maxage=86400",
+            },
+          }
+        );
+      }
+    }
+
     // Match referral/invite links: /r/:code, /join/:code, /join/:username/:code, /invite/:code
     const refMatch =
       path.match(/^\/r\/([^/]+)$/) ||
