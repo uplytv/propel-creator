@@ -461,6 +461,17 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
   const [calibrating, setCalibrating] = useState(false);
   const calibStartRef = useRef<number>(0);
   const calibSamplesRef = useRef(0);
+  // User-tunable stability requirement before calibration completes.
+  // Higher = arrows start from a more reliably centered position, but takes longer to lock.
+  type CalibStability = "fast" | "balanced" | "strict";
+  const [calibStability, setCalibStability] = useState<CalibStability>("balanced");
+  const CALIB_PRESETS: Record<CalibStability, { minMs: number; minSamples: number; maxMs: number; label: string; hint: string }> = {
+    fast:     { minMs: 500,  minSamples: 4,  maxMs: 1500, label: "Fast",     hint: "~0.5s lock" },
+    balanced: { minMs: 800,  minSamples: 6,  maxMs: 2000, label: "Balanced", hint: "~0.8s lock" },
+    strict:   { minMs: 1400, minSamples: 12, maxMs: 3500, label: "Strict",   hint: "~1.4s lock" },
+  };
+  const calibCfgRef = useRef(CALIB_PRESETS.balanced);
+  useEffect(() => { calibCfgRef.current = CALIB_PRESETS[calibStability]; }, [calibStability]);
 
   // Render QR into preview canvas when modal opens / preview tab active
   useEffect(() => {
