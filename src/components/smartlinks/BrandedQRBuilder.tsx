@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Download, Upload, RefreshCw, QrCode as QrIcon, X, ScanLine, CheckCircle2, AlertTriangle, XCircle, Camera, CameraOff, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, ZoomIn, ZoomOut, Crosshair } from "lucide-react";
 import jsQR from "jsqr";
 import { toast } from "sonner";
+import { hapticTick } from "@/lib/cameraHaptics";
 
 // --- Reliability scoring ---
 type ECC = "L" | "M" | "Q" | "H";
@@ -467,6 +468,36 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
   const [lockedHoldUntil, setLockedHoldUntil] = useState<number>(0);
   const [nowTs, setNowTs] = useState<number>(0);
   const lockedHolding = lockedHoldUntil > 0 && nowTs < lockedHoldUntil;
+  // Subtle confirmation feedback when calibration locks in.
+  const [lockFeedback, setLockFeedback] = useState<boolean>(true);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const playLockChime = useCallback(() => {
+    try {
+      const Ctx = (window.AudioContext || (window as any).webkitAudioContext) as typeof AudioContext | undefined;
+      if (!Ctx) return;
+      if (!audioCtxRef.current) audioCtxRef.current = new Ctx();
+      const ctx = audioCtxRef.current;
+      if (ctx.state === "suspended") ctx.resume().catch(() => {});
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      // Two quick ascending notes — gentle, "trustworthy lock" feel
+      osc.frequency.setValueAtTime(880, now);
+      osc.frequency.exponentialRampToValueAtTime(1320, now + 0.09);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.08, now + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.2);
+    } catch { /* noop */ }
+  }, []);
+  const fireLockFeedback = useCallback(() => {
+    if (!lockFeedback) return;
+    void hapticTick();
+    playLockChime();
+  }, [lockFeedback, playLockChime]);
   useEffect(() => {
     if (lockedHoldUntil <= 0) return;
     const remaining = lockedHoldUntil - performance.now();
@@ -692,6 +723,8 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
                 if (c) {
                   // Trigger the post-lock hold window so tracker box + label stay visible
                   setLockedHoldUntil(performance.now() + LOCK_HOLD_MS);
+                  // Subtle confirmation feedback (haptic + soft chime) on lock-in
+                  fireLockFeedback();
                   return false;
                 }
                 return c;
@@ -839,6 +872,38 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
                 );
               })}
             </div>
+          </div>
+        )}
+
+        {/* Lock-in feedback toggle (camera mode only) */}
+        {mode === "camera" && (
+          <div className="flex items-center justify-between gap-2 px-1">
+            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <CheckCircle2 className="h-3 w-3" />
+              <span>Lock-in feedback</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setLockFeedback((v) => {
+                  const next = !v;
+                  // Preview the feedback when enabling so the user knows what to expect
+                  if (next) {
+                    void hapticTick();
+                    playLockChime();
+                  }
+                  return next;
+                });
+              }}
+              className={`px-2 py-1 rounded text-[11px] font-medium min-h-[28px] transition-colors border ${
+                lockFeedback
+                  ? "bg-primary/15 text-primary border-primary/40"
+                  : "bg-muted/40 text-muted-foreground border-border/50 hover:text-foreground"
+              }`}
+              aria-pressed={lockFeedback}
+            >
+              {lockFeedback ? "On · Tap + chime" : "Off"}
+            </button>
           </div>
         )}
 
