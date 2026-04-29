@@ -468,6 +468,36 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
   const [lockedHoldUntil, setLockedHoldUntil] = useState<number>(0);
   const [nowTs, setNowTs] = useState<number>(0);
   const lockedHolding = lockedHoldUntil > 0 && nowTs < lockedHoldUntil;
+  // Subtle confirmation feedback when calibration locks in.
+  const [lockFeedback, setLockFeedback] = useState<boolean>(true);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const playLockChime = useCallback(() => {
+    try {
+      const Ctx = (window.AudioContext || (window as any).webkitAudioContext) as typeof AudioContext | undefined;
+      if (!Ctx) return;
+      if (!audioCtxRef.current) audioCtxRef.current = new Ctx();
+      const ctx = audioCtxRef.current;
+      if (ctx.state === "suspended") ctx.resume().catch(() => {});
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      // Two quick ascending notes — gentle, "trustworthy lock" feel
+      osc.frequency.setValueAtTime(880, now);
+      osc.frequency.exponentialRampToValueAtTime(1320, now + 0.09);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.08, now + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.2);
+    } catch { /* noop */ }
+  }, []);
+  const fireLockFeedback = useCallback(() => {
+    if (!lockFeedback) return;
+    void hapticTick();
+    playLockChime();
+  }, [lockFeedback, playLockChime]);
   useEffect(() => {
     if (lockedHoldUntil <= 0) return;
     const remaining = lockedHoldUntil - performance.now();
