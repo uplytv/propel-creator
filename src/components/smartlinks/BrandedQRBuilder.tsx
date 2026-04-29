@@ -80,7 +80,6 @@ interface Props {
   filenameSlug: string;
 }
 
-type ECC = "L" | "M" | "Q" | "H";
 
 const PRESET_COLORS = [
   { name: "Electric", fg: "#00FF85", bg: "#0A0A0A" },
