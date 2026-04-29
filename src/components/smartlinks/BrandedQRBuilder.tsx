@@ -409,3 +409,105 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
   ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
 }
+
+function SeverityIcon({ s }: { s: Severity }) {
+  if (s === "ok") return <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />;
+  if (s === "warn") return <AlertTriangle className="h-4 w-4 text-yellow-400 shrink-0" />;
+  return <XCircle className="h-4 w-4 text-red-400 shrink-0" />;
+}
+
+interface TestScanModalProps {
+  open: boolean;
+  onClose: () => void;
+  canvasRef: React.RefObject<HTMLCanvasElement>;
+  renderQR: (canvas: HTMLCanvasElement, size: number) => Promise<void>;
+  report: ReliabilityReport;
+}
+
+function TestScanModal({ open, onClose, canvasRef, renderQR, report }: TestScanModalProps) {
+  useEffect(() => {
+    if (!open) return;
+    const c = canvasRef.current;
+    if (!c) return;
+    renderQR(c, 520).catch(() => {});
+  }, [open, renderQR, canvasRef]);
+
+  const verdictColor =
+    report.verdict === "ok" ? "text-primary" : report.verdict === "warn" ? "text-yellow-400" : "text-red-400";
+  const verdictLabel =
+    report.verdict === "ok" ? "Looks great" : report.verdict === "warn" ? "Should scan, with caveats" : "Likely to fail";
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <ScanLine className="h-4 w-4 text-primary" />
+            Test scan preview
+          </DialogTitle>
+          <DialogDescription>
+            Point any phone camera at the frame below to verify the link opens correctly.
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* Finder frame overlay */}
+        <div className="relative mx-auto w-[280px] h-[280px] rounded-2xl bg-white p-3 shadow-xl">
+          <canvas ref={canvasRef} className="block w-full h-full rounded-md" />
+          {/* Corner brackets */}
+          <div className="pointer-events-none absolute inset-3">
+            {[
+              "top-0 left-0 border-t-2 border-l-2 rounded-tl-md",
+              "top-0 right-0 border-t-2 border-r-2 rounded-tr-md",
+              "bottom-0 left-0 border-b-2 border-l-2 rounded-bl-md",
+              "bottom-0 right-0 border-b-2 border-r-2 rounded-br-md",
+            ].map((cls, i) => (
+              <span
+                key={i}
+                className={`absolute w-7 h-7 border-primary ${cls}`}
+                style={{ filter: "drop-shadow(0 0 6px hsl(var(--primary) / 0.6))" }}
+              />
+            ))}
+            {/* Animated scan line */}
+            <span
+              aria-hidden
+              className="absolute left-0 right-0 h-[2px] bg-primary/70"
+              style={{
+                top: "50%",
+                boxShadow: "0 0 12px hsl(var(--primary)), 0 0 24px hsl(var(--primary) / 0.6)",
+                animation: "qrScan 1.6s ease-in-out infinite alternate",
+              }}
+            />
+          </div>
+          <style>{`@keyframes qrScan { 0% { top: 8%; } 100% { top: 92%; } }`}</style>
+        </div>
+
+        {/* Verdict + score */}
+        <div className="flex items-center justify-between mt-1">
+          <div>
+            <p className={`text-sm font-semibold ${verdictColor}`}>{verdictLabel}</p>
+            <p className="text-[11px] text-muted-foreground">Reliability score</p>
+          </div>
+          <div className={`text-3xl font-bold ${verdictColor}`}>{report.score}</div>
+        </div>
+
+        {/* Checks */}
+        <ul className="space-y-2 mt-2 max-h-[200px] overflow-y-auto pr-1">
+          {report.checks.map((c) => (
+            <li
+              key={c.id}
+              className="flex items-start gap-2 p-2.5 rounded-lg bg-muted/30 border border-border/50"
+            >
+              <SeverityIcon s={c.severity} />
+              <div className="min-w-0">
+                <p className="text-xs font-semibold leading-tight">{c.label}</p>
+                <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{c.detail}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        <Button onClick={onClose} variant="outline" size="sm" className="mt-1">Close</Button>
+      </DialogContent>
+    </Dialog>
+  );
+}
