@@ -5,8 +5,75 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Download, Upload, RefreshCw, QrCode as QrIcon, X } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Download, Upload, RefreshCw, QrCode as QrIcon, X, ScanLine, CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
 import { toast } from "sonner";
+
+// --- Reliability scoring ---
+type ECC = "L" | "M" | "Q" | "H";
+type Severity = "ok" | "warn" | "fail";
+interface ReliabilityCheck { id: string; label: string; severity: Severity; detail: string; }
+interface ReliabilityReport { score: number; checks: ReliabilityCheck[]; verdict: Severity; }
+
+function hexToRgb(hex: string): [number, number, number] {
+  const h = hex.replace("#", "");
+  const v = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
+  const n = parseInt(v, 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+function relLuminance([r, g, b]: [number, number, number]) {
+  const f = (c: number) => { const s = c / 255; return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4); };
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+}
+function contrastRatio(a: string, b: string) {
+  const la = relLuminance(hexToRgb(a)), lb = relLuminance(hexToRgb(b));
+  const [hi, lo] = la > lb ? [la, lb] : [lb, la];
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+function evaluateReliability(opts: {
+  fg: string; bg: string; margin: number; ecc: ECC; hasLogo: boolean; logoScale: number;
+}): ReliabilityReport {
+  const checks: ReliabilityCheck[] = [];
+  // ECC vs logo
+  const eccCap: Record<ECC, number> = { L: 7, M: 15, Q: 25, H: 30 };
+  const logoArea = opts.hasLogo ? (opts.logoScale * opts.logoScale) / 100 : 0; // % of QR area
+  if (opts.hasLogo) {
+    if (opts.ecc !== "H" && opts.ecc !== "Q") {
+      checks.push({ id: "ecc", label: "Error correction", severity: "fail", detail: `Logo present but ECC is ${opts.ecc}. Use High (30%) for reliable scans.` });
+    } else if (opts.ecc === "Q" && logoArea > 18) {
+      checks.push({ id: "ecc", label: "Error correction", severity: "warn", detail: "Logo area exceeds Quartile recovery. Switch to High." });
+    } else {
+      checks.push({ id: "ecc", label: "Error correction", severity: "ok", detail: `ECC ${opts.ecc} (${eccCap[opts.ecc]}% recovery) covers your logo.` });
+    }
+  } else {
+    checks.push({ id: "ecc", label: "Error correction", severity: "ok", detail: `ECC ${opts.ecc} — fine without a logo.` });
+  }
+  // Logo size
+  if (opts.hasLogo) {
+    if (opts.logoScale > 28) checks.push({ id: "logo", label: "Logo size", severity: "fail", detail: `${opts.logoScale}% is too large — keep below 25% to stay scannable.` });
+    else if (opts.logoScale > 25) checks.push({ id: "logo", label: "Logo size", severity: "warn", detail: `${opts.logoScale}% is close to the limit. 18–22% is the safe zone.` });
+    else checks.push({ id: "logo", label: "Logo size", severity: "ok", detail: `${opts.logoScale}% sits in the safe zone.` });
+  }
+  // Quiet zone
+  if (opts.margin < 2) checks.push({ id: "margin", label: "Quiet zone", severity: "fail", detail: `Margin ${opts.margin} is too tight. Use at least 2 modules.` });
+  else if (opts.margin < 3) checks.push({ id: "margin", label: "Quiet zone", severity: "warn", detail: "A margin of 4 is the spec recommendation." });
+  else checks.push({ id: "margin", label: "Quiet zone", severity: "ok", detail: `Margin ${opts.margin} gives scanners breathing room.` });
+  // Contrast
+  const cr = contrastRatio(opts.fg, opts.bg);
+  if (cr < 3) checks.push({ id: "contrast", label: "Contrast", severity: "fail", detail: `Ratio ${cr.toFixed(1)}:1 — too low. Aim for 7:1+.` });
+  else if (cr < 7) checks.push({ id: "contrast", label: "Contrast", severity: "warn", detail: `Ratio ${cr.toFixed(1)}:1 — okay, but darker FG / lighter BG scans faster.` });
+  else checks.push({ id: "contrast", label: "Contrast", severity: "ok", detail: `Ratio ${cr.toFixed(1)}:1 — excellent.` });
+  // Inverted
+  const fgL = relLuminance(hexToRgb(opts.fg)), bgL = relLuminance(hexToRgb(opts.bg));
+  if (fgL > bgL) checks.push({ id: "invert", label: "Polarity", severity: "warn", detail: "Light modules on dark background — some older scanners struggle." });
+
+  const fails = checks.filter((c) => c.severity === "fail").length;
+  const warns = checks.filter((c) => c.severity === "warn").length;
+  const score = Math.max(0, 100 - fails * 35 - warns * 12);
+  const verdict: Severity = fails > 0 ? "fail" : warns > 0 ? "warn" : "ok";
+  return { score, checks, verdict };
+}
 
 interface Props {
   url: string;
