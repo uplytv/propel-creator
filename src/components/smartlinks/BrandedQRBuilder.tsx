@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Download, Upload, RefreshCw, QrCode as QrIcon, X, ScanLine, CheckCircle2, AlertTriangle, XCircle, Camera, CameraOff, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, ZoomIn, ZoomOut, Crosshair } from "lucide-react";
 import jsQR from "jsqr";
 import { toast } from "sonner";
+import { hapticTick } from "@/lib/cameraHaptics";
 
 // --- Reliability scoring ---
 type ECC = "L" | "M" | "Q" | "H";
