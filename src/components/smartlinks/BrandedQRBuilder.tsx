@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Download, Upload, RefreshCw, QrCode as QrIcon, X, ScanLine, CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
+import { Download, Upload, RefreshCw, QrCode as QrIcon, X, ScanLine, CheckCircle2, AlertTriangle, XCircle, Camera, CameraOff } from "lucide-react";
+import jsQR from "jsqr";
 import { toast } from "sonner";
 
 // --- Reliability scoring ---
