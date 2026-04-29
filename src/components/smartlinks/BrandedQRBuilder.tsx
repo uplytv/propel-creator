@@ -963,6 +963,8 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
                         className={`flex items-center gap-1.5 backdrop-blur-sm rounded-full px-3 py-1.5 text-[11px] font-semibold border ${
                           calibrating
                             ? "bg-black/70 text-white border-primary/40"
+                            : lockedHolding
+                            ? "bg-primary/25 text-primary border-primary/50"
                             : aligned
                             ? "bg-primary/20 text-primary border-primary/40"
                             : "bg-black/70 text-white border-white/10"
@@ -972,6 +974,11 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
                           <>
                             <Crosshair className="h-3.5 w-3.5 text-primary animate-pulse" />
                             Calibrating — hold steady
+                          </>
+                        ) : lockedHolding ? (
+                          <>
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            Locked · {CALIB_PRESETS[calibStability].label}
                           </>
                         ) : aligned ? (
                           <>
