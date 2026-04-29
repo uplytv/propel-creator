@@ -461,6 +461,22 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
   const [calibrating, setCalibrating] = useState(false);
   const calibStartRef = useRef<number>(0);
   const calibSamplesRef = useRef(0);
+  // After calibration completes, keep the tracker box + stability label visible briefly
+  // so the directional arrows feel grounded in a confirmed lock rather than appearing cold.
+  const LOCK_HOLD_MS = 2500;
+  const [lockedHoldUntil, setLockedHoldUntil] = useState<number>(0);
+  const [nowTs, setNowTs] = useState<number>(0);
+  const lockedHolding = lockedHoldUntil > 0 && nowTs < lockedHoldUntil;
+  useEffect(() => {
+    if (lockedHoldUntil <= 0) return;
+    const remaining = lockedHoldUntil - performance.now();
+    if (remaining <= 0) { setLockedHoldUntil(0); return; }
+    const tick = () => setNowTs(performance.now());
+    tick();
+    const id = window.setInterval(tick, 120);
+    const end = window.setTimeout(() => { setLockedHoldUntil(0); }, remaining + 50);
+    return () => { window.clearInterval(id); window.clearTimeout(end); };
+  }, [lockedHoldUntil]);
   // User-tunable stability requirement before calibration completes.
   // Higher = arrows start from a more reliably centered position, but takes longer to lock.
   type CalibStability = "fast" | "balanced" | "strict";
@@ -506,6 +522,7 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
         setLatencyMs(null);
         setAlign(null);
         setCalibrating(false);
+        setLockedHoldUntil(0);
         setMode("preview");
       }
     }
@@ -525,6 +542,7 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
     missCountRef.current = 0;
     calibSamplesRef.current = 0;
     setCalibrating(false);
+    setLockedHoldUntil(0);
 
     (async () => {
       try {
@@ -670,7 +688,14 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
               (elapsed > cfg.minMs && calibSamplesRef.current >= cfg.minSamples) ||
               elapsed > cfg.maxMs
             ) {
-              setCalibrating((c) => (c ? false : c));
+              setCalibrating((c) => {
+                if (c) {
+                  // Trigger the post-lock hold window so tracker box + label stay visible
+                  setLockedHoldUntil(performance.now() + LOCK_HOLD_MS);
+                  return false;
+                }
+                return c;
+              });
             }
 
             // Only commit to React state when change is meaningful (reduces re-renders / micro-jitter)
@@ -694,6 +719,8 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
               smoothRef.current = null;
               // Restart calibration sample count so we re-lock once QR is back in view
               calibSamplesRef.current = 0;
+              // End the locked-hold window — we lost tracking, so don't pretend we're locked
+              setLockedHoldUntil((v) => (v ? 0 : v));
               setAlign((prev) => (prev && prev.found ? { ...prev, found: false } : prev));
             }
           }
@@ -917,15 +944,15 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
                     {/* Tracker box around detected QR */}
                     <div
                       className={`absolute pointer-events-none rounded-md border-2 transition-all duration-150 ${
-                        aligned ? "border-primary" : "border-yellow-300/90"
+                        aligned || lockedHolding ? "border-primary" : "border-yellow-300/90"
                       }`}
                       style={{
                         left: boxLeft,
                         top: boxTop,
                         width: boxSize,
                         height: boxSize,
-                        boxShadow: aligned
-                          ? "0 0 14px hsl(var(--primary) / 0.7)"
+                        boxShadow: aligned || lockedHolding
+                          ? "0 0 18px hsl(var(--primary) / 0.8)"
                           : "0 0 10px rgba(250,204,21,0.45)",
                       }}
                     />
@@ -936,6 +963,8 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
                         className={`flex items-center gap-1.5 backdrop-blur-sm rounded-full px-3 py-1.5 text-[11px] font-semibold border ${
                           calibrating
                             ? "bg-black/70 text-white border-primary/40"
+                            : lockedHolding
+                            ? "bg-primary/25 text-primary border-primary/50"
                             : aligned
                             ? "bg-primary/20 text-primary border-primary/40"
                             : "bg-black/70 text-white border-white/10"
@@ -945,6 +974,11 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
                           <>
                             <Crosshair className="h-3.5 w-3.5 text-primary animate-pulse" />
                             Calibrating — hold steady
+                          </>
+                        ) : lockedHolding ? (
+                          <>
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            Locked · {CALIB_PRESETS[calibStability].label}
                           </>
                         ) : aligned ? (
                           <>
