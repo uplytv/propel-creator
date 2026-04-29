@@ -1003,7 +1003,7 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
               />
             )}
           </div>
-          <style>{`@keyframes qrScan { 0% { top: 8%; } 100% { top: 92%; } }`}</style>
+          <style>{`@keyframes qrScan { 0% { top: 8%; } 100% { top: 92%; } } @keyframes qrCalibPulse { 0%, 100% { transform: scale(1); opacity: 0.85; } 50% { transform: scale(1.06); opacity: 1; } }`}</style>
         </div>
 
         {/* Camera result panel */}
