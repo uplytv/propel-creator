@@ -540,16 +540,35 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
             return;
           }
           let value: string | null = null;
+          let location: any = null;
+          let frameW = video.videoWidth;
+          let frameH = video.videoHeight;
           try {
             if (detectorRef.current) {
               const codes = await detectorRef.current.detect(video);
-              if (codes && codes.length > 0) value = codes[0].rawValue ?? null;
-            } else {
-              // jsQR fallback
-              const dc = decodeCanvasRef.current!;
-              const w = video.videoWidth;
-              const h = video.videoHeight;
-              if (w && h) {
+              if (codes && codes.length > 0) {
+                value = codes[0].rawValue ?? null;
+                const bb = codes[0].boundingBox;
+                if (bb) {
+                  location = {
+                    topLeftCorner: { x: bb.x, y: bb.y },
+                    topRightCorner: { x: bb.x + bb.width, y: bb.y },
+                    bottomLeftCorner: { x: bb.x, y: bb.y + bb.height },
+                    bottomRightCorner: { x: bb.x + bb.width, y: bb.y + bb.height },
+                  };
+                }
+              }
+            }
+            // Always run a (downscaled) jsQR pass for alignment hints, even when BarcodeDetector found nothing
+            if (!location || !value) {
+              frameCounterRef.current++;
+              // Throttle alignment scan to every 2nd frame to keep perf
+              if (frameCounterRef.current % 2 === 0 && frameW && frameH) {
+                const dc = decodeCanvasRef.current!;
+                const targetW = 360;
+                const scale = Math.min(1, targetW / frameW);
+                const w = Math.max(1, Math.round(frameW * scale));
+                const h = Math.max(1, Math.round(frameH * scale));
                 dc.width = w;
                 dc.height = h;
                 const ctx = dc.getContext("2d", { willReadFrequently: true });
@@ -557,12 +576,41 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
                   ctx.drawImage(video, 0, 0, w, h);
                   const img = ctx.getImageData(0, 0, w, h);
                   const code = jsQR(img.data, w, h, { inversionAttempts: "attemptBoth" });
-                  if (code) value = code.data;
+                  if (code) {
+                    if (!value) value = code.data;
+                    if (!location) {
+                      // Scale coords back to full video frame
+                      const inv = 1 / scale;
+                      const loc = code.location;
+                      location = {
+                        topLeftCorner: { x: loc.topLeftCorner.x * inv, y: loc.topLeftCorner.y * inv },
+                        topRightCorner: { x: loc.topRightCorner.x * inv, y: loc.topRightCorner.y * inv },
+                        bottomLeftCorner: { x: loc.bottomLeftCorner.x * inv, y: loc.bottomLeftCorner.y * inv },
+                        bottomRightCorner: { x: loc.bottomRightCorner.x * inv, y: loc.bottomRightCorner.y * inv },
+                      };
+                    }
+                  }
                 }
               }
             }
           } catch {
             // ignore frame errors
+          }
+
+          // Compute alignment guidance for the overlay
+          if (location && frameW && frameH) {
+            const tl = location.topLeftCorner, tr = location.topRightCorner;
+            const bl = location.bottomLeftCorner, br = location.bottomRightCorner;
+            const cx = ((tl.x + tr.x + bl.x + br.x) / 4) / frameW;
+            const cy = ((tl.y + tr.y + bl.y + br.y) / 4) / frameH;
+            const widthPx = Math.hypot(tr.x - tl.x, tr.y - tl.y);
+            const heightPx = Math.hypot(bl.x - tl.x, bl.y - tl.y);
+            const size = Math.max(widthPx / frameW, heightPx / frameH);
+            const tilt = Math.atan2(tr.y - tl.y, tr.x - tl.x) * (180 / Math.PI);
+            setAlign({ cx, cy, size, tilt, found: true });
+          } else {
+            // Decay to "not found" if we haven't seen the QR
+            setAlign((prev) => (prev && prev.found ? { ...prev, found: false } : prev));
           }
 
           if (value) {
