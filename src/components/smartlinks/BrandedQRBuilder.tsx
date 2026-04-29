@@ -454,6 +454,9 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
     cx: number; cy: number; size: number; tilt: number; found: boolean;
   } | null>(null);
   const frameCounterRef = useRef(0);
+  // Smoothing state for alignment overlay (avoids jitter from partial detection / camera shake)
+  const smoothRef = useRef<{ cx: number; cy: number; size: number; tilt: number } | null>(null);
+  const missCountRef = useRef(0);
 
   // Render QR into preview canvas when modal opens / preview tab active
   useEffect(() => {
