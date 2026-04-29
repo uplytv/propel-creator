@@ -647,6 +647,17 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
               : { cx: rawCx, cy: rawCy, size: rawSize, tilt: rawTiltDeg };
             smoothRef.current = next;
 
+            // Track calibration progress: count consecutive in-frame samples
+            calibSamplesRef.current += 1;
+            const elapsed = performance.now() - calibStartRef.current;
+            // End calibration after min 800ms AND 6 stable samples, or hard cap at 2000ms
+            if (
+              (elapsed > 800 && calibSamplesRef.current >= 6) ||
+              elapsed > 2000
+            ) {
+              setCalibrating((c) => (c ? false : c));
+            }
+
             // Only commit to React state when change is meaningful (reduces re-renders / micro-jitter)
             setAlign((cur) => {
               if (
