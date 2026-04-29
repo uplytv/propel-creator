@@ -686,7 +686,14 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
               (elapsed > cfg.minMs && calibSamplesRef.current >= cfg.minSamples) ||
               elapsed > cfg.maxMs
             ) {
-              setCalibrating((c) => (c ? false : c));
+              setCalibrating((c) => {
+                if (c) {
+                  // Trigger the post-lock hold window so tracker box + label stay visible
+                  setLockedHoldUntil(performance.now() + LOCK_HOLD_MS);
+                  return false;
+                }
+                return c;
+              });
             }
 
             // Only commit to React state when change is meaningful (reduces re-renders / micro-jitter)
