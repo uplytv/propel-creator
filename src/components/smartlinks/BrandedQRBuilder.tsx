@@ -779,6 +779,42 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
           </button>
         </div>
 
+        {/* Calibration stability selector (camera mode only) */}
+        {mode === "camera" && (
+          <div className="flex items-center justify-between gap-2 px-1">
+            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <Crosshair className="h-3 w-3" />
+              <span>Lock-in stability</span>
+            </div>
+            <div className="grid grid-cols-3 gap-1 p-0.5 rounded-md bg-muted/40 border border-border/50">
+              {(Object.keys(CALIB_PRESETS) as CalibStability[]).map((k) => {
+                const p = CALIB_PRESETS[k];
+                const active = calibStability === k;
+                return (
+                  <button
+                    key={k}
+                    type="button"
+                    onClick={() => {
+                      setCalibStability(k);
+                      // If we're mid-calibration, restart so the new threshold applies cleanly
+                      if (calibrating) {
+                        calibStartRef.current = performance.now();
+                        calibSamplesRef.current = 0;
+                      }
+                    }}
+                    title={p.hint}
+                    className={`px-2 py-1 rounded text-[11px] font-medium min-h-[28px] transition-colors ${
+                      active ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Frame area */}
         <div className="relative mx-auto w-[280px] h-[280px] rounded-2xl bg-black p-3 shadow-xl overflow-hidden">
           {mode === "preview" ? (
