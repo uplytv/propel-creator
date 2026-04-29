@@ -736,6 +736,149 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
                   <p className="text-xs font-semibold text-yellow-200">Decoded a different URL</p>
                 </div>
               )}
+
+              {/* Alignment guidance overlay */}
+              {status === "scanning" && (() => {
+                const TARGET_MIN = 0.45;
+                const TARGET_MAX = 0.78;
+                const CENTER_TOL = 0.12;
+
+                if (!align) {
+                  return (
+                    <div className="absolute top-2 left-2 right-2 flex items-center justify-center pointer-events-none">
+                      <div className="flex items-center gap-1.5 bg-black/70 backdrop-blur-sm rounded-full px-3 py-1.5 text-[11px] font-medium text-white/90 border border-white/10">
+                        <Crosshair className="h-3.5 w-3.5 text-primary animate-pulse" />
+                        Point at your QR code
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (!align.found) {
+                  return (
+                    <div className="absolute top-2 left-2 right-2 flex items-center justify-center pointer-events-none">
+                      <div className="flex items-center gap-1.5 bg-black/70 backdrop-blur-sm rounded-full px-3 py-1.5 text-[11px] font-medium text-yellow-200 border border-yellow-500/30">
+                        <AlertTriangle className="h-3.5 w-3.5" />
+                        Lost — recenter the QR
+                      </div>
+                    </div>
+                  );
+                }
+
+                const dx = align.cx - 0.5;
+                const dy = align.cy - 0.5;
+                const offCenter = Math.hypot(dx, dy) > CENTER_TOL;
+                const tooSmall = align.size < TARGET_MIN;
+                const tooLarge = align.size > TARGET_MAX;
+                const tilted = Math.abs(align.tilt) > 12;
+                const aligned = !offCenter && !tooSmall && !tooLarge;
+
+                // Position a tracker box around the detected QR
+                const boxLeft = `${Math.max(2, Math.min(98, (align.cx - align.size / 2) * 100))}%`;
+                const boxTop = `${Math.max(2, Math.min(98, (align.cy - align.size / 2) * 100))}%`;
+                const boxSize = `${Math.max(8, Math.min(96, align.size * 100))}%`;
+
+                return (
+                  <>
+                    {/* Tracker box around detected QR */}
+                    <div
+                      className={`absolute pointer-events-none rounded-md border-2 transition-all duration-150 ${
+                        aligned ? "border-primary" : "border-yellow-300/90"
+                      }`}
+                      style={{
+                        left: boxLeft,
+                        top: boxTop,
+                        width: boxSize,
+                        height: boxSize,
+                        boxShadow: aligned
+                          ? "0 0 14px hsl(var(--primary) / 0.7)"
+                          : "0 0 10px rgba(250,204,21,0.45)",
+                      }}
+                    />
+
+                    {/* Top guidance pill */}
+                    <div className="absolute top-2 left-2 right-2 flex items-center justify-center pointer-events-none">
+                      <div
+                        className={`flex items-center gap-1.5 backdrop-blur-sm rounded-full px-3 py-1.5 text-[11px] font-semibold border ${
+                          aligned
+                            ? "bg-primary/20 text-primary border-primary/40"
+                            : "bg-black/70 text-white border-white/10"
+                        }`}
+                      >
+                        {aligned ? (
+                          <>
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            Hold steady — decoding…
+                          </>
+                        ) : tooSmall ? (
+                          <>
+                            <ZoomIn className="h-3.5 w-3.5 text-primary" />
+                            Move closer
+                          </>
+                        ) : tooLarge ? (
+                          <>
+                            <ZoomOut className="h-3.5 w-3.5 text-primary" />
+                            Move back
+                          </>
+                        ) : tilted ? (
+                          <>
+                            <RefreshCw className="h-3.5 w-3.5 text-primary" />
+                            Straighten the QR
+                          </>
+                        ) : (
+                          <>
+                            <Crosshair className="h-3.5 w-3.5 text-primary" />
+                            Center inside the frame
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Directional arrows when off-center */}
+                    {!aligned && offCenter && (
+                      <div className="pointer-events-none absolute inset-3">
+                        {dy < -CENTER_TOL && (
+                          <ArrowUp className="absolute top-1 left-1/2 -translate-x-1/2 h-5 w-5 text-primary drop-shadow-[0_0_4px_hsl(var(--primary))] animate-bounce" />
+                        )}
+                        {dy > CENTER_TOL && (
+                          <ArrowDown className="absolute bottom-1 left-1/2 -translate-x-1/2 h-5 w-5 text-primary drop-shadow-[0_0_4px_hsl(var(--primary))] animate-bounce" />
+                        )}
+                        {dx < -CENTER_TOL && (
+                          <ArrowLeft className="absolute left-1 top-1/2 -translate-y-1/2 h-5 w-5 text-primary drop-shadow-[0_0_4px_hsl(var(--primary))] animate-bounce" />
+                        )}
+                        {dx > CENTER_TOL && (
+                          <ArrowRight className="absolute right-1 top-1/2 -translate-y-1/2 h-5 w-5 text-primary drop-shadow-[0_0_4px_hsl(var(--primary))] animate-bounce" />
+                        )}
+                      </div>
+                    )}
+
+                    {/* Distance / size meter at the bottom */}
+                    <div className="absolute bottom-2 left-2 right-2 pointer-events-none">
+                      <div className="bg-black/70 backdrop-blur-sm rounded-md border border-white/10 px-2 py-1.5">
+                        <div className="flex items-center justify-between text-[10px] text-white/70 mb-1">
+                          <span className="flex items-center gap-1"><ZoomOut className="h-3 w-3" /> back</span>
+                          <span>{Math.round(align.size * 100)}%</span>
+                          <span className="flex items-center gap-1">closer <ZoomIn className="h-3 w-3" /></span>
+                        </div>
+                        <div className="relative h-1.5 rounded-full bg-white/15 overflow-hidden">
+                          {/* Target band */}
+                          <div
+                            className="absolute top-0 bottom-0 bg-primary/25"
+                            style={{ left: `${TARGET_MIN * 100}%`, width: `${(TARGET_MAX - TARGET_MIN) * 100}%` }}
+                          />
+                          {/* Current marker */}
+                          <div
+                            className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-3 w-3 rounded-full border-2 ${
+                              aligned ? "bg-primary border-primary" : "bg-yellow-300 border-yellow-200"
+                            }`}
+                            style={{ left: `${Math.max(0, Math.min(100, align.size * 100))}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
             </>
           )}
 
