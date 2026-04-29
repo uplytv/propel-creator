@@ -906,6 +906,8 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
             </button>
           </div>
         )}
+
+        {/* Frame area */}
         <div className="relative mx-auto w-[280px] h-[280px] rounded-2xl bg-black p-3 shadow-xl overflow-hidden">
           {mode === "preview" ? (
             <div className="w-full h-full bg-white rounded-md p-1">
