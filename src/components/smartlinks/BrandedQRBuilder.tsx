@@ -542,6 +542,10 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
         }
 
         setStatus("scanning");
+        // Begin calibration: brief guided phase to lock onto a starting position
+        setCalibrating(true);
+        calibStartRef.current = performance.now();
+        calibSamplesRef.current = 0;
         const startedAt = performance.now();
         const tick = async () => {
           if (cancelled || !videoRef.current) return;
