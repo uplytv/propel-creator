@@ -816,12 +816,27 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
 
                 if (!align) {
                   return (
-                    <div className="absolute top-2 left-2 right-2 flex items-center justify-center pointer-events-none">
-                      <div className="flex items-center gap-1.5 bg-black/70 backdrop-blur-sm rounded-full px-3 py-1.5 text-[11px] font-medium text-white/90 border border-white/10">
-                        <Crosshair className="h-3.5 w-3.5 text-primary animate-pulse" />
-                        Point at your QR code
+                    <>
+                      <div className="absolute top-2 left-2 right-2 flex items-center justify-center pointer-events-none">
+                        <div className="flex items-center gap-1.5 bg-black/70 backdrop-blur-sm rounded-full px-3 py-1.5 text-[11px] font-medium text-white/90 border border-white/10">
+                          <Crosshair className="h-3.5 w-3.5 text-primary animate-pulse" />
+                          {calibrating ? "Calibrating — show me the QR" : "Point at your QR code"}
+                        </div>
                       </div>
-                    </div>
+                      {calibrating && (
+                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                          <div
+                            className="rounded-2xl border-2 border-primary/70"
+                            style={{
+                              width: "62%",
+                              aspectRatio: "1 / 1",
+                              boxShadow: "0 0 0 9999px rgba(0,0,0,0.35), 0 0 24px hsl(var(--primary) / 0.5)",
+                              animation: "qrCalibPulse 1.2s ease-in-out infinite",
+                            }}
+                          />
+                        </div>
+                      )}
+                    </>
                   );
                 }
 
