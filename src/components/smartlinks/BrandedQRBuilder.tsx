@@ -886,12 +886,19 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
                     <div className="absolute top-2 left-2 right-2 flex items-center justify-center pointer-events-none">
                       <div
                         className={`flex items-center gap-1.5 backdrop-blur-sm rounded-full px-3 py-1.5 text-[11px] font-semibold border ${
-                          aligned
+                          calibrating
+                            ? "bg-black/70 text-white border-primary/40"
+                            : aligned
                             ? "bg-primary/20 text-primary border-primary/40"
                             : "bg-black/70 text-white border-white/10"
                         }`}
                       >
-                        {aligned ? (
+                        {calibrating ? (
+                          <>
+                            <Crosshair className="h-3.5 w-3.5 text-primary animate-pulse" />
+                            Calibrating — hold steady
+                          </>
+                        ) : aligned ? (
                           <>
                             <CheckCircle2 className="h-3.5 w-3.5" />
                             Hold steady — decoding…
@@ -920,8 +927,8 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
                       </div>
                     </div>
 
-                    {/* Directional arrows when off-center */}
-                    {!aligned && offCenter && (
+                    {/* Directional arrows when off-center (suppressed during calibration) */}
+                    {!calibrating && !aligned && offCenter && (
                       <div className="pointer-events-none absolute inset-3">
                         {dy < -CENTER_TOL && (
                           <ArrowUp className="absolute top-1 left-1/2 -translate-x-1/2 h-5 w-5 text-primary drop-shadow-[0_0_4px_hsl(var(--primary))] animate-bounce" />
