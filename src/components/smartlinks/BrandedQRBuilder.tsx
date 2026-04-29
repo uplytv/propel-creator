@@ -944,15 +944,15 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
                     {/* Tracker box around detected QR */}
                     <div
                       className={`absolute pointer-events-none rounded-md border-2 transition-all duration-150 ${
-                        aligned ? "border-primary" : "border-yellow-300/90"
+                        aligned || lockedHolding ? "border-primary" : "border-yellow-300/90"
                       }`}
                       style={{
                         left: boxLeft,
                         top: boxTop,
                         width: boxSize,
                         height: boxSize,
-                        boxShadow: aligned
-                          ? "0 0 14px hsl(var(--primary) / 0.7)"
+                        boxShadow: aligned || lockedHolding
+                          ? "0 0 18px hsl(var(--primary) / 0.8)"
                           : "0 0 10px rgba(250,204,21,0.45)",
                       }}
                     />
