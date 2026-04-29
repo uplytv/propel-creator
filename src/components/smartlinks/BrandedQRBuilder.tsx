@@ -237,7 +237,34 @@ export default function BrandedQRBuilder({ url, filenameSlug }: Props) {
             PNG
           </Button>
         </div>
+        <button
+          type="button"
+          onClick={() => setScanOpen(true)}
+          className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-border hover:border-primary/50 transition-colors text-xs font-medium min-h-[36px]"
+        >
+          <ScanLine className="h-3.5 w-3.5" />
+          Test scan
+          <span
+            className={`ml-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${
+              reliability.verdict === "ok"
+                ? "bg-primary/15 text-primary"
+                : reliability.verdict === "warn"
+                ? "bg-yellow-500/15 text-yellow-400"
+                : "bg-red-500/15 text-red-400"
+            }`}
+          >
+            {reliability.score}
+          </span>
+        </button>
       </div>
+
+      <TestScanModal
+        open={scanOpen}
+        onClose={() => setScanOpen(false)}
+        canvasRef={scanCanvasRef}
+        renderQR={renderQR}
+        report={reliability}
+      />
 
       {/* Controls */}
       <div className="space-y-4">
