@@ -602,20 +602,62 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
             // ignore frame errors
           }
 
-          // Compute alignment guidance for the overlay
+          // Compute alignment guidance for the overlay (with EMA smoothing + miss tolerance)
           if (location && frameW && frameH) {
             const tl = location.topLeftCorner, tr = location.topRightCorner;
             const bl = location.bottomLeftCorner, br = location.bottomRightCorner;
-            const cx = ((tl.x + tr.x + bl.x + br.x) / 4) / frameW;
-            const cy = ((tl.y + tr.y + bl.y + br.y) / 4) / frameH;
+            const rawCx = ((tl.x + tr.x + bl.x + br.x) / 4) / frameW;
+            const rawCy = ((tl.y + tr.y + bl.y + br.y) / 4) / frameH;
             const widthPx = Math.hypot(tr.x - tl.x, tr.y - tl.y);
             const heightPx = Math.hypot(bl.x - tl.x, bl.y - tl.y);
-            const size = Math.max(widthPx / frameW, heightPx / frameH);
-            const tilt = Math.atan2(tr.y - tl.y, tr.x - tl.x) * (180 / Math.PI);
-            setAlign({ cx, cy, size, tilt, found: true });
+            const rawSize = Math.max(widthPx / frameW, heightPx / frameH);
+            const rawTiltDeg = Math.atan2(tr.y - tl.y, tr.x - tl.x) * (180 / Math.PI);
+
+            missCountRef.current = 0;
+            const prev = smoothRef.current;
+            // Low-pass filter: heavier smoothing for position/tilt, lighter for size
+            const aPos = 0.25; // position smoothing factor
+            const aSize = 0.2;
+            const aTilt = 0.18;
+            // Tilt is angular — wrap to nearest neighbour to avoid 179°→-179° flips
+            let tiltTarget = rawTiltDeg;
+            if (prev) {
+              let delta = tiltTarget - prev.tilt;
+              if (delta > 180) delta -= 360;
+              else if (delta < -180) delta += 360;
+              tiltTarget = prev.tilt + delta;
+            }
+            const next = prev
+              ? {
+                  cx: prev.cx + (rawCx - prev.cx) * aPos,
+                  cy: prev.cy + (rawCy - prev.cy) * aPos,
+                  size: prev.size + (rawSize - prev.size) * aSize,
+                  tilt: prev.tilt + (tiltTarget - prev.tilt) * aTilt,
+                }
+              : { cx: rawCx, cy: rawCy, size: rawSize, tilt: rawTiltDeg };
+            smoothRef.current = next;
+
+            // Only commit to React state when change is meaningful (reduces re-renders / micro-jitter)
+            setAlign((cur) => {
+              if (
+                cur &&
+                cur.found &&
+                Math.abs(cur.cx - next.cx) < 0.004 &&
+                Math.abs(cur.cy - next.cy) < 0.004 &&
+                Math.abs(cur.size - next.size) < 0.005 &&
+                Math.abs(cur.tilt - next.tilt) < 0.6
+              ) {
+                return cur;
+              }
+              return { ...next, found: true };
+            });
           } else {
-            // Decay to "not found" if we haven't seen the QR
-            setAlign((prev) => (prev && prev.found ? { ...prev, found: false } : prev));
+            // Tolerate a few missed frames before flagging "not found" so brief occlusions don't flicker the UI
+            missCountRef.current += 1;
+            if (missCountRef.current > 8) {
+              smoothRef.current = null;
+              setAlign((prev) => (prev && prev.found ? { ...prev, found: false } : prev));
+            }
           }
 
           if (value) {
