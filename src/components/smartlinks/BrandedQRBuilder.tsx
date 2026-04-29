@@ -719,6 +719,8 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
               smoothRef.current = null;
               // Restart calibration sample count so we re-lock once QR is back in view
               calibSamplesRef.current = 0;
+              // End the locked-hold window — we lost tracking, so don't pretend we're locked
+              setLockedHoldUntil((v) => (v ? 0 : v));
               setAlign((prev) => (prev && prev.found ? { ...prev, found: false } : prev));
             }
           }
