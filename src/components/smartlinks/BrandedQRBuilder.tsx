@@ -522,6 +522,7 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
         setLatencyMs(null);
         setAlign(null);
         setCalibrating(false);
+        setLockedHoldUntil(0);
         setMode("preview");
       }
     }
