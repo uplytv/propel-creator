@@ -461,6 +461,22 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
   const [calibrating, setCalibrating] = useState(false);
   const calibStartRef = useRef<number>(0);
   const calibSamplesRef = useRef(0);
+  // After calibration completes, keep the tracker box + stability label visible briefly
+  // so the directional arrows feel grounded in a confirmed lock rather than appearing cold.
+  const LOCK_HOLD_MS = 2500;
+  const [lockedHoldUntil, setLockedHoldUntil] = useState<number>(0);
+  const [nowTs, setNowTs] = useState<number>(0);
+  const lockedHolding = lockedHoldUntil > 0 && nowTs < lockedHoldUntil;
+  useEffect(() => {
+    if (lockedHoldUntil <= 0) return;
+    const remaining = lockedHoldUntil - performance.now();
+    if (remaining <= 0) { setLockedHoldUntil(0); return; }
+    const tick = () => setNowTs(performance.now());
+    tick();
+    const id = window.setInterval(tick, 120);
+    const end = window.setTimeout(() => { setLockedHoldUntil(0); }, remaining + 50);
+    return () => { window.clearInterval(id); window.clearTimeout(end); };
+  }, [lockedHoldUntil]);
   // User-tunable stability requirement before calibration completes.
   // Higher = arrows start from a more reliably centered position, but takes longer to lock.
   type CalibStability = "fast" | "balanced" | "strict";
