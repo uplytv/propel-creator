@@ -664,10 +664,11 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
             // Track calibration progress: count consecutive in-frame samples
             calibSamplesRef.current += 1;
             const elapsed = performance.now() - calibStartRef.current;
-            // End calibration after min 800ms AND 6 stable samples, or hard cap at 2000ms
+            // End calibration when stability requirement is met (configurable preset)
+            const cfg = calibCfgRef.current;
             if (
-              (elapsed > 800 && calibSamplesRef.current >= 6) ||
-              elapsed > 2000
+              (elapsed > cfg.minMs && calibSamplesRef.current >= cfg.minSamples) ||
+              elapsed > cfg.maxMs
             ) {
               setCalibrating((c) => (c ? false : c));
             }
