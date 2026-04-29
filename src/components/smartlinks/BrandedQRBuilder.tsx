@@ -449,6 +449,11 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
   const [decoded, setDecoded] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [latencyMs, setLatencyMs] = useState<number | null>(null);
+  // Alignment guidance: position of QR within the camera frame (normalized 0-1) and size ratio
+  const [align, setAlign] = useState<{
+    cx: number; cy: number; size: number; tilt: number; found: boolean;
+  } | null>(null);
+  const frameCounterRef = useRef(0);
 
   // Render QR into preview canvas when modal opens / preview tab active
   useEffect(() => {
