@@ -505,6 +505,8 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
     setErrorMsg(null);
     setLatencyMs(null);
     setAlign(null);
+    smoothRef.current = null;
+    missCountRef.current = 0;
 
     (async () => {
       try {
