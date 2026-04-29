@@ -677,6 +677,8 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
             missCountRef.current += 1;
             if (missCountRef.current > 8) {
               smoothRef.current = null;
+              // Restart calibration sample count so we re-lock once QR is back in view
+              calibSamplesRef.current = 0;
               setAlign((prev) => (prev && prev.found ? { ...prev, found: false } : prev));
             }
           }
