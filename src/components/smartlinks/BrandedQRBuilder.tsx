@@ -542,6 +542,7 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
     missCountRef.current = 0;
     calibSamplesRef.current = 0;
     setCalibrating(false);
+    setLockedHoldUntil(0);
 
     (async () => {
       try {
