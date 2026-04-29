@@ -723,6 +723,8 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
                 if (c) {
                   // Trigger the post-lock hold window so tracker box + label stay visible
                   setLockedHoldUntil(performance.now() + LOCK_HOLD_MS);
+                  // Subtle confirmation feedback (haptic + soft chime) on lock-in
+                  fireLockFeedback();
                   return false;
                 }
                 return c;
