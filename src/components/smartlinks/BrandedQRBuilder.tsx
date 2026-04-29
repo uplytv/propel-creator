@@ -265,6 +265,7 @@ export default function BrandedQRBuilder({ url, filenameSlug }: Props) {
         canvasRef={scanCanvasRef}
         renderQR={renderQR}
         report={reliability}
+        expectedUrl={url}
       />
 
       {/* Controls */}
