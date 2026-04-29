@@ -457,6 +457,10 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
   // Smoothing state for alignment overlay (avoids jitter from partial detection / camera shake)
   const smoothRef = useRef<{ cx: number; cy: number; size: number; tilt: number } | null>(null);
   const missCountRef = useRef(0);
+  // Calibration: brief auto-center phase before continuous arrows
+  const [calibrating, setCalibrating] = useState(false);
+  const calibStartRef = useRef<number>(0);
+  const calibSamplesRef = useRef(0);
 
   // Render QR into preview canvas when modal opens / preview tab active
   useEffect(() => {
@@ -490,6 +494,7 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
         setErrorMsg(null);
         setLatencyMs(null);
         setAlign(null);
+        setCalibrating(false);
         setMode("preview");
       }
     }
@@ -507,6 +512,8 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
     setAlign(null);
     smoothRef.current = null;
     missCountRef.current = 0;
+    calibSamplesRef.current = 0;
+    setCalibrating(false);
 
     (async () => {
       try {
@@ -538,6 +545,10 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
         }
 
         setStatus("scanning");
+        // Begin calibration: brief guided phase to lock onto a starting position
+        setCalibrating(true);
+        calibStartRef.current = performance.now();
+        calibSamplesRef.current = 0;
         const startedAt = performance.now();
         const tick = async () => {
           if (cancelled || !videoRef.current) return;
@@ -639,6 +650,17 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
               : { cx: rawCx, cy: rawCy, size: rawSize, tilt: rawTiltDeg };
             smoothRef.current = next;
 
+            // Track calibration progress: count consecutive in-frame samples
+            calibSamplesRef.current += 1;
+            const elapsed = performance.now() - calibStartRef.current;
+            // End calibration after min 800ms AND 6 stable samples, or hard cap at 2000ms
+            if (
+              (elapsed > 800 && calibSamplesRef.current >= 6) ||
+              elapsed > 2000
+            ) {
+              setCalibrating((c) => (c ? false : c));
+            }
+
             // Only commit to React state when change is meaningful (reduces re-renders / micro-jitter)
             setAlign((cur) => {
               if (
@@ -658,6 +680,8 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
             missCountRef.current += 1;
             if (missCountRef.current > 8) {
               smoothRef.current = null;
+              // Restart calibration sample count so we re-lock once QR is back in view
+              calibSamplesRef.current = 0;
               setAlign((prev) => (prev && prev.found ? { ...prev, found: false } : prev));
             }
           }
@@ -792,12 +816,27 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
 
                 if (!align) {
                   return (
-                    <div className="absolute top-2 left-2 right-2 flex items-center justify-center pointer-events-none">
-                      <div className="flex items-center gap-1.5 bg-black/70 backdrop-blur-sm rounded-full px-3 py-1.5 text-[11px] font-medium text-white/90 border border-white/10">
-                        <Crosshair className="h-3.5 w-3.5 text-primary animate-pulse" />
-                        Point at your QR code
+                    <>
+                      <div className="absolute top-2 left-2 right-2 flex items-center justify-center pointer-events-none">
+                        <div className="flex items-center gap-1.5 bg-black/70 backdrop-blur-sm rounded-full px-3 py-1.5 text-[11px] font-medium text-white/90 border border-white/10">
+                          <Crosshair className="h-3.5 w-3.5 text-primary animate-pulse" />
+                          {calibrating ? "Calibrating — show me the QR" : "Point at your QR code"}
+                        </div>
                       </div>
-                    </div>
+                      {calibrating && (
+                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                          <div
+                            className="rounded-2xl border-2 border-primary/70"
+                            style={{
+                              width: "62%",
+                              aspectRatio: "1 / 1",
+                              boxShadow: "0 0 0 9999px rgba(0,0,0,0.35), 0 0 24px hsl(var(--primary) / 0.5)",
+                              animation: "qrCalibPulse 1.2s ease-in-out infinite",
+                            }}
+                          />
+                        </div>
+                      )}
+                    </>
                   );
                 }
 
@@ -847,12 +886,19 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
                     <div className="absolute top-2 left-2 right-2 flex items-center justify-center pointer-events-none">
                       <div
                         className={`flex items-center gap-1.5 backdrop-blur-sm rounded-full px-3 py-1.5 text-[11px] font-semibold border ${
-                          aligned
+                          calibrating
+                            ? "bg-black/70 text-white border-primary/40"
+                            : aligned
                             ? "bg-primary/20 text-primary border-primary/40"
                             : "bg-black/70 text-white border-white/10"
                         }`}
                       >
-                        {aligned ? (
+                        {calibrating ? (
+                          <>
+                            <Crosshair className="h-3.5 w-3.5 text-primary animate-pulse" />
+                            Calibrating — hold steady
+                          </>
+                        ) : aligned ? (
                           <>
                             <CheckCircle2 className="h-3.5 w-3.5" />
                             Hold steady — decoding…
@@ -881,8 +927,8 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
                       </div>
                     </div>
 
-                    {/* Directional arrows when off-center */}
-                    {!aligned && offCenter && (
+                    {/* Directional arrows when off-center (suppressed during calibration) */}
+                    {!calibrating && !aligned && offCenter && (
                       <div className="pointer-events-none absolute inset-3">
                         {dy < -CENTER_TOL && (
                           <ArrowUp className="absolute top-1 left-1/2 -translate-x-1/2 h-5 w-5 text-primary drop-shadow-[0_0_4px_hsl(var(--primary))] animate-bounce" />
@@ -957,7 +1003,7 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
               />
             )}
           </div>
-          <style>{`@keyframes qrScan { 0% { top: 8%; } 100% { top: 92%; } }`}</style>
+          <style>{`@keyframes qrScan { 0% { top: 8%; } 100% { top: 92%; } } @keyframes qrCalibPulse { 0%, 100% { transform: scale(1); opacity: 0.85; } 50% { transform: scale(1.06); opacity: 1; } }`}</style>
         </div>
 
         {/* Camera result panel */}
