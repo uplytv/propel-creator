@@ -457,6 +457,10 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
   // Smoothing state for alignment overlay (avoids jitter from partial detection / camera shake)
   const smoothRef = useRef<{ cx: number; cy: number; size: number; tilt: number } | null>(null);
   const missCountRef = useRef(0);
+  // Calibration: brief auto-center phase before continuous arrows
+  const [calibrating, setCalibrating] = useState(false);
+  const calibStartRef = useRef<number>(0);
+  const calibSamplesRef = useRef(0);
 
   // Render QR into preview canvas when modal opens / preview tab active
   useEffect(() => {
