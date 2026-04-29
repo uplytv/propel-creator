@@ -494,6 +494,7 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
         setErrorMsg(null);
         setLatencyMs(null);
         setAlign(null);
+        setCalibrating(false);
         setMode("preview");
       }
     }
