@@ -100,6 +100,13 @@ export default function BrandedQRBuilder({ url, filenameSlug }: Props) {
   const [logoScale, setLogoScale] = useState(22); // % of QR width
   const [exportSize, setExportSize] = useState(1024);
   const [busy, setBusy] = useState(false);
+  const [scanOpen, setScanOpen] = useState(false);
+  const scanCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  const reliability = useMemo(
+    () => evaluateReliability({ fg, bg, margin, ecc, hasLogo: !!logoDataUrl, logoScale }),
+    [fg, bg, margin, ecc, logoDataUrl, logoScale],
+  );
 
   // Render QR (with optional logo) into a canvas at given pixel size
   const renderQR = useCallback(
