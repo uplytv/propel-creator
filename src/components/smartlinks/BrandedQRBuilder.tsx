@@ -875,7 +875,37 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
           </div>
         )}
 
-        {/* Frame area */}
+        {/* Lock-in feedback toggle (camera mode only) */}
+        {mode === "camera" && (
+          <div className="flex items-center justify-between gap-2 px-1">
+            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <CheckCircle2 className="h-3 w-3" />
+              <span>Lock-in feedback</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setLockFeedback((v) => {
+                  const next = !v;
+                  // Preview the feedback when enabling so the user knows what to expect
+                  if (next) {
+                    void hapticTick();
+                    playLockChime();
+                  }
+                  return next;
+                });
+              }}
+              className={`px-2 py-1 rounded text-[11px] font-medium min-h-[28px] transition-colors border ${
+                lockFeedback
+                  ? "bg-primary/15 text-primary border-primary/40"
+                  : "bg-muted/40 text-muted-foreground border-border/50 hover:text-foreground"
+              }`}
+              aria-pressed={lockFeedback}
+            >
+              {lockFeedback ? "On · Tap + chime" : "Off"}
+            </button>
+          </div>
+        )}
         <div className="relative mx-auto w-[280px] h-[280px] rounded-2xl bg-black p-3 shadow-xl overflow-hidden">
           {mode === "preview" ? (
             <div className="w-full h-full bg-white rounded-md p-1">
