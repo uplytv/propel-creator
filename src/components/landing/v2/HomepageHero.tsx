@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState, FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, PlayCircle } from "lucide-react";
-import logo from "@/assets/logo.png";
+import { Input } from "@/components/ui/input";
+import { ArrowRight, PlayCircle, Trophy, Zap, Gamepad2 } from "lucide-react";
 
 const ROTATING = [
   "If you're a musician, ToneDen is dead. We replaced it.",
@@ -17,6 +17,8 @@ export default function HomepageHero() {
   const [idx, setIdx] = useState(0);
   const [settled, setSettled] = useState(false);
   const [cycles, setCycles] = useState(0);
+  const [betaCode, setBetaCode] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (settled) return;
@@ -39,14 +41,18 @@ export default function HomepageHero() {
 
   const headline = settled ? FINAL : ROTATING[idx];
 
+  const handleBetaSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    const code = betaCode.trim();
+    if (!code) {
+      navigate("/auth");
+      return;
+    }
+    navigate(`/auth?code=${encodeURIComponent(code)}`);
+  };
+
   return (
     <section className="relative min-h-[100svh] w-full flex flex-col items-center justify-center overflow-hidden px-4 sm:px-6 pt-20 pb-12">
-      {/* Logo top-left handled by nav, also show big mark for hero feel */}
-      <div className="absolute top-20 left-4 sm:left-6 flex items-center gap-2 opacity-80">
-        <img src={logo} alt="UPLY" className="h-6 w-6 rounded" />
-        <span className="font-display text-sm tracking-widest text-foreground/70">UPLY</span>
-      </div>
-
       {/* Animated green glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] max-w-[900px] max-h-[900px] rounded-full bg-primary/20 blur-[120px] animate-pulse" />
@@ -81,9 +87,55 @@ export default function HomepageHero() {
           </a>
         </div>
 
-        <p className="text-xs sm:text-sm text-primary/90 font-medium tracking-wide">
-          Founding creator spots are open. 100,000 and they're gone.
+        {/* Milestone pills */}
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/40 text-primary text-xs sm:text-sm font-medium">
+            <Trophy className="w-3.5 h-3.5" /> 100,000 Members
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/40 text-primary text-xs sm:text-sm font-medium">
+            <Zap className="w-3.5 h-3.5" /> UPLY Awards
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/40 text-primary text-xs sm:text-sm font-medium">
+            <Gamepad2 className="w-3.5 h-3.5" /> Creator Games
+          </span>
+        </div>
+
+        <p className="text-xs sm:text-sm text-primary/90 font-medium tracking-wide max-w-xl">
+          Founding creator spots are open.
+          <br />
+          100,000 members and this offer is gone — forever.
         </p>
+
+        {/* Beta access card */}
+        <div className="w-full max-w-md mx-auto rounded-2xl border border-primary/40 bg-card/60 backdrop-blur-md p-5 sm:p-6 text-left shadow-[0_0_40px_hsl(var(--primary)/0.15)]">
+          <div className="flex flex-col gap-1 mb-4 text-center">
+            <span className="text-xs font-semibold tracking-[0.2em] text-primary uppercase">
+              Invite Only — Beta Access
+            </span>
+            <p className="text-sm text-foreground/70">
+              Already have a beta code? Enter it below to bypass the waitlist.
+            </p>
+          </div>
+          <form onSubmit={handleBetaSubmit} className="flex flex-col sm:flex-row gap-2">
+            <Input
+              value={betaCode}
+              onChange={(e) => setBetaCode(e.target.value)}
+              placeholder="Enter beta code"
+              className="flex-1 bg-background/60 border-border/60 text-foreground placeholder:text-foreground/40 h-11 text-base"
+              autoComplete="off"
+              spellCheck={false}
+            />
+            <Button
+              type="submit"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold h-11"
+            >
+              Activate Access
+            </Button>
+          </form>
+          <p className="text-xs text-foreground/55 mt-3 text-center">
+            Don't have a code? Each founding creator gets 5 invites to share.
+          </p>
+        </div>
       </div>
     </section>
   );
