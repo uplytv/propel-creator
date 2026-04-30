@@ -60,7 +60,7 @@ export default function Landing() {
       <SEOHead
         title="UPLY — The Creator Operating System"
         description="Stream, teach, sell, and build community. Keep 95% of everything. The first creator platform on Roku TV."
-        canonical="https://uply.tv/"
+        canonicalUrl="https://uply.tv/"
         jsonLd={JSON_LD}
       />
 
