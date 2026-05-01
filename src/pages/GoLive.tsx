@@ -227,7 +227,23 @@ export default function GoLive() {
           orientation,
         },
       });
-      if (error) throw error;
+      if (error) {
+        // Surface the real edge function error message instead of the generic
+        // "Edge Function returned a non-2xx status code".
+        let realMsg = error.message || "Failed to create stream";
+        try {
+          const ctx: any = (error as any).context;
+          if (ctx?.json) {
+            const body = await ctx.json();
+            if (body?.error) realMsg = body.error;
+          } else if (ctx instanceof Response) {
+            const body = await ctx.json();
+            if (body?.error) realMsg = body.error;
+          }
+        } catch { /* ignore body parse */ }
+        throw new Error(realMsg);
+      }
+      if (!data?.streamId) throw new Error("Stream creation returned no streamId");
 
       if (featuredProductId && data?.streamId) {
         const isLiveShop = liveProducts.some((p: any) => p.id === featuredProductId);
