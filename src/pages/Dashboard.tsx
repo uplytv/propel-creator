@@ -256,7 +256,7 @@ export default function Dashboard() {
         >
           {[
             { label: "Go Live", icon: Radio, path: "/go-live", color: "text-destructive" },
-            { label: "New Post", icon: MessageCircle, path: "/community", color: "text-primary" },
+            { label: "New Post", icon: MessageCircle, path: "/create/post/editor", color: "text-primary" },
             { label: "Upload Video", action: () => setUploadOpen(true), icon: Upload, color: "text-primary" },
             { label: "Share Link", icon: Eye, path: `/creator/${(profile as any)?.username || "me"}`, color: "text-primary" },
           ].map((action) => {
