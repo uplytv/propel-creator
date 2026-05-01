@@ -68,6 +68,102 @@ export type Database = {
         }
         Relationships: []
       }
+      ad_campaigns_published: {
+        Row: {
+          brief: Json
+          builder_draft_id: string | null
+          external_ad_id: string | null
+          external_adset_id: string | null
+          external_campaign_id: string
+          id: string
+          last_synced_at: string | null
+          provider: string
+          published_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          brief: Json
+          builder_draft_id?: string | null
+          external_ad_id?: string | null
+          external_adset_id?: string | null
+          external_campaign_id: string
+          id?: string
+          last_synced_at?: string | null
+          provider: string
+          published_at?: string
+          status: string
+          user_id: string
+        }
+        Update: {
+          brief?: Json
+          builder_draft_id?: string | null
+          external_ad_id?: string | null
+          external_adset_id?: string | null
+          external_campaign_id?: string
+          id?: string
+          last_synced_at?: string | null
+          provider?: string
+          published_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ad_connections: {
+        Row: {
+          access_token: string
+          account_data: Json | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          provider: string
+          refresh_token: string | null
+          scopes: string[] | null
+          selected_ad_account_id: string | null
+          selected_ig_account_id: string | null
+          selected_page_id: string | null
+          selected_pixel_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          account_data?: Json | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          provider: string
+          refresh_token?: string | null
+          scopes?: string[] | null
+          selected_ad_account_id?: string | null
+          selected_ig_account_id?: string | null
+          selected_page_id?: string | null
+          selected_pixel_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          account_data?: Json | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          provider?: string
+          refresh_token?: string | null
+          scopes?: string[] | null
+          selected_ad_account_id?: string | null
+          selected_ig_account_id?: string | null
+          selected_page_id?: string | null
+          selected_pixel_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ad_integrations: {
         Row: {
           access_token: string | null
