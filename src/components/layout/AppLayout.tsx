@@ -540,6 +540,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                       >
                         <Settings className="w-4 h-4" /> Settings
                       </button>
+                      <button
+                        onClick={() => { navigate("/settings/connections"); setProfileOpen(false); }}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                      >
+                        <Plug className="w-4 h-4" /> Ad Connections
+                      </button>
                       {isAdmin && (
                         <button
                           onClick={() => { navigate("/admin"); setProfileOpen(false); }}

@@ -36,6 +36,7 @@ const Grow = lazy(() => import("./pages/Grow"));
 const Affiliates = lazy(() => import("./pages/Affiliates"));
 const CreatorAffiliate = lazy(() => import("./pages/CreatorAffiliate"));
 const Settings = lazy(() => import("./pages/Settings"));
+const SettingsConnections = lazy(() => import("./pages/SettingsConnections"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard"));
 const Collaborate = lazy(() => import("./pages/Collaborate"));
 const JointProduct = lazy(() => import("./pages/JointProduct"));
@@ -306,6 +307,7 @@ const App = () => (
                     <Route path="/collaborate" element={<ProtectedRoute><Collaborate /></ProtectedRoute>} />
                     <Route path="/collaborate/product" element={<ProtectedRoute><JointProduct /></ProtectedRoute>} />
                     <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                    <Route path="/settings/connections" element={<ProtectedRoute><SettingsConnections /></ProtectedRoute>} />
                     <Route path="/my-rep" element={<ProtectedRoute><MyRep /></ProtectedRoute>} />
                     <Route path="/go-live" element={<ProtectedRoute><GoLive /></ProtectedRoute>} />
                     <Route path="/buy-credits" element={<ProtectedRoute><BuyCredits /></ProtectedRoute>} />
