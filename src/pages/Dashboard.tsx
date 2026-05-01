@@ -120,8 +120,6 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <div className="max-w-5xl mx-auto pb-20 md:pb-8">
-        {/* Interactive onboarding tour (auto-launches once for new creators) */}
-        <CreatorTour />
         <MilestoneProgressPill />
 
         {/* First Dollar Wizard */}
