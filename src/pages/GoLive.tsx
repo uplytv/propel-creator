@@ -416,7 +416,7 @@ export default function GoLive() {
                   >
                     <div className="w-12 h-7 rounded border-2 border-current" />
                     <span className="text-xs font-semibold">Landscape</span>
-                    <span className="text-xs opacity-70">16:9 · Twitch / Kick style</span>
+                    <span className="text-xs opacity-70">16:9 · Twitch / Kick / YouTube Live</span>
                   </button>
                   <button
                     onClick={() => setOrientation('portrait')}
@@ -429,12 +429,17 @@ export default function GoLive() {
                   >
                     <div className="w-7 h-12 rounded border-2 border-current" />
                     <span className="text-xs font-semibold">Portrait</span>
-                    <span className="text-xs opacity-70">9:16 · TikTok / Mobile style</span>
+                    <span className="text-xs opacity-70">9:16 · TikTok / Whatnot Live</span>
                   </button>
                 </div>
                 {orientation === 'landscape' && (
                   <p className="text-xs text-muted-foreground">
-                    ✓ Recommended for professional streams like iShowSpeed and Adin Ross on Twitch & Kick
+                    Best for entertainment streams — gaming, talk, music, concerts. Plays on TV apps.
+                  </p>
+                )}
+                {orientation === 'portrait' && (
+                  <p className="text-xs text-muted-foreground">
+                    Best for live commerce — product drops, hauls, demos. Mobile only.
                   </p>
                 )}
               </div>
