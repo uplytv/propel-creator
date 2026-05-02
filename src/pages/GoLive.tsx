@@ -92,6 +92,19 @@ export default function GoLive() {
   const [category, setCategory] = useState(categories[0]);
   const [orientation, setOrientation] = useState<'landscape' | 'portrait'>('landscape');
   const [isSettingUp, setIsSettingUp] = useState(false);
+  type SetupStep = { step: string; status: "pending" | "ok" | "error"; ms?: number; detail?: string };
+  const [setupSteps, setSetupSteps] = useState<SetupStep[]>([]);
+  const [setupTraceId, setSetupTraceId] = useState<string | null>(null);
+  const pushStep = (step: string, status: SetupStep["status"], detail?: string) => {
+    setSetupSteps((prev) => {
+      const idx = prev.findIndex((s) => s.step === step);
+      const next: SetupStep = { step, status, detail };
+      if (idx >= 0) { const copy = [...prev]; copy[idx] = next; return copy; }
+      return [...prev, next];
+    });
+    // eslint-disable-next-line no-console
+    console.log(`[go-live] ${status === "ok" ? "✓" : status === "error" ? "✗" : "…"} ${step}`, detail ?? "");
+  };
   const [featuredProductId, setFeaturedProductId] = useState<string | null>(null);
   const [streamData, setStreamData] = useState<{
     streamId: string;
@@ -216,7 +229,12 @@ export default function GoLive() {
   const handleSetUpStream = async () => {
     if (!title.trim() || !user) return;
     setIsSettingUp(true);
+    setSetupSteps([]);
+    setSetupTraceId(null);
+    pushStep("validate_inputs", "ok", `${orientation} · ${mode}`);
+    pushStep("invoke_edge_function", "pending", "Calling mux-create-livestream…");
     try {
+      const t0 = performance.now();
       const { data, error } = await supabase.functions.invoke("mux-create-livestream", {
         body: {
           userId: user.id,
@@ -227,79 +245,104 @@ export default function GoLive() {
           orientation,
         },
       });
+      const ms = Math.round(performance.now() - t0);
       if (error) {
-        // Surface the real edge function error message instead of the generic
-        // "Edge Function returned a non-2xx status code".
         let realMsg = error.message || "Failed to create stream";
+        let serverSteps: any[] | null = null;
+        let serverTrace: string | null = null;
         try {
           const ctx: any = (error as any).context;
-          if (ctx?.json) {
-            const body = await ctx.json();
-            if (body?.error) realMsg = body.error;
-          } else if (ctx instanceof Response) {
-            const body = await ctx.json();
-            if (body?.error) realMsg = body.error;
-          }
-        } catch { /* ignore body parse */ }
+          let parsed: any = null;
+          if (ctx?.json) parsed = await ctx.json();
+          else if (ctx instanceof Response) parsed = await ctx.json();
+          if (parsed?.error) realMsg = parsed.error;
+          if (Array.isArray(parsed?.steps)) serverSteps = parsed.steps;
+          if (parsed?.traceId) serverTrace = parsed.traceId;
+        } catch { /* ignore */ }
+        pushStep("invoke_edge_function", "error", `${realMsg} (${ms}ms)`);
+        if (serverTrace) setSetupTraceId(serverTrace);
+        if (serverSteps) {
+          serverSteps.forEach((s: any) =>
+            pushStep(`server:${s.step}`, s.status === "error" ? "error" : "ok",
+              s.detail ? JSON.stringify(s.detail).slice(0, 120) : undefined)
+          );
+        }
         throw new Error(realMsg);
       }
       if (!data?.streamId) throw new Error("Stream creation returned no streamId");
 
+      pushStep("invoke_edge_function", "ok", `Stream created (${ms}ms)`);
+      if (data?.traceId) setSetupTraceId(data.traceId);
+      if (Array.isArray(data?.steps)) {
+        data.steps.forEach((s: any) =>
+          pushStep(`server:${s.step}`, s.status === "error" ? "error" : "ok",
+            typeof s.ms === "number" ? `+${s.ms}ms` : undefined)
+        );
+      }
+
       if (featuredProductId && data?.streamId) {
+        pushStep("attach_featured_product", "pending");
         const isLiveShop = liveProducts.some((p: any) => p.id === featuredProductId);
-        await supabase
+        const { error: featErr } = await supabase
           .from('mux_live_streams')
           .update({
             featured_product_id: featuredProductId,
             featured_product_source: isLiveShop ? "live_shop" : "digital",
           } as any)
           .eq('id', data.streamId);
+        pushStep("attach_featured_product", featErr ? "error" : "ok", featErr?.message);
       }
 
-      // Migrate any draft products to the real stream
       if (data?.streamId && user) {
-        // Migrate by draftSessionId
-        if (draftSessionId) {
-          await supabase
-            .from("live_products")
-            .update({ stream_id: data.streamId })
-            .eq("stream_id", draftSessionId);
-        }
-        // Also migrate any orphaned drafts by this creator (from previous sessions)
-        const { data: orphans } = await supabase
-          .from("live_products")
-          .select("id, stream_id")
-          .eq("creator_id", user.id)
-          .eq("is_sold_out", false)
-          .eq("is_active", false)
-          .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
-        if (orphans && orphans.length > 0) {
-          const orphanIds = orphans
-            .filter((o: any) => o.stream_id !== data.streamId)
-            .map((o: any) => o.id);
-          if (orphanIds.length > 0) {
+        pushStep("migrate_draft_products", "pending");
+        try {
+          if (draftSessionId) {
             await supabase
               .from("live_products")
               .update({ stream_id: data.streamId })
-              .in("id", orphanIds);
+              .eq("stream_id", draftSessionId);
           }
+          const { data: orphans } = await supabase
+            .from("live_products")
+            .select("id, stream_id")
+            .eq("creator_id", user.id)
+            .eq("is_sold_out", false)
+            .eq("is_active", false)
+            .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+          if (orphans && orphans.length > 0) {
+            const orphanIds = orphans
+              .filter((o: any) => o.stream_id !== data.streamId)
+              .map((o: any) => o.id);
+            if (orphanIds.length > 0) {
+              await supabase
+                .from("live_products")
+                .update({ stream_id: data.streamId })
+                .in("id", orphanIds);
+            }
+          }
+          fetchLiveProducts(data.streamId);
+          try { localStorage.removeItem("uply_draft_session_id"); } catch {}
+          pushStep("migrate_draft_products", "ok");
+        } catch (e: any) {
+          pushStep("migrate_draft_products", "error", e?.message);
         }
-        fetchLiveProducts(data.streamId);
-        try { localStorage.removeItem("uply_draft_session_id"); } catch {}
       }
 
       setStreamData(data);
       setStreamStatus("idle");
       setStreamStartTime(Date.now());
-      trackEvent("stream_created", { mode, category, has_featured_product: !!featuredProductId, simulcast: simulcastEnabled });
+      trackEvent("stream_created", { mode, category, orientation, has_featured_product: !!featuredProductId, simulcast: simulcastEnabled, total_ms: ms });
+      pushStep("ready", "ok", "Broadcast studio ready");
       toast.success("Stream created!", { description: "Your broadcast studio is ready." });
 
-      // Start simulcast non-blocking
       if (simulcastEnabled && enabledPlatforms.length > 0 && data?.streamId) {
-        startSimulcast(data.streamId, user.id).catch(() => {});
+        pushStep("start_simulcast", "pending", `${enabledPlatforms.length} destinations`);
+        startSimulcast(data.streamId, user.id)
+          .then(() => pushStep("start_simulcast", "ok"))
+          .catch((e: any) => pushStep("start_simulcast", "error", e?.message));
       }
     } catch (e: any) {
-      toast.error("Error", { description: e.message || "Failed to create stream" });
+      toast.error("Setup failed", { description: e.message || "Failed to create stream" });
     } finally {
       setIsSettingUp(false);
     }
@@ -487,6 +530,42 @@ export default function GoLive() {
                   <><Radio className="w-5 h-5 mr-2" /> Set Up Stream</>
                 )}
               </Button>
+
+              {(isSettingUp || setupSteps.length > 0) && (
+                <div className="rounded-xl border border-border bg-secondary/30 p-3 space-y-1.5 text-xs font-mono">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-semibold text-foreground">Setup trace</span>
+                    {setupTraceId && (
+                      <span className="text-[10px] text-muted-foreground truncate max-w-[60%]" title={setupTraceId}>
+                        id: {setupTraceId.slice(0, 8)}…
+                      </span>
+                    )}
+                  </div>
+                  {setupSteps.map((s, i) => (
+                    <div key={`${s.step}-${i}`} className="flex items-start gap-2">
+                      <span className={cn(
+                        "mt-0.5 inline-block w-3 text-center",
+                        s.status === "ok" && "text-primary",
+                        s.status === "error" && "text-destructive",
+                        s.status === "pending" && "text-muted-foreground animate-pulse"
+                      )}>
+                        {s.status === "ok" ? "✓" : s.status === "error" ? "✗" : "…"}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <span className={cn(
+                          "text-foreground",
+                          s.status === "error" && "text-destructive"
+                        )}>
+                          {s.step.replace(/^server:/, "↳ ")}
+                        </span>
+                        {s.detail && (
+                          <span className="text-muted-foreground ml-2 break-all">{s.detail}</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <p className="text-xs text-muted-foreground text-center">
                 Your stream will be automatically recorded and saved to your content library.
