@@ -11,12 +11,27 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
+  // Trace ID + step accumulator for end-to-end visibility
+  const traceId = crypto.randomUUID()
+  const t0 = Date.now()
+  const steps: Array<{ step: string; status: 'ok' | 'error'; ms: number; detail?: any }> = []
+  const log = (step: string, status: 'ok' | 'error', detail?: any) => {
+    const ms = Date.now() - t0
+    steps.push({ step, status, ms, detail })
+    const line = `[mux-create-livestream][${traceId}] ${status === 'ok' ? '✓' : '✗'} ${step} (+${ms}ms)`
+    if (status === 'ok') console.log(line, detail ?? '')
+    else console.error(line, detail ?? '')
+  }
+
+  log('request_received', 'ok', { method: req.method })
+
   let body: any
   try {
     body = await req.json()
+    log('body_parsed', 'ok', { keys: Object.keys(body || {}) })
   } catch (e) {
-    console.error('[mux-create-livestream] body parse failed:', e)
-    return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+    log('body_parse_failed', 'error', { message: String(e) })
+    return new Response(JSON.stringify({ error: 'Invalid JSON body', traceId, steps }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
@@ -24,10 +39,11 @@ serve(async (req) => {
 
   const { userId, title, description, category, isPublic, orientation } = body || {}
   const streamOrientation = orientation === 'portrait' ? 'portrait' : 'landscape'
+  log('input_validated', 'ok', { userId: userId ? `${String(userId).slice(0, 8)}…` : null, orientation: streamOrientation, hasTitle: !!title })
 
   if (!userId) {
-    console.error('[mux-create-livestream] missing userId in body:', body)
-    return new Response(JSON.stringify({ error: 'userId is required' }), {
+    log('missing_user_id', 'error')
+    return new Response(JSON.stringify({ error: 'userId is required', traceId, steps }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
@@ -37,15 +53,14 @@ serve(async (req) => {
   const muxTokenSecret = Deno.env.get('MUX_TOKEN_SECRET')
 
   if (!muxTokenId || !muxTokenSecret) {
-    console.error('[mux-create-livestream] Mux credentials not configured')
-    return new Response(JSON.stringify({ error: 'Mux API credentials not configured' }), {
+    log('mux_credentials_missing', 'error')
+    return new Response(JSON.stringify({ error: 'Mux API credentials not configured', traceId, steps }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
+  log('mux_credentials_present', 'ok')
 
-  // Build Mux payload — keep it minimal and valid.
-  // Recording is automatic when new_asset_settings is present.
   const muxPayload = {
     playback_policy: ['public'],
     new_asset_settings: {
@@ -54,13 +69,14 @@ serve(async (req) => {
       normalize_audio: true,
     },
     reconnect_window: 300,
-    max_continuous_duration: 43200, // 12h — Mux max is 12h, 86400 was invalid
+    max_continuous_duration: 43200,
     latency_mode: 'reduced',
     passthrough: JSON.stringify({ userId, orientation: streamOrientation }),
   }
 
   let muxData: any
   try {
+    log('mux_api_call_start', 'ok')
     const muxResponse = await fetch('https://api.mux.com/video/v1/live-streams', {
       method: 'POST',
       headers: {
@@ -72,26 +88,22 @@ serve(async (req) => {
 
     if (!muxResponse.ok) {
       const errText = await muxResponse.text()
-      console.error('[mux-create-livestream] Mux API error', {
-        status: muxResponse.status,
-        body: errText,
-        sentPayload: muxPayload,
-      })
+      log('mux_api_error', 'error', { status: muxResponse.status, body: errText.slice(0, 500) })
       return new Response(
         JSON.stringify({
           error: `Mux API error (${muxResponse.status}): ${errText}`,
+          traceId,
+          steps,
         }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
     muxData = await muxResponse.json()
+    log('mux_api_call_success', 'ok', { muxStreamId: muxData?.data?.id })
   } catch (e: any) {
-    console.error('[mux-create-livestream] Mux fetch threw:', e?.message || e)
-    return new Response(JSON.stringify({ error: `Mux request failed: ${e?.message || e}` }), {
+    log('mux_fetch_threw', 'error', { message: e?.message || String(e) })
+    return new Response(JSON.stringify({ error: `Mux request failed: ${e?.message || e}`, traceId, steps }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
@@ -101,6 +113,7 @@ serve(async (req) => {
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
   )
+  log('supabase_client_ready', 'ok')
 
   const { data: stream, error: dbError } = await supabase
     .from('mux_live_streams')
@@ -120,12 +133,13 @@ serve(async (req) => {
     .single()
 
   if (dbError) {
-    console.error('[mux-create-livestream] DB insert failed:', dbError)
-    return new Response(JSON.stringify({ error: `DB insert failed: ${dbError.message}` }), {
+    log('db_insert_failed', 'error', { message: dbError.message, code: (dbError as any).code })
+    return new Response(JSON.stringify({ error: `DB insert failed: ${dbError.message}`, traceId, steps }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
+  log('db_insert_success', 'ok', { streamId: stream.id, slug: stream.slug })
 
   const { error: sessionError } = await supabase.from('live_stream_sessions').insert({
     stream_id: stream.id,
@@ -133,8 +147,12 @@ serve(async (req) => {
     started_at: new Date().toISOString(),
   })
   if (sessionError) {
-    console.error('[mux-create-livestream] session insert failed (non-fatal):', sessionError)
+    log('session_insert_failed_nonfatal', 'error', { message: sessionError.message })
+  } else {
+    log('session_insert_success', 'ok')
   }
+
+  log('done', 'ok', { totalMs: Date.now() - t0 })
 
   return new Response(
     JSON.stringify({
@@ -144,6 +162,8 @@ serve(async (req) => {
       rtmpUrl: 'rtmps://global-live.mux.com:443/app',
       slug: stream.slug || stream.id,
       orientation: streamOrientation,
+      traceId,
+      steps,
     }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   )
