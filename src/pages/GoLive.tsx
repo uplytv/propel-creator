@@ -92,6 +92,19 @@ export default function GoLive() {
   const [category, setCategory] = useState(categories[0]);
   const [orientation, setOrientation] = useState<'landscape' | 'portrait'>('landscape');
   const [isSettingUp, setIsSettingUp] = useState(false);
+  type SetupStep = { step: string; status: "pending" | "ok" | "error"; ms?: number; detail?: string };
+  const [setupSteps, setSetupSteps] = useState<SetupStep[]>([]);
+  const [setupTraceId, setSetupTraceId] = useState<string | null>(null);
+  const pushStep = (step: string, status: SetupStep["status"], detail?: string) => {
+    setSetupSteps((prev) => {
+      const idx = prev.findIndex((s) => s.step === step);
+      const next: SetupStep = { step, status, detail };
+      if (idx >= 0) { const copy = [...prev]; copy[idx] = next; return copy; }
+      return [...prev, next];
+    });
+    // eslint-disable-next-line no-console
+    console.log(`[go-live] ${status === "ok" ? "✓" : status === "error" ? "✗" : "…"} ${step}`, detail ?? "");
+  };
   const [featuredProductId, setFeaturedProductId] = useState<string | null>(null);
   const [streamData, setStreamData] = useState<{
     streamId: string;
