@@ -531,6 +531,42 @@ export default function GoLive() {
                 )}
               </Button>
 
+              {(isSettingUp || setupSteps.length > 0) && (
+                <div className="rounded-xl border border-border bg-secondary/30 p-3 space-y-1.5 text-xs font-mono">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-semibold text-foreground">Setup trace</span>
+                    {setupTraceId && (
+                      <span className="text-[10px] text-muted-foreground truncate max-w-[60%]" title={setupTraceId}>
+                        id: {setupTraceId.slice(0, 8)}…
+                      </span>
+                    )}
+                  </div>
+                  {setupSteps.map((s, i) => (
+                    <div key={`${s.step}-${i}`} className="flex items-start gap-2">
+                      <span className={cn(
+                        "mt-0.5 inline-block w-3 text-center",
+                        s.status === "ok" && "text-primary",
+                        s.status === "error" && "text-destructive",
+                        s.status === "pending" && "text-muted-foreground animate-pulse"
+                      )}>
+                        {s.status === "ok" ? "✓" : s.status === "error" ? "✗" : "…"}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <span className={cn(
+                          "text-foreground",
+                          s.status === "error" && "text-destructive"
+                        )}>
+                          {s.step.replace(/^server:/, "↳ ")}
+                        </span>
+                        {s.detail && (
+                          <span className="text-muted-foreground ml-2 break-all">{s.detail}</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <p className="text-xs text-muted-foreground text-center">
                 Your stream will be automatically recorded and saved to your content library.
               </p>
