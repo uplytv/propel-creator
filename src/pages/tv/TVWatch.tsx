@@ -118,7 +118,7 @@ export default function TVWatch() {
       {/* Video */}
       <div className="absolute inset-0">
         {stream.mux_playback_id && (
-          <UPLYMuxPlayer playbackId={stream.mux_playback_id} isLive autoPlay muted={false} />
+          <UPLYMuxPlayer playbackId={stream.mux_playback_id} streamType="ll-live" autoPlay muted={false} />
         )}
       </div>
 
