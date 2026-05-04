@@ -180,7 +180,7 @@ export default function TVAuditAnalytics({ rows, streamMeta }: Props) {
     : drill.type === "day"
     ? `Day · ${drill.label}`
     : drill.type === "stream"
-    ? `Stream · ${drill.streamId.slice(0, 8)}…`
+    ? `Stream · ${labelFor(drill.streamId)?.title || drill.streamId.slice(0, 8) + "…"}`
     : `Time-to-resolution · ${drill.range}`;
 
   return (
