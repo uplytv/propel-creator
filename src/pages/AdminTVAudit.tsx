@@ -118,6 +118,8 @@ export default function AdminTVAudit() {
           ))}
         </div>
 
+        <TVAuditAnalytics rows={(data || []) as any} />
+
         <div className="flex flex-wrap items-center gap-2">
           <Input
             value={search}
