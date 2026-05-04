@@ -66,6 +66,7 @@ const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminUsers = lazy(() => import("./pages/AdminUsers"));
 const AdminSettings = lazy(() => import("./pages/AdminSettings"));
 const AdminFeatureToggles = lazy(() => import("./pages/AdminFeatureToggles"));
+const AdminTVAudit = lazy(() => import("./pages/AdminTVAudit"));
 const ContentLibrary = lazy(() => import("./pages/ContentLibrary"));
 const CreatorSpace = lazy(() => import("./pages/CreatorSpace"));
 const Launchpad = lazy(() => import("./pages/Launchpad"));
@@ -373,6 +374,7 @@ const App = () => (
                     <Route path="/admin/features" element={<AdminRoute><AdminFeatureToggles /></AdminRoute>} />
                     <Route path="/admin/affiliates" element={<AdminRoute><AdminAffiliates /></AdminRoute>} />
                     <Route path="/admin/referrals" element={<AdminRoute><AdminReferrals /></AdminRoute>} />
+                    <Route path="/admin/tv-audit" element={<AdminRoute><AdminTVAudit /></AdminRoute>} />
 
                     {/* In-app camera & post-capture editors */}
                     <Route path="/camera" element={<ProtectedRoute><Camera /></ProtectedRoute>} />
