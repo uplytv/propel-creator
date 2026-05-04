@@ -165,7 +165,8 @@ export default function Discover() {
   }, [loadMore]);
 
   const showEvents = category === "events";
-  const showContent = !showEvents;
+  const showShopping = category === "shopping";
+  const showContent = !showEvents && !showShopping;
   const showSkeletons = isLoading || transitioning;
 
   return (
