@@ -954,6 +954,9 @@ export default function BroadcastStudio({
                             </button>
                           </div>
                           <CreatorShopPanel streamId={streamData.streamId} />
+                          <div className="pt-2 border-t border-border/50">
+                            <TVFeatureProductButton streamId={streamData.streamId} />
+                          </div>
                         </div>
                       </motion.div>
                     )}
