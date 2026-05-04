@@ -3,11 +3,12 @@ import { ArrowUpDown, Check } from "lucide-react";
 import { type FilterCategory, type SortOption } from "@/hooks/useDiscoveryFeed";
 import { cn } from "@/lib/utils";
 
-export type DiscoverCategory = "all" | "live" | "videos" | "shorts" | "courses" | "communities" | "events";
+export type DiscoverCategory = "all" | "live" | "shopping" | "videos" | "shorts" | "courses" | "communities" | "events";
 
 const categories: { value: DiscoverCategory; label: string }[] = [
   { value: "all", label: "All" },
   { value: "live", label: "Live" },
+  { value: "shopping", label: "🛍️ Live Shopping" },
   { value: "videos", label: "Videos" },
   { value: "shorts", label: "Shorts" },
   { value: "courses", label: "Courses" },
