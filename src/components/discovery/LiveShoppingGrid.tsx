@@ -237,49 +237,52 @@ export default function LiveShoppingGrid() {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-6">
-      {items.map((s) => (
-        <Link
-          key={s.id}
-          to={`/stream/${s.id}`}
-          className="group block rounded-lg overflow-hidden bg-card hover:scale-[1.02] transition-transform"
-        >
-          <div className="aspect-video bg-black relative">
-            {thumb(s.mux_playback_id) ? (
-              <img src={thumb(s.mux_playback_id)!} alt={s.title || "Live"} className="w-full h-full object-cover" loading="lazy" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <Radio className="w-8 h-8 text-muted-foreground" />
-              </div>
-            )}
-            <span className="absolute top-2 left-2 bg-destructive text-destructive-foreground px-2 py-0.5 text-[10px] font-bold rounded flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> LIVE
-            </span>
-            <span className="absolute top-2 right-2 bg-primary text-primary-foreground px-2 py-0.5 text-[10px] font-bold rounded flex items-center gap-1">
-              <ShoppingBag className="w-3 h-3" /> {s.product_count}
-            </span>
-            {(s.viewer_count ?? 0) > 0 && (
-              <span className="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-0.5 text-[10px] rounded">
-                {s.viewer_count} watching
-              </span>
-            )}
-          </div>
-          <div className="p-3 space-y-1.5">
-            <div className="text-sm font-semibold line-clamp-1">{s.title || "Live shopping"}</div>
-            {s.featured_product && (
-              <div className="flex items-center gap-2 pt-1 transition-all">
-                {s.featured_product.image_url && (
-                  <img src={s.featured_product.image_url} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
-                )}
-                <div className="min-w-0 flex-1">
-                  <div className="text-[11px] text-muted-foreground line-clamp-1">{s.featured_product.name}</div>
-                  <div className="text-xs font-bold text-primary">${s.featured_product.price}</div>
+    <>
+      {Controls}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-6">
+        {items.map((s) => (
+          <Link
+            key={s.id}
+            to={`/stream/${s.id}`}
+            className="group block rounded-lg overflow-hidden bg-card hover:scale-[1.02] transition-transform"
+          >
+            <div className="aspect-video bg-black relative">
+              {thumb(s.mux_playback_id) ? (
+                <img src={thumb(s.mux_playback_id)!} alt={s.title || "Live"} className="w-full h-full object-cover" loading="lazy" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <Radio className="w-8 h-8 text-muted-foreground" />
                 </div>
-              </div>
-            )}
-          </div>
-        </Link>
-      ))}
-    </div>
+              )}
+              <span className="absolute top-2 left-2 bg-destructive text-destructive-foreground px-2 py-0.5 text-[10px] font-bold rounded flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> LIVE
+              </span>
+              <span className="absolute top-2 right-2 bg-primary text-primary-foreground px-2 py-0.5 text-[10px] font-bold rounded flex items-center gap-1">
+                <ShoppingBag className="w-3 h-3" /> {s.product_count}
+              </span>
+              {(s.viewer_count ?? 0) > 0 && (
+                <span className="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-0.5 text-[10px] rounded">
+                  {s.viewer_count} watching
+                </span>
+              )}
+            </div>
+            <div className="p-3 space-y-1.5">
+              <div className="text-sm font-semibold line-clamp-1">{s.title || "Live shopping"}</div>
+              {s.featured_product && (
+                <div className="flex items-center gap-2 pt-1 transition-all">
+                  {s.featured_product.image_url && (
+                    <img src={s.featured_product.image_url} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[11px] text-muted-foreground line-clamp-1">{s.featured_product.name}</div>
+                    <div className="text-xs font-bold text-primary">${s.featured_product.price}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </Link>
+        ))}
+      </div>
+    </>
   );
 }
