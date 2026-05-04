@@ -42,7 +42,7 @@ export default function AdminTVAudit() {
         .from("tv_product_features")
         .select("id, stream_id, product_id, creator_id, checkout_token, featured_at, expires_at, dismissed_at, qr_scanned_at, purchased_at, amount_cents")
         .order("featured_at", { ascending: false })
-        .limit(500);
+        .limit(2000);
       if (error) throw error;
       return (data || []) as Row[];
     },
