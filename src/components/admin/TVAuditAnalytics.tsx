@@ -354,7 +354,8 @@ export default function TVAuditAnalytics({ rows, streamMeta }: Props) {
                     <td className="p-2 text-right text-yellow-400">{s.purchased}</td>
                     <td className="p-2 text-right">${(s.revenueCents / 100).toFixed(2)}</td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
               {drillByStream.length > 0 && (
                 <tfoot className="bg-muted/20 text-xs">
