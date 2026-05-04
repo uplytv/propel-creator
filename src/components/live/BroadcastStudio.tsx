@@ -51,6 +51,7 @@ import ViewerSentimentOverlay from "./ViewerSentimentOverlay";
 import { LiveQuizOverlay, QuizCreatorPanel } from "./LiveQuizOverlay";
 import CreatorShopPanel from "./CreatorShopPanel";
 import LiveTicketSalesPanel from "./LiveTicketSalesPanel";
+import TVFeatureProductButton from "./TVFeatureProductButton";
 
 import ModeSelectionScreen from "./ModeSelectionScreen";
 import PreRecordingSetup from "./PreRecordingSetup";
