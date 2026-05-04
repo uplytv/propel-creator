@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback, memo, forwardRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Compass, Radio, Upload, Film, BookOpen, Users, CalendarDays, X } from "lucide-react";
+import { Compass, Radio, Upload, Film, BookOpen, Users, CalendarDays, X, ShoppingBag } from "lucide-react";
+import LiveShoppingGrid from "@/components/discovery/LiveShoppingGrid";
 import AppLayout from "@/components/layout/AppLayout";
 import { useDiscoveryFeed, type SortOption, type FeedTab } from "@/hooks/useDiscoveryFeed";
 import FeedCard from "@/components/discovery/FeedCard";
@@ -75,6 +76,7 @@ function EmptyState({ category }: { category: DiscoverCategory }) {
   const config: Record<DiscoverCategory, { icon: React.ElementType; title: string; subtitle: string; cta?: string }> = {
     all: { icon: Compass, title: "Nothing here yet", subtitle: "Check back soon for new content." },
     live: { icon: Radio, title: "No one is live right now", subtitle: "Check back soon or follow creators to get notified." },
+    shopping: { icon: ShoppingBag, title: "No live shopping right now", subtitle: "Creators selling live will appear here." },
     videos: { icon: Film, title: "No videos yet", subtitle: "Be the first to upload a video.", cta: "Upload" },
     shorts: { icon: Film, title: "No shorts yet", subtitle: "Short clips will appear here." },
     courses: { icon: BookOpen, title: "No courses yet", subtitle: "Creators are building courses — check back soon." },
@@ -163,7 +165,8 @@ export default function Discover() {
   }, [loadMore]);
 
   const showEvents = category === "events";
-  const showContent = !showEvents;
+  const showShopping = category === "shopping";
+  const showContent = !showEvents && !showShopping;
   const showSkeletons = isLoading || transitioning;
 
   return (
@@ -246,6 +249,8 @@ export default function Discover() {
       <div className="max-w-7xl mx-auto px-4 py-4">
         {showEvents ? (
           <EventDiscoveryGrid />
+        ) : showShopping ? (
+          <LiveShoppingGrid />
         ) : (
           <div
             className={`transition-opacity duration-150 ${transitioning ? "opacity-0" : "opacity-100"}`}
