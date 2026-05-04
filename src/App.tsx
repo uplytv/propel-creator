@@ -66,6 +66,7 @@ const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminUsers = lazy(() => import("./pages/AdminUsers"));
 const AdminSettings = lazy(() => import("./pages/AdminSettings"));
 const AdminFeatureToggles = lazy(() => import("./pages/AdminFeatureToggles"));
+const AdminTVAudit = lazy(() => import("./pages/AdminTVAudit"));
 const ContentLibrary = lazy(() => import("./pages/ContentLibrary"));
 const CreatorSpace = lazy(() => import("./pages/CreatorSpace"));
 const Launchpad = lazy(() => import("./pages/Launchpad"));
