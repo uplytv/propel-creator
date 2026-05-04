@@ -156,7 +156,7 @@ export default function AdminTVAudit() {
           ))}
         </div>
 
-        <TVAuditAnalytics rows={(data || []) as any} />
+        <TVAuditAnalytics rows={(data || []) as any} streamMeta={streamMeta} />
 
         <div className="flex flex-wrap items-center gap-2">
           <Input
