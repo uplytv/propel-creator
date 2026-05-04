@@ -1,7 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { ShoppingBag, Radio } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+
+interface ProductInfo {
+  id: string;
+  name: string;
+  price: number;
+  image_url: string | null;
+}
+
+interface LinkRow {
+  stream_id: string;
+  product_id: string;
+  is_currently_featured: boolean;
+  position: number;
+}
 
 interface ShoppingStream {
   id: string;
@@ -11,11 +25,7 @@ interface ShoppingStream {
   viewer_count: number | null;
   user_id: string;
   product_count: number;
-  featured_product?: {
-    name: string;
-    price: number;
-    image_url: string | null;
-  } | null;
+  featured_product?: ProductInfo | null;
 }
 
 function thumb(playbackId: string | null) {
@@ -23,63 +33,118 @@ function thumb(playbackId: string | null) {
 }
 
 export default function LiveShoppingGrid() {
-  const [items, setItems] = useState<ShoppingStream[]>([]);
+  const [streams, setStreams] = useState<Record<string, any>>({});
+  const [links, setLinks] = useState<LinkRow[]>([]);
+  const [products, setProducts] = useState<Record<string, ProductInfo>>({});
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      // Fetch live streams
-      const { data: streams } = await supabase
-        .from("mux_live_streams")
-        .select("id, title, category, mux_playback_id, viewer_count, user_id, status, is_public")
-        .eq("status", "active")
-        .eq("is_public", true)
-        .limit(60);
+  const load = useCallback(async () => {
+    const { data: streamRows } = await supabase
+      .from("mux_live_streams")
+      .select("id, title, category, mux_playback_id, viewer_count, user_id, status, is_public")
+      .eq("status", "active")
+      .eq("is_public", true)
+      .limit(60);
 
-      const streamIds = (streams || []).map((s: any) => s.id);
-      if (!streamIds.length) {
-        if (!cancelled) { setItems([]); setLoading(false); }
-        return;
-      }
+    const streamIds = (streamRows || []).map((s: any) => s.id);
+    const streamMap: Record<string, any> = {};
+    (streamRows || []).forEach((s: any) => { streamMap[s.id] = s; });
+    setStreams(streamMap);
 
-      // Find streams that have products attached
-      const { data: links } = await supabase
-        .from("live_stream_products")
-        .select("stream_id, product_id, is_currently_featured, position")
-        .in("stream_id", streamIds);
+    if (!streamIds.length) {
+      setLinks([]); setProducts({}); setLoading(false); return;
+    }
 
-      const byStream = new Map<string, any[]>();
-      (links || []).forEach((l: any) => {
-        const arr = byStream.get(l.stream_id) || [];
-        arr.push(l);
-        byStream.set(l.stream_id, arr);
-      });
+    const { data: linkRows } = await supabase
+      .from("live_stream_products")
+      .select("stream_id, product_id, is_currently_featured, position")
+      .in("stream_id", streamIds);
+    const linksData = (linkRows || []) as LinkRow[];
+    setLinks(linksData);
 
-      const productIds = Array.from(new Set((links || []).map((l: any) => l.product_id)));
-      const { data: products } = productIds.length
-        ? await supabase.from("products").select("id, name, price, image_url").in("id", productIds)
-        : { data: [] as any[] };
-      const productMap = new Map((products || []).map((p: any) => [p.id, p]));
+    const productIds = Array.from(new Set(linksData.map((l) => l.product_id)));
+    if (productIds.length) {
+      const { data: productRows } = await supabase
+        .from("products")
+        .select("id, name, price, image_url")
+        .in("id", productIds);
+      const pMap: Record<string, ProductInfo> = {};
+      (productRows || []).forEach((p: any) => { pMap[p.id] = p; });
+      setProducts(pMap);
+    } else {
+      setProducts({});
+    }
 
-      const result: ShoppingStream[] = (streams || [])
-        .filter((s: any) => byStream.has(s.id))
-        .map((s: any) => {
-          const links = byStream.get(s.id)!;
-          const featuredLink = links.find((l) => l.is_currently_featured) || links[0];
-          const featured = featuredLink ? productMap.get(featuredLink.product_id) : null;
-          return {
-            ...s,
-            product_count: links.length,
-            featured_product: featured ? { name: featured.name, price: featured.price, image_url: featured.image_url } : null,
-          };
-        })
-        .sort((a, b) => (b.viewer_count || 0) - (a.viewer_count || 0));
-
-      if (!cancelled) { setItems(result); setLoading(false); }
-    })();
-    return () => { cancelled = true; };
+    setLoading(false);
   }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  // Realtime subscriptions
+  useEffect(() => {
+    const channel = supabase
+      .channel("live-shopping-discover")
+      .on("postgres_changes", { event: "*", schema: "public", table: "live_stream_products" }, (payload: any) => {
+        setLinks((prev) => {
+          if (payload.eventType === "DELETE") {
+            return prev.filter((l) => !(l.stream_id === payload.old.stream_id && l.product_id === payload.old.product_id));
+          }
+          const row = payload.new as LinkRow;
+          const filtered = prev.filter((l) => !(l.stream_id === row.stream_id && l.product_id === row.product_id));
+          return [...filtered, row];
+        });
+        // Fetch product details if new
+        if (payload.eventType !== "DELETE") {
+          const pid = payload.new.product_id;
+          setProducts((prev) => {
+            if (prev[pid]) return prev;
+            supabase.from("products").select("id, name, price, image_url").eq("id", pid).maybeSingle()
+              .then(({ data }) => {
+                if (data) setProducts((p) => ({ ...p, [pid]: data as ProductInfo }));
+              });
+            return prev;
+          });
+        }
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "products" }, (payload: any) => {
+        const p = payload.new;
+        setProducts((prev) => prev[p.id] ? { ...prev, [p.id]: { id: p.id, name: p.name, price: p.price, image_url: p.image_url } } : prev);
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "mux_live_streams" }, (payload: any) => {
+        if (payload.eventType === "DELETE") {
+          setStreams((prev) => {
+            const { [payload.old.id]: _, ...rest } = prev;
+            return rest;
+          });
+          return;
+        }
+        const s = payload.new;
+        if (s.status === "active" && s.is_public) {
+          setStreams((prev) => ({ ...prev, [s.id]: s }));
+        } else {
+          setStreams((prev) => {
+            if (!prev[s.id]) return prev;
+            const { [s.id]: _, ...rest } = prev;
+            return rest;
+          });
+        }
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
+  // Derive items
+  const items: ShoppingStream[] = Object.values(streams)
+    .map((s: any) => {
+      const sLinks = links.filter((l) => l.stream_id === s.id);
+      if (!sLinks.length) return null;
+      const featuredLink = sLinks.find((l) => l.is_currently_featured) || sLinks.sort((a, b) => a.position - b.position)[0];
+      const featured = featuredLink ? products[featuredLink.product_id] || null : null;
+      return { ...s, product_count: sLinks.length, featured_product: featured };
+    })
+    .filter(Boolean) as ShoppingStream[];
+  items.sort((a, b) => (b.viewer_count || 0) - (a.viewer_count || 0));
 
   if (loading) {
     return (
@@ -136,7 +201,7 @@ export default function LiveShoppingGrid() {
           <div className="p-3 space-y-1.5">
             <div className="text-sm font-semibold line-clamp-1">{s.title || "Live shopping"}</div>
             {s.featured_product && (
-              <div className="flex items-center gap-2 pt-1">
+              <div className="flex items-center gap-2 pt-1 transition-all">
                 {s.featured_product.image_url && (
                   <img src={s.featured_product.image_url} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
                 )}
