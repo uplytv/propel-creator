@@ -27,6 +27,7 @@ interface Row {
 
 interface Props {
   rows: Row[];
+  streamMeta?: Map<string, { title: string; channel: string }>;
 }
 
 const tooltipStyle = {
