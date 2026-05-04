@@ -249,6 +249,8 @@ export default function Discover() {
       <div className="max-w-7xl mx-auto px-4 py-4">
         {showEvents ? (
           <EventDiscoveryGrid />
+        ) : showShopping ? (
+          <LiveShoppingGrid />
         ) : (
           <div
             className={`transition-opacity duration-150 ${transitioning ? "opacity-0" : "opacity-100"}`}
