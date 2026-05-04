@@ -51,6 +51,7 @@ import ViewerSentimentOverlay from "./ViewerSentimentOverlay";
 import { LiveQuizOverlay, QuizCreatorPanel } from "./LiveQuizOverlay";
 import CreatorShopPanel from "./CreatorShopPanel";
 import LiveTicketSalesPanel from "./LiveTicketSalesPanel";
+import TVFeatureProductButton from "./TVFeatureProductButton";
 
 import ModeSelectionScreen from "./ModeSelectionScreen";
 import PreRecordingSetup from "./PreRecordingSetup";
@@ -953,6 +954,9 @@ export default function BroadcastStudio({
                             </button>
                           </div>
                           <CreatorShopPanel streamId={streamData.streamId} />
+                          <div className="pt-2 border-t border-border/50">
+                            <TVFeatureProductButton streamId={streamData.streamId} />
+                          </div>
                         </div>
                       </motion.div>
                     )}
