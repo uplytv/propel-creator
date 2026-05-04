@@ -6022,6 +6022,62 @@ export type Database = {
         }
         Relationships: []
       }
+      live_stream_products: {
+        Row: {
+          created_at: string
+          id: string
+          is_currently_featured: boolean
+          position: number
+          product_id: string
+          stream_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_currently_featured?: boolean
+          position?: number
+          product_id: string
+          stream_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_currently_featured?: boolean
+          position?: number
+          product_id?: string
+          stream_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_stream_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_stream_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_stream_products_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "mux_live_streams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_stream_products_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "mux_live_streams_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       live_stream_sessions: {
         Row: {
           ended_at: string | null
@@ -9662,6 +9718,80 @@ export type Database = {
           term?: string
         }
         Relationships: []
+      }
+      tv_product_features: {
+        Row: {
+          amount_cents: number | null
+          checkout_token: string
+          creator_id: string
+          dismissed_at: string | null
+          expires_at: string
+          featured_at: string
+          id: string
+          product_id: string
+          purchased_at: string | null
+          purchaser_user_id: string | null
+          qr_scanned_at: string | null
+          stream_id: string
+        }
+        Insert: {
+          amount_cents?: number | null
+          checkout_token: string
+          creator_id: string
+          dismissed_at?: string | null
+          expires_at?: string
+          featured_at?: string
+          id?: string
+          product_id: string
+          purchased_at?: string | null
+          purchaser_user_id?: string | null
+          qr_scanned_at?: string | null
+          stream_id: string
+        }
+        Update: {
+          amount_cents?: number | null
+          checkout_token?: string
+          creator_id?: string
+          dismissed_at?: string | null
+          expires_at?: string
+          featured_at?: string
+          id?: string
+          product_id?: string
+          purchased_at?: string | null
+          purchaser_user_id?: string | null
+          qr_scanned_at?: string | null
+          stream_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tv_product_features_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tv_product_features_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tv_product_features_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "mux_live_streams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tv_product_features_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "mux_live_streams_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       upload_jobs: {
         Row: {
