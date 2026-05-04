@@ -13,6 +13,7 @@ import {
   Legend,
 } from "recharts";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 interface Row {
   id: string;
@@ -21,6 +22,7 @@ interface Row {
   expires_at: string;
   dismissed_at: string | null;
   purchased_at: string | null;
+  amount_cents?: number | null;
 }
 
 interface Props {
@@ -34,8 +36,15 @@ const tooltipStyle = {
   fontSize: 12,
 };
 
+type Drill =
+  | { type: "day"; dateKey: string; label: string }
+  | { type: "stream"; streamId: string }
+  | { type: "ttl"; range: string; min: number; max: number }
+  | null;
+
 export default function TVAuditAnalytics({ rows }: Props) {
   const [windowDays, setWindowDays] = useState<30 | 90>(30);
+  const [drill, setDrill] = useState<Drill>(null);
 
   const since = useMemo(
     () => startOfDay(subDays(new Date(), windowDays - 1)).getTime(),
@@ -47,13 +56,12 @@ export default function TVAuditAnalytics({ rows }: Props) {
     [rows, since],
   );
 
-  // Daily activation / dismissal series
   const dailySeries = useMemo(() => {
-    const buckets = new Map<string, { date: string; activated: number; dismissed: number; purchased: number }>();
+    const buckets = new Map<string, { dateKey: string; date: string; activated: number; dismissed: number; purchased: number }>();
     for (let i = windowDays - 1; i >= 0; i--) {
       const d = startOfDay(subDays(new Date(), i));
       const key = format(d, "yyyy-MM-dd");
-      buckets.set(key, { date: format(d, windowDays > 30 ? "MMM d" : "MMM d"), activated: 0, dismissed: 0, purchased: 0 });
+      buckets.set(key, { dateKey: key, date: format(d, "MMM d"), activated: 0, dismissed: 0, purchased: 0 });
     }
     for (const r of scoped) {
       const k = format(startOfDay(new Date(r.featured_at)), "yyyy-MM-dd");
@@ -73,7 +81,6 @@ export default function TVAuditAnalytics({ rows }: Props) {
     return Array.from(buckets.values());
   }, [scoped, windowDays]);
 
-  // Rate metrics
   const rates = useMemo(() => {
     const total = scoped.length || 1;
     const dismissed = scoped.filter((r) => r.dismissed_at).length;
@@ -81,25 +88,20 @@ export default function TVAuditAnalytics({ rows }: Props) {
     const expired = scoped.filter(
       (r) => !r.dismissed_at && !r.purchased_at && new Date(r.expires_at) < new Date(),
     ).length;
-    const active = scoped.filter(
-      (r) => !r.dismissed_at && !r.purchased_at && new Date(r.expires_at) >= new Date(),
-    ).length;
     return {
       total: scoped.length,
       activationPerDay: (scoped.length / windowDays).toFixed(1),
       dismissalRate: ((dismissed / total) * 100).toFixed(1),
       purchaseRate: ((purchased / total) * 100).toFixed(1),
       expiredRate: ((expired / total) * 100).toFixed(1),
-      active,
     };
   }, [scoped, windowDays]);
 
-  // Top streams by activation
   const byStream = useMemo(() => {
-    const map = new Map<string, { stream: string; activated: number; dismissed: number; expired: number; purchased: number }>();
+    const map = new Map<string, { streamId: string; stream: string; activated: number; dismissed: number; expired: number; purchased: number }>();
     for (const r of scoped) {
       const key = r.stream_id;
-      const e = map.get(key) || { stream: key.slice(0, 8) + "…", activated: 0, dismissed: 0, expired: 0, purchased: 0 };
+      const e = map.get(key) || { streamId: key, stream: key.slice(0, 8) + "…", activated: 0, dismissed: 0, expired: 0, purchased: 0 };
       e.activated++;
       if (r.purchased_at) e.purchased++;
       else if (r.dismissed_at) e.dismissed++;
@@ -109,7 +111,6 @@ export default function TVAuditAnalytics({ rows }: Props) {
     return Array.from(map.values()).sort((a, b) => b.activated - a.activated).slice(0, 10);
   }, [scoped]);
 
-  // Expiration TTL distribution (minutes between featured_at and expires_at OR dismissed_at)
   const ttlDist = useMemo(() => {
     const buckets = [
       { range: "<5m", min: 0, max: 5, count: 0 },
@@ -128,6 +129,54 @@ export default function TVAuditAnalytics({ rows }: Props) {
     }
     return buckets;
   }, [scoped]);
+
+  // Filter scoped rows according to current drill
+  const drillRows = useMemo(() => {
+    if (!drill) return [];
+    if (drill.type === "day") {
+      return scoped.filter((r) => {
+        const fk = format(startOfDay(new Date(r.featured_at)), "yyyy-MM-dd") === drill.dateKey;
+        const dk = r.dismissed_at && format(startOfDay(new Date(r.dismissed_at)), "yyyy-MM-dd") === drill.dateKey;
+        const pk = r.purchased_at && format(startOfDay(new Date(r.purchased_at)), "yyyy-MM-dd") === drill.dateKey;
+        return fk || dk || pk;
+      });
+    }
+    if (drill.type === "stream") {
+      return scoped.filter((r) => r.stream_id === drill.streamId);
+    }
+    // ttl
+    return scoped.filter((r) => {
+      const end = r.dismissed_at
+        ? new Date(r.dismissed_at).getTime()
+        : Math.min(new Date(r.expires_at).getTime(), Date.now());
+      const mins = Math.max(0, (end - new Date(r.featured_at).getTime()) / 60000);
+      return mins >= drill.min && mins < drill.max;
+    });
+  }, [drill, scoped]);
+
+  // Per-stream aggregation for the drilldown table
+  const drillByStream = useMemo(() => {
+    const map = new Map<string, { streamId: string; activated: number; dismissed: number; expired: number; purchased: number; revenueCents: number }>();
+    for (const r of drillRows) {
+      const e = map.get(r.stream_id) || { streamId: r.stream_id, activated: 0, dismissed: 0, expired: 0, purchased: 0, revenueCents: 0 };
+      e.activated++;
+      if (r.purchased_at) {
+        e.purchased++;
+        e.revenueCents += r.amount_cents || 0;
+      } else if (r.dismissed_at) e.dismissed++;
+      else if (new Date(r.expires_at) < new Date()) e.expired++;
+      map.set(r.stream_id, e);
+    }
+    return Array.from(map.values()).sort((a, b) => b.activated - a.activated);
+  }, [drillRows]);
+
+  const drillTitle = !drill
+    ? ""
+    : drill.type === "day"
+    ? `Day · ${drill.label}`
+    : drill.type === "stream"
+    ? `Stream · ${drill.streamId.slice(0, 8)}…`
+    : `Time-to-resolution · ${drill.range}`;
 
   return (
     <div className="space-y-4">
@@ -165,10 +214,16 @@ export default function TVAuditAnalytics({ rows }: Props) {
 
       <div className="rounded-xl border border-border bg-card p-4">
         <h3 className="text-xs font-medium text-muted-foreground mb-3">
-          Daily activations vs dismissals vs purchases
+          Daily activations vs dismissals vs purchases <span className="text-[10px]">(click a day)</span>
         </h3>
         <ResponsiveContainer width="100%" height={220}>
-          <AreaChart data={dailySeries}>
+          <AreaChart
+            data={dailySeries}
+            onClick={(e: any) => {
+              const p = e?.activePayload?.[0]?.payload;
+              if (p?.dateKey) setDrill({ type: "day", dateKey: p.dateKey, label: p.date });
+            }}
+          >
             <defs>
               <linearGradient id="actArea" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#00FF85" stopOpacity={0.4} />
@@ -184,7 +239,7 @@ export default function TVAuditAnalytics({ rows }: Props) {
             <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} width={28} />
             <Tooltip contentStyle={tooltipStyle} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
-            <Area type="monotone" dataKey="activated" stroke="#00FF85" fill="url(#actArea)" strokeWidth={2} />
+            <Area type="monotone" dataKey="activated" stroke="#00FF85" fill="url(#actArea)" strokeWidth={2} style={{ cursor: "pointer" }} />
             <Area type="monotone" dataKey="dismissed" stroke="hsl(var(--muted-foreground))" fill="url(#disArea)" strokeWidth={2} />
             <Area type="monotone" dataKey="purchased" stroke="#facc15" fill="transparent" strokeWidth={2} />
           </AreaChart>
@@ -193,39 +248,119 @@ export default function TVAuditAnalytics({ rows }: Props) {
 
       <div className="grid md:grid-cols-2 gap-4">
         <div className="rounded-xl border border-border bg-card p-4">
-          <h3 className="text-xs font-medium text-muted-foreground mb-3">Top streams (by activations)</h3>
+          <h3 className="text-xs font-medium text-muted-foreground mb-3">
+            Top streams (by activations) <span className="text-[10px]">(click a bar)</span>
+          </h3>
           {byStream.length === 0 ? (
             <div className="text-sm text-muted-foreground py-8 text-center">No data in this window.</div>
           ) : (
             <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={byStream} layout="vertical" margin={{ left: 10 }}>
+              <BarChart
+                data={byStream}
+                layout="vertical"
+                margin={{ left: 10 }}
+                onClick={(e: any) => {
+                  const p = e?.activePayload?.[0]?.payload;
+                  if (p?.streamId) setDrill({ type: "stream", streamId: p.streamId });
+                }}
+              >
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis type="number" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
                 <YAxis dataKey="stream" type="category" width={70} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
                 <Tooltip contentStyle={tooltipStyle} />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="purchased" stackId="a" fill="#facc15" />
-                <Bar dataKey="dismissed" stackId="a" fill="hsl(var(--muted-foreground))" />
-                <Bar dataKey="expired" stackId="a" fill="#f97316" />
-                <Bar dataKey="activated" stackId="a" fill="#00FF85" />
+                <Bar dataKey="purchased" stackId="a" fill="#facc15" style={{ cursor: "pointer" }} />
+                <Bar dataKey="dismissed" stackId="a" fill="hsl(var(--muted-foreground))" style={{ cursor: "pointer" }} />
+                <Bar dataKey="expired" stackId="a" fill="#f97316" style={{ cursor: "pointer" }} />
+                <Bar dataKey="activated" stackId="a" fill="#00FF85" style={{ cursor: "pointer" }} />
               </BarChart>
             </ResponsiveContainer>
           )}
         </div>
 
         <div className="rounded-xl border border-border bg-card p-4">
-          <h3 className="text-xs font-medium text-muted-foreground mb-3">Time-to-resolution distribution</h3>
+          <h3 className="text-xs font-medium text-muted-foreground mb-3">
+            Time-to-resolution distribution <span className="text-[10px]">(click a bucket)</span>
+          </h3>
           <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={ttlDist}>
+            <BarChart
+              data={ttlDist}
+              onClick={(e: any) => {
+                const p = e?.activePayload?.[0]?.payload;
+                if (p?.range) setDrill({ type: "ttl", range: p.range, min: p.min, max: p.max });
+              }}
+            >
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="range" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
               <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} width={28} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="count" fill="#00FF85" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="count" fill="#00FF85" radius={[6, 6, 0, 0]} style={{ cursor: "pointer" }} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
+
+      <Dialog open={!!drill} onOpenChange={(o) => !o && setDrill(null)}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Drilldown — {drillTitle}</DialogTitle>
+            <DialogDescription>
+              Per-stream breakdown of {drillRows.length} TV feature{drillRows.length === 1 ? "" : "s"} in this slice.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="max-h-[60vh] overflow-auto rounded-lg border border-border">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/30 text-xs uppercase text-muted-foreground sticky top-0">
+                <tr>
+                  <th className="text-left p-2">Stream</th>
+                  <th className="text-right p-2">Activations</th>
+                  <th className="text-right p-2">Dismissals</th>
+                  <th className="text-right p-2">Expirations</th>
+                  <th className="text-right p-2">Purchases</th>
+                  <th className="text-right p-2">Revenue</th>
+                </tr>
+              </thead>
+              <tbody>
+                {drillByStream.length === 0 && (
+                  <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">No rows.</td></tr>
+                )}
+                {drillByStream.map((s) => (
+                  <tr key={s.streamId} className="border-t border-border hover:bg-muted/20">
+                    <td className="p-2 font-mono text-xs">
+                      <button
+                        onClick={() => setDrill({ type: "stream", streamId: s.streamId })}
+                        className="hover:text-[#00FF85] underline-offset-2 hover:underline"
+                      >
+                        {s.streamId.slice(0, 12)}…
+                      </button>
+                    </td>
+                    <td className="p-2 text-right">{s.activated}</td>
+                    <td className="p-2 text-right text-muted-foreground">{s.dismissed}</td>
+                    <td className="p-2 text-right text-orange-400">{s.expired}</td>
+                    <td className="p-2 text-right text-yellow-400">{s.purchased}</td>
+                    <td className="p-2 text-right">${(s.revenueCents / 100).toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+              {drillByStream.length > 0 && (
+                <tfoot className="bg-muted/20 text-xs">
+                  <tr className="border-t border-border font-semibold">
+                    <td className="p-2">Total</td>
+                    <td className="p-2 text-right">{drillByStream.reduce((a, b) => a + b.activated, 0)}</td>
+                    <td className="p-2 text-right">{drillByStream.reduce((a, b) => a + b.dismissed, 0)}</td>
+                    <td className="p-2 text-right">{drillByStream.reduce((a, b) => a + b.expired, 0)}</td>
+                    <td className="p-2 text-right">{drillByStream.reduce((a, b) => a + b.purchased, 0)}</td>
+                    <td className="p-2 text-right">
+                      ${(drillByStream.reduce((a, b) => a + b.revenueCents, 0) / 100).toFixed(2)}
+                    </td>
+                  </tr>
+                </tfoot>
+              )}
+            </table>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
