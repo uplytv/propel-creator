@@ -27,6 +27,7 @@ interface Row {
 
 interface Props {
   rows: Row[];
+  streamMeta?: Map<string, { title: string; channel: string }>;
 }
 
 const tooltipStyle = {
@@ -42,7 +43,8 @@ type Drill =
   | { type: "ttl"; range: string; min: number; max: number }
   | null;
 
-export default function TVAuditAnalytics({ rows }: Props) {
+export default function TVAuditAnalytics({ rows, streamMeta }: Props) {
+  const labelFor = (id: string) => streamMeta?.get(id);
   const [windowDays, setWindowDays] = useState<30 | 90>(30);
   const [drill, setDrill] = useState<Drill>(null);
 
@@ -101,7 +103,10 @@ export default function TVAuditAnalytics({ rows }: Props) {
     const map = new Map<string, { streamId: string; stream: string; activated: number; dismissed: number; expired: number; purchased: number }>();
     for (const r of scoped) {
       const key = r.stream_id;
-      const e = map.get(key) || { streamId: key, stream: key.slice(0, 8) + "…", activated: 0, dismissed: 0, expired: 0, purchased: 0 };
+      const meta = labelFor(key);
+      const fallback = key.slice(0, 8) + "…";
+      const stream = meta ? (meta.title.length > 18 ? meta.title.slice(0, 16) + "…" : meta.title) : fallback;
+      const e = map.get(key) || { streamId: key, stream, activated: 0, dismissed: 0, expired: 0, purchased: 0 };
       e.activated++;
       if (r.purchased_at) e.purchased++;
       else if (r.dismissed_at) e.dismissed++;
@@ -175,7 +180,7 @@ export default function TVAuditAnalytics({ rows }: Props) {
     : drill.type === "day"
     ? `Day · ${drill.label}`
     : drill.type === "stream"
-    ? `Stream · ${drill.streamId.slice(0, 8)}…`
+    ? `Stream · ${labelFor(drill.streamId)?.title || drill.streamId.slice(0, 8) + "…"}`
     : `Time-to-resolution · ${drill.range}`;
 
   return (
@@ -325,14 +330,22 @@ export default function TVAuditAnalytics({ rows }: Props) {
                 {drillByStream.length === 0 && (
                   <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">No rows.</td></tr>
                 )}
-                {drillByStream.map((s) => (
+                {drillByStream.map((s) => {
+                  const meta = labelFor(s.streamId);
+                  return (
                   <tr key={s.streamId} className="border-t border-border hover:bg-muted/20">
-                    <td className="p-2 font-mono text-xs">
+                    <td className="p-2">
                       <button
                         onClick={() => setDrill({ type: "stream", streamId: s.streamId })}
-                        className="hover:text-[#00FF85] underline-offset-2 hover:underline"
+                        className="text-left hover:text-[#00FF85] underline-offset-2 hover:underline"
                       >
-                        {s.streamId.slice(0, 12)}…
+                        <div className="text-sm font-medium truncate max-w-[260px]">
+                          {meta?.title || "Untitled stream"}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground truncate max-w-[260px]">
+                          {meta?.channel ? `${meta.channel} · ` : ""}
+                          <span className="font-mono">{s.streamId.slice(0, 12)}…</span>
+                        </div>
                       </button>
                     </td>
                     <td className="p-2 text-right">{s.activated}</td>
@@ -341,7 +354,8 @@ export default function TVAuditAnalytics({ rows }: Props) {
                     <td className="p-2 text-right text-yellow-400">{s.purchased}</td>
                     <td className="p-2 text-right">${(s.revenueCents / 100).toFixed(2)}</td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
               {drillByStream.length > 0 && (
                 <tfoot className="bg-muted/20 text-xs">

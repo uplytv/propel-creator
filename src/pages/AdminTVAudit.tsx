@@ -48,6 +48,44 @@ export default function AdminTVAudit() {
     },
   });
 
+  const streamIds = useMemo(
+    () => Array.from(new Set((data || []).map((r) => r.stream_id))),
+    [data],
+  );
+
+  const { data: streamMeta } = useQuery({
+    queryKey: ["admin-tv-stream-meta", streamIds.length, streamIds.slice(0, 5).join(",")],
+    enabled: streamIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("mux_live_streams")
+        .select("id, title, user_id")
+        .in("id", streamIds);
+      if (error) throw error;
+      const userIds = Array.from(new Set((data || []).map((s: any) => s.user_id).filter(Boolean)));
+      let profileMap = new Map<string, { display_name: string | null; username: string | null }>();
+      if (userIds.length > 0) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("user_id, display_name, username")
+          .in("user_id", userIds);
+        (profs || []).forEach((p: any) =>
+          profileMap.set(p.user_id, { display_name: p.display_name, username: p.username }),
+        );
+      }
+      const map = new Map<string, { title: string; channel: string }>();
+      (data || []).forEach((s: any) => {
+        const p = s.user_id ? profileMap.get(s.user_id) : null;
+        map.set(s.id, {
+          title: s.title || "Untitled stream",
+          channel: p?.display_name || (p?.username ? "@" + p.username : "Unknown"),
+        });
+      });
+      return map;
+    },
+  });
+
+
   // Realtime: refresh when changes occur
   useEffect(() => {
     const channel = supabase
@@ -118,7 +156,7 @@ export default function AdminTVAudit() {
           ))}
         </div>
 
-        <TVAuditAnalytics rows={(data || []) as any} />
+        <TVAuditAnalytics rows={(data || []) as any} streamMeta={streamMeta} />
 
         <div className="flex flex-wrap items-center gap-2">
           <Input
