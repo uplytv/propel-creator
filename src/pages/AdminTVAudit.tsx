@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import TVAuditAnalytics from "@/components/admin/TVAuditAnalytics";
 
 interface Row {
   id: string;
