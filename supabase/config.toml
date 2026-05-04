@@ -120,3 +120,7 @@ project_id = "dbjlhmbgskvhuzqvqfrl"
 
   [functions.oauth-meta-callback]
     verify_jwt = false
+  [functions.tv-feature-product]
+    verify_jwt = false
+  [functions.tv-checkout-resolve]
+    verify_jwt = false
