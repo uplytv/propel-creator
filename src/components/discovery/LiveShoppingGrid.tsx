@@ -135,85 +135,154 @@ export default function LiveShoppingGrid() {
   }, []);
 
   // Derive items
-  const items: ShoppingStream[] = Object.values(streams)
+  const allItems: ShoppingStream[] = Object.values(streams)
     .map((s: any) => {
       const sLinks = links.filter((l) => l.stream_id === s.id);
       if (!sLinks.length) return null;
       const featuredLink = sLinks.find((l) => l.is_currently_featured) || sLinks.sort((a, b) => a.position - b.position)[0];
       const featured = featuredLink ? products[featuredLink.product_id] || null : null;
-      return { ...s, product_count: sLinks.length, featured_product: featured };
+      return {
+        ...s,
+        product_count: sLinks.length,
+        featured_product: featured,
+        has_featured: sLinks.some((l) => l.is_currently_featured),
+      };
     })
-    .filter(Boolean) as ShoppingStream[];
-  items.sort((a, b) => (b.viewer_count || 0) - (a.viewer_count || 0));
+    .filter(Boolean) as (ShoppingStream & { has_featured: boolean })[];
+
+  // Filter & sort state
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<"viewers" | "price_low" | "price_high" | "featured">("viewers");
+  const [featuredOnly, setFeaturedOnly] = useState(false);
+
+  const categories = Array.from(new Set(allItems.map((i) => i.category).filter(Boolean))) as string[];
+
+  let items = allItems.filter((i) => {
+    if (featuredOnly && !(i as any).has_featured) return false;
+    if (categoryFilter !== "all" && i.category !== categoryFilter) return false;
+    return true;
+  });
+
+  items.sort((a, b) => {
+    if (sortBy === "viewers") return (b.viewer_count || 0) - (a.viewer_count || 0);
+    if (sortBy === "featured") return Number((b as any).has_featured) - Number((a as any).has_featured);
+    const ap = a.featured_product?.price ?? Number.POSITIVE_INFINITY;
+    const bp = b.featured_product?.price ?? Number.POSITIVE_INFINITY;
+    return sortBy === "price_low" ? ap - bp : bp - ap;
+  });
+
+  const Controls = (
+    <div className="flex flex-wrap items-center gap-2 mb-4">
+      <select
+        value={categoryFilter}
+        onChange={(e) => setCategoryFilter(e.target.value)}
+        className="h-9 px-3 text-sm rounded-md bg-card border border-border text-foreground"
+        style={{ fontSize: 16 }}
+      >
+        <option value="all">All categories</option>
+        {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+      </select>
+      <select
+        value={sortBy}
+        onChange={(e) => setSortBy(e.target.value as any)}
+        className="h-9 px-3 text-sm rounded-md bg-card border border-border text-foreground"
+        style={{ fontSize: 16 }}
+      >
+        <option value="viewers">Most viewers</option>
+        <option value="featured">Featured first</option>
+        <option value="price_low">Price: Low to High</option>
+        <option value="price_high">Price: High to Low</option>
+      </select>
+      <button
+        onClick={() => setFeaturedOnly((v) => !v)}
+        className={`h-9 px-3 text-xs font-semibold rounded-md border transition-colors min-h-[36px] ${
+          featuredOnly
+            ? "bg-primary text-primary-foreground border-primary"
+            : "bg-card text-muted-foreground border-border hover:text-foreground"
+        }`}
+      >
+        🔥 Featured only
+      </button>
+    </div>
+  );
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-6">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="aspect-video rounded-lg bg-card animate-pulse" />
-        ))}
-      </div>
+      <>
+        {Controls}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-6">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="aspect-video rounded-lg bg-card animate-pulse" />
+          ))}
+        </div>
+      </>
     );
   }
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 px-4">
-        <ShoppingBag className="w-8 h-8 text-muted-foreground mb-3" />
-        <h3 className="text-base font-semibold mb-1" style={{ fontFamily: "Space Grotesk, sans-serif" }}>
-          No live shopping right now
-        </h3>
-        <p className="text-[13px] text-muted-foreground text-center max-w-xs">
-          Creators selling products live will appear here. Check back soon!
-        </p>
-      </div>
+      <>
+        {Controls}
+        <div className="flex flex-col items-center justify-center py-16 px-4">
+          <ShoppingBag className="w-8 h-8 text-muted-foreground mb-3" />
+          <h3 className="text-base font-semibold mb-1" style={{ fontFamily: "Space Grotesk, sans-serif" }}>
+            No live shopping matches
+          </h3>
+          <p className="text-[13px] text-muted-foreground text-center max-w-xs">
+            Try clearing filters or check back soon — creators selling live will show up here.
+          </p>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-6">
-      {items.map((s) => (
-        <Link
-          key={s.id}
-          to={`/stream/${s.id}`}
-          className="group block rounded-lg overflow-hidden bg-card hover:scale-[1.02] transition-transform"
-        >
-          <div className="aspect-video bg-black relative">
-            {thumb(s.mux_playback_id) ? (
-              <img src={thumb(s.mux_playback_id)!} alt={s.title || "Live"} className="w-full h-full object-cover" loading="lazy" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <Radio className="w-8 h-8 text-muted-foreground" />
-              </div>
-            )}
-            <span className="absolute top-2 left-2 bg-destructive text-destructive-foreground px-2 py-0.5 text-[10px] font-bold rounded flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> LIVE
-            </span>
-            <span className="absolute top-2 right-2 bg-primary text-primary-foreground px-2 py-0.5 text-[10px] font-bold rounded flex items-center gap-1">
-              <ShoppingBag className="w-3 h-3" /> {s.product_count}
-            </span>
-            {(s.viewer_count ?? 0) > 0 && (
-              <span className="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-0.5 text-[10px] rounded">
-                {s.viewer_count} watching
-              </span>
-            )}
-          </div>
-          <div className="p-3 space-y-1.5">
-            <div className="text-sm font-semibold line-clamp-1">{s.title || "Live shopping"}</div>
-            {s.featured_product && (
-              <div className="flex items-center gap-2 pt-1 transition-all">
-                {s.featured_product.image_url && (
-                  <img src={s.featured_product.image_url} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
-                )}
-                <div className="min-w-0 flex-1">
-                  <div className="text-[11px] text-muted-foreground line-clamp-1">{s.featured_product.name}</div>
-                  <div className="text-xs font-bold text-primary">${s.featured_product.price}</div>
+    <>
+      {Controls}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-6">
+        {items.map((s) => (
+          <Link
+            key={s.id}
+            to={`/stream/${s.id}`}
+            className="group block rounded-lg overflow-hidden bg-card hover:scale-[1.02] transition-transform"
+          >
+            <div className="aspect-video bg-black relative">
+              {thumb(s.mux_playback_id) ? (
+                <img src={thumb(s.mux_playback_id)!} alt={s.title || "Live"} className="w-full h-full object-cover" loading="lazy" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <Radio className="w-8 h-8 text-muted-foreground" />
                 </div>
-              </div>
-            )}
-          </div>
-        </Link>
-      ))}
-    </div>
+              )}
+              <span className="absolute top-2 left-2 bg-destructive text-destructive-foreground px-2 py-0.5 text-[10px] font-bold rounded flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> LIVE
+              </span>
+              <span className="absolute top-2 right-2 bg-primary text-primary-foreground px-2 py-0.5 text-[10px] font-bold rounded flex items-center gap-1">
+                <ShoppingBag className="w-3 h-3" /> {s.product_count}
+              </span>
+              {(s.viewer_count ?? 0) > 0 && (
+                <span className="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-0.5 text-[10px] rounded">
+                  {s.viewer_count} watching
+                </span>
+              )}
+            </div>
+            <div className="p-3 space-y-1.5">
+              <div className="text-sm font-semibold line-clamp-1">{s.title || "Live shopping"}</div>
+              {s.featured_product && (
+                <div className="flex items-center gap-2 pt-1 transition-all">
+                  {s.featured_product.image_url && (
+                    <img src={s.featured_product.image_url} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[11px] text-muted-foreground line-clamp-1">{s.featured_product.name}</div>
+                    <div className="text-xs font-bold text-primary">${s.featured_product.price}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </Link>
+        ))}
+      </div>
+    </>
   );
 }
