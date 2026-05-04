@@ -103,7 +103,10 @@ export default function TVAuditAnalytics({ rows, streamMeta }: Props) {
     const map = new Map<string, { streamId: string; stream: string; activated: number; dismissed: number; expired: number; purchased: number }>();
     for (const r of scoped) {
       const key = r.stream_id;
-      const e = map.get(key) || { streamId: key, stream: key.slice(0, 8) + "…", activated: 0, dismissed: 0, expired: 0, purchased: 0 };
+      const meta = labelFor(key);
+      const fallback = key.slice(0, 8) + "…";
+      const stream = meta ? (meta.title.length > 18 ? meta.title.slice(0, 16) + "…" : meta.title) : fallback;
+      const e = map.get(key) || { streamId: key, stream, activated: 0, dismissed: 0, expired: 0, purchased: 0 };
       e.activated++;
       if (r.purchased_at) e.purchased++;
       else if (r.dismissed_at) e.dismissed++;
