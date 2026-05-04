@@ -1,0 +1,1 @@
+ALTER TABLE public.tv_product_features REPLICA IDENTITY FULL;
