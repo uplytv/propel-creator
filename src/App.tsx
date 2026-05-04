@@ -98,6 +98,9 @@ const TicketDetail = lazy(() => import("./pages/TicketDetail"));
 const TicketSuccess = lazy(() => import("./pages/TicketSuccess"));
 const TicketWallet = lazy(() => import("./pages/TicketWallet"));
 const StaffReentryRequests = lazy(() => import("./pages/StaffReentryRequests"));
+const TVDiscover = lazy(() => import("./pages/tv/TVDiscover"));
+const TVWatch = lazy(() => import("./pages/tv/TVWatch"));
+const TVBuyRedirect = lazy(() => import("./pages/tv/TVBuyRedirect"));
 const ContentStudio = lazy(() => import("./pages/ContentStudio"));
 const AITeamDashboard = lazy(() => import("./pages/AITeamDashboard"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
@@ -290,6 +293,11 @@ const App = () => (
                     <Route path="/smart-links/campaign" element={<ProtectedRoute><SmartLinkCampaign /></ProtectedRoute>} />
                     <Route path="/smart-links/:id/analytics" element={<ProtectedRoute><SmartLinkAnalyticsPage /></ProtectedRoute>} />
                     <Route path="/smart-links/domains" element={<ProtectedRoute><SmartLinkDomains /></ProtectedRoute>} />
+
+                    {/* UPLY TV (must come before /:username catch-all) */}
+                    <Route path="/tv" element={<TVDiscover />} />
+                    <Route path="/tv/watch/:streamId" element={<TVWatch />} />
+                    <Route path="/buy/:token" element={<TVBuyRedirect />} />
 
                     <Route path="/:username" element={<BioPage />} />
                     <Route path="/:username/page" element={<BioPage />} />
