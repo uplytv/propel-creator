@@ -43,7 +43,8 @@ type Drill =
   | { type: "ttl"; range: string; min: number; max: number }
   | null;
 
-export default function TVAuditAnalytics({ rows }: Props) {
+export default function TVAuditAnalytics({ rows, streamMeta }: Props) {
+  const labelFor = (id: string) => streamMeta?.get(id);
   const [windowDays, setWindowDays] = useState<30 | 90>(30);
   const [drill, setDrill] = useState<Drill>(null);
 
