@@ -330,14 +330,22 @@ export default function TVAuditAnalytics({ rows, streamMeta }: Props) {
                 {drillByStream.length === 0 && (
                   <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">No rows.</td></tr>
                 )}
-                {drillByStream.map((s) => (
+                {drillByStream.map((s) => {
+                  const meta = labelFor(s.streamId);
+                  return (
                   <tr key={s.streamId} className="border-t border-border hover:bg-muted/20">
-                    <td className="p-2 font-mono text-xs">
+                    <td className="p-2">
                       <button
                         onClick={() => setDrill({ type: "stream", streamId: s.streamId })}
-                        className="hover:text-[#00FF85] underline-offset-2 hover:underline"
+                        className="text-left hover:text-[#00FF85] underline-offset-2 hover:underline"
                       >
-                        {s.streamId.slice(0, 12)}…
+                        <div className="text-sm font-medium truncate max-w-[260px]">
+                          {meta?.title || "Untitled stream"}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground truncate max-w-[260px]">
+                          {meta?.channel ? `${meta.channel} · ` : ""}
+                          <span className="font-mono">{s.streamId.slice(0, 12)}…</span>
+                        </div>
                       </button>
                     </td>
                     <td className="p-2 text-right">{s.activated}</td>
