@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import TVAuditAnalytics from "@/components/admin/TVAuditAnalytics";
 
 interface Row {
   id: string;
@@ -41,7 +42,7 @@ export default function AdminTVAudit() {
         .from("tv_product_features")
         .select("id, stream_id, product_id, creator_id, checkout_token, featured_at, expires_at, dismissed_at, qr_scanned_at, purchased_at, amount_cents")
         .order("featured_at", { ascending: false })
-        .limit(500);
+        .limit(2000);
       if (error) throw error;
       return (data || []) as Row[];
     },
@@ -116,6 +117,8 @@ export default function AdminTVAudit() {
             </div>
           ))}
         </div>
+
+        <TVAuditAnalytics rows={(data || []) as any} />
 
         <div className="flex flex-wrap items-center gap-2">
           <Input
