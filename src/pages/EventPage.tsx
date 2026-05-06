@@ -409,6 +409,11 @@ END:VCALENDAR`;
                   <QRCodeSVG value={myTicket.qr_code_token} size={180} level="H" includeMargin={false} />
                 </div>
                 <p className="text-xs text-muted-foreground">Show this QR at check-in</p>
+                {qrUpdatedAt && (
+                  <p className="text-[11px] text-muted-foreground">
+                    Last updated {format(qrUpdatedAt, "MMM d, h:mm a")}
+                  </p>
+                )}
               </div>
             )}
             <DialogFooter className="flex-col sm:flex-col gap-2">
