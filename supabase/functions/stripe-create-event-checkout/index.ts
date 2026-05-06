@@ -29,8 +29,13 @@ serve(async (req) => {
     if (userError || !userData.user) throw new Error("Unauthorized");
 
     const user = userData.user;
-    const { event_id, success_url, cancel_url, embedded, quantity } = await req.json();
-    const qty = Math.max(1, Math.min(10, parseInt(String(quantity || 1), 10) || 1));
+    const { event_id, success_url, cancel_url, embedded, quantity, seat_labels } = await req.json();
+    const seats: string[] = Array.isArray(seat_labels)
+      ? seat_labels.filter((s) => typeof s === "string" && s.length > 0 && s.length <= 12)
+      : [];
+    const qty = seats.length > 0
+      ? seats.length
+      : Math.max(1, Math.min(10, parseInt(String(quantity || 1), 10) || 1));
 
     if (!event_id) throw new Error("event_id required");
 
@@ -47,6 +52,30 @@ serve(async (req) => {
     if (event.status !== "published") throw new Error("Event is not published");
     if (event.ticket_quantity != null && (event.tickets_sold + qty) > event.ticket_quantity) {
       throw new Error("Not enough tickets remaining");
+    }
+
+    // Seated-mode validation: seats required, must match map size, must be free
+    if (event.ticketing_mode === "seated") {
+      if (seats.length === 0) throw new Error("Pick at least one seat");
+      const map = (event.seat_map || {}) as { rows?: number; cols?: number };
+      const validSet = new Set<string>();
+      const A = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      for (let r = 0; r < (map.rows ?? 0); r++) {
+        const row = r < 26 ? A[r] : `R${r + 1}`;
+        for (let c = 0; c < (map.cols ?? 0); c++) validSet.add(`${row}${c + 1}`);
+      }
+      const bad = seats.find((s) => !validSet.has(s));
+      if (bad) throw new Error(`Invalid seat ${bad}`);
+
+      const { data: clashes } = await supabase
+        .from("tickets")
+        .select("seat_label")
+        .eq("event_id", event_id)
+        .in("seat_label", seats)
+        .in("status", ["active", "scanned", "used", "listed_for_resale"]);
+      if (clashes && clashes.length > 0) {
+        throw new Error(`Seats already taken: ${clashes.map((c: any) => c.seat_label).join(", ")}`);
+      }
     }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
