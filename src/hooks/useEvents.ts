@@ -295,21 +295,18 @@ export function useCreatorEventsByUsername(username?: string) {
 export function useCheckInTicket() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (qrToken: string) => {
-      const { data, error } = await tables.tickets()
-        .select("*, events:event_id(title)")
-        .eq("qr_code_token", qrToken)
-        .maybeSingle();
-      if (error) throw error;
-      if (!data) throw new Error("INVALID");
-      if (data.status === "used") throw new Error("ALREADY_USED:" + data.checked_in_at);
-      if (data.status !== "active") throw new Error("INVALID_STATUS:" + data.status);
-
-      await tables.tickets()
-        .update({ status: "used", checked_in_at: new Date().toISOString() })
-        .eq("id", data.id);
-
-      return data;
+    mutationFn: async (input: { qrSecret: string; eventId?: string }) => {
+      const { data, error } = await supabase.functions.invoke("scan-ticket", {
+        body: { qr_secret: input.qrSecret, event_id: input.eventId },
+      });
+      if (error) throw new Error(error.message || "Scan failed");
+      if (!data?.valid) {
+        if (data?.reason?.toLowerCase().includes("already")) {
+          throw new Error("ALREADY_USED:" + (data.scanned_at || ""));
+        }
+        throw new Error(data?.reason || "INVALID");
+      }
+      return data as { valid: true; ticket_id: string; buyer_id?: string; event_title: string; scanned_at: string };
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["event-tickets"] });
