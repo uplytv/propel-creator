@@ -80,6 +80,8 @@ export default function EventPage() {
   const badge = event ? typeBadge[event.event_type] || typeBadge.virtual : null;
   const isPast = event ? isBefore(new Date(event.ends_at), new Date()) : false;
   const virtualRevealed = event?.virtual_link_unlocked_at || (event && differenceInMinutes(new Date(event.starts_at), new Date()) <= 30);
+  const isHost = !!(event && user && event.creator_id === user.id);
+  const isFree = !!event && (event.is_free || Number(event.ticket_price || 0) === 0);
 
   async function handleGetTicket() {
     if (!user) {
@@ -88,7 +90,12 @@ export default function EventPage() {
     }
     if (!event) return;
 
-    if (event.is_free) {
+    if (isHost) {
+      toast.success("You're the host of this event 🎤");
+      return;
+    }
+
+    if (isFree) {
       await claimFree.mutateAsync(event);
       return;
     }
