@@ -92,6 +92,11 @@ export default function EventPage() {
       return;
     }
 
+    if (isSeated && seatMap?.rows && seatMap?.cols) {
+      setSeatPickerOpen(true);
+      return;
+    }
+
     setCheckoutOpen(true);
   }
 
