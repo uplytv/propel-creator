@@ -56,6 +56,39 @@ export default function EventCheckIn({ event, onClose }: { event: EventRow; onCl
     setTimeout(() => setState("scanning"), 3000);
   }
 
+  // Camera QR scanner
+  useEffect(() => {
+    if (!scannerOn) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const reader = new BrowserMultiFormatReader();
+        readerRef.current = reader;
+        const devices = await BrowserMultiFormatReader.listVideoInputDevices();
+        const back = devices.find(d => /back|rear|environment/i.test(d.label)) || devices[devices.length - 1];
+        if (!back || !videoRef.current) { setScannerOn(false); toast.error("No camera available"); return; }
+        const controls = await reader.decodeFromVideoDevice(back.deviceId, videoRef.current, (result) => {
+          if (cancelled || !result) return;
+          const text = result.getText();
+          const now = Date.now();
+          if (text === lastScanRef.current.token && now - lastScanRef.current.at < 2500) return;
+          lastScanRef.current = { token: text, at: now };
+          handleScan(text);
+        });
+        controlsRef.current = controls as any;
+      } catch (e: any) {
+        toast.error("Camera error", { description: e?.message ?? "Permission denied" });
+        setScannerOn(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+      try { controlsRef.current?.stop(); } catch {}
+      controlsRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scannerOn]);
+
   async function handleManualCheckIn(ticketId: string, token: string) {
     await handleScan(token);
   }
