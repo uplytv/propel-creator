@@ -59,6 +59,7 @@ export default function EventPage() {
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
+  const [qrUpdatedAt, setQrUpdatedAt] = useState<Date | null>(null);
   const isSeated = (event as any)?.ticketing_mode === "seated";
   const seatMap = (event as any)?.seat_map as { rows?: number; cols?: number } | null;
 
@@ -121,6 +122,7 @@ export default function EventPage() {
       const { error } = await (supabase as any).rpc("rotate_ticket_qr", { p_ticket_id: myTicket.id });
       if (error) throw error;
       await qc.invalidateQueries({ queryKey: ["my-ticket"] });
+      setQrUpdatedAt(new Date());
       toast.success("QR code refreshed", { description: "Your previous code is no longer valid." });
     } catch (e: any) {
       toast.error("Couldn't regenerate QR", { description: e?.message || "Try again in a moment." });
@@ -407,6 +409,11 @@ END:VCALENDAR`;
                   <QRCodeSVG value={myTicket.qr_code_token} size={180} level="H" includeMargin={false} />
                 </div>
                 <p className="text-xs text-muted-foreground">Show this QR at check-in</p>
+                {qrUpdatedAt && (
+                  <p className="text-[11px] text-muted-foreground">
+                    Last updated {format(qrUpdatedAt, "MMM d, h:mm a")}
+                  </p>
+                )}
               </div>
             )}
             <DialogFooter className="flex-col sm:flex-col gap-2">
