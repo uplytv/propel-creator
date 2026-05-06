@@ -138,6 +138,8 @@ export default function TicketSuccess() {
         transition={{ delay: 0.9 }}
         className="flex flex-col gap-3 w-full max-w-xs"
       >
+        {ticket && <WalletPassButtons ticketId={ticket.id} />}
+
         {ticket && (
           <Button
             variant="default"
