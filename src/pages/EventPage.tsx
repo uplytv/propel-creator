@@ -661,8 +661,9 @@ END:VCALENDAR`;
               >
                 <Printer className="w-4 h-4" /> Print Now
               </Button>
-              <Button variant="secondary" onClick={handleExportPdf} className="w-full gap-2">
-                <Download className="w-4 h-4" /> Export as PDF
+              <Button variant="secondary" onClick={handleExportPdf} disabled={exportingPdf} className="w-full gap-2">
+                {exportingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                {exportingPdf ? "Generating PDF…" : "Export as PDF"}
               </Button>
               <Button variant="outline" onClick={() => setPrintPreviewOpen(false)} className="w-full">
                 Cancel
