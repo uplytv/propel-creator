@@ -46,7 +46,9 @@ export default function TicketDetail() {
     },
   });
 
-  const qrUrl = token ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(token)}&bgcolor=0A0A0A&color=FFFFFF` : "";
+  // Encode the PRIVATE qr_code_secret in the QR — never the public token in the URL
+  const qrPayload = ticket?.qr_code_secret || token || "";
+  const qrUrl = qrPayload ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrPayload)}&bgcolor=0A0A0A&color=FFFFFF` : "";
 
   const event = ticket?.events;
   const isPast = event ? isBefore(new Date(event.ends_at), new Date()) : false;
