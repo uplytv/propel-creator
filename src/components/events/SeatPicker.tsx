@@ -144,12 +144,19 @@ export default function SeatPicker({
               })}
             </div>
           )}
+        </div>
 
-          <div className="flex items-center justify-center gap-4 text-[11px] text-muted-foreground mt-4">
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-primary/15 inline-block" /> Available</span>
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-primary inline-block" /> Selected</span>
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-muted/40 inline-block" /> Taken</span>
-          </div>
+        {/* Persistent legend (always visible, outside scroll area) */}
+        <div className="border-t border-border bg-card/80 backdrop-blur px-4 py-2.5 flex items-center justify-center flex-wrap gap-x-4 gap-y-1.5 text-[11px] text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded-sm bg-primary/15 ring-1 ring-primary/30 inline-block" /> Available
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded-sm bg-primary inline-block shadow-[0_0_0_1.5px_hsl(var(--primary))]" /> Selected
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded-sm bg-muted/40 inline-block" /> Taken
+          </span>
         </div>
 
         <div className="border-t border-border p-4 flex items-center justify-between gap-3 bg-card">
