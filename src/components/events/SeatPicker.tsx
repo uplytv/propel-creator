@@ -34,6 +34,7 @@ export default function SeatPicker({
   const [highlight, setHighlight] = useState<string | null>(null);
   const seatRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const pinchRef = useRef<{ dist: number; startZoom: number } | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
