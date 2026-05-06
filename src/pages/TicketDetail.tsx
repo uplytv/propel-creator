@@ -23,6 +23,8 @@ export default function TicketDetail() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [refunding, setRefunding] = useState(false);
+  const [listing, setListing] = useState(false);
+  const [transferring, setTransferring] = useState(false);
 
   const { data: ticket, isLoading } = useQuery({
     queryKey: ["ticket-detail", token],
