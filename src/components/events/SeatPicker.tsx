@@ -263,13 +263,22 @@ export default function SeatPicker({
               </button>
               <button
                 type="button"
-                onClick={() => setZoom(1)}
-                disabled={zoom === 1}
-                aria-label="Reset zoom"
-                title="Reset zoom"
+                onClick={() => {
+                  setZoom(1);
+                  const el = scrollerRef.current;
+                  if (el) {
+                    requestAnimationFrame(() => el.scrollTo({ left: 0, top: 0, behavior: "smooth" }));
+                  }
+                  if (typeof window !== "undefined") {
+                    try { window.localStorage.removeItem(scrollKey); } catch {}
+                  }
+                }}
+                disabled={zoom === 1 && (scrollerRef.current?.scrollLeft ?? 0) === 0 && (scrollerRef.current?.scrollTop ?? 0) === 0}
+                aria-label="Reset view"
+                title="Reset view"
                 className="w-9 h-9 flex items-center justify-center text-[10px] font-semibold disabled:opacity-30 hover:bg-muted rounded-b-lg border-t border-border"
               >
-                1x
+                Reset
               </button>
             </div>
           )}
