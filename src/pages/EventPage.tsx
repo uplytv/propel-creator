@@ -59,6 +59,7 @@ export default function EventPage() {
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
+  const [qrUpdatedAt, setQrUpdatedAt] = useState<Date | null>(null);
   const isSeated = (event as any)?.ticketing_mode === "seated";
   const seatMap = (event as any)?.seat_map as { rows?: number; cols?: number } | null;
 
