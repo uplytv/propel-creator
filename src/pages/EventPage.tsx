@@ -278,7 +278,7 @@ END:VCALENDAR`;
                 )}
               </div>
               <div className="flex items-center gap-2">
-                {!event.is_free && !myTicket && !event.is_sold_out && (
+                {!event.is_free && !myTicket && !event.is_sold_out && !isSeated && (
                   <div className="flex items-center border border-border rounded-lg overflow-hidden h-11">
                     <button aria-label="Decrease" className="w-11 h-11 flex items-center justify-center disabled:opacity-30" onClick={() => setQuantity(q => Math.max(1, q - 1))} disabled={quantity <= 1}><Minus className="w-4 h-4" /></button>
                     <span className="w-8 text-center text-sm font-semibold">{quantity}</span>
