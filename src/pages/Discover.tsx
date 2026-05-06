@@ -182,6 +182,7 @@ export default function Discover() {
         <>
           <StoriesRow />
           <GoingOutWeekCard />
+          <MyPlansCard />
         </>
       )}
 
