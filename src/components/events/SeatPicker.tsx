@@ -30,6 +30,10 @@ export default function SeatPicker({
   const [loading, setLoading] = useState(false);
   // Zoom: 1 = fit, 2 = 2x, 3 = 3x. Larger maps default to a more zoomed-out fit.
   const [zoom, setZoom] = useState(1);
+  const [query, setQuery] = useState("");
+  const [highlight, setHighlight] = useState<string | null>(null);
+  const seatRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+  const scrollerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isOpen) return;
