@@ -122,6 +122,7 @@ export default function EventPage() {
       const { error } = await (supabase as any).rpc("rotate_ticket_qr", { p_ticket_id: myTicket.id });
       if (error) throw error;
       await qc.invalidateQueries({ queryKey: ["my-ticket"] });
+      setQrUpdatedAt(new Date());
       toast.success("QR code refreshed", { description: "Your previous code is no longer valid." });
     } catch (e: any) {
       toast.error("Couldn't regenerate QR", { description: e?.message || "Try again in a moment." });
