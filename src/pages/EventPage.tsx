@@ -141,12 +141,15 @@ export default function EventPage() {
       toast.error("Ticket not ready", { description: "Try again in a moment." });
       return;
     }
+    setPrinting(true);
+    const toastId = toast.loading("Preparing print view…");
     try {
       const svgStr = new XMLSerializer().serializeToString(svg);
       const svgDataUri = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svgStr)))}`;
       const w = window.open("", "_blank", "width=480,height=720");
       if (!w) {
-        toast.error("Pop-up blocked", { description: "Allow pop-ups to print your ticket." });
+        toast.error("Pop-up blocked", { id: toastId, description: "Allow pop-ups to print your ticket." });
+        setPrinting(false);
         return;
       }
       const when = format(new Date(event.starts_at), "EEE, MMM d • h:mm a");
@@ -176,9 +179,11 @@ export default function EventPage() {
   <script>window.onload=()=>{setTimeout(()=>{window.focus();window.print();},250);};</script>
 </body></html>`);
       w.document.close();
-      toast.success("Opening print view…");
+      toast.success("Print view ready", { id: toastId, description: "Pick a printer to finish." });
     } catch (e: any) {
-      toast.error("Couldn't print ticket", { description: e?.message || "Try again." });
+      toast.error("Couldn't print ticket", { id: toastId, description: e?.message || "Try again." });
+    } finally {
+      setPrinting(false);
     }
   }
 
