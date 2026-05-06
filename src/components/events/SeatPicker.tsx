@@ -265,18 +265,22 @@ export default function SeatPicker({
               <button
                 type="button"
                 onClick={() => {
-                  setZoom(1);
-                  const el = scrollerRef.current;
-                  if (el) {
-                    requestAnimationFrame(() => el.scrollTo({ left: 0, top: 0, behavior: "smooth" }));
-                  }
-                  if (typeof window !== "undefined") {
-                    try {
+                  try {
+                    setZoom(1);
+                    const el = scrollerRef.current;
+                    if (el) {
+                      requestAnimationFrame(() => el.scrollTo({ left: 0, top: 0, behavior: "smooth" }));
+                    }
+                    if (typeof window !== "undefined") {
                       window.localStorage.removeItem(scrollKey);
                       window.localStorage.removeItem(zoomKey);
-                    } catch {}
+                    }
+                    toast.success("View reset", { description: "Zoom and scroll cleared." });
+                  } catch (err) {
+                    toast.error("Couldn't reset view", {
+                      description: "Storage access may be blocked. Try again or check your browser settings.",
+                    });
                   }
-                  toast.success("View reset", { description: "Zoom and scroll cleared." });
                 }}
                 disabled={zoom === 1 && (scrollerRef.current?.scrollLeft ?? 0) === 0 && (scrollerRef.current?.scrollTop ?? 0) === 0}
                 aria-label="Reset view"
