@@ -35,7 +35,7 @@ export default function TicketSuccess() {
         const poll = async () => {
           const { data: tkt } = await supabase
             .from("tickets")
-            .select("id, qr_code_token, ticket_code")
+            .select("id, qr_code_token, qr_code_secret, ticket_number")
             .eq("event_id", eventId)
             .eq("buyer_id", user.id)
             .eq("status", "active")
