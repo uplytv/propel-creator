@@ -248,18 +248,19 @@ Deno.serve(async (req) => {
           const qty = parseInt(metadata.quantity || "1", 10) || 1;
           const amount = (session.amount_total || 0) / 100;
           const fee = Math.round(amount * 0.05 * 100) / 100;
+          let firstToken: string | null = null;
 
           // Atomic reserve to guarantee no oversell under concurrent webhooks
           const { data: reserved } = await supabase.rpc("reserve_event_ticket", { p_event_id: event_id, p_qty: qty });
           if (!reserved) {
             logStep("Event sold out — refund needed", { event_id, buyer_id });
-            // Best effort: skip ticket creation; refund handled out-of-band
           } else {
             const perTicketAmount = amount / qty;
             const perTicketFee = fee / qty;
             for (let i = 0; i < qty; i++) {
-              const token = crypto.randomUUID();
+              const tk = crypto.randomUUID();
               const secret = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
+              if (!firstToken) firstToken = tk;
               await supabase.from("tickets").insert({
                 event_id,
                 buyer_id,
@@ -268,7 +269,7 @@ Deno.serve(async (req) => {
                 amount_paid: perTicketAmount,
                 platform_fee: perTicketFee,
                 creator_earnings: perTicketAmount - perTicketFee,
-                qr_code_token: token,
+                qr_code_token: tk,
                 qr_code_secret: secret,
                 status: "active",
               });
@@ -283,7 +284,7 @@ Deno.serve(async (req) => {
             type: "event_ticket",
             title: "Ticket Confirmed! 🎟️",
             message: `Your ticket for "${evt?.title}" is confirmed.`,
-            link: `/tickets/${token}`,
+            link: firstToken ? `/tickets/${firstToken}` : "/wallet",
           });
 
           const { data: buyerProfile } = await supabase.from("profiles").select("display_name").eq("user_id", buyer_id).maybeSingle();
