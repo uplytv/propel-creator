@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, Search, X, Check, AlertTriangle, Users, Loader2 } from "lucide-react";
+import { Camera, Search, X, Check, AlertTriangle, Users, Loader2, CameraOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCheckInTicket, useEventTickets, EventRow } from "@/hooks/useEvents";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { BrowserMultiFormatReader } from "@zxing/browser";
+import { toast } from "sonner";
 
 type CheckInState = "scanning" | "success" | "already_used" | "invalid";
 
@@ -14,6 +16,11 @@ export default function EventCheckIn({ event, onClose }: { event: EventRow; onCl
   const [resultName, setResultName] = useState("");
   const [resultTime, setResultTime] = useState("");
   const [search, setSearch] = useState("");
+  const [scannerOn, setScannerOn] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const readerRef = useRef<BrowserMultiFormatReader | null>(null);
+  const controlsRef = useRef<{ stop: () => void } | null>(null);
+  const lastScanRef = useRef<{ token: string; at: number }>({ token: "", at: 0 });
   const checkIn = useCheckInTicket();
   const { data: tickets, refetch } = useEventTickets(event.id);
 
@@ -48,6 +55,39 @@ export default function EventCheckIn({ event, onClose }: { event: EventRow; onCl
     }
     setTimeout(() => setState("scanning"), 3000);
   }
+
+  // Camera QR scanner
+  useEffect(() => {
+    if (!scannerOn) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const reader = new BrowserMultiFormatReader();
+        readerRef.current = reader;
+        const devices = await BrowserMultiFormatReader.listVideoInputDevices();
+        const back = devices.find(d => /back|rear|environment/i.test(d.label)) || devices[devices.length - 1];
+        if (!back || !videoRef.current) { setScannerOn(false); toast.error("No camera available"); return; }
+        const controls = await reader.decodeFromVideoDevice(back.deviceId, videoRef.current, (result) => {
+          if (cancelled || !result) return;
+          const text = result.getText();
+          const now = Date.now();
+          if (text === lastScanRef.current.token && now - lastScanRef.current.at < 2500) return;
+          lastScanRef.current = { token: text, at: now };
+          handleScan(text);
+        });
+        controlsRef.current = controls as any;
+      } catch (e: any) {
+        toast.error("Camera error", { description: e?.message ?? "Permission denied" });
+        setScannerOn(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+      try { controlsRef.current?.stop(); } catch {}
+      controlsRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scannerOn]);
 
   async function handleManualCheckIn(ticketId: string, token: string) {
     await handleScan(token);
@@ -107,6 +147,23 @@ export default function EventCheckIn({ event, onClose }: { event: EventRow; onCl
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Camera scanner */}
+      <div className="px-4 pt-3">
+        <Button
+          variant={scannerOn ? "destructive" : "default"}
+          size="sm"
+          className="w-full"
+          onClick={() => setScannerOn(s => !s)}
+        >
+          {scannerOn ? <><CameraOff className="w-4 h-4 mr-2" /> Stop camera</> : <><Camera className="w-4 h-4 mr-2" /> Scan with camera</>}
+        </Button>
+        {scannerOn && (
+          <div className="mt-3 rounded-lg overflow-hidden border border-border bg-black aspect-video">
+            <video ref={videoRef} className="w-full h-full object-cover" muted playsInline />
+          </div>
+        )}
+      </div>
 
       {/* Manual entry */}
       <div className="p-4 space-y-3">

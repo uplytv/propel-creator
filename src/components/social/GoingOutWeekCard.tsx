@@ -1,6 +1,7 @@
 import { useAttendance } from "@/hooks/useAttendance";
 import { addDays, format, isToday } from "date-fns";
 import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 
 const EMOJIS: Record<string, string> = {
   going: "😘",
@@ -23,16 +24,22 @@ export default function GoingOutWeekCard() {
   };
 
   const toggleStatus = async (date: Date) => {
-    if (!user) return;
+    if (!user) {
+      toast.error("Sign in to save your plans");
+      return;
+    }
     const dateStr = format(date, "yyyy-MM-dd");
     const current = getStatus(date);
-    // Cycle: none → maybe → going → clear
+    const label = format(date, "EEE, MMM d");
     if (current === undefined) {
       await markAttending({ date: dateStr, status: "maybe" });
+      toast.success(`Saved: maybe going out ${label}`, { description: "See it on your Discover feed under My plans." });
     } else if (current === "maybe") {
       await markAttending({ date: dateStr, status: "going" });
+      toast.success(`Confirmed: going out ${label} 🎉`);
     } else {
       await clearAttendance({ date: dateStr });
+      toast(`Cleared ${label}`);
     }
   };
 

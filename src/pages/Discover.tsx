@@ -19,6 +19,7 @@ import TonightOnUPLY from "@/components/network/TonightOnUPLY";
 import UPLYChannels from "@/components/network/UPLYChannels";
 import StoriesRow from "@/components/social/StoriesRow";
 import GoingOutWeekCard from "@/components/social/GoingOutWeekCard";
+import MyPlansCard from "@/components/social/MyPlansCard";
 
 const PAGE_SIZE = 24;
 
@@ -182,6 +183,7 @@ export default function Discover() {
         <>
           <StoriesRow />
           <GoingOutWeekCard />
+          <MyPlansCard />
         </>
       )}
 
