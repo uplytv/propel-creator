@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { CalendarDays, MapPin, Download, ArrowLeft, ExternalLink, Clock, Loader2, AlertTriangle } from "lucide-react";
+import { CalendarDays, MapPin, Download, ArrowLeft, ExternalLink, Clock, Loader2, AlertTriangle, Tag, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import AppLayout from "@/components/layout/AppLayout";
