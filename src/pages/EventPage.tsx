@@ -60,6 +60,7 @@ export default function EventPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
   const [qrUpdatedAt, setQrUpdatedAt] = useState<Date | null>(null);
+  const [exportingPdf, setExportingPdf] = useState(false);
   const qrWrapRef = useRef<HTMLDivElement>(null);
   const [printPreviewOpen, setPrintPreviewOpen] = useState(false);
   const isSeated = (event as any)?.ticketing_mode === "seated";
