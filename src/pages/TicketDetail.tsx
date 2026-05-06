@@ -246,6 +246,32 @@ export default function TicketDetail() {
               <WalletPassButtons ticketId={ticket.id} />
             )}
 
+            {/* Resale & Transfer (Ticketmaster-class) */}
+            {ticket.status === "active" && !isPast && isOwner && (
+              <div className="grid grid-cols-2 gap-2">
+                {event?.resale_allowed && (
+                  <Button variant="outline" className="w-full gap-2" onClick={handleListResale} disabled={listing}>
+                    {listing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Tag className="w-4 h-4" />}
+                    Sell / Resell
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  className={`w-full gap-2 ${event?.resale_allowed ? "" : "col-span-2"}`}
+                  onClick={handleTransfer}
+                  disabled={transferring}
+                >
+                  {transferring ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  Transfer
+                </Button>
+              </div>
+            )}
+            {ticket.status === "listed_for_resale" && (
+              <div className="text-center text-xs px-3 py-2 rounded-lg bg-primary/10 border border-primary/20 text-primary">
+                Listed for resale — we'll notify you when it sells
+              </div>
+            )}
+
             {/* Download / print fallback */}
             <Button variant="outline" className="w-full gap-2" onClick={() => window.print()}>
               <Download className="w-4 h-4" /> Download / Print
