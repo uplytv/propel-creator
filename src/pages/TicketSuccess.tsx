@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import SEOHead from "@/components/SEOHead";
+import WalletPassButtons from "@/components/tickets/WalletPassButtons";
 
 export default function TicketSuccess() {
   const [searchParams] = useSearchParams();
@@ -137,6 +138,8 @@ export default function TicketSuccess() {
         transition={{ delay: 0.9 }}
         className="flex flex-col gap-3 w-full max-w-xs"
       >
+        {ticket && <WalletPassButtons ticketId={ticket.id} />}
+
         {ticket && (
           <Button
             variant="default"
