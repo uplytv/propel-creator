@@ -27,6 +27,8 @@ export default function SeatPicker({
   const [taken, setTaken] = useState<Set<string>>(new Set());
   const [selected, setSelected] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  // Zoom: 1 = fit, 2 = 2x, 3 = 3x. Larger maps default to a more zoomed-out fit.
+  const [zoom, setZoom] = useState(1);
 
   useEffect(() => {
     if (!isOpen) return;
