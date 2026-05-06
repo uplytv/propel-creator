@@ -16,6 +16,11 @@ export default function EventCheckIn({ event, onClose }: { event: EventRow; onCl
   const [resultName, setResultName] = useState("");
   const [resultTime, setResultTime] = useState("");
   const [search, setSearch] = useState("");
+  const [scannerOn, setScannerOn] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const readerRef = useRef<BrowserMultiFormatReader | null>(null);
+  const controlsRef = useRef<{ stop: () => void } | null>(null);
+  const lastScanRef = useRef<{ token: string; at: number }>({ token: "", at: 0 });
   const checkIn = useCheckInTicket();
   const { data: tickets, refetch } = useEventTickets(event.id);
 
