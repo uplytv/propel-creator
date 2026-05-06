@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, Search, X, Check, AlertTriangle, Users, Loader2 } from "lucide-react";
+import { Camera, Search, X, Check, AlertTriangle, Users, Loader2, CameraOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCheckInTicket, useEventTickets, EventRow } from "@/hooks/useEvents";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { BrowserMultiFormatReader } from "@zxing/browser";
+import { toast } from "sonner";
 
 type CheckInState = "scanning" | "success" | "already_used" | "invalid";
 
