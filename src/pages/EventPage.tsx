@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import EventLiveNowBanner from "@/components/live/EventLiveNowBanner";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { QRCodeSVG } from "qrcode.react";
 import SEOHead from "@/components/SEOHead";
 import BackNav from "@/components/BackNav";
 import AppLayout from "@/components/layout/AppLayout";
