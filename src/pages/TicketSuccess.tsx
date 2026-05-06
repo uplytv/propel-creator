@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import SEOHead from "@/components/SEOHead";
+import WalletPassButtons from "@/components/tickets/WalletPassButtons";
 
 export default function TicketSuccess() {
   const [searchParams] = useSearchParams();
