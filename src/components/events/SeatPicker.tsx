@@ -276,6 +276,7 @@ export default function SeatPicker({
                       window.localStorage.removeItem(zoomKey);
                     } catch {}
                   }
+                  toast.success("View reset", { description: "Zoom and scroll cleared." });
                 }}
                 disabled={zoom === 1 && (scrollerRef.current?.scrollLeft ?? 0) === 0 && (scrollerRef.current?.scrollTop ?? 0) === 0}
                 aria-label="Reset view"
