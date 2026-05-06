@@ -61,20 +61,51 @@ export default function SeatPicker({
 
   const subtotal = selected.length * pricePerSeat;
 
+  const availableCount = totalSeats - taken.size;
+
   return (
     <Dialog open={isOpen} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-lg p-0 gap-0 bg-card border-border">
         <DialogHeader className="px-4 py-3 border-b border-border flex flex-row items-center justify-between">
-          <DialogTitle className="text-base">Pick your seats</DialogTitle>
+          <div className="flex items-center gap-2">
+            <DialogTitle className="text-base">Pick your seats</DialogTitle>
+            <TooltipProvider delayDuration={150}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="How seat labels work"
+                    className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-muted text-muted-foreground"
+                  >
+                    <Info className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-[260px] text-xs leading-relaxed">
+                  <p className="font-semibold mb-1">How seats are labeled</p>
+                  <p>
+                    <span className="font-medium">Rows</span> use letters (A is closest to the
+                    stage), <span className="font-medium">columns</span> use numbers from left to
+                    right. Example: <span className="font-mono">B5</span> = Row B, Seat 5.
+                  </p>
+                  <p className="mt-2">Tap a seat to select up to {maxSeats}.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
           <button onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-muted" aria-label="Close">
             <X className="w-4 h-4" />
           </button>
         </DialogHeader>
 
         <div className="px-4 py-4 max-h-[60vh] overflow-auto">
-          <div className="text-[10px] uppercase tracking-wider text-center text-muted-foreground mb-3">
+          <div className="text-[10px] uppercase tracking-wider text-center text-muted-foreground mb-1">
             ── Stage / Screen ──
           </div>
+          {!loading && (
+            <p className="text-center text-[11px] text-muted-foreground mb-3">
+              <span className="text-foreground font-semibold">{availableCount}</span> of {totalSeats} seats available
+            </p>
+          )}
 
           {loading ? (
             <div className="flex justify-center py-12">
