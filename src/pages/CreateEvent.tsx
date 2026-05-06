@@ -44,6 +44,8 @@ const timezones = [
 
 export default function CreateEvent() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const presetMode = searchParams.get("mode");
   const { user } = useAuth();
   const createEvent = useCreateEvent();
   const updateEvent = useUpdateEvent();
@@ -63,13 +65,25 @@ export default function CreateEvent() {
   const [endDate, setEndDate] = useState("");
   const [endTime, setEndTime] = useState("21:00");
   const [timezone, setTimezone] = useState("America/New_York");
-  const [isFree, setIsFree] = useState(false);
+  const [ticketingMode, setTicketingMode] = useState<"ticketed" | "free_rsvp" | "seated">(
+    presetMode === "free_rsvp" || presetMode === "seated" ? presetMode : "ticketed",
+  );
+  const [isFree, setIsFree] = useState(presetMode === "free_rsvp");
   const [ticketPrice, setTicketPrice] = useState("10");
   const [ticketQuantity, setTicketQuantity] = useState("");
   const [refundPolicy, setRefundPolicy] = useState("no_refunds");
+  const [resaleAllowed, setResaleAllowed] = useState(true);
+  const [resaleCapPct, setResaleCapPct] = useState("120");
+  const [seatRows, setSeatRows] = useState("8");
+  const [seatCols, setSeatCols] = useState("12");
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (ticketingMode === "free_rsvp") setIsFree(true);
+    if (ticketingMode === "seated" && isFree) setIsFree(false);
+  }, [ticketingMode]);
 
   const showLocation = eventType === "in_person" || eventType === "hybrid";
   const showVirtual = eventType === "virtual" || eventType === "hybrid";
