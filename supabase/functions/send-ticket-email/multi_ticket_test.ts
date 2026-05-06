@@ -4,13 +4,62 @@
 // (`ticket-confirm-{ticket.id}`) so emails are not deduped across tickets.
 
 import "https://deno.land/std@0.224.0/dotenv/load.ts";
-import { assert, assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assert, assertEquals, assertStringIncludes } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? Deno.env.get("VITE_SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const TICKET_COUNT = 3;
+const QUEUE_NAME = "transactional_emails";
+
+interface QueueMsg {
+  msg_id: number;
+  read_ct: number;
+  message: {
+    to: string;
+    subject: string;
+    html: string;
+    idempotency_key: string;
+    label?: string;
+  };
+}
+
+// Drain transactional_emails until we've collected one message per
+// expected idempotency key, or timeout. Matched messages are deleted so
+// the real dispatcher doesn't try to deliver to fake addresses.
+async function collectByIdempotencyKey(
+  // deno-lint-ignore no-explicit-any
+  admin: any,
+  expectedKeys: Set<string>,
+  timeoutMs = 60_000,
+): Promise<Map<string, QueueMsg>> {
+  const found = new Map<string, QueueMsg>();
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs && found.size < expectedKeys.size) {
+    const { data, error } = await admin.rpc("read_email_batch", {
+      queue_name: QUEUE_NAME,
+      batch_size: 25,
+      vt: 1,
+    });
+    if (error) throw error;
+    const rows = (data ?? []) as QueueMsg[];
+    for (const row of rows) {
+      const key = row.message?.idempotency_key;
+      if (key && expectedKeys.has(key) && !found.has(key)) {
+        found.set(key, row);
+        await admin.rpc("delete_email", {
+          queue_name: QUEUE_NAME,
+          message_id: row.msg_id,
+        });
+      }
+    }
+    if (found.size < expectedKeys.size) {
+      await new Promise((r) => setTimeout(r, 1500));
+    }
+  }
+  return found;
+}
 
 // Poll email_send_log until we observe at least `expected` distinct
 // idempotency keys for this recipient + template, or timeout.
@@ -65,11 +114,14 @@ Deno.test({
 
     const runId = crypto.randomUUID().slice(0, 8);
     const buyerEmail = `multi-ticket-${runId}@uply-test.local`;
+    const buyerName = `Multi Buyer ${runId}`;
+    const eventTitle = `Multi Ticket Event ${runId}`;
     const password = crypto.randomUUID();
 
     let buyerId: string | null = null;
     let organizerId: string | null = null;
     let eventId: string | null = null;
+    const tickets: Array<{ id: string; ticket_number: string }> = [];
     const ticketIds: string[] = [];
 
     try {
@@ -81,6 +133,11 @@ Deno.test({
       });
       assertEquals(buyerErr, null, `createUser(buyer) failed: ${buyerErr?.message}`);
       buyerId = buyerUser.user!.id;
+
+      // Set buyer display_name so send-ticket-email passes it as `name`.
+      await admin
+        .from("profiles")
+        .upsert({ user_id: buyerId, display_name: buyerName }, { onConflict: "user_id" });
 
       const { data: orgUser, error: orgErr } = await admin.auth.admin.createUser({
         email: `multi-ticket-org-${runId}@uply-test.local`,
@@ -94,7 +151,7 @@ Deno.test({
         .from("events")
         .insert({
           creator_id: organizerId,
-          title: `Multi Ticket Event ${runId}`,
+          title: eventTitle,
           event_type: "in_person",
           starts_at: new Date(Date.now() + 7 * 24 * 3600_000).toISOString(),
           ends_at: new Date(Date.now() + 7 * 24 * 3600_000 + 3600_000).toISOString(),
@@ -110,6 +167,7 @@ Deno.test({
 
       // Insert N tickets — each row should fire trg_tickets_send_email.
       for (let i = 0; i < TICKET_COUNT; i++) {
+        const ticketNumber = `MULTI-${runId}-${i}`;
         const { data: t, error: tErr } = await admin
           .from("tickets")
           .insert({
@@ -121,13 +179,14 @@ Deno.test({
             platform_fee: 1.25,
             creator_earnings: 23.75,
             stripe_payment_intent_id: `pi_multi_${runId}_${i}`,
-            ticket_number: `MULTI-${runId}-${i}`,
+            ticket_number: ticketNumber,
             status: "active",
           })
           .select("id")
           .single();
         assertEquals(tErr, null, `ticket ${i} insert failed: ${tErr?.message}`);
         ticketIds.push(t!.id);
+        tickets.push({ id: t!.id, ticket_number: ticketNumber });
       }
 
       // Wait for distinct emails to appear.
@@ -166,6 +225,48 @@ Deno.test({
         assert(
           ["pending", "sent"].includes(r.status),
           `unexpected email status "${r.status}" for key ${r.idempotency_key}`,
+        );
+      }
+
+      // Pull each enqueued message and assert its payload references the
+      // correct buyer name, event title, and ticket number for the ticket
+      // its idempotency key points to.
+      const expectedKeysSet = new Set(tickets.map((t) => `ticket-confirm-${t.id}`));
+      const found = await collectByIdempotencyKey(admin, expectedKeysSet);
+      assertEquals(
+        found.size,
+        tickets.length,
+        `expected ${tickets.length} enqueued messages, found ${found.size}. ` +
+          `Missing: ${[...expectedKeysSet].filter((k) => !found.has(k)).join(", ")}`,
+      );
+
+      for (const ticket of tickets) {
+        const key = `ticket-confirm-${ticket.id}`;
+        const payload = found.get(key)!.message;
+        assertEquals(
+          payload.to,
+          buyerEmail,
+          `[${key}] recipient mismatch: expected ${buyerEmail}, got ${payload.to}`,
+        );
+        assertStringIncludes(
+          payload.subject,
+          eventTitle,
+          `[${key}] subject missing event title. Subject: ${payload.subject}`,
+        );
+        assertStringIncludes(
+          payload.html,
+          eventTitle,
+          `[${key}] HTML missing event title`,
+        );
+        assertStringIncludes(
+          payload.html,
+          buyerName,
+          `[${key}] HTML missing buyer name "${buyerName}"`,
+        );
+        assertStringIncludes(
+          payload.html,
+          ticket.ticket_number,
+          `[${key}] HTML missing ticket number ${ticket.ticket_number}`,
         );
       }
     } finally {
