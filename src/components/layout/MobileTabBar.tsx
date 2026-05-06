@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Search, Users, DollarSign, Sparkles, Plus, Radio, Upload, Calendar, X, Bot, Rocket, TrendingUp } from "lucide-react";
+import { Search, Users, DollarSign, Sparkles, Plus, Radio, Upload, Calendar, X, Bot, Rocket, TrendingUp, Ticket, GraduationCap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { useLiveCount } from "@/context/NetworkContext";
@@ -50,6 +50,8 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
     { label: "Go Live", icon: Radio, onClick: () => { setCreateOpen(false); navigate("/go-live"); } },
     { label: "Upload Video", icon: Upload, onClick: () => { setCreateOpen(false); onUploadVideo?.(); } },
     { label: "Schedule Stream", icon: Calendar, onClick: () => { setCreateOpen(false); navigate("/go-live?tab=schedule"); } },
+    { label: "Create Event", icon: Ticket, onClick: () => { setCreateOpen(false); navigate("/events/create"); } },
+    { label: "Add Course", icon: GraduationCap, onClick: () => { setCreateOpen(false); navigate(user ? `/community/${user.id}/classroom` : "/dashboard"); } },
   ];
 
   const ariaActions = [

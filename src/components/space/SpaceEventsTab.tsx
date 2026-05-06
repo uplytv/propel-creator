@@ -26,8 +26,11 @@ const typeBadge = (event: any) => {
   return { label: "ONLINE", icon: Globe, className: "bg-teal-500/15 text-teal-400" };
 };
 
-function EventCard({ event, isOwn, isOwner }: { event: any; isOwn: boolean; isOwner: boolean }) {
+function EventCard({ event, isOwn, isOwner, creatorUsername }: { event: any; isOwn: boolean; isOwner: boolean; creatorUsername?: string }) {
   const navigate = useNavigate();
+  const eventPath = creatorUsername && event.slug
+    ? `/${creatorUsername}/events/${event.slug}`
+    : `/events/global/${event.id}`;
   const badge = typeBadge(event);
   const Icon = badge.icon;
   const startDate = event.starts_at ? new Date(event.starts_at) : null;
@@ -74,7 +77,7 @@ function EventCard({ event, isOwn, isOwner }: { event: any; isOwn: boolean; isOw
           <Button
             size="sm"
             className="h-7 rounded-full text-xs px-3"
-            onClick={() => navigate(`/events/${event.slug || event.id}`)}
+            onClick={() => navigate(eventPath)}
           >
             <Ticket className="w-3 h-3 mr-1" />
             {price > 0 ? "Get Tickets" : event.stream_on_uply ? "Watch Live" : "Register"}
@@ -208,6 +211,21 @@ function DigitalProductCard({ product, isOwner }: { product: any; isOwner: boole
 export default function SpaceEventsTab({ creatorId, isOwner }: Props) {
   const navigate = useNavigate();
 
+  const { data: creatorProfile } = useQuery({
+    queryKey: ["space-creator-username", creatorId],
+    enabled: !!creatorId,
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("username")
+        .eq("user_id", creatorId)
+        .maybeSingle();
+      return data;
+    },
+  });
+  const creatorUsername = creatorProfile?.username || undefined;
+
   const { data: ownEvents = [], isLoading: loadingOwn } = useQuery({
     queryKey: ["space-own-events", creatorId],
     enabled: !!creatorId,
@@ -272,7 +290,7 @@ export default function SpaceEventsTab({ creatorId, isOwner }: Props) {
             <Download className="w-4 h-4 mr-1" />
             Manage Downloads
           </Button>
-          <Button size="sm" onClick={() => navigate("/create-event")} className="rounded-full">
+          <Button size="sm" onClick={() => navigate("/events/create")} className="rounded-full">
             <Plus className="w-4 h-4 mr-1" />
             New Event
           </Button>
@@ -286,7 +304,7 @@ export default function SpaceEventsTab({ creatorId, isOwner }: Props) {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {ownEvents.map((event: any) => (
-              <EventCard key={event.id} event={event} isOwn isOwner={isOwner} />
+              <EventCard key={event.id} event={event} isOwn isOwner={isOwner} creatorUsername={creatorUsername} />
             ))}
           </div>
         </section>
@@ -326,7 +344,7 @@ export default function SpaceEventsTab({ creatorId, isOwner }: Props) {
           </p>
           {isOwner ? (
             <button
-              onClick={() => navigate("/create-event")}
+              onClick={() => navigate("/events/create")}
               className="text-sm text-primary hover:underline"
             >
               Create your first event →
