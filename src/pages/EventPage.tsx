@@ -15,6 +15,7 @@ import AppLayout from "@/components/layout/AppLayout";
 import EventTabs from "@/components/social/EventTabs";
 import { PurchaseOverlay } from "@/components/payments/PurchaseOverlay";
 import SeatPicker from "@/components/events/SeatPicker";
+import ResaleListings from "@/components/events/ResaleListings";
 import { useAuth } from "@/context/AuthContext";
 import { useEvent, useMyTicketForEvent, useClaimFreeTicket, useSetEventReminder } from "@/hooks/useEvents";
 import { useProfile } from "@/hooks/useProfile";
@@ -259,6 +260,17 @@ END:VCALENDAR`;
                 <Clock className="w-4 h-4" /> Access link reveals 30 minutes before the event
               </p>
             </div>
+          )}
+
+          {/* Resale marketplace */}
+          {!myTicket && (
+            <ResaleListings
+              eventId={event.id}
+              eventTitle={event.title}
+              faceValueCents={Math.round((event.ticket_price || 0) * 100)}
+              resaleAllowed={(event as any).resale_allowed !== false}
+              resaleCapPct={(event as any).resale_price_cap_pct ?? 120}
+            />
           )}
         </div>
 

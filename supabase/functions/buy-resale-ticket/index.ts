@@ -31,6 +31,23 @@ serve(async (req) => {
     if (listing.seller_id === userId) return err("Cannot buy your own listing");
 
     const event = (listing as any).events;
+    const ticket = (listing as any).tickets;
+    if (!event.resale_allowed) return err("Resale disabled for this event");
+
+    // Defense-in-depth: enforce price cap at purchase time too
+    const { data: tier } = await supabase
+      .from("ticket_tiers")
+      .select("price_cents")
+      .eq("id", ticket.tier_id)
+      .maybeSingle();
+    const facePriceCents =
+      tier?.price_cents ?? ticket.purchase_price_cents ?? Math.round((event.ticket_price ?? 0) * 100);
+    const capPct = event.resale_price_cap_pct ?? 120;
+    const cap = Math.round((facePriceCents * capPct) / 100);
+    if (facePriceCents > 0 && listing.asking_price_cents > cap) {
+      return err(`Listing price exceeds resale cap of $${(cap / 100).toFixed(2)}`, 400);
+    }
+
     const subtotal = listing.asking_price_cents;
     const fees = Math.round(subtotal * PLATFORM_FEE_PCT);
     const total = subtotal + fees;
