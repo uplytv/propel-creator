@@ -48,6 +48,7 @@ export default function EventPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
+  const qc = useQueryClient();
   const { data: event, isLoading } = useEvent(slug);
   const { data: myTicket } = useMyTicketForEvent(event?.id);
   const claimFree = useClaimFreeTicket();
