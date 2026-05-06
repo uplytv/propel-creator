@@ -70,6 +70,45 @@ export default function SeatPicker({
 
   const availableCount = totalSeats - taken.size;
 
+  const rowLetters = useMemo(
+    () => Array.from({ length: Math.min(rows, 26) }, (_, i) => ALPHA[i]),
+    [rows],
+  );
+
+  const normalizedQuery = query.trim().toUpperCase();
+  const matchesQuery = (label: string) => {
+    if (!normalizedQuery) return true;
+    return label.startsWith(normalizedQuery) || label.includes(normalizedQuery);
+  };
+
+  const scrollToSeat = (label: string) => {
+    const el = seatRefs.current.get(label);
+    const scroller = scrollerRef.current;
+    if (!el || !scroller) return;
+    const er = el.getBoundingClientRect();
+    const sr = scroller.getBoundingClientRect();
+    scroller.scrollBy({
+      left: er.left - sr.left - sr.width / 2 + er.width / 2,
+      top: er.top - sr.top - sr.height / 2 + er.height / 2,
+      behavior: "smooth",
+    });
+    setHighlight(label);
+    window.setTimeout(() => setHighlight((h) => (h === label ? null : h)), 1600);
+  };
+
+  const jumpToRow = (letter: string) => {
+    setQuery(letter);
+    scrollToSeat(`${letter}1`);
+  };
+
+  const submitSearch = () => {
+    if (!normalizedQuery) return;
+    // Try exact label first, else first matching label
+    const exact = allSeats.find((s) => s === normalizedQuery);
+    const target = exact ?? allSeats.find(matchesQuery);
+    if (target) scrollToSeat(target);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-lg p-0 gap-0 bg-card border-border">
