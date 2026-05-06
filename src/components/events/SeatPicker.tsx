@@ -254,19 +254,25 @@ export default function SeatPicker({
                 {allSeats.map((label) => {
                   const isTaken = taken.has(label);
                   const isPicked = selected.includes(label);
+                  const isMatch = matchesQuery(label);
+                  const isHighlight = highlight === label;
                   return (
                     <button
                       key={label}
+                      ref={(el) => {
+                        if (el) seatRefs.current.set(label, el);
+                        else seatRefs.current.delete(label);
+                      }}
                       type="button"
                       aria-label={`Seat ${label}${isTaken ? " (taken)" : isPicked ? " (selected)" : ""}`}
                       aria-pressed={isPicked}
                       disabled={isTaken}
                       onClick={() => toggle(label)}
-                      style={{
-                        fontSize: zoom >= 2 ? 11 : 9,
-                      }}
+                      style={{ fontSize: zoom >= 2 ? 11 : 9 }}
                       className={[
                         "aspect-square rounded-md font-semibold transition-all",
+                        isMatch ? "" : "opacity-25",
+                        isHighlight ? "ring-2 ring-primary ring-offset-1 ring-offset-card animate-pulse" : "",
                         isTaken
                           ? "bg-muted/40 text-muted-foreground/40 cursor-not-allowed line-through"
                           : isPicked
