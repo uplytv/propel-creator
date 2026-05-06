@@ -211,6 +211,12 @@ export function useClaimFreeTicket() {
   return useMutation({
     mutationFn: async (event: EventRow) => {
       if (!user) throw new Error("Must be logged in");
+      // Atomic reserve to prevent oversell
+      const { data: reserved, error: reserveErr } = await (supabase as any)
+        .rpc("reserve_event_ticket", { p_event_id: event.id, p_qty: 1 });
+      if (reserveErr) throw reserveErr;
+      if (!reserved) throw new Error("Sold out");
+
       const token = crypto.randomUUID();
       const { data, error } = await tables.tickets()
         .insert({
@@ -226,11 +232,6 @@ export function useClaimFreeTicket() {
         .select()
         .single();
       if (error) throw error;
-
-      await tables.events()
-        .update({ tickets_sold: event.tickets_sold + 1 })
-        .eq("id", event.id);
-
       return data as TicketRow;
     },
     onSuccess: () => {
