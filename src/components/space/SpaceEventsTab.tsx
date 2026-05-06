@@ -344,7 +344,7 @@ export default function SpaceEventsTab({ creatorId, isOwner }: Props) {
           </p>
           {isOwner ? (
             <button
-              onClick={() => navigate("/create-event")}
+              onClick={() => navigate("/events/create")}
               className="text-sm text-primary hover:underline"
             >
               Create your first event →
