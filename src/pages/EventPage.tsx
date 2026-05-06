@@ -443,7 +443,7 @@ END:VCALENDAR`;
             </DialogHeader>
             {myTicket?.qr_code_token && (
               <div className="flex flex-col items-center gap-3 py-2">
-                <div className="bg-white p-3 rounded-xl">
+                <div ref={qrWrapRef} className="bg-white p-3 rounded-xl">
                   <QRCodeSVG value={myTicket.qr_code_token} size={180} level="H" includeMargin={false} />
                 </div>
                 <p className="text-xs text-muted-foreground">Show this QR at check-in</p>
