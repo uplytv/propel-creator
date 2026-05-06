@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface SeatPickerProps {
   eventId: string;
@@ -275,6 +276,7 @@ export default function SeatPicker({
                       window.localStorage.removeItem(zoomKey);
                     } catch {}
                   }
+                  toast.success("View reset", { description: "Zoom and scroll cleared." });
                 }}
                 disabled={zoom === 1 && (scrollerRef.current?.scrollLeft ?? 0) === 0 && (scrollerRef.current?.scrollTop ?? 0) === 0}
                 aria-label="Reset view"
