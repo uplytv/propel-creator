@@ -28,8 +28,18 @@ export default function SeatPicker({
   const [taken, setTaken] = useState<Set<string>>(new Set());
   const [selected, setSelected] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  // Zoom: 1 = fit, 2 = 2x, 3 = 3x. Larger maps default to a more zoomed-out fit.
-  const [zoom, setZoom] = useState(1);
+  // Zoom: 1 = fit, up to 3x. Persisted per-event in localStorage.
+  const zoomKey = `uply.seatPicker.zoom.${eventId}`;
+  const [zoom, setZoom] = useState<number>(() => {
+    if (typeof window === "undefined") return 1;
+    const raw = window.localStorage.getItem(zoomKey);
+    const parsed = raw ? parseFloat(raw) : NaN;
+    return Number.isFinite(parsed) ? Math.min(3, Math.max(1, parsed)) : 1;
+  });
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try { window.localStorage.setItem(zoomKey, String(zoom)); } catch {}
+  }, [zoom, zoomKey]);
   const [query, setQuery] = useState("");
   const [highlight, setHighlight] = useState<string | null>(null);
   const seatRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
