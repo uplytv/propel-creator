@@ -63,6 +63,7 @@ export default function EventPage() {
   const [exportingPdf, setExportingPdf] = useState(false);
   const qrWrapRef = useRef<HTMLDivElement>(null);
   const [printPreviewOpen, setPrintPreviewOpen] = useState(false);
+  const [printing, setPrinting] = useState(false);
   const isSeated = (event as any)?.ticketing_mode === "seated";
   const seatMap = (event as any)?.seat_map as { rows?: number; cols?: number } | null;
 
@@ -140,12 +141,15 @@ export default function EventPage() {
       toast.error("Ticket not ready", { description: "Try again in a moment." });
       return;
     }
+    setPrinting(true);
+    const toastId = toast.loading("Preparing print view…");
     try {
       const svgStr = new XMLSerializer().serializeToString(svg);
       const svgDataUri = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svgStr)))}`;
       const w = window.open("", "_blank", "width=480,height=720");
       if (!w) {
-        toast.error("Pop-up blocked", { description: "Allow pop-ups to print your ticket." });
+        toast.error("Pop-up blocked", { id: toastId, description: "Allow pop-ups to print your ticket." });
+        setPrinting(false);
         return;
       }
       const when = format(new Date(event.starts_at), "EEE, MMM d • h:mm a");
@@ -175,9 +179,11 @@ export default function EventPage() {
   <script>window.onload=()=>{setTimeout(()=>{window.focus();window.print();},250);};</script>
 </body></html>`);
       w.document.close();
-      toast.success("Opening print view…");
+      toast.success("Print view ready", { id: toastId, description: "Pick a printer to finish." });
     } catch (e: any) {
-      toast.error("Couldn't print ticket", { description: e?.message || "Try again." });
+      toast.error("Couldn't print ticket", { id: toastId, description: e?.message || "Try again." });
+    } finally {
+      setPrinting(false);
     }
   }
 
@@ -653,13 +659,15 @@ END:VCALENDAR`;
             )}
             <DialogFooter className="flex-col sm:flex-col gap-2">
               <Button
+                disabled={printing}
                 onClick={() => {
                   setPrintPreviewOpen(false);
                   setTimeout(() => handlePrintTicket(), 150);
                 }}
                 className="w-full gap-2"
               >
-                <Printer className="w-4 h-4" /> Print Now
+                {printing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Printer className="w-4 h-4" />}
+                {printing ? "Preparing…" : "Print Now"}
               </Button>
               <Button variant="secondary" onClick={handleExportPdf} disabled={exportingPdf} className="w-full gap-2">
                 {exportingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
