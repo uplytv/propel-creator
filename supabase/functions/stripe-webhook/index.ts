@@ -245,29 +245,37 @@ Deno.serve(async (req) => {
 
         } else if (purchaseType === "event_ticket") {
           const { event_id, buyer_id, creator_id } = metadata;
+          const qty = parseInt(metadata.quantity || "1", 10) || 1;
           const amount = (session.amount_total || 0) / 100;
           const fee = Math.round(amount * 0.05 * 100) / 100;
-          const token = crypto.randomUUID();
 
-          await supabase.from("tickets").insert({
-            event_id,
-            buyer_id,
-            creator_id,
-            stripe_payment_intent_id: session.payment_intent as string,
-            amount_paid: amount,
-            platform_fee: fee,
-            creator_earnings: amount - fee,
-            qr_code_token: token,
-            status: "active",
-          });
-
-          const { data: evt } = await supabase.from("events").select("tickets_sold, ticket_quantity, title").eq("id", event_id).single();
-          if (evt) {
-            const newSold = (evt.tickets_sold || 0) + 1;
-            const isSoldOut = evt.ticket_quantity ? newSold >= evt.ticket_quantity : false;
-            await supabase.from("events").update({ tickets_sold: newSold, is_sold_out: isSoldOut }).eq("id", event_id);
+          // Atomic reserve to guarantee no oversell under concurrent webhooks
+          const { data: reserved } = await supabase.rpc("reserve_event_ticket", { p_event_id: event_id, p_qty: qty });
+          if (!reserved) {
+            logStep("Event sold out — refund needed", { event_id, buyer_id });
+            // Best effort: skip ticket creation; refund handled out-of-band
+          } else {
+            const perTicketAmount = amount / qty;
+            const perTicketFee = fee / qty;
+            for (let i = 0; i < qty; i++) {
+              const token = crypto.randomUUID();
+              const secret = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
+              await supabase.from("tickets").insert({
+                event_id,
+                buyer_id,
+                creator_id,
+                stripe_payment_intent_id: session.payment_intent as string,
+                amount_paid: perTicketAmount,
+                platform_fee: perTicketFee,
+                creator_earnings: perTicketAmount - perTicketFee,
+                qr_code_token: token,
+                qr_code_secret: secret,
+                status: "active",
+              });
+            }
           }
 
+          const { data: evt } = await supabase.from("events").select("title").eq("id", event_id).single();
           await updateWallet(supabase, creator_id, amount, fee, `Event ticket: ${evt?.title || "Event"}`, session.payment_intent as string);
 
           await supabase.from("notifications").insert({
