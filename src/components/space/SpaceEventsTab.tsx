@@ -290,7 +290,7 @@ export default function SpaceEventsTab({ creatorId, isOwner }: Props) {
             <Download className="w-4 h-4 mr-1" />
             Manage Downloads
           </Button>
-          <Button size="sm" onClick={() => navigate("/create-event")} className="rounded-full">
+          <Button size="sm" onClick={() => navigate("/events/create")} className="rounded-full">
             <Plus className="w-4 h-4 mr-1" />
             New Event
           </Button>
