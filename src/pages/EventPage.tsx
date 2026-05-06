@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   CalendarDays, MapPin, Monitor, Globe, Users, Ticket, Bell,
-  Download, Check, Clock, Loader2, Share2, ExternalLink
+  Download, Check, Clock, Loader2, Share2, ExternalLink, Plus, Minus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import EventLiveNowBanner from "@/components/live/EventLiveNowBanner";
@@ -13,6 +13,7 @@ import SEOHead from "@/components/SEOHead";
 import BackNav from "@/components/BackNav";
 import AppLayout from "@/components/layout/AppLayout";
 import EventTabs from "@/components/social/EventTabs";
+import { PurchaseOverlay } from "@/components/payments/PurchaseOverlay";
 import { useAuth } from "@/context/AuthContext";
 import { useEvent, useMyTicketForEvent, useClaimFreeTicket, useSetEventReminder } from "@/hooks/useEvents";
 import { useProfile } from "@/hooks/useProfile";
