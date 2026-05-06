@@ -77,7 +77,7 @@ function EventCard({ event, isOwn, isOwner, creatorUsername }: { event: any; isO
           <Button
             size="sm"
             className="h-7 rounded-full text-xs px-3"
-            onClick={() => navigate(`/events/${event.slug || event.id}`)}
+            onClick={() => navigate(eventPath)}
           >
             <Ticket className="w-3 h-3 mr-1" />
             {price > 0 ? "Get Tickets" : event.stream_on_uply ? "Watch Live" : "Register"}
