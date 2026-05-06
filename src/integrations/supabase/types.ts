@@ -10943,6 +10943,10 @@ export type Database = {
         }
         Returns: Json
       }
+      check_in_ticket_secure: {
+        Args: { p_qr_secret: string; p_scanner: string }
+        Returns: Json
+      }
       check_rank_movements_and_email: { Args: never; Returns: undefined }
       check_simulcast_key_rotation: { Args: never; Returns: undefined }
       confirm_ticket_inventory: {
@@ -11032,6 +11036,10 @@ export type Database = {
       release_ticket_inventory: {
         Args: { p_quantity: number; p_tier_id: string }
         Returns: undefined
+      }
+      reserve_event_ticket: {
+        Args: { p_event_id: string; p_qty?: number }
+        Returns: boolean
       }
       reserve_ticket_inventory: {
         Args: { p_quantity: number; p_tier_id: string }
