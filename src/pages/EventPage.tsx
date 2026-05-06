@@ -659,13 +659,15 @@ END:VCALENDAR`;
             )}
             <DialogFooter className="flex-col sm:flex-col gap-2">
               <Button
+                disabled={printing}
                 onClick={() => {
                   setPrintPreviewOpen(false);
                   setTimeout(() => handlePrintTicket(), 150);
                 }}
                 className="w-full gap-2"
               >
-                <Printer className="w-4 h-4" /> Print Now
+                {printing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Printer className="w-4 h-4" />}
+                {printing ? "Preparing…" : "Print Now"}
               </Button>
               <Button variant="secondary" onClick={handleExportPdf} disabled={exportingPdf} className="w-full gap-2">
                 {exportingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
