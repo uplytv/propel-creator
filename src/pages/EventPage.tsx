@@ -535,6 +535,56 @@ END:VCALENDAR`;
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Print preview */}
+        <Dialog open={printPreviewOpen} onOpenChange={setPrintPreviewOpen}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Printer className="w-5 h-5" /> Print Preview
+              </DialogTitle>
+              <DialogDescription>Review your ticket before printing.</DialogDescription>
+            </DialogHeader>
+            {myTicket?.qr_code_token && (
+              <div className="rounded-xl border-2 border-dashed border-foreground/30 bg-white text-[#0A0A0A] p-5 text-center">
+                <h3 className="text-base font-bold mb-1">{event.title}</h3>
+                <p className="text-xs text-[#444] mb-1">
+                  {format(new Date(event.starts_at), "EEE, MMM d • h:mm a")}
+                </p>
+                {(event.event_type === "virtual"
+                  ? "Virtual"
+                  : ((event as any).venue_name || (event as any).location || "")) && (
+                  <p className="text-xs text-[#444] mb-2">
+                    {event.event_type === "virtual"
+                      ? "Virtual"
+                      : ((event as any).venue_name || (event as any).location || "")}
+                  </p>
+                )}
+                <div className="my-3 flex justify-center">
+                  <QRCodeSVG value={myTicket.qr_code_token} size={160} level="H" includeMargin={false} />
+                </div>
+                <p className="font-mono text-xs tracking-[2px]">
+                  {(myTicket.qr_code_token || "").slice(0, 8).toUpperCase()}
+                </p>
+                <p className="text-[10px] text-[#777] mt-2">Present this ticket at check-in. UPLY</p>
+              </div>
+            )}
+            <DialogFooter className="flex-col sm:flex-col gap-2">
+              <Button
+                onClick={() => {
+                  setPrintPreviewOpen(false);
+                  setTimeout(() => handlePrintTicket(), 150);
+                }}
+                className="w-full gap-2"
+              >
+                <Printer className="w-4 h-4" /> Print Now
+              </Button>
+              <Button variant="outline" onClick={() => setPrintPreviewOpen(false)} className="w-full">
+                Cancel
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </AppLayout>
   );
