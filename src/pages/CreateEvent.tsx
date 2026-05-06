@@ -279,23 +279,53 @@ export default function CreateEvent() {
             </Select>
           </div>
 
-          {/* Ticketing */}
+          {/* Ticketing model */}
           <div className="space-y-3 p-4 bg-card rounded-xl border border-border">
-            <Label className="text-sm font-semibold">🎟️ Ticketing</Label>
-            <div className="flex items-center gap-3">
-              <Switch checked={isFree} onCheckedChange={setIsFree} />
-              <Label className="text-sm">Free Event</Label>
+            <Label className="text-sm font-semibold">🎟️ How will people get in?</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {TICKETING_MODES.map(t => (
+                <button
+                  key={t.value}
+                  type="button"
+                  onClick={() => setTicketingMode(t.value as any)}
+                  className={`p-3 rounded-xl border-2 text-left transition-all ${
+                    ticketingMode === t.value ? "border-primary bg-primary/10" : "border-border hover:border-muted-foreground"
+                  }`}
+                >
+                  <div className="text-xl mb-1">{t.emoji}</div>
+                  <div className="text-sm font-semibold text-foreground">{t.label}</div>
+                  <div className="text-[11px] text-muted-foreground mt-0.5">{t.desc}</div>
+                </button>
+              ))}
             </div>
-            {!isFree && (
+
+            {/* Mode-specific options */}
+            {ticketingMode === "free_rsvp" && (
+              <div className="text-xs text-muted-foreground bg-muted/40 rounded-lg p-3">
+                Attendees RSVP for free. We collect their email and send reminders + a QR check-in pass.
+              </div>
+            )}
+
+            {ticketingMode !== "free_rsvp" && (
               <>
-                <div>
-                  <Label className="text-xs text-muted-foreground mb-1 block">Ticket Price ($)</Label>
-                  <Input type="number" min="1" max="10000" value={ticketPrice} onChange={e => setTicketPrice(e.target.value)} />
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground mb-1 block">Ticket Quantity (blank = unlimited)</Label>
-                  <Input type="number" min="1" value={ticketQuantity} onChange={e => setTicketQuantity(e.target.value)} placeholder="Unlimited" />
-                </div>
+                {ticketingMode === "ticketed" && (
+                  <div className="flex items-center gap-3 pt-1">
+                    <Switch checked={isFree} onCheckedChange={setIsFree} />
+                    <Label className="text-sm">Free Event (no payment)</Label>
+                  </div>
+                )}
+                {!isFree && (
+                  <div>
+                    <Label className="text-xs text-muted-foreground mb-1 block">Ticket Price ($)</Label>
+                    <Input type="number" min="1" max="10000" value={ticketPrice} onChange={e => setTicketPrice(e.target.value)} />
+                  </div>
+                )}
+                {ticketingMode === "ticketed" && (
+                  <div>
+                    <Label className="text-xs text-muted-foreground mb-1 block">Ticket Quantity (blank = unlimited)</Label>
+                    <Input type="number" min="1" value={ticketQuantity} onChange={e => setTicketQuantity(e.target.value)} placeholder="Unlimited" />
+                  </div>
+                )}
                 <div>
                   <Label className="text-xs text-muted-foreground mb-1 block">Refund Policy</Label>
                   <Select value={refundPolicy} onValueChange={setRefundPolicy}>
@@ -305,7 +335,50 @@ export default function CreateEvent() {
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* Resale controls (Ticketmaster-style) */}
+                <div className="pt-2 border-t border-border space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Switch checked={resaleAllowed} onCheckedChange={setResaleAllowed} />
+                    <Label className="text-sm">Allow ticket resale & transfer</Label>
+                  </div>
+                  {resaleAllowed && (
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1 block">Max resale price (% of original)</Label>
+                      <Input type="number" min="100" max="500" value={resaleCapPct} onChange={e => setResaleCapPct(e.target.value)} />
+                      <p className="text-[11px] text-muted-foreground mt-1">Cap protects fans from price gouging. 120 = up to 1.2× face value.</p>
+                    </div>
+                  )}
+                </div>
               </>
+            )}
+
+            {/* Seat map editor */}
+            {ticketingMode === "seated" && (
+              <div className="pt-2 border-t border-border space-y-3">
+                <Label className="text-sm font-semibold">💺 Seat Map</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs text-muted-foreground mb-1 block">Rows</Label>
+                    <Input type="number" min="1" max="50" value={seatRows} onChange={e => setSeatRows(e.target.value)} />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground mb-1 block">Seats per row</Label>
+                    <Input type="number" min="1" max="50" value={seatCols} onChange={e => setSeatCols(e.target.value)} />
+                  </div>
+                </div>
+                <div className="rounded-lg bg-muted/30 p-3 overflow-auto">
+                  <div className="text-[10px] text-center text-muted-foreground mb-2">STAGE</div>
+                  <div className="grid gap-1 mx-auto" style={{ gridTemplateColumns: `repeat(${Math.min(parseInt(seatCols) || 1, 20)}, minmax(12px, 1fr))`, maxWidth: 360 }}>
+                    {Array.from({ length: Math.min((parseInt(seatRows) || 1) * (parseInt(seatCols) || 1), 200) }).map((_, i) => (
+                      <div key={i} className="aspect-square rounded-sm bg-primary/30" />
+                    ))}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground text-center mt-2">
+                    {(parseInt(seatRows) || 0) * (parseInt(seatCols) || 0)} seats · ${ticketPrice} each
+                  </p>
+                </div>
+              </div>
             )}
           </div>
 
