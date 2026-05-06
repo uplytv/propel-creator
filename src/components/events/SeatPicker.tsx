@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Info, Loader2, X } from "lucide-react";
+import { Info, Loader2, Minus, Plus, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -27,6 +27,8 @@ export default function SeatPicker({
   const [taken, setTaken] = useState<Set<string>>(new Set());
   const [selected, setSelected] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  // Zoom: 1 = fit, 2 = 2x, 3 = 3x. Larger maps default to a more zoomed-out fit.
+  const [zoom, setZoom] = useState(1);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -97,54 +99,92 @@ export default function SeatPicker({
           </button>
         </DialogHeader>
 
-        <div className="px-4 py-4 max-h-[60vh] overflow-auto">
-          <div className="text-[10px] uppercase tracking-wider text-center text-muted-foreground mb-1">
-            ── Stage / Screen ──
-          </div>
-          {!loading && (
-            <p className="text-center text-[11px] text-muted-foreground mb-3">
-              <span className="text-foreground font-semibold">{availableCount}</span> of {totalSeats} seats available
-            </p>
+        <div className="relative">
+          {/* Zoom controls */}
+          {!loading && cols > 8 && (
+            <div className="absolute right-3 top-3 z-10 flex flex-col gap-1 bg-card/90 backdrop-blur border border-border rounded-lg shadow-md">
+              <button
+                type="button"
+                onClick={() => setZoom((z) => Math.min(3, z + 1))}
+                disabled={zoom >= 3}
+                aria-label="Zoom in"
+                className="w-9 h-9 flex items-center justify-center disabled:opacity-30 hover:bg-muted rounded-t-lg"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setZoom((z) => Math.max(1, z - 1))}
+                disabled={zoom <= 1}
+                aria-label="Zoom out"
+                className="w-9 h-9 flex items-center justify-center disabled:opacity-30 hover:bg-muted rounded-b-lg border-t border-border"
+              >
+                <Minus className="w-4 h-4" />
+              </button>
+            </div>
           )}
 
-          {loading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+          <div
+            className="px-4 py-4 max-h-[60vh] overflow-auto overscroll-contain touch-pan-x touch-pan-y"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
+            <div className="text-[10px] uppercase tracking-wider text-center text-muted-foreground mb-1 sticky top-0">
+              ── Stage / Screen ──
             </div>
-          ) : (
-            <div
-              className="grid gap-1.5 mx-auto"
-              style={{ gridTemplateColumns: `repeat(${cols}, minmax(20px, 1fr))`, maxWidth: 480 }}
-              role="grid"
-              aria-label="Seat map"
-            >
-              {allSeats.map((label) => {
-                const isTaken = taken.has(label);
-                const isPicked = selected.includes(label);
-                return (
-                  <button
-                    key={label}
-                    type="button"
-                    aria-label={`Seat ${label}${isTaken ? " (taken)" : isPicked ? " (selected)" : ""}`}
-                    aria-pressed={isPicked}
-                    disabled={isTaken}
-                    onClick={() => toggle(label)}
-                    className={[
-                      "aspect-square rounded-md text-[9px] font-semibold transition-all",
-                      isTaken
-                        ? "bg-muted/40 text-muted-foreground/40 cursor-not-allowed line-through"
-                        : isPicked
-                          ? "bg-primary text-primary-foreground scale-105 shadow-[0_0_0_2px_hsl(var(--primary))]"
-                          : "bg-primary/15 text-foreground hover:bg-primary/30",
-                    ].join(" ")}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-          )}
+            {!loading && (
+              <p className="text-center text-[11px] text-muted-foreground mb-3">
+                <span className="text-foreground font-semibold">{availableCount}</span> of {totalSeats} seats available
+                {cols > 8 && <span className="ml-1 opacity-70">· pinch or scroll to navigate</span>}
+              </p>
+            )}
+
+            {loading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <div
+                className="grid gap-1.5 mx-auto"
+                style={{
+                  gridTemplateColumns: `repeat(${cols}, ${Math.max(22, 22 * zoom)}px)`,
+                  width: "max-content",
+                  minWidth: "100%",
+                }}
+                role="grid"
+                aria-label="Seat map"
+              >
+                {allSeats.map((label) => {
+                  const isTaken = taken.has(label);
+                  const isPicked = selected.includes(label);
+                  return (
+                    <button
+                      key={label}
+                      type="button"
+                      aria-label={`Seat ${label}${isTaken ? " (taken)" : isPicked ? " (selected)" : ""}`}
+                      aria-pressed={isPicked}
+                      disabled={isTaken}
+                      onClick={() => toggle(label)}
+                      style={{
+                        fontSize: zoom >= 2 ? 11 : 9,
+                      }}
+                      className={[
+                        "aspect-square rounded-md font-semibold transition-all",
+                        isTaken
+                          ? "bg-muted/40 text-muted-foreground/40 cursor-not-allowed line-through"
+                          : isPicked
+                            ? "bg-primary text-primary-foreground scale-105 shadow-[0_0_0_2px_hsl(var(--primary))]"
+                            : "bg-primary/15 text-foreground hover:bg-primary/30 active:bg-primary/40",
+                      ].join(" ")}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
+
 
         {/* Persistent legend (always visible, outside scroll area) */}
         <div className="border-t border-border bg-card/80 backdrop-blur px-4 py-2.5 flex items-center justify-center flex-wrap gap-x-4 gap-y-1.5 text-[11px] text-muted-foreground">
