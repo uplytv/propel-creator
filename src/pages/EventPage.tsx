@@ -100,6 +100,7 @@ export default function EventPage() {
 
     if (isFree) {
       await claimFree.mutateAsync(event);
+      setConfirmOpen(true);
       return;
     }
 
