@@ -180,6 +180,83 @@ export default function EventPage() {
     }
   }
 
+  async function handleExportPdf() {
+    const svg = qrWrapRef.current?.querySelector("svg");
+    if (!svg || !event || !myTicket) {
+      toast.error("Ticket not ready", { description: "Try again in a moment." });
+      return;
+    }
+    try {
+      const svgStr = new XMLSerializer().serializeToString(svg);
+      const svgBlob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(svgBlob);
+      const qrPng: string = await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          const size = 600;
+          const canvas = document.createElement("canvas");
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) { reject(new Error("Canvas unavailable")); return; }
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, size, size);
+          ctx.drawImage(img, 0, 0, size, size);
+          resolve(canvas.toDataURL("image/png"));
+        };
+        img.onerror = () => reject(new Error("QR render failed"));
+        img.src = url;
+      });
+      URL.revokeObjectURL(url);
+
+      const { default: jsPDF } = await import("jspdf");
+      const doc = new jsPDF({ unit: "pt", format: "a4" });
+      const pageW = doc.internal.pageSize.getWidth();
+
+      const cardW = 320, cardH = 460;
+      const x = (pageW - cardW) / 2, y = 80;
+
+      doc.setDrawColor(10, 10, 10);
+      doc.setLineDashPattern([6, 4], 0);
+      doc.setLineWidth(1.5);
+      doc.roundedRect(x, y, cardW, cardH, 12, 12, "S");
+      doc.setLineDashPattern([], 0);
+
+      doc.setTextColor(10, 10, 10);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      const title = doc.splitTextToSize(event.title, cardW - 40);
+      doc.text(title, pageW / 2, y + 32, { align: "center" });
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.setTextColor(68, 68, 68);
+      doc.text(format(new Date(event.starts_at), "EEE, MMM d • h:mm a"), pageW / 2, y + 60, { align: "center" });
+      const loc = event.event_type === "virtual" ? "Virtual" : ((event as any).venue_name || (event as any).location || "");
+      if (loc) doc.text(String(loc), pageW / 2, y + 76, { align: "center" });
+
+      const qrSize = 220;
+      doc.addImage(qrPng, "PNG", (pageW - qrSize) / 2, y + 100, qrSize, qrSize);
+
+      doc.setFont("courier", "normal");
+      doc.setFontSize(13);
+      doc.setTextColor(10, 10, 10);
+      const code = (myTicket.qr_code_token || "").slice(0, 8).toUpperCase();
+      doc.text(code, pageW / 2, y + 360, { align: "center" });
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(119, 119, 119);
+      doc.text("Present this ticket at check-in. UPLY", pageW / 2, y + 420, { align: "center" });
+
+      const safe = (event.title || "ticket").replace(/[^a-z0-9]+/gi, "-").toLowerCase();
+      doc.save(`${safe}-ticket.pdf`);
+      toast.success("PDF downloaded", { description: "Ticket saved to your device." });
+    } catch (e: any) {
+      toast.error("Couldn't export PDF", { description: e?.message || "Try again." });
+    }
+  }
+
   function handleDownloadQr() {
     const svg = qrWrapRef.current?.querySelector("svg");
     if (!svg || !event) {
@@ -578,6 +655,9 @@ END:VCALENDAR`;
                 className="w-full gap-2"
               >
                 <Printer className="w-4 h-4" /> Print Now
+              </Button>
+              <Button variant="secondary" onClick={handleExportPdf} className="w-full gap-2">
+                <Download className="w-4 h-4" /> Export as PDF
               </Button>
               <Button variant="outline" onClick={() => setPrintPreviewOpen(false)} className="w-full">
                 Cancel
