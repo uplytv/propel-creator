@@ -304,7 +304,7 @@ export default function SpaceEventsTab({ creatorId, isOwner }: Props) {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {ownEvents.map((event: any) => (
-              <EventCard key={event.id} event={event} isOwn isOwner={isOwner} />
+              <EventCard key={event.id} event={event} isOwn isOwner={isOwner} creatorUsername={creatorUsername} />
             ))}
           </div>
         </section>
