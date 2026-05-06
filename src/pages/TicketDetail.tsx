@@ -15,6 +15,7 @@ import {
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
   AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import WalletPassButtons from "@/components/tickets/WalletPassButtons";
 
 export default function TicketDetail() {
   const { token } = useParams();
