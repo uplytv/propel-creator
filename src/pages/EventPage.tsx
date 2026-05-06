@@ -512,6 +512,11 @@ END:VCALENDAR`;
                   <Download className="w-4 h-4" /> Download QR
                 </Button>
               )}
+              {myTicket?.qr_code_token && (
+                <Button variant="secondary" onClick={handlePrintTicket} className="w-full gap-2">
+                  <Printer className="w-4 h-4" /> Print Ticket
+                </Button>
+              )}
               {myTicket?.id && (
                 <Button
                   variant="secondary"
