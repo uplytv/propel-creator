@@ -300,7 +300,7 @@ END:VCALENDAR`;
                 ) : (
                   <Button onClick={handleGetTicket} disabled={claimFree.isPending} className="gap-2">
                     {claimFree.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ticket className="w-4 h-4" />}
-                    {event.is_free ? "Get Free Ticket" : "Get Tickets"}
+                    {event.is_free ? "Get Free Ticket" : isSeated ? "Pick Seats" : "Get Tickets"}
                   </Button>
                 )}
               </div>
