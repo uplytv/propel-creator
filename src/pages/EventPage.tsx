@@ -310,16 +310,20 @@ END:VCALENDAR`;
                 <Button variant="outline" size="sm" onClick={() => event && setReminder.mutate(event.id)} aria-label="Remind me">
                   <Bell className="w-4 h-4" />
                 </Button>
-                {myTicket ? (
+                {isHost ? (
+                  <Button variant="outline" onClick={() => navigate("/events")} className="gap-2">
+                    <Ticket className="w-4 h-4" /> Manage Event
+                  </Button>
+                ) : myTicket ? (
                   <Button onClick={() => navigate(`/tickets/${myTicket.qr_code_token}`)} className="gap-2">
-                    <Ticket className="w-4 h-4" /> Your Ticket
+                    <Ticket className="w-4 h-4" /> {isFree ? "You're In ✓" : "Your Ticket"}
                   </Button>
                 ) : event.is_sold_out ? (
                   <Button variant="outline" disabled>Sold Out</Button>
                 ) : (
                   <Button onClick={handleGetTicket} disabled={claimFree.isPending} className="gap-2">
                     {claimFree.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ticket className="w-4 h-4" />}
-                    {event.is_free ? "Get Free Ticket" : isSeated ? "Pick Seats" : "Get Tickets"}
+                    {isFree ? "RSVP — Free" : isSeated ? "Pick Seats" : "Get Tickets"}
                   </Button>
                 )}
               </div>
