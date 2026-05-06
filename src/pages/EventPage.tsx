@@ -63,6 +63,7 @@ export default function EventPage() {
   const [exportingPdf, setExportingPdf] = useState(false);
   const qrWrapRef = useRef<HTMLDivElement>(null);
   const [printPreviewOpen, setPrintPreviewOpen] = useState(false);
+  const [printing, setPrinting] = useState(false);
   const isSeated = (event as any)?.ticketing_mode === "seated";
   const seatMap = (event as any)?.seat_map as { rows?: number; cols?: number } | null;
 
