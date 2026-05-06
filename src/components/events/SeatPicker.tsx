@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
-import { Info, Loader2, Minus, Plus, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Info, Loader2, Minus, Plus, Search, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -29,6 +30,10 @@ export default function SeatPicker({
   const [loading, setLoading] = useState(false);
   // Zoom: 1 = fit, 2 = 2x, 3 = 3x. Larger maps default to a more zoomed-out fit.
   const [zoom, setZoom] = useState(1);
+  const [query, setQuery] = useState("");
+  const [highlight, setHighlight] = useState<string | null>(null);
+  const seatRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+  const scrollerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -65,6 +70,45 @@ export default function SeatPicker({
 
   const availableCount = totalSeats - taken.size;
 
+  const rowLetters = useMemo(
+    () => Array.from({ length: Math.min(rows, 26) }, (_, i) => ALPHA[i]),
+    [rows],
+  );
+
+  const normalizedQuery = query.trim().toUpperCase();
+  const matchesQuery = (label: string) => {
+    if (!normalizedQuery) return true;
+    return label.startsWith(normalizedQuery) || label.includes(normalizedQuery);
+  };
+
+  const scrollToSeat = (label: string) => {
+    const el = seatRefs.current.get(label);
+    const scroller = scrollerRef.current;
+    if (!el || !scroller) return;
+    const er = el.getBoundingClientRect();
+    const sr = scroller.getBoundingClientRect();
+    scroller.scrollBy({
+      left: er.left - sr.left - sr.width / 2 + er.width / 2,
+      top: er.top - sr.top - sr.height / 2 + er.height / 2,
+      behavior: "smooth",
+    });
+    setHighlight(label);
+    window.setTimeout(() => setHighlight((h) => (h === label ? null : h)), 1600);
+  };
+
+  const jumpToRow = (letter: string) => {
+    setQuery(letter);
+    scrollToSeat(`${letter}1`);
+  };
+
+  const submitSearch = () => {
+    if (!normalizedQuery) return;
+    // Try exact label first, else first matching label
+    const exact = allSeats.find((s) => s === normalizedQuery);
+    const target = exact ?? allSeats.find(matchesQuery);
+    if (target) scrollToSeat(target);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-lg p-0 gap-0 bg-card border-border">
@@ -99,6 +143,59 @@ export default function SeatPicker({
           </button>
         </DialogHeader>
 
+        {/* Search + row quick filters */}
+        {!loading && rows > 0 && (
+          <div className="px-4 pt-3 pb-2 border-b border-border space-y-2 bg-card">
+            <form
+              onSubmit={(e) => { e.preventDefault(); submitSearch(); }}
+              className="relative"
+            >
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Find seat (e.g. B5) or row (e.g. C)"
+                className="pl-9 pr-9 h-10 text-base"
+                inputMode="text"
+                autoComplete="off"
+                aria-label="Search seats"
+              />
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => { setQuery(""); setHighlight(null); }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded hover:bg-muted text-muted-foreground"
+                  aria-label="Clear search"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </form>
+            {rowLetters.length > 1 && (
+              <div className="flex gap-1.5 overflow-x-auto -mx-1 px-1 pb-1 scrollbar-thin">
+                {rowLetters.map((r) => {
+                  const active = normalizedQuery === r;
+                  return (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => jumpToRow(r)}
+                      className={[
+                        "shrink-0 min-w-[36px] h-8 px-2 rounded-full text-xs font-semibold border transition-colors",
+                        active
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-muted/30 text-muted-foreground border-border hover:bg-muted",
+                      ].join(" ")}
+                    >
+                      {r}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="relative">
           {/* Zoom controls */}
           {!loading && cols > 8 && (
@@ -125,6 +222,7 @@ export default function SeatPicker({
           )}
 
           <div
+            ref={scrollerRef}
             className="px-4 py-4 max-h-[60vh] overflow-auto overscroll-contain touch-pan-x touch-pan-y"
             style={{ WebkitOverflowScrolling: "touch" }}
           >
@@ -156,19 +254,25 @@ export default function SeatPicker({
                 {allSeats.map((label) => {
                   const isTaken = taken.has(label);
                   const isPicked = selected.includes(label);
+                  const isMatch = matchesQuery(label);
+                  const isHighlight = highlight === label;
                   return (
                     <button
                       key={label}
+                      ref={(el) => {
+                        if (el) seatRefs.current.set(label, el);
+                        else seatRefs.current.delete(label);
+                      }}
                       type="button"
                       aria-label={`Seat ${label}${isTaken ? " (taken)" : isPicked ? " (selected)" : ""}`}
                       aria-pressed={isPicked}
                       disabled={isTaken}
                       onClick={() => toggle(label)}
-                      style={{
-                        fontSize: zoom >= 2 ? 11 : 9,
-                      }}
+                      style={{ fontSize: zoom >= 2 ? 11 : 9 }}
                       className={[
                         "aspect-square rounded-md font-semibold transition-all",
+                        isMatch ? "" : "opacity-25",
+                        isHighlight ? "ring-2 ring-primary ring-offset-1 ring-offset-card animate-pulse" : "",
                         isTaken
                           ? "bg-muted/40 text-muted-foreground/40 cursor-not-allowed line-through"
                           : isPicked
