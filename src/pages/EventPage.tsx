@@ -60,6 +60,7 @@ export default function EventPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
   const [qrUpdatedAt, setQrUpdatedAt] = useState<Date | null>(null);
+  const [exportingPdf, setExportingPdf] = useState(false);
   const qrWrapRef = useRef<HTMLDivElement>(null);
   const [printPreviewOpen, setPrintPreviewOpen] = useState(false);
   const isSeated = (event as any)?.ticketing_mode === "seated";
@@ -186,6 +187,8 @@ export default function EventPage() {
       toast.error("Ticket not ready", { description: "Try again in a moment." });
       return;
     }
+    setExportingPdf(true);
+    const toastId = toast.loading("Generating PDF…");
     try {
       const svgStr = new XMLSerializer().serializeToString(svg);
       const svgBlob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
@@ -251,9 +254,11 @@ export default function EventPage() {
 
       const safe = (event.title || "ticket").replace(/[^a-z0-9]+/gi, "-").toLowerCase();
       doc.save(`${safe}-ticket.pdf`);
-      toast.success("PDF downloaded", { description: "Ticket saved to your device." });
+      toast.success("PDF downloaded", { id: toastId, description: "Ticket saved to your device." });
     } catch (e: any) {
-      toast.error("Couldn't export PDF", { description: e?.message || "Try again." });
+      toast.error("Couldn't export PDF", { id: toastId, description: e?.message || "Try again." });
+    } finally {
+      setExportingPdf(false);
     }
   }
 
@@ -656,8 +661,9 @@ END:VCALENDAR`;
               >
                 <Printer className="w-4 h-4" /> Print Now
               </Button>
-              <Button variant="secondary" onClick={handleExportPdf} className="w-full gap-2">
-                <Download className="w-4 h-4" /> Export as PDF
+              <Button variant="secondary" onClick={handleExportPdf} disabled={exportingPdf} className="w-full gap-2">
+                {exportingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                {exportingPdf ? "Generating PDF…" : "Export as PDF"}
               </Button>
               <Button variant="outline" onClick={() => setPrintPreviewOpen(false)} className="w-full">
                 Cancel
