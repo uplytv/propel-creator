@@ -3,7 +3,7 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   CalendarDays, MapPin, Monitor, Globe, Users, Ticket, Bell,
-  Download, Check, Clock, Loader2, Share2, ExternalLink, Plus, Minus
+  Download, Check, Clock, Loader2, Share2, ExternalLink, Plus, Minus, RefreshCw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import EventLiveNowBanner from "@/components/live/EventLiveNowBanner";
