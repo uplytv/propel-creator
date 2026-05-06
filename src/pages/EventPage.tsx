@@ -187,6 +187,8 @@ export default function EventPage() {
       toast.error("Ticket not ready", { description: "Try again in a moment." });
       return;
     }
+    setExportingPdf(true);
+    const toastId = toast.loading("Generating PDF…");
     try {
       const svgStr = new XMLSerializer().serializeToString(svg);
       const svgBlob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
@@ -252,9 +254,11 @@ export default function EventPage() {
 
       const safe = (event.title || "ticket").replace(/[^a-z0-9]+/gi, "-").toLowerCase();
       doc.save(`${safe}-ticket.pdf`);
-      toast.success("PDF downloaded", { description: "Ticket saved to your device." });
+      toast.success("PDF downloaded", { id: toastId, description: "Ticket saved to your device." });
     } catch (e: any) {
-      toast.error("Couldn't export PDF", { description: e?.message || "Try again." });
+      toast.error("Couldn't export PDF", { id: toastId, description: e?.message || "Try again." });
+    } finally {
+      setExportingPdf(false);
     }
   }
 
