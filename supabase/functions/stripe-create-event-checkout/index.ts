@@ -111,7 +111,12 @@ serve(async (req) => {
 
     const sessionConfig: any = {
       mode: "payment",
-      line_items: [{ price: priceId, quantity: qty, adjustable_quantity: { enabled: true, minimum: 1, maximum: 10 } }],
+      line_items: [{
+        price: priceId,
+        quantity: qty,
+        // Disable Stripe's qty adjuster when seats are pre-selected (must match exactly)
+        ...(seats.length === 0 ? { adjustable_quantity: { enabled: true, minimum: 1, maximum: 10 } } : {}),
+      }],
       success_url: success_url || `${req.headers.get("origin")}/tickets/success?event=${event.id}`,
       cancel_url: cancel_url || `${req.headers.get("origin")}/discover`,
       metadata: {
@@ -120,6 +125,8 @@ serve(async (req) => {
         buyer_id: user.id,
         creator_id: event.creator_id,
         quantity: String(qty),
+        // Stripe metadata cap is 500 chars; seats labels are tiny so this is safe
+        seat_labels: seats.join(","),
       },
       payment_intent_data: {
         application_fee_amount: fee,
