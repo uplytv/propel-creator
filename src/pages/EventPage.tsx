@@ -56,6 +56,7 @@ export default function EventPage() {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [seatPickerOpen, setSeatPickerOpen] = useState(false);
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const isSeated = (event as any)?.ticketing_mode === "seated";
   const seatMap = (event as any)?.seat_map as { rows?: number; cols?: number } | null;
 
