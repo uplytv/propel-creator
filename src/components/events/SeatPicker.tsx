@@ -143,6 +143,59 @@ export default function SeatPicker({
           </button>
         </DialogHeader>
 
+        {/* Search + row quick filters */}
+        {!loading && rows > 0 && (
+          <div className="px-4 pt-3 pb-2 border-b border-border space-y-2 bg-card">
+            <form
+              onSubmit={(e) => { e.preventDefault(); submitSearch(); }}
+              className="relative"
+            >
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Find seat (e.g. B5) or row (e.g. C)"
+                className="pl-9 pr-9 h-10 text-base"
+                inputMode="text"
+                autoComplete="off"
+                aria-label="Search seats"
+              />
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => { setQuery(""); setHighlight(null); }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded hover:bg-muted text-muted-foreground"
+                  aria-label="Clear search"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </form>
+            {rowLetters.length > 1 && (
+              <div className="flex gap-1.5 overflow-x-auto -mx-1 px-1 pb-1 scrollbar-thin">
+                {rowLetters.map((r) => {
+                  const active = normalizedQuery === r;
+                  return (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => jumpToRow(r)}
+                      className={[
+                        "shrink-0 min-w-[36px] h-8 px-2 rounded-full text-xs font-semibold border transition-colors",
+                        active
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-muted/30 text-muted-foreground border-border hover:bg-muted",
+                      ].join(" ")}
+                    >
+                      {r}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="relative">
           {/* Zoom controls */}
           {!loading && cols > 8 && (
