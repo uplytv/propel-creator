@@ -239,6 +239,26 @@ export default function Discover() {
         </div>
       </div>
 
+      {/* Quick create row (logged-in) */}
+      {user && (
+        <div className="max-w-7xl mx-auto px-4 pt-3">
+          <div className="flex gap-2 overflow-x-auto no-scrollbar">
+            <Button size="sm" variant="outline" className="rounded-full shrink-0 gap-1.5" onClick={() => navigate("/go-live")}>
+              <Radio className="w-4 h-4" /> Go Live
+            </Button>
+            <Button size="sm" variant="outline" className="rounded-full shrink-0 gap-1.5" onClick={() => navigate("/camera")}>
+              <Upload className="w-4 h-4" /> Upload
+            </Button>
+            <Button size="sm" variant="outline" className="rounded-full shrink-0 gap-1.5" onClick={() => navigate("/events/create")}>
+              <CalendarDays className="w-4 h-4" /> Create Event
+            </Button>
+            <Button size="sm" variant="outline" className="rounded-full shrink-0 gap-1.5" onClick={() => navigate(`/community/${user.id}/classroom`)}>
+              <BookOpen className="w-4 h-4" /> Add Course
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Network Layer */}
       <div className="max-w-7xl mx-auto px-4 py-4 space-y-4">
         <NetworkBanner />
