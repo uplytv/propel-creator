@@ -514,7 +514,7 @@ END:VCALENDAR`;
                 </Button>
               )}
               {myTicket?.qr_code_token && (
-                <Button variant="secondary" onClick={handlePrintTicket} className="w-full gap-2">
+                <Button variant="secondary" onClick={() => setPrintPreviewOpen(true)} className="w-full gap-2">
                   <Printer className="w-4 h-4" /> Print Ticket
                 </Button>
               )}
