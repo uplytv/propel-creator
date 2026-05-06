@@ -132,8 +132,20 @@ export default function CreateEvent() {
         timezone,
         is_free: isFree,
         ticket_price: isFree ? 0 : parseFloat(ticketPrice) || 0,
-        ticket_quantity: ticketQuantity ? parseInt(ticketQuantity) : null,
+        ticket_quantity:
+          ticketingMode === "seated"
+            ? parseInt(seatRows) * parseInt(seatCols)
+            : ticketQuantity
+              ? parseInt(ticketQuantity)
+              : null,
         refund_policy: refundPolicy,
+        ticketing_mode: ticketingMode,
+        resale_allowed: ticketingMode === "ticketed" || ticketingMode === "seated" ? resaleAllowed : false,
+        resale_price_cap_pct: parseInt(resaleCapPct) || 120,
+        seat_map:
+          ticketingMode === "seated"
+            ? { rows: parseInt(seatRows) || 1, cols: parseInt(seatCols) || 1 }
+            : null,
         status: publish ? "published" : "draft",
       };
 
