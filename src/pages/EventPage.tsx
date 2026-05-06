@@ -42,12 +42,14 @@ function Countdown({ date }: { date: string }) {
 export default function EventPage() {
   const { username, slug } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { data: event, isLoading } = useEvent(slug);
   const { data: myTicket } = useMyTicketForEvent(event?.id);
   const claimFree = useClaimFreeTicket();
   const setReminder = useSetEventReminder();
-  const [purchasing, setPurchasing] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   // Get creator profile
   const { data: creatorProfile } = useQuery({
