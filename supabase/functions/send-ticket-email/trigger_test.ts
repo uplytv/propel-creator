@@ -9,8 +9,53 @@
 // exercises the trigger → email path in isolation.
 
 import "https://deno.land/std@0.224.0/dotenv/load.ts";
-import { assert, assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assert, assertEquals, assertStringIncludes } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+
+const QUEUE_NAME = "transactional_emails";
+
+interface QueueMsg {
+  msg_id: number;
+  message: {
+    to: string;
+    subject: string;
+    html: string;
+    idempotency_key: string;
+    label?: string;
+  };
+}
+
+// Drain transactional_emails until we find a message matching the
+// expected idempotency key, or timeout. Matched messages are deleted so
+// the real dispatcher does not attempt to deliver to fake addresses.
+async function findQueuedMessage(
+  // deno-lint-ignore no-explicit-any
+  admin: any,
+  expectedKey: string,
+  timeoutMs = 30_000,
+): Promise<QueueMsg | null> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    const { data, error } = await admin.rpc("read_email_batch", {
+      queue_name: QUEUE_NAME,
+      batch_size: 25,
+      vt: 1,
+    });
+    if (error) throw error;
+    const rows = (data ?? []) as QueueMsg[];
+    for (const row of rows) {
+      if (row.message?.idempotency_key === expectedKey) {
+        await admin.rpc("delete_email", {
+          queue_name: QUEUE_NAME,
+          message_id: row.msg_id,
+        });
+        return row;
+      }
+    }
+    await new Promise((r) => setTimeout(r, 1500));
+  }
+  return null;
+}
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? Deno.env.get("VITE_SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -50,6 +95,9 @@ Deno.test({
     const runId = crypto.randomUUID().slice(0, 8);
     const buyerEmail = `ticket-trigger-${runId}@uply-test.local`;
     const password = crypto.randomUUID();
+    const buyerName = `Trigger Buyer ${runId}`;
+    const eventTitle = `Trigger Test Event ${runId}`;
+    const ticketNumber = `TRG-${runId}`;
 
     let buyerId: string | null = null;
     let organizerId: string | null = null;
@@ -67,6 +115,12 @@ Deno.test({
       assertEquals(buyerErr, null, `createUser(buyer) failed: ${buyerErr?.message}`);
       buyerId = buyerUser.user!.id;
 
+      // Set a display_name on the buyer's profile so send-ticket-email
+      // can pick it up and pass it as `name` to the template.
+      await admin
+        .from("profiles")
+        .upsert({ user_id: buyerId, display_name: buyerName }, { onConflict: "user_id" });
+
       // 2. Create an organizer + published event so the ticket has
       //    somewhere to live and event metadata can be fetched.
       const { data: orgUser, error: orgErr } = await admin.auth.admin.createUser({
@@ -81,7 +135,7 @@ Deno.test({
         .from("events")
         .insert({
           creator_id: organizerId,
-          title: `Trigger Test Event ${runId}`,
+          title: eventTitle,
           event_type: "in_person",
           starts_at: new Date(Date.now() + 7 * 24 * 3600_000).toISOString(),
           ends_at: new Date(Date.now() + 7 * 24 * 3600_000 + 3600_000).toISOString(),
@@ -109,7 +163,7 @@ Deno.test({
           platform_fee: 1.25,
           creator_earnings: 23.75,
           stripe_payment_intent_id: `pi_trigger_${runId}`,
-          ticket_number: `TRG-${runId}`,
+          ticket_number: ticketNumber,
           status: "active",
         })
         .select("id, qr_code_secret")
@@ -130,6 +184,48 @@ Deno.test({
         `ticket email status unexpected: ${ticketLog.status}`,
       );
       assertEquals(ticketLog.template_name, "ticket-confirmation");
+
+      // 5. Pull the actual queued message for ticket-confirm-{ticket.id}
+      //    and assert the rendered payload references this ticket's
+      //    event title and buyer name.
+      const expectedKey = `ticket-confirm-${ticketId}`;
+      const queued = await findQueuedMessage(admin, expectedKey);
+      assert(
+        queued,
+        `no queued ticket-confirmation message found for key ${expectedKey}`,
+      );
+
+      const payload = queued!.message;
+      assertEquals(
+        payload.to,
+        buyerEmail,
+        `recipient mismatch: expected ${buyerEmail}, got ${payload.to}`,
+      );
+      assertStringIncludes(
+        payload.subject,
+        eventTitle,
+        `subject missing event title. Subject: ${payload.subject}`,
+      );
+      assertStringIncludes(
+        payload.html,
+        eventTitle,
+        `HTML body missing event title for ticket ${ticketId}`,
+      );
+      assertStringIncludes(
+        payload.html,
+        buyerName,
+        `HTML body missing buyer name for ticket ${ticketId}`,
+      );
+      assertStringIncludes(
+        payload.html,
+        ticketNumber,
+        `HTML body missing ticket number for ticket ${ticketId}`,
+      );
+      assertEquals(
+        payload.idempotency_key,
+        expectedKey,
+        `idempotency_key mismatch for ticket ${ticketId}`,
+      );
     } finally {
       // Best-effort cleanup.
       if (ticketId) await admin.from("tickets").delete().eq("id", ticketId);
