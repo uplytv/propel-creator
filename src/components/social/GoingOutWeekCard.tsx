@@ -1,6 +1,7 @@
 import { useAttendance } from "@/hooks/useAttendance";
 import { addDays, format, isToday } from "date-fns";
 import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 
 const EMOJIS: Record<string, string> = {
   going: "😘",
