@@ -222,6 +222,7 @@ export default function SeatPicker({
           )}
 
           <div
+            ref={scrollerRef}
             className="px-4 py-4 max-h-[60vh] overflow-auto overscroll-contain touch-pan-x touch-pan-y"
             style={{ WebkitOverflowScrolling: "touch" }}
           >
