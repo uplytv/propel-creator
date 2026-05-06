@@ -194,9 +194,14 @@ export default function TicketDetail() {
               )}
             </div>
 
-            {/* Download */}
+            {/* Add to Wallet (Apple / Google) */}
+            {ticket.status === "active" && !isPast && (
+              <WalletPassButtons ticketId={ticket.id} />
+            )}
+
+            {/* Download / print fallback */}
             <Button variant="outline" className="w-full gap-2" onClick={() => window.print()}>
-              <Download className="w-4 h-4" /> Download Ticket
+              <Download className="w-4 h-4" /> Download / Print
             </Button>
 
             {/* Refund */}
