@@ -45,9 +45,12 @@ export type TicketRow = {
   platform_fee: number;
   creator_earnings: number;
   qr_code_token: string;
+  qr_code_secret: string | null;
   qr_code_url: string | null;
   status: string;
+  ticket_number: string | null;
   checked_in_at: string | null;
+  scanned_at: string | null;
   created_at: string;
 };
 
@@ -208,6 +211,12 @@ export function useClaimFreeTicket() {
   return useMutation({
     mutationFn: async (event: EventRow) => {
       if (!user) throw new Error("Must be logged in");
+      // Atomic reserve to prevent oversell
+      const { data: reserved, error: reserveErr } = await (supabase as any)
+        .rpc("reserve_event_ticket", { p_event_id: event.id, p_qty: 1 });
+      if (reserveErr) throw reserveErr;
+      if (!reserved) throw new Error("Sold out");
+
       const token = crypto.randomUUID();
       const { data, error } = await tables.tickets()
         .insert({
@@ -223,11 +232,6 @@ export function useClaimFreeTicket() {
         .select()
         .single();
       if (error) throw error;
-
-      await tables.events()
-        .update({ tickets_sold: event.tickets_sold + 1 })
-        .eq("id", event.id);
-
       return data as TicketRow;
     },
     onSuccess: () => {
@@ -291,21 +295,18 @@ export function useCreatorEventsByUsername(username?: string) {
 export function useCheckInTicket() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (qrToken: string) => {
-      const { data, error } = await tables.tickets()
-        .select("*, events:event_id(title)")
-        .eq("qr_code_token", qrToken)
-        .maybeSingle();
-      if (error) throw error;
-      if (!data) throw new Error("INVALID");
-      if (data.status === "used") throw new Error("ALREADY_USED:" + data.checked_in_at);
-      if (data.status !== "active") throw new Error("INVALID_STATUS:" + data.status);
-
-      await tables.tickets()
-        .update({ status: "used", checked_in_at: new Date().toISOString() })
-        .eq("id", data.id);
-
-      return data;
+    mutationFn: async (input: { qrSecret: string; eventId?: string }) => {
+      const { data, error } = await supabase.functions.invoke("scan-ticket", {
+        body: { qr_secret: input.qrSecret, event_id: input.eventId },
+      });
+      if (error) throw new Error(error.message || "Scan failed");
+      if (!data?.valid) {
+        if (data?.reason?.toLowerCase().includes("already")) {
+          throw new Error("ALREADY_USED:" + (data.scanned_at || ""));
+        }
+        throw new Error(data?.reason || "INVALID");
+      }
+      return data as { valid: true; ticket_id: string; buyer_id?: string; event_title: string; scanned_at: string };
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["event-tickets"] });

@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   CalendarDays, MapPin, Monitor, Globe, Users, Ticket, Bell,
-  Download, Check, Clock, Loader2, Share2, ExternalLink
+  Download, Check, Clock, Loader2, Share2, ExternalLink, Plus, Minus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import EventLiveNowBanner from "@/components/live/EventLiveNowBanner";
@@ -13,6 +13,7 @@ import SEOHead from "@/components/SEOHead";
 import BackNav from "@/components/BackNav";
 import AppLayout from "@/components/layout/AppLayout";
 import EventTabs from "@/components/social/EventTabs";
+import { PurchaseOverlay } from "@/components/payments/PurchaseOverlay";
 import { useAuth } from "@/context/AuthContext";
 import { useEvent, useMyTicketForEvent, useClaimFreeTicket, useSetEventReminder } from "@/hooks/useEvents";
 import { useProfile } from "@/hooks/useProfile";
@@ -41,12 +42,14 @@ function Countdown({ date }: { date: string }) {
 export default function EventPage() {
   const { username, slug } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { data: event, isLoading } = useEvent(slug);
   const { data: myTicket } = useMyTicketForEvent(event?.id);
   const claimFree = useClaimFreeTicket();
   const setReminder = useSetEventReminder();
-  const [purchasing, setPurchasing] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   // Get creator profile
   const { data: creatorProfile } = useQuery({
@@ -84,22 +87,7 @@ export default function EventPage() {
       return;
     }
 
-    setPurchasing(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("stripe-create-event-checkout", {
-        body: {
-          event_id: event.id,
-          success_url: `${window.location.origin}/${username}/events/${slug}?ticket=success`,
-          cancel_url: window.location.href,
-        },
-      });
-      if (error) throw error;
-      if (data?.url) window.location.href = data.url;
-    } catch (err: any) {
-      toast.error("Error", { description: err.message });
-    } finally {
-      setPurchasing(false);
-    }
+    setCheckoutOpen(true);
   }
 
   function handleDownloadIcs() {
@@ -125,9 +113,8 @@ END:VCALENDAR`;
     URL.revokeObjectURL(url);
   }
 
-  // Show success state
-  const params = new URLSearchParams(window.location.search);
-  const showSuccess = params.get("ticket") === "success";
+  // Show success state (reactive to client navigation)
+  const showSuccess = searchParams.get("ticket") === "success";
 
   if (isLoading) {
     return (
@@ -271,20 +258,27 @@ END:VCALENDAR`;
         {/* Bottom sticky ticket card */}
         {!isPast && (
           <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 z-40 md:relative md:border-t-0 md:mt-6">
-            <div className="max-w-3xl mx-auto flex items-center justify-between gap-4">
+            <div className="max-w-3xl mx-auto flex items-center justify-between gap-3 flex-wrap">
               <div>
                 <p className="text-xl font-bold text-foreground">
-                  {event.is_free ? <span className="text-primary">FREE</span> : `$${event.ticket_price}`}
+                  {event.is_free ? <span className="text-primary">FREE</span> : `$${(event.ticket_price * quantity).toFixed(2)}`}
                 </p>
                 {event.ticket_quantity && event.ticket_quantity - event.tickets_sold <= 20 && !event.is_sold_out && (
                   <p className="text-xs text-destructive">{event.ticket_quantity - event.tickets_sold} tickets left</p>
                 )}
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={handleDownloadIcs}>
+              <div className="flex items-center gap-2">
+                {!event.is_free && !myTicket && !event.is_sold_out && (
+                  <div className="flex items-center border border-border rounded-lg overflow-hidden h-11">
+                    <button aria-label="Decrease" className="w-11 h-11 flex items-center justify-center disabled:opacity-30" onClick={() => setQuantity(q => Math.max(1, q - 1))} disabled={quantity <= 1}><Minus className="w-4 h-4" /></button>
+                    <span className="w-8 text-center text-sm font-semibold">{quantity}</span>
+                    <button aria-label="Increase" className="w-11 h-11 flex items-center justify-center disabled:opacity-30" onClick={() => setQuantity(q => Math.min(10, q + 1))} disabled={quantity >= 10}><Plus className="w-4 h-4" /></button>
+                  </div>
+                )}
+                <Button variant="outline" size="sm" onClick={handleDownloadIcs} aria-label="Add to calendar">
                   <CalendarDays className="w-4 h-4" />
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => event && setReminder.mutate(event.id)}>
+                <Button variant="outline" size="sm" onClick={() => event && setReminder.mutate(event.id)} aria-label="Remind me">
                   <Bell className="w-4 h-4" />
                 </Button>
                 {myTicket ? (
@@ -294,14 +288,27 @@ END:VCALENDAR`;
                 ) : event.is_sold_out ? (
                   <Button variant="outline" disabled>Sold Out</Button>
                 ) : (
-                  <Button onClick={handleGetTicket} disabled={purchasing || claimFree.isPending} className="gap-2">
-                    {purchasing || claimFree.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ticket className="w-4 h-4" />}
+                  <Button onClick={handleGetTicket} disabled={claimFree.isPending} className="gap-2">
+                    {claimFree.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ticket className="w-4 h-4" />}
                     {event.is_free ? "Get Free Ticket" : "Get Tickets"}
                   </Button>
                 )}
               </div>
             </div>
           </div>
+        )}
+
+        {!event.is_free && (
+          <PurchaseOverlay
+            isOpen={checkoutOpen}
+            onClose={() => setCheckoutOpen(false)}
+            onSuccess={() => navigate(`/tickets/success?event=${event.id}`)}
+            purchaseType="ticket"
+            purchaseParams={{ event_id: event.id, quantity }}
+            title={event.title}
+            description={`${quantity} ticket${quantity > 1 ? "s" : ""}`}
+            price={event.ticket_price * quantity}
+          />
         )}
       </div>
     </AppLayout>
