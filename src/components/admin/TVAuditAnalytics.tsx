@@ -100,21 +100,22 @@ export default function TVAuditAnalytics({ rows, streamMeta }: Props) {
   }, [scoped, windowDays]);
 
   const byStream = useMemo(() => {
-    const map = new Map<string, { streamId: string; stream: string; activated: number; dismissed: number; expired: number; purchased: number }>();
+    const map = new Map<string, { streamId: string; stream: string; activated: number; active: number; dismissed: number; expired: number; purchased: number }>();
     for (const r of scoped) {
       const key = r.stream_id;
       const meta = labelFor(key);
       const fallback = key.slice(0, 8) + "…";
       const stream = meta ? (meta.title.length > 18 ? meta.title.slice(0, 16) + "…" : meta.title) : fallback;
-      const e = map.get(key) || { streamId: key, stream, activated: 0, dismissed: 0, expired: 0, purchased: 0 };
+      const e = map.get(key) || { streamId: key, stream, activated: 0, active: 0, dismissed: 0, expired: 0, purchased: 0 };
       e.activated++;
       if (r.purchased_at) e.purchased++;
       else if (r.dismissed_at) e.dismissed++;
       else if (new Date(r.expires_at) < new Date()) e.expired++;
+      else e.active++;
       map.set(key, e);
     }
     return Array.from(map.values()).sort((a, b) => b.activated - a.activated).slice(0, 10);
-  }, [scoped]);
+  }, [scoped, streamMeta]);
 
   const ttlDist = useMemo(() => {
     const buckets = [
@@ -124,10 +125,16 @@ export default function TVAuditAnalytics({ rows, streamMeta }: Props) {
       { range: "30–60m", min: 30, max: 60, count: 0 },
       { range: ">60m", min: 60, max: Infinity, count: 0 },
     ];
+    const now = Date.now();
     for (const r of scoped) {
-      const end = r.dismissed_at
+      // Skip rows still active (not yet resolved by dismissal, purchase, or expiry)
+      const isActive = !r.dismissed_at && !r.purchased_at && new Date(r.expires_at).getTime() > now;
+      if (isActive) continue;
+      const end = r.purchased_at
+        ? new Date(r.purchased_at).getTime()
+        : r.dismissed_at
         ? new Date(r.dismissed_at).getTime()
-        : Math.min(new Date(r.expires_at).getTime(), Date.now());
+        : new Date(r.expires_at).getTime();
       const mins = Math.max(0, (end - new Date(r.featured_at).getTime()) / 60000);
       const b = buckets.find((x) => mins >= x.min && mins < x.max);
       if (b) b.count++;
@@ -277,7 +284,7 @@ export default function TVAuditAnalytics({ rows, streamMeta }: Props) {
                 <Bar dataKey="purchased" stackId="a" fill="#facc15" style={{ cursor: "pointer" }} />
                 <Bar dataKey="dismissed" stackId="a" fill="hsl(var(--muted-foreground))" style={{ cursor: "pointer" }} />
                 <Bar dataKey="expired" stackId="a" fill="#f97316" style={{ cursor: "pointer" }} />
-                <Bar dataKey="activated" stackId="a" fill="#00FF85" style={{ cursor: "pointer" }} />
+                <Bar dataKey="active" stackId="a" fill="#00FF85" style={{ cursor: "pointer" }} />
               </BarChart>
             </ResponsiveContainer>
           )}
