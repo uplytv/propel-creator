@@ -14,6 +14,7 @@ import BackNav from "@/components/BackNav";
 import AppLayout from "@/components/layout/AppLayout";
 import EventTabs from "@/components/social/EventTabs";
 import { PurchaseOverlay } from "@/components/payments/PurchaseOverlay";
+import SeatPicker from "@/components/events/SeatPicker";
 import { useAuth } from "@/context/AuthContext";
 import { useEvent, useMyTicketForEvent, useClaimFreeTicket, useSetEventReminder } from "@/hooks/useEvents";
 import { useProfile } from "@/hooks/useProfile";
