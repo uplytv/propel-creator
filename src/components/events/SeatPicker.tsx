@@ -257,9 +257,19 @@ export default function SeatPicker({
                 onClick={() => setZoom((z) => Math.max(1, z - 1))}
                 disabled={zoom <= 1}
                 aria-label="Zoom out"
-                className="w-9 h-9 flex items-center justify-center disabled:opacity-30 hover:bg-muted rounded-b-lg border-t border-border"
+                className="w-9 h-9 flex items-center justify-center disabled:opacity-30 hover:bg-muted border-t border-border"
               >
                 <Minus className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setZoom(1)}
+                disabled={zoom === 1}
+                aria-label="Reset zoom"
+                title="Reset zoom"
+                className="w-9 h-9 flex items-center justify-center text-[10px] font-semibold disabled:opacity-30 hover:bg-muted rounded-b-lg border-t border-border"
+              >
+                1x
               </button>
             </div>
           )}
