@@ -3,7 +3,7 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   CalendarDays, MapPin, Monitor, Globe, Users, Ticket, Bell,
-  Download, Check, Clock, Loader2, Share2, ExternalLink, Plus, Minus
+  Download, Check, Clock, Loader2, Share2, ExternalLink, Plus, Minus, RefreshCw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import EventLiveNowBanner from "@/components/live/EventLiveNowBanner";
@@ -24,7 +24,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, formatDistanceToNow, isBefore, differenceInMinutes } from "date-fns";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 const typeBadge: Record<string, { emoji: string; color: string; label: string }> = {
   virtual: { emoji: "🖥️", color: "bg-blue-500/20 text-blue-500", label: "Virtual" },
@@ -48,6 +48,7 @@ export default function EventPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
+  const qc = useQueryClient();
   const { data: event, isLoading } = useEvent(slug);
   const { data: myTicket } = useMyTicketForEvent(event?.id);
   const claimFree = useClaimFreeTicket();
@@ -57,6 +58,7 @@ export default function EventPage() {
   const [seatPickerOpen, setSeatPickerOpen] = useState(false);
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
   const isSeated = (event as any)?.ticketing_mode === "seated";
   const seatMap = (event as any)?.seat_map as { rows?: number; cols?: number } | null;
 
@@ -110,6 +112,21 @@ export default function EventPage() {
     }
 
     setCheckoutOpen(true);
+  }
+
+  async function handleRegenerateQr() {
+    if (!myTicket?.id) return;
+    setRegenerating(true);
+    try {
+      const { error } = await (supabase as any).rpc("rotate_ticket_qr", { p_ticket_id: myTicket.id });
+      if (error) throw error;
+      await qc.invalidateQueries({ queryKey: ["my-ticket"] });
+      toast.success("QR code refreshed", { description: "Your previous code is no longer valid." });
+    } catch (e: any) {
+      toast.error("Couldn't regenerate QR", { description: e?.message || "Try again in a moment." });
+    } finally {
+      setRegenerating(false);
+    }
   }
 
   function handleDownloadIcs() {
@@ -396,6 +413,17 @@ END:VCALENDAR`;
               {myTicket?.qr_code_token && (
                 <Button onClick={() => navigate(`/tickets/${myTicket.qr_code_token}`)} className="w-full gap-2">
                   <Ticket className="w-4 h-4" /> View Full Ticket
+                </Button>
+              )}
+              {myTicket?.id && (
+                <Button
+                  variant="secondary"
+                  onClick={handleRegenerateQr}
+                  disabled={regenerating}
+                  className="w-full gap-2"
+                >
+                  {regenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                  Regenerate QR Code
                 </Button>
               )}
               <Button variant="outline" onClick={() => setConfirmOpen(false)} className="w-full">
