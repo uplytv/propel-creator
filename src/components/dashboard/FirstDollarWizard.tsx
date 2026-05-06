@@ -139,10 +139,18 @@ export default function FirstDollarWizard({ onDismiss, username }: { onDismiss: 
           {step === 2 && mode && (
             <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
               <h3 className="text-base font-semibold text-foreground mb-1">
-                {mode === "live_shop" ? "Add your first product" : mode === "community" ? "Launch your community" : mode === "course" ? "Create your first course" : "Go live and earn tips"}
+                {mode === "live_shop" ? "Add your first product"
+                  : mode === "community" ? "Launch your community"
+                  : mode === "course" ? "Create your first course"
+                  : mode === "events" ? (ticketingMode === "free_rsvp" ? "Open free RSVPs" : ticketingMode === "seated" ? "Build your seat map" : "Create your ticketed event")
+                  : "Go live and earn tips"}
               </h3>
               <p className="text-xs text-muted-foreground mb-4">
-                {mode === "live_shop" ? "Add a product to your live shop. Viewers buy it during your stream." : mode === "community" ? "Set a monthly price, write a welcome post, open your community." : mode === "course" ? "Upload videos, set a price, sell globally." : "Go live now. Pin a tip message. Your audience will support you."}
+                {mode === "live_shop" ? "Add a product to your live shop. Viewers buy it during your stream."
+                  : mode === "community" ? "Set a monthly price, write a welcome post, open your community."
+                  : mode === "course" ? "Upload videos, set a price, sell globally."
+                  : mode === "events" ? "Cover, date, ticket tiers — published in under 60 seconds. Resale, transfers and QR check-in are on by default."
+                  : "Go live now. Pin a tip message. Your audience will support you."}
               </p>
               <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 text-center mb-4">
                 <p className="text-3xl mb-1">{MODES.find(m => m.id === mode)?.emoji}</p>
@@ -150,7 +158,11 @@ export default function FirstDollarWizard({ onDismiss, username }: { onDismiss: 
                 <p className="text-xs text-muted-foreground">UPLY takes only 5%. Every other platform takes 20–50%.</p>
               </div>
               <Button onClick={go} className="w-full gap-1.5 mb-2">
-                {mode === "live_shop" ? "Set Up Live Shop →" : mode === "community" ? "Launch Community →" : mode === "course" ? "Create Product →" : "Go Live Now →"}
+                {mode === "live_shop" ? "Set Up Live Shop →"
+                  : mode === "community" ? "Launch Community →"
+                  : mode === "course" ? "Create Product →"
+                  : mode === "events" ? "Create Event →"
+                  : "Go Live Now →"}
               </Button>
               <button onClick={onDismiss} className="w-full text-xs text-muted-foreground hover:text-foreground py-2 transition-colors">I'll do this later</button>
             </motion.div>
