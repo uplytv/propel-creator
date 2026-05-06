@@ -9,8 +9,53 @@
 // exercises the trigger → email path in isolation.
 
 import "https://deno.land/std@0.224.0/dotenv/load.ts";
-import { assert, assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assert, assertEquals, assertStringIncludes } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+
+const QUEUE_NAME = "transactional_emails";
+
+interface QueueMsg {
+  msg_id: number;
+  message: {
+    to: string;
+    subject: string;
+    html: string;
+    idempotency_key: string;
+    label?: string;
+  };
+}
+
+// Drain transactional_emails until we find a message matching the
+// expected idempotency key, or timeout. Matched messages are deleted so
+// the real dispatcher does not attempt to deliver to fake addresses.
+async function findQueuedMessage(
+  // deno-lint-ignore no-explicit-any
+  admin: any,
+  expectedKey: string,
+  timeoutMs = 30_000,
+): Promise<QueueMsg | null> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    const { data, error } = await admin.rpc("read_email_batch", {
+      queue_name: QUEUE_NAME,
+      batch_size: 25,
+      vt: 1,
+    });
+    if (error) throw error;
+    const rows = (data ?? []) as QueueMsg[];
+    for (const row of rows) {
+      if (row.message?.idempotency_key === expectedKey) {
+        await admin.rpc("delete_email", {
+          queue_name: QUEUE_NAME,
+          message_id: row.msg_id,
+        });
+        return row;
+      }
+    }
+    await new Promise((r) => setTimeout(r, 1500));
+  }
+  return null;
+}
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? Deno.env.get("VITE_SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
