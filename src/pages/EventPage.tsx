@@ -87,22 +87,7 @@ export default function EventPage() {
       return;
     }
 
-    setPurchasing(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("stripe-create-event-checkout", {
-        body: {
-          event_id: event.id,
-          success_url: `${window.location.origin}/${username}/events/${slug}?ticket=success`,
-          cancel_url: window.location.href,
-        },
-      });
-      if (error) throw error;
-      if (data?.url) window.location.href = data.url;
-    } catch (err: any) {
-      toast.error("Error", { description: err.message });
-    } finally {
-      setPurchasing(false);
-    }
+    setCheckoutOpen(true);
   }
 
   function handleDownloadIcs() {
