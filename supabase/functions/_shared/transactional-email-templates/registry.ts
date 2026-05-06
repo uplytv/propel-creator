@@ -11,8 +11,12 @@ export interface TemplateEntry {
 
 import { template as welcomeEmail } from './welcome-email.tsx'
 import { template as digitalProductReceipt } from './digital-product-receipt.tsx'
+import { template as betaAccessGranted } from './beta-access-granted.tsx'
+import { template as ticketConfirmation } from './ticket-confirmation.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'welcome-email': welcomeEmail,
   'digital-product-receipt': digitalProductReceipt,
+  'beta-access-granted': betaAccessGranted,
+  'ticket-confirmation': ticketConfirmation,
 }
