@@ -29,7 +29,8 @@ serve(async (req) => {
     if (userError || !userData.user) throw new Error("Unauthorized");
 
     const user = userData.user;
-    const { event_id, success_url, cancel_url, embedded } = await req.json();
+    const { event_id, success_url, cancel_url, embedded, quantity } = await req.json();
+    const qty = Math.max(1, Math.min(10, parseInt(String(quantity || 1), 10) || 1));
 
     if (!event_id) throw new Error("event_id required");
 
@@ -44,6 +45,9 @@ serve(async (req) => {
     if (event.is_free) throw new Error("This is a free event");
     if (event.is_sold_out) throw new Error("Event is sold out");
     if (event.status !== "published") throw new Error("Event is not published");
+    if (event.ticket_quantity != null && (event.tickets_sold + qty) > event.ticket_quantity) {
+      throw new Error("Not enough tickets remaining");
+    }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
@@ -66,31 +70,33 @@ serve(async (req) => {
     // Get creator's stripe account
     const { data: stripeAccount } = await supabase
       .from("creator_stripe_accounts")
-      .select("stripe_account_id")
+      .select("stripe_account_id, charges_enabled")
       .eq("creator_id", event.creator_id)
       .maybeSingle();
 
-    const fee = Math.round(event.ticket_price * 0.05 * 100); // 5% platform fee in cents
+    if (!stripeAccount?.stripe_account_id || !stripeAccount?.charges_enabled) {
+      throw new Error("This organizer can't accept payments yet. Please contact them.");
+    }
+
+    const fee = Math.round(event.ticket_price * qty * 0.05 * 100); // 5% platform fee in cents
 
     const sessionConfig: any = {
       mode: "payment",
-      line_items: [{ price: priceId, quantity: 1 }],
-      success_url: success_url || `${req.headers.get("origin")}/discover`,
+      line_items: [{ price: priceId, quantity: qty, adjustable_quantity: { enabled: true, minimum: 1, maximum: 10 } }],
+      success_url: success_url || `${req.headers.get("origin")}/tickets/success?event=${event.id}`,
       cancel_url: cancel_url || `${req.headers.get("origin")}/discover`,
       metadata: {
         purchase_type: "event_ticket",
         event_id: event.id,
         buyer_id: user.id,
         creator_id: event.creator_id,
+        quantity: String(qty),
       },
-    };
-
-    if (stripeAccount?.stripe_account_id) {
-      sessionConfig.payment_intent_data = {
+      payment_intent_data: {
         application_fee_amount: fee,
         transfer_data: { destination: stripeAccount.stripe_account_id },
-      };
-    }
+      },
+    };
 
     if (embedded) {
       sessionConfig.ui_mode = 'embedded';
