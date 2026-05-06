@@ -114,6 +114,21 @@ export default function EventPage() {
     setCheckoutOpen(true);
   }
 
+  async function handleRegenerateQr() {
+    if (!myTicket?.id) return;
+    setRegenerating(true);
+    try {
+      const { error } = await (supabase as any).rpc("rotate_ticket_qr", { p_ticket_id: myTicket.id });
+      if (error) throw error;
+      await qc.invalidateQueries({ queryKey: ["my-ticket"] });
+      toast.success("QR code refreshed", { description: "Your previous code is no longer valid." });
+    } catch (e: any) {
+      toast.error("Couldn't regenerate QR", { description: e?.message || "Try again in a moment." });
+    } finally {
+      setRegenerating(false);
+    }
+  }
+
   function handleDownloadIcs() {
     if (!event) return;
     const start = new Date(event.starts_at).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
