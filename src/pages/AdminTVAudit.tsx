@@ -54,7 +54,7 @@ export default function AdminTVAudit() {
   );
 
   const { data: streamMeta } = useQuery({
-    queryKey: ["admin-tv-stream-meta", streamIds.length, streamIds.slice(0, 5).join(",")],
+    queryKey: ["admin-tv-stream-meta", [...streamIds].sort().join(",")],
     enabled: streamIds.length > 0,
     queryFn: async () => {
       const { data, error } = await supabase
