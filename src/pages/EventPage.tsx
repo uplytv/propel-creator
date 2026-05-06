@@ -415,6 +415,17 @@ END:VCALENDAR`;
                   <Ticket className="w-4 h-4" /> View Full Ticket
                 </Button>
               )}
+              {myTicket?.id && (
+                <Button
+                  variant="secondary"
+                  onClick={handleRegenerateQr}
+                  disabled={regenerating}
+                  className="w-full gap-2"
+                >
+                  {regenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                  Regenerate QR Code
+                </Button>
+              )}
               <Button variant="outline" onClick={() => setConfirmOpen(false)} className="w-full">
                 Done
               </Button>
