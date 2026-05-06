@@ -85,7 +85,28 @@ export default function FirstDollarWizard({ onDismiss, username }: { onDismiss: 
                   </button>
                 ))}
               </div>
-              <Button onClick={() => setStep(1)} disabled={!mode} className="w-full gap-1.5">
+
+              {/* Events sub-question: ticketing model */}
+              {mode === "events" && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="overflow-hidden mb-4">
+                  <p className="text-xs font-semibold text-foreground mb-2">What kind of event?</p>
+                  <div className="grid grid-cols-1 gap-2">
+                    {TICKETING_MODES.map(t => (
+                      <button key={t.id} onClick={() => setTicketingMode(t.id)}
+                        className="p-3 rounded-xl text-left border transition-all flex gap-3 items-start"
+                        style={{ borderColor: ticketingMode === t.id ? "#EC4899" : "hsl(var(--border))", background: ticketingMode === t.id ? "#EC489912" : "hsl(var(--card))" }}>
+                        <span className="text-lg leading-none mt-0.5">{t.emoji}</span>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-foreground">{t.label}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{t.desc}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              <Button onClick={() => setStep(1)} disabled={!mode || (mode === "events" && !ticketingMode)} className="w-full gap-1.5">
                 Continue <ArrowRight className="w-4 h-4" />
               </Button>
             </motion.div>
