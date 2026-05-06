@@ -87,6 +87,51 @@ export default function TicketDetail() {
     }
   }
 
+  async function handleListResale() {
+    if (!ticket || !event) return;
+    const facePrice = Number(ticket.amount_paid || event.ticket_price || 0);
+    const cap = Math.round((facePrice * (event.resale_price_cap_pct ?? 120)) / 100);
+    const input = window.prompt(
+      `List your ticket for resale.\nMax allowed: $${cap.toFixed(2)}\nEnter your asking price (USD):`,
+      facePrice.toString(),
+    );
+    if (!input) return;
+    const ask = Math.round(parseFloat(input) * 100);
+    if (!ask || ask < 100) return toast.error("Enter a valid price");
+    setListing(true);
+    try {
+      const { error } = await supabase.functions.invoke("list-ticket-for-resale", {
+        body: { ticket_id: ticket.id, asking_price_cents: ask, listing_type: "fixed" },
+      });
+      if (error) throw error;
+      toast.success("Listed for resale ✓", { description: "We'll notify you when it sells." });
+      qc.invalidateQueries({ queryKey: ["ticket-detail"] });
+    } catch (e: any) {
+      toast.error("Couldn't list", { description: e.message });
+    } finally {
+      setListing(false);
+    }
+  }
+
+  async function handleTransfer() {
+    if (!ticket) return;
+    const username = window.prompt("Transfer to which @username?");
+    if (!username) return;
+    setTransferring(true);
+    try {
+      const { error } = await supabase.functions.invoke("transfer-ticket", {
+        body: { ticket_id: ticket.id, to_username: username.replace(/^@/, "") },
+      });
+      if (error) throw error;
+      toast.success(`Transferred to @${username.replace(/^@/, "")} ✓`);
+      navigate("/tickets");
+    } catch (e: any) {
+      toast.error("Transfer failed", { description: e.message });
+    } finally {
+      setTransferring(false);
+    }
+  }
+
   if (isLoading) {
     return (
       <AppLayout>
