@@ -14,6 +14,7 @@ import BackNav from "@/components/BackNav";
 import AppLayout from "@/components/layout/AppLayout";
 import EventTabs from "@/components/social/EventTabs";
 import { PurchaseOverlay } from "@/components/payments/PurchaseOverlay";
+import SeatPicker from "@/components/events/SeatPicker";
 import { useAuth } from "@/context/AuthContext";
 import { useEvent, useMyTicketForEvent, useClaimFreeTicket, useSetEventReminder } from "@/hooks/useEvents";
 import { useProfile } from "@/hooks/useProfile";
@@ -50,6 +51,10 @@ export default function EventPage() {
   const setReminder = useSetEventReminder();
   const [quantity, setQuantity] = useState(1);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [seatPickerOpen, setSeatPickerOpen] = useState(false);
+  const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
+  const isSeated = (event as any)?.ticketing_mode === "seated";
+  const seatMap = (event as any)?.seat_map as { rows?: number; cols?: number } | null;
 
   // Get creator profile
   const { data: creatorProfile } = useQuery({
@@ -84,6 +89,11 @@ export default function EventPage() {
 
     if (event.is_free) {
       await claimFree.mutateAsync(event);
+      return;
+    }
+
+    if (isSeated && seatMap?.rows && seatMap?.cols) {
+      setSeatPickerOpen(true);
       return;
     }
 
@@ -268,7 +278,7 @@ END:VCALENDAR`;
                 )}
               </div>
               <div className="flex items-center gap-2">
-                {!event.is_free && !myTicket && !event.is_sold_out && (
+                {!event.is_free && !myTicket && !event.is_sold_out && !isSeated && (
                   <div className="flex items-center border border-border rounded-lg overflow-hidden h-11">
                     <button aria-label="Decrease" className="w-11 h-11 flex items-center justify-center disabled:opacity-30" onClick={() => setQuantity(q => Math.max(1, q - 1))} disabled={quantity <= 1}><Minus className="w-4 h-4" /></button>
                     <span className="w-8 text-center text-sm font-semibold">{quantity}</span>
@@ -290,7 +300,7 @@ END:VCALENDAR`;
                 ) : (
                   <Button onClick={handleGetTicket} disabled={claimFree.isPending} className="gap-2">
                     {claimFree.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ticket className="w-4 h-4" />}
-                    {event.is_free ? "Get Free Ticket" : "Get Tickets"}
+                    {event.is_free ? "Get Free Ticket" : isSeated ? "Pick Seats" : "Get Tickets"}
                   </Button>
                 )}
               </div>
@@ -304,10 +314,35 @@ END:VCALENDAR`;
             onClose={() => setCheckoutOpen(false)}
             onSuccess={() => navigate(`/tickets/success?event=${event.id}`)}
             purchaseType="ticket"
-            purchaseParams={{ event_id: event.id, quantity }}
+            purchaseParams={{
+              event_id: event.id,
+              quantity: isSeated ? selectedSeats.length : quantity,
+              ...(isSeated && selectedSeats.length > 0 ? { seat_labels: selectedSeats } : {}),
+            }}
             title={event.title}
-            description={`${quantity} ticket${quantity > 1 ? "s" : ""}`}
-            price={event.ticket_price * quantity}
+            description={
+              isSeated && selectedSeats.length
+                ? `Seats ${selectedSeats.join(", ")}`
+                : `${quantity} ticket${quantity > 1 ? "s" : ""}`
+            }
+            price={event.ticket_price * (isSeated ? selectedSeats.length : quantity)}
+          />
+        )}
+
+        {isSeated && seatMap?.rows && seatMap?.cols && (
+          <SeatPicker
+            isOpen={seatPickerOpen}
+            onClose={() => setSeatPickerOpen(false)}
+            eventId={event.id}
+            rows={seatMap.rows}
+            cols={seatMap.cols}
+            pricePerSeat={event.ticket_price}
+            maxSeats={10}
+            onConfirm={(seats) => {
+              setSelectedSeats(seats);
+              setSeatPickerOpen(false);
+              setCheckoutOpen(true);
+            }}
           />
         )}
       </div>

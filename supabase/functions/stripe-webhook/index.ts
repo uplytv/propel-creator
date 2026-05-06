@@ -246,6 +246,10 @@ Deno.serve(async (req) => {
         } else if (purchaseType === "event_ticket") {
           const { event_id, buyer_id, creator_id } = metadata;
           const qty = parseInt(metadata.quantity || "1", 10) || 1;
+          const seatLabels: string[] = (metadata.seat_labels || "")
+            .split(",")
+            .map((s: string) => s.trim())
+            .filter(Boolean);
           const amount = (session.amount_total || 0) / 100;
           const fee = Math.round(amount * 0.05 * 100) / 100;
           let firstToken: string | null = null;
@@ -271,6 +275,7 @@ Deno.serve(async (req) => {
                 creator_earnings: perTicketAmount - perTicketFee,
                 qr_code_token: tk,
                 qr_code_secret: secret,
+                seat_label: seatLabels[i] ?? null,
                 status: "active",
               });
             }
