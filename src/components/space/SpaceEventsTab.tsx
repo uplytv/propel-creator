@@ -211,6 +211,21 @@ function DigitalProductCard({ product, isOwner }: { product: any; isOwner: boole
 export default function SpaceEventsTab({ creatorId, isOwner }: Props) {
   const navigate = useNavigate();
 
+  const { data: creatorProfile } = useQuery({
+    queryKey: ["space-creator-username", creatorId],
+    enabled: !!creatorId,
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("username")
+        .eq("user_id", creatorId)
+        .maybeSingle();
+      return data;
+    },
+  });
+  const creatorUsername = creatorProfile?.username || undefined;
+
   const { data: ownEvents = [], isLoading: loadingOwn } = useQuery({
     queryKey: ["space-own-events", creatorId],
     enabled: !!creatorId,
