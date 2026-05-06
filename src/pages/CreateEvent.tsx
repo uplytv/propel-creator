@@ -1,9 +1,9 @@
-import { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Monitor, MapPin, Globe, Upload, Image, CalendarDays, DollarSign,
-  Loader2, ArrowLeft, Save
+  Loader2, ArrowLeft, Save, Ticket, UserCheck, Armchair
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,12 @@ import { useCreateEvent, useUpdateEvent } from "@/hooks/useEvents";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Sentry } from "@/lib/sentry";
+
+const TICKETING_MODES = [
+  { value: "ticketed", label: "Ticketed", emoji: "🎟️", icon: Ticket, desc: "Paid tickets + QR scan + resale" },
+  { value: "free_rsvp", label: "Free RSVP", emoji: "✋", icon: UserCheck, desc: "Free signup, names + emails" },
+  { value: "seated", label: "Assigned Seating", emoji: "💺", icon: Armchair, desc: "Seat map, buyers pick a spot" },
+];
 
 const eventTypes = [
   { value: "virtual", label: "Virtual", icon: Monitor, emoji: "🖥️", color: "border-blue-500 bg-blue-500/10 text-blue-500" },
