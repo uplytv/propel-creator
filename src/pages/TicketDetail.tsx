@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { CalendarDays, MapPin, Download, ArrowLeft, ExternalLink, Clock, Loader2, AlertTriangle } from "lucide-react";
+import { CalendarDays, MapPin, Download, ArrowLeft, ExternalLink, Clock, Loader2, AlertTriangle, Tag, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import AppLayout from "@/components/layout/AppLayout";
@@ -23,6 +23,8 @@ export default function TicketDetail() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [refunding, setRefunding] = useState(false);
+  const [listing, setListing] = useState(false);
+  const [transferring, setTransferring] = useState(false);
 
   const { data: ticket, isLoading } = useQuery({
     queryKey: ["ticket-detail", token],
@@ -82,6 +84,51 @@ export default function TicketDetail() {
       toast.error("Refund failed", { description: err.message });
     } finally {
       setRefunding(false);
+    }
+  }
+
+  async function handleListResale() {
+    if (!ticket || !event) return;
+    const facePrice = Number(ticket.amount_paid || event.ticket_price || 0);
+    const cap = Math.round((facePrice * (event.resale_price_cap_pct ?? 120)) / 100);
+    const input = window.prompt(
+      `List your ticket for resale.\nMax allowed: $${cap.toFixed(2)}\nEnter your asking price (USD):`,
+      facePrice.toString(),
+    );
+    if (!input) return;
+    const ask = Math.round(parseFloat(input) * 100);
+    if (!ask || ask < 100) return toast.error("Enter a valid price");
+    setListing(true);
+    try {
+      const { error } = await supabase.functions.invoke("list-ticket-for-resale", {
+        body: { ticket_id: ticket.id, asking_price_cents: ask, listing_type: "fixed" },
+      });
+      if (error) throw error;
+      toast.success("Listed for resale ✓", { description: "We'll notify you when it sells." });
+      qc.invalidateQueries({ queryKey: ["ticket-detail"] });
+    } catch (e: any) {
+      toast.error("Couldn't list", { description: e.message });
+    } finally {
+      setListing(false);
+    }
+  }
+
+  async function handleTransfer() {
+    if (!ticket) return;
+    const username = window.prompt("Transfer to which @username?");
+    if (!username) return;
+    setTransferring(true);
+    try {
+      const { error } = await supabase.functions.invoke("transfer-ticket", {
+        body: { ticket_id: ticket.id, to_username: username.replace(/^@/, "") },
+      });
+      if (error) throw error;
+      toast.success(`Transferred to @${username.replace(/^@/, "")} ✓`);
+      navigate("/tickets");
+    } catch (e: any) {
+      toast.error("Transfer failed", { description: e.message });
+    } finally {
+      setTransferring(false);
     }
   }
 
@@ -197,6 +244,32 @@ export default function TicketDetail() {
             {/* Add to Wallet (Apple / Google) */}
             {ticket.status === "active" && !isPast && (
               <WalletPassButtons ticketId={ticket.id} />
+            )}
+
+            {/* Resale & Transfer (Ticketmaster-class) */}
+            {ticket.status === "active" && !isPast && isOwner && (
+              <div className="grid grid-cols-2 gap-2">
+                {event?.resale_allowed && (
+                  <Button variant="outline" className="w-full gap-2" onClick={handleListResale} disabled={listing}>
+                    {listing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Tag className="w-4 h-4" />}
+                    Sell / Resell
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  className={`w-full gap-2 ${event?.resale_allowed ? "" : "col-span-2"}`}
+                  onClick={handleTransfer}
+                  disabled={transferring}
+                >
+                  {transferring ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  Transfer
+                </Button>
+              </div>
+            )}
+            {ticket.status === "listed_for_resale" && (
+              <div className="text-center text-xs px-3 py-2 rounded-lg bg-primary/10 border border-primary/20 text-primary">
+                Listed for resale — we'll notify you when it sells
+              </div>
             )}
 
             {/* Download / print fallback */}

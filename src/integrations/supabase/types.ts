@@ -4072,6 +4072,7 @@ export type Database = {
           refund_policy: string
           resale_allowed: boolean
           resale_price_cap_pct: number | null
+          seat_map: Json | null
           slug: string | null
           space_id: string | null
           starts_at: string
@@ -4083,6 +4084,7 @@ export type Database = {
           ticket_quantity: number | null
           ticket_sales_close_at: string | null
           ticket_sales_open_at: string | null
+          ticketing_mode: string
           tickets_sold: number
           timezone: string
           title: string
@@ -4127,6 +4129,7 @@ export type Database = {
           refund_policy?: string
           resale_allowed?: boolean
           resale_price_cap_pct?: number | null
+          seat_map?: Json | null
           slug?: string | null
           space_id?: string | null
           starts_at: string
@@ -4138,6 +4141,7 @@ export type Database = {
           ticket_quantity?: number | null
           ticket_sales_close_at?: string | null
           ticket_sales_open_at?: string | null
+          ticketing_mode?: string
           tickets_sold?: number
           timezone?: string
           title: string
@@ -4182,6 +4186,7 @@ export type Database = {
           refund_policy?: string
           resale_allowed?: boolean
           resale_price_cap_pct?: number | null
+          seat_map?: Json | null
           slug?: string | null
           space_id?: string | null
           starts_at?: string
@@ -4193,6 +4198,7 @@ export type Database = {
           ticket_quantity?: number | null
           ticket_sales_close_at?: string | null
           ticket_sales_open_at?: string | null
+          ticketing_mode?: string
           tickets_sold?: number
           timezone?: string
           title?: string
@@ -9477,6 +9483,7 @@ export type Database = {
           qr_code_url: string | null
           scanned_at: string | null
           scanned_by: string | null
+          seat_label: string | null
           status: string
           stripe_payment_intent_id: string | null
           ticket_number: string | null
@@ -9507,6 +9514,7 @@ export type Database = {
           qr_code_url?: string | null
           scanned_at?: string | null
           scanned_by?: string | null
+          seat_label?: string | null
           status?: string
           stripe_payment_intent_id?: string | null
           ticket_number?: string | null
@@ -9537,6 +9545,7 @@ export type Database = {
           qr_code_url?: string | null
           scanned_at?: string | null
           scanned_by?: string | null
+          seat_label?: string | null
           status?: string
           stripe_payment_intent_id?: string | null
           ticket_number?: string | null
