@@ -103,21 +103,21 @@ export default function TicketSuccess() {
         </motion.div>
       )}
 
-      {/* QR Code */}
+      {/* QR Code — encodes the private secret, scannable at the door */}
       {ticket && (
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.7 }}
-          className="bg-white rounded-2xl p-6 mb-6"
+          className="bg-white rounded-2xl p-4 mb-6"
         >
-          <div className="w-[200px] h-[200px] bg-muted flex items-center justify-center">
-            {/* Simple QR placeholder - uses the ticket token */}
-            <div className="text-center">
-              <Ticket className="w-12 h-12 text-foreground mx-auto mb-2" />
-              <p className="text-xs font-mono text-muted-foreground">{ticket.ticket_code || ticket.qr_code_token?.slice(0, 12)}</p>
-            </div>
-          </div>
+          <img
+            src={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(ticket.qr_code_secret || ticket.qr_code_token)}`}
+            alt="Ticket QR code"
+            className="w-[200px] h-[200px]"
+            crossOrigin="anonymous"
+          />
+          <p className="text-[10px] font-mono text-muted-foreground text-center mt-2">{ticket.ticket_number || ticket.qr_code_token.slice(0, 12)}</p>
         </motion.div>
       )}
 
