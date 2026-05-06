@@ -114,11 +114,14 @@ Deno.test({
 
     const runId = crypto.randomUUID().slice(0, 8);
     const buyerEmail = `multi-ticket-${runId}@uply-test.local`;
+    const buyerName = `Multi Buyer ${runId}`;
+    const eventTitle = `Multi Ticket Event ${runId}`;
     const password = crypto.randomUUID();
 
     let buyerId: string | null = null;
     let organizerId: string | null = null;
     let eventId: string | null = null;
+    const tickets: Array<{ id: string; ticket_number: string }> = [];
     const ticketIds: string[] = [];
 
     try {
