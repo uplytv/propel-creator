@@ -64,6 +64,14 @@ export default function EventPage() {
   const qrWrapRef = useRef<HTMLDivElement>(null);
   const [printPreviewOpen, setPrintPreviewOpen] = useState(false);
   const [printing, setPrinting] = useState(false);
+  const [iosPrintHelpOpen, setIosPrintHelpOpen] = useState(false);
+  const isIosOrSafari = useMemo(() => {
+    if (typeof navigator === "undefined") return false;
+    const ua = navigator.userAgent;
+    const isIOS = /iPad|iPhone|iPod/.test(ua) || (ua.includes("Mac") && "ontouchend" in document);
+    const isSafari = /^((?!chrome|android|crios|fxios|edgios).)*safari/i.test(ua);
+    return isIOS || isSafari;
+  }, []);
   const isSeated = (event as any)?.ticketing_mode === "seated";
   const seatMap = (event as any)?.seat_map as { rows?: number; cols?: number } | null;
 
