@@ -89,15 +89,15 @@ export default function EventCheckIn({ event, onClose }: { event: EventRow; onCl
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scannerOn]);
 
-  async function handleManualCheckIn(ticketId: string, token: string) {
-    await handleScan(token);
+  async function handleManualCheckIn(_ticketId: string, secret: string) {
+    await handleScan(secret);
   }
 
   const filteredTickets = tickets?.filter(t => {
     if (!search) return true;
     const profile = attendeeProfiles?.find(p => p.user_id === t.buyer_id);
     const name = (profile?.display_name || profile?.username || "").toLowerCase();
-    return name.includes(search.toLowerCase()) || t.qr_code_token.includes(search);
+    return name.includes(search.toLowerCase()) || (t.qr_code_secret || "").includes(search) || t.qr_code_token.includes(search);
   });
 
   return (
