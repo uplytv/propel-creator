@@ -227,6 +227,48 @@ Deno.test({
           `unexpected email status "${r.status}" for key ${r.idempotency_key}`,
         );
       }
+
+      // Pull each enqueued message and assert its payload references the
+      // correct buyer name, event title, and ticket number for the ticket
+      // its idempotency key points to.
+      const expectedKeysSet = new Set(tickets.map((t) => `ticket-confirm-${t.id}`));
+      const found = await collectByIdempotencyKey(admin, expectedKeysSet);
+      assertEquals(
+        found.size,
+        tickets.length,
+        `expected ${tickets.length} enqueued messages, found ${found.size}. ` +
+          `Missing: ${[...expectedKeysSet].filter((k) => !found.has(k)).join(", ")}`,
+      );
+
+      for (const ticket of tickets) {
+        const key = `ticket-confirm-${ticket.id}`;
+        const payload = found.get(key)!.message;
+        assertEquals(
+          payload.to,
+          buyerEmail,
+          `[${key}] recipient mismatch: expected ${buyerEmail}, got ${payload.to}`,
+        );
+        assertStringIncludes(
+          payload.subject,
+          eventTitle,
+          `[${key}] subject missing event title. Subject: ${payload.subject}`,
+        );
+        assertStringIncludes(
+          payload.html,
+          eventTitle,
+          `[${key}] HTML missing event title`,
+        );
+        assertStringIncludes(
+          payload.html,
+          buyerName,
+          `[${key}] HTML missing buyer name "${buyerName}"`,
+        );
+        assertStringIncludes(
+          payload.html,
+          ticket.ticket_number,
+          `[${key}] HTML missing ticket number ${ticket.ticket_number}`,
+        );
+      }
     } finally {
       // Best-effort cleanup.
       for (const id of ticketIds) {
