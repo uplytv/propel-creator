@@ -80,6 +80,8 @@ export default function EventPage() {
   const badge = event ? typeBadge[event.event_type] || typeBadge.virtual : null;
   const isPast = event ? isBefore(new Date(event.ends_at), new Date()) : false;
   const virtualRevealed = event?.virtual_link_unlocked_at || (event && differenceInMinutes(new Date(event.starts_at), new Date()) <= 30);
+  const isHost = !!(event && user && event.creator_id === user.id);
+  const isFree = !!event && (event.is_free || Number(event.ticket_price || 0) === 0);
 
   async function handleGetTicket() {
     if (!user) {
@@ -88,7 +90,12 @@ export default function EventPage() {
     }
     if (!event) return;
 
-    if (event.is_free) {
+    if (isHost) {
+      toast.success("You're the host of this event 🎤");
+      return;
+    }
+
+    if (isFree) {
       await claimFree.mutateAsync(event);
       return;
     }
@@ -303,16 +310,20 @@ END:VCALENDAR`;
                 <Button variant="outline" size="sm" onClick={() => event && setReminder.mutate(event.id)} aria-label="Remind me">
                   <Bell className="w-4 h-4" />
                 </Button>
-                {myTicket ? (
+                {isHost ? (
+                  <Button variant="outline" onClick={() => navigate("/events")} className="gap-2">
+                    <Ticket className="w-4 h-4" /> Manage Event
+                  </Button>
+                ) : myTicket ? (
                   <Button onClick={() => navigate(`/tickets/${myTicket.qr_code_token}`)} className="gap-2">
-                    <Ticket className="w-4 h-4" /> Your Ticket
+                    <Ticket className="w-4 h-4" /> {isFree ? "You're In ✓" : "Your Ticket"}
                   </Button>
                 ) : event.is_sold_out ? (
                   <Button variant="outline" disabled>Sold Out</Button>
                 ) : (
                   <Button onClick={handleGetTicket} disabled={claimFree.isPending} className="gap-2">
                     {claimFree.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ticket className="w-4 h-4" />}
-                    {event.is_free ? "Get Free Ticket" : isSeated ? "Pick Seats" : "Get Tickets"}
+                    {isFree ? "RSVP — Free" : isSeated ? "Pick Seats" : "Get Tickets"}
                   </Button>
                 )}
               </div>

@@ -211,6 +211,16 @@ export function useClaimFreeTicket() {
   return useMutation({
     mutationFn: async (event: EventRow) => {
       if (!user) throw new Error("Must be logged in");
+
+      // If user already has an active ticket, return it (idempotent RSVP)
+      const { data: existing } = await tables.tickets()
+        .select("*")
+        .eq("event_id", event.id)
+        .eq("buyer_id", user.id)
+        .eq("status", "active")
+        .maybeSingle();
+      if (existing) return existing as TicketRow;
+
       // Atomic reserve to prevent oversell
       const { data: reserved, error: reserveErr } = await (supabase as any)
         .rpc("reserve_event_ticket", { p_event_id: event.id, p_qty: 1 });
