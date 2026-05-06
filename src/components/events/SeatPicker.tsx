@@ -223,8 +223,29 @@ export default function SeatPicker({
 
           <div
             ref={scrollerRef}
-            className="px-4 py-4 max-h-[60vh] overflow-auto overscroll-contain touch-pan-x touch-pan-y"
-            style={{ WebkitOverflowScrolling: "touch" }}
+            className="px-4 py-4 max-h-[60vh] overflow-auto overscroll-contain"
+            style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x pan-y pinch-zoom" }}
+            onTouchStart={(e) => {
+              if (e.touches.length === 2) {
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                pinchRef.current = { dist: Math.hypot(dx, dy), startZoom: zoom };
+              }
+            }}
+            onTouchMove={(e) => {
+              if (e.touches.length === 2 && pinchRef.current) {
+                e.preventDefault();
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                const newDist = Math.hypot(dx, dy);
+                const ratio = newDist / pinchRef.current.dist;
+                const next = Math.min(3, Math.max(1, pinchRef.current.startZoom * ratio));
+                setZoom(next);
+              }
+            }}
+            onTouchEnd={(e) => {
+              if (e.touches.length < 2) pinchRef.current = null;
+            }}
           >
             <div className="text-[10px] uppercase tracking-wider text-center text-muted-foreground mb-1 sticky top-0">
               ── Stage / Screen ──
