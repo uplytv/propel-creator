@@ -372,6 +372,38 @@ END:VCALENDAR`;
             }}
           />
         )}
+
+        {/* Free RSVP confirmation */}
+        <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Check className="w-5 h-5 text-primary" /> You're In ✓
+              </DialogTitle>
+              <DialogDescription>
+                Your free RSVP for <span className="font-medium text-foreground">{event.title}</span> is confirmed.
+              </DialogDescription>
+            </DialogHeader>
+            {myTicket?.qr_code_token && (
+              <div className="flex flex-col items-center gap-3 py-2">
+                <div className="bg-white p-3 rounded-xl">
+                  <QRCodeSVG value={myTicket.qr_code_token} size={180} level="H" includeMargin={false} />
+                </div>
+                <p className="text-xs text-muted-foreground">Show this QR at check-in</p>
+              </div>
+            )}
+            <DialogFooter className="flex-col sm:flex-col gap-2">
+              {myTicket?.qr_code_token && (
+                <Button onClick={() => navigate(`/tickets/${myTicket.qr_code_token}`)} className="w-full gap-2">
+                  <Ticket className="w-4 h-4" /> View Full Ticket
+                </Button>
+              )}
+              <Button variant="outline" onClick={() => setConfirmOpen(false)} className="w-full">
+                Done
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </AppLayout>
   );
