@@ -25,8 +25,9 @@ const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("VITE_SUPABAS
 
 // Wait for an `email_send_log` row matching template + recipient.
 // The queue dispatcher runs every 5s, so we poll up to ~30s.
+// deno-lint-ignore no-explicit-any
 async function waitForEmailLog(
-  admin: ReturnType<typeof createClient>,
+  admin: any,
   templateName: string,
   recipientEmail: string,
   timeoutMs = 30_000,
