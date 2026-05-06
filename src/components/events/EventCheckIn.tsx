@@ -62,6 +62,11 @@ export default function EventCheckIn({ event, onClose }: { event: EventRow; onCl
     let cancelled = false;
     (async () => {
       try {
+        // Request camera permission FIRST so iOS Safari exposes device labels
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+          stream.getTracks().forEach(t => t.stop());
+        } catch {}
         const reader = new BrowserMultiFormatReader();
         readerRef.current = reader;
         const devices = await BrowserMultiFormatReader.listVideoInputDevices();
