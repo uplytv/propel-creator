@@ -113,9 +113,8 @@ END:VCALENDAR`;
     URL.revokeObjectURL(url);
   }
 
-  // Show success state
-  const params = new URLSearchParams(window.location.search);
-  const showSuccess = params.get("ticket") === "success";
+  // Show success state (reactive to client navigation)
+  const showSuccess = searchParams.get("ticket") === "success";
 
   if (isLoading) {
     return (
