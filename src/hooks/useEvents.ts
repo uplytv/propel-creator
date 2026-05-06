@@ -45,9 +45,12 @@ export type TicketRow = {
   platform_fee: number;
   creator_earnings: number;
   qr_code_token: string;
+  qr_code_secret: string | null;
   qr_code_url: string | null;
   status: string;
+  ticket_number: string | null;
   checked_in_at: string | null;
+  scanned_at: string | null;
   created_at: string;
 };
 
