@@ -26,8 +26,11 @@ const typeBadge = (event: any) => {
   return { label: "ONLINE", icon: Globe, className: "bg-teal-500/15 text-teal-400" };
 };
 
-function EventCard({ event, isOwn, isOwner }: { event: any; isOwn: boolean; isOwner: boolean }) {
+function EventCard({ event, isOwn, isOwner, creatorUsername }: { event: any; isOwn: boolean; isOwner: boolean; creatorUsername?: string }) {
   const navigate = useNavigate();
+  const eventPath = creatorUsername && event.slug
+    ? `/${creatorUsername}/events/${event.slug}`
+    : `/events/global/${event.id}`;
   const badge = typeBadge(event);
   const Icon = badge.icon;
   const startDate = event.starts_at ? new Date(event.starts_at) : null;
