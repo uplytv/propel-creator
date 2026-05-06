@@ -151,7 +151,7 @@ Deno.test({
         .from("events")
         .insert({
           creator_id: organizerId,
-          title: `Multi Ticket Event ${runId}`,
+          title: eventTitle,
           event_type: "in_person",
           starts_at: new Date(Date.now() + 7 * 24 * 3600_000).toISOString(),
           ends_at: new Date(Date.now() + 7 * 24 * 3600_000 + 3600_000).toISOString(),
