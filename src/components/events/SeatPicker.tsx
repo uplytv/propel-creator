@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
-import { Info, Loader2, Minus, Plus, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Info, Loader2, Minus, Plus, Search, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 
