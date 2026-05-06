@@ -38,10 +38,10 @@ export default function EventCheckIn({ event, onClose }: { event: EventRow; onCl
   const checkedInCount = tickets?.filter(t => t.status === "used").length || 0;
   const totalCount = tickets?.length || 0;
 
-  async function handleScan(token: string) {
+  async function handleScan(qrSecret: string) {
     try {
-      const result = await checkIn.mutateAsync(token);
-      const profile = attendeeProfiles?.find(p => p.user_id === result.buyer_id);
+      const result = await checkIn.mutateAsync({ qrSecret, eventId: event.id });
+      const profile = attendeeProfiles?.find(p => p.user_id === (result as any).buyer_id);
       setResultName(profile?.display_name || profile?.username || "Attendee");
       setState("success");
       refetch();
