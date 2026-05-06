@@ -270,7 +270,10 @@ export default function SeatPicker({
                     requestAnimationFrame(() => el.scrollTo({ left: 0, top: 0, behavior: "smooth" }));
                   }
                   if (typeof window !== "undefined") {
-                    try { window.localStorage.removeItem(scrollKey); } catch {}
+                    try {
+                      window.localStorage.removeItem(scrollKey);
+                      window.localStorage.removeItem(zoomKey);
+                    } catch {}
                   }
                 }}
                 disabled={zoom === 1 && (scrollerRef.current?.scrollLeft ?? 0) === 0 && (scrollerRef.current?.scrollTop ?? 0) === 0}
