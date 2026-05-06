@@ -314,10 +314,35 @@ END:VCALENDAR`;
             onClose={() => setCheckoutOpen(false)}
             onSuccess={() => navigate(`/tickets/success?event=${event.id}`)}
             purchaseType="ticket"
-            purchaseParams={{ event_id: event.id, quantity }}
+            purchaseParams={{
+              event_id: event.id,
+              quantity: isSeated ? selectedSeats.length : quantity,
+              ...(isSeated && selectedSeats.length > 0 ? { seat_labels: selectedSeats } : {}),
+            }}
             title={event.title}
-            description={`${quantity} ticket${quantity > 1 ? "s" : ""}`}
-            price={event.ticket_price * quantity}
+            description={
+              isSeated && selectedSeats.length
+                ? `Seats ${selectedSeats.join(", ")}`
+                : `${quantity} ticket${quantity > 1 ? "s" : ""}`
+            }
+            price={event.ticket_price * (isSeated ? selectedSeats.length : quantity)}
+          />
+        )}
+
+        {isSeated && seatMap?.rows && seatMap?.cols && (
+          <SeatPicker
+            isOpen={seatPickerOpen}
+            onClose={() => setSeatPickerOpen(false)}
+            eventId={event.id}
+            rows={seatMap.rows}
+            cols={seatMap.cols}
+            pricePerSeat={event.ticket_price}
+            maxSeats={10}
+            onConfirm={(seats) => {
+              setSelectedSeats(seats);
+              setSeatPickerOpen(false);
+              setCheckoutOpen(true);
+            }}
           />
         )}
       </div>
