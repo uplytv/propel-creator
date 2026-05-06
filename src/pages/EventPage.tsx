@@ -745,8 +745,58 @@ END:VCALENDAR`;
                 {exportingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                 {exportingPdf ? "Generating PDF…" : "Export as PDF"}
               </Button>
+              {isIosOrSafari && (
+                <button
+                  type="button"
+                  onClick={() => setIosPrintHelpOpen(true)}
+                  className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                >
+                  Having trouble printing on iPhone or Safari?
+                </button>
+              )}
               <Button variant="outline" onClick={() => setPrintPreviewOpen(false)} className="w-full">
                 Cancel
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* iOS / Safari print fallback help */}
+        <Dialog open={iosPrintHelpOpen} onOpenChange={setIosPrintHelpOpen}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Printer className="w-5 h-5" /> Print on iPhone or Safari
+              </DialogTitle>
+              <DialogDescription>
+                Safari may block the print pop-up. Use one of these reliable options instead.
+              </DialogDescription>
+            </DialogHeader>
+            <ol className="space-y-3 text-sm text-foreground/90 list-decimal pl-5">
+              <li>
+                <span className="font-medium">Use Export as PDF</span> — saves the ticket to Files, then tap Share → Print.
+              </li>
+              <li>
+                <span className="font-medium">Use the system Share sheet</span> — tap the Share icon in Safari and choose <em>Print</em>.
+              </li>
+              <li>
+                <span className="font-medium">AirPrint</span> — pinch-out on the print preview thumbnail to send straight to a nearby printer.
+              </li>
+            </ol>
+            <DialogFooter className="flex-col gap-2">
+              <Button
+                onClick={() => {
+                  setIosPrintHelpOpen(false);
+                  setTimeout(() => handleExportPdf(), 150);
+                }}
+                disabled={exportingPdf}
+                className="w-full gap-2"
+              >
+                {exportingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                {exportingPdf ? "Generating PDF…" : "Export as PDF instead"}
+              </Button>
+              <Button variant="outline" onClick={() => setIosPrintHelpOpen(false)} className="w-full">
+                Got it
               </Button>
             </DialogFooter>
           </DialogContent>
