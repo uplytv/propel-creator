@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { DollarSign, ShoppingBag, Users, BookOpen, Zap, ArrowRight, X, Copy, Check, Link } from "lucide-react";
+import { DollarSign, ShoppingBag, Users, BookOpen, Zap, CalendarDays, ArrowRight, X, Copy, Check, Link, Ticket, UserCheck, Armchair } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -12,6 +12,13 @@ const MODES = [
   { id: "community", icon: Users, emoji: "🤝", label: "Paid Community", desc: "Monthly subscription. Exclusive posts, videos, direct access.", color: "#00AEEF" },
   { id: "course", icon: BookOpen, emoji: "📚", label: "Sell a Course", desc: "Package your knowledge. One-time payment, 95% yours.", color: "#F59E0B" },
   { id: "tips", icon: Zap, emoji: "⚡", label: "Tips & Live", desc: "Go live and accept tips instantly. Lowest barrier to first dollar.", color: "#9333EA" },
+  { id: "events", icon: CalendarDays, emoji: "🎟️", label: "Events", desc: "Tickets, RSVP, or assigned seating. Resale built-in.", color: "#EC4899" },
+];
+
+const TICKETING_MODES = [
+  { id: "ticketed", icon: Ticket, emoji: "🎟️", label: "Ticketed", desc: "Paid tickets, QR check-in, resale marketplace." },
+  { id: "free_rsvp", icon: UserCheck, emoji: "✋", label: "Free RSVP", desc: "Collect names + emails. Reminders + check-in." },
+  { id: "seated", icon: Armchair, emoji: "💺", label: "Assigned Seating", desc: "Seat map. Buyers pick their exact spot." },
 ];
 
 export default function FirstDollarWizard({ onDismiss, username }: { onDismiss: () => void; username: string | null }) {
@@ -19,6 +26,7 @@ export default function FirstDollarWizard({ onDismiss, username }: { onDismiss: 
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [mode, setMode] = useState<string | null>(null);
+  const [ticketingMode, setTicketingMode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const profileUrl = username ? `${SITE_URL}/${username}` : `${SITE_URL}/dashboard`;
 
@@ -30,6 +38,7 @@ export default function FirstDollarWizard({ onDismiss, username }: { onDismiss: 
   const go = () => {
     if (mode === "community") navigate(user ? `/community/${user.id}` : "/auth");
     else if (mode === "course") navigate("/products");
+    else if (mode === "events") navigate(`/events/create?mode=${ticketingMode ?? "ticketed"}`);
     else navigate("/go-live");
     onDismiss();
   };
