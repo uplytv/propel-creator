@@ -4,13 +4,62 @@
 // (`ticket-confirm-{ticket.id}`) so emails are not deduped across tickets.
 
 import "https://deno.land/std@0.224.0/dotenv/load.ts";
-import { assert, assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { assert, assertEquals, assertStringIncludes } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? Deno.env.get("VITE_SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const TICKET_COUNT = 3;
+const QUEUE_NAME = "transactional_emails";
+
+interface QueueMsg {
+  msg_id: number;
+  read_ct: number;
+  message: {
+    to: string;
+    subject: string;
+    html: string;
+    idempotency_key: string;
+    label?: string;
+  };
+}
+
+// Drain transactional_emails until we've collected one message per
+// expected idempotency key, or timeout. Matched messages are deleted so
+// the real dispatcher doesn't try to deliver to fake addresses.
+async function collectByIdempotencyKey(
+  // deno-lint-ignore no-explicit-any
+  admin: any,
+  expectedKeys: Set<string>,
+  timeoutMs = 60_000,
+): Promise<Map<string, QueueMsg>> {
+  const found = new Map<string, QueueMsg>();
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs && found.size < expectedKeys.size) {
+    const { data, error } = await admin.rpc("read_email_batch", {
+      queue_name: QUEUE_NAME,
+      batch_size: 25,
+      vt: 1,
+    });
+    if (error) throw error;
+    const rows = (data ?? []) as QueueMsg[];
+    for (const row of rows) {
+      const key = row.message?.idempotency_key;
+      if (key && expectedKeys.has(key) && !found.has(key)) {
+        found.set(key, row);
+        await admin.rpc("delete_email", {
+          queue_name: QUEUE_NAME,
+          message_id: row.msg_id,
+        });
+      }
+    }
+    if (found.size < expectedKeys.size) {
+      await new Promise((r) => setTimeout(r, 1500));
+    }
+  }
+  return found;
+}
 
 // Poll email_send_log until we observe at least `expected` distinct
 // idempotency keys for this recipient + template, or timeout.
