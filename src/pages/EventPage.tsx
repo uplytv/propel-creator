@@ -132,6 +132,43 @@ export default function EventPage() {
     }
   }
 
+  function handleDownloadQr() {
+    const svg = qrWrapRef.current?.querySelector("svg");
+    if (!svg || !event) {
+      toast.error("QR not ready", { description: "Try again in a moment." });
+      return;
+    }
+    try {
+      const svgStr = new XMLSerializer().serializeToString(svg);
+      const svgBlob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(svgBlob);
+      const img = new Image();
+      const size = 512;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) { URL.revokeObjectURL(url); toast.error("Couldn't render QR"); return; }
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, size, size);
+        ctx.drawImage(img, 0, 0, size, size);
+        URL.revokeObjectURL(url);
+        const a = document.createElement("a");
+        a.href = canvas.toDataURL("image/png");
+        const safe = (event.title || "ticket").replace(/[^a-z0-9]+/gi, "-").toLowerCase();
+        a.download = `${safe}-qr.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        toast.success("QR downloaded", { description: "Saved for offline check-in." });
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); toast.error("Couldn't download QR"); };
+      img.src = url;
+    } catch (e: any) {
+      toast.error("Couldn't download QR", { description: e?.message || "Try again." });
+    }
+  }
   function handleDownloadIcs() {
     if (!event) return;
     const start = new Date(event.starts_at).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
