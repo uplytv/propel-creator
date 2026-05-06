@@ -167,6 +167,7 @@ Deno.test({
 
       // Insert N tickets — each row should fire trg_tickets_send_email.
       for (let i = 0; i < TICKET_COUNT; i++) {
+        const ticketNumber = `MULTI-${runId}-${i}`;
         const { data: t, error: tErr } = await admin
           .from("tickets")
           .insert({
@@ -178,13 +179,14 @@ Deno.test({
             platform_fee: 1.25,
             creator_earnings: 23.75,
             stripe_payment_intent_id: `pi_multi_${runId}_${i}`,
-            ticket_number: `MULTI-${runId}-${i}`,
+            ticket_number: ticketNumber,
             status: "active",
           })
           .select("id")
           .single();
         assertEquals(tErr, null, `ticket ${i} insert failed: ${tErr?.message}`);
         ticketIds.push(t!.id);
+        tickets.push({ id: t!.id, ticket_number: ticketNumber });
       }
 
       // Wait for distinct emails to appear.
