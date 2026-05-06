@@ -134,6 +134,11 @@ Deno.test({
       assertEquals(buyerErr, null, `createUser(buyer) failed: ${buyerErr?.message}`);
       buyerId = buyerUser.user!.id;
 
+      // Set buyer display_name so send-ticket-email passes it as `name`.
+      await admin
+        .from("profiles")
+        .upsert({ user_id: buyerId, display_name: buyerName }, { onConflict: "user_id" });
+
       const { data: orgUser, error: orgErr } = await admin.auth.admin.createUser({
         email: `multi-ticket-org-${runId}@uply-test.local`,
         password,
