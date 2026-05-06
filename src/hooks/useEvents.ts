@@ -249,8 +249,15 @@ export function useClaimFreeTicket() {
       qc.invalidateQueries({ queryKey: ["event"] });
       toast.success("You're going! 🎉", { description: "Free ticket claimed successfully." });
     },
-    onError: (e: Error) => {
-      toast.error("Error claiming ticket", { description: e.message });
+    onError: (e: any) => {
+      const raw = e?.message || e?.error_description || e?.hint || "Unknown error";
+      let description = raw;
+      if (/sold out/i.test(raw)) description = "This event is sold out.";
+      else if (/logged in|JWT|auth/i.test(raw)) description = "Please sign in and try again.";
+      else if (/duplicate|unique/i.test(raw)) description = "You already have a ticket for this event.";
+      else if (/row-level security|policy/i.test(raw)) description = "Permission denied. Try signing out and back in.";
+      else if (/network|fetch/i.test(raw)) description = "Network issue. Check your connection and retry.";
+      toast.error("Couldn't RSVP", { description });
     },
   });
 }
