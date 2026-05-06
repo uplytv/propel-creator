@@ -460,6 +460,11 @@ END:VCALENDAR`;
                   <Ticket className="w-4 h-4" /> View Full Ticket
                 </Button>
               )}
+              {myTicket?.qr_code_token && (
+                <Button variant="secondary" onClick={handleDownloadQr} className="w-full gap-2">
+                  <Download className="w-4 h-4" /> Download QR
+                </Button>
+              )}
               {myTicket?.id && (
                 <Button
                   variant="secondary"
