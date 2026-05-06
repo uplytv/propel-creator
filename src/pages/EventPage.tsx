@@ -64,6 +64,14 @@ export default function EventPage() {
   const qrWrapRef = useRef<HTMLDivElement>(null);
   const [printPreviewOpen, setPrintPreviewOpen] = useState(false);
   const [printing, setPrinting] = useState(false);
+  const [iosPrintHelpOpen, setIosPrintHelpOpen] = useState(false);
+  const isIosOrSafari = useMemo(() => {
+    if (typeof navigator === "undefined") return false;
+    const ua = navigator.userAgent;
+    const isIOS = /iPad|iPhone|iPod/.test(ua) || (ua.includes("Mac") && "ontouchend" in document);
+    const isSafari = /^((?!chrome|android|crios|fxios|edgios).)*safari/i.test(ua);
+    return isIOS || isSafari;
+  }, []);
   const isSeated = (event as any)?.ticketing_mode === "seated";
   const seatMap = (event as any)?.seat_map as { rows?: number; cols?: number } | null;
 
@@ -135,27 +143,12 @@ export default function EventPage() {
     }
   }
 
-  function handlePrintTicket() {
-    const svg = qrWrapRef.current?.querySelector("svg");
-    if (!svg || !event) {
-      toast.error("Ticket not ready", { description: "Try again in a moment." });
-      return;
-    }
-    setPrinting(true);
-    const toastId = toast.loading("Preparing print view…");
-    try {
-      const svgStr = new XMLSerializer().serializeToString(svg);
-      const svgDataUri = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svgStr)))}`;
-      const w = window.open("", "_blank", "width=480,height=720");
-      if (!w) {
-        toast.error("Pop-up blocked", { id: toastId, description: "Allow pop-ups to print your ticket." });
-        setPrinting(false);
-        return;
-      }
-      const when = format(new Date(event.starts_at), "EEE, MMM d • h:mm a");
-      const location = event.event_type === "virtual" ? "Virtual" : ((event as any).venue_name || (event as any).location || "");
-      const code = (myTicket?.qr_code_token || "").slice(0, 8).toUpperCase();
-      w.document.write(`<!doctype html><html><head><title>Ticket — ${event.title}</title>
+  function buildTicketHtml(svgDataUri: string) {
+    const when = format(new Date(event!.starts_at), "EEE, MMM d • h:mm a");
+    const location = event!.event_type === "virtual" ? "Virtual" : ((event as any).venue_name || (event as any).location || "");
+    const code = (myTicket?.qr_code_token || "").slice(0, 8).toUpperCase();
+    return `<!doctype html><html><head><title>Ticket — ${event!.title}</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#0A0A0A}
   body{padding:32px;background:#fff}
@@ -169,7 +162,7 @@ export default function EventPage() {
   @media print{body{padding:0}.card{border-color:#000}}
 </style></head><body>
   <div class="card">
-    <h1>${event.title}</h1>
+    <h1>${event!.title}</h1>
     <p class="meta">${when}</p>
     ${location ? `<p class="meta">${location}</p>` : ""}
     <div class="qr"><img src="${svgDataUri}" alt="Ticket QR"/></div>
@@ -177,12 +170,91 @@ export default function EventPage() {
     <p class="foot">Present this ticket at check-in. UPLY</p>
   </div>
   <script>window.onload=()=>{setTimeout(()=>{window.focus();window.print();},250);};</script>
-</body></html>`);
+</body></html>`;
+  }
+
+  function printViaIframe(html: string) {
+    // Fallback for iOS/Safari where window.open is restricted: use a hidden iframe in the same document.
+    return new Promise<void>((resolve, reject) => {
+      try {
+        const iframe = document.createElement("iframe");
+        iframe.setAttribute("aria-hidden", "true");
+        iframe.style.position = "fixed";
+        iframe.style.right = "0";
+        iframe.style.bottom = "0";
+        iframe.style.width = "0";
+        iframe.style.height = "0";
+        iframe.style.border = "0";
+        document.body.appendChild(iframe);
+        const doc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (!doc) { iframe.remove(); reject(new Error("Iframe unavailable")); return; }
+        doc.open();
+        doc.write(html.replace(/<script[\s\S]*?<\/script>/g, ""));
+        doc.close();
+        const trigger = () => {
+          try {
+            iframe.contentWindow?.focus();
+            iframe.contentWindow?.print();
+            resolve();
+          } catch (err) {
+            reject(err as Error);
+          } finally {
+            setTimeout(() => iframe.remove(), 1000);
+          }
+        };
+        setTimeout(trigger, 350);
+      } catch (e) {
+        reject(e as Error);
+      }
+    });
+  }
+
+  function handlePrintTicket() {
+    const svg = qrWrapRef.current?.querySelector("svg");
+    if (!svg || !event) {
+      toast.error("Ticket not ready", { description: "Try again in a moment." });
+      return;
+    }
+    setPrinting(true);
+    const toastId = toast.loading("Preparing print view…");
+    try {
+      const svgStr = new XMLSerializer().serializeToString(svg);
+      const svgDataUri = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svgStr)))}`;
+      const html = buildTicketHtml(svgDataUri);
+
+      // iOS Safari often blocks or strips features from window.open; go straight to iframe fallback.
+      if (isIosOrSafari) {
+        printViaIframe(html)
+          .then(() => {
+            toast.success("Print dialog opened", { id: toastId, description: "Use Share → Print if it didn't appear." });
+            setIosPrintHelpOpen(true);
+          })
+          .catch(() => {
+            toast.error("Couldn't open print dialog", { id: toastId, description: "Follow the on-screen steps to print." });
+            setIosPrintHelpOpen(true);
+          })
+          .finally(() => setPrinting(false));
+        return;
+      }
+
+      const w = window.open("", "_blank", "width=480,height=720");
+      if (!w) {
+        // Pop-up blocked — fall back to in-page iframe printing.
+        printViaIframe(html)
+          .then(() => toast.success("Print view ready", { id: toastId, description: "Pick a printer to finish." }))
+          .catch(() => {
+            toast.error("Pop-up blocked", { id: toastId, description: "Allow pop-ups or follow the on-screen steps." });
+            setIosPrintHelpOpen(true);
+          })
+          .finally(() => setPrinting(false));
+        return;
+      }
+      w.document.write(html);
       w.document.close();
       toast.success("Print view ready", { id: toastId, description: "Pick a printer to finish." });
+      setPrinting(false);
     } catch (e: any) {
       toast.error("Couldn't print ticket", { id: toastId, description: e?.message || "Try again." });
-    } finally {
       setPrinting(false);
     }
   }
@@ -673,8 +745,58 @@ END:VCALENDAR`;
                 {exportingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                 {exportingPdf ? "Generating PDF…" : "Export as PDF"}
               </Button>
+              {isIosOrSafari && (
+                <button
+                  type="button"
+                  onClick={() => setIosPrintHelpOpen(true)}
+                  className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                >
+                  Having trouble printing on iPhone or Safari?
+                </button>
+              )}
               <Button variant="outline" onClick={() => setPrintPreviewOpen(false)} className="w-full">
                 Cancel
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* iOS / Safari print fallback help */}
+        <Dialog open={iosPrintHelpOpen} onOpenChange={setIosPrintHelpOpen}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Printer className="w-5 h-5" /> Print on iPhone or Safari
+              </DialogTitle>
+              <DialogDescription>
+                Safari may block the print pop-up. Use one of these reliable options instead.
+              </DialogDescription>
+            </DialogHeader>
+            <ol className="space-y-3 text-sm text-foreground/90 list-decimal pl-5">
+              <li>
+                <span className="font-medium">Use Export as PDF</span> — saves the ticket to Files, then tap Share → Print.
+              </li>
+              <li>
+                <span className="font-medium">Use the system Share sheet</span> — tap the Share icon in Safari and choose <em>Print</em>.
+              </li>
+              <li>
+                <span className="font-medium">AirPrint</span> — pinch-out on the print preview thumbnail to send straight to a nearby printer.
+              </li>
+            </ol>
+            <DialogFooter className="flex-col gap-2">
+              <Button
+                onClick={() => {
+                  setIosPrintHelpOpen(false);
+                  setTimeout(() => handleExportPdf(), 150);
+                }}
+                disabled={exportingPdf}
+                className="w-full gap-2"
+              >
+                {exportingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                {exportingPdf ? "Generating PDF…" : "Export as PDF instead"}
+              </Button>
+              <Button variant="outline" onClick={() => setIosPrintHelpOpen(false)} className="w-full">
+                Got it
               </Button>
             </DialogFooter>
           </DialogContent>
