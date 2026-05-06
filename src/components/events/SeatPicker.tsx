@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Info, Loader2, X } from "lucide-react";
+import { Info, Loader2, Minus, Plus, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
