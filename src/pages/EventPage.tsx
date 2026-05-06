@@ -258,20 +258,27 @@ END:VCALENDAR`;
         {/* Bottom sticky ticket card */}
         {!isPast && (
           <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 z-40 md:relative md:border-t-0 md:mt-6">
-            <div className="max-w-3xl mx-auto flex items-center justify-between gap-4">
+            <div className="max-w-3xl mx-auto flex items-center justify-between gap-3 flex-wrap">
               <div>
                 <p className="text-xl font-bold text-foreground">
-                  {event.is_free ? <span className="text-primary">FREE</span> : `$${event.ticket_price}`}
+                  {event.is_free ? <span className="text-primary">FREE</span> : `$${(event.ticket_price * quantity).toFixed(2)}`}
                 </p>
                 {event.ticket_quantity && event.ticket_quantity - event.tickets_sold <= 20 && !event.is_sold_out && (
                   <p className="text-xs text-destructive">{event.ticket_quantity - event.tickets_sold} tickets left</p>
                 )}
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={handleDownloadIcs}>
+              <div className="flex items-center gap-2">
+                {!event.is_free && !myTicket && !event.is_sold_out && (
+                  <div className="flex items-center border border-border rounded-lg overflow-hidden h-11">
+                    <button aria-label="Decrease" className="w-11 h-11 flex items-center justify-center disabled:opacity-30" onClick={() => setQuantity(q => Math.max(1, q - 1))} disabled={quantity <= 1}><Minus className="w-4 h-4" /></button>
+                    <span className="w-8 text-center text-sm font-semibold">{quantity}</span>
+                    <button aria-label="Increase" className="w-11 h-11 flex items-center justify-center disabled:opacity-30" onClick={() => setQuantity(q => Math.min(10, q + 1))} disabled={quantity >= 10}><Plus className="w-4 h-4" /></button>
+                  </div>
+                )}
+                <Button variant="outline" size="sm" onClick={handleDownloadIcs} aria-label="Add to calendar">
                   <CalendarDays className="w-4 h-4" />
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => event && setReminder.mutate(event.id)}>
+                <Button variant="outline" size="sm" onClick={() => event && setReminder.mutate(event.id)} aria-label="Remind me">
                   <Bell className="w-4 h-4" />
                 </Button>
                 {myTicket ? (
@@ -281,14 +288,27 @@ END:VCALENDAR`;
                 ) : event.is_sold_out ? (
                   <Button variant="outline" disabled>Sold Out</Button>
                 ) : (
-                  <Button onClick={handleGetTicket} disabled={purchasing || claimFree.isPending} className="gap-2">
-                    {purchasing || claimFree.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ticket className="w-4 h-4" />}
+                  <Button onClick={handleGetTicket} disabled={claimFree.isPending} className="gap-2">
+                    {claimFree.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ticket className="w-4 h-4" />}
                     {event.is_free ? "Get Free Ticket" : "Get Tickets"}
                   </Button>
                 )}
               </div>
             </div>
           </div>
+        )}
+
+        {!event.is_free && (
+          <PurchaseOverlay
+            isOpen={checkoutOpen}
+            onClose={() => setCheckoutOpen(false)}
+            onSuccess={() => navigate(`/tickets/success?event=${event.id}`)}
+            purchaseType="ticket"
+            purchaseParams={{ event_id: event.id, quantity }}
+            title={event.title}
+            description={`${quantity} ticket${quantity > 1 ? "s" : ""}`}
+            price={event.ticket_price * quantity}
+          />
         )}
       </div>
     </AppLayout>
