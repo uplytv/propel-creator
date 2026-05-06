@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -60,6 +60,7 @@ export default function EventPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
   const [qrUpdatedAt, setQrUpdatedAt] = useState<Date | null>(null);
+  const qrWrapRef = useRef<HTMLDivElement>(null);
   const isSeated = (event as any)?.ticketing_mode === "seated";
   const seatMap = (event as any)?.seat_map as { rows?: number; cols?: number } | null;
 
@@ -131,6 +132,43 @@ export default function EventPage() {
     }
   }
 
+  function handleDownloadQr() {
+    const svg = qrWrapRef.current?.querySelector("svg");
+    if (!svg || !event) {
+      toast.error("QR not ready", { description: "Try again in a moment." });
+      return;
+    }
+    try {
+      const svgStr = new XMLSerializer().serializeToString(svg);
+      const svgBlob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(svgBlob);
+      const img = new Image();
+      const size = 512;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) { URL.revokeObjectURL(url); toast.error("Couldn't render QR"); return; }
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, size, size);
+        ctx.drawImage(img, 0, 0, size, size);
+        URL.revokeObjectURL(url);
+        const a = document.createElement("a");
+        a.href = canvas.toDataURL("image/png");
+        const safe = (event.title || "ticket").replace(/[^a-z0-9]+/gi, "-").toLowerCase();
+        a.download = `${safe}-qr.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        toast.success("QR downloaded", { description: "Saved for offline check-in." });
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); toast.error("Couldn't download QR"); };
+      img.src = url;
+    } catch (e: any) {
+      toast.error("Couldn't download QR", { description: e?.message || "Try again." });
+    }
+  }
   function handleDownloadIcs() {
     if (!event) return;
     const start = new Date(event.starts_at).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
@@ -405,7 +443,7 @@ END:VCALENDAR`;
             </DialogHeader>
             {myTicket?.qr_code_token && (
               <div className="flex flex-col items-center gap-3 py-2">
-                <div className="bg-white p-3 rounded-xl">
+                <div ref={qrWrapRef} className="bg-white p-3 rounded-xl">
                   <QRCodeSVG value={myTicket.qr_code_token} size={180} level="H" includeMargin={false} />
                 </div>
                 <p className="text-xs text-muted-foreground">Show this QR at check-in</p>
@@ -420,6 +458,11 @@ END:VCALENDAR`;
               {myTicket?.qr_code_token && (
                 <Button onClick={() => navigate(`/tickets/${myTicket.qr_code_token}`)} className="w-full gap-2">
                   <Ticket className="w-4 h-4" /> View Full Ticket
+                </Button>
+              )}
+              {myTicket?.qr_code_token && (
+                <Button variant="secondary" onClick={handleDownloadQr} className="w-full gap-2">
+                  <Download className="w-4 h-4" /> Download QR
                 </Button>
               )}
               {myTicket?.id && (
