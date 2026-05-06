@@ -148,6 +148,23 @@ export default function EventCheckIn({ event, onClose }: { event: EventRow; onCl
         )}
       </AnimatePresence>
 
+      {/* Camera scanner */}
+      <div className="px-4 pt-3">
+        <Button
+          variant={scannerOn ? "destructive" : "default"}
+          size="sm"
+          className="w-full"
+          onClick={() => setScannerOn(s => !s)}
+        >
+          {scannerOn ? <><CameraOff className="w-4 h-4 mr-2" /> Stop camera</> : <><Camera className="w-4 h-4 mr-2" /> Scan with camera</>}
+        </Button>
+        {scannerOn && (
+          <div className="mt-3 rounded-lg overflow-hidden border border-border bg-black aspect-video">
+            <video ref={videoRef} className="w-full h-full object-cover" muted playsInline />
+          </div>
+        )}
+      </div>
+
       {/* Manual entry */}
       <div className="p-4 space-y-3">
         <div className="flex gap-2">
