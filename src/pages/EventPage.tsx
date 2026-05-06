@@ -3,7 +3,7 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   CalendarDays, MapPin, Monitor, Globe, Users, Ticket, Bell,
-  Download, Check, Clock, Loader2, Share2, ExternalLink, Plus, Minus, RefreshCw
+  Download, Check, Clock, Loader2, Share2, ExternalLink, Plus, Minus, RefreshCw, Printer
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import EventLiveNowBanner from "@/components/live/EventLiveNowBanner";
@@ -129,6 +129,53 @@ export default function EventPage() {
       toast.error("Couldn't regenerate QR", { description: e?.message || "Try again in a moment." });
     } finally {
       setRegenerating(false);
+    }
+  }
+
+  function handlePrintTicket() {
+    const svg = qrWrapRef.current?.querySelector("svg");
+    if (!svg || !event) {
+      toast.error("Ticket not ready", { description: "Try again in a moment." });
+      return;
+    }
+    try {
+      const svgStr = new XMLSerializer().serializeToString(svg);
+      const svgDataUri = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svgStr)))}`;
+      const w = window.open("", "_blank", "width=480,height=720");
+      if (!w) {
+        toast.error("Pop-up blocked", { description: "Allow pop-ups to print your ticket." });
+        return;
+      }
+      const when = format(new Date(event.starts_at), "EEE, MMM d • h:mm a");
+      const location = event.event_type === "virtual" ? "Virtual" : ((event as any).venue_name || (event as any).location || "");
+      const code = (myTicket?.qr_code_token || "").slice(0, 8).toUpperCase();
+      w.document.write(`<!doctype html><html><head><title>Ticket — ${event.title}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#0A0A0A}
+  body{padding:32px;background:#fff}
+  .card{max-width:380px;margin:0 auto;border:2px dashed #0A0A0A;border-radius:16px;padding:24px;text-align:center}
+  h1{font-size:20px;font-weight:700;margin-bottom:8px}
+  .meta{font-size:13px;color:#444;margin-bottom:4px}
+  .qr{margin:20px auto;padding:12px;background:#fff;display:inline-block}
+  .qr img{display:block;width:240px;height:240px}
+  .code{font-family:"Courier New",monospace;font-size:14px;letter-spacing:2px;margin-top:8px}
+  .foot{margin-top:16px;font-size:11px;color:#777}
+  @media print{body{padding:0}.card{border-color:#000}}
+</style></head><body>
+  <div class="card">
+    <h1>${event.title}</h1>
+    <p class="meta">${when}</p>
+    ${location ? `<p class="meta">${location}</p>` : ""}
+    <div class="qr"><img src="${svgDataUri}" alt="Ticket QR"/></div>
+    <p class="code">${code}</p>
+    <p class="foot">Present this ticket at check-in. UPLY</p>
+  </div>
+  <script>window.onload=()=>{setTimeout(()=>{window.focus();window.print();},250);};</script>
+</body></html>`);
+      w.document.close();
+      toast.success("Opening print view…");
+    } catch (e: any) {
+      toast.error("Couldn't print ticket", { description: e?.message || "Try again." });
     }
   }
 
@@ -463,6 +510,11 @@ END:VCALENDAR`;
               {myTicket?.qr_code_token && (
                 <Button variant="secondary" onClick={handleDownloadQr} className="w-full gap-2">
                   <Download className="w-4 h-4" /> Download QR
+                </Button>
+              )}
+              {myTicket?.qr_code_token && (
+                <Button variant="secondary" onClick={handlePrintTicket} className="w-full gap-2">
+                  <Printer className="w-4 h-4" /> Print Ticket
                 </Button>
               )}
               {myTicket?.id && (
