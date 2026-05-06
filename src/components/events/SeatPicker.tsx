@@ -268,6 +268,7 @@ export default function SeatPicker({
             ref={scrollerRef}
             className="px-4 py-4 max-h-[60vh] overflow-auto overscroll-contain"
             style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x pan-y pinch-zoom" }}
+            onScroll={handleScroll}
             onTouchStart={(e) => {
               if (e.touches.length === 2) {
                 const dx = e.touches[0].clientX - e.touches[1].clientX;
