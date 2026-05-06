@@ -40,11 +40,43 @@ export default function SeatPicker({
     if (typeof window === "undefined") return;
     try { window.localStorage.setItem(zoomKey, String(zoom)); } catch {}
   }, [zoom, zoomKey]);
+  const scrollKey = `uply.seatPicker.scroll.${eventId}`;
   const [query, setQuery] = useState("");
   const [highlight, setHighlight] = useState<string | null>(null);
   const seatRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const scrollerRef = useRef<HTMLDivElement>(null);
   const pinchRef = useRef<{ dist: number; startZoom: number } | null>(null);
+  const saveScrollTimer = useRef<number | null>(null);
+
+  // Restore scroll once seats render after open
+  useEffect(() => {
+    if (!isOpen || loading || typeof window === "undefined") return;
+    const el = scrollerRef.current;
+    if (!el) return;
+    const raw = window.localStorage.getItem(scrollKey);
+    if (!raw) return;
+    try {
+      const { left, top } = JSON.parse(raw) as { left: number; top: number };
+      // Defer to next frame so the grid has its final size
+      requestAnimationFrame(() => {
+        el.scrollTo({ left: left || 0, top: top || 0, behavior: "auto" });
+      });
+    } catch {}
+  }, [isOpen, loading, scrollKey, zoom]);
+
+  const handleScroll = () => {
+    const el = scrollerRef.current;
+    if (!el || typeof window === "undefined") return;
+    if (saveScrollTimer.current) window.clearTimeout(saveScrollTimer.current);
+    saveScrollTimer.current = window.setTimeout(() => {
+      try {
+        window.localStorage.setItem(
+          scrollKey,
+          JSON.stringify({ left: el.scrollLeft, top: el.scrollTop }),
+        );
+      } catch {}
+    }, 150);
+  };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -236,6 +268,7 @@ export default function SeatPicker({
             ref={scrollerRef}
             className="px-4 py-4 max-h-[60vh] overflow-auto overscroll-contain"
             style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x pan-y pinch-zoom" }}
+            onScroll={handleScroll}
             onTouchStart={(e) => {
               if (e.touches.length === 2) {
                 const dx = e.touches[0].clientX - e.touches[1].clientX;
