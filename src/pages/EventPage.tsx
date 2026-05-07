@@ -245,10 +245,10 @@ ${iframePrintCss}
     try {
       const svgStr = new XMLSerializer().serializeToString(svg);
       const svgDataUri = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svgStr)))}`;
-      const html = buildTicketHtml(svgDataUri);
 
       // iOS Safari often blocks or strips features from window.open; go straight to iframe fallback.
       if (isIosOrSafari) {
+        const html = buildTicketHtml(svgDataUri, { iframeFallback: true });
         printViaIframe(html)
           .then(() => {
             toast.success("Print dialog opened", { id: toastId, description: "Use Share → Print if it didn't appear." });
@@ -265,7 +265,8 @@ ${iframePrintCss}
       const w = window.open("", "_blank", "width=480,height=720");
       if (!w) {
         // Pop-up blocked — fall back to in-page iframe printing.
-        printViaIframe(html)
+        const fallbackHtml = buildTicketHtml(svgDataUri, { iframeFallback: true });
+        printViaIframe(fallbackHtml)
           .then(() => toast.success("Print view ready", { id: toastId, description: "Pick a printer to finish." }))
           .catch(() => {
             toast.error("Pop-up blocked", { id: toastId, description: "Allow pop-ups or follow the on-screen steps." });
@@ -274,6 +275,7 @@ ${iframePrintCss}
           .finally(() => setPrinting(false));
         return;
       }
+      const html = buildTicketHtml(svgDataUri);
       w.document.write(html);
       w.document.close();
       toast.success("Print view ready", { id: toastId, description: "Pick a printer to finish." });
