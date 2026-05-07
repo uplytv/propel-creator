@@ -143,10 +143,34 @@ export default function EventPage() {
     }
   }
 
-  function buildTicketHtml(svgDataUri: string) {
+  function buildTicketHtml(svgDataUri: string, opts?: { iframeFallback?: boolean }) {
     const when = format(new Date(event!.starts_at), "EEE, MMM d • h:mm a");
     const location = event!.event_type === "virtual" ? "Virtual" : ((event as any).venue_name || (event as any).location || "");
     const code = (myTicket?.qr_code_token || "").slice(0, 8).toUpperCase();
+    // Dedicated print CSS for iframe fallback (iOS/Safari): forces letter page,
+    // tight margins, exact color rendering, and a crisp pixelated QR that won't
+    // get smoothed by the iPhone print pipeline.
+    const iframePrintCss = opts?.iframeFallback ? `
+  @page { size: auto; margin: 12mm; }
+  html, body { width: 100%; height: auto; background: #fff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  @media print {
+    html, body { padding: 0 !important; margin: 0 !important; }
+    .card { width: 78mm !important; max-width: 78mm !important; margin: 0 auto !important; padding: 6mm !important; border: 1.5pt dashed #000 !important; page-break-inside: avoid; break-inside: avoid; }
+    .card h1 { font-size: 14pt !important; }
+    .card .meta { font-size: 9pt !important; color: #000 !important; }
+    .card .code { font-size: 10pt !important; }
+    .card .foot { font-size: 7pt !important; color: #000 !important; }
+    .qr { padding: 2mm !important; margin: 4mm auto !important; }
+    .qr img {
+      width: 52mm !important;
+      height: 52mm !important;
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+      -ms-interpolation-mode: nearest-neighbor;
+    }
+  }
+` : "";
     return `<!doctype html><html><head><title>Ticket — ${event!.title}</title>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <style>
@@ -156,10 +180,11 @@ export default function EventPage() {
   h1{font-size:20px;font-weight:700;margin-bottom:8px}
   .meta{font-size:13px;color:#444;margin-bottom:4px}
   .qr{margin:20px auto;padding:12px;background:#fff;display:inline-block}
-  .qr img{display:block;width:240px;height:240px}
+  .qr img{display:block;width:240px;height:240px;image-rendering:pixelated;image-rendering:-moz-crisp-edges;image-rendering:crisp-edges}
   .code{font-family:"Courier New",monospace;font-size:14px;letter-spacing:2px;margin-top:8px}
   .foot{margin-top:16px;font-size:11px;color:#777}
   @media print{body{padding:0}.card{border-color:#000}}
+${iframePrintCss}
 </style></head><body>
   <div class="card">
     <h1>${event!.title}</h1>
