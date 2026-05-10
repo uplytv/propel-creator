@@ -9676,6 +9676,71 @@ export type Database = {
         }
         Relationships: []
       }
+      music_liner_note_reactions: {
+        Row: {
+          created_at: string
+          id: string
+          note_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_liner_note_reactions_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "music_liner_notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_liner_notes: {
+        Row: {
+          album: string | null
+          artist_id: string
+          body: string
+          created_at: string
+          id: string
+          like_count: number
+          story_type: string
+          track_title: string
+          updated_at: string
+        }
+        Insert: {
+          album?: string | null
+          artist_id: string
+          body: string
+          created_at?: string
+          id?: string
+          like_count?: number
+          story_type?: string
+          track_title: string
+          updated_at?: string
+        }
+        Update: {
+          album?: string | null
+          artist_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          like_count?: number
+          story_type?: string
+          track_title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_listen_streaks: {
         Row: {
           current_streak: number
