@@ -13824,6 +13824,41 @@ export type Database = {
           },
         ]
       }
+      music_sync_attendees: {
+        Row: {
+          created_at: string
+          fan_id: string
+          id: string
+          rsvp: string
+          session_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          fan_id: string
+          id?: string
+          rsvp?: string
+          session_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          fan_id?: string
+          id?: string
+          rsvp?: string
+          session_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_sync_attendees_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "music_sync_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_sync_briefs: {
         Row: {
           budget_cents: number | null
@@ -13982,6 +14017,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      music_sync_sessions: {
+        Row: {
+          album_name: string | null
+          artist_id: string | null
+          capacity: number
+          cover_url: string | null
+          created_at: string
+          duration_minutes: number
+          going_count: number
+          host_id: string
+          host_message: string | null
+          id: string
+          scheduled_at: string
+          spotify_url: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          album_name?: string | null
+          artist_id?: string | null
+          capacity?: number
+          cover_url?: string | null
+          created_at?: string
+          duration_minutes?: number
+          going_count?: number
+          host_id: string
+          host_message?: string | null
+          id?: string
+          scheduled_at: string
+          spotify_url?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          album_name?: string | null
+          artist_id?: string | null
+          capacity?: number
+          cover_url?: string | null
+          created_at?: string
+          duration_minutes?: number
+          going_count?: number
+          host_id?: string
+          host_message?: string | null
+          id?: string
+          scheduled_at?: string
+          spotify_url?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       music_tip_contributions: {
         Row: {
