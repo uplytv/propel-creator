@@ -86,6 +86,20 @@ export default function MusicHome() {
       </header>
 
       <div className="space-y-8">
+        {(spotlights?.length ?? 0) > 0 && (
+          <section className="space-y-3">
+            <div className="flex items-center justify-between px-4">
+              <h2 className="text-lg font-bold text-white">Spotlight</h2>
+              <Link to="/music/browse" className="text-xs text-white/60">Browse all</Link>
+            </div>
+            <div className="flex gap-3 overflow-x-auto px-4 pb-2">
+              {spotlights!.map((s) => (
+                <SpotlightCard key={s.id} item={s} />
+              ))}
+            </div>
+          </section>
+        )}
+
         {(stations?.some((s) => s.is_live) || (premieres?.length ?? 0) > 0 || (liveRooms?.length ?? 0) > 0) && (
           <section className="space-y-3">
             <div className="flex items-center justify-between px-4">
