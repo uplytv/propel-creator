@@ -9701,6 +9701,89 @@ export type Database = {
         }
         Relationships: []
       }
+      music_merch_waitlist_signups: {
+        Row: {
+          created_at: string
+          email: string | null
+          fan_id: string
+          id: string
+          notified_at: string | null
+          size_pref: string | null
+          waitlist_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          fan_id: string
+          id?: string
+          notified_at?: string | null
+          size_pref?: string | null
+          waitlist_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          fan_id?: string
+          id?: string
+          notified_at?: string | null
+          size_pref?: string | null
+          waitlist_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_merch_waitlist_signups_waitlist_id_fkey"
+            columns: ["waitlist_id"]
+            isOneToOne: false
+            referencedRelation: "music_merch_waitlists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_merch_waitlists: {
+        Row: {
+          artist_id: string
+          created_at: string
+          drop_title: string
+          id: string
+          image_url: string | null
+          launch_at: string | null
+          max_signups: number | null
+          notes: string | null
+          product_name: string
+          signup_count: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          drop_title: string
+          id?: string
+          image_url?: string | null
+          launch_at?: string | null
+          max_signups?: number | null
+          notes?: string | null
+          product_name: string
+          signup_count?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          drop_title?: string
+          id?: string
+          image_url?: string | null
+          launch_at?: string | null
+          max_signups?: number | null
+          notes?: string | null
+          product_name?: string
+          signup_count?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_nft_drops: {
         Row: {
           artwork_url: string | null
