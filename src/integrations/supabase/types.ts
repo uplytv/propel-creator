@@ -9615,6 +9615,63 @@ export type Database = {
           },
         ]
       }
+      music_podcast_episodes: {
+        Row: {
+          artist_id: string
+          audio_url: string
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          duration_seconds: number | null
+          episode_number: number | null
+          id: string
+          is_explicit: boolean
+          is_published: boolean
+          play_count: number
+          published_at: string | null
+          season_number: number | null
+          show_name: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          audio_url: string
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number | null
+          episode_number?: number | null
+          id?: string
+          is_explicit?: boolean
+          is_published?: boolean
+          play_count?: number
+          published_at?: string | null
+          season_number?: number | null
+          show_name?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          audio_url?: string
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number | null
+          episode_number?: number | null
+          id?: string
+          is_explicit?: boolean
+          is_published?: boolean
+          play_count?: number
+          published_at?: string | null
+          season_number?: number | null
+          show_name?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_premiere_chat: {
         Row: {
           created_at: string
@@ -15911,6 +15968,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_podcast_episode_plays: {
+        Args: { _episode_id: string }
+        Returns: undefined
       }
       increment_product_sales: {
         Args: { p_amount?: number; p_id: string }
