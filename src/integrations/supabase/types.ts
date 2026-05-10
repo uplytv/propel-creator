@@ -10077,6 +10077,107 @@ export type Database = {
         }
         Relationships: []
       }
+      music_preorder_campaigns: {
+        Row: {
+          artist_id: string
+          cover_url: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          format: string
+          goal_units: number
+          id: string
+          price_cents: number
+          ships_by: string | null
+          status: string
+          title: string
+          units_reserved: number
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          cover_url?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          format?: string
+          goal_units?: number
+          id?: string
+          price_cents: number
+          ships_by?: string | null
+          status?: string
+          title: string
+          units_reserved?: number
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          cover_url?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          format?: string
+          goal_units?: number
+          id?: string
+          price_cents?: number
+          ships_by?: string | null
+          status?: string
+          title?: string
+          units_reserved?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      music_preorders: {
+        Row: {
+          amount_cents: number
+          campaign_id: string
+          created_at: string
+          currency: string
+          fan_id: string
+          id: string
+          quantity: number
+          shipping_address: Json | null
+          shipping_name: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          campaign_id: string
+          created_at?: string
+          currency?: string
+          fan_id: string
+          id?: string
+          quantity?: number
+          shipping_address?: Json | null
+          shipping_name?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          campaign_id?: string
+          created_at?: string
+          currency?: string
+          fan_id?: string
+          id?: string
+          quantity?: number
+          shipping_address?: Json | null
+          shipping_name?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_preorders_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "music_preorder_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_pro_works: {
         Row: {
           confirmed_at: string | null
