@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,6 @@ import {
   useUpdateBookingInquiryStatus,
 } from "../hooks/useGigMarketplace";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useState as useRState } from "react";
 
 export default function BookingInquiryPage() {
   const { id } = useParams<{ id: string }>();
