@@ -59,11 +59,14 @@ serve(async (req) => {
     })
 
     if (dur >= 30) {
-      // Atomic increment via raw RPC-less update
-      await admin.rpc('exec_sql' as any, {} as any).catch(() => {})
+      const { data: cur } = await admin
+        .from('tracks')
+        .select('play_count')
+        .eq('id', trackId)
+        .single()
       await admin
         .from('tracks')
-        .update({ play_count: (await getCurrentCount(admin, trackId)) + 1 })
+        .update({ play_count: Number(cur?.play_count || 0) + 1 })
         .eq('id', trackId)
     }
 
@@ -78,7 +81,3 @@ serve(async (req) => {
   }
 })
 
-async function getCurrentCount(admin: any, trackId: string): Promise<number> {
-  const { data } = await admin.from('tracks').select('play_count').eq('id', trackId).single()
-  return Number(data?.play_count || 0)
-}
