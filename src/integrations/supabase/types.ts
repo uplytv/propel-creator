@@ -13556,6 +13556,86 @@ export type Database = {
           },
         ]
       }
+      music_tip_contributions: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          fan_id: string
+          goal_id: string
+          id: string
+          is_anonymous: boolean
+          message: string | null
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          fan_id: string
+          goal_id: string
+          id?: string
+          is_anonymous?: boolean
+          message?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          fan_id?: string
+          goal_id?: string
+          id?: string
+          is_anonymous?: boolean
+          message?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_tip_contributions_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "music_tip_goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_tip_goals: {
+        Row: {
+          artist_id: string
+          contributor_count: number
+          created_at: string
+          description: string | null
+          ends_at: string | null
+          goal_cents: number
+          id: string
+          raised_cents: number
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          contributor_count?: number
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          goal_cents: number
+          id?: string
+          raised_cents?: number
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          contributor_count?: number
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          goal_cents?: number
+          id?: string
+          raised_cents?: number
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_tip_jar_contributions: {
         Row: {
           amount_cents: number
