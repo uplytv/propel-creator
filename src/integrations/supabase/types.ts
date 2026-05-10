@@ -14139,6 +14139,121 @@ export type Database = {
         }
         Relationships: []
       }
+      music_trivia_attempts: {
+        Row: {
+          created_at: string
+          duration_seconds: number
+          fan_id: string
+          id: string
+          quiz_id: string
+          score: number
+          total_points: number
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds?: number
+          fan_id: string
+          id?: string
+          quiz_id: string
+          score?: number
+          total_points?: number
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number
+          fan_id?: string
+          id?: string
+          quiz_id?: string
+          score?: number
+          total_points?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_trivia_attempts_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "music_trivia_quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_trivia_questions: {
+        Row: {
+          choices: string[]
+          correct_index: number
+          created_at: string
+          id: string
+          points: number
+          position: number
+          prompt: string
+          quiz_id: string
+        }
+        Insert: {
+          choices: string[]
+          correct_index: number
+          created_at?: string
+          id?: string
+          points?: number
+          position?: number
+          prompt: string
+          quiz_id: string
+        }
+        Update: {
+          choices?: string[]
+          correct_index?: number
+          created_at?: string
+          id?: string
+          points?: number
+          position?: number
+          prompt?: string
+          quiz_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_trivia_questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "music_trivia_quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_trivia_quizzes: {
+        Row: {
+          artist_id: string
+          attempt_count: number
+          created_at: string
+          description: string | null
+          id: string
+          status: string
+          time_limit_seconds: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          attempt_count?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          status?: string
+          time_limit_seconds?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          attempt_count?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          status?: string
+          time_limit_seconds?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_user_badges: {
         Row: {
           badge_key: string
