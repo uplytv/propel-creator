@@ -8990,6 +8990,57 @@ export type Database = {
           },
         ]
       }
+      music_demo_submissions: {
+        Row: {
+          artist_id: string
+          audio_url: string
+          created_at: string
+          description: string | null
+          duration_seconds: number
+          fan_id: string
+          feedback: string | null
+          genre: string | null
+          id: string
+          is_featured: boolean
+          rating: number | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          audio_url: string
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number
+          fan_id: string
+          feedback?: string | null
+          genre?: string | null
+          id?: string
+          is_featured?: boolean
+          rating?: number | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          audio_url?: string
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number
+          fan_id?: string
+          feedback?: string | null
+          genre?: string | null
+          id?: string
+          is_featured?: boolean
+          rating?: number | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_distribution_releases: {
         Row: {
           artist_name: string
