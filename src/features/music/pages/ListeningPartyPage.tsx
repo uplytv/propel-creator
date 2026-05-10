@@ -1,199 +1,194 @@
-import { useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Crown, Users, Copy, LogOut, Play, Pause } from "lucide-react";
-import { useListeningParty, usePartyQueue } from "../hooks/useListeningParty";
-import { usePlayerStore } from "../hooks/usePlayerStore";
-import { useTrack } from "../hooks/useTrack";
-import { useAuth } from "@/context/AuthContext";
-import { toast } from "@/hooks/use-toast";
+import { useEffect, useRef, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { Play, Pause, Send, Users, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
+import {
+  useParty,
+  useUpdatePartyState,
+  useEndParty,
+  useJoinParty,
+  useLeaveParty,
+  usePartyChat,
+} from '../hooks/useListeningParties';
+import { toast } from 'sonner';
 
-export default function ListeningPartyPage() {
-  const { code } = useParams<{ code: string }>();
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const { party, members, isHost, updateState } = useListeningParty(code);
-  const { data: queue } = usePartyQueue(party?.id);
-  const { data: currentTrack } = useTrack(party?.current_track_id ?? undefined);
+const MAX_DRIFT = 2.0; // seconds
 
-  const playerLoadTrack = usePlayerStore((s) => s.loadTrack);
-  const playerCurrentId = usePlayerStore((s) => s.queue[s.currentIndex]?.id);
-  const playerIsPlaying = usePlayerStore((s) => s.isPlaying);
-  const playerPlay = usePlayerStore((s) => s.play);
-  const playerPause = usePlayerStore((s) => s.pause);
-  const playerSeek = usePlayerStore((s) => s.seek);
-  const playerPosition = usePlayerStore((s) => s.positionSeconds);
+export function ListeningPartyPage() {
+  const { partyId } = useParams<{ partyId: string }>();
+  const { data: party } = useParty(partyId);
+  const updateState = useUpdatePartyState();
+  const endParty = useEndParty();
+  const join = useJoinParty(partyId);
+  const leave = useLeaveParty(partyId);
+  const { messages, send } = usePartyChat(partyId);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [me, setMe] = useState<string | null>(null);
+  const [draft, setDraft] = useState('');
 
-  // Sync host -> party state
   useEffect(() => {
-    if (!isHost || !party) return;
-    const id = setInterval(() => {
-      const cur = usePlayerStore.getState();
-      const trackId = cur.queue[cur.currentIndex]?.id ?? null;
-      if (
-        trackId !== party.current_track_id ||
-        Math.abs(cur.positionSeconds - party.position_seconds) > 2 ||
-        cur.isPlaying !== party.is_playing
-      ) {
-        updateState({
-          current_track_id: trackId,
-          position_seconds: cur.positionSeconds,
-          is_playing: cur.isPlaying,
-        });
-      }
-    }, 2000);
-    return () => clearInterval(id);
-  }, [isHost, party?.id, party?.current_track_id, party?.position_seconds, party?.is_playing, updateState]);
+    supabase.auth.getUser().then(({ data }) => setMe(data.user?.id ?? null));
+  }, []);
 
-  // Sync party state -> guest player
+  // Join on mount, leave on unmount
   useEffect(() => {
-    if (!party || isHost || !currentTrack) return;
-    if (playerCurrentId !== currentTrack.id) {
-      playerLoadTrack(currentTrack);
-    }
-    if (Math.abs(playerPosition - party.position_seconds) > 3) {
-      playerSeek(party.position_seconds);
-    }
-    if (party.is_playing && !playerIsPlaying) playerPlay();
-    if (!party.is_playing && playerIsPlaying) playerPause();
-  }, [party?.current_track_id, party?.position_seconds, party?.is_playing, currentTrack?.id, isHost]);
+    if (!partyId || !me) return;
+    join.mutate();
+    return () => {
+      leave.mutate();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [partyId, me]);
 
-  if (!party) {
-    return (
-      <div className="p-8 text-white/60">
-        Loading party… If this party has ended, the host may have closed it.
-      </div>
-    );
-  }
+  const isHost = !!me && !!party && me === party.host_id;
 
-  const shareUrl = `${window.location.origin}/music/party/${party.share_code}`;
+  // Sync follower playback to host state
+  useEffect(() => {
+    const a = audioRef.current;
+    if (!a || !party || isHost) return;
+    if (party.current_track_url && a.src !== party.current_track_url) {
+      a.src = party.current_track_url;
+    }
+    const elapsed = (Date.now() - new Date(party.last_sync_at).getTime()) / 1000;
+    const target = party.is_playing
+      ? party.position_seconds + elapsed
+      : party.position_seconds;
+    if (Math.abs(a.currentTime - target) > MAX_DRIFT) {
+      a.currentTime = target;
+    }
+    if (party.is_playing && a.paused) a.play().catch(() => {});
+    if (!party.is_playing && !a.paused) a.pause();
+  }, [party, isHost]);
+
+  // Host: set source on track change
+  useEffect(() => {
+    const a = audioRef.current;
+    if (!a || !party || !isHost) return;
+    if (party.current_track_url && a.src !== party.current_track_url) {
+      a.src = party.current_track_url;
+      if (party.is_playing) a.play().catch(() => {});
+    }
+  }, [party, isHost]);
+
+  const togglePlay = async () => {
+    if (!party || !isHost) return;
+    const a = audioRef.current;
+    if (!a) return;
+    const next = a.paused;
+    if (next) {
+      await a.play();
+    } else {
+      a.pause();
+    }
+    await updateState.mutateAsync({
+      id: party.id,
+      is_playing: next,
+      position_seconds: Math.floor(a.currentTime),
+    });
+  };
+
+  const handleEnd = async () => {
+    if (!party) return;
+    await endParty.mutateAsync(party.id);
+    toast.success('Party ended');
+  };
+
+  if (!party) return <div className="p-6 text-muted-foreground">Loading party…</div>;
 
   return (
-    <div className="pb-40 max-w-3xl mx-auto px-4 pt-4 space-y-6">
-      <button
-        onClick={() => navigate("/music")}
-        className="inline-flex items-center gap-1 text-white/60 text-sm min-h-[44px]"
-      >
-        <ArrowLeft className="w-4 h-4" /> Back
-      </button>
-
-      <div className="rounded-2xl p-5" style={{ background: "rgba(0,255,133,0.06)", border: "1px solid rgba(0,255,133,0.2)" }}>
-        <div className="flex items-center gap-2 mb-1">
-          <Users className="w-5 h-5" style={{ color: "#00FF85" }} />
-          <h1 className="text-xl font-black text-white">{party.title}</h1>
-        </div>
-        <p className="text-white/60 text-sm">
-          Code <span className="font-mono font-bold text-white">{party.share_code}</span>
-          {isHost && <span className="ml-2 inline-flex items-center gap-1 text-xs"><Crown className="w-3 h-3" style={{ color: "#FFD700" }} /> You're the host</span>}
-        </p>
-        <button
-          onClick={() => {
-            navigator.clipboard.writeText(shareUrl);
-            toast({ title: "Link copied" });
-          }}
-          className="mt-3 inline-flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-full text-sm font-semibold"
-          style={{ background: "#00FF85", color: "#000" }}
-        >
-          <Copy className="w-4 h-4" /> Copy invite link
-        </button>
-      </div>
-
-      <section>
-        <h2 className="text-white font-bold text-sm mb-2">Now playing</h2>
-        {currentTrack ? (
-          <div className="flex items-center gap-3 rounded-xl p-3" style={{ background: "rgba(255,255,255,0.04)" }}>
-            <div
-              className="w-14 h-14 rounded-lg flex-shrink-0"
-              style={{
-                background: currentTrack.cover_art_url
-                  ? `url(${currentTrack.cover_art_url}) center/cover`
-                  : "linear-gradient(135deg,#3D7CFF,#B025FF)",
-              }}
-            />
-            <div className="flex-1 min-w-0">
-              <p className="text-white font-semibold truncate">{currentTrack.title}</p>
-              <p className="text-white/50 text-xs truncate">{currentTrack.genre || "Music"}</p>
-            </div>
-            {isHost ? (
-              <button
-                onClick={() => (party.is_playing ? playerPause() : playerPlay())}
-                className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-full"
-                style={{ background: "#00FF85", color: "#000" }}
-              >
-                {party.is_playing ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-              </button>
-            ) : (
-              <span className="text-xs text-white/40">{party.is_playing ? "Playing" : "Paused"}</span>
-            )}
+    <div className="mobile-safe-content min-h-screen flex flex-col max-w-2xl mx-auto p-4 gap-4">
+      <header className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <Badge className="bg-red-500 text-white text-[10px] mb-1">LIVE</Badge>
+          <h1 className="text-xl font-bold truncate">{party.title}</h1>
+          <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+            <Users className="w-3 h-3" />
+            {party.participant_count.toLocaleString()} listening
           </div>
-        ) : (
-          <p className="text-white/40 text-sm">
-            {isHost ? "Pick a track from anywhere — it'll sync to your guests." : "Waiting for the host to start a track…"}
-          </p>
+        </div>
+        {isHost && (
+          <Button variant="outline" size="sm" onClick={handleEnd} className="rounded-full min-h-[44px]">
+            <X className="w-4 h-4 mr-1" /> End
+          </Button>
         )}
-      </section>
+      </header>
 
-      <section>
-        <div className="flex items-center gap-2 mb-3">
-          <Users className="w-4 h-4 text-white/70" />
-          <h2 className="text-white font-bold text-sm">In the room ({members.length + 1})</h2>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {[
-            { id: party.host_id, isHost: true, profile: null as any },
-            ...members.map((m) => ({ id: m.user_id, isHost: false, profile: m.profiles })),
-          ].map((m) => (
-            <div
-              key={m.id}
-              className="flex items-center gap-2 px-3 py-2 rounded-full"
-              style={{ background: "rgba(255,255,255,0.06)" }}
-            >
-              <div
-                className="w-7 h-7 rounded-full"
-                style={{
-                  background: m.profile?.avatar_url
-                    ? `url(${m.profile.avatar_url}) center/cover`
-                    : "linear-gradient(135deg,#3D7CFF,#B025FF)",
-                }}
-              />
-              <span className="text-white text-xs font-semibold">
-                {m.profile?.display_name || m.profile?.username || (m.isHost ? "Host" : "Guest")}
-              </span>
-              {m.isHost && <Crown className="w-3 h-3" style={{ color: "#FFD700" }} />}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {!!queue?.length && (
-        <section>
-          <h2 className="text-white font-bold text-sm mb-2">Up next</h2>
-          <div className="space-y-1">
-            {queue.map((q: any) => (
-              <div key={q.id} className="flex items-center gap-3 rounded-lg p-2" style={{ background: "rgba(255,255,255,0.03)" }}>
-                <div
-                  className="w-10 h-10 rounded"
-                  style={{
-                    background: q.tracks?.cover_art_url
-                      ? `url(${q.tracks.cover_art_url}) center/cover`
-                      : "rgba(255,255,255,0.1)",
-                  }}
-                />
-                <p className="text-white text-sm flex-1 truncate">{q.tracks?.title || "Unknown"}</p>
-              </div>
-            ))}
+      {/* Player */}
+      <Card className="p-4 bg-card/40 border-border/40 space-y-3">
+        {party.cover_url && (
+          <div className="aspect-square w-full max-w-[240px] mx-auto rounded-xl overflow-hidden bg-muted/20">
+            <img src={party.cover_url} alt="" className="w-full h-full object-cover" />
           </div>
-        </section>
-      )}
+        )}
+        <div className="text-center">
+          <p className="font-semibold">{party.current_track_title ?? 'No track'}</p>
+          <p className="text-sm text-muted-foreground">{party.current_track_artist}</p>
+        </div>
+        <audio ref={audioRef} preload="auto" />
+        <div className="flex justify-center">
+          {isHost ? (
+            <Button
+              size="icon"
+              onClick={togglePlay}
+              className="h-14 w-14 rounded-full bg-primary hover:bg-primary/90"
+            >
+              {party.is_playing ? (
+                <Pause className="w-6 h-6 fill-current" />
+              ) : (
+                <Play className="w-6 h-6 fill-current" />
+              )}
+            </Button>
+          ) : (
+            <Badge variant="outline" className="text-xs">
+              {party.is_playing ? 'Playing in sync' : 'Paused by host'}
+            </Badge>
+          )}
+        </div>
+      </Card>
 
-      {!isHost && user && (
-        <button
-          onClick={() => navigate("/music")}
-          className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 min-h-[44px] rounded-full text-sm font-bold text-white"
-          style={{ background: "rgba(255,255,255,0.06)" }}
+      {/* Chat */}
+      <Card className="flex-1 flex flex-col bg-card/40 border-border/40 min-h-[280px]">
+        <div className="flex-1 overflow-y-auto p-3 space-y-2">
+          {messages.length === 0 ? (
+            <p className="text-center text-xs text-muted-foreground pt-4">
+              Say hi 👋
+            </p>
+          ) : (
+            messages.map((m) => (
+              <div key={m.id} className="text-sm">
+                <span className="text-muted-foreground text-xs mr-2">
+                  {m.user_id === party.host_id ? '👑' : '·'}
+                </span>
+                {m.body}
+              </div>
+            ))
+          )}
+        </div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!draft.trim()) return;
+            send(draft);
+            setDraft('');
+          }}
+          className="flex gap-2 p-3 border-t border-border/40"
         >
-          <LogOut className="w-4 h-4" /> Leave party
-        </button>
-      )}
+          <Input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder="Drop a message…"
+            className="text-base"
+            maxLength={500}
+          />
+          <Button type="submit" size="icon" className="shrink-0 h-11 w-11">
+            <Send className="w-4 h-4" />
+          </Button>
+        </form>
+      </Card>
     </div>
   );
 }
