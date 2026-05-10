@@ -10640,6 +10640,67 @@ export type Database = {
           },
         ]
       }
+      track_drop_reminders: {
+        Row: {
+          created_at: string
+          drop_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          drop_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          drop_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "track_drop_reminders_drop_id_fkey"
+            columns: ["drop_id"]
+            isOneToOne: false
+            referencedRelation: "track_drops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      track_drops: {
+        Row: {
+          created_at: string
+          drop_at: string
+          hype_message: string | null
+          id: string
+          track_id: string
+        }
+        Insert: {
+          created_at?: string
+          drop_at: string
+          hype_message?: string | null
+          id?: string
+          track_id: string
+        }
+        Update: {
+          created_at?: string
+          drop_at?: string
+          hype_message?: string | null
+          id?: string
+          track_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "track_drops_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: true
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       track_likes: {
         Row: {
           created_at: string
@@ -12339,6 +12400,17 @@ export type Database = {
           score: number
           source: string
           track_id: string
+        }[]
+      }
+      get_super_fans: {
+        Args: { _artist_id: string; _limit?: number }
+        Returns: {
+          likes: number
+          plays: number
+          purchases: number
+          score: number
+          tier: string
+          user_id: string
         }[]
       }
       get_track_geo_breakdown: {
