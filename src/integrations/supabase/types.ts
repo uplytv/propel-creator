@@ -11030,6 +11030,159 @@ export type Database = {
         }
         Relationships: []
       }
+      music_setlist_items: {
+        Row: {
+          created_at: string
+          duration_seconds: number | null
+          id: string
+          note: string | null
+          position: number
+          setlist_id: string
+          track_id: string | null
+          track_title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          note?: string | null
+          position?: number
+          setlist_id: string
+          track_id?: string | null
+          track_title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          note?: string | null
+          position?: number
+          setlist_id?: string
+          track_id?: string | null
+          track_title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_setlist_items_setlist_id_fkey"
+            columns: ["setlist_id"]
+            isOneToOne: false
+            referencedRelation: "music_setlists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_setlist_request_votes: {
+        Row: {
+          created_at: string
+          id: string
+          request_id: string
+          voter_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          request_id: string
+          voter_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          request_id?: string
+          voter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_setlist_request_votes_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "music_setlist_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_setlist_requests: {
+        Row: {
+          created_at: string
+          fan_id: string
+          id: string
+          note: string | null
+          setlist_id: string
+          status: string
+          track_title: string
+          updated_at: string
+          vote_count: number
+        }
+        Insert: {
+          created_at?: string
+          fan_id: string
+          id?: string
+          note?: string | null
+          setlist_id: string
+          status?: string
+          track_title: string
+          updated_at?: string
+          vote_count?: number
+        }
+        Update: {
+          created_at?: string
+          fan_id?: string
+          id?: string
+          note?: string | null
+          setlist_id?: string
+          status?: string
+          track_title?: string
+          updated_at?: string
+          vote_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_setlist_requests_setlist_id_fkey"
+            columns: ["setlist_id"]
+            isOneToOne: false
+            referencedRelation: "music_setlists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_setlists: {
+        Row: {
+          artist_id: string
+          created_at: string
+          id: string
+          is_published: boolean
+          notes: string | null
+          show_date: string
+          show_title: string
+          updated_at: string
+          venue: string | null
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          notes?: string | null
+          show_date: string
+          show_title: string
+          updated_at?: string
+          venue?: string | null
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          notes?: string | null
+          show_date?: string
+          show_title?: string
+          updated_at?: string
+          venue?: string | null
+        }
+        Relationships: []
+      }
       music_show_tips: {
         Row: {
           amount_cents: number
