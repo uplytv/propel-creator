@@ -7,8 +7,8 @@ import AddToPlaylistMenu from '../components/AddToPlaylistMenu';
 import { formatDuration } from '../lib/formatDuration';
 
 export default function TrackPage() {
-  const { trackId } = useParams<{ trackId: string }>();
-  const { data: track, isLoading } = useTrack(trackId);
+  const { id } = useParams<{ id: string }>();
+  const { data: track, isLoading } = useTrack(id);
   const load = usePlayerStore((s) => s.loadTrack);
   const toggle = usePlayerStore((s) => s.toggle);
   const isCurrent = usePlayerStore((s) => s.queue[s.currentIndex]?.id === track?.id);

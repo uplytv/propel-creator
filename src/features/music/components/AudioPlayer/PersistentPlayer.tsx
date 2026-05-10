@@ -1,17 +1,23 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Hls from 'hls.js';
-import { Pause, Play, SkipBack, SkipForward, ListMusic, Maximize2 } from 'lucide-react';
+import { Pause, Play, SkipBack, SkipForward, ListMusic, ChevronUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { usePlayerStore } from '../../hooks/usePlayerStore';
 import { muxHlsUrl } from '../../lib/musicQueries';
 import { formatDuration } from '../../lib/formatDuration';
 import { usePlayLogger } from '../../hooks/usePlayLogger';
 import { Slider } from '@/components/ui/slider';
+import LikeButton from '../LikeButton';
+import VolumeControl from './VolumeControl';
+import QueueDrawer from './QueueDrawer';
+import NowPlayingSheet from './NowPlayingSheet';
 
 export default function PersistentPlayer() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const hlsRef = useRef<Hls | null>(null);
   const lastTrackIdRef = useRef<string | null>(null);
+  const [queueOpen, setQueueOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const queue = usePlayerStore((s) => s.queue);
   const currentIndex = usePlayerStore((s) => s.currentIndex);
@@ -151,10 +157,11 @@ export default function PersistentPlayer() {
             <span>{formatDuration(durationSeconds)}</span>
           </div>
         </div>
-        <div className="flex items-center gap-3 px-3 pb-2">
-          <Link
-            to={`/music/track/${current.id}`}
-            className="flex items-center gap-3 min-w-0 flex-1"
+        <div className="flex items-center gap-2 px-3 pb-2">
+          <button
+            onClick={() => setSheetOpen(true)}
+            className="flex items-center gap-3 min-w-0 flex-1 text-left"
+            aria-label="Open now playing"
           >
             <div
               className="w-10 h-10 rounded-md overflow-hidden flex-shrink-0"
@@ -170,7 +177,15 @@ export default function PersistentPlayer() {
               <div className="text-sm font-semibold text-white truncate">{current.title}</div>
               <div className="text-xs text-white/50 truncate">{current.genre || 'Music'}</div>
             </div>
+          </button>
+          <Link
+            to={`/music/track/${current.id}`}
+            aria-label="Track page"
+            className="hidden sm:inline-flex p-2 text-white/60 hover:text-white"
+          >
+            <ChevronUp className="w-4 h-4" />
           </Link>
+          <LikeButton trackId={current.id} />
           <button
             onClick={prev}
             className="p-2 text-white/80 hover:text-white"
@@ -193,8 +208,19 @@ export default function PersistentPlayer() {
           >
             <SkipForward className="w-5 h-5" />
           </button>
+          <button
+            onClick={() => setQueueOpen(true)}
+            aria-label="Queue"
+            className="p-2 text-white/70 hover:text-white"
+          >
+            <ListMusic className="w-5 h-5" />
+          </button>
+          <VolumeControl />
         </div>
       </div>
+
+      <QueueDrawer open={queueOpen} onClose={() => setQueueOpen(false)} />
+      <NowPlayingSheet open={sheetOpen} onClose={() => setSheetOpen(false)} />
     </>
   );
 }

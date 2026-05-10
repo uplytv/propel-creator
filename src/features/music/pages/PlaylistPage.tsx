@@ -4,8 +4,8 @@ import { usePlaylist } from '../hooks/useTrack';
 import TrackRow from '../components/TrackRow';
 
 export default function PlaylistPage() {
-  const { playlistId } = useParams<{ playlistId: string }>();
-  const { data, isLoading } = usePlaylist(playlistId);
+  const { id } = useParams<{ id: string }>();
+  const { data, isLoading } = usePlaylist(id);
   if (isLoading) return <div className="p-8 text-white/50">Loading…</div>;
   if (!data?.playlist) return <div className="p-8 text-white/50">Playlist not found.</div>;
   const { playlist, tracks } = data;

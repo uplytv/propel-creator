@@ -1,1 +1,56 @@
-export default function WaveformBar() { return null; }
+import { useMemo } from 'react';
+import { usePlayerStore } from '../../hooks/usePlayerStore';
+
+/**
+ * Lightweight pseudo-waveform: 60 deterministic bars driven by track id,
+ * highlighted up to current position. Avoids Web Audio decoding cost.
+ */
+export default function WaveformBar({ trackId }: { trackId: string }) {
+  const position = usePlayerStore((s) => s.positionSeconds);
+  const duration = usePlayerStore((s) => s.durationSeconds);
+  const seek = usePlayerStore((s) => s.seek);
+
+  const bars = useMemo(() => {
+    // simple hash → 60 heights between 0.25 and 1
+    let seed = 0;
+    for (let i = 0; i < trackId.length; i++) seed = (seed * 31 + trackId.charCodeAt(i)) >>> 0;
+    return Array.from({ length: 60 }, () => {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      return 0.25 + (seed % 1000) / 1333; // 0.25 .. ~1
+    });
+  }, [trackId]);
+
+  const progress = duration > 0 ? position / duration : 0;
+
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    const ratio = (e.clientX - r.left) / r.width;
+    if (duration > 0) seek(ratio * duration);
+  };
+
+  return (
+    <div
+      onClick={handleClick}
+      className="flex items-end gap-[2px] h-10 cursor-pointer select-none"
+      role="slider"
+      aria-label="Seek"
+      aria-valuemin={0}
+      aria-valuemax={Math.max(1, Math.round(duration))}
+      aria-valuenow={Math.round(position)}
+    >
+      {bars.map((h, i) => {
+        const reached = i / bars.length <= progress;
+        return (
+          <div
+            key={i}
+            className="flex-1 rounded-full transition-colors"
+            style={{
+              height: `${h * 100}%`,
+              background: reached ? '#00FF85' : 'rgba(255,255,255,0.18)',
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}

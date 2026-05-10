@@ -4,8 +4,8 @@ import { useAlbum } from '../hooks/useTrack';
 import TrackRow from '../components/TrackRow';
 
 export default function AlbumPage() {
-  const { albumId } = useParams<{ albumId: string }>();
-  const { data, isLoading } = useAlbum(albumId);
+  const { id } = useParams<{ id: string }>();
+  const { data, isLoading } = useAlbum(id);
 
   if (isLoading) return <div className="p-8 text-white/50">Loading…</div>;
   if (!data?.album) return <div className="p-8 text-white/50">Album not found.</div>;
