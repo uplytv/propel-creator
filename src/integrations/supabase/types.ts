@@ -6737,6 +6737,74 @@ export type Database = {
         }
         Relationships: []
       }
+      music_audio_room_participants: {
+        Row: {
+          id: string
+          joined_at: string
+          role: string
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          role?: string
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          role?: string
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_audio_room_participants_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "music_audio_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_audio_rooms: {
+        Row: {
+          created_at: string
+          ended_at: string | null
+          host_id: string
+          id: string
+          is_live: boolean
+          listeners_count: number
+          started_at: string
+          title: string
+          topic: string | null
+        }
+        Insert: {
+          created_at?: string
+          ended_at?: string | null
+          host_id: string
+          id?: string
+          is_live?: boolean
+          listeners_count?: number
+          started_at?: string
+          title: string
+          topic?: string | null
+        }
+        Update: {
+          created_at?: string
+          ended_at?: string | null
+          host_id?: string
+          id?: string
+          is_live?: boolean
+          listeners_count?: number
+          started_at?: string
+          title?: string
+          topic?: string | null
+        }
+        Relationships: []
+      }
       music_downloads: {
         Row: {
           downloaded_at: string
@@ -6990,6 +7058,180 @@ export type Database = {
             columns: ["folder_id"]
             isOneToOne: false
             referencedRelation: "music_playlist_folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_premiere_chat: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          premiere_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          premiere_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          premiere_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_premiere_chat_premiere_id_fkey"
+            columns: ["premiere_id"]
+            isOneToOne: false
+            referencedRelation: "music_premieres"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_premiere_reminders: {
+        Row: {
+          created_at: string
+          id: string
+          premiere_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          premiere_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          premiere_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_premiere_reminders_premiere_id_fkey"
+            columns: ["premiere_id"]
+            isOneToOne: false
+            referencedRelation: "music_premieres"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_premieres: {
+        Row: {
+          created_at: string
+          creator_id: string
+          ended_at: string | null
+          id: string
+          reminders_count: number
+          scheduled_at: string
+          started_at: string | null
+          status: string
+          track_id: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          ended_at?: string | null
+          id?: string
+          reminders_count?: number
+          scheduled_at: string
+          started_at?: string | null
+          status?: string
+          track_id: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          ended_at?: string | null
+          id?: string
+          reminders_count?: number
+          scheduled_at?: string
+          started_at?: string | null
+          status?: string
+          track_id?: string
+        }
+        Relationships: []
+      }
+      music_radio_stations: {
+        Row: {
+          cover_url: string | null
+          created_at: string
+          current_started_at: string | null
+          current_track_id: string | null
+          description: string | null
+          genre: string | null
+          id: string
+          is_live: boolean
+          listeners_count: number
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          cover_url?: string | null
+          created_at?: string
+          current_started_at?: string | null
+          current_track_id?: string | null
+          description?: string | null
+          genre?: string | null
+          id?: string
+          is_live?: boolean
+          listeners_count?: number
+          name: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          cover_url?: string | null
+          created_at?: string
+          current_started_at?: string | null
+          current_track_id?: string | null
+          description?: string | null
+          genre?: string | null
+          id?: string
+          is_live?: boolean
+          listeners_count?: number
+          name?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      music_radio_tracks: {
+        Row: {
+          created_at: string
+          id: string
+          position: number
+          station_id: string
+          track_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          position?: number
+          station_id: string
+          track_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          position?: number
+          station_id?: string
+          track_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_radio_tracks_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "music_radio_stations"
             referencedColumns: ["id"]
           },
         ]
