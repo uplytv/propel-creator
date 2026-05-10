@@ -8024,6 +8024,42 @@ export type Database = {
         }
         Relationships: []
       }
+      music_karaoke_sessions: {
+        Row: {
+          accuracy: number
+          created_at: string
+          duration_seconds: number
+          id: string
+          lyric_id: string | null
+          recording_url: string | null
+          score: number
+          track_id: string
+          user_id: string
+        }
+        Insert: {
+          accuracy?: number
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          lyric_id?: string | null
+          recording_url?: string | null
+          score?: number
+          track_id: string
+          user_id: string
+        }
+        Update: {
+          accuracy?: number
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          lyric_id?: string | null
+          recording_url?: string | null
+          score?: number
+          track_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       music_listen_streaks: {
         Row: {
           current_streak: number
@@ -8204,6 +8240,86 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      music_lyric_translations: {
+        Row: {
+          contributor_id: string | null
+          created_at: string
+          id: string
+          language: string
+          lyric_id: string
+          translated_synced_lines: Json
+          translated_text: string
+          updated_at: string
+        }
+        Insert: {
+          contributor_id?: string | null
+          created_at?: string
+          id?: string
+          language: string
+          lyric_id: string
+          translated_synced_lines?: Json
+          translated_text: string
+          updated_at?: string
+        }
+        Update: {
+          contributor_id?: string | null
+          created_at?: string
+          id?: string
+          language?: string
+          lyric_id?: string
+          translated_synced_lines?: Json
+          translated_text?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_lyric_translations_lyric_id_fkey"
+            columns: ["lyric_id"]
+            isOneToOne: false
+            referencedRelation: "music_lyrics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_lyrics: {
+        Row: {
+          contributor_id: string | null
+          created_at: string
+          id: string
+          is_karaoke_ready: boolean
+          is_published: boolean
+          language: string
+          plain_text: string | null
+          synced_lines: Json
+          track_id: string
+          updated_at: string
+        }
+        Insert: {
+          contributor_id?: string | null
+          created_at?: string
+          id?: string
+          is_karaoke_ready?: boolean
+          is_published?: boolean
+          language?: string
+          plain_text?: string | null
+          synced_lines?: Json
+          track_id: string
+          updated_at?: string
+        }
+        Update: {
+          contributor_id?: string | null
+          created_at?: string
+          id?: string
+          is_karaoke_ready?: boolean
+          is_published?: boolean
+          language?: string
+          plain_text?: string | null
+          synced_lines?: Json
+          track_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       music_notification_prefs: {
         Row: {
