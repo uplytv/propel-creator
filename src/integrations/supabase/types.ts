@@ -7541,6 +7541,119 @@ export type Database = {
         }
         Relationships: []
       }
+      music_artist_poll_options: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string | null
+          label: string
+          poll_id: string
+          position: number
+          vote_count: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          label: string
+          poll_id: string
+          position?: number
+          vote_count?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          label?: string
+          poll_id?: string
+          position?: number
+          vote_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_artist_poll_options_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "music_artist_polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_artist_poll_votes: {
+        Row: {
+          created_at: string
+          id: string
+          option_id: string
+          poll_id: string
+          voter_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          option_id: string
+          poll_id: string
+          voter_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          option_id?: string
+          poll_id?: string
+          voter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_artist_poll_votes_option_id_fkey"
+            columns: ["option_id"]
+            isOneToOne: false
+            referencedRelation: "music_artist_poll_options"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "music_artist_poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "music_artist_polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_artist_polls: {
+        Row: {
+          artist_id: string
+          closes_at: string | null
+          created_at: string
+          description: string | null
+          id: string
+          question: string
+          status: string
+          total_votes: number
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          closes_at?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          question: string
+          status?: string
+          total_votes?: number
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          closes_at?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          question?: string
+          status?: string
+          total_votes?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_audio_preferences: {
         Row: {
           lossless_enabled: boolean
