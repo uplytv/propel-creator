@@ -20,6 +20,8 @@ export interface Track {
   play_count: number;
   like_count: number;
   release_date: string | null;
+  price_cents?: number;
+  is_paid?: boolean;
   created_at: string;
   updated_at: string;
 }
