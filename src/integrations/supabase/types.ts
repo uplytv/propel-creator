@@ -13800,6 +13800,36 @@ export type Database = {
         }
         Relationships: []
       }
+      music_track_wishlist: {
+        Row: {
+          artist_id: string
+          created_at: string
+          fan_id: string
+          id: string
+          note: string | null
+          priority: number
+          track_id: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          fan_id: string
+          id?: string
+          note?: string | null
+          priority?: number
+          track_id: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          fan_id?: string
+          id?: string
+          note?: string | null
+          priority?: number
+          track_id?: string
+        }
+        Relationships: []
+      }
       music_trending_searches: {
         Row: {
           hits: number
