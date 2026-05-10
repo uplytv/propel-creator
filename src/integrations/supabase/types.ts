@@ -12280,6 +12280,45 @@ export type Database = {
         }
         Relationships: []
       }
+      music_stem_downloads: {
+        Row: {
+          created_at: string
+          id: string
+          station_id: string
+          stem_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          station_id: string
+          stem_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          station_id?: string
+          stem_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_stem_downloads_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "music_stem_stations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "music_stem_downloads_stem_id_fkey"
+            columns: ["stem_id"]
+            isOneToOne: false
+            referencedRelation: "music_stem_tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_stem_files: {
         Row: {
           created_at: string
@@ -12412,6 +12451,92 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "music_stem_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_stem_stations: {
+        Row: {
+          artist_id: string
+          bpm: number | null
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          download_count: number
+          id: string
+          music_key: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          bpm?: number | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          download_count?: number
+          id?: string
+          music_key?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          bpm?: number | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          download_count?: number
+          id?: string
+          music_key?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      music_stem_tracks: {
+        Row: {
+          audio_url: string
+          created_at: string
+          duration_seconds: number | null
+          id: string
+          kind: string
+          label: string
+          position: number
+          station_id: string
+          updated_at: string
+        }
+        Insert: {
+          audio_url: string
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          kind: string
+          label: string
+          position?: number
+          station_id: string
+          updated_at?: string
+        }
+        Update: {
+          audio_url?: string
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          kind?: string
+          label?: string
+          position?: number
+          station_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_stem_tracks_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "music_stem_stations"
             referencedColumns: ["id"]
           },
         ]
