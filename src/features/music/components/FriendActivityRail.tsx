@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Play, Heart, Repeat2, Headphones, Users } from 'lucide-react';
+import { Play, Heart, Repeat2, Headphones, Users, Sparkles } from 'lucide-react';
 import { useFriendActivity, type FriendActivity } from '../hooks/useFriendActivity';
 import { usePlayerStore } from '../hooks/usePlayerStore';
 
