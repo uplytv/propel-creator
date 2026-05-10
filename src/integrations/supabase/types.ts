@@ -9719,6 +9719,165 @@ export type Database = {
           },
         ]
       }
+      music_sync_briefs: {
+        Row: {
+          budget_cents: number | null
+          created_at: string
+          deadline: string | null
+          description: string | null
+          genre: string[] | null
+          id: string
+          mood: string[] | null
+          owner_id: string
+          project_name: string
+          project_type: string
+          reference_url: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          budget_cents?: number | null
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          genre?: string[] | null
+          id?: string
+          mood?: string[] | null
+          owner_id: string
+          project_name: string
+          project_type: string
+          reference_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          budget_cents?: number | null
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          genre?: string[] | null
+          id?: string
+          mood?: string[] | null
+          owner_id?: string
+          project_name?: string
+          project_type?: string
+          reference_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      music_sync_listings: {
+        Row: {
+          artist_name: string
+          artwork_url: string | null
+          created_at: string
+          description: string | null
+          exclusive: boolean
+          genre: string[] | null
+          id: string
+          max_fee_cents: number | null
+          min_fee_cents: number | null
+          mood: string[] | null
+          owner_id: string
+          preview_url: string | null
+          status: string
+          tags: string[] | null
+          title: string
+          track_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          artist_name: string
+          artwork_url?: string | null
+          created_at?: string
+          description?: string | null
+          exclusive?: boolean
+          genre?: string[] | null
+          id?: string
+          max_fee_cents?: number | null
+          min_fee_cents?: number | null
+          mood?: string[] | null
+          owner_id: string
+          preview_url?: string | null
+          status?: string
+          tags?: string[] | null
+          title: string
+          track_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          artist_name?: string
+          artwork_url?: string | null
+          created_at?: string
+          description?: string | null
+          exclusive?: boolean
+          genre?: string[] | null
+          id?: string
+          max_fee_cents?: number | null
+          min_fee_cents?: number | null
+          mood?: string[] | null
+          owner_id?: string
+          preview_url?: string | null
+          status?: string
+          tags?: string[] | null
+          title?: string
+          track_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      music_sync_pitches: {
+        Row: {
+          brief_id: string
+          created_at: string
+          id: string
+          listing_id: string | null
+          message: string | null
+          pitcher_id: string
+          proposed_fee_cents: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          brief_id: string
+          created_at?: string
+          id?: string
+          listing_id?: string | null
+          message?: string | null
+          pitcher_id: string
+          proposed_fee_cents?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          brief_id?: string
+          created_at?: string
+          id?: string
+          listing_id?: string | null
+          message?: string | null
+          pitcher_id?: string
+          proposed_fee_cents?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_sync_pitches_brief_id_fkey"
+            columns: ["brief_id"]
+            isOneToOne: false
+            referencedRelation: "music_sync_briefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "music_sync_pitches_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "music_sync_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_tips: {
         Row: {
           amount_cents: number
