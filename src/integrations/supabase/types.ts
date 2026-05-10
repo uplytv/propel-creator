@@ -3903,6 +3903,54 @@ export type Database = {
         }
         Relationships: []
       }
+      dj_song_requests: {
+        Row: {
+          created_at: string
+          currency: string
+          dj_id: string
+          fan_id: string
+          id: string
+          message: string | null
+          position: number
+          session_id: string
+          status: string
+          tip_amount_cents: number
+          track_artist: string | null
+          track_title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          dj_id: string
+          fan_id: string
+          id?: string
+          message?: string | null
+          position?: number
+          session_id: string
+          status?: string
+          tip_amount_cents?: number
+          track_artist?: string | null
+          track_title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          dj_id?: string
+          fan_id?: string
+          id?: string
+          message?: string | null
+          position?: number
+          session_id?: string
+          status?: string
+          tip_amount_cents?: number
+          track_artist?: string | null
+          track_title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       drip_sequence_enrollments: {
         Row: {
           completed_at: string | null
