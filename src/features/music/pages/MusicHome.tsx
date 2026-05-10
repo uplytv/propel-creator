@@ -42,6 +42,7 @@ export default function MusicHome() {
   const { data: stations } = useRadioStations();
   const { data: premieres } = useUpcomingPremieres();
   const { data: liveRooms } = useLiveAudioRooms();
+  const { data: spotlights } = useEditorialSpotlights();
 
   return (
     <div className="pb-40">
