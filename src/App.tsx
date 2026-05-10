@@ -102,6 +102,15 @@ const StaffReentryRequests = lazy(() => import("./pages/StaffReentryRequests"));
 const TVDiscover = lazy(() => import("./pages/tv/TVDiscover"));
 const TVWatch = lazy(() => import("./pages/tv/TVWatch"));
 const TVBuyRedirect = lazy(() => import("./pages/tv/TVBuyRedirect"));
+const MusicLayout = lazy(() => import("./features/music/layout/MusicLayout"));
+const MusicHome = lazy(() => import("./features/music/pages/MusicHome"));
+const MusicSearch = lazy(() => import("./features/music/pages/MusicSearch"));
+const MusicLibrary = lazy(() => import("./features/music/pages/MusicLibrary"));
+const MusicUpload = lazy(() => import("./features/music/pages/MusicUpload"));
+const GenrePage = lazy(() => import("./features/music/pages/GenrePage"));
+const TrackPage = lazy(() => import("./features/music/pages/TrackPage"));
+const AlbumPage = lazy(() => import("./features/music/pages/AlbumPage"));
+const PlaylistPage = lazy(() => import("./features/music/pages/PlaylistPage"));
 const ContentStudio = lazy(() => import("./pages/ContentStudio"));
 const AITeamDashboard = lazy(() => import("./pages/AITeamDashboard"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
@@ -299,6 +308,18 @@ const App = () => (
                     <Route path="/tv" element={<TVDiscover />} />
                     <Route path="/tv/watch/:streamId" element={<TVWatch />} />
                     <Route path="/buy/:token" element={<TVBuyRedirect />} />
+
+                    {/* Music module (must come before /:username catch-all) */}
+                    <Route path="/music" element={<MusicLayout />}>
+                      <Route index element={<MusicHome />} />
+                      <Route path="search" element={<MusicSearch />} />
+                      <Route path="library" element={<ProtectedRoute><MusicLibrary /></ProtectedRoute>} />
+                      <Route path="upload" element={<ProtectedRoute><MusicUpload /></ProtectedRoute>} />
+                      <Route path="genre/:genre" element={<GenrePage />} />
+                      <Route path="track/:id" element={<TrackPage />} />
+                      <Route path="album/:id" element={<AlbumPage />} />
+                      <Route path="playlist/:id" element={<PlaylistPage />} />
+                    </Route>
 
                     <Route path="/:username" element={<BioPage />} />
                     <Route path="/:username/page" element={<BioPage />} />
