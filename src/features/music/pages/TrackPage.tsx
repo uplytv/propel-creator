@@ -94,10 +94,19 @@ export default function TrackPage() {
               <Share2 className="w-3.5 h-3.5" /> Share
             </button>
             <StartPartyButton />
-            <TipTrackButton creatorId={track.creator_id} trackId={track.id} />
-            {track.is_paid && track.price_cents ? (
+            {user?.id !== track.creator_id && (
+              <TipTrackButton creatorId={track.creator_id} trackId={track.id} />
+            )}
+            {track.is_paid && track.price_cents && user?.id !== track.creator_id ? (
               <BuyTrackButton trackId={track.id} priceCents={track.price_cents} />
             ) : null}
+            {user?.id === track.creator_id && (
+              <TrackPriceEditor
+                trackId={track.id}
+                isPaid={!!track.is_paid}
+                priceCents={track.price_cents ?? 0}
+              />
+            )}
           </div>
         </div>
       </div>
