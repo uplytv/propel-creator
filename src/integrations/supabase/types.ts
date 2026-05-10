@@ -8539,6 +8539,121 @@ export type Database = {
         }
         Relationships: []
       }
+      music_cover_contests: {
+        Row: {
+          artist_id: string
+          created_at: string
+          id: string
+          max_submissions: number | null
+          prize: string | null
+          prompt: string | null
+          status: string
+          submission_deadline: string | null
+          track_title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          id?: string
+          max_submissions?: number | null
+          prize?: string | null
+          prompt?: string | null
+          status?: string
+          submission_deadline?: string | null
+          track_title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          id?: string
+          max_submissions?: number | null
+          prize?: string | null
+          prompt?: string | null
+          status?: string
+          submission_deadline?: string | null
+          track_title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      music_cover_submission_likes: {
+        Row: {
+          created_at: string
+          fan_id: string
+          id: string
+          submission_id: string
+        }
+        Insert: {
+          created_at?: string
+          fan_id: string
+          id?: string
+          submission_id: string
+        }
+        Update: {
+          created_at?: string
+          fan_id?: string
+          id?: string
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_cover_submission_likes_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "music_cover_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_cover_submissions: {
+        Row: {
+          caption: string | null
+          contest_id: string
+          created_at: string
+          fan_id: string
+          id: string
+          like_count: number
+          status: string
+          thumbnail_url: string | null
+          updated_at: string
+          video_url: string
+        }
+        Insert: {
+          caption?: string | null
+          contest_id: string
+          created_at?: string
+          fan_id: string
+          id?: string
+          like_count?: number
+          status?: string
+          thumbnail_url?: string | null
+          updated_at?: string
+          video_url: string
+        }
+        Update: {
+          caption?: string | null
+          contest_id?: string
+          created_at?: string
+          fan_id?: string
+          id?: string
+          like_count?: number
+          status?: string
+          thumbnail_url?: string | null
+          updated_at?: string
+          video_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_cover_submissions_contest_id_fkey"
+            columns: ["contest_id"]
+            isOneToOne: false
+            referencedRelation: "music_cover_contests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_crowdfund_campaigns: {
         Row: {
           cover_url: string | null
