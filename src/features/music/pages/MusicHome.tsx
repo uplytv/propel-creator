@@ -72,6 +72,35 @@ export default function MusicHome() {
       </header>
 
       <div className="space-y-8">
+        {user && (recentlyPlayed?.length ?? 0) > 0 && (
+          <Row title="Jump Back In">
+            {recentlyPlayed!.map((t) => (
+              <TrackCard key={t.id} track={t} queue={recentlyPlayed} />
+            ))}
+          </Row>
+        )}
+
+        {user && (dailyMixes?.length ?? 0) > 0 && (
+          <Row title="Made For You">
+            {dailyMixes!.map((mix) => (
+              <DailyMixCard
+                key={mix.id}
+                title={mix.title}
+                subtitle={mix.subtitle}
+                tracks={mix.tracks}
+              />
+            ))}
+          </Row>
+        )}
+
+        {user && because && because.tracks.length > 0 && (
+          <Row title={`Because you listened to ${because.seed.title}`}>
+            {because.tracks.map((t) => (
+              <TrackCard key={t.id} track={t} queue={because.tracks} />
+            ))}
+          </Row>
+        )}
+
         <Row title="For You">
           {(data?.forYou ?? []).map((t) => (
             <TrackCard key={t.id} track={t} queue={data?.forYou} />
