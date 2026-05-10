@@ -10815,6 +10815,92 @@ export type Database = {
         }
         Relationships: []
       }
+      music_merch_drops: {
+        Row: {
+          artist_id: string
+          created_at: string
+          description: string | null
+          ends_at: string | null
+          id: string
+          image_url: string | null
+          launch_at: string
+          price_cents: number
+          reservation_count: number
+          status: string
+          stock_remaining: number
+          stock_total: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          launch_at: string
+          price_cents?: number
+          reservation_count?: number
+          status?: string
+          stock_remaining?: number
+          stock_total?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          launch_at?: string
+          price_cents?: number
+          reservation_count?: number
+          status?: string
+          stock_remaining?: number
+          stock_total?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      music_merch_reservations: {
+        Row: {
+          created_at: string
+          drop_id: string
+          fan_id: string
+          id: string
+          quantity: number
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          drop_id: string
+          fan_id: string
+          id?: string
+          quantity?: number
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          drop_id?: string
+          fan_id?: string
+          id?: string
+          quantity?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_merch_reservations_drop_id_fkey"
+            columns: ["drop_id"]
+            isOneToOne: false
+            referencedRelation: "music_merch_drops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_merch_waitlist_signups: {
         Row: {
           created_at: string
