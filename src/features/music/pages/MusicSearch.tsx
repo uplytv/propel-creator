@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, Search, SlidersHorizontal, X } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, Search, SlidersHorizontal, X, Clock, TrendingUp, Trash2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import {
   searchMusicAdvanced,
@@ -11,16 +11,30 @@ import { GENRES } from '../lib/genres';
 import { MOODS, MOOD_GENRES, type Mood } from '../lib/moods';
 import TrackCard from '../components/TrackCard';
 import AlbumCard from '../components/AlbumCard';
+import {
+  useSearchHistory,
+  useRecordSearch,
+  useClearSearchHistory,
+  useTrendingSearches,
+} from '../hooks/useSearchHistory';
 
 export default function MusicSearch() {
-  const [q, setQ] = useState('');
+  const [params, setParams] = useSearchParams();
+  const initialQ = params.get('q') ?? '';
+  const initialMood = (params.get('mood') as Mood | null) ?? null;
+  const [q, setQ] = useState(initialQ);
   const [showFilters, setShowFilters] = useState(false);
   const [genres, setGenres] = useState<string[]>([]);
-  const [mood, setMood] = useState<Mood | null>(null);
+  const [mood, setMood] = useState<Mood | null>(initialMood);
   const [hideExplicit, setHideExplicit] = useState(false);
   const [monetization, setMonetization] = useState<'any' | 'free' | 'paid'>('any');
   const [duration, setDuration] = useState<DurationBucket>('any');
   const [sort, setSort] = useState<SearchSort>('relevance');
+
+  const { data: history } = useSearchHistory(8);
+  const { data: trending } = useTrendingSearches(8);
+  const recordSearch = useRecordSearch();
+  const clearHistory = useClearSearchHistory();
 
   const filters = useMemo(
     () => ({
@@ -47,6 +61,28 @@ export default function MusicSearch() {
     queryFn: () => searchMusicAdvanced(q, filters),
     enabled: q.trim().length >= 2 || filterCount > 0,
   });
+
+  // Persist last meaningful query to history (debounced via effect on q)
+  useEffect(() => {
+    const term = q.trim();
+    if (term.length < 2) return;
+    const id = setTimeout(() => recordSearch.mutate(term), 1500);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q]);
+
+  // Keep URL in sync for shareable searches
+  useEffect(() => {
+    const next = new URLSearchParams(params);
+    if (q.trim()) next.set('q', q.trim());
+    else next.delete('q');
+    if (mood) next.set('mood', mood);
+    else next.delete('mood');
+    setParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q, mood]);
+
+  const showSuggestions = q.trim().length < 2 && filterCount === 0;
 
   const toggleGenre = (g: string) =>
     setGenres((prev) => (prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]));
@@ -210,6 +246,75 @@ export default function MusicSearch() {
               Hide explicit
             </label>
           </div>
+        </div>
+      )}
+
+      {showSuggestions && (
+        <div className="mt-6 space-y-6">
+          {(history?.length ?? 0) > 0 && (
+            <section>
+              <div className="flex items-center justify-between mb-2 px-1">
+                <h2 className="text-sm font-bold text-white/80 flex items-center gap-2">
+                  <Clock className="w-4 h-4" /> Recent
+                </h2>
+                <button
+                  onClick={() => clearHistory.mutate(undefined)}
+                  className="text-[11px] text-white/50 inline-flex items-center gap-1"
+                >
+                  <Trash2 className="w-3 h-3" /> Clear
+                </button>
+              </div>
+              <div className="flex flex-col">
+                {history!.map((h) => (
+                  <button
+                    key={h.id}
+                    onClick={() => setQ(h.query)}
+                    className="text-left flex items-center justify-between py-2 px-1 text-sm text-white/80 hover:text-white"
+                  >
+                    <span className="truncate">{h.query}</span>
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        clearHistory.mutate(h.id);
+                      }}
+                      className="text-white/30 hover:text-white p-1"
+                      aria-label="Remove"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {(trending?.length ?? 0) > 0 && (
+            <section>
+              <h2 className="text-sm font-bold text-white/80 mb-2 flex items-center gap-2 px-1">
+                <TrendingUp className="w-4 h-4" /> Trending
+              </h2>
+              <div className="flex gap-2 flex-wrap">
+                {trending!.map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setQ(t)}
+                    className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white/5 text-white/80 border border-white/10"
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+
+          <Link
+            to="/music/browse"
+            className="block text-center py-3 rounded-full bg-white/5 text-white text-sm font-semibold"
+          >
+            Browse moods, activities & genres →
+          </Link>
         </div>
       )}
 

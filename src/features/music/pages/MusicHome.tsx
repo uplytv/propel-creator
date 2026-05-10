@@ -19,6 +19,8 @@ import ChartsSection from '../components/ChartsSection';
 import FriendActivityRail from '../components/FriendActivityRail';
 import GenreChip from '../components/GenreChip';
 import { GENRES } from '../lib/genres';
+import SpotlightCard from '../components/SpotlightCard';
+import { useEditorialSpotlights } from '../hooks/useEditorialSpotlights';
 
 function Row({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -40,6 +42,7 @@ export default function MusicHome() {
   const { data: stations } = useRadioStations();
   const { data: premieres } = useUpcomingPremieres();
   const { data: liveRooms } = useLiveAudioRooms();
+  const { data: spotlights } = useEditorialSpotlights();
 
   return (
     <div className="pb-40">
@@ -83,6 +86,20 @@ export default function MusicHome() {
       </header>
 
       <div className="space-y-8">
+        {(spotlights?.length ?? 0) > 0 && (
+          <section className="space-y-3">
+            <div className="flex items-center justify-between px-4">
+              <h2 className="text-lg font-bold text-white">Spotlight</h2>
+              <Link to="/music/browse" className="text-xs text-white/60">Browse all</Link>
+            </div>
+            <div className="flex gap-3 overflow-x-auto px-4 pb-2">
+              {spotlights!.map((s) => (
+                <SpotlightCard key={s.id} item={s} />
+              ))}
+            </div>
+          </section>
+        )}
+
         {(stations?.some((s) => s.is_live) || (premieres?.length ?? 0) > 0 || (liveRooms?.length ?? 0) > 0) && (
           <section className="space-y-3">
             <div className="flex items-center justify-between px-4">
