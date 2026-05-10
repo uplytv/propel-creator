@@ -13,9 +13,12 @@ import DownloadButton from '../components/DownloadButton';
 import StartPartyButton from '../components/StartPartyButton';
 import BuyTrackButton from '../components/BuyTrackButton';
 import TipTrackButton from '../components/TipTrackButton';
+import TrackPriceEditor from '../components/TrackPriceEditor';
 import { formatDuration } from '../lib/formatDuration';
+import { useAuth } from '@/context/AuthContext';
 
 export default function TrackPage() {
+  const { user } = useAuth();
   const { id } = useParams<{ id: string }>();
   const { data: track, isLoading } = useTrack(id);
   useTrackProcessing(track);
