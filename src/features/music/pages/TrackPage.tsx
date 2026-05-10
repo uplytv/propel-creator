@@ -10,6 +10,7 @@ import ShareTrackSheet from '../components/ShareTrackSheet';
 import RepostButton from '../components/RepostButton';
 import PresaveButton from '../components/PresaveButton';
 import DownloadButton from '../components/DownloadButton';
+import StartPartyButton from '../components/StartPartyButton';
 import { formatDuration } from '../lib/formatDuration';
 
 export default function TrackPage() {
@@ -87,6 +88,7 @@ export default function TrackPage() {
             >
               <Share2 className="w-3.5 h-3.5" /> Share
             </button>
+            <StartPartyButton />
           </div>
         </div>
       </div>
