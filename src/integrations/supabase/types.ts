@@ -10208,6 +10208,39 @@ export type Database = {
         }
         Relationships: []
       }
+      music_listening_sessions: {
+        Row: {
+          artist_id: string
+          completed: boolean
+          created_at: string
+          device_type: string | null
+          duration_seconds: number
+          fan_id: string
+          id: string
+          track_id: string
+        }
+        Insert: {
+          artist_id: string
+          completed?: boolean
+          created_at?: string
+          device_type?: string | null
+          duration_seconds?: number
+          fan_id: string
+          id?: string
+          track_id: string
+        }
+        Update: {
+          artist_id?: string
+          completed?: boolean
+          created_at?: string
+          device_type?: string | null
+          duration_seconds?: number
+          fan_id?: string
+          id?: string
+          track_id?: string
+        }
+        Relationships: []
+      }
       music_listening_streak_days: {
         Row: {
           artist_id: string
