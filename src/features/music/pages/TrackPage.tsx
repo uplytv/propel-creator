@@ -9,6 +9,7 @@ import AddToPlaylistMenu from '../components/AddToPlaylistMenu';
 import ShareTrackSheet from '../components/ShareTrackSheet';
 import RepostButton from '../components/RepostButton';
 import PresaveButton from '../components/PresaveButton';
+import DownloadButton from '../components/DownloadButton';
 import { formatDuration } from '../lib/formatDuration';
 
 export default function TrackPage() {
