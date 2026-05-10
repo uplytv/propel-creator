@@ -12830,6 +12830,95 @@ export type Database = {
           },
         ]
       }
+      music_vinyl_drops: {
+        Row: {
+          artist_id: string
+          color: string | null
+          cover_url: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          edition_size: number
+          id: string
+          price_cents: number
+          reserved_count: number
+          ships_at: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          color?: string | null
+          cover_url?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          edition_size?: number
+          id?: string
+          price_cents?: number
+          reserved_count?: number
+          ships_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          color?: string | null
+          cover_url?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          edition_size?: number
+          id?: string
+          price_cents?: number
+          reserved_count?: number
+          ships_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      music_vinyl_reservations: {
+        Row: {
+          created_at: string
+          drop_id: string
+          fan_id: string
+          id: string
+          quantity: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          drop_id: string
+          fan_id: string
+          id?: string
+          quantity?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          drop_id?: string
+          fan_id?: string
+          id?: string
+          quantity?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_vinyl_reservations_drop_id_fkey"
+            columns: ["drop_id"]
+            isOneToOne: false
+            referencedRelation: "music_vinyl_drops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mux_assets: {
         Row: {
           aspect_ratio: string | null
