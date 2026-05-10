@@ -10848,6 +10848,77 @@ export type Database = {
         }
         Relationships: []
       }
+      music_mailbag_questions: {
+        Row: {
+          answer: string | null
+          answered_at: string | null
+          artist_id: string
+          created_at: string
+          fan_id: string
+          id: string
+          is_pinned: boolean
+          question: string
+          status: string
+          updated_at: string
+          upvote_count: number
+        }
+        Insert: {
+          answer?: string | null
+          answered_at?: string | null
+          artist_id: string
+          created_at?: string
+          fan_id: string
+          id?: string
+          is_pinned?: boolean
+          question: string
+          status?: string
+          updated_at?: string
+          upvote_count?: number
+        }
+        Update: {
+          answer?: string | null
+          answered_at?: string | null
+          artist_id?: string
+          created_at?: string
+          fan_id?: string
+          id?: string
+          is_pinned?: boolean
+          question?: string
+          status?: string
+          updated_at?: string
+          upvote_count?: number
+        }
+        Relationships: []
+      }
+      music_mailbag_upvotes: {
+        Row: {
+          created_at: string
+          fan_id: string
+          id: string
+          question_id: string
+        }
+        Insert: {
+          created_at?: string
+          fan_id: string
+          id?: string
+          question_id: string
+        }
+        Update: {
+          created_at?: string
+          fan_id?: string
+          id?: string
+          question_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_mailbag_upvotes_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "music_mailbag_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_merch_bundle_items: {
         Row: {
           bundle_id: string
