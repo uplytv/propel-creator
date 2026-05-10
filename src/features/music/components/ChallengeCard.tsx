@@ -1,60 +1,56 @@
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Trophy, Users, Clock } from "lucide-react";
-import { Link } from "react-router-dom";
-import { formatDistanceToNow } from "date-fns";
+import { Link } from 'react-router-dom';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Trophy, Users, Clock } from 'lucide-react';
 
 interface Props {
-  challenge: {
-    id: string;
-    title: string;
-    challenge_type: string;
-    artwork_url?: string | null;
-    prize_description?: string | null;
-    prize_cents: number;
-    entry_count: number;
-    submission_deadline?: string | null;
-    status: string;
-  };
+  challenge: any;
+}
+
+function timeRemaining(deadline?: string | null) {
+  if (!deadline) return 'No deadline';
+  const ms = new Date(deadline).getTime() - Date.now();
+  if (ms <= 0) return 'Closed';
+  const days = Math.floor(ms / 86400000);
+  const hours = Math.floor((ms % 86400000) / 3600000);
+  if (days > 0) return `${days}d ${hours}h left`;
+  return `${hours}h left`;
 }
 
 export function ChallengeCard({ challenge }: Props) {
-  const deadline = challenge.submission_deadline ? new Date(challenge.submission_deadline) : null;
-  const ended = deadline ? deadline < new Date() : false;
-
   return (
-    <Link to={`/music/challenges/${challenge.id}`}>
-      <Card className="overflow-hidden hover:border-primary transition-colors h-full">
-        <div className="aspect-video bg-muted relative">
-          {challenge.artwork_url ? (
-            <img src={challenge.artwork_url} alt={challenge.title} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Trophy className="w-10 h-10 text-muted-foreground" />
-            </div>
-          )}
-          <Badge className="absolute top-2 left-2 capitalize">{challenge.challenge_type}</Badge>
-          {challenge.prize_cents > 0 && (
-            <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground">
-              ${(challenge.prize_cents / 100).toFixed(0)} prize
+    <Link to={`/music/challenges/${challenge.id}`} className="block">
+      <Card className="overflow-hidden hover:border-primary/40 transition-colors">
+        {challenge.artwork_url && (
+          <img
+            src={challenge.artwork_url}
+            alt={challenge.title}
+            className="w-full aspect-video object-cover"
+            loading="lazy"
+          />
+        )}
+        <div className="p-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="capitalize text-[10px]">
+              {challenge.challenge_type}
             </Badge>
-          )}
-        </div>
-        <div className="p-3">
-          <h3 className="font-semibold truncate">{challenge.title}</h3>
-          {challenge.prize_description && (
-            <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{challenge.prize_description}</p>
-          )}
-          <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2">
-            <span className="flex items-center gap-1">
-              <Users className="w-3 h-3" /> {challenge.entry_count}
-            </span>
-            {deadline && (
-              <span className="flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                {ended ? "Closed" : formatDistanceToNow(deadline, { addSuffix: true })}
-              </span>
+            {challenge.prize_cents > 0 && (
+              <Badge className="text-[10px]">
+                <Trophy size={10} className="mr-1" />${(challenge.prize_cents / 100).toFixed(0)}
+              </Badge>
             )}
+          </div>
+          <h3 className="font-semibold text-sm line-clamp-2">{challenge.title}</h3>
+          {challenge.description && (
+            <p className="text-xs text-muted-foreground line-clamp-2">{challenge.description}</p>
+          )}
+          <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+            <span className="inline-flex items-center gap-1">
+              <Users size={12} />{challenge.entry_count} entries
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Clock size={12} />{timeRemaining(challenge.submission_deadline)}
+            </span>
           </div>
         </div>
       </Card>
