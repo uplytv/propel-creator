@@ -334,6 +334,7 @@ const App = () => (
                       <Route path="premiere/:id" element={<PremierePage />} />
                       <Route path="room/:id" element={<AudioRoomPage />} />
                       <Route path="browse" element={<MusicBrowsePage />} />
+                      <Route path="notifications" element={<ProtectedRoute><MusicNotificationsPage /></ProtectedRoute>} />
                     </Route>
 
                     <Route path="/:username" element={<BioPage />} />
