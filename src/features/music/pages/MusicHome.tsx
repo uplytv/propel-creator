@@ -81,6 +81,8 @@ export default function MusicHome() {
           </Row>
         )}
 
+        {user && <FriendActivityRail />}
+
         {user && (dailyMixes?.length ?? 0) > 0 && (
           <Row title="Made For You">
             {dailyMixes!.map((mix) => (
