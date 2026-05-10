@@ -6823,6 +6823,33 @@ export type Database = {
         }
         Relationships: []
       }
+      music_audio_preferences: {
+        Row: {
+          lossless_enabled: boolean
+          normalize_volume: boolean
+          prefer_on_wifi_only: boolean
+          spatial_enabled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          lossless_enabled?: boolean
+          normalize_volume?: boolean
+          prefer_on_wifi_only?: boolean
+          spatial_enabled?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          lossless_enabled?: boolean
+          normalize_volume?: boolean
+          prefer_on_wifi_only?: boolean
+          spatial_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       music_audio_room_participants: {
         Row: {
           id: string
@@ -11248,6 +11275,9 @@ export type Database = {
           description: string | null
           duration_seconds: number | null
           genre: string | null
+          has_lossless: boolean
+          has_spatial: boolean
+          hires_url: string | null
           id: string
           is_explicit: boolean
           is_paid: boolean
@@ -11260,6 +11290,7 @@ export type Database = {
           play_count: number
           price_cents: number
           release_date: string | null
+          spatial_url: string | null
           title: string
           updated_at: string
         }
@@ -11275,6 +11306,9 @@ export type Database = {
           description?: string | null
           duration_seconds?: number | null
           genre?: string | null
+          has_lossless?: boolean
+          has_spatial?: boolean
+          hires_url?: string | null
           id?: string
           is_explicit?: boolean
           is_paid?: boolean
@@ -11287,6 +11321,7 @@ export type Database = {
           play_count?: number
           price_cents?: number
           release_date?: string | null
+          spatial_url?: string | null
           title: string
           updated_at?: string
         }
@@ -11302,6 +11337,9 @@ export type Database = {
           description?: string | null
           duration_seconds?: number | null
           genre?: string | null
+          has_lossless?: boolean
+          has_spatial?: boolean
+          hires_url?: string | null
           id?: string
           is_explicit?: boolean
           is_paid?: boolean
@@ -11314,6 +11352,7 @@ export type Database = {
           play_count?: number
           price_cents?: number
           release_date?: string | null
+          spatial_url?: string | null
           title?: string
           updated_at?: string
         }
