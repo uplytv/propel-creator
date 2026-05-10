@@ -110,3 +110,5 @@ export function CollaboratorsPanel({
     </section>
   );
 }
+
+export default CollaboratorsPanel;
