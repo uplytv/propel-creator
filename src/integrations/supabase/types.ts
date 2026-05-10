@@ -9057,6 +9057,98 @@ export type Database = {
         }
         Relationships: []
       }
+      music_merch_bundle_items: {
+        Row: {
+          bundle_id: string
+          created_at: string
+          id: string
+          item_kind: string
+          item_ref_id: string | null
+          label: string | null
+          position: number
+        }
+        Insert: {
+          bundle_id: string
+          created_at?: string
+          id?: string
+          item_kind: string
+          item_ref_id?: string | null
+          label?: string | null
+          position?: number
+        }
+        Update: {
+          bundle_id?: string
+          created_at?: string
+          id?: string
+          item_kind?: string
+          item_ref_id?: string | null
+          label?: string | null
+          position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_merch_bundle_items_bundle_id_fkey"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "music_merch_bundles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_merch_bundles: {
+        Row: {
+          bundle_type: string
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          image_url: string | null
+          inventory_count: number | null
+          owner_id: string
+          price_cents: number
+          release_id: string | null
+          sold_count: number
+          status: string
+          title: string
+          tour_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          bundle_type?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          inventory_count?: number | null
+          owner_id: string
+          price_cents?: number
+          release_id?: string | null
+          sold_count?: number
+          status?: string
+          title: string
+          tour_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bundle_type?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          inventory_count?: number | null
+          owner_id?: string
+          price_cents?: number
+          release_id?: string | null
+          sold_count?: number
+          status?: string
+          title?: string
+          tour_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_nft_drops: {
         Row: {
           artwork_url: string | null
