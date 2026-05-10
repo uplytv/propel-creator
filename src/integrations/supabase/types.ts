@@ -14425,6 +14425,77 @@ export type Database = {
         }
         Relationships: []
       }
+      music_tour_city_requests: {
+        Row: {
+          artist_id: string
+          city: string
+          country: string
+          created_at: string
+          id: string
+          nominator_id: string
+          notes: string | null
+          region: string | null
+          status: string
+          updated_at: string
+          vote_count: number
+        }
+        Insert: {
+          artist_id: string
+          city: string
+          country: string
+          created_at?: string
+          id?: string
+          nominator_id: string
+          notes?: string | null
+          region?: string | null
+          status?: string
+          updated_at?: string
+          vote_count?: number
+        }
+        Update: {
+          artist_id?: string
+          city?: string
+          country?: string
+          created_at?: string
+          id?: string
+          nominator_id?: string
+          notes?: string | null
+          region?: string | null
+          status?: string
+          updated_at?: string
+          vote_count?: number
+        }
+        Relationships: []
+      }
+      music_tour_city_votes: {
+        Row: {
+          created_at: string
+          fan_id: string
+          id: string
+          request_id: string
+        }
+        Insert: {
+          created_at?: string
+          fan_id: string
+          id?: string
+          request_id: string
+        }
+        Update: {
+          created_at?: string
+          fan_id?: string
+          id?: string
+          request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_tour_city_votes_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "music_tour_city_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_tour_dates: {
         Row: {
           artist_id: string
