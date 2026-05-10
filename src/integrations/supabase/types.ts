@@ -335,6 +335,75 @@ export type Database = {
         }
         Relationships: []
       }
+      album_tracks: {
+        Row: {
+          album_id: string
+          track_id: string
+          track_number: number
+        }
+        Insert: {
+          album_id: string
+          track_id: string
+          track_number?: number
+        }
+        Update: {
+          album_id?: string
+          track_id?: string
+          track_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "album_tracks_album_id_fkey"
+            columns: ["album_id"]
+            isOneToOne: false
+            referencedRelation: "albums"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "album_tracks_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      albums: {
+        Row: {
+          album_type: string
+          cover_art_url: string | null
+          created_at: string
+          creator_id: string
+          description: string | null
+          id: string
+          is_published: boolean
+          release_date: string | null
+          title: string
+        }
+        Insert: {
+          album_type?: string
+          cover_art_url?: string | null
+          created_at?: string
+          creator_id: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          release_date?: string | null
+          title: string
+        }
+        Update: {
+          album_type?: string
+          cover_art_url?: string | null
+          created_at?: string
+          creator_id?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          release_date?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       api_keys: {
         Row: {
           created_at: string | null
@@ -6560,6 +6629,72 @@ export type Database = {
         }
         Relationships: []
       }
+      music_playlist_tracks: {
+        Row: {
+          added_at: string
+          playlist_id: string
+          position: number
+          track_id: string
+        }
+        Insert: {
+          added_at?: string
+          playlist_id: string
+          position?: number
+          track_id: string
+        }
+        Update: {
+          added_at?: string
+          playlist_id?: string
+          position?: number
+          track_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_playlist_tracks_playlist_id_fkey"
+            columns: ["playlist_id"]
+            isOneToOne: false
+            referencedRelation: "music_playlists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "music_playlist_tracks_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_playlists: {
+        Row: {
+          cover_art_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_public: boolean
+          title: string
+          user_id: string
+        }
+        Insert: {
+          cover_art_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          title: string
+          user_id: string
+        }
+        Update: {
+          cover_art_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       mux_assets: {
         Row: {
           aspect_ratio: string | null
@@ -9653,6 +9788,165 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      track_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          timestamp_seconds: number | null
+          track_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          timestamp_seconds?: number | null
+          track_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          timestamp_seconds?: number | null
+          track_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "track_comments_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      track_likes: {
+        Row: {
+          created_at: string
+          track_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          track_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          track_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "track_likes_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      track_plays: {
+        Row: {
+          duration_played_seconds: number
+          id: string
+          played_at: string
+          track_id: string
+          user_id: string | null
+        }
+        Insert: {
+          duration_played_seconds?: number
+          id?: string
+          played_at?: string
+          track_id: string
+          user_id?: string | null
+        }
+        Update: {
+          duration_played_seconds?: number
+          id?: string
+          played_at?: string
+          track_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "track_plays_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tracks: {
+        Row: {
+          audio_mux_asset_id: string | null
+          audio_mux_playback_id: string | null
+          audio_status: string
+          audio_upload_id: string | null
+          cover_art_url: string | null
+          created_at: string
+          creator_id: string
+          description: string | null
+          duration_seconds: number | null
+          genre: string | null
+          id: string
+          is_explicit: boolean
+          is_published: boolean
+          like_count: number
+          monetization_type: string
+          play_count: number
+          release_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          audio_mux_asset_id?: string | null
+          audio_mux_playback_id?: string | null
+          audio_status?: string
+          audio_upload_id?: string | null
+          cover_art_url?: string | null
+          created_at?: string
+          creator_id: string
+          description?: string | null
+          duration_seconds?: number | null
+          genre?: string | null
+          id?: string
+          is_explicit?: boolean
+          is_published?: boolean
+          like_count?: number
+          monetization_type?: string
+          play_count?: number
+          release_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          audio_mux_asset_id?: string | null
+          audio_mux_playback_id?: string | null
+          audio_status?: string
+          audio_upload_id?: string | null
+          cover_art_url?: string | null
+          created_at?: string
+          creator_id?: string
+          description?: string | null
+          duration_seconds?: number | null
+          genre?: string | null
+          id?: string
+          is_explicit?: boolean
+          is_published?: boolean
+          like_count?: number
+          monetization_type?: string
+          play_count?: number
+          release_date?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       transactions: {
         Row: {
