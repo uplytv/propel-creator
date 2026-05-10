@@ -9485,17 +9485,23 @@ export type Database = {
       music_playlist_collaborators: {
         Row: {
           added_at: string
+          invited_by: string | null
           playlist_id: string
+          role: string
           user_id: string
         }
         Insert: {
           added_at?: string
+          invited_by?: string | null
           playlist_id: string
+          role?: string
           user_id: string
         }
         Update: {
           added_at?: string
+          invited_by?: string | null
           playlist_id?: string
+          role?: string
           user_id?: string
         }
         Relationships: [
@@ -9532,6 +9538,42 @@ export type Database = {
           name?: string
           position?: number
           user_id?: string
+        }
+        Relationships: []
+      }
+      music_playlist_invites: {
+        Row: {
+          consumed_at: string | null
+          consumed_by: string | null
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          playlist_id: string
+          role: string
+          token: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          consumed_by?: string | null
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          playlist_id: string
+          role?: string
+          token: string
+        }
+        Update: {
+          consumed_at?: string | null
+          consumed_by?: string | null
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          playlist_id?: string
+          role?: string
+          token?: string
         }
         Relationships: []
       }
@@ -15777,6 +15819,7 @@ export type Database = {
       }
     }
     Functions: {
+      accept_playlist_invite: { Args: { _token: string }; Returns: string }
       bump_trending_search: { Args: { p_term: string }; Returns: undefined }
       bump_viewer_affinity: {
         Args: { p_category: string; p_viewer: string }
@@ -16003,6 +16046,10 @@ export type Database = {
       }
       is_email_suppressed: { Args: { p_email: string }; Returns: boolean }
       is_new_creator: { Args: { p_creator_id: string }; Returns: boolean }
+      is_playlist_collaborator: {
+        Args: { _min_role?: string; _playlist_id: string; _user_id: string }
+        Returns: boolean
+      }
       lookup_referrer_by_code: { Args: { ref_code: string }; Returns: Json }
       move_to_dlq: {
         Args: {
