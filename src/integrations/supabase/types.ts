@@ -7330,6 +7330,165 @@ export type Database = {
         }
         Relationships: []
       }
+      music_collab_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          payload: Json
+          project_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          payload?: Json
+          project_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          payload?: Json
+          project_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_collab_events_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "music_collab_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_collab_members: {
+        Row: {
+          id: string
+          joined_at: string
+          project_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          project_id: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          project_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_collab_members_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "music_collab_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_collab_projects: {
+        Row: {
+          bpm: number
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_public: boolean
+          music_key: string | null
+          owner_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          bpm?: number
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          music_key?: string | null
+          owner_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          bpm?: number
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          music_key?: string | null
+          owner_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      music_collab_tracks: {
+        Row: {
+          audio_url: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          is_muted: boolean
+          locked_by: string | null
+          name: string
+          pan: number
+          position: number
+          project_id: string
+          updated_at: string
+          volume: number
+        }
+        Insert: {
+          audio_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_muted?: boolean
+          locked_by?: string | null
+          name: string
+          pan?: number
+          position?: number
+          project_id: string
+          updated_at?: string
+          volume?: number
+        }
+        Update: {
+          audio_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_muted?: boolean
+          locked_by?: string | null
+          name?: string
+          pan?: number
+          position?: number
+          project_id?: string
+          updated_at?: string
+          volume?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_collab_tracks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "music_collab_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_concert_merch: {
         Row: {
           concert_id: string
@@ -13573,6 +13732,10 @@ export type Database = {
       }
       is_blend_member: {
         Args: { _blend_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_collab_member: {
+        Args: { _project: string; _user: string }
         Returns: boolean
       }
       is_email_suppressed: { Args: { p_email: string }; Returns: boolean }
