@@ -1,10 +1,13 @@
+import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Play, Pause, Loader2, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Play, Pause, Loader2, AlertTriangle, Share2 } from 'lucide-react';
 import { useTrack } from '../hooks/useTrack';
 import { useTrackProcessing } from '../hooks/useTrackProcessing';
 import { usePlayerStore } from '../hooks/usePlayerStore';
 import LikeButton from '../components/LikeButton';
 import AddToPlaylistMenu from '../components/AddToPlaylistMenu';
+import ShareTrackSheet from '../components/ShareTrackSheet';
+import RepostButton from '../components/RepostButton';
 import { formatDuration } from '../lib/formatDuration';
 
 export default function TrackPage() {
