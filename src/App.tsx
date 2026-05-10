@@ -121,6 +121,8 @@ const MusicBrowsePage = lazy(() => import("./features/music/pages/MusicBrowsePag
 const MusicNotificationsPage = lazy(() => import("./features/music/pages/MusicNotificationsPage"));
 const MusicAnalyticsPage = lazy(() => import("./features/music/pages/MusicAnalyticsPage"));
 const GroupBlendsPage = lazy(() => import("./features/music/pages/GroupBlendsPage"));
+const ConcertsPage = lazy(() => import("./features/music/pages/ConcertsPage"));
+const ConcertPage = lazy(() => import("./features/music/pages/ConcertPage"));
 const ContentStudio = lazy(() => import("./pages/ContentStudio"));
 const AITeamDashboard = lazy(() => import("./pages/AITeamDashboard"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
@@ -339,6 +341,8 @@ const App = () => (
                       <Route path="notifications" element={<ProtectedRoute><MusicNotificationsPage /></ProtectedRoute>} />
                       <Route path="analytics" element={<ProtectedRoute><MusicAnalyticsPage /></ProtectedRoute>} />
                       <Route path="blends" element={<ProtectedRoute><GroupBlendsPage /></ProtectedRoute>} />
+                      <Route path="concerts" element={<ConcertsPage />} />
+                      <Route path="concerts/:id" element={<ConcertPage />} />
                     </Route>
 
                     <Route path="/:username" element={<BioPage />} />
