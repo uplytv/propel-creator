@@ -8661,6 +8661,56 @@ export type Database = {
           },
         ]
       }
+      music_fan_club_exclusives: {
+        Row: {
+          artist_id: string
+          body: string | null
+          created_at: string
+          id: string
+          kind: string
+          media_url: string | null
+          min_tier_id: string | null
+          published_at: string
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          media_url?: string | null
+          min_tier_id?: string | null
+          published_at?: string
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          media_url?: string | null
+          min_tier_id?: string | null
+          published_at?: string
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_fan_club_exclusives_min_tier_id_fkey"
+            columns: ["min_tier_id"]
+            isOneToOne: false
+            referencedRelation: "music_fan_club_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_fan_club_memberships: {
         Row: {
           club_id: string
@@ -8707,6 +8757,89 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      music_fan_club_subscriptions: {
+        Row: {
+          artist_id: string
+          created_at: string
+          current_period_end: string | null
+          fan_id: string
+          id: string
+          status: string
+          tier_id: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          current_period_end?: string | null
+          fan_id: string
+          id?: string
+          status?: string
+          tier_id: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          current_period_end?: string | null
+          fan_id?: string
+          id?: string
+          status?: string
+          tier_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_fan_club_subscriptions_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "music_fan_club_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_fan_club_tiers: {
+        Row: {
+          artist_id: string
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          perks: Json
+          position: number
+          price_cents: number
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          perks?: Json
+          position?: number
+          price_cents: number
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          perks?: Json
+          position?: number
+          price_cents?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       music_fan_clubs: {
         Row: {
@@ -16136,6 +16269,10 @@ export type Database = {
           plays: number
           unique_listeners: number
         }[]
+      }
+      has_fan_club_access: {
+        Args: { _artist_id: string; _tier_id: string }
+        Returns: boolean
       }
       has_purchased_track: {
         Args: { _track_id: string; _user_id: string }
