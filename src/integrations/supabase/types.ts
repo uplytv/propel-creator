@@ -1296,6 +1296,53 @@ export type Database = {
         }
         Relationships: []
       }
+      artist_merch_variants: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          merch_id: string
+          position: number
+          price_cents_override: number | null
+          size: string | null
+          sku: string | null
+          stock_count: number
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          merch_id: string
+          position?: number
+          price_cents_override?: number | null
+          size?: string | null
+          sku?: string | null
+          stock_count?: number
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          merch_id?: string
+          position?: number
+          price_cents_override?: number | null
+          size?: string | null
+          sku?: string | null
+          stock_count?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artist_merch_variants_merch_id_fkey"
+            columns: ["merch_id"]
+            isOneToOne: false
+            referencedRelation: "artist_merch"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       artist_message_reads: {
         Row: {
           message_id: string
@@ -15932,6 +15979,10 @@ export type Database = {
         Returns: undefined
       }
       creator_content_count: { Args: { p_creator_id: string }; Returns: number }
+      decrement_merch_variant_stock: {
+        Args: { _qty?: number; _variant_id: string }
+        Returns: number
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
