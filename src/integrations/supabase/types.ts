@@ -10992,6 +10992,54 @@ export type Database = {
           },
         ]
       }
+      music_song_dedications: {
+        Row: {
+          amount_cents: number
+          artist_id: string
+          created_at: string
+          currency: string
+          dedicated_to: string
+          display_order: number
+          fan_id: string
+          id: string
+          is_public: boolean
+          message: string | null
+          status: string
+          track_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents?: number
+          artist_id: string
+          created_at?: string
+          currency?: string
+          dedicated_to: string
+          display_order?: number
+          fan_id: string
+          id?: string
+          is_public?: boolean
+          message?: string | null
+          status?: string
+          track_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          artist_id?: string
+          created_at?: string
+          currency?: string
+          dedicated_to?: string
+          display_order?: number
+          fan_id?: string
+          id?: string
+          is_public?: boolean
+          message?: string | null
+          status?: string
+          track_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_split_sheet_writers: {
         Row: {
           created_at: string
