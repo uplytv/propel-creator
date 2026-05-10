@@ -7357,6 +7357,121 @@ export type Database = {
         }
         Relationships: []
       }
+      music_ama_question_votes: {
+        Row: {
+          created_at: string
+          id: string
+          question_id: string
+          voter_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          question_id: string
+          voter_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          question_id?: string
+          voter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_ama_question_votes_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "music_ama_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_ama_questions: {
+        Row: {
+          answer: string | null
+          answered_at: string | null
+          created_at: string
+          fan_id: string
+          id: string
+          is_answered: boolean
+          question: string
+          session_id: string
+          updated_at: string
+          upvote_count: number
+        }
+        Insert: {
+          answer?: string | null
+          answered_at?: string | null
+          created_at?: string
+          fan_id: string
+          id?: string
+          is_answered?: boolean
+          question: string
+          session_id: string
+          updated_at?: string
+          upvote_count?: number
+        }
+        Update: {
+          answer?: string | null
+          answered_at?: string | null
+          created_at?: string
+          fan_id?: string
+          id?: string
+          is_answered?: boolean
+          question?: string
+          session_id?: string
+          updated_at?: string
+          upvote_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_ama_questions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "music_ama_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_ama_sessions: {
+        Row: {
+          artist_id: string
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          ends_at: string | null
+          id: string
+          scheduled_for: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          scheduled_for: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          scheduled_for?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_artist_alerts: {
         Row: {
           artist_id: string
