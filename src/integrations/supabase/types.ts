@@ -12100,6 +12100,86 @@ export type Database = {
           },
         ]
       }
+      music_tip_jar_contributions: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          fan_id: string
+          goal_id: string
+          id: string
+          is_anonymous: boolean
+          message: string | null
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          fan_id: string
+          goal_id: string
+          id?: string
+          is_anonymous?: boolean
+          message?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          fan_id?: string
+          goal_id?: string
+          id?: string
+          is_anonymous?: boolean
+          message?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_tip_jar_contributions_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "music_tip_jar_goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_tip_jar_goals: {
+        Row: {
+          artist_id: string
+          created_at: string
+          description: string | null
+          ends_at: string | null
+          id: string
+          image_url: string | null
+          raised_cents: number
+          status: string
+          target_cents: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          raised_cents?: number
+          status?: string
+          target_cents: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          raised_cents?: number
+          status?: string
+          target_cents?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_tips: {
         Row: {
           amount_cents: number
