@@ -21,6 +21,8 @@ import GenreChip from '../components/GenreChip';
 import { GENRES } from '../lib/genres';
 import SpotlightCard from '../components/SpotlightCard';
 import { useEditorialSpotlights } from '../hooks/useEditorialSpotlights';
+import NotificationBell from '../components/NotificationBell';
+import WeeklyRecapCard from '../components/WeeklyRecapCard';
 
 function Row({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -60,7 +62,8 @@ export default function MusicHome() {
           </h1>
           <p className="text-xs text-white/50">stream what creators are dropping</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          {user && <NotificationBell />}
           <Link
             to="/music/search"
             className="p-2 rounded-full bg-white/5 text-white"
