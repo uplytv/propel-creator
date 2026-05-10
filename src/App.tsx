@@ -113,6 +113,10 @@ const AlbumPage = lazy(() => import("./features/music/pages/AlbumPage"));
 const PlaylistPage = lazy(() => import("./features/music/pages/PlaylistPage"));
 const MusicBlendPage = lazy(() => import("./features/music/pages/MusicBlendPage"));
 const ListeningPartyPage = lazy(() => import("./features/music/pages/ListeningPartyPage"));
+const MusicLivePage = lazy(() => import("./features/music/pages/MusicLivePage"));
+const RadioStationPage = lazy(() => import("./features/music/pages/RadioStationPage"));
+const PremierePage = lazy(() => import("./features/music/pages/PremierePage"));
+const AudioRoomPage = lazy(() => import("./features/music/pages/AudioRoomPage"));
 const ContentStudio = lazy(() => import("./pages/ContentStudio"));
 const AITeamDashboard = lazy(() => import("./pages/AITeamDashboard"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
@@ -323,6 +327,10 @@ const App = () => (
                       <Route path="playlist/:id" element={<PlaylistPage />} />
                       <Route path="blend/:userId" element={<ProtectedRoute><MusicBlendPage /></ProtectedRoute>} />
                       <Route path="party/:code" element={<ListeningPartyPage />} />
+                      <Route path="live" element={<MusicLivePage />} />
+                      <Route path="radio/:id" element={<RadioStationPage />} />
+                      <Route path="premiere/:id" element={<PremierePage />} />
+                      <Route path="room/:id" element={<AudioRoomPage />} />
                     </Route>
 
                     <Route path="/:username" element={<BioPage />} />

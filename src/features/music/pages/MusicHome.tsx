@@ -1,5 +1,11 @@
 import { Link } from 'react-router-dom';
-import { Upload, Library, Search } from 'lucide-react';
+import { Upload, Library, Search, Radio } from 'lucide-react';
+import { useRadioStations } from '../hooks/useRadioStations';
+import RadioStationCard from '../components/RadioStationCard';
+import { useUpcomingPremieres } from '../hooks/usePremieres';
+import PremiereCard from '../components/PremiereCard';
+import { useLiveAudioRooms } from '../hooks/useAudioRooms';
+import AudioRoomCard from '../components/AudioRoomCard';
 import { useAuth } from '@/context/AuthContext';
 import { useMusicFeed } from '../hooks/useMusicFeed';
 import { useRecentlyPlayed } from '../hooks/useRecentlyPlayed';
