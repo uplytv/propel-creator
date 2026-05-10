@@ -7829,6 +7829,24 @@ export type Database = {
           },
         ]
       }
+      music_trending_searches: {
+        Row: {
+          hits: number
+          last_searched_at: string
+          query: string
+        }
+        Insert: {
+          hits?: number
+          last_searched_at?: string
+          query: string
+        }
+        Update: {
+          hits?: number
+          last_searched_at?: string
+          query?: string
+        }
+        Relationships: []
+      }
       mux_assets: {
         Row: {
           aspect_ratio: string | null
@@ -12941,6 +12959,7 @@ export type Database = {
         Returns: undefined
       }
       recalculate_waitlist_positions: { Args: never; Returns: undefined }
+      record_music_search: { Args: { _query: string }; Returns: undefined }
       release_ticket_inventory: {
         Args: { p_quantity: number; p_tier_id: string }
         Returns: undefined
