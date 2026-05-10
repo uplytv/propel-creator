@@ -16137,7 +16137,9 @@ export type Database = {
       }
       resolve_smart_playlist: {
         Args: { _limit?: number; _smart_id: string }
-        Returns: string[]
+        Returns: {
+          track_id: string
+        }[]
       }
       rotate_ticket_qr: { Args: { p_ticket_id: string }; Returns: string }
       send_creator_lifecycle_emails_batch: { Args: never; Returns: undefined }
