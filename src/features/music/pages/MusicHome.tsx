@@ -132,6 +132,8 @@ export default function MusicHome() {
           </div>
         </section>
 
+        <ChartsSection />
+
         {user && (data?.following?.length ?? 0) > 0 && (
           <Row title="From Creators You Follow">
             {(data?.following ?? []).map((t: any) => (
