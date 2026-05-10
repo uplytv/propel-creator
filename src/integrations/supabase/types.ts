@@ -9765,6 +9765,48 @@ export type Database = {
         }
         Relationships: []
       }
+      music_listening_lounges: {
+        Row: {
+          album_url: string | null
+          artist_id: string
+          attendee_count: number
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          scheduled_at: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          album_url?: string | null
+          artist_id: string
+          attendee_count?: number
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          scheduled_at: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          album_url?: string | null
+          artist_id?: string
+          attendee_count?: number
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          scheduled_at?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_listening_parties: {
         Row: {
           created_at: string
@@ -9978,6 +10020,76 @@ export type Database = {
             columns: ["episode_id"]
             isOneToOne: false
             referencedRelation: "music_longform"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_lounge_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          fan_id: string
+          id: string
+          lounge_id: string
+          position_seconds: number | null
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          fan_id: string
+          id?: string
+          lounge_id: string
+          position_seconds?: number | null
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          fan_id?: string
+          id?: string
+          lounge_id?: string
+          position_seconds?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_lounge_reactions_lounge_id_fkey"
+            columns: ["lounge_id"]
+            isOneToOne: false
+            referencedRelation: "music_listening_lounges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_lounge_rsvps: {
+        Row: {
+          created_at: string
+          fan_id: string
+          id: string
+          lounge_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          fan_id: string
+          id?: string
+          lounge_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          fan_id?: string
+          id?: string
+          lounge_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_lounge_rsvps_lounge_id_fkey"
+            columns: ["lounge_id"]
+            isOneToOne: false
+            referencedRelation: "music_listening_lounges"
             referencedColumns: ["id"]
           },
         ]
