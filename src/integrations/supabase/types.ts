@@ -1215,6 +1215,114 @@ export type Database = {
         }
         Relationships: []
       }
+      artist_merch_items: {
+        Row: {
+          artist_id: string
+          created_at: string
+          currency: string
+          external_url: string | null
+          id: string
+          image_url: string | null
+          is_available: boolean
+          name: string
+          price_cents: number
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          currency?: string
+          external_url?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean
+          name: string
+          price_cents?: number
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          currency?: string
+          external_url?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean
+          name?: string
+          price_cents?: number
+        }
+        Relationships: []
+      }
+      artist_profiles: {
+        Row: {
+          artist_bio: string | null
+          created_at: string
+          header_image_url: string | null
+          id: string
+          is_verified: boolean
+          monthly_listeners_cache: number
+          social_links: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          artist_bio?: string | null
+          created_at?: string
+          header_image_url?: string | null
+          id?: string
+          is_verified?: boolean
+          monthly_listeners_cache?: number
+          social_links?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          artist_bio?: string | null
+          created_at?: string
+          header_image_url?: string | null
+          id?: string
+          is_verified?: boolean
+          monthly_listeners_cache?: number
+          social_links?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      artist_tour_dates: {
+        Row: {
+          artist_id: string
+          city: string
+          country: string | null
+          created_at: string
+          event_date: string
+          id: string
+          is_sold_out: boolean
+          ticket_url: string | null
+          venue_name: string
+        }
+        Insert: {
+          artist_id: string
+          city: string
+          country?: string | null
+          created_at?: string
+          event_date: string
+          id?: string
+          is_sold_out?: boolean
+          ticket_url?: string | null
+          venue_name: string
+        }
+        Update: {
+          artist_id?: string
+          city?: string
+          country?: string | null
+          created_at?: string
+          event_date?: string
+          id?: string
+          is_sold_out?: boolean
+          ticket_url?: string | null
+          venue_name?: string
+        }
+        Relationships: []
+      }
       attendance: {
         Row: {
           attend_date: string
@@ -9981,6 +10089,33 @@ export type Database = {
           },
         ]
       }
+      track_presaves: {
+        Row: {
+          created_at: string
+          id: string
+          notify_on_release: boolean
+          release_date: string | null
+          track_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notify_on_release?: boolean
+          release_date?: string | null
+          track_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notify_on_release?: boolean
+          release_date?: string | null
+          track_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       track_reposts: {
         Row: {
           caption: string | null
@@ -11398,6 +11533,10 @@ export type Database = {
         Returns: number
       }
       generate_slug: { Args: { input_text: string }; Returns: string }
+      get_artist_listener_stats: {
+        Args: { _artist_id: string; _days?: number }
+        Returns: Json
+      }
       get_friend_music_activity: {
         Args: { _limit?: number; _viewer: string }
         Returns: {
