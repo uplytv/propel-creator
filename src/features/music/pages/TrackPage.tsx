@@ -11,6 +11,8 @@ import RepostButton from '../components/RepostButton';
 import PresaveButton from '../components/PresaveButton';
 import DownloadButton from '../components/DownloadButton';
 import StartPartyButton from '../components/StartPartyButton';
+import BuyTrackButton from '../components/BuyTrackButton';
+import TipTrackButton from '../components/TipTrackButton';
 import { formatDuration } from '../lib/formatDuration';
 
 export default function TrackPage() {
