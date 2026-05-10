@@ -128,6 +128,82 @@ export async function searchMusic(q: string): Promise<{ tracks: Track[]; albums:
   return { tracks: (t as Track[]) ?? [], albums: (a as Album[]) ?? [] };
 }
 
+export type SearchSort = 'relevance' | 'newest' | 'popular';
+export type DurationBucket = 'any' | 'short' | 'medium' | 'long';
+
+export interface SearchFilters {
+  genres?: string[];
+  moodGenres?: string[]; // pre-expanded genres from a mood
+  hideExplicit?: boolean;
+  monetization?: 'any' | 'free' | 'paid';
+  duration?: DurationBucket;
+  sort?: SearchSort;
+}
+
+export async function searchMusicAdvanced(
+  q: string,
+  filters: SearchFilters = {},
+): Promise<{ tracks: Track[]; albums: Album[] }> {
+  const term = q.trim().length ? `%${q.trim()}%` : null;
+  const allowedGenres = [
+    ...(filters.genres ?? []),
+    ...(filters.moodGenres ?? []),
+  ];
+  const uniqueGenres = Array.from(new Set(allowedGenres));
+
+  let tq = sb.from('tracks').select('*').eq('is_published', true);
+  if (term) tq = tq.or(`title.ilike.${term},description.ilike.${term}`);
+  if (uniqueGenres.length) tq = tq.in('genre', uniqueGenres);
+  if (filters.hideExplicit) tq = tq.eq('is_explicit', false);
+  if (filters.monetization && filters.monetization !== 'any') {
+    tq = tq.eq('monetization_type', filters.monetization);
+  }
+  if (filters.duration === 'short') tq = tq.lte('duration_seconds', 120);
+  else if (filters.duration === 'medium')
+    tq = tq.gt('duration_seconds', 120).lte('duration_seconds', 300);
+  else if (filters.duration === 'long') tq = tq.gt('duration_seconds', 300);
+
+  const sort = filters.sort ?? (term ? 'relevance' : 'popular');
+  if (sort === 'newest')
+    tq = tq.order('release_date', { ascending: false, nullsFirst: false });
+  else if (sort === 'popular') tq = tq.order('play_count', { ascending: false });
+  else
+    tq = tq
+      .order('play_count', { ascending: false })
+      .order('like_count', { ascending: false });
+
+  let aq = sb.from('albums').select('*').eq('is_published', true);
+  if (term) aq = aq.ilike('title', term);
+  aq = aq.order('release_date', { ascending: false, nullsFirst: false }).limit(20);
+
+  const [{ data: t }, { data: a }] = await Promise.all([tq.limit(60), aq]);
+  return { tracks: (t as Track[]) ?? [], albums: (a as Album[]) ?? [] };
+}
+
+export interface ChartFilters {
+  genres?: string[];
+  windowDays?: number; // restrict to tracks released within window
+}
+
+export async function fetchChartTracks(
+  filters: ChartFilters = {},
+  limit = 50,
+): Promise<Track[]> {
+  let q = sb.from('tracks').select('*').eq('is_published', true);
+  if (filters.genres?.length) q = q.in('genre', filters.genres);
+  if (filters.windowDays && filters.windowDays > 0) {
+    const since = new Date(
+      Date.now() - filters.windowDays * 86400_000,
+    ).toISOString();
+    q = q.gte('created_at', since);
+  }
+  const { data } = await q
+    .order('play_count', { ascending: false })
+    .order('like_count', { ascending: false })
+    .limit(limit);
+  return (data as Track[]) ?? [];
+}
+
 export function muxHlsUrl(playbackId: string) {
   return `https://stream.mux.com/${playbackId}.m3u8`;
 }

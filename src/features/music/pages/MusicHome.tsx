@@ -9,6 +9,7 @@ import {
 } from '../hooks/usePersonalizedMixes';
 import TrackCard from '../components/TrackCard';
 import DailyMixCard from '../components/DailyMixCard';
+import ChartsSection from '../components/ChartsSection';
 import GenreChip from '../components/GenreChip';
 import { GENRES } from '../lib/genres';
 
@@ -130,6 +131,8 @@ export default function MusicHome() {
             ))}
           </div>
         </section>
+
+        <ChartsSection />
 
         {user && (data?.following?.length ?? 0) > 0 && (
           <Row title="From Creators You Follow">
