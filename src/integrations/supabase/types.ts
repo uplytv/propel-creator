@@ -7214,6 +7214,33 @@ export type Database = {
         }
         Relationships: []
       }
+      music_badges: {
+        Row: {
+          created_at: string
+          description: string
+          icon: string | null
+          key: string
+          tier: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          icon?: string | null
+          key: string
+          tier?: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          icon?: string | null
+          key?: string
+          tier?: string
+          title?: string
+        }
+        Relationships: []
+      }
       music_concert_merch: {
         Row: {
           concert_id: string
@@ -7492,6 +7519,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      music_listen_streaks: {
+        Row: {
+          current_streak: number
+          last_listened_on: string | null
+          longest_streak: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          current_streak?: number
+          last_listened_on?: string | null
+          longest_streak?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          current_streak?: number
+          last_listened_on?: string | null
+          longest_streak?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       music_listening_parties: {
         Row: {
@@ -8234,6 +8285,32 @@ export type Database = {
           query?: string
         }
         Relationships: []
+      }
+      music_user_badges: {
+        Row: {
+          badge_key: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          badge_key: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          badge_key?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_user_badges_badge_key_fkey"
+            columns: ["badge_key"]
+            isOneToOne: false
+            referencedRelation: "music_badges"
+            referencedColumns: ["key"]
+          },
+        ]
       }
       mux_assets: {
         Row: {
@@ -13293,6 +13370,14 @@ export type Database = {
           unique_listeners: number
         }[]
       }
+      music_streak_leaderboard: {
+        Args: { p_limit?: number }
+        Returns: {
+          current_streak: number
+          longest_streak: number
+          user_id: string
+        }[]
+      }
       music_top_fans: {
         Args: { _artist_id: string; _days?: number; _limit?: number }
         Returns: {
@@ -13347,6 +13432,22 @@ export type Database = {
         Returns: undefined
       }
       recalculate_waitlist_positions: { Args: never; Returns: undefined }
+      record_music_listen_day: {
+        Args: never
+        Returns: {
+          current_streak: number
+          last_listened_on: string | null
+          longest_streak: number
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "music_listen_streaks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       record_music_search: { Args: { _query: string }; Returns: undefined }
       release_ticket_inventory: {
         Args: { p_quantity: number; p_tier_id: string }
