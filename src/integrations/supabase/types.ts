@@ -10540,6 +10540,50 @@ export type Database = {
           },
         ]
       }
+      track_distribution_exports: {
+        Row: {
+          artist_id: string
+          created_at: string
+          external_id: string | null
+          id: string
+          notes: string | null
+          platform: string
+          status: string
+          track_id: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          external_id?: string | null
+          id?: string
+          notes?: string | null
+          platform: string
+          status?: string
+          track_id: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          external_id?: string | null
+          id?: string
+          notes?: string | null
+          platform?: string
+          status?: string
+          track_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "track_distribution_exports_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       track_likes: {
         Row: {
           created_at: string
@@ -10731,12 +10775,48 @@ export type Database = {
           },
         ]
       }
+      track_royalty_splits: {
+        Row: {
+          collaborator_id: string
+          created_at: string
+          id: string
+          percent: number
+          role: string
+          track_id: string
+        }
+        Insert: {
+          collaborator_id: string
+          created_at?: string
+          id?: string
+          percent: number
+          role?: string
+          track_id: string
+        }
+        Update: {
+          collaborator_id?: string
+          created_at?: string
+          id?: string
+          percent?: number
+          role?: string
+          track_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "track_royalty_splits_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tracks: {
         Row: {
           audio_mux_asset_id: string | null
           audio_mux_playback_id: string | null
           audio_status: string
           audio_upload_id: string | null
+          copyright_notice: string | null
           cover_art_url: string | null
           created_at: string
           creator_id: string
@@ -10747,6 +10827,9 @@ export type Database = {
           is_explicit: boolean
           is_paid: boolean
           is_published: boolean
+          isrc: string | null
+          iswc: string | null
+          label: string | null
           like_count: number
           monetization_type: string
           play_count: number
@@ -10760,6 +10843,7 @@ export type Database = {
           audio_mux_playback_id?: string | null
           audio_status?: string
           audio_upload_id?: string | null
+          copyright_notice?: string | null
           cover_art_url?: string | null
           created_at?: string
           creator_id: string
@@ -10770,6 +10854,9 @@ export type Database = {
           is_explicit?: boolean
           is_paid?: boolean
           is_published?: boolean
+          isrc?: string | null
+          iswc?: string | null
+          label?: string | null
           like_count?: number
           monetization_type?: string
           play_count?: number
@@ -10783,6 +10870,7 @@ export type Database = {
           audio_mux_playback_id?: string | null
           audio_status?: string
           audio_upload_id?: string | null
+          copyright_notice?: string | null
           cover_art_url?: string | null
           created_at?: string
           creator_id?: string
@@ -10793,6 +10881,9 @@ export type Database = {
           is_explicit?: boolean
           is_paid?: boolean
           is_published?: boolean
+          isrc?: string | null
+          iswc?: string | null
+          label?: string | null
           like_count?: number
           monetization_type?: string
           play_count?: number
