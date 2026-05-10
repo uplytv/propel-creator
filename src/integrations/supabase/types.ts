@@ -8329,6 +8329,80 @@ export type Database = {
           },
         ]
       }
+      music_concert_memories: {
+        Row: {
+          artist_id: string
+          caption: string | null
+          city: string | null
+          concert_date: string | null
+          created_at: string
+          fan_id: string
+          id: string
+          like_count: number
+          media_type: string
+          media_url: string
+          status: string
+          venue: string | null
+        }
+        Insert: {
+          artist_id: string
+          caption?: string | null
+          city?: string | null
+          concert_date?: string | null
+          created_at?: string
+          fan_id: string
+          id?: string
+          like_count?: number
+          media_type: string
+          media_url: string
+          status?: string
+          venue?: string | null
+        }
+        Update: {
+          artist_id?: string
+          caption?: string | null
+          city?: string | null
+          concert_date?: string | null
+          created_at?: string
+          fan_id?: string
+          id?: string
+          like_count?: number
+          media_type?: string
+          media_url?: string
+          status?: string
+          venue?: string | null
+        }
+        Relationships: []
+      }
+      music_concert_memory_likes: {
+        Row: {
+          created_at: string
+          fan_id: string
+          id: string
+          memory_id: string
+        }
+        Insert: {
+          created_at?: string
+          fan_id: string
+          id?: string
+          memory_id: string
+        }
+        Update: {
+          created_at?: string
+          fan_id?: string
+          id?: string
+          memory_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_concert_memory_likes_memory_id_fkey"
+            columns: ["memory_id"]
+            isOneToOne: false
+            referencedRelation: "music_concert_memories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_concert_merch: {
         Row: {
           concert_id: string
