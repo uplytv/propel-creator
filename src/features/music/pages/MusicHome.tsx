@@ -2,7 +2,13 @@ import { Link } from 'react-router-dom';
 import { Upload, Library, Search } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useMusicFeed } from '../hooks/useMusicFeed';
+import { useRecentlyPlayed } from '../hooks/useRecentlyPlayed';
+import {
+  useDailyMixes,
+  useBecauseYouListened,
+} from '../hooks/usePersonalizedMixes';
 import TrackCard from '../components/TrackCard';
+import DailyMixCard from '../components/DailyMixCard';
 import GenreChip from '../components/GenreChip';
 import { GENRES } from '../lib/genres';
 
