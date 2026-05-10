@@ -10394,6 +10394,143 @@ export type Database = {
           },
         ]
       }
+      music_remix_contests: {
+        Row: {
+          artist_id: string
+          cover_url: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          prize_amount_cents: number | null
+          prize_description: string | null
+          status: string
+          stems_url: string | null
+          submission_deadline: string | null
+          title: string
+          updated_at: string
+          voting_deadline: string | null
+        }
+        Insert: {
+          artist_id: string
+          cover_url?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          prize_amount_cents?: number | null
+          prize_description?: string | null
+          status?: string
+          stems_url?: string | null
+          submission_deadline?: string | null
+          title: string
+          updated_at?: string
+          voting_deadline?: string | null
+        }
+        Update: {
+          artist_id?: string
+          cover_url?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          prize_amount_cents?: number | null
+          prize_description?: string | null
+          status?: string
+          stems_url?: string | null
+          submission_deadline?: string | null
+          title?: string
+          updated_at?: string
+          voting_deadline?: string | null
+        }
+        Relationships: []
+      }
+      music_remix_submissions: {
+        Row: {
+          audio_url: string
+          contest_id: string
+          created_at: string
+          fan_id: string
+          id: string
+          notes: string | null
+          status: string
+          title: string
+          updated_at: string
+          vote_count: number
+        }
+        Insert: {
+          audio_url: string
+          contest_id: string
+          created_at?: string
+          fan_id: string
+          id?: string
+          notes?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          vote_count?: number
+        }
+        Update: {
+          audio_url?: string
+          contest_id?: string
+          created_at?: string
+          fan_id?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          vote_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_remix_submissions_contest_id_fkey"
+            columns: ["contest_id"]
+            isOneToOne: false
+            referencedRelation: "music_remix_contests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_remix_votes: {
+        Row: {
+          contest_id: string
+          created_at: string
+          id: string
+          submission_id: string
+          voter_id: string
+        }
+        Insert: {
+          contest_id: string
+          created_at?: string
+          id?: string
+          submission_id: string
+          voter_id: string
+        }
+        Update: {
+          contest_id?: string
+          created_at?: string
+          id?: string
+          submission_id?: string
+          voter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_remix_votes_contest_id_fkey"
+            columns: ["contest_id"]
+            isOneToOne: false
+            referencedRelation: "music_remix_contests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "music_remix_votes_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "music_remix_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_rights_holders: {
         Row: {
           created_at: string
