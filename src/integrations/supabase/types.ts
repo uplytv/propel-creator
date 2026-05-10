@@ -7682,6 +7682,98 @@ export type Database = {
         }
         Relationships: []
       }
+      music_drop_editions: {
+        Row: {
+          amount_cents: number
+          claimed_at: string
+          collector_id: string
+          currency: string
+          drop_id: string
+          edition_number: number
+          id: string
+        }
+        Insert: {
+          amount_cents?: number
+          claimed_at?: string
+          collector_id: string
+          currency?: string
+          drop_id: string
+          edition_number: number
+          id?: string
+        }
+        Update: {
+          amount_cents?: number
+          claimed_at?: string
+          collector_id?: string
+          currency?: string
+          drop_id?: string
+          edition_number?: number
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_drop_editions_drop_id_fkey"
+            columns: ["drop_id"]
+            isOneToOne: false
+            referencedRelation: "music_drops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_drops: {
+        Row: {
+          artwork_url: string | null
+          audio_url: string | null
+          created_at: string
+          creator_id: string
+          currency: string
+          description: string | null
+          drops_at: string | null
+          edition_cap: number
+          editions_sold: number
+          ends_at: string | null
+          id: string
+          price_cents: number
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artwork_url?: string | null
+          audio_url?: string | null
+          created_at?: string
+          creator_id: string
+          currency?: string
+          description?: string | null
+          drops_at?: string | null
+          edition_cap?: number
+          editions_sold?: number
+          ends_at?: string | null
+          id?: string
+          price_cents?: number
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artwork_url?: string | null
+          audio_url?: string | null
+          created_at?: string
+          creator_id?: string
+          currency?: string
+          description?: string | null
+          drops_at?: string | null
+          edition_cap?: number
+          editions_sold?: number
+          ends_at?: string | null
+          id?: string
+          price_cents?: number
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_editorial_spotlights: {
         Row: {
           cover_url: string | null
@@ -13621,6 +13713,24 @@ export type Database = {
       }
       check_rank_movements_and_email: { Args: never; Returns: undefined }
       check_simulcast_key_rotation: { Args: never; Returns: undefined }
+      claim_music_drop_edition: {
+        Args: { _drop_id: string }
+        Returns: {
+          amount_cents: number
+          claimed_at: string
+          collector_id: string
+          currency: string
+          drop_id: string
+          edition_number: number
+          id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "music_drop_editions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       confirm_ticket_inventory: {
         Args: { p_quantity: number; p_tier_id: string }
         Returns: undefined
