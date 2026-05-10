@@ -1,47 +1,55 @@
-import { Trophy, Flame } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { useStreakLeaderboard } from '../hooks/useMusicGamification';
+import { memo } from "react";
+import { Flame } from "lucide-react";
+import { useTopListeningStreaks } from "../hooks/useListeningStreaks";
+import { useAuth } from "@/context/AuthContext";
 
-const MEDAL = ['🥇', '🥈', '🥉'];
+interface Props {
+  artistId: string;
+  limit?: number;
+}
 
-export function StreakLeaderboard({ limit = 25 }: { limit?: number }) {
-  const { data: rows = [], isLoading } = useStreakLeaderboard(limit);
+function StreakLeaderboardImpl({ artistId, limit = 25 }: Props) {
+  const { data: rows = [], isLoading } = useTopListeningStreaks(artistId, limit);
+  const { user } = useAuth();
 
-  if (isLoading) return <div className="h-40 rounded-xl bg-muted/20 animate-pulse" />;
+  if (isLoading) {
+    return <div className="p-4 text-sm text-muted-foreground">Loading streaks...</div>;
+  }
   if (rows.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground text-sm">
-        <Flame className="w-8 h-8 mx-auto mb-2 opacity-40" />
-        Be the first to start a streak
+      <div className="p-4 text-sm text-muted-foreground">
+        No streaks yet — be the first fan to start one.
       </div>
     );
   }
 
   return (
-    <Card className="bg-card/40 border-border/40 overflow-hidden">
-      <div className="flex items-center gap-2 p-3 border-b border-border/40">
-        <Trophy className="w-4 h-4 text-primary" />
-        <h3 className="font-bold">Top streaks</h3>
-      </div>
-      <ol className="divide-y divide-border/40">
-        {rows.map((r: any, i: number) => (
-          <li
-            key={r.user_id}
-            className="flex items-center gap-3 px-3 py-2.5 min-h-[44px]"
+    <div className="space-y-2">
+      {rows.map((r, i) => {
+        const mine = user?.id === r.fan_id;
+        return (
+          <div
+            key={r.id}
+            className={`flex items-center gap-3 rounded-xl border p-3 ${
+              mine ? "border-primary bg-primary/5" : "border-border bg-card/40"
+            }`}
           >
-            <span className="w-7 text-center font-bold text-sm">
-              {MEDAL[i] ?? `#${i + 1}`}
+            <span className="w-6 text-center text-sm font-semibold text-muted-foreground">
+              {i + 1}
             </span>
-            <span className="flex-1 truncate text-sm font-mono">
-              {String(r.user_id).slice(0, 8)}…
-            </span>
-            <span className="flex items-center gap-1 text-sm font-semibold text-orange-400">
-              <Flame className="w-3.5 h-3.5" />
+            <div className="flex-1 min-w-0 text-sm font-medium truncate">
+              {mine ? "You" : r.fan_id.slice(0, 8)}
+            </div>
+            <div className="flex items-center gap-1 text-sm font-semibold text-primary">
+              <Flame className="h-4 w-4" />
               {r.current_streak}
-            </span>
-          </li>
-        ))}
-      </ol>
-    </Card>
+            </div>
+            <div className="text-xs text-muted-foreground">best {r.longest_streak}</div>
+          </div>
+        );
+      })}
+    </div>
   );
 }
+
+export const StreakLeaderboard = memo(StreakLeaderboardImpl);
