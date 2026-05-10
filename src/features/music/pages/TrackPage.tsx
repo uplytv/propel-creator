@@ -48,14 +48,27 @@ export default function TrackPage() {
           {track.description && (
             <p className="text-sm text-white/70 mt-3 whitespace-pre-line">{track.description}</p>
           )}
+          {processing && (
+            <div className="mt-3 inline-flex items-center gap-2 text-xs text-white/70 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              Processing audio… we'll auto-refresh when it's ready.
+            </div>
+          )}
+          {errored && (
+            <div className="mt-3 inline-flex items-center gap-2 text-xs text-red-300 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-full">
+              <AlertTriangle className="w-3 h-3" />
+              Mux processing failed. Try re-uploading.
+            </div>
+          )}
           <div className="flex items-center gap-3 mt-4">
             <button
+              disabled={!ready}
               onClick={() => (isCurrent ? toggle() : load(track))}
-              className="px-5 py-2.5 rounded-full text-white font-bold flex items-center gap-2"
+              className="px-5 py-2.5 rounded-full text-white font-bold flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ background: 'linear-gradient(90deg,#3D7CFF,#B025FF)' }}
             >
               {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-              {isPlaying ? 'Pause' : 'Play'}
+              {!ready ? 'Not ready' : isPlaying ? 'Pause' : 'Play'}
             </button>
             <LikeButton trackId={track.id} />
             <AddToPlaylistMenu trackId={track.id} />
