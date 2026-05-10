@@ -111,6 +111,7 @@ const GenrePage = lazy(() => import("./features/music/pages/GenrePage"));
 const TrackPage = lazy(() => import("./features/music/pages/TrackPage"));
 const AlbumPage = lazy(() => import("./features/music/pages/AlbumPage"));
 const PlaylistPage = lazy(() => import("./features/music/pages/PlaylistPage"));
+const MusicBlendPage = lazy(() => import("./features/music/pages/MusicBlendPage"));
 const ContentStudio = lazy(() => import("./pages/ContentStudio"));
 const AITeamDashboard = lazy(() => import("./pages/AITeamDashboard"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
@@ -319,6 +320,7 @@ const App = () => (
                       <Route path="track/:id" element={<TrackPage />} />
                       <Route path="album/:id" element={<AlbumPage />} />
                       <Route path="playlist/:id" element={<PlaylistPage />} />
+                      <Route path="blend/:userId" element={<ProtectedRoute><MusicBlendPage /></ProtectedRoute>} />
                     </Route>
 
                     <Route path="/:username" element={<BioPage />} />
