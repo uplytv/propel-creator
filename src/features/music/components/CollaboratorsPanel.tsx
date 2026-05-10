@@ -1,178 +1,114 @@
-import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { Users, Plus, X, Lock, UserPlus } from 'lucide-react';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { Users, Link2, X, Copy } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import {
   usePlaylistCollaborators,
-  useAddCollaborator,
+  usePlaylistInvites,
+  useCreatePlaylistInvite,
   useRemoveCollaborator,
-  useTogglePlaylistCollaborative,
-} from '../hooks/usePlaylistCollaborators';
-import { useAuth } from '@/context/AuthContext';
+} from "../hooks/usePlaylistCollaborators";
 
-interface Props {
+export function CollaboratorsPanel({
+  playlistId,
+  isOwner,
+}: {
   playlistId: string;
-  ownerId: string;
-  isCollaborative: boolean;
-}
-
-export default function CollaboratorsPanel({ playlistId, ownerId, isCollaborative }: Props) {
-  const { user } = useAuth();
-  const qc = useQueryClient();
-  const [open, setOpen] = useState(false);
-  const [username, setUsername] = useState('');
-  const isOwner = user?.id === ownerId;
-
+  isOwner: boolean;
+}) {
   const { data: collabs = [] } = usePlaylistCollaborators(playlistId);
-  const add = useAddCollaborator(playlistId);
-  const remove = useRemoveCollaborator(playlistId);
-  const toggle = useTogglePlaylistCollaborative(playlistId);
+  const { data: invites = [] } = usePlaylistInvites(playlistId);
+  const create = useCreatePlaylistInvite();
+  const remove = useRemoveCollaborator();
+  const [role, setRole] = useState<"editor" | "viewer">("editor");
 
-  const handleAdd = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const generate = async () => {
     try {
-      await add.mutateAsync(username);
-      setUsername('');
-      toast.success('Collaborator added');
-    } catch (err: any) {
-      toast.error(err?.message ?? 'Could not add collaborator');
+      const inv = await create.mutateAsync({ playlistId, role });
+      const url = `${window.location.origin}/music/playlist-invite/${inv.token}`;
+      await navigator.clipboard.writeText(url);
+      toast.success("Invite link copied to clipboard");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not generate invite");
     }
   };
 
-  const handleToggle = async () => {
-    try {
-      await toggle.mutateAsync(!isCollaborative);
-      qc.invalidateQueries({ queryKey: ['music', 'playlist', playlistId] });
-      toast.success(isCollaborative ? 'Now private' : 'Collaborative mode on');
-    } catch {
-      toast.error('Could not update playlist');
-    }
+  const copyInvite = async (token: string) => {
+    const url = `${window.location.origin}/music/playlist-invite/${token}`;
+    await navigator.clipboard.writeText(url);
+    toast.success("Copied");
   };
 
   return (
-    <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 mb-6">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2 min-w-0">
-          <Users className="w-4 h-4 text-white" />
-          <div className="text-sm font-bold text-white">
-            {isCollaborative ? 'Collaborative' : 'Solo playlist'}
-          </div>
-          <div className="flex -space-x-2 ml-2">
-            {collabs.slice(0, 5).map((c) =>
-              c.avatar_url ? (
-                <img
-                  key={c.user_id}
-                  src={c.avatar_url}
-                  alt={c.display_name ?? ''}
-                  className="w-6 h-6 rounded-full border-2 border-[#0A0A0A] object-cover"
-                />
-              ) : (
-                <div
-                  key={c.user_id}
-                  className="w-6 h-6 rounded-full border-2 border-[#0A0A0A] flex items-center justify-center text-[10px] font-bold text-white"
-                  style={{ background: 'linear-gradient(135deg,#3D7CFF,#B025FF)' }}
-                >
-                  {(c.display_name ?? c.username ?? '?').slice(0, 1).toUpperCase()}
-                </div>
-              ),
-            )}
-          </div>
-        </div>
-        {isOwner && (
-          <button
-            onClick={handleToggle}
-            className={`text-xs font-semibold px-3 py-1.5 rounded-full ${
-              isCollaborative
-                ? 'bg-[#00FF85] text-black'
-                : 'bg-white/10 text-white'
-            }`}
-          >
-            {isCollaborative ? 'On' : 'Off'}
-          </button>
-        )}
+    <section className="rounded-xl bg-card/40 border border-border/30 p-4">
+      <div className="flex items-center gap-2 mb-3">
+        <Users className="h-4 w-4 text-primary" />
+        <h2 className="text-sm font-semibold">Collaborators</h2>
+        <span className="text-xs text-muted-foreground ml-auto">{collabs.length}</span>
       </div>
 
-      {isCollaborative && (
-        <button
-          onClick={() => setOpen((s) => !s)}
-          className="mt-3 inline-flex items-center gap-1 text-xs text-white/70 hover:text-white"
-        >
-          {open ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
-          {open ? 'Hide collaborators' : `Manage collaborators (${collabs.length})`}
-        </button>
-      )}
-
-      {!isCollaborative && isOwner && (
-        <div className="mt-3 flex items-center gap-2 text-xs text-white/50">
-          <Lock className="w-3 h-3" /> Only you can edit. Turn on to invite friends.
-        </div>
-      )}
-
-      {open && isCollaborative && (
-        <div className="mt-3 space-y-3">
-          {isOwner && (
-            <form onSubmit={handleAdd} className="flex items-center gap-2">
-              <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-full bg-white/5 border border-white/10">
-                <UserPlus className="w-4 h-4 text-white/50" />
-                <input
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Add by @username"
-                  className="flex-1 bg-transparent outline-none text-white placeholder:text-white/40"
-                  style={{ fontSize: 16 }}
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={add.isPending || !username.trim()}
-                className="px-4 py-2 rounded-full bg-[#00FF85] text-black text-sm font-bold disabled:opacity-50"
-              >
-                Add
-              </button>
-            </form>
-          )}
-          <div className="space-y-1">
-            {collabs.length === 0 && (
-              <div className="text-xs text-white/40">No collaborators yet.</div>
-            )}
-            {collabs.map((c) => (
-              <div
-                key={c.user_id}
-                className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/5"
-              >
-                {c.avatar_url ? (
-                  <img src={c.avatar_url} alt="" className="w-7 h-7 rounded-full object-cover" />
-                ) : (
-                  <div
-                    className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
-                    style={{ background: 'linear-gradient(135deg,#3D7CFF,#B025FF)' }}
+      {collabs.length === 0 ? (
+        <p className="text-xs text-muted-foreground mb-3">
+          No collaborators yet. Invite someone to co-edit this playlist.
+        </p>
+      ) : (
+        <ul className="space-y-2 mb-3">
+          {collabs.map((c) => (
+            <li key={c.user_id} className="flex items-center justify-between text-sm">
+              <span className="font-mono text-xs truncate">{c.user_id.slice(0, 8)}…</span>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-[10px]">{c.role}</Badge>
+                {isOwner && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7"
+                    onClick={() => remove.mutate({ playlistId, userId: c.user_id })}
                   >
-                    {(c.display_name ?? c.username ?? '?').slice(0, 1).toUpperCase()}
-                  </div>
-                )}
-                <div className="text-sm text-white truncate flex-1">
-                  {c.display_name || (c.username ? `@${c.username}` : 'Anonymous')}
-                </div>
-                {(isOwner || c.user_id === user?.id) && (
-                  <button
-                    onClick={async () => {
-                      try {
-                        await remove.mutateAsync(c.user_id);
-                        toast.success('Removed');
-                      } catch {
-                        toast.error('Could not remove');
-                      }
-                    }}
-                    className="text-xs text-white/50 hover:text-white"
-                  >
-                    {c.user_id === user?.id ? 'Leave' : 'Remove'}
-                  </button>
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
                 )}
               </div>
-            ))}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {isOwner && (
+        <>
+          <div className="flex items-center gap-2 mb-3">
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value as any)}
+              className="text-xs bg-background border border-border rounded px-2 h-9"
+              style={{ fontSize: 16 }}
+            >
+              <option value="editor">Editor</option>
+              <option value="viewer">Viewer</option>
+            </select>
+            <Button size="sm" onClick={generate} disabled={create.isPending}>
+              <Link2 className="h-4 w-4 mr-1" /> Invite link
+            </Button>
           </div>
-        </div>
+
+          {invites.length > 0 && (
+            <div className="border-t border-border/30 pt-3 space-y-2">
+              <div className="text-xs text-muted-foreground">Pending invites</div>
+              {invites.map((inv) => (
+                <div key={inv.id} className="flex items-center justify-between text-xs">
+                  <span className="font-mono truncate">{inv.token.slice(0, 12)}…</span>
+                  <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => copyInvite(inv.token)}>
+                    <Copy className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
-    </div>
+    </section>
   );
 }
+
+export default CollaboratorsPanel;
