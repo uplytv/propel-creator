@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 
 export interface SyncedLine {
-  t: number; // start time in seconds
+  time: number; // start time in seconds
   text: string;
 }
 
@@ -13,6 +13,7 @@ export interface Lyrics {
   contributor_id: string | null;
   language: string;
   plain_text: string | null;
+  lrc_text?: string | null;
   synced_lines: SyncedLine[] | null;
   is_karaoke_ready: boolean;
   is_published: boolean;
@@ -32,9 +33,37 @@ export function useTrackLyrics(trackId?: string) {
         .limit(1)
         .maybeSingle();
       if (error) throw error;
-      return data as Lyrics | null;
+      if (!data) return null;
+      // Synthesize lrc_text for legacy consumers if absent.
+      if (!data.lrc_text && Array.isArray(data.synced_lines)) {
+        data.lrc_text = (data.synced_lines as SyncedLine[])
+          .map((l) => `[${formatTimeLrc(l.time ?? 0)}]${l.text}`)
+          .join("\n");
+      }
+      return data as Lyrics;
     },
     enabled: !!trackId,
+  });
+}
+
+// Legacy alias used by existing components.
+export const useLyrics = useTrackLyrics;
+
+// Legacy stub: returns empty translation list (translations not yet stored separately).
+export function useLyricTranslations(_id?: string) {
+  return useQuery({
+    queryKey: ["lyric-translations", _id],
+    queryFn: async () => [] as Array<{ id: string; language: string; lrc_text: string }>,
+    enabled: !!_id,
+  });
+}
+
+// Legacy stub: no-op save for karaoke session telemetry.
+export function useSaveKaraokeSession() {
+  return useMutation({
+    mutationFn: async (_payload: Record<string, unknown>) => {
+      return { ok: true };
+    },
   });
 }
 
@@ -82,9 +111,18 @@ export function parseLRC(input: string): SyncedLine[] {
     const min = parseInt(m[1], 10);
     const sec = parseInt(m[2], 10);
     const ms = m[3] ? parseInt(m[3].padEnd(3, "0"), 10) : 0;
-    const t = min * 60 + sec + ms / 1000;
+    const time = min * 60 + sec + ms / 1000;
     const text = m[4].trim();
-    if (text) lines.push({ t, text });
+    if (text) lines.push({ time, text });
   }
-  return lines.sort((a, b) => a.t - b.t);
+  return lines.sort((a, b) => a.time - b.time);
+}
+
+// Legacy alias for existing callers.
+export const parseLrc = parseLRC;
+
+function formatTimeLrc(t: number): string {
+  const m = Math.floor(t / 60);
+  const s = t - m * 60;
+  return `${String(m).padStart(2, "0")}:${s.toFixed(2).padStart(5, "0")}`;
 }

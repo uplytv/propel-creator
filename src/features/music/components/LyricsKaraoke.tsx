@@ -13,7 +13,7 @@ export function LyricsKaraoke({ lines, currentTime, className }: LyricsKaraokePr
   const activeIndex = useMemo(() => {
     let idx = -1;
     for (let i = 0; i < lines.length; i++) {
-      if (lines[i].t <= currentTime) idx = i;
+      if (lines[i].time <= currentTime) idx = i;
       else break;
     }
     return idx;
