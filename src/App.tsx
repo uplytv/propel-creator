@@ -332,6 +332,7 @@ const App = () => (
                       <Route path="radio/:id" element={<RadioStationPage />} />
                       <Route path="premiere/:id" element={<PremierePage />} />
                       <Route path="room/:id" element={<AudioRoomPage />} />
+                      <Route path="browse" element={<MusicBrowsePage />} />
                     </Route>
 
                     <Route path="/:username" element={<BioPage />} />
