@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { usePlaylist } from '../hooks/useTrack';
 import TrackRow from '../components/TrackRow';
+import CollaboratorsPanel from '../components/CollaboratorsPanel';
 
 export default function PlaylistPage() {
   const { id } = useParams<{ id: string }>();
@@ -16,6 +17,11 @@ export default function PlaylistPage() {
       </Link>
       <h1 className="text-3xl font-black text-white">{playlist.title}</h1>
       <p className="text-sm text-white/50 mb-6">{tracks.length} tracks</p>
+      <CollaboratorsPanel
+        playlistId={playlist.id}
+        ownerId={(playlist as any).user_id}
+        isCollaborative={!!(playlist as any).is_collaborative}
+      />
       <div className="space-y-1">
         {tracks.map((t, i) => (
           <TrackRow key={t.id} track={t} queue={tracks} index={i} />

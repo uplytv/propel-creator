@@ -1,10 +1,13 @@
+import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Play, Pause, Loader2, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Play, Pause, Loader2, AlertTriangle, Share2 } from 'lucide-react';
 import { useTrack } from '../hooks/useTrack';
 import { useTrackProcessing } from '../hooks/useTrackProcessing';
 import { usePlayerStore } from '../hooks/usePlayerStore';
 import LikeButton from '../components/LikeButton';
 import AddToPlaylistMenu from '../components/AddToPlaylistMenu';
+import ShareTrackSheet from '../components/ShareTrackSheet';
+import RepostButton from '../components/RepostButton';
 import { formatDuration } from '../lib/formatDuration';
 
 export default function TrackPage() {
@@ -15,6 +18,7 @@ export default function TrackPage() {
   const toggle = usePlayerStore((s) => s.toggle);
   const isCurrent = usePlayerStore((s) => s.queue[s.currentIndex]?.id === track?.id);
   const isPlaying = usePlayerStore((s) => s.isPlaying && isCurrent);
+  const [shareOpen, setShareOpen] = useState(false);
 
   if (isLoading) return <div className="p-8 text-white/50">Loading…</div>;
   if (!track) return <div className="p-8 text-white/50">Track not found.</div>;
@@ -71,17 +75,18 @@ export default function TrackPage() {
               {!ready ? 'Not ready' : isPlaying ? 'Pause' : 'Play'}
             </button>
             <LikeButton trackId={track.id} />
+            <RepostButton trackId={track.id} />
             <AddToPlaylistMenu trackId={track.id} />
             <button
-              disabled
-              className="px-3 py-1.5 rounded-full text-xs border border-white/15 text-white/40 cursor-not-allowed"
-              title="Coming soon"
+              onClick={() => setShareOpen(true)}
+              className="px-3 py-1.5 rounded-full text-xs bg-white/5 hover:bg-white/10 text-white inline-flex items-center gap-1"
             >
-              💸 Tip the artist (coming soon)
+              <Share2 className="w-3.5 h-3.5" /> Share
             </button>
           </div>
         </div>
       </div>
+      <ShareTrackSheet track={track} open={shareOpen} onClose={() => setShareOpen(false)} />
     </div>
   );
 }

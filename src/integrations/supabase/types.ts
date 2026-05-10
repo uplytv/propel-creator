@@ -6629,6 +6629,32 @@ export type Database = {
         }
         Relationships: []
       }
+      music_playlist_collaborators: {
+        Row: {
+          added_at: string
+          playlist_id: string
+          user_id: string
+        }
+        Insert: {
+          added_at?: string
+          playlist_id: string
+          user_id: string
+        }
+        Update: {
+          added_at?: string
+          playlist_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_playlist_collaborators_playlist_id_fkey"
+            columns: ["playlist_id"]
+            isOneToOne: false
+            referencedRelation: "music_playlists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_playlist_tracks: {
         Row: {
           added_at: string
@@ -6671,6 +6697,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_collaborative: boolean
           is_public: boolean
           title: string
           user_id: string
@@ -6680,6 +6707,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_collaborative?: boolean
           is_public?: boolean
           title: string
           user_id: string
@@ -6689,6 +6717,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_collaborative?: boolean
           is_public?: boolean
           title?: string
           user_id?: string
@@ -11386,6 +11415,14 @@ export type Database = {
           track_id: string
           track_mux_playback_id: string
           track_title: string
+        }[]
+      }
+      get_music_blend: {
+        Args: { _limit?: number; _user_a: string; _user_b: string }
+        Returns: {
+          score: number
+          source: string
+          track_id: string
         }[]
       }
       has_role: {
