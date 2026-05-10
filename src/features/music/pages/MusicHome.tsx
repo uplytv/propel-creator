@@ -89,6 +89,8 @@ export default function MusicHome() {
       </header>
 
       <div className="space-y-8">
+        {user && <WeeklyRecapCard />}
+
         {(spotlights?.length ?? 0) > 0 && (
           <section className="space-y-3">
             <div className="flex items-center justify-between px-4">
