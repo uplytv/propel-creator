@@ -1507,6 +1507,60 @@ export type Database = {
         }
         Relationships: []
       }
+      artist_verification_applications: {
+        Row: {
+          admin_notes: string | null
+          artist_name: string
+          created_at: string
+          evidence_urls: Json
+          id: string
+          legal_name: string
+          monthly_listeners: number | null
+          primary_link: string | null
+          reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          social_links: Json
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          artist_name: string
+          created_at?: string
+          evidence_urls?: Json
+          id?: string
+          legal_name: string
+          monthly_listeners?: number | null
+          primary_link?: string | null
+          reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          social_links?: Json
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          artist_name?: string
+          created_at?: string
+          evidence_urls?: Json
+          id?: string
+          legal_name?: string
+          monthly_listeners?: number | null
+          primary_link?: string | null
+          reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          social_links?: Json
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       attendance: {
         Row: {
           attend_date: string
