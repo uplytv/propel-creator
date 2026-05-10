@@ -12715,6 +12715,80 @@ export type Database = {
         }
         Relationships: []
       }
+      music_road_postcard_likes: {
+        Row: {
+          created_at: string
+          fan_id: string
+          id: string
+          postcard_id: string
+        }
+        Insert: {
+          created_at?: string
+          fan_id: string
+          id?: string
+          postcard_id: string
+        }
+        Update: {
+          created_at?: string
+          fan_id?: string
+          id?: string
+          postcard_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_road_postcard_likes_postcard_id_fkey"
+            columns: ["postcard_id"]
+            isOneToOne: false
+            referencedRelation: "music_road_postcards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_road_postcards: {
+        Row: {
+          artist_id: string
+          city: string
+          country: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          like_count: number
+          message: string
+          mood: string | null
+          postcard_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          city: string
+          country?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          like_count?: number
+          message: string
+          mood?: string | null
+          postcard_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          city?: string
+          country?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          like_count?: number
+          message?: string
+          mood?: string | null
+          postcard_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_royalty_events: {
         Row: {
           created_at: string
