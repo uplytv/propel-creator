@@ -26,6 +26,9 @@ function Row({ title, children }: { title: string; children: React.ReactNode }) 
 export default function MusicHome() {
   const { user } = useAuth();
   const { data, isLoading } = useMusicFeed(user?.id);
+  const { data: recentlyPlayed } = useRecentlyPlayed(12);
+  const { data: dailyMixes } = useDailyMixes(20);
+  const { data: because } = useBecauseYouListened(12);
 
   return (
     <div className="pb-40">
