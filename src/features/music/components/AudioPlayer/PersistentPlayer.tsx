@@ -6,6 +6,12 @@ import { usePlayerStore } from '../../hooks/usePlayerStore';
 import { muxHlsUrl } from '../../lib/musicQueries';
 import { formatDuration } from '../../lib/formatDuration';
 import { usePlayLogger } from '../../hooks/usePlayLogger';
+import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
+import { useSleepTimer } from '../../hooks/useSleepTimer';
+import { useAutoplayRadio } from '../../hooks/useAutoplayRadio';
+import { useGaplessPreload } from '../../hooks/useGaplessPreload';
+import { useEqualizer } from '../../hooks/useEqualizer';
+import { useRecentlyPlayedLogger } from '../../hooks/useRecentlyPlayed';
 import { Slider } from '@/components/ui/slider';
 import LikeButton from '../LikeButton';
 import VolumeControl from './VolumeControl';
@@ -26,6 +32,7 @@ export default function PersistentPlayer() {
   const durationSeconds = usePlayerStore((s) => s.durationSeconds);
   const volume = usePlayerStore((s) => s.volume);
   const muted = usePlayerStore((s) => s.muted);
+  const playbackRate = usePlayerStore((s) => s.playbackRate);
   const seekRequest = usePlayerStore((s) => s._seekRequest);
 
   const setPos = usePlayerStore((s) => s._setPosition);
@@ -35,8 +42,14 @@ export default function PersistentPlayer() {
   const next = usePlayerStore((s) => s.next);
   const prev = usePlayerStore((s) => s.prev);
   const toggle = usePlayerStore((s) => s.toggle);
+  const sleepRemaining = useSleepTimer();
 
   usePlayLogger();
+  useKeyboardShortcuts();
+  useAutoplayRadio();
+  useGaplessPreload();
+  useRecentlyPlayedLogger();
+  useEqualizer(audioRef);
 
   const current = queue[currentIndex];
   const playbackId = current?.audio_mux_playback_id || null;
@@ -82,13 +95,14 @@ export default function PersistentPlayer() {
     else a.pause();
   }, [isPlaying, current?.id]);
 
-  // Volume / muted
+  // Volume / muted / playback rate
   useEffect(() => {
     const a = audioRef.current;
     if (!a) return;
     a.volume = volume;
     a.muted = muted;
-  }, [volume, muted]);
+    a.playbackRate = playbackRate;
+  }, [volume, muted, playbackRate]);
 
   // Seek requests
   useEffect(() => {
@@ -116,7 +130,30 @@ export default function PersistentPlayer() {
     navigator.mediaSession.setActionHandler('pause', () => usePlayerStore.getState().pause());
     navigator.mediaSession.setActionHandler('previoustrack', prev);
     navigator.mediaSession.setActionHandler('nexttrack', next);
+    try {
+      navigator.mediaSession.setActionHandler('seekto', (e: any) => {
+        if (typeof e?.seekTime === 'number') usePlayerStore.getState().seek(e.seekTime);
+      });
+      navigator.mediaSession.setActionHandler('seekbackward', () =>
+        usePlayerStore.getState().seek(Math.max(0, usePlayerStore.getState().positionSeconds - 10))
+      );
+      navigator.mediaSession.setActionHandler('seekforward', () =>
+        usePlayerStore.getState().seek(usePlayerStore.getState().positionSeconds + 10)
+      );
+    } catch {}
   }, [current?.id, next, prev]);
+
+  // Update Media Session position state for OS scrubbers / lock screen
+  useEffect(() => {
+    if (!('mediaSession' in navigator) || !durationSeconds) return;
+    try {
+      navigator.mediaSession.setPositionState?.({
+        duration: durationSeconds,
+        position: Math.min(positionSeconds, durationSeconds),
+        playbackRate,
+      });
+    } catch {}
+  }, [positionSeconds, durationSeconds, playbackRate]);
 
   if (!current) return null;
 

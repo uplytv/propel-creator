@@ -6695,6 +6695,38 @@ export type Database = {
         }
         Relationships: []
       }
+      music_recently_played: {
+        Row: {
+          id: string
+          played_at: string
+          position_seconds: number | null
+          track_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          played_at?: string
+          position_seconds?: number | null
+          track_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          played_at?: string
+          position_seconds?: number | null
+          track_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_recently_played_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mux_assets: {
         Row: {
           aspect_ratio: string | null
@@ -9850,6 +9882,44 @@ export type Database = {
           },
         ]
       }
+      track_lyrics: {
+        Row: {
+          created_at: string
+          language: string | null
+          lrc_text: string | null
+          lyrics_text: string | null
+          source: string | null
+          track_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          language?: string | null
+          lrc_text?: string | null
+          lyrics_text?: string | null
+          source?: string | null
+          track_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          language?: string | null
+          lrc_text?: string | null
+          lyrics_text?: string | null
+          source?: string | null
+          track_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "track_lyrics_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: true
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       track_plays: {
         Row: {
           duration_played_seconds: number
@@ -9875,6 +9945,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "track_plays_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      track_reposts: {
+        Row: {
+          caption: string | null
+          created_at: string
+          id: string
+          track_id: string
+          user_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          track_id: string
+          user_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          track_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "track_reposts_track_id_fkey"
             columns: ["track_id"]
             isOneToOne: false
             referencedRelation: "tracks"
