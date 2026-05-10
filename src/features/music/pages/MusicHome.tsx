@@ -2,7 +2,13 @@ import { Link } from 'react-router-dom';
 import { Upload, Library, Search } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useMusicFeed } from '../hooks/useMusicFeed';
+import { useRecentlyPlayed } from '../hooks/useRecentlyPlayed';
+import {
+  useDailyMixes,
+  useBecauseYouListened,
+} from '../hooks/usePersonalizedMixes';
 import TrackCard from '../components/TrackCard';
+import DailyMixCard from '../components/DailyMixCard';
 import GenreChip from '../components/GenreChip';
 import { GENRES } from '../lib/genres';
 
@@ -20,6 +26,9 @@ function Row({ title, children }: { title: string; children: React.ReactNode }) 
 export default function MusicHome() {
   const { user } = useAuth();
   const { data, isLoading } = useMusicFeed(user?.id);
+  const { data: recentlyPlayed } = useRecentlyPlayed(12);
+  const { data: dailyMixes } = useDailyMixes(20);
+  const { data: because } = useBecauseYouListened(12);
 
   return (
     <div className="pb-40">
@@ -63,6 +72,35 @@ export default function MusicHome() {
       </header>
 
       <div className="space-y-8">
+        {user && (recentlyPlayed?.length ?? 0) > 0 && (
+          <Row title="Jump Back In">
+            {recentlyPlayed!.map((t) => (
+              <TrackCard key={t.id} track={t} queue={recentlyPlayed} />
+            ))}
+          </Row>
+        )}
+
+        {user && (dailyMixes?.length ?? 0) > 0 && (
+          <Row title="Made For You">
+            {dailyMixes!.map((mix) => (
+              <DailyMixCard
+                key={mix.id}
+                title={mix.title}
+                subtitle={mix.subtitle}
+                tracks={mix.tracks}
+              />
+            ))}
+          </Row>
+        )}
+
+        {user && because && because.tracks.length > 0 && (
+          <Row title={`Because you listened to ${because.seed.title}`}>
+            {because.tracks.map((t) => (
+              <TrackCard key={t.id} track={t} queue={because.tracks} />
+            ))}
+          </Row>
+        )}
+
         <Row title="For You">
           {(data?.forYou ?? []).map((t) => (
             <TrackCard key={t.id} track={t} queue={data?.forYou} />
