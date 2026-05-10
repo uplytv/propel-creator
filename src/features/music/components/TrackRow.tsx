@@ -18,11 +18,19 @@ export default function TrackRow({
     (s) => s.queue[s.currentIndex]?.id === track.id,
   );
   const isPlaying = usePlayerStore((s) => s.isPlaying && isCurrent);
+  const playable = track.audio_status === 'ready' && !!track.audio_mux_playback_id;
 
   return (
     <button
-      onClick={() => (isCurrent ? toggle() : load(track, queue))}
-      className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 text-left"
+      disabled={!playable}
+      onClick={() => {
+        if (isCurrent) return toggle();
+        const filtered = queue?.filter(
+          (t) => t.audio_status === 'ready' && !!t.audio_mux_playback_id,
+        );
+        load(track, filtered);
+      }}
+      className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 text-left disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <span className="w-6 text-center text-white/40 text-xs">
         {isCurrent ? (
@@ -45,7 +53,9 @@ export default function TrackRow({
       />
       <div className="flex-1 min-w-0">
         <div className="text-sm text-white truncate">{track.title}</div>
-        <div className="text-xs text-white/50 truncate">{track.genre || 'Music'}</div>
+        <div className="text-xs text-white/50 truncate">
+          {playable ? track.genre || 'Music' : 'Processing…'}
+        </div>
       </div>
       <span className="text-xs text-white/40">{formatDuration(track.duration_seconds)}</span>
     </button>
