@@ -118,6 +118,7 @@ const RadioStationPage = lazy(() => import("./features/music/pages/RadioStationP
 const PremierePage = lazy(() => import("./features/music/pages/PremierePage"));
 const AudioRoomPage = lazy(() => import("./features/music/pages/AudioRoomPage"));
 const MusicBrowsePage = lazy(() => import("./features/music/pages/MusicBrowsePage"));
+const MusicNotificationsPage = lazy(() => import("./features/music/pages/MusicNotificationsPage"));
 const ContentStudio = lazy(() => import("./pages/ContentStudio"));
 const AITeamDashboard = lazy(() => import("./pages/AITeamDashboard"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
@@ -333,6 +334,7 @@ const App = () => (
                       <Route path="premiere/:id" element={<PremierePage />} />
                       <Route path="room/:id" element={<AudioRoomPage />} />
                       <Route path="browse" element={<MusicBrowsePage />} />
+                      <Route path="notifications" element={<ProtectedRoute><MusicNotificationsPage /></ProtectedRoute>} />
                     </Route>
 
                     <Route path="/:username" element={<BioPage />} />

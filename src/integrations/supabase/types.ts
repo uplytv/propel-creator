@@ -6907,6 +6907,45 @@ export type Database = {
         }
         Relationships: []
       }
+      music_notifications: {
+        Row: {
+          actor_id: string | null
+          body: string | null
+          cover_url: string | null
+          created_at: string
+          id: string
+          link_path: string | null
+          read_at: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          body?: string | null
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          link_path?: string | null
+          read_at?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          body?: string | null
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          link_path?: string | null
+          read_at?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       music_party_members: {
         Row: {
           id: string
