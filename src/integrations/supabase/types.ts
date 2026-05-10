@@ -7654,6 +7654,106 @@ export type Database = {
         }
         Relationships: []
       }
+      music_artist_qa_answers: {
+        Row: {
+          artist_id: string
+          body: string
+          created_at: string
+          id: string
+          question_id: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          body: string
+          created_at?: string
+          id?: string
+          question_id: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          question_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_artist_qa_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: true
+            referencedRelation: "music_artist_qa_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_artist_qa_questions: {
+        Row: {
+          artist_id: string
+          body: string
+          created_at: string
+          fan_id: string
+          id: string
+          is_anonymous: boolean
+          status: string
+          updated_at: string
+          upvotes: number
+        }
+        Insert: {
+          artist_id: string
+          body: string
+          created_at?: string
+          fan_id: string
+          id?: string
+          is_anonymous?: boolean
+          status?: string
+          updated_at?: string
+          upvotes?: number
+        }
+        Update: {
+          artist_id?: string
+          body?: string
+          created_at?: string
+          fan_id?: string
+          id?: string
+          is_anonymous?: boolean
+          status?: string
+          updated_at?: string
+          upvotes?: number
+        }
+        Relationships: []
+      }
+      music_artist_qa_upvotes: {
+        Row: {
+          created_at: string
+          id: string
+          question_id: string
+          voter_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          question_id: string
+          voter_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          question_id?: string
+          voter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_artist_qa_upvotes_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "music_artist_qa_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_audio_preferences: {
         Row: {
           lossless_enabled: boolean
