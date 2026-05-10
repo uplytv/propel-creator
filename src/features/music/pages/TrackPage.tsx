@@ -18,6 +18,7 @@ export default function TrackPage() {
   const toggle = usePlayerStore((s) => s.toggle);
   const isCurrent = usePlayerStore((s) => s.queue[s.currentIndex]?.id === track?.id);
   const isPlaying = usePlayerStore((s) => s.isPlaying && isCurrent);
+  const [shareOpen, setShareOpen] = useState(false);
 
   if (isLoading) return <div className="p-8 text-white/50">Loading…</div>;
   if (!track) return <div className="p-8 text-white/50">Track not found.</div>;
