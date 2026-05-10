@@ -7890,6 +7890,177 @@ export type Database = {
           },
         ]
       }
+      music_fan_club_badges: {
+        Row: {
+          awarded_at: string
+          badge_type: string
+          club_id: string
+          id: string
+          milestone: string | null
+          user_id: string
+        }
+        Insert: {
+          awarded_at?: string
+          badge_type: string
+          club_id: string
+          id?: string
+          milestone?: string | null
+          user_id: string
+        }
+        Update: {
+          awarded_at?: string
+          badge_type?: string
+          club_id?: string
+          id?: string
+          milestone?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_fan_club_badges_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "music_fan_clubs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_fan_club_drops: {
+        Row: {
+          artwork_url: string | null
+          club_id: string
+          content_type: string
+          created_at: string
+          description: string | null
+          drops_at: string
+          id: string
+          media_url: string | null
+          title: string
+          unlock_tier: string
+        }
+        Insert: {
+          artwork_url?: string | null
+          club_id: string
+          content_type?: string
+          created_at?: string
+          description?: string | null
+          drops_at?: string
+          id?: string
+          media_url?: string | null
+          title: string
+          unlock_tier?: string
+        }
+        Update: {
+          artwork_url?: string | null
+          club_id?: string
+          content_type?: string
+          created_at?: string
+          description?: string | null
+          drops_at?: string
+          id?: string
+          media_url?: string | null
+          title?: string
+          unlock_tier?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_fan_club_drops_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "music_fan_clubs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_fan_club_memberships: {
+        Row: {
+          club_id: string
+          created_at: string
+          current_period_end: string | null
+          id: string
+          joined_at: string
+          status: string
+          stripe_subscription_id: string | null
+          tier: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          club_id: string
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          joined_at?: string
+          status?: string
+          stripe_subscription_id?: string | null
+          tier?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          club_id?: string
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          joined_at?: string
+          status?: string
+          stripe_subscription_id?: string | null
+          tier?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_fan_club_memberships_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "music_fan_clubs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_fan_clubs: {
+        Row: {
+          artist_id: string
+          artwork_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          member_count: number
+          monthly_price_cents: number
+          name: string
+          perks: Json
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          artwork_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          member_count?: number
+          monthly_price_cents?: number
+          name: string
+          perks?: Json
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          artwork_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          member_count?: number
+          monthly_price_cents?: number
+          name?: string
+          perks?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_fan_radio_listens: {
         Row: {
           id: string
