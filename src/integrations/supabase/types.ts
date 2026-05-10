@@ -5724,6 +5724,118 @@ export type Database = {
           },
         ]
       }
+      listening_parties: {
+        Row: {
+          cover_url: string | null
+          created_at: string
+          current_track_artist: string | null
+          current_track_id: string | null
+          current_track_title: string | null
+          current_track_url: string | null
+          host_id: string
+          id: string
+          is_playing: boolean
+          last_sync_at: string
+          participant_count: number
+          position_seconds: number
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          cover_url?: string | null
+          created_at?: string
+          current_track_artist?: string | null
+          current_track_id?: string | null
+          current_track_title?: string | null
+          current_track_url?: string | null
+          host_id: string
+          id?: string
+          is_playing?: boolean
+          last_sync_at?: string
+          participant_count?: number
+          position_seconds?: number
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          cover_url?: string | null
+          created_at?: string
+          current_track_artist?: string | null
+          current_track_id?: string | null
+          current_track_title?: string | null
+          current_track_url?: string | null
+          host_id?: string
+          id?: string
+          is_playing?: boolean
+          last_sync_at?: string
+          participant_count?: number
+          position_seconds?: number
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      listening_party_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          party_id: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          party_id: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          party_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listening_party_messages_party_id_fkey"
+            columns: ["party_id"]
+            isOneToOne: false
+            referencedRelation: "listening_parties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      listening_party_participants: {
+        Row: {
+          joined_at: string
+          party_id: string
+          user_id: string
+        }
+        Insert: {
+          joined_at?: string
+          party_id: string
+          user_id: string
+        }
+        Update: {
+          joined_at?: string
+          party_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listening_party_participants_party_id_fkey"
+            columns: ["party_id"]
+            isOneToOne: false
+            referencedRelation: "listening_parties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       live_activities: {
         Row: {
           activity_type: string
