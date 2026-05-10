@@ -11917,6 +11917,115 @@ export type Database = {
         }
         Relationships: []
       }
+      music_qa_question_votes: {
+        Row: {
+          created_at: string
+          id: string
+          question_id: string
+          voter_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          question_id: string
+          voter_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          question_id?: string
+          voter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_qa_question_votes_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "music_qa_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_qa_questions: {
+        Row: {
+          answer_body: string | null
+          answered_at: string | null
+          asker_id: string
+          body: string
+          created_at: string
+          id: string
+          status: string
+          thread_id: string
+          updated_at: string
+          upvote_count: number
+        }
+        Insert: {
+          answer_body?: string | null
+          answered_at?: string | null
+          asker_id: string
+          body: string
+          created_at?: string
+          id?: string
+          status?: string
+          thread_id: string
+          updated_at?: string
+          upvote_count?: number
+        }
+        Update: {
+          answer_body?: string | null
+          answered_at?: string | null
+          asker_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          status?: string
+          thread_id?: string
+          updated_at?: string
+          upvote_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_qa_questions_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "music_qa_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_qa_threads: {
+        Row: {
+          artist_id: string
+          created_at: string
+          description: string | null
+          id: string
+          question_count: number
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          question_count?: number
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          question_count?: number
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_radio_stations: {
         Row: {
           cover_url: string | null
@@ -13790,6 +13899,112 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      music_voice_memo_likes: {
+        Row: {
+          created_at: string
+          fan_id: string
+          id: string
+          memo_id: string
+        }
+        Insert: {
+          created_at?: string
+          fan_id: string
+          id?: string
+          memo_id: string
+        }
+        Update: {
+          created_at?: string
+          fan_id?: string
+          id?: string
+          memo_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_voice_memo_likes_memo_id_fkey"
+            columns: ["memo_id"]
+            isOneToOne: false
+            referencedRelation: "music_voice_memos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_voice_memo_replies: {
+        Row: {
+          body: string
+          created_at: string
+          fan_id: string
+          id: string
+          memo_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          fan_id: string
+          id?: string
+          memo_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          fan_id?: string
+          id?: string
+          memo_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_voice_memo_replies_memo_id_fkey"
+            columns: ["memo_id"]
+            isOneToOne: false
+            referencedRelation: "music_voice_memos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_voice_memos: {
+        Row: {
+          artist_id: string
+          audio_url: string
+          caption: string | null
+          created_at: string
+          duration_seconds: number | null
+          id: string
+          like_count: number
+          reply_count: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          audio_url: string
+          caption?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          like_count?: number
+          reply_count?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          audio_url?: string
+          caption?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          like_count?: number
+          reply_count?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       mux_assets: {
         Row: {
