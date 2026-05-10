@@ -19,7 +19,7 @@ export default function BookingInquiryPage() {
   const send = useSendBookingMessage();
   const updateStatus = useUpdateBookingInquiryStatus();
   const [body, setBody] = useState("");
-  const [me, setMe] = useRState<string | null>(null);
+  const [me, setMe] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setMe(data.user?.id ?? null));
