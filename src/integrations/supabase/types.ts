@@ -10922,6 +10922,92 @@ export type Database = {
           },
         ]
       }
+      music_presave_campaigns: {
+        Row: {
+          apple_url: string | null
+          artist_id: string
+          artwork_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          presave_count: number
+          release_date: string
+          release_title: string
+          spotify_url: string | null
+          status: string
+          tidal_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          apple_url?: string | null
+          artist_id: string
+          artwork_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          presave_count?: number
+          release_date: string
+          release_title: string
+          spotify_url?: string | null
+          status?: string
+          tidal_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          apple_url?: string | null
+          artist_id?: string
+          artwork_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          presave_count?: number
+          release_date?: string
+          release_title?: string
+          spotify_url?: string | null
+          status?: string
+          tidal_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      music_presave_signups: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          email: string | null
+          fan_id: string
+          id: string
+          notified_at: string | null
+          platforms: string[]
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          email?: string | null
+          fan_id: string
+          id?: string
+          notified_at?: string | null
+          platforms?: string[]
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          email?: string | null
+          fan_id?: string
+          id?: string
+          notified_at?: string | null
+          platforms?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_presave_signups_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "music_presave_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_pro_works: {
         Row: {
           confirmed_at: string | null
