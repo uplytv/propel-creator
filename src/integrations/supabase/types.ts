@@ -4771,6 +4771,62 @@ export type Database = {
         }
         Relationships: []
       }
+      group_blend_members: {
+        Row: {
+          blend_id: string
+          id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          blend_id: string
+          id?: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          blend_id?: string
+          id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_blend_members_blend_id_fkey"
+            columns: ["blend_id"]
+            isOneToOne: false
+            referencedRelation: "group_blends"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_blends: {
+        Row: {
+          cover_url: string | null
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       group_conversations: {
         Row: {
           avatar_url: string | null
@@ -10810,6 +10866,38 @@ export type Database = {
           },
         ]
       }
+      track_universal_links: {
+        Row: {
+          created_at: string
+          id: string
+          platform: string
+          track_id: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          platform: string
+          track_id: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          platform?: string
+          track_id?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "track_universal_links_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tracks: {
         Row: {
           audio_mux_asset_id: string | null
@@ -12295,6 +12383,10 @@ export type Database = {
           p_user_id: string
         }
         Returns: undefined
+      }
+      is_blend_member: {
+        Args: { _blend_id: string; _user_id: string }
+        Returns: boolean
       }
       is_email_suppressed: { Args: { p_email: string }; Returns: boolean }
       is_new_creator: { Args: { p_creator_id: string }; Returns: boolean }
