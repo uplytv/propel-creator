@@ -51,7 +51,7 @@ export function useUploadTrack() {
         const upload = UpChunk.createUpload({
           endpoint: init.uploadUrl,
           file: opts.file,
-          chunkSize: 5120,
+          chunkSize: 10240,
         });
         upload.on('error', (e: any) => reject(new Error(e?.detail || 'upload failed')));
         upload.on('progress', (e: any) => {
