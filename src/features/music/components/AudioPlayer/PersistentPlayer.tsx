@@ -1,12 +1,16 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Hls from 'hls.js';
-import { Pause, Play, SkipBack, SkipForward, ListMusic, Maximize2 } from 'lucide-react';
+import { Pause, Play, SkipBack, SkipForward, ListMusic, ChevronUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { usePlayerStore } from '../../hooks/usePlayerStore';
 import { muxHlsUrl } from '../../lib/musicQueries';
 import { formatDuration } from '../../lib/formatDuration';
 import { usePlayLogger } from '../../hooks/usePlayLogger';
 import { Slider } from '@/components/ui/slider';
+import LikeButton from '../LikeButton';
+import VolumeControl from './VolumeControl';
+import QueueDrawer from './QueueDrawer';
+import NowPlayingSheet from './NowPlayingSheet';
 
 export default function PersistentPlayer() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
