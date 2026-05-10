@@ -37,6 +37,9 @@ export default function MusicHome() {
   const { data: recentlyPlayed } = useRecentlyPlayed(12);
   const { data: dailyMixes } = useDailyMixes(20);
   const { data: because } = useBecauseYouListened(12);
+  const { data: stations } = useRadioStations();
+  const { data: premieres } = useUpcomingPremieres();
+  const { data: liveRooms } = useLiveAudioRooms();
 
   return (
     <div className="pb-40">
@@ -80,6 +83,28 @@ export default function MusicHome() {
       </header>
 
       <div className="space-y-8">
+        {(stations?.some((s) => s.is_live) || (premieres?.length ?? 0) > 0 || (liveRooms?.length ?? 0) > 0) && (
+          <section className="space-y-3">
+            <div className="flex items-center justify-between px-4">
+              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                <Radio className="w-4 h-4 text-red-400" /> Live Now
+              </h2>
+              <Link to="/music/live" className="text-xs text-white/60">See all</Link>
+            </div>
+            <div className="flex gap-3 overflow-x-auto px-4 pb-2">
+              {(stations ?? []).filter((s) => s.is_live).map((s) => (
+                <RadioStationCard key={s.id} station={s} />
+              ))}
+              {(liveRooms ?? []).map((r) => (
+                <AudioRoomCard key={r.id} room={r} />
+              ))}
+              {(premieres ?? []).slice(0, 4).map((p) => (
+                <PremiereCard key={p.id} premiere={p} />
+              ))}
+            </div>
+          </section>
+        )}
+
         {user && (recentlyPlayed?.length ?? 0) > 0 && (
           <Row title="Jump Back In">
             {recentlyPlayed!.map((t) => (
