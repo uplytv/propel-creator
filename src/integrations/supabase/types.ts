@@ -12811,6 +12811,48 @@ export type Database = {
         }
         Relationships: []
       }
+      music_setlist_candidates: {
+        Row: {
+          artist_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          show_date: string | null
+          show_label: string
+          status: string
+          track_id: string | null
+          track_title: string
+          updated_at: string
+          vote_count: number
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          show_date?: string | null
+          show_label: string
+          status?: string
+          track_id?: string | null
+          track_title: string
+          updated_at?: string
+          vote_count?: number
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          show_date?: string | null
+          show_label?: string
+          status?: string
+          track_id?: string | null
+          track_title?: string
+          updated_at?: string
+          vote_count?: number
+        }
+        Relationships: []
+      }
       music_setlist_items: {
         Row: {
           created_at: string
@@ -12924,6 +12966,35 @@ export type Database = {
             columns: ["setlist_id"]
             isOneToOne: false
             referencedRelation: "music_setlists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_setlist_votes: {
+        Row: {
+          candidate_id: string
+          created_at: string
+          fan_id: string
+          id: string
+        }
+        Insert: {
+          candidate_id: string
+          created_at?: string
+          fan_id: string
+          id?: string
+        }
+        Update: {
+          candidate_id?: string
+          created_at?: string
+          fan_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_setlist_votes_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "music_setlist_candidates"
             referencedColumns: ["id"]
           },
         ]
