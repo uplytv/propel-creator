@@ -12,6 +12,7 @@ import { useAutoplayRadio } from '../../hooks/useAutoplayRadio';
 import { useGaplessPreload } from '../../hooks/useGaplessPreload';
 import { useEqualizer } from '../../hooks/useEqualizer';
 import { useRecentlyPlayedLogger } from '../../hooks/useRecentlyPlayed';
+import { useMediaSession } from '../../hooks/useMediaSession';
 import { Slider } from '@/components/ui/slider';
 import LikeButton from '../LikeButton';
 import VolumeControl from './VolumeControl';
@@ -48,6 +49,7 @@ export default function PersistentPlayer() {
   useKeyboardShortcuts();
   useAutoplayRadio();
   useGaplessPreload();
+  useMediaSession(audioRef.current);
   useRecentlyPlayedLogger();
   useEqualizer(audioRef);
 
