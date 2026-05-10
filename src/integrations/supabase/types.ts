@@ -6737,6 +6737,27 @@ export type Database = {
         }
         Relationships: []
       }
+      music_downloads: {
+        Row: {
+          downloaded_at: string
+          id: string
+          track_id: string
+          user_id: string
+        }
+        Insert: {
+          downloaded_at?: string
+          id?: string
+          track_id: string
+          user_id: string
+        }
+        Update: {
+          downloaded_at?: string
+          id?: string
+          track_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       music_playlist_collaborators: {
         Row: {
           added_at: string
@@ -6762,6 +6783,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      music_playlist_folders: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+          position: number
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          position?: number
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          position?: number
+          user_id?: string
+        }
+        Relationships: []
       }
       music_playlist_tracks: {
         Row: {
@@ -6804,6 +6852,7 @@ export type Database = {
           cover_art_url: string | null
           created_at: string
           description: string | null
+          folder_id: string | null
           id: string
           is_collaborative: boolean
           is_public: boolean
@@ -6814,6 +6863,7 @@ export type Database = {
           cover_art_url?: string | null
           created_at?: string
           description?: string | null
+          folder_id?: string | null
           id?: string
           is_collaborative?: boolean
           is_public?: boolean
@@ -6824,13 +6874,22 @@ export type Database = {
           cover_art_url?: string | null
           created_at?: string
           description?: string | null
+          folder_id?: string | null
           id?: string
           is_collaborative?: boolean
           is_public?: boolean
           title?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "music_playlists_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "music_playlist_folders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       music_recently_played: {
         Row: {
@@ -6860,6 +6919,47 @@ export type Database = {
             columns: ["track_id"]
             isOneToOne: false
             referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_smart_playlists: {
+        Row: {
+          cover_art_url: string | null
+          created_at: string
+          folder_id: string | null
+          id: string
+          rule_params: Json
+          rule_type: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          cover_art_url?: string | null
+          created_at?: string
+          folder_id?: string | null
+          id?: string
+          rule_params?: Json
+          rule_type: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          cover_art_url?: string | null
+          created_at?: string
+          folder_id?: string | null
+          id?: string
+          rule_params?: Json
+          rule_type?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_smart_playlists_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "music_playlist_folders"
             referencedColumns: ["id"]
           },
         ]
@@ -11644,6 +11744,10 @@ export type Database = {
       reserve_ticket_inventory: {
         Args: { p_quantity: number; p_tier_id: string }
         Returns: boolean
+      }
+      resolve_smart_playlist: {
+        Args: { _limit?: number; _smart_id: string }
+        Returns: string[]
       }
       rotate_ticket_qr: { Args: { p_ticket_id: string }; Returns: string }
       send_creator_lifecycle_emails_batch: { Args: never; Returns: undefined }
