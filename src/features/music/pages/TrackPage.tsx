@@ -75,17 +75,18 @@ export default function TrackPage() {
               {!ready ? 'Not ready' : isPlaying ? 'Pause' : 'Play'}
             </button>
             <LikeButton trackId={track.id} />
+            <RepostButton trackId={track.id} />
             <AddToPlaylistMenu trackId={track.id} />
             <button
-              disabled
-              className="px-3 py-1.5 rounded-full text-xs border border-white/15 text-white/40 cursor-not-allowed"
-              title="Coming soon"
+              onClick={() => setShareOpen(true)}
+              className="px-3 py-1.5 rounded-full text-xs bg-white/5 hover:bg-white/10 text-white inline-flex items-center gap-1"
             >
-              💸 Tip the artist (coming soon)
+              <Share2 className="w-3.5 h-3.5" /> Share
             </button>
           </div>
         </div>
       </div>
+      <ShareTrackSheet track={track} open={shareOpen} onClose={() => setShareOpen(false)} />
     </div>
   );
 }
