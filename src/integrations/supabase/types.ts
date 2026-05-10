@@ -7937,6 +7937,152 @@ export type Database = {
         }
         Relationships: []
       }
+      music_crowdfund_campaigns: {
+        Row: {
+          cover_url: string | null
+          created_at: string
+          creator_id: string
+          currency: string
+          description: string | null
+          ends_at: string | null
+          goal_cents: number
+          id: string
+          kind: string
+          raised_cents: number
+          starts_at: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          cover_url?: string | null
+          created_at?: string
+          creator_id: string
+          currency?: string
+          description?: string | null
+          ends_at?: string | null
+          goal_cents?: number
+          id?: string
+          kind?: string
+          raised_cents?: number
+          starts_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          cover_url?: string | null
+          created_at?: string
+          creator_id?: string
+          currency?: string
+          description?: string | null
+          ends_at?: string | null
+          goal_cents?: number
+          id?: string
+          kind?: string
+          raised_cents?: number
+          starts_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      music_crowdfund_pledges: {
+        Row: {
+          amount_cents: number
+          backer_id: string
+          campaign_id: string
+          created_at: string
+          id: string
+          message: string | null
+          status: string
+          tier_id: string | null
+        }
+        Insert: {
+          amount_cents: number
+          backer_id: string
+          campaign_id: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          status?: string
+          tier_id?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          backer_id?: string
+          campaign_id?: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          status?: string
+          tier_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_crowdfund_pledges_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "music_crowdfund_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "music_crowdfund_pledges_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "music_crowdfund_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_crowdfund_tiers: {
+        Row: {
+          campaign_id: string
+          claimed_count: number
+          created_at: string
+          description: string | null
+          id: string
+          limit_count: number | null
+          perks: string | null
+          pledge_cents: number
+          sort_order: number
+          title: string
+        }
+        Insert: {
+          campaign_id: string
+          claimed_count?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          limit_count?: number | null
+          perks?: string | null
+          pledge_cents?: number
+          sort_order?: number
+          title: string
+        }
+        Update: {
+          campaign_id?: string
+          claimed_count?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          limit_count?: number | null
+          perks?: string | null
+          pledge_cents?: number
+          sort_order?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_crowdfund_tiers_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "music_crowdfund_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_distribution_releases: {
         Row: {
           artist_name: string
