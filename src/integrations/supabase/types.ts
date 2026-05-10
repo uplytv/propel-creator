@@ -7502,6 +7502,45 @@ export type Database = {
         }
         Relationships: []
       }
+      music_artist_fan_points: {
+        Row: {
+          artist_id: string
+          created_at: string
+          dedications_count: number
+          fan_id: string
+          id: string
+          last_event_at: string
+          listens: number
+          points: number
+          tips_cents: number
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          dedications_count?: number
+          fan_id: string
+          id?: string
+          last_event_at?: string
+          listens?: number
+          points?: number
+          tips_cents?: number
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          dedications_count?: number
+          fan_id?: string
+          id?: string
+          last_event_at?: string
+          listens?: number
+          points?: number
+          tips_cents?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_audio_preferences: {
         Row: {
           lossless_enabled: boolean
@@ -9043,6 +9082,36 @@ export type Database = {
           name?: string
           perks?: Json
           updated_at?: string
+        }
+        Relationships: []
+      }
+      music_fan_point_events: {
+        Row: {
+          artist_id: string
+          created_at: string
+          fan_id: string
+          id: string
+          points: number
+          ref_id: string | null
+          source: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          fan_id: string
+          id?: string
+          points?: number
+          ref_id?: string | null
+          source: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          fan_id?: string
+          id?: string
+          points?: number
+          ref_id?: string | null
+          source?: string
         }
         Relationships: []
       }
@@ -16776,6 +16845,17 @@ export type Database = {
     }
     Functions: {
       accept_playlist_invite: { Args: { _token: string }; Returns: string }
+      add_fan_points: {
+        Args: {
+          _artist_id: string
+          _fan_id: string
+          _points: number
+          _ref_id?: string
+          _source: string
+          _tip_cents?: number
+        }
+        Returns: undefined
+      }
       bump_trending_search: { Args: { p_term: string }; Returns: undefined }
       bump_viewer_affinity: {
         Args: { p_category: string; p_viewer: string }
