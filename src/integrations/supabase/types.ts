@@ -10407,6 +10407,42 @@ export type Database = {
         }
         Relationships: []
       }
+      music_show_tips: {
+        Row: {
+          amount_cents: number
+          artist_id: string
+          created_at: string
+          currency: string
+          fan_id: string
+          id: string
+          message: string | null
+          show_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          artist_id: string
+          created_at?: string
+          currency?: string
+          fan_id: string
+          id?: string
+          message?: string | null
+          show_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          artist_id?: string
+          created_at?: string
+          currency?: string
+          fan_id?: string
+          id?: string
+          message?: string | null
+          show_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_smart_playlists: {
         Row: {
           cover_art_url: string | null
@@ -15698,6 +15734,17 @@ export type Database = {
           emails_sent: number | null
           template_name: string | null
           variant: string | null
+        }
+        Relationships: []
+      }
+      music_show_tip_leaderboard: {
+        Row: {
+          fan_id: string | null
+          last_tip_at: string | null
+          rank: number | null
+          show_id: string | null
+          tip_count: number | null
+          total_cents: number | null
         }
         Relationships: []
       }
