@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, Search, SlidersHorizontal, X } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, Search, SlidersHorizontal, X, Clock, TrendingUp, Trash2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import {
   searchMusicAdvanced,
@@ -11,16 +11,30 @@ import { GENRES } from '../lib/genres';
 import { MOODS, MOOD_GENRES, type Mood } from '../lib/moods';
 import TrackCard from '../components/TrackCard';
 import AlbumCard from '../components/AlbumCard';
+import {
+  useSearchHistory,
+  useRecordSearch,
+  useClearSearchHistory,
+  useTrendingSearches,
+} from '../hooks/useSearchHistory';
 
 export default function MusicSearch() {
-  const [q, setQ] = useState('');
+  const [params, setParams] = useSearchParams();
+  const initialQ = params.get('q') ?? '';
+  const initialMood = (params.get('mood') as Mood | null) ?? null;
+  const [q, setQ] = useState(initialQ);
   const [showFilters, setShowFilters] = useState(false);
   const [genres, setGenres] = useState<string[]>([]);
-  const [mood, setMood] = useState<Mood | null>(null);
+  const [mood, setMood] = useState<Mood | null>(initialMood);
   const [hideExplicit, setHideExplicit] = useState(false);
   const [monetization, setMonetization] = useState<'any' | 'free' | 'paid'>('any');
   const [duration, setDuration] = useState<DurationBucket>('any');
   const [sort, setSort] = useState<SearchSort>('relevance');
+
+  const { data: history } = useSearchHistory(8);
+  const { data: trending } = useTrendingSearches(8);
+  const recordSearch = useRecordSearch();
+  const clearHistory = useClearSearchHistory();
 
   const filters = useMemo(
     () => ({
