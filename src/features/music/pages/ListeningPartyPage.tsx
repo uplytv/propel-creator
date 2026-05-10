@@ -192,3 +192,5 @@ export function ListeningPartyPage() {
     </div>
   );
 }
+
+export default ListeningPartyPage;

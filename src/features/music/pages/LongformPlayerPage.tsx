@@ -208,3 +208,5 @@ export function LongformPlayerPage() {
     </div>
   );
 }
+
+export default LongformPlayerPage;
