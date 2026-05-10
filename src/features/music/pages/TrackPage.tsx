@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Play, Pause } from 'lucide-react';
+import { ArrowLeft, Play, Pause, Loader2, AlertTriangle } from 'lucide-react';
 import { useTrack } from '../hooks/useTrack';
+import { useTrackProcessing } from '../hooks/useTrackProcessing';
 import { usePlayerStore } from '../hooks/usePlayerStore';
 import LikeButton from '../components/LikeButton';
 import AddToPlaylistMenu from '../components/AddToPlaylistMenu';
@@ -9,6 +10,7 @@ import { formatDuration } from '../lib/formatDuration';
 export default function TrackPage() {
   const { id } = useParams<{ id: string }>();
   const { data: track, isLoading } = useTrack(id);
+  useTrackProcessing(track);
   const load = usePlayerStore((s) => s.loadTrack);
   const toggle = usePlayerStore((s) => s.toggle);
   const isCurrent = usePlayerStore((s) => s.queue[s.currentIndex]?.id === track?.id);
@@ -16,6 +18,10 @@ export default function TrackPage() {
 
   if (isLoading) return <div className="p-8 text-white/50">Loading…</div>;
   if (!track) return <div className="p-8 text-white/50">Track not found.</div>;
+
+  const ready = track.audio_status === 'ready' && !!track.audio_mux_playback_id;
+  const errored = track.audio_status === 'errored';
+  const processing = !ready && !errored;
 
   return (
     <div className="pb-40 max-w-3xl mx-auto px-4 pt-4">
