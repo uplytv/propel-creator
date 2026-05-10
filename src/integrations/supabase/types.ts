@@ -7911,6 +7911,44 @@ export type Database = {
           },
         ]
       }
+      music_concert_rsvps: {
+        Row: {
+          concert_id: string
+          created_at: string
+          id: string
+          remind_me: boolean
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          concert_id: string
+          created_at?: string
+          id?: string
+          remind_me?: boolean
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          concert_id?: string
+          created_at?: string
+          id?: string
+          remind_me?: boolean
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_concert_rsvps_concert_id_fkey"
+            columns: ["concert_id"]
+            isOneToOne: false
+            referencedRelation: "music_concerts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_concert_tickets: {
         Row: {
           concert_id: string
