@@ -10222,6 +10222,160 @@ export type Database = {
           },
         ]
       }
+      music_lyric_annotation_votes: {
+        Row: {
+          annotation_id: string
+          created_at: string
+          id: string
+          voter_id: string
+        }
+        Insert: {
+          annotation_id: string
+          created_at?: string
+          id?: string
+          voter_id: string
+        }
+        Update: {
+          annotation_id?: string
+          created_at?: string
+          id?: string
+          voter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_lyric_annotation_votes_annotation_id_fkey"
+            columns: ["annotation_id"]
+            isOneToOne: false
+            referencedRelation: "music_lyric_annotations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_lyric_annotations: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          line_id: string
+          sheet_id: string
+          status: string
+          updated_at: string
+          upvote_count: number
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          line_id: string
+          sheet_id: string
+          status?: string
+          updated_at?: string
+          upvote_count?: number
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          line_id?: string
+          sheet_id?: string
+          status?: string
+          updated_at?: string
+          upvote_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_lyric_annotations_line_id_fkey"
+            columns: ["line_id"]
+            isOneToOne: false
+            referencedRelation: "music_lyric_lines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "music_lyric_annotations_sheet_id_fkey"
+            columns: ["sheet_id"]
+            isOneToOne: false
+            referencedRelation: "music_lyric_sheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_lyric_lines: {
+        Row: {
+          annotation_count: number
+          created_at: string
+          id: string
+          line_number: number
+          line_text: string
+          sheet_id: string
+          updated_at: string
+        }
+        Insert: {
+          annotation_count?: number
+          created_at?: string
+          id?: string
+          line_number: number
+          line_text: string
+          sheet_id: string
+          updated_at?: string
+        }
+        Update: {
+          annotation_count?: number
+          created_at?: string
+          id?: string
+          line_number?: number
+          line_text?: string
+          sheet_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_lyric_lines_sheet_id_fkey"
+            columns: ["sheet_id"]
+            isOneToOne: false
+            referencedRelation: "music_lyric_sheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_lyric_sheets: {
+        Row: {
+          annotation_count: number
+          artist_id: string
+          artist_label: string | null
+          created_at: string
+          id: string
+          lyrics_text: string | null
+          status: string
+          track_title: string
+          updated_at: string
+        }
+        Insert: {
+          annotation_count?: number
+          artist_id: string
+          artist_label?: string | null
+          created_at?: string
+          id?: string
+          lyrics_text?: string | null
+          status?: string
+          track_title: string
+          updated_at?: string
+        }
+        Update: {
+          annotation_count?: number
+          artist_id?: string
+          artist_label?: string | null
+          created_at?: string
+          id?: string
+          lyrics_text?: string | null
+          status?: string
+          track_title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_lyric_translations: {
         Row: {
           contributor_id: string | null
