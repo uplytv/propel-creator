@@ -9732,6 +9732,124 @@ export type Database = {
         }
         Relationships: []
       }
+      music_fan_spotlight_likes: {
+        Row: {
+          created_at: string
+          fan_id: string
+          id: string
+          submission_id: string
+        }
+        Insert: {
+          created_at?: string
+          fan_id: string
+          id?: string
+          submission_id: string
+        }
+        Update: {
+          created_at?: string
+          fan_id?: string
+          id?: string
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_fan_spotlight_likes_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "music_fan_spotlight_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_fan_spotlight_submissions: {
+        Row: {
+          caption: string | null
+          created_at: string
+          fan_id: string
+          id: string
+          is_featured: boolean
+          like_count: number
+          media_type: string
+          media_url: string
+          spotlight_id: string
+          status: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          fan_id: string
+          id?: string
+          is_featured?: boolean
+          like_count?: number
+          media_type: string
+          media_url: string
+          spotlight_id: string
+          status?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          fan_id?: string
+          id?: string
+          is_featured?: boolean
+          like_count?: number
+          media_type?: string
+          media_url?: string
+          spotlight_id?: string
+          status?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_fan_spotlight_submissions_spotlight_id_fkey"
+            columns: ["spotlight_id"]
+            isOneToOne: false
+            referencedRelation: "music_fan_spotlights"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_fan_spotlights: {
+        Row: {
+          artist_id: string
+          created_at: string
+          description: string | null
+          featured_count: number
+          id: string
+          status: string
+          submission_count: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          description?: string | null
+          featured_count?: number
+          id?: string
+          status?: string
+          submission_count?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          description?: string | null
+          featured_count?: number
+          id?: string
+          status?: string
+          submission_count?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_fan_station_tracks: {
         Row: {
           artist: string | null
