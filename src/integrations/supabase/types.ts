@@ -7606,6 +7606,54 @@ export type Database = {
         }
         Relationships: []
       }
+      music_chart_snapshots: {
+        Row: {
+          chart_type: string
+          created_at: string
+          id: string
+          item_image_url: string | null
+          item_ref_id: string
+          item_subtitle: string | null
+          item_title: string | null
+          period: string
+          prev_rank: number | null
+          rank: number
+          region: string
+          score: number
+          snapshot_date: string
+        }
+        Insert: {
+          chart_type: string
+          created_at?: string
+          id?: string
+          item_image_url?: string | null
+          item_ref_id: string
+          item_subtitle?: string | null
+          item_title?: string | null
+          period: string
+          prev_rank?: number | null
+          rank: number
+          region?: string
+          score?: number
+          snapshot_date?: string
+        }
+        Update: {
+          chart_type?: string
+          created_at?: string
+          id?: string
+          item_image_url?: string | null
+          item_ref_id?: string
+          item_subtitle?: string | null
+          item_title?: string | null
+          period?: string
+          prev_rank?: number | null
+          rank?: number
+          region?: string
+          score?: number
+          snapshot_date?: string
+        }
+        Relationships: []
+      }
       music_collab_events: {
         Row: {
           created_at: string
