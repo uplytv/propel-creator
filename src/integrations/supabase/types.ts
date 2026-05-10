@@ -3713,6 +3713,95 @@ export type Database = {
         }
         Relationships: []
       }
+      dj_session_cues: {
+        Row: {
+          at_seconds: number
+          bpm: number | null
+          created_at: string
+          deck: string
+          id: string
+          label: string | null
+          session_id: string
+          track_title: string | null
+          track_url: string | null
+        }
+        Insert: {
+          at_seconds: number
+          bpm?: number | null
+          created_at?: string
+          deck: string
+          id?: string
+          label?: string | null
+          session_id: string
+          track_title?: string | null
+          track_url?: string | null
+        }
+        Update: {
+          at_seconds?: number
+          bpm?: number | null
+          created_at?: string
+          deck?: string
+          id?: string
+          label?: string | null
+          session_id?: string
+          track_title?: string | null
+          track_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dj_session_cues_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "dj_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dj_sessions: {
+        Row: {
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          duration_seconds: number
+          id: string
+          is_public: boolean
+          play_count: number
+          recording_url: string | null
+          target_bpm: number | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number
+          id?: string
+          is_public?: boolean
+          play_count?: number
+          recording_url?: string | null
+          target_bpm?: number | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number
+          id?: string
+          is_public?: boolean
+          play_count?: number
+          recording_url?: string | null
+          target_bpm?: number | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       drip_sequence_enrollments: {
         Row: {
           completed_at: string | null
