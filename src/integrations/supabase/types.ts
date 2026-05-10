@@ -9273,6 +9273,141 @@ export type Database = {
           },
         ]
       }
+      music_rights_holders: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          owner_id: string
+          payee_email: string | null
+          payee_name: string | null
+          payee_user_id: string | null
+          role: string
+          share_percent: number
+          track_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id: string
+          payee_email?: string | null
+          payee_name?: string | null
+          payee_user_id?: string | null
+          role?: string
+          share_percent: number
+          track_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          payee_email?: string | null
+          payee_name?: string | null
+          payee_user_id?: string | null
+          role?: string
+          share_percent?: number
+          track_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      music_royalty_events: {
+        Row: {
+          created_at: string
+          distributed_at: string | null
+          fee_cents: number
+          gross_cents: number
+          id: string
+          net_cents: number
+          occurred_at: string
+          owner_id: string
+          source: string
+          source_ref: string | null
+          track_id: string
+        }
+        Insert: {
+          created_at?: string
+          distributed_at?: string | null
+          fee_cents?: number
+          gross_cents?: number
+          id?: string
+          net_cents?: number
+          occurred_at?: string
+          owner_id: string
+          source: string
+          source_ref?: string | null
+          track_id: string
+        }
+        Update: {
+          created_at?: string
+          distributed_at?: string | null
+          fee_cents?: number
+          gross_cents?: number
+          id?: string
+          net_cents?: number
+          occurred_at?: string
+          owner_id?: string
+          source?: string
+          source_ref?: string | null
+          track_id?: string
+        }
+        Relationships: []
+      }
+      music_royalty_payouts: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          event_id: string
+          holder_id: string
+          id: string
+          paid_at: string | null
+          payee_user_id: string | null
+          status: string
+          stripe_transfer_id: string | null
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          event_id: string
+          holder_id: string
+          id?: string
+          paid_at?: string | null
+          payee_user_id?: string | null
+          status?: string
+          stripe_transfer_id?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          event_id?: string
+          holder_id?: string
+          id?: string
+          paid_at?: string | null
+          payee_user_id?: string | null
+          status?: string
+          stripe_transfer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_royalty_payouts_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "music_royalty_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "music_royalty_payouts_holder_id_fkey"
+            columns: ["holder_id"]
+            isOneToOne: false
+            referencedRelation: "music_rights_holders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_sample_packs: {
         Row: {
           bpm: number | null
@@ -14628,6 +14763,26 @@ export type Database = {
         Returns: boolean
       }
       dispatch_batched_admin_notifications: { Args: never; Returns: undefined }
+      distribute_royalty_event: {
+        Args: { _event_id: string }
+        Returns: {
+          amount_cents: number
+          created_at: string
+          event_id: string
+          holder_id: string
+          id: string
+          paid_at: string | null
+          payee_user_id: string | null
+          status: string
+          stripe_transfer_id: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "music_royalty_payouts"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
