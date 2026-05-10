@@ -7860,6 +7860,140 @@ export type Database = {
           },
         ]
       }
+      music_fan_radio_listens: {
+        Row: {
+          id: string
+          liked: boolean | null
+          listened_at: string
+          skipped: boolean
+          station_id: string | null
+          track_id: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          liked?: boolean | null
+          listened_at?: string
+          skipped?: boolean
+          station_id?: string | null
+          track_id?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          liked?: boolean | null
+          listened_at?: string
+          skipped?: boolean
+          station_id?: string | null
+          track_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_fan_radio_listens_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "music_fan_stations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "music_fan_radio_listens_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "music_fan_station_tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_fan_station_tracks: {
+        Row: {
+          artist: string | null
+          artwork_url: string | null
+          audio_url: string
+          created_at: string
+          duration_seconds: number | null
+          id: string
+          station_id: string
+          title: string
+          track_position: number
+        }
+        Insert: {
+          artist?: string | null
+          artwork_url?: string | null
+          audio_url: string
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          station_id: string
+          title: string
+          track_position?: number
+        }
+        Update: {
+          artist?: string | null
+          artwork_url?: string | null
+          audio_url?: string
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          station_id?: string
+          title?: string
+          track_position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_fan_station_tracks_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "music_fan_stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_fan_stations: {
+        Row: {
+          artwork_url: string | null
+          created_at: string
+          creator_id: string | null
+          description: string | null
+          genres: string[] | null
+          id: string
+          is_featured: boolean
+          is_published: boolean
+          mood: string | null
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          artwork_url?: string | null
+          created_at?: string
+          creator_id?: string | null
+          description?: string | null
+          genres?: string[] | null
+          id?: string
+          is_featured?: boolean
+          is_published?: boolean
+          mood?: string | null
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          artwork_url?: string | null
+          created_at?: string
+          creator_id?: string | null
+          description?: string | null
+          genres?: string[] | null
+          id?: string
+          is_featured?: boolean
+          is_published?: boolean
+          mood?: string | null
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_listen_streaks: {
         Row: {
           current_streak: number
@@ -13784,6 +13918,20 @@ export type Database = {
           score: number
           source: string
           track_id: string
+        }[]
+      }
+      get_personalized_fan_radio: {
+        Args: { _limit?: number; _station_id: string }
+        Returns: {
+          affinity: number
+          artist: string
+          artwork_url: string
+          audio_url: string
+          duration_seconds: number
+          id: string
+          station_id: string
+          title: string
+          track_position: number
         }[]
       }
       get_super_fans: {
