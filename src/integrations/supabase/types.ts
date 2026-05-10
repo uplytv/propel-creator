@@ -9524,6 +9524,66 @@ export type Database = {
         }
         Relationships: []
       }
+      music_listening_streak_days: {
+        Row: {
+          artist_id: string
+          created_at: string
+          fan_id: string
+          id: string
+          listen_date: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          fan_id: string
+          id?: string
+          listen_date: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          fan_id?: string
+          id?: string
+          listen_date?: string
+        }
+        Relationships: []
+      }
+      music_listening_streaks: {
+        Row: {
+          artist_id: string
+          created_at: string
+          current_streak: number
+          fan_id: string
+          id: string
+          last_listen_date: string | null
+          longest_streak: number
+          total_days: number
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          current_streak?: number
+          fan_id: string
+          id?: string
+          last_listen_date?: string | null
+          longest_streak?: number
+          total_days?: number
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          current_streak?: number
+          fan_id?: string
+          id?: string
+          last_listen_date?: string | null
+          longest_streak?: number
+          total_days?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_longform: {
         Row: {
           artist_id: string
@@ -17479,6 +17539,26 @@ export type Database = {
         Returns: undefined
       }
       recalculate_waitlist_positions: { Args: never; Returns: undefined }
+      record_listening_day: {
+        Args: { _artist_id: string }
+        Returns: {
+          artist_id: string
+          created_at: string
+          current_streak: number
+          fan_id: string
+          id: string
+          last_listen_date: string | null
+          longest_streak: number
+          total_days: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "music_listening_streaks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       record_music_listen_day: {
         Args: never
         Returns: {
