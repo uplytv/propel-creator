@@ -13231,6 +13231,89 @@ export type Database = {
         }
         Relationships: []
       }
+      music_setlist_battle_votes: {
+        Row: {
+          battle_id: string
+          choice: string
+          created_at: string
+          fan_id: string
+          id: string
+        }
+        Insert: {
+          battle_id: string
+          choice: string
+          created_at?: string
+          fan_id: string
+          id?: string
+        }
+        Update: {
+          battle_id?: string
+          choice?: string
+          created_at?: string
+          fan_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_setlist_battle_votes_battle_id_fkey"
+            columns: ["battle_id"]
+            isOneToOne: false
+            referencedRelation: "music_setlist_battles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_setlist_battles: {
+        Row: {
+          artist_id: string
+          created_at: string
+          id: string
+          option_a_label: string
+          option_a_tracks: string[]
+          option_b_label: string
+          option_b_tracks: string[]
+          show_date: string | null
+          status: string
+          title: string
+          updated_at: string
+          votes_a: number
+          votes_b: number
+          winner: string | null
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          id?: string
+          option_a_label: string
+          option_a_tracks?: string[]
+          option_b_label: string
+          option_b_tracks?: string[]
+          show_date?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          votes_a?: number
+          votes_b?: number
+          winner?: string | null
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          id?: string
+          option_a_label?: string
+          option_a_tracks?: string[]
+          option_b_label?: string
+          option_b_tracks?: string[]
+          show_date?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          votes_a?: number
+          votes_b?: number
+          winner?: string | null
+        }
+        Relationships: []
+      }
       music_setlist_candidates: {
         Row: {
           artist_id: string
