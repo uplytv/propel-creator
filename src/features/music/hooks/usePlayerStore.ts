@@ -16,6 +16,10 @@ interface PlayerState {
 
   loadTrack: (track: Track, queue?: Track[]) => void;
   enqueue: (tracks: Track[]) => void;
+  playAt: (index: number) => void;
+  removeAt: (index: number) => void;
+  moveQueueItem: (from: number, to: number) => void;
+  clearQueue: () => void;
   play: () => void;
   pause: () => void;
   toggle: () => void;
