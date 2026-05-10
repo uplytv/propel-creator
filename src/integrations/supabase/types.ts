@@ -10319,6 +10319,42 @@ export type Database = {
         }
         Relationships: []
       }
+      track_purchases: {
+        Row: {
+          amount_cents: number
+          buyer_id: string
+          created_at: string
+          creator_id: string
+          currency: string
+          id: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          track_id: string
+        }
+        Insert: {
+          amount_cents: number
+          buyer_id: string
+          created_at?: string
+          creator_id: string
+          currency?: string
+          id?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          track_id: string
+        }
+        Update: {
+          amount_cents?: number
+          buyer_id?: string
+          created_at?: string
+          creator_id?: string
+          currency?: string
+          id?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          track_id?: string
+        }
+        Relationships: []
+      }
       track_reposts: {
         Row: {
           caption: string | null
@@ -10365,10 +10401,12 @@ export type Database = {
           genre: string | null
           id: string
           is_explicit: boolean
+          is_paid: boolean
           is_published: boolean
           like_count: number
           monetization_type: string
           play_count: number
+          price_cents: number
           release_date: string | null
           title: string
           updated_at: string
@@ -10386,10 +10424,12 @@ export type Database = {
           genre?: string | null
           id?: string
           is_explicit?: boolean
+          is_paid?: boolean
           is_published?: boolean
           like_count?: number
           monetization_type?: string
           play_count?: number
+          price_cents?: number
           release_date?: string | null
           title: string
           updated_at?: string
@@ -10407,10 +10447,12 @@ export type Database = {
           genre?: string | null
           id?: string
           is_explicit?: boolean
+          is_paid?: boolean
           is_published?: boolean
           like_count?: number
           monetization_type?: string
           play_count?: number
+          price_cents?: number
           release_date?: string | null
           title?: string
           updated_at?: string
@@ -11766,6 +11808,10 @@ export type Database = {
           source: string
           track_id: string
         }[]
+      }
+      has_purchased_track: {
+        Args: { _track_id: string; _user_id: string }
+        Returns: boolean
       }
       has_role: {
         Args: {

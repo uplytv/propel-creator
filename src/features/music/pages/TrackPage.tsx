@@ -11,9 +11,14 @@ import RepostButton from '../components/RepostButton';
 import PresaveButton from '../components/PresaveButton';
 import DownloadButton from '../components/DownloadButton';
 import StartPartyButton from '../components/StartPartyButton';
+import BuyTrackButton from '../components/BuyTrackButton';
+import TipTrackButton from '../components/TipTrackButton';
+import TrackPriceEditor from '../components/TrackPriceEditor';
 import { formatDuration } from '../lib/formatDuration';
+import { useAuth } from '@/context/AuthContext';
 
 export default function TrackPage() {
+  const { user } = useAuth();
   const { id } = useParams<{ id: string }>();
   const { data: track, isLoading } = useTrack(id);
   useTrackProcessing(track);
@@ -89,6 +94,19 @@ export default function TrackPage() {
               <Share2 className="w-3.5 h-3.5" /> Share
             </button>
             <StartPartyButton />
+            {user?.id !== track.creator_id && (
+              <TipTrackButton creatorId={track.creator_id} trackId={track.id} />
+            )}
+            {track.is_paid && track.price_cents && user?.id !== track.creator_id ? (
+              <BuyTrackButton trackId={track.id} priceCents={track.price_cents} />
+            ) : null}
+            {user?.id === track.creator_id && (
+              <TrackPriceEditor
+                trackId={track.id}
+                isPaid={!!track.is_paid}
+                priceCents={track.price_cents ?? 0}
+              />
+            )}
           </div>
         </div>
       </div>
