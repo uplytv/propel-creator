@@ -13824,6 +13824,89 @@ export type Database = {
           },
         ]
       }
+      music_studio_diary_entries: {
+        Row: {
+          artist_id: string
+          clip_url: string | null
+          created_at: string
+          hours_logged: number | null
+          id: string
+          mood: string | null
+          notes: string | null
+          phase: string
+          reaction_count: number
+          session_date: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          clip_url?: string | null
+          created_at?: string
+          hours_logged?: number | null
+          id?: string
+          mood?: string | null
+          notes?: string | null
+          phase: string
+          reaction_count?: number
+          session_date?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          clip_url?: string | null
+          created_at?: string
+          hours_logged?: number | null
+          id?: string
+          mood?: string | null
+          notes?: string | null
+          phase?: string
+          reaction_count?: number
+          session_date?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      music_studio_diary_reactions: {
+        Row: {
+          created_at: string
+          entry_id: string
+          fan_id: string
+          id: string
+          reaction: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          entry_id: string
+          fan_id: string
+          id?: string
+          reaction: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          entry_id?: string
+          fan_id?: string
+          id?: string
+          reaction?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_studio_diary_reactions_entry_id_fkey"
+            columns: ["entry_id"]
+            isOneToOne: false
+            referencedRelation: "music_studio_diary_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_sync_attendees: {
         Row: {
           created_at: string
