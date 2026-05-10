@@ -7024,6 +7024,45 @@ export type Database = {
         }
         Relationships: []
       }
+      music_context_playlists: {
+        Row: {
+          context_params: Json
+          context_type: string
+          cover_url: string | null
+          created_at: string
+          id: string
+          seed_genres: string[]
+          seed_moods: string[]
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          context_params?: Json
+          context_type: string
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          seed_genres?: string[]
+          seed_moods?: string[]
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          context_params?: Json
+          context_type?: string
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          seed_genres?: string[]
+          seed_moods?: string[]
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       music_downloads: {
         Row: {
           downloaded_at: string
