@@ -1,171 +1,172 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/context/AuthContext";
 
-export interface QAQuestion {
-  id: string;
-  artist_id: string;
-  fan_id: string;
-  body: string;
-  is_anonymous: boolean;
-  status: "pending" | "answered" | "hidden";
-  upvotes: number;
-  created_at: string;
-}
-
-export interface QAAnswer {
-  id: string;
-  question_id: string;
-  artist_id: string;
-  body: string;
-  created_at: string;
-}
-
-export function useQAQuestions(artistId?: string, opts?: { status?: QAQuestion["status"] | "all" }) {
-  const status = opts?.status ?? "answered";
+export function useQAThreads(artistId?: string) {
   return useQuery({
-    queryKey: ["qa-questions", artistId, status],
+    queryKey: ["music_qa_threads", artistId],
     enabled: !!artistId,
+    staleTime: 30_000,
     queryFn: async () => {
-      let q = supabase
-        .from("music_artist_qa_questions")
+      const { data, error } = await supabase
+        .from("music_qa_threads")
         .select("*")
         .eq("artist_id", artistId!)
-        .order("upvotes", { ascending: false })
         .order("created_at", { ascending: false });
-      if (status !== "all") q = q.eq("status", status);
-      const { data, error } = await q;
       if (error) throw error;
-      return (data ?? []) as QAQuestion[];
+      return data ?? [];
     },
-    staleTime: 30_000,
   });
 }
 
-export function useQAAnswer(questionId?: string) {
+export function useQAThread(id?: string) {
   return useQuery({
-    queryKey: ["qa-answer", questionId],
-    enabled: !!questionId,
+    queryKey: ["music_qa_thread", id],
+    enabled: !!id,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("music_artist_qa_answers")
+        .from("music_qa_threads")
         .select("*")
-        .eq("question_id", questionId!)
+        .eq("id", id!)
         .maybeSingle();
       if (error) throw error;
-      return data as QAAnswer | null;
+      return data;
     },
   });
 }
 
-export function useMyQAUpvote(questionId?: string) {
-  const { user } = useAuth();
+export function useQAQuestions(threadId?: string) {
   return useQuery({
-    queryKey: ["qa-upvote-mine", questionId, user?.id],
-    enabled: !!questionId && !!user?.id,
+    queryKey: ["music_qa_questions", threadId],
+    enabled: !!threadId,
+    staleTime: 15_000,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("music_artist_qa_upvotes")
-        .select("id")
-        .eq("question_id", questionId!)
-        .eq("voter_id", user!.id)
-        .maybeSingle();
+        .from("music_qa_questions")
+        .select("*")
+        .eq("thread_id", threadId!)
+        .order("upvote_count", { ascending: false });
       if (error) throw error;
-      return !!data;
+      return data ?? [];
     },
   });
 }
 
-export function useSubmitQAQuestion() {
+export function useMyQAVotes(threadId?: string) {
+  return useQuery({
+    queryKey: ["music_qa_my_votes", threadId],
+    enabled: !!threadId,
+    queryFn: async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      const uid = auth.user?.id;
+      if (!uid) return new Set<string>();
+      const { data: qs } = await supabase
+        .from("music_qa_questions")
+        .select("id")
+        .eq("thread_id", threadId!);
+      const ids = (qs ?? []).map((q: any) => q.id);
+      if (!ids.length) return new Set<string>();
+      const { data, error } = await supabase
+        .from("music_qa_question_votes")
+        .select("question_id")
+        .eq("voter_id", uid)
+        .in("question_id", ids);
+      if (error) throw error;
+      return new Set((data ?? []).map((v: any) => v.question_id));
+    },
+  });
+}
+
+export function useCreateQAThread() {
   const qc = useQueryClient();
-  const { user } = useAuth();
   return useMutation({
-    mutationFn: async (input: { artist_id: string; body: string; is_anonymous?: boolean }) => {
-      if (!user?.id) throw new Error("Not authenticated");
-      const { data, error } = await (supabase as any)
-        .from("music_artist_qa_questions")
-        .insert({
-          artist_id: input.artist_id,
-          fan_id: user.id,
-          body: input.body,
-          is_anonymous: input.is_anonymous ?? false,
-        })
+    mutationFn: async (input: { artist_id: string; title: string; description?: string; status?: string }) => {
+      const { data, error } = await supabase
+        .from("music_qa_threads")
+        .insert(input as any)
         .select()
         .single();
       if (error) throw error;
-      return data as QAQuestion;
+      return data;
     },
-    onSuccess: (_d, vars) => {
-      qc.invalidateQueries({ queryKey: ["qa-questions", vars.artist_id] });
-    },
+    onSuccess: (row: any) => qc.invalidateQueries({ queryKey: ["music_qa_threads", row.artist_id] }),
   });
 }
 
-export function useToggleQAUpvote() {
+export function useAskQAQuestion() {
   const qc = useQueryClient();
-  const { user } = useAuth();
   return useMutation({
-    mutationFn: async (input: { question_id: string; on: boolean }) => {
-      if (!user?.id) throw new Error("Not authenticated");
-      if (input.on) {
-        const { error } = await (supabase as any)
-          .from("music_artist_qa_upvotes")
-          .insert({ question_id: input.question_id, voter_id: user.id });
-        if (error && !String(error.message).includes("duplicate")) throw error;
-      } else {
-        const { error } = await supabase
-          .from("music_artist_qa_upvotes")
-          .delete()
-          .eq("question_id", input.question_id)
-          .eq("voter_id", user.id);
-        if (error) throw error;
-      }
-      return input;
+    mutationFn: async (input: { thread_id: string; body: string }) => {
+      const { data: auth } = await supabase.auth.getUser();
+      const uid = auth.user?.id;
+      if (!uid) throw new Error("Not authenticated");
+      const { data, error } = await supabase
+        .from("music_qa_questions")
+        .insert({ ...input, asker_id: uid } as any)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
     },
-    onSuccess: (_d, vars) => {
-      qc.invalidateQueries({ queryKey: ["qa-upvote-mine", vars.question_id] });
-      qc.invalidateQueries({ queryKey: ["qa-questions"] });
+    onSuccess: (row: any) => {
+      qc.invalidateQueries({ queryKey: ["music_qa_questions", row.thread_id] });
+      qc.invalidateQueries({ queryKey: ["music_qa_thread", row.thread_id] });
     },
   });
 }
 
 export function useAnswerQAQuestion() {
   const qc = useQueryClient();
-  const { user } = useAuth();
   return useMutation({
-    mutationFn: async (input: { question_id: string; body: string }) => {
-      if (!user?.id) throw new Error("Not authenticated");
-      const { data, error } = await (supabase as any)
-        .from("music_artist_qa_answers")
-        .insert({
-          question_id: input.question_id,
-          artist_id: user.id,
-          body: input.body,
-        })
+    mutationFn: async (input: { id: string; thread_id: string; answer_body: string }) => {
+      const { data, error } = await supabase
+        .from("music_qa_questions")
+        .update({ answer_body: input.answer_body, answered_at: new Date().toISOString(), status: "answered" } as any)
+        .eq("id", input.id)
         .select()
         .single();
       if (error) throw error;
-      return data as QAAnswer;
+      return data;
+    },
+    onSuccess: (_d, vars) => qc.invalidateQueries({ queryKey: ["music_qa_questions", vars.thread_id] }),
+  });
+}
+
+export function useVoteQAQuestion() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { question_id: string; thread_id: string }) => {
+      const { data: auth } = await supabase.auth.getUser();
+      const uid = auth.user?.id;
+      if (!uid) throw new Error("Not authenticated");
+      const { error } = await supabase
+        .from("music_qa_question_votes")
+        .insert({ question_id: input.question_id, voter_id: uid } as any);
+      if (error && !String(error.message).includes("duplicate")) throw error;
     },
     onSuccess: (_d, vars) => {
-      qc.invalidateQueries({ queryKey: ["qa-answer", vars.question_id] });
-      qc.invalidateQueries({ queryKey: ["qa-questions"] });
+      qc.invalidateQueries({ queryKey: ["music_qa_questions", vars.thread_id] });
+      qc.invalidateQueries({ queryKey: ["music_qa_my_votes", vars.thread_id] });
     },
   });
 }
 
-export function useUpdateQAQuestionStatus() {
+export function useUnvoteQAQuestion() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { id: string; status: QAQuestion["status"] }) => {
+    mutationFn: async (input: { question_id: string; thread_id: string }) => {
+      const { data: auth } = await supabase.auth.getUser();
+      const uid = auth.user?.id;
+      if (!uid) throw new Error("Not authenticated");
       const { error } = await supabase
-        .from("music_artist_qa_questions")
-        .update({ status: input.status })
-        .eq("id", input.id);
+        .from("music_qa_question_votes")
+        .delete()
+        .eq("question_id", input.question_id)
+        .eq("voter_id", uid);
       if (error) throw error;
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["qa-questions"] });
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["music_qa_questions", vars.thread_id] });
+      qc.invalidateQueries({ queryKey: ["music_qa_my_votes", vars.thread_id] });
     },
   });
 }
