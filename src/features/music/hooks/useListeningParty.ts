@@ -29,6 +29,22 @@ function generateCode() {
   return Math.random().toString(36).slice(2, 8).toUpperCase();
 }
 
+async function fetchMembersWithProfiles(partyId: string): Promise<PartyMember[]> {
+  const { data: rows } = await sb
+    .from("music_party_members")
+    .select("*")
+    .eq("party_id", partyId);
+  const members = (rows as PartyMember[]) ?? [];
+  const userIds = members.map((m) => m.user_id);
+  if (!userIds.length) return members;
+  const { data: profiles } = await sb
+    .from("profiles")
+    .select("user_id, display_name, username, avatar_url")
+    .in("user_id", userIds);
+  const byId = new Map((profiles ?? []).map((p: any) => [p.user_id, p]));
+  return members.map((m) => ({ ...m, profiles: byId.get(m.user_id) ?? null } as any));
+}
+
 export function useListeningParty(shareCode?: string) {
   const { user } = useAuth();
   const qc = useQueryClient();
