@@ -97,9 +97,17 @@ function ActivityCard({ activity, queue }: { activity: FriendActivity; queue: Fr
         </div>
       </Link>
 
-      <div className="px-1">
-        <div className="text-sm font-semibold text-white truncate">{t.title}</div>
-        <div className="text-xs text-white/50 truncate">{t.genre ?? 'Music'}</div>
+      <div className="px-1 flex items-end justify-between gap-2">
+        <div className="min-w-0">
+          <div className="text-sm font-semibold text-white truncate">{t.title}</div>
+          <div className="text-xs text-white/50 truncate">{t.genre ?? 'Music'}</div>
+        </div>
+        <Link
+          to={`/music/blend/${activity.actor.id}`}
+          className="flex-shrink-0 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#00FF85] hover:text-white"
+        >
+          <Sparkles className="w-3 h-3" /> Blend
+        </Link>
       </div>
     </div>
   );
