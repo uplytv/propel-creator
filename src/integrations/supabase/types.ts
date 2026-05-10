@@ -9488,6 +9488,134 @@ export type Database = {
           },
         ]
       }
+      music_fan_setlist_songs: {
+        Row: {
+          album: string | null
+          artist_label: string | null
+          created_at: string
+          id: string
+          position: number
+          setlist_id: string
+          title: string
+          updated_at: string
+          vote_count: number
+        }
+        Insert: {
+          album?: string | null
+          artist_label?: string | null
+          created_at?: string
+          id?: string
+          position?: number
+          setlist_id: string
+          title: string
+          updated_at?: string
+          vote_count?: number
+        }
+        Update: {
+          album?: string | null
+          artist_label?: string | null
+          created_at?: string
+          id?: string
+          position?: number
+          setlist_id?: string
+          title?: string
+          updated_at?: string
+          vote_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_fan_setlist_songs_setlist_id_fkey"
+            columns: ["setlist_id"]
+            isOneToOne: false
+            referencedRelation: "music_fan_setlists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_fan_setlist_votes: {
+        Row: {
+          created_at: string
+          fan_id: string
+          id: string
+          setlist_id: string
+          song_id: string
+        }
+        Insert: {
+          created_at?: string
+          fan_id: string
+          id?: string
+          setlist_id: string
+          song_id: string
+        }
+        Update: {
+          created_at?: string
+          fan_id?: string
+          id?: string
+          setlist_id?: string
+          song_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_fan_setlist_votes_setlist_id_fkey"
+            columns: ["setlist_id"]
+            isOneToOne: false
+            referencedRelation: "music_fan_setlists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "music_fan_setlist_votes_song_id_fkey"
+            columns: ["song_id"]
+            isOneToOne: false
+            referencedRelation: "music_fan_setlist_songs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_fan_setlists: {
+        Row: {
+          artist_id: string
+          closes_at: string | null
+          created_at: string
+          description: string | null
+          id: string
+          max_votes_per_fan: number
+          show_date: string | null
+          show_title: string
+          status: string
+          updated_at: string
+          venue: string | null
+          vote_count: number
+        }
+        Insert: {
+          artist_id: string
+          closes_at?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          max_votes_per_fan?: number
+          show_date?: string | null
+          show_title: string
+          status?: string
+          updated_at?: string
+          venue?: string | null
+          vote_count?: number
+        }
+        Update: {
+          artist_id?: string
+          closes_at?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          max_votes_per_fan?: number
+          show_date?: string | null
+          show_title?: string
+          status?: string
+          updated_at?: string
+          venue?: string | null
+          vote_count?: number
+        }
+        Relationships: []
+      }
       music_fan_station_tracks: {
         Row: {
           artist: string | null
