@@ -9274,6 +9274,113 @@ export type Database = {
         }
         Relationships: []
       }
+      music_pro_works: {
+        Row: {
+          confirmed_at: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          pro_name: string
+          registration_id: string
+          status: string
+          submitted_at: string
+          work_id_external: string | null
+          work_title: string
+        }
+        Insert: {
+          confirmed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          pro_name: string
+          registration_id: string
+          status?: string
+          submitted_at?: string
+          work_id_external?: string | null
+          work_title: string
+        }
+        Update: {
+          confirmed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          pro_name?: string
+          registration_id?: string
+          status?: string
+          submitted_at?: string
+          work_id_external?: string | null
+          work_title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_pro_works_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "music_publishing_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_publishing_registrations: {
+        Row: {
+          created_at: string
+          id: string
+          isrc: string | null
+          iswc: string | null
+          notes: string | null
+          owner_id: string
+          pro_member_id: string | null
+          pro_name: string | null
+          publisher_name: string | null
+          publisher_share: number | null
+          registered_at: string | null
+          release_id: string | null
+          status: string
+          track_id: string | null
+          upc: string | null
+          updated_at: string
+          writer_share: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          isrc?: string | null
+          iswc?: string | null
+          notes?: string | null
+          owner_id: string
+          pro_member_id?: string | null
+          pro_name?: string | null
+          publisher_name?: string | null
+          publisher_share?: number | null
+          registered_at?: string | null
+          release_id?: string | null
+          status?: string
+          track_id?: string | null
+          upc?: string | null
+          updated_at?: string
+          writer_share?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          isrc?: string | null
+          iswc?: string | null
+          notes?: string | null
+          owner_id?: string
+          pro_member_id?: string | null
+          pro_name?: string | null
+          publisher_name?: string | null
+          publisher_share?: number | null
+          registered_at?: string | null
+          release_id?: string | null
+          status?: string
+          track_id?: string | null
+          upc?: string | null
+          updated_at?: string
+          writer_share?: number | null
+        }
+        Relationships: []
+      }
       music_radio_stations: {
         Row: {
           cover_url: string | null
