@@ -49,11 +49,8 @@ export function useListeningParty(shareCode?: string) {
         .maybeSingle();
       if (!cancelled) setParty((p as ListeningParty) ?? null);
       if (p) {
-        const { data: m } = await sb
-          .from("music_party_members")
-          .select("*, profiles:profiles!music_party_members_user_id_fkey(display_name,username,avatar_url)")
-          .eq("party_id", (p as any).id);
-        if (!cancelled) setMembers((m as any) ?? []);
+        const m = await fetchMembersWithProfiles((p as any).id);
+        if (!cancelled) setMembers(m);
       }
     })();
     return () => { cancelled = true; };
