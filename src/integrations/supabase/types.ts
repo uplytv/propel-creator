@@ -7964,6 +7964,44 @@ export type Database = {
           },
         ]
       }
+      music_carpool_riders: {
+        Row: {
+          carpool_id: string
+          created_at: string
+          id: string
+          note: string | null
+          rider_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          carpool_id: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          rider_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          carpool_id?: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          rider_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_carpool_riders_carpool_id_fkey"
+            columns: ["carpool_id"]
+            isOneToOne: false
+            referencedRelation: "music_concert_carpools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_challenge_entries: {
         Row: {
           artwork_url: string | null
@@ -8328,6 +8366,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      music_concert_carpools: {
+        Row: {
+          concert_date: string | null
+          concert_label: string
+          contact_note: string | null
+          created_at: string
+          departure_time: string | null
+          driver_id: string
+          id: string
+          meeting_point: string | null
+          origin_city: string
+          seats_taken: number
+          status: string
+          total_seats: number
+          updated_at: string
+        }
+        Insert: {
+          concert_date?: string | null
+          concert_label: string
+          contact_note?: string | null
+          created_at?: string
+          departure_time?: string | null
+          driver_id: string
+          id?: string
+          meeting_point?: string | null
+          origin_city: string
+          seats_taken?: number
+          status?: string
+          total_seats?: number
+          updated_at?: string
+        }
+        Update: {
+          concert_date?: string | null
+          concert_label?: string
+          contact_note?: string | null
+          created_at?: string
+          departure_time?: string | null
+          driver_id?: string
+          id?: string
+          meeting_point?: string | null
+          origin_city?: string
+          seats_taken?: number
+          status?: string
+          total_seats?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       music_concert_memories: {
         Row: {
