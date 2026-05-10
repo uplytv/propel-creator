@@ -8,6 +8,7 @@ import LikeButton from '../components/LikeButton';
 import AddToPlaylistMenu from '../components/AddToPlaylistMenu';
 import ShareTrackSheet from '../components/ShareTrackSheet';
 import RepostButton from '../components/RepostButton';
+import PresaveButton from '../components/PresaveButton';
 import { formatDuration } from '../lib/formatDuration';
 
 export default function TrackPage() {
@@ -77,6 +78,7 @@ export default function TrackPage() {
             <LikeButton trackId={track.id} />
             <RepostButton trackId={track.id} />
             <AddToPlaylistMenu trackId={track.id} />
+            {!ready && <PresaveButton trackId={track.id} />}
             <button
               onClick={() => setShareOpen(true)}
               className="px-3 py-1.5 rounded-full text-xs bg-white/5 hover:bg-white/10 text-white inline-flex items-center gap-1"
