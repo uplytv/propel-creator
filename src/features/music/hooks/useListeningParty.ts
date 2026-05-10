@@ -95,11 +95,8 @@ export function useListeningParty(shareCode?: string) {
         "postgres_changes",
         { event: "*", schema: "public", table: "music_party_members", filter: `party_id=eq.${party.id}` },
         async () => {
-          const { data: m } = await sb
-            .from("music_party_members")
-            .select("*, profiles:profiles!music_party_members_user_id_fkey(display_name,username,avatar_url)")
-            .eq("party_id", party.id);
-          setMembers((m as any) ?? []);
+          const m = await fetchMembersWithProfiles(party.id);
+          setMembers(m);
         },
       )
       .subscribe();
