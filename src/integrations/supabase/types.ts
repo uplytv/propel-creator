@@ -8911,6 +8911,104 @@ export type Database = {
         }
         Relationships: []
       }
+      music_nft_drops: {
+        Row: {
+          artwork_url: string | null
+          chain: string
+          contract_address: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          drop_ends_at: string | null
+          drop_starts_at: string | null
+          edition_size: number
+          id: string
+          minted_count: number
+          owner_id: string
+          price_cents: number
+          status: string
+          title: string
+          track_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          artwork_url?: string | null
+          chain?: string
+          contract_address?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          drop_ends_at?: string | null
+          drop_starts_at?: string | null
+          edition_size?: number
+          id?: string
+          minted_count?: number
+          owner_id: string
+          price_cents?: number
+          status?: string
+          title: string
+          track_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          artwork_url?: string | null
+          chain?: string
+          contract_address?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          drop_ends_at?: string | null
+          drop_starts_at?: string | null
+          edition_size?: number
+          id?: string
+          minted_count?: number
+          owner_id?: string
+          price_cents?: number
+          status?: string
+          title?: string
+          track_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      music_nft_editions: {
+        Row: {
+          drop_id: string
+          edition_number: number
+          id: string
+          minted_at: string
+          owner_user_id: string | null
+          tx_hash: string | null
+          wallet_address: string | null
+        }
+        Insert: {
+          drop_id: string
+          edition_number: number
+          id?: string
+          minted_at?: string
+          owner_user_id?: string | null
+          tx_hash?: string | null
+          wallet_address?: string | null
+        }
+        Update: {
+          drop_id?: string
+          edition_number?: number
+          id?: string
+          minted_at?: string
+          owner_user_id?: string | null
+          tx_hash?: string | null
+          wallet_address?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_nft_editions_drop_id_fkey"
+            columns: ["drop_id"]
+            isOneToOne: false
+            referencedRelation: "music_nft_drops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_notification_prefs: {
         Row: {
           artist_messages: boolean
