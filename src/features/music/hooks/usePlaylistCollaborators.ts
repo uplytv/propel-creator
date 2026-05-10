@@ -34,7 +34,9 @@ export function usePlaylistCollaborators(playlistId?: string) {
               .select('user_id, display_name, username, avatar_url')
               .in('user_id', ids)
           : { data: [] as any[] };
-        const byId = new Map((profs ?? []).map((p: any) => [p.user_id, p]));
+        const byId = new Map<string, any>(
+          (profs ?? []).map((p: any) => [p.user_id as string, p]),
+        );
         return (rows ?? []).map((r: any) => ({
           user_id: r.user_id,
           added_at: r.added_at,
