@@ -10931,6 +10931,118 @@ export type Database = {
         }
         Relationships: []
       }
+      music_lyric_snippet_reactions: {
+        Row: {
+          created_at: string
+          fan_id: string
+          id: string
+          reaction: string
+          snippet_id: string
+        }
+        Insert: {
+          created_at?: string
+          fan_id: string
+          id?: string
+          reaction: string
+          snippet_id: string
+        }
+        Update: {
+          created_at?: string
+          fan_id?: string
+          id?: string
+          reaction?: string
+          snippet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_lyric_snippet_reactions_snippet_id_fkey"
+            columns: ["snippet_id"]
+            isOneToOne: false
+            referencedRelation: "music_lyric_snippets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_lyric_snippet_suggestions: {
+        Row: {
+          created_at: string
+          id: string
+          reasoning: string | null
+          snippet_id: string
+          status: string
+          suggested_text: string
+          suggester_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reasoning?: string | null
+          snippet_id: string
+          status?: string
+          suggested_text: string
+          suggester_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reasoning?: string | null
+          snippet_id?: string
+          status?: string
+          suggested_text?: string
+          suggester_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_lyric_snippet_suggestions_snippet_id_fkey"
+            columns: ["snippet_id"]
+            isOneToOne: false
+            referencedRelation: "music_lyric_snippets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_lyric_snippets: {
+        Row: {
+          artist_id: string
+          created_at: string
+          id: string
+          mood: string | null
+          reaction_count: number
+          snippet_text: string
+          status: string
+          suggestion_count: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          id?: string
+          mood?: string | null
+          reaction_count?: number
+          snippet_text: string
+          status?: string
+          suggestion_count?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          id?: string
+          mood?: string | null
+          reaction_count?: number
+          snippet_text?: string
+          status?: string
+          suggestion_count?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_lyric_translations: {
         Row: {
           contributor_id: string | null
