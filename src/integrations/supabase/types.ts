@@ -7360,6 +7360,94 @@ export type Database = {
         }
         Relationships: []
       }
+      music_booking_inquiries: {
+        Row: {
+          artist_id: string
+          booker_id: string
+          budget_cents: number | null
+          created_at: string
+          duration_minutes: number | null
+          event_date: string | null
+          event_location: string | null
+          event_title: string | null
+          id: string
+          listing_id: string
+          message: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          booker_id: string
+          budget_cents?: number | null
+          created_at?: string
+          duration_minutes?: number | null
+          event_date?: string | null
+          event_location?: string | null
+          event_title?: string | null
+          id?: string
+          listing_id: string
+          message?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          booker_id?: string
+          budget_cents?: number | null
+          created_at?: string
+          duration_minutes?: number | null
+          event_date?: string | null
+          event_location?: string | null
+          event_title?: string | null
+          id?: string
+          listing_id?: string
+          message?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_booking_inquiries_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "music_gig_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_booking_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          inquiry_id: string
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          inquiry_id: string
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          inquiry_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_booking_messages_inquiry_id_fkey"
+            columns: ["inquiry_id"]
+            isOneToOne: false
+            referencedRelation: "music_booking_inquiries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_challenge_entries: {
         Row: {
           artwork_url: string | null
@@ -8349,6 +8437,69 @@ export type Database = {
           mood?: string | null
           name?: string
           slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      music_gig_listings: {
+        Row: {
+          artist_id: string
+          artwork_url: string | null
+          base_price_cents: number
+          booking_count: number
+          created_at: string
+          demo_url: string | null
+          description: string | null
+          genres: string[]
+          gig_type: string
+          home_city: string | null
+          id: string
+          inquiry_count: number
+          instruments: string[]
+          is_active: boolean
+          min_duration_minutes: number
+          title: string
+          travel_radius_km: number
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          artwork_url?: string | null
+          base_price_cents?: number
+          booking_count?: number
+          created_at?: string
+          demo_url?: string | null
+          description?: string | null
+          genres?: string[]
+          gig_type?: string
+          home_city?: string | null
+          id?: string
+          inquiry_count?: number
+          instruments?: string[]
+          is_active?: boolean
+          min_duration_minutes?: number
+          title: string
+          travel_radius_km?: number
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          artwork_url?: string | null
+          base_price_cents?: number
+          booking_count?: number
+          created_at?: string
+          demo_url?: string | null
+          description?: string | null
+          genres?: string[]
+          gig_type?: string
+          home_city?: string | null
+          id?: string
+          inquiry_count?: number
+          instruments?: string[]
+          is_active?: boolean
+          min_duration_minutes?: number
+          title?: string
+          travel_radius_km?: number
           updated_at?: string
         }
         Relationships: []
