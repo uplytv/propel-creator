@@ -12126,6 +12126,15 @@ export type Database = {
         Args: { _artist_id: string; _days?: number }
         Returns: Json
       }
+      get_creator_music_revenue: {
+        Args: { _artist_id: string; _days?: number }
+        Returns: {
+          day: string
+          sales_revenue: number
+          tips_revenue: number
+          total_revenue: number
+        }[]
+      }
       get_friend_music_activity: {
         Args: { _limit?: number; _viewer: string }
         Returns: {
@@ -12151,6 +12160,18 @@ export type Database = {
           score: number
           source: string
           track_id: string
+        }[]
+      }
+      get_track_geo_breakdown: {
+        Args: { _days?: number; _track_id: string }
+        Returns: Json
+      }
+      get_track_listener_trends: {
+        Args: { _days?: number; _track_id: string }
+        Returns: {
+          day: string
+          plays: number
+          unique_listeners: number
         }[]
       }
       has_purchased_track: {
