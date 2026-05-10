@@ -12787,6 +12787,41 @@ export type Database = {
         }
         Returns: number
       }
+      music_creator_overview: {
+        Args: { _artist_id: string; _days?: number }
+        Returns: {
+          day: string
+          likes: number
+          plays: number
+          purchases: number
+          revenue_cents: number
+          unique_listeners: number
+        }[]
+      }
+      music_top_fans: {
+        Args: { _artist_id: string; _days?: number; _limit?: number }
+        Returns: {
+          likes: number
+          plays: number
+          purchases: number
+          revenue_cents: number
+          score: number
+          user_id: string
+        }[]
+      }
+      music_top_tracks: {
+        Args: { _artist_id: string; _days?: number; _limit?: number }
+        Returns: {
+          cover_art_url: string
+          likes: number
+          plays: number
+          purchases: number
+          revenue_cents: number
+          title: string
+          track_id: string
+          unique_listeners: number
+        }[]
+      }
       notify_admin: {
         Args: {
           p_amount?: number
