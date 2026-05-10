@@ -7360,6 +7360,164 @@ export type Database = {
         }
         Relationships: []
       }
+      music_challenge_entries: {
+        Row: {
+          artwork_url: string | null
+          challenge_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_disqualified: boolean
+          media_url: string
+          score: number
+          title: string
+          updated_at: string
+          user_id: string
+          vote_count: number
+        }
+        Insert: {
+          artwork_url?: string | null
+          challenge_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_disqualified?: boolean
+          media_url: string
+          score?: number
+          title: string
+          updated_at?: string
+          user_id: string
+          vote_count?: number
+        }
+        Update: {
+          artwork_url?: string | null
+          challenge_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_disqualified?: boolean
+          media_url?: string
+          score?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+          vote_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_challenge_entries_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "music_challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_challenge_votes: {
+        Row: {
+          challenge_id: string
+          created_at: string
+          entry_id: string
+          id: string
+          user_id: string
+          weight: number
+        }
+        Insert: {
+          challenge_id: string
+          created_at?: string
+          entry_id: string
+          id?: string
+          user_id: string
+          weight?: number
+        }
+        Update: {
+          challenge_id?: string
+          created_at?: string
+          entry_id?: string
+          id?: string
+          user_id?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_challenge_votes_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "music_challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "music_challenge_votes_entry_id_fkey"
+            columns: ["entry_id"]
+            isOneToOne: false
+            referencedRelation: "music_challenge_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_challenges: {
+        Row: {
+          artwork_url: string | null
+          challenge_type: string
+          created_at: string
+          description: string | null
+          entry_count: number
+          host_id: string
+          id: string
+          prize_cents: number
+          prize_description: string | null
+          prompt: string | null
+          starts_at: string
+          status: string
+          stems_url: string | null
+          submission_deadline: string | null
+          title: string
+          updated_at: string
+          vote_count: number
+          voting_deadline: string | null
+        }
+        Insert: {
+          artwork_url?: string | null
+          challenge_type?: string
+          created_at?: string
+          description?: string | null
+          entry_count?: number
+          host_id: string
+          id?: string
+          prize_cents?: number
+          prize_description?: string | null
+          prompt?: string | null
+          starts_at?: string
+          status?: string
+          stems_url?: string | null
+          submission_deadline?: string | null
+          title: string
+          updated_at?: string
+          vote_count?: number
+          voting_deadline?: string | null
+        }
+        Update: {
+          artwork_url?: string | null
+          challenge_type?: string
+          created_at?: string
+          description?: string | null
+          entry_count?: number
+          host_id?: string
+          id?: string
+          prize_cents?: number
+          prize_description?: string | null
+          prompt?: string | null
+          starts_at?: string
+          status?: string
+          stems_url?: string | null
+          submission_deadline?: string | null
+          title?: string
+          updated_at?: string
+          vote_count?: number
+          voting_deadline?: string | null
+        }
+        Relationships: []
+      }
       music_collab_events: {
         Row: {
           created_at: string
@@ -14246,6 +14404,35 @@ export type Database = {
         Returns: undefined
       }
       calculate_waitlist_leaderboard_rank: { Args: never; Returns: undefined }
+      cast_challenge_vote: {
+        Args: { _entry_id: string; _weight?: number }
+        Returns: {
+          challenge_id: string
+          created_at: string
+          entry_id: string
+          id: string
+          user_id: string
+          weight: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "music_challenge_votes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      challenge_leaderboard: {
+        Args: { _challenge_id: string; _limit?: number }
+        Returns: {
+          artwork_url: string
+          entry_id: string
+          rank: number
+          score: number
+          title: string
+          user_id: string
+          vote_count: number
+        }[]
+      }
       check_auth_rate_limit: {
         Args: {
           p_action_type?: string
