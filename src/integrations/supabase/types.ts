@@ -10237,6 +10237,115 @@ export type Database = {
         }
         Relationships: []
       }
+      music_mood_board_items: {
+        Row: {
+          board_id: string
+          caption: string | null
+          created_at: string
+          id: string
+          kind: string
+          position: number
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          board_id: string
+          caption?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          position?: number
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          board_id?: string
+          caption?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          position?: number
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_mood_board_items_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "music_mood_boards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_mood_board_likes: {
+        Row: {
+          board_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          board_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          board_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_mood_board_likes_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "music_mood_boards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_mood_boards: {
+        Row: {
+          artist_id: string
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_published: boolean
+          like_count: number
+          mood: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          like_count?: number
+          mood?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          like_count?: number
+          mood?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_nft_drops: {
         Row: {
           artwork_url: string | null
