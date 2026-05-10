@@ -74,6 +74,38 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
   enqueue: (tracks) => set((s) => ({ queue: [...s.queue, ...tracks] })),
 
+  playAt: (index) => {
+    const { queue } = get();
+    if (index < 0 || index >= queue.length) return;
+    set({ currentIndex: index, positionSeconds: 0, isPlaying: true, _seekRequest: 0 });
+  },
+
+  removeAt: (index) => {
+    const { queue, currentIndex } = get();
+    if (index < 0 || index >= queue.length) return;
+    const next = queue.slice();
+    next.splice(index, 1);
+    let nextIdx = currentIndex;
+    if (index < currentIndex) nextIdx = currentIndex - 1;
+    else if (index === currentIndex) nextIdx = Math.min(currentIndex, next.length - 1);
+    set({ queue: next, currentIndex: nextIdx });
+  },
+
+  moveQueueItem: (from, to) => {
+    const { queue, currentIndex } = get();
+    if (from === to) return;
+    const next = queue.slice();
+    const [m] = next.splice(from, 1);
+    next.splice(to, 0, m);
+    let nextIdx = currentIndex;
+    if (from === currentIndex) nextIdx = to;
+    else if (from < currentIndex && to >= currentIndex) nextIdx = currentIndex - 1;
+    else if (from > currentIndex && to <= currentIndex) nextIdx = currentIndex + 1;
+    set({ queue: next, currentIndex: nextIdx });
+  },
+
+  clearQueue: () => set({ queue: [], currentIndex: -1, isPlaying: false }),
+
   play: () => set({ isPlaying: true }),
   pause: () => set({ isPlaying: false }),
   toggle: () => set((s) => ({ isPlaying: !s.isPlaying })),
