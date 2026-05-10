@@ -1,11 +1,13 @@
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 import { usePlaylist } from '../hooks/useTrack';
 import TrackRow from '../components/TrackRow';
 import CollaboratorsPanel from '../components/CollaboratorsPanel';
 
 export default function PlaylistPage() {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const { data, isLoading } = usePlaylist(id);
   if (isLoading) return <div className="p-8 text-white/50">Loading…</div>;
   if (!data?.playlist) return <div className="p-8 text-white/50">Playlist not found.</div>;
@@ -19,8 +21,7 @@ export default function PlaylistPage() {
       <p className="text-sm text-white/50 mb-6">{tracks.length} tracks</p>
       <CollaboratorsPanel
         playlistId={playlist.id}
-        ownerId={(playlist as any).user_id}
-        isCollaborative={!!(playlist as any).is_collaborative}
+        isOwner={!!user && user.id === (playlist as any).creator_id}
       />
       <div className="space-y-1">
         {tracks.map((t, i) => (
