@@ -5433,6 +5433,36 @@ export type Database = {
         }
         Relationships: []
       }
+      karaoke_scores: {
+        Row: {
+          created_at: string
+          id: string
+          lines_hit: number
+          score: number
+          total_lines: number
+          track_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lines_hit?: number
+          score: number
+          total_lines?: number
+          track_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lines_hit?: number
+          score?: number
+          total_lines?: number
+          track_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       launch_config: {
         Row: {
           id: string
@@ -10903,6 +10933,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      track_lyric_translations: {
+        Row: {
+          created_at: string
+          id: string
+          language: string
+          lrc_text: string | null
+          lyrics_text: string | null
+          track_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          language: string
+          lrc_text?: string | null
+          lyrics_text?: string | null
+          track_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          language?: string
+          lrc_text?: string | null
+          lyrics_text?: string | null
+          track_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       track_lyrics: {
         Row: {
