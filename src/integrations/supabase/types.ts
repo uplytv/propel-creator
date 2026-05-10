@@ -1215,6 +1215,51 @@ export type Database = {
         }
         Relationships: []
       }
+      artist_merch: {
+        Row: {
+          artist_id: string
+          created_at: string
+          currency: string
+          description: string | null
+          external_url: string | null
+          id: string
+          image_url: string | null
+          in_stock: boolean
+          kind: string
+          price_cents: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          external_url?: string | null
+          id?: string
+          image_url?: string | null
+          in_stock?: boolean
+          kind?: string
+          price_cents?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          external_url?: string | null
+          id?: string
+          image_url?: string | null
+          in_stock?: boolean
+          kind?: string
+          price_cents?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       artist_merch_items: {
         Row: {
           artist_id: string
@@ -1345,6 +1390,86 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      artist_sub_tiers: {
+        Row: {
+          active: boolean
+          artist_id: string
+          created_at: string
+          description: string | null
+          id: string
+          monthly_price_cents: number
+          name: string
+          perks: Json
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          artist_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          monthly_price_cents: number
+          name: string
+          perks?: Json
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          artist_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          monthly_price_cents?: number
+          name?: string
+          perks?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      artist_subscriptions: {
+        Row: {
+          artist_id: string
+          created_at: string
+          current_period_end: string | null
+          fan_id: string
+          id: string
+          started_at: string
+          status: string
+          tier_id: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          current_period_end?: string | null
+          fan_id: string
+          id?: string
+          started_at?: string
+          status?: string
+          tier_id: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          current_period_end?: string | null
+          fan_id?: string
+          id?: string
+          started_at?: string
+          status?: string
+          tier_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artist_subscriptions_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "artist_sub_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       artist_tour_dates: {
         Row: {
@@ -7828,6 +7953,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      music_tips: {
+        Row: {
+          amount_cents: number
+          artist_id: string
+          created_at: string
+          currency: string
+          fan_id: string
+          id: string
+          message: string | null
+          track_id: string | null
+        }
+        Insert: {
+          amount_cents: number
+          artist_id: string
+          created_at?: string
+          currency?: string
+          fan_id: string
+          id?: string
+          message?: string | null
+          track_id?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          artist_id?: string
+          created_at?: string
+          currency?: string
+          fan_id?: string
+          id?: string
+          message?: string | null
+          track_id?: string | null
+        }
+        Relationships: []
       }
       music_trending_searches: {
         Row: {
