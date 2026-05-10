@@ -7937,6 +7937,116 @@ export type Database = {
         }
         Relationships: []
       }
+      music_distribution_releases: {
+        Row: {
+          artist_name: string
+          artwork_url: string | null
+          audio_url: string | null
+          created_at: string
+          explicit: boolean
+          genre: string | null
+          id: string
+          isrc: string | null
+          language: string | null
+          notes: string | null
+          owner_id: string
+          release_date: string | null
+          status: string
+          title: string
+          track_id: string | null
+          upc: string | null
+          updated_at: string
+        }
+        Insert: {
+          artist_name: string
+          artwork_url?: string | null
+          audio_url?: string | null
+          created_at?: string
+          explicit?: boolean
+          genre?: string | null
+          id?: string
+          isrc?: string | null
+          language?: string | null
+          notes?: string | null
+          owner_id: string
+          release_date?: string | null
+          status?: string
+          title: string
+          track_id?: string | null
+          upc?: string | null
+          updated_at?: string
+        }
+        Update: {
+          artist_name?: string
+          artwork_url?: string | null
+          audio_url?: string | null
+          created_at?: string
+          explicit?: boolean
+          genre?: string | null
+          id?: string
+          isrc?: string | null
+          language?: string | null
+          notes?: string | null
+          owner_id?: string
+          release_date?: string | null
+          status?: string
+          title?: string
+          track_id?: string | null
+          upc?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      music_distribution_targets: {
+        Row: {
+          created_at: string
+          delivered_at: string | null
+          error_message: string | null
+          external_id: string | null
+          external_url: string | null
+          id: string
+          live_at: string | null
+          platform: string
+          release_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          external_id?: string | null
+          external_url?: string | null
+          id?: string
+          live_at?: string | null
+          platform: string
+          release_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          external_id?: string | null
+          external_url?: string | null
+          id?: string
+          live_at?: string | null
+          platform?: string
+          release_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_distribution_targets_release_id_fkey"
+            columns: ["release_id"]
+            isOneToOne: false
+            referencedRelation: "music_distribution_releases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_downloads: {
         Row: {
           downloaded_at: string
