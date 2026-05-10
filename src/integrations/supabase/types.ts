@@ -8262,6 +8262,145 @@ export type Database = {
           },
         ]
       }
+      music_sample_packs: {
+        Row: {
+          bpm: number | null
+          cover_url: string | null
+          created_at: string
+          creator_id: string
+          currency: string
+          description: string | null
+          genre: string | null
+          id: string
+          is_published: boolean
+          music_key: string | null
+          price_cents: number
+          sales_count: number
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          bpm?: number | null
+          cover_url?: string | null
+          created_at?: string
+          creator_id: string
+          currency?: string
+          description?: string | null
+          genre?: string | null
+          id?: string
+          is_published?: boolean
+          music_key?: string | null
+          price_cents?: number
+          sales_count?: number
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          bpm?: number | null
+          cover_url?: string | null
+          created_at?: string
+          creator_id?: string
+          currency?: string
+          description?: string | null
+          genre?: string | null
+          id?: string
+          is_published?: boolean
+          music_key?: string | null
+          price_cents?: number
+          sales_count?: number
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      music_sample_purchases: {
+        Row: {
+          amount_cents: number
+          buyer_id: string
+          currency: string
+          id: string
+          pack_id: string
+          purchased_at: string
+        }
+        Insert: {
+          amount_cents?: number
+          buyer_id: string
+          currency?: string
+          id?: string
+          pack_id: string
+          purchased_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          buyer_id?: string
+          currency?: string
+          id?: string
+          pack_id?: string
+          purchased_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_sample_purchases_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "music_sample_packs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_samples: {
+        Row: {
+          audio_url: string
+          bpm: number | null
+          created_at: string
+          duration_seconds: number | null
+          id: string
+          music_key: string | null
+          pack_id: string
+          position: number
+          preview_url: string | null
+          sample_type: string
+          title: string
+        }
+        Insert: {
+          audio_url: string
+          bpm?: number | null
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          music_key?: string | null
+          pack_id: string
+          position?: number
+          preview_url?: string | null
+          sample_type?: string
+          title: string
+        }
+        Update: {
+          audio_url?: string
+          bpm?: number | null
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          music_key?: string | null
+          pack_id?: string
+          position?: number
+          preview_url?: string | null
+          sample_type?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_samples_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "music_sample_packs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_search_history: {
         Row: {
           created_at: string
