@@ -62,6 +62,28 @@ export default function MusicSearch() {
     enabled: q.trim().length >= 2 || filterCount > 0,
   });
 
+  // Persist last meaningful query to history (debounced via effect on q)
+  useEffect(() => {
+    const term = q.trim();
+    if (term.length < 2) return;
+    const id = setTimeout(() => recordSearch.mutate(term), 1500);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q]);
+
+  // Keep URL in sync for shareable searches
+  useEffect(() => {
+    const next = new URLSearchParams(params);
+    if (q.trim()) next.set('q', q.trim());
+    else next.delete('q');
+    if (mood) next.set('mood', mood);
+    else next.delete('mood');
+    setParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q, mood]);
+
+  const showSuggestions = q.trim().length < 2 && filterCount === 0;
+
   const toggleGenre = (g: string) =>
     setGenres((prev) => (prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]));
 
