@@ -13151,6 +13151,125 @@ export type Database = {
           },
         ]
       }
+      music_tour_suggestion_cities: {
+        Row: {
+          city: string
+          country: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          region: string | null
+          suggested_by: string | null
+          suggestion_id: string
+          updated_at: string
+          vote_count: number
+        }
+        Insert: {
+          city: string
+          country?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          region?: string | null
+          suggested_by?: string | null
+          suggestion_id: string
+          updated_at?: string
+          vote_count?: number
+        }
+        Update: {
+          city?: string
+          country?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          region?: string | null
+          suggested_by?: string | null
+          suggestion_id?: string
+          updated_at?: string
+          vote_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_tour_suggestion_cities_suggestion_id_fkey"
+            columns: ["suggestion_id"]
+            isOneToOne: false
+            referencedRelation: "music_tour_suggestions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_tour_suggestion_votes: {
+        Row: {
+          city_id: string
+          created_at: string
+          fan_id: string
+          id: string
+          suggestion_id: string
+        }
+        Insert: {
+          city_id: string
+          created_at?: string
+          fan_id: string
+          id?: string
+          suggestion_id: string
+        }
+        Update: {
+          city_id?: string
+          created_at?: string
+          fan_id?: string
+          id?: string
+          suggestion_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_tour_suggestion_votes_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "music_tour_suggestion_cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "music_tour_suggestion_votes_suggestion_id_fkey"
+            columns: ["suggestion_id"]
+            isOneToOne: false
+            referencedRelation: "music_tour_suggestions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_tour_suggestions: {
+        Row: {
+          artist_id: string
+          created_at: string
+          description: string | null
+          id: string
+          status: string
+          suggestion_count: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          status?: string
+          suggestion_count?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          status?: string
+          suggestion_count?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_trending_searches: {
         Row: {
           hits: number
