@@ -9740,6 +9740,83 @@ export type Database = {
         }
         Relationships: []
       }
+      music_fan_demo_plays: {
+        Row: {
+          created_at: string
+          id: string
+          listener_id: string
+          submission_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          listener_id: string
+          submission_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          listener_id?: string
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_fan_demo_plays_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "music_fan_demo_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_fan_demo_submissions: {
+        Row: {
+          artist_feedback: string | null
+          artist_id: string
+          audio_url: string
+          created_at: string
+          description: string | null
+          fan_id: string
+          feedback_at: string | null
+          genre: string | null
+          id: string
+          play_count: number
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_feedback?: string | null
+          artist_id: string
+          audio_url: string
+          created_at?: string
+          description?: string | null
+          fan_id: string
+          feedback_at?: string | null
+          genre?: string | null
+          id?: string
+          play_count?: number
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_feedback?: string | null
+          artist_id?: string
+          audio_url?: string
+          created_at?: string
+          description?: string | null
+          fan_id?: string
+          feedback_at?: string | null
+          genre?: string | null
+          id?: string
+          play_count?: number
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_fan_point_events: {
         Row: {
           artist_id: string
