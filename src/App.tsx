@@ -117,6 +117,7 @@ const MusicLivePage = lazy(() => import("./features/music/pages/MusicLivePage"))
 const RadioStationPage = lazy(() => import("./features/music/pages/RadioStationPage"));
 const PremierePage = lazy(() => import("./features/music/pages/PremierePage"));
 const AudioRoomPage = lazy(() => import("./features/music/pages/AudioRoomPage"));
+const MusicBrowsePage = lazy(() => import("./features/music/pages/MusicBrowsePage"));
 const ContentStudio = lazy(() => import("./pages/ContentStudio"));
 const AITeamDashboard = lazy(() => import("./pages/AITeamDashboard"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
