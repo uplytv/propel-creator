@@ -81,7 +81,7 @@ export function useCreatePreorder() {
       shipping_address?: Record<string, unknown>;
     }) => {
       if (!user?.id) throw new Error("Not authenticated");
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("music_preorders")
         .insert({
           fan_id: user.id,
