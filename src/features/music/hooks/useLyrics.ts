@@ -98,21 +98,21 @@ export function parseLrc(lrc: string): SyncedLine[] {
 // Backward-compat alias used by older components; returns lyric with `lrc_text` shape
 export function useLyrics(trackId?: string, language = "en") {
   const q = useTrackLyrics(trackId, language);
-  const data = q.data
-    ? {
-        ...q.data,
-        lrc_text:
-          (q.data as any).plain_text ??
-          (Array.isArray((q.data as any).synced_lines)
-            ? ((q.data as any).synced_lines as SyncedLine[])
-                .map((l) => {
-                  const m = Math.floor(l.time / 60);
-                  const s = (l.time - m * 60).toFixed(2).padStart(5, "0");
-                  return `[${String(m).padStart(2, "0")}:${s}]${l.text}`;
-                })
-                .join("\n")
-            : ""),
-      }
-    : q.data;
-  return { ...q, data } as typeof q;
+  const raw: any = q.data;
+  const lrc_text = raw
+    ? raw.plain_text ??
+      (Array.isArray(raw.synced_lines)
+        ? (raw.synced_lines as SyncedLine[])
+            .map((l) => {
+              const m = Math.floor(l.time / 60);
+              const s = (l.time - m * 60).toFixed(2).padStart(5, "0");
+              return `[${String(m).padStart(2, "0")}:${s}]${l.text}`;
+            })
+            .join("\n")
+        : "")
+    : "";
+  const data = raw ? { ...raw, lrc_text, lyrics_text: raw.plain_text ?? "" } : raw;
+  return { ...q, data } as Omit<typeof q, "data"> & {
+    data: (typeof raw & { lrc_text: string; lyrics_text: string }) | null | undefined;
+  };
 }
