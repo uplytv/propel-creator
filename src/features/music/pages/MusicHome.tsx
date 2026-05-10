@@ -19,6 +19,8 @@ import ChartsSection from '../components/ChartsSection';
 import FriendActivityRail from '../components/FriendActivityRail';
 import GenreChip from '../components/GenreChip';
 import { GENRES } from '../lib/genres';
+import SpotlightCard from '../components/SpotlightCard';
+import { useEditorialSpotlights } from '../hooks/useEditorialSpotlights';
 
 function Row({ title, children }: { title: string; children: React.ReactNode }) {
   return (
