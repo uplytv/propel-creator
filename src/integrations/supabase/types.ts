@@ -13900,6 +13900,112 @@ export type Database = {
           },
         ]
       }
+      music_voice_memo_likes: {
+        Row: {
+          created_at: string
+          fan_id: string
+          id: string
+          memo_id: string
+        }
+        Insert: {
+          created_at?: string
+          fan_id: string
+          id?: string
+          memo_id: string
+        }
+        Update: {
+          created_at?: string
+          fan_id?: string
+          id?: string
+          memo_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_voice_memo_likes_memo_id_fkey"
+            columns: ["memo_id"]
+            isOneToOne: false
+            referencedRelation: "music_voice_memos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_voice_memo_replies: {
+        Row: {
+          body: string
+          created_at: string
+          fan_id: string
+          id: string
+          memo_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          fan_id: string
+          id?: string
+          memo_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          fan_id?: string
+          id?: string
+          memo_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_voice_memo_replies_memo_id_fkey"
+            columns: ["memo_id"]
+            isOneToOne: false
+            referencedRelation: "music_voice_memos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_voice_memos: {
+        Row: {
+          artist_id: string
+          audio_url: string
+          caption: string | null
+          created_at: string
+          duration_seconds: number | null
+          id: string
+          like_count: number
+          reply_count: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          audio_url: string
+          caption?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          like_count?: number
+          reply_count?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          audio_url?: string
+          caption?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          like_count?: number
+          reply_count?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       mux_assets: {
         Row: {
           aspect_ratio: string | null
