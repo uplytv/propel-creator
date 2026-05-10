@@ -16,6 +16,8 @@ export default function PersistentPlayer() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const hlsRef = useRef<Hls | null>(null);
   const lastTrackIdRef = useRef<string | null>(null);
+  const [queueOpen, setQueueOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const queue = usePlayerStore((s) => s.queue);
   const currentIndex = usePlayerStore((s) => s.currentIndex);
