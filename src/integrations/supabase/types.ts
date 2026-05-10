@@ -10162,6 +10162,142 @@ export type Database = {
           },
         ]
       }
+      music_stem_files: {
+        Row: {
+          created_at: string
+          file_format: string | null
+          file_size_bytes: number | null
+          file_url: string
+          id: string
+          listing_id: string
+          position: number
+          stem_kind: string
+        }
+        Insert: {
+          created_at?: string
+          file_format?: string | null
+          file_size_bytes?: number | null
+          file_url: string
+          id?: string
+          listing_id: string
+          position?: number
+          stem_kind: string
+        }
+        Update: {
+          created_at?: string
+          file_format?: string | null
+          file_size_bytes?: number | null
+          file_url?: string
+          id?: string
+          listing_id?: string
+          position?: number
+          stem_kind?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_stem_files_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "music_stem_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_stem_listings: {
+        Row: {
+          bpm: number | null
+          created_at: string
+          currency: string
+          description: string | null
+          genre: string | null
+          id: string
+          license_type: string
+          musical_key: string | null
+          owner_id: string
+          preview_url: string | null
+          price_cents: number
+          sold_count: number
+          status: string
+          title: string
+          track_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          bpm?: number | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          genre?: string | null
+          id?: string
+          license_type?: string
+          musical_key?: string | null
+          owner_id: string
+          preview_url?: string | null
+          price_cents?: number
+          sold_count?: number
+          status?: string
+          title: string
+          track_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bpm?: number | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          genre?: string | null
+          id?: string
+          license_type?: string
+          musical_key?: string | null
+          owner_id?: string
+          preview_url?: string | null
+          price_cents?: number
+          sold_count?: number
+          status?: string
+          title?: string
+          track_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      music_stem_purchases: {
+        Row: {
+          amount_cents: number
+          buyer_id: string
+          created_at: string
+          currency: string
+          download_count: number
+          id: string
+          listing_id: string
+        }
+        Insert: {
+          amount_cents: number
+          buyer_id: string
+          created_at?: string
+          currency?: string
+          download_count?: number
+          id?: string
+          listing_id: string
+        }
+        Update: {
+          amount_cents?: number
+          buyer_id?: string
+          created_at?: string
+          currency?: string
+          download_count?: number
+          id?: string
+          listing_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_stem_purchases_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "music_stem_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_sync_briefs: {
         Row: {
           budget_cents: number | null
