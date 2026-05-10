@@ -14,32 +14,36 @@ export interface Lyrics {
   language: string;
   plain_text: string | null;
   lrc_text?: string | null;
+  /** Legacy alias for plain_text. */
+  lyrics_text?: string | null;
   synced_lines: SyncedLine[] | null;
   is_karaoke_ready: boolean;
   is_published: boolean;
 }
 
-export function useTrackLyrics(trackId?: string) {
+export function useTrackLyrics(trackId?: string, language?: string) {
   return useQuery({
-    queryKey: ["lyrics", trackId],
+    queryKey: ["lyrics", trackId, language ?? "any"],
     queryFn: async () => {
       if (!trackId) return null;
-      const { data, error } = await (supabase as any)
+      let q = (supabase as any)
         .from("music_lyrics")
         .select("*")
         .eq("track_id", trackId)
-        .eq("is_published", true)
+        .eq("is_published", true);
+      if (language) q = q.eq("language", language);
+      const { data, error } = await q
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
       if (error) throw error;
       if (!data) return null;
-      // Synthesize lrc_text for legacy consumers if absent.
       if (!data.lrc_text && Array.isArray(data.synced_lines)) {
         data.lrc_text = (data.synced_lines as SyncedLine[])
-          .map((l) => `[${formatTimeLrc(l.time ?? 0)}]${l.text}`)
+          .map((l: SyncedLine) => `[${formatTimeLrc(l.time ?? 0)}]${l.text}`)
           .join("\n");
       }
+      data.lyrics_text = data.plain_text;
       return data as Lyrics;
     },
     enabled: !!trackId,
@@ -53,7 +57,13 @@ export const useLyrics = useTrackLyrics;
 export function useLyricTranslations(_id?: string) {
   return useQuery({
     queryKey: ["lyric-translations", _id],
-    queryFn: async () => [] as Array<{ id: string; language: string; lrc_text: string }>,
+    queryFn: async () =>
+      [] as Array<{
+        id: string;
+        language: string;
+        lrc_text: string;
+        translated_synced_lines?: SyncedLine[];
+      }>,
     enabled: !!_id,
   });
 }
