@@ -10162,6 +10162,92 @@ export type Database = {
           },
         ]
       }
+      music_split_sheet_writers: {
+        Row: {
+          created_at: string
+          id: string
+          pro_affiliation: string | null
+          publishing_share_pct: number
+          role: string
+          sheet_id: string
+          signed_at: string | null
+          writer_email: string | null
+          writer_name: string
+          writer_user_id: string | null
+          writing_share_pct: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          pro_affiliation?: string | null
+          publishing_share_pct?: number
+          role?: string
+          sheet_id: string
+          signed_at?: string | null
+          writer_email?: string | null
+          writer_name: string
+          writer_user_id?: string | null
+          writing_share_pct?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          pro_affiliation?: string | null
+          publishing_share_pct?: number
+          role?: string
+          sheet_id?: string
+          signed_at?: string | null
+          writer_email?: string | null
+          writer_name?: string
+          writer_user_id?: string | null
+          writing_share_pct?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_split_sheet_writers_sheet_id_fkey"
+            columns: ["sheet_id"]
+            isOneToOne: false
+            referencedRelation: "music_split_sheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_split_sheets: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          notes: string | null
+          song_title: string
+          status: string
+          track_id: string | null
+          updated_at: string
+          work_title: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          notes?: string | null
+          song_title: string
+          status?: string
+          track_id?: string | null
+          updated_at?: string
+          work_title?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          notes?: string | null
+          song_title?: string
+          status?: string
+          track_id?: string | null
+          updated_at?: string
+          work_title?: string | null
+        }
+        Relationships: []
+      }
       music_stem_files: {
         Row: {
           created_at: string
