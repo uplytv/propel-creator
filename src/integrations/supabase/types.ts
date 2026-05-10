@@ -9980,6 +9980,95 @@ export type Database = {
         }
         Relationships: []
       }
+      music_ppv_shows: {
+        Row: {
+          artist_id: string
+          cover_url: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          duration_minutes: number
+          id: string
+          price_cents: number
+          scheduled_start: string
+          status: string
+          stream_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          cover_url?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          price_cents?: number
+          scheduled_start: string
+          status?: string
+          stream_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          cover_url?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          price_cents?: number
+          scheduled_start?: string
+          status?: string
+          stream_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      music_ppv_tickets: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          currency: string
+          fan_id: string
+          id: string
+          show_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          fan_id: string
+          id?: string
+          show_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          fan_id?: string
+          id?: string
+          show_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_ppv_tickets_show_id_fkey"
+            columns: ["show_id"]
+            isOneToOne: false
+            referencedRelation: "music_ppv_shows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_premiere_chat: {
         Row: {
           created_at: string
