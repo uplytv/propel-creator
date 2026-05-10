@@ -9,6 +9,7 @@ import {
 } from '../hooks/usePersonalizedMixes';
 import TrackCard from '../components/TrackCard';
 import DailyMixCard from '../components/DailyMixCard';
+import ChartsSection from '../components/ChartsSection';
 import GenreChip from '../components/GenreChip';
 import { GENRES } from '../lib/genres';
 
