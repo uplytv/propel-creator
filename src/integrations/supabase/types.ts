@@ -6861,6 +6861,139 @@ export type Database = {
         }
         Relationships: []
       }
+      music_concert_merch: {
+        Row: {
+          concert_id: string
+          created_at: string
+          currency: string
+          external_url: string | null
+          id: string
+          image_url: string | null
+          position: number
+          price_cents: number
+          title: string
+        }
+        Insert: {
+          concert_id: string
+          created_at?: string
+          currency?: string
+          external_url?: string | null
+          id?: string
+          image_url?: string | null
+          position?: number
+          price_cents?: number
+          title: string
+        }
+        Update: {
+          concert_id?: string
+          created_at?: string
+          currency?: string
+          external_url?: string | null
+          id?: string
+          image_url?: string | null
+          position?: number
+          price_cents?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_concert_merch_concert_id_fkey"
+            columns: ["concert_id"]
+            isOneToOne: false
+            referencedRelation: "music_concerts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_concert_tickets: {
+        Row: {
+          concert_id: string
+          created_at: string
+          currency: string
+          id: string
+          paid_cents: number
+          qr_token: string
+          user_id: string
+        }
+        Insert: {
+          concert_id: string
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_cents?: number
+          qr_token?: string
+          user_id: string
+        }
+        Update: {
+          concert_id?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_cents?: number
+          qr_token?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_concert_tickets_concert_id_fkey"
+            columns: ["concert_id"]
+            isOneToOne: false
+            referencedRelation: "music_concerts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_concerts: {
+        Row: {
+          artist_id: string
+          cover_url: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          ends_at: string | null
+          id: string
+          max_capacity: number | null
+          starts_at: string
+          status: string
+          stream_url: string | null
+          ticket_price_cents: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          cover_url?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          max_capacity?: number | null
+          starts_at: string
+          status?: string
+          stream_url?: string | null
+          ticket_price_cents?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          cover_url?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          max_capacity?: number | null
+          starts_at?: string
+          status?: string
+          stream_url?: string | null
+          ticket_price_cents?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_downloads: {
         Row: {
           downloaded_at: string
@@ -6923,6 +7056,50 @@ export type Database = {
           title?: string
         }
         Relationships: []
+      }
+      music_encore_bids: {
+        Row: {
+          bid_cents: number
+          concert_id: string
+          created_at: string
+          id: string
+          message: string | null
+          song_title: string
+          status: string
+          track_id: string | null
+          user_id: string
+        }
+        Insert: {
+          bid_cents?: number
+          concert_id: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          song_title: string
+          status?: string
+          track_id?: string | null
+          user_id: string
+        }
+        Update: {
+          bid_cents?: number
+          concert_id?: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          song_title?: string
+          status?: string
+          track_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_encore_bids_concert_id_fkey"
+            columns: ["concert_id"]
+            isOneToOne: false
+            referencedRelation: "music_concerts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       music_listening_parties: {
         Row: {
