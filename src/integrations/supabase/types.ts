@@ -8578,6 +8578,122 @@ export type Database = {
         }
         Relationships: []
       }
+      music_cover_request_songs: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          original_artist: string | null
+          request_id: string
+          song_title: string
+          suggested_by: string | null
+          updated_at: string
+          vote_count: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          original_artist?: string | null
+          request_id: string
+          song_title: string
+          suggested_by?: string | null
+          updated_at?: string
+          vote_count?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          original_artist?: string | null
+          request_id?: string
+          song_title?: string
+          suggested_by?: string | null
+          updated_at?: string
+          vote_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_cover_request_songs_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "music_cover_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_cover_request_votes: {
+        Row: {
+          created_at: string
+          fan_id: string
+          id: string
+          request_id: string
+          song_id: string
+        }
+        Insert: {
+          created_at?: string
+          fan_id: string
+          id?: string
+          request_id: string
+          song_id: string
+        }
+        Update: {
+          created_at?: string
+          fan_id?: string
+          id?: string
+          request_id?: string
+          song_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_cover_request_votes_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "music_cover_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "music_cover_request_votes_song_id_fkey"
+            columns: ["song_id"]
+            isOneToOne: false
+            referencedRelation: "music_cover_request_songs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_cover_requests: {
+        Row: {
+          artist_id: string
+          created_at: string
+          description: string | null
+          id: string
+          request_count: number
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          request_count?: number
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          request_count?: number
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       music_cover_submission_likes: {
         Row: {
           created_at: string
