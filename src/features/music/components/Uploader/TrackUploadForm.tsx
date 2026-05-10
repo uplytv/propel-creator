@@ -22,7 +22,8 @@ export default function TrackUploadForm({
   const [explicit, setExplicit] = useState(false);
   const [cover, setCover] = useState<File | null>(null);
   const [audio, setAudio] = useState<File | null>(null);
-  const { upload, uploading, progress, error } = useUploadTrack();
+  const { upload, retry, cancel, uploading, progress, error, errorPhase, stage, canRetry } =
+    useUploadTrack();
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -47,8 +48,15 @@ export default function TrackUploadForm({
     if (trackId) {
       toast.success("Processing… we'll email you when it's live");
       navigate('/music/library');
-    } else {
-      toast.error(error || 'Upload failed');
+    }
+    // On failure, the inline error UI in MuxAudioUploader handles retry.
+  }
+
+  async function handleRetry() {
+    const trackId = await retry();
+    if (trackId) {
+      toast.success("Processing… we'll email you when it's live");
+      navigate('/music/library');
     }
   }
 
@@ -105,7 +113,12 @@ export default function TrackUploadForm({
       <MuxAudioUploader
         onPick={setAudio}
         fileName={audio?.name}
-        progress={uploading ? progress : undefined}
+        progress={progress}
+        stage={stage}
+        error={error}
+        errorPhase={errorPhase}
+        onRetry={canRetry ? handleRetry : undefined}
+        onCancel={uploading ? cancel : undefined}
       />
 
       {onAriaPrompt && (
