@@ -7420,6 +7420,124 @@ export type Database = {
         }
         Relationships: []
       }
+      music_longform: {
+        Row: {
+          artist_id: string
+          audio_url: string
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          duration_seconds: number
+          episode_number: number | null
+          id: string
+          is_published: boolean
+          kind: string
+          play_count: number
+          published_at: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_id: string
+          audio_url: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number
+          episode_number?: number | null
+          id?: string
+          is_published?: boolean
+          kind?: string
+          play_count?: number
+          published_at?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_id?: string
+          audio_url?: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number
+          episode_number?: number | null
+          id?: string
+          is_published?: boolean
+          kind?: string
+          play_count?: number
+          published_at?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      music_longform_chapters: {
+        Row: {
+          artwork_url: string | null
+          created_at: string
+          episode_id: string
+          id: string
+          start_seconds: number
+          title: string
+        }
+        Insert: {
+          artwork_url?: string | null
+          created_at?: string
+          episode_id: string
+          id?: string
+          start_seconds: number
+          title: string
+        }
+        Update: {
+          artwork_url?: string | null
+          created_at?: string
+          episode_id?: string
+          id?: string
+          start_seconds?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_longform_chapters_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "music_longform"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_longform_progress: {
+        Row: {
+          completed: boolean
+          episode_id: string
+          position_seconds: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          episode_id: string
+          position_seconds?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          episode_id?: string
+          position_seconds?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_longform_progress_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "music_longform"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_notification_prefs: {
         Row: {
           artist_messages: boolean
