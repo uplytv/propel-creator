@@ -79,6 +79,7 @@ export default function TrackPage() {
             <LikeButton trackId={track.id} />
             <RepostButton trackId={track.id} />
             <AddToPlaylistMenu trackId={track.id} />
+            {ready && <DownloadButton trackId={track.id} />}
             {!ready && <PresaveButton trackId={track.id} />}
             <button
               onClick={() => setShareOpen(true)}
