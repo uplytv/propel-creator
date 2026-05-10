@@ -11252,6 +11252,92 @@ export type Database = {
         }
         Relationships: []
       }
+      music_show_guest_lists: {
+        Row: {
+          artist_id: string
+          capacity: number
+          created_at: string
+          id: string
+          notes: string | null
+          show_date: string
+          show_title: string
+          spots_used: number
+          status: string
+          updated_at: string
+          venue: string | null
+        }
+        Insert: {
+          artist_id: string
+          capacity?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          show_date: string
+          show_title: string
+          spots_used?: number
+          status?: string
+          updated_at?: string
+          venue?: string | null
+        }
+        Update: {
+          artist_id?: string
+          capacity?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          show_date?: string
+          show_title?: string
+          spots_used?: number
+          status?: string
+          updated_at?: string
+          venue?: string | null
+        }
+        Relationships: []
+      }
+      music_show_guest_requests: {
+        Row: {
+          created_at: string
+          fan_id: string
+          full_name: string
+          guest_list_id: string
+          id: string
+          note: string | null
+          plus_one_name: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          fan_id: string
+          full_name: string
+          guest_list_id: string
+          id?: string
+          note?: string | null
+          plus_one_name?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          fan_id?: string
+          full_name?: string
+          guest_list_id?: string
+          id?: string
+          note?: string | null
+          plus_one_name?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_show_guest_requests_guest_list_id_fkey"
+            columns: ["guest_list_id"]
+            isOneToOne: false
+            referencedRelation: "music_show_guest_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_show_tips: {
         Row: {
           amount_cents: number
