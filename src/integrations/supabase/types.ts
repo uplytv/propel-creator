@@ -1251,6 +1251,65 @@ export type Database = {
         }
         Relationships: []
       }
+      artist_message_reads: {
+        Row: {
+          message_id: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          message_id: string
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          message_id?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artist_message_reads_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "artist_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      artist_messages: {
+        Row: {
+          artist_id: string
+          body: string
+          created_at: string
+          id: string
+          link_url: string | null
+          sent_at: string
+          target: string
+          title: string
+        }
+        Insert: {
+          artist_id: string
+          body: string
+          created_at?: string
+          id?: string
+          link_url?: string | null
+          sent_at?: string
+          target?: string
+          title: string
+        }
+        Update: {
+          artist_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          link_url?: string | null
+          sent_at?: string
+          target?: string
+          title?: string
+        }
+        Relationships: []
+      }
       artist_profiles: {
         Row: {
           artist_bio: string | null
@@ -7233,6 +7292,36 @@ export type Database = {
           position_seconds?: number
           share_code?: string
           title?: string | null
+        }
+        Relationships: []
+      }
+      music_notification_prefs: {
+        Row: {
+          artist_messages: boolean
+          concert_reminders: boolean
+          drop_reminders: boolean
+          new_release: boolean
+          updated_at: string
+          user_id: string
+          weekly_digest: boolean
+        }
+        Insert: {
+          artist_messages?: boolean
+          concert_reminders?: boolean
+          drop_reminders?: boolean
+          new_release?: boolean
+          updated_at?: string
+          user_id: string
+          weekly_digest?: boolean
+        }
+        Update: {
+          artist_messages?: boolean
+          concert_reminders?: boolean
+          drop_reminders?: boolean
+          new_release?: boolean
+          updated_at?: string
+          user_id?: string
+          weekly_digest?: boolean
         }
         Relationships: []
       }
