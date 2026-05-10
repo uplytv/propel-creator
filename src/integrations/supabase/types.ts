@@ -7208,6 +7208,36 @@ export type Database = {
         }
         Relationships: []
       }
+      music_artist_alerts: {
+        Row: {
+          artist_id: string
+          city: string | null
+          country: string | null
+          created_at: string
+          id: string
+          radius_km: number
+          user_id: string
+        }
+        Insert: {
+          artist_id: string
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          radius_km?: number
+          user_id: string
+        }
+        Update: {
+          artist_id?: string
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          radius_km?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       music_audio_preferences: {
         Row: {
           lossless_enabled: boolean
@@ -8880,6 +8910,104 @@ export type Database = {
           track_id?: string | null
         }
         Relationships: []
+      }
+      music_tour_dates: {
+        Row: {
+          artist_id: string
+          city: string
+          country: string
+          cover_url: string | null
+          created_at: string
+          doors_at: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          notes: string | null
+          on_sale_at: string | null
+          region: string | null
+          starts_at: string
+          status: string
+          ticket_url: string | null
+          tour_name: string | null
+          updated_at: string
+          venue_name: string
+        }
+        Insert: {
+          artist_id: string
+          city: string
+          country: string
+          cover_url?: string | null
+          created_at?: string
+          doors_at?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          notes?: string | null
+          on_sale_at?: string | null
+          region?: string | null
+          starts_at: string
+          status?: string
+          ticket_url?: string | null
+          tour_name?: string | null
+          updated_at?: string
+          venue_name: string
+        }
+        Update: {
+          artist_id?: string
+          city?: string
+          country?: string
+          cover_url?: string | null
+          created_at?: string
+          doors_at?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          notes?: string | null
+          on_sale_at?: string | null
+          region?: string | null
+          starts_at?: string
+          status?: string
+          ticket_url?: string | null
+          tour_name?: string | null
+          updated_at?: string
+          venue_name?: string
+        }
+        Relationships: []
+      }
+      music_tour_rsvps: {
+        Row: {
+          created_at: string
+          id: string
+          reminder_enabled: boolean
+          status: string
+          tour_date_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reminder_enabled?: boolean
+          status?: string
+          tour_date_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reminder_enabled?: boolean
+          status?: string
+          tour_date_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_tour_rsvps_tour_date_id_fkey"
+            columns: ["tour_date_id"]
+            isOneToOne: false
+            referencedRelation: "music_tour_dates"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       music_trending_searches: {
         Row: {
@@ -14049,6 +14177,26 @@ export type Database = {
           title: string
           track_id: string
           unique_listeners: number
+        }[]
+      }
+      nearby_tour_dates: {
+        Args: {
+          _lat: number
+          _limit?: number
+          _lng: number
+          _radius_km?: number
+        }
+        Returns: {
+          artist_id: string
+          city: string
+          country: string
+          cover_url: string
+          distance_km: number
+          id: string
+          starts_at: string
+          ticket_url: string
+          tour_name: string
+          venue_name: string
         }[]
       }
       notify_admin: {
