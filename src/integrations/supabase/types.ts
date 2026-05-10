@@ -6758,6 +6758,109 @@ export type Database = {
         }
         Relationships: []
       }
+      music_listening_parties: {
+        Row: {
+          created_at: string
+          current_track_id: string | null
+          host_id: string
+          id: string
+          is_active: boolean
+          is_playing: boolean
+          last_sync_at: string
+          position_seconds: number
+          share_code: string
+          title: string | null
+        }
+        Insert: {
+          created_at?: string
+          current_track_id?: string | null
+          host_id: string
+          id?: string
+          is_active?: boolean
+          is_playing?: boolean
+          last_sync_at?: string
+          position_seconds?: number
+          share_code: string
+          title?: string | null
+        }
+        Update: {
+          created_at?: string
+          current_track_id?: string | null
+          host_id?: string
+          id?: string
+          is_active?: boolean
+          is_playing?: boolean
+          last_sync_at?: string
+          position_seconds?: number
+          share_code?: string
+          title?: string | null
+        }
+        Relationships: []
+      }
+      music_party_members: {
+        Row: {
+          id: string
+          joined_at: string
+          party_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          party_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          party_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_party_members_party_id_fkey"
+            columns: ["party_id"]
+            isOneToOne: false
+            referencedRelation: "music_listening_parties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_party_queue: {
+        Row: {
+          added_by: string
+          created_at: string
+          id: string
+          party_id: string
+          position: number
+          track_id: string
+        }
+        Insert: {
+          added_by: string
+          created_at?: string
+          id?: string
+          party_id: string
+          position?: number
+          track_id: string
+        }
+        Update: {
+          added_by?: string
+          created_at?: string
+          id?: string
+          party_id?: string
+          position?: number
+          track_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_party_queue_party_id_fkey"
+            columns: ["party_id"]
+            isOneToOne: false
+            referencedRelation: "music_listening_parties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_playlist_collaborators: {
         Row: {
           added_at: string
