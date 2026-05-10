@@ -11369,6 +11369,25 @@ export type Database = {
         Returns: number
       }
       generate_slug: { Args: { input_text: string }; Returns: string }
+      get_friend_music_activity: {
+        Args: { _limit?: number; _viewer: string }
+        Returns: {
+          activity_type: string
+          actor_avatar_url: string
+          actor_display_name: string
+          actor_id: string
+          actor_username: string
+          occurred_at: string
+          track_audio_status: string
+          track_cover_art_url: string
+          track_creator_id: string
+          track_duration_seconds: number
+          track_genre: string
+          track_id: string
+          track_mux_playback_id: string
+          track_title: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

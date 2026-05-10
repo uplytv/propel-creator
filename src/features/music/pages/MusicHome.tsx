@@ -10,6 +10,7 @@ import {
 import TrackCard from '../components/TrackCard';
 import DailyMixCard from '../components/DailyMixCard';
 import ChartsSection from '../components/ChartsSection';
+import FriendActivityRail from '../components/FriendActivityRail';
 import GenreChip from '../components/GenreChip';
 import { GENRES } from '../lib/genres';
 
@@ -80,6 +81,8 @@ export default function MusicHome() {
             ))}
           </Row>
         )}
+
+        {user && <FriendActivityRail />}
 
         {user && (dailyMixes?.length ?? 0) > 0 && (
           <Row title="Made For You">
