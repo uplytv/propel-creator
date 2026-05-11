@@ -160,15 +160,18 @@ export async function searchMusicAdvanced(
   q: string,
   filters: SearchFilters = {},
 ): Promise<{ tracks: Track[]; albums: Album[] }> {
-  const term = q.trim().length ? `%${q.trim()}%` : null;
+  const term = q.trim();
   const allowedGenres = [
     ...(filters.genres ?? []),
     ...(filters.moodGenres ?? []),
   ];
   const uniqueGenres = Array.from(new Set(allowedGenres));
 
-  let tq = sb.from('tracks').select('*').eq('is_published', true);
-  if (term) tq = tq.or(`title.ilike.${term},description.ilike.${term}`);
+  let tq = sb.from('tracks').select('*').eq('is_published', true).eq('audio_status', 'ready');
+  if (term) {
+    // Postgres full-text search via the maintained `search_vector` column.
+    tq = tq.textSearch('search_vector', term, { type: 'websearch', config: 'simple' });
+  }
   if (uniqueGenres.length) tq = tq.in('genre', uniqueGenres);
   if (filters.hideExplicit) tq = tq.eq('is_explicit', false);
   if (filters.monetization && filters.monetization !== 'any') {
@@ -189,11 +192,42 @@ export async function searchMusicAdvanced(
       .order('like_count', { ascending: false });
 
   let aq = sb.from('albums').select('*').eq('is_published', true);
-  if (term) aq = aq.ilike('title', term);
+  if (term) {
+    aq = aq.textSearch('search_vector', term, { type: 'websearch', config: 'simple' });
+  }
   aq = aq.order('release_date', { ascending: false, nullsFirst: false }).limit(20);
 
   const [{ data: t }, { data: a }] = await Promise.all([tq.limit(60), aq]);
   return { tracks: (t as Track[]) ?? [], albums: (a as Album[]) ?? [] };
+}
+
+/**
+ * Lightweight typeahead — uses the `search_music` SECURITY DEFINER RPC which
+ * returns ranked tracks and albums with creator subtitle. Used for instant
+ * suggestions while the user is typing.
+ */
+export interface SearchSuggestion {
+  kind: 'track' | 'album';
+  id: string;
+  title: string;
+  subtitle: string;
+  image_url: string | null;
+  rank: number;
+}
+
+export async function searchMusicTypeahead(
+  q: string,
+  limit = 12,
+): Promise<SearchSuggestion[]> {
+  const term = q.trim();
+  if (term.length < 2) return [];
+  try {
+    const { data, error } = await sb.rpc('search_music', { p_query: term, p_limit: limit });
+    if (error) return [];
+    return (data ?? []) as SearchSuggestion[];
+  } catch {
+    return [];
+  }
 }
 
 export interface ChartFilters {
