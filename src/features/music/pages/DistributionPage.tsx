@@ -1,45 +1,167 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import {
   SUPPORTED_DSPS,
   useCreateRelease,
   useMyReleases,
   useReleaseTargets,
-  useSubmitToDSPs,
+  useMarkAllSubmitted,
 } from "@/features/music/hooks/useDistribution";
-import { DSPStatusBadge } from "@/features/music/components/DSPStatusBadge";
-import { Loader2, Disc3 } from "lucide-react";
+import ReleaseStatusRow from "@/features/music/components/ReleaseStatusRow";
+import { Loader2, Radio, X } from "lucide-react";
+
+const EXPLAINER_KEY = "release_tracker_explainer_dismissed_v1";
+
+function StatusBadge({ status }: { status: string }) {
+  if (status === "not_submitted") return null;
+  const map: Record<string, string> = {
+    live: "bg-[#00FF85]/20 text-[#00FF85] border-[#00FF85]/30",
+    submitted: "bg-white/10 text-white/70 border-white/10",
+    pending_review: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
+    rejected: "bg-red-500/20 text-red-300 border-red-500/30",
+    removed: "bg-white/5 text-white/40 border-white/10 line-through",
+  };
+  const labels: Record<string, string> = {
+    live: "Live",
+    submitted: "Submitted",
+    pending_review: "Pending",
+    rejected: "Rejected",
+    removed: "Removed",
+  };
+  return (
+    <span className={`text-[10px] px-2 py-0.5 rounded-full border ${map[status] ?? "bg-white/10"}`}>
+      {labels[status] ?? status}
+    </span>
+  );
+}
+
+function ReleaseManager({ releaseId }: { releaseId: string }) {
+  const { data: targets } = useReleaseTargets(releaseId);
+  const markAll = useMarkAllSubmitted();
+  const { toast } = useToast();
+
+  const targetByPlatform = new Map((targets ?? []).map((t) => [t.platform, t]));
+
+  return (
+    <div className="space-y-3 pt-2 border-t border-white/10">
+      <div className="flex items-center justify-between">
+        <h3 className="text-white font-bold text-sm">Where it's live</h3>
+        <button
+          onClick={async () => {
+            try {
+              await markAll.mutateAsync({ releaseId, platforms: SUPPORTED_DSPS });
+              toast({ title: "Marked all as submitted" });
+            } catch (e: any) {
+              toast({ title: "Failed", description: e.message, variant: "destructive" });
+            }
+          }}
+          className="text-xs text-[#00FF85] underline disabled:opacity-50"
+          disabled={markAll.isPending}
+        >
+          Mark all as submitted
+        </button>
+      </div>
+
+      <div className="space-y-2">
+        {SUPPORTED_DSPS.map((p) => (
+          <ReleaseStatusRow
+            key={p}
+            releaseId={releaseId}
+            platform={p}
+            target={targetByPlatform.get(p)}
+          />
+        ))}
+      </div>
+
+      {targets && targets.some((t) => t.status !== "not_submitted") && (
+        <div className="flex flex-wrap gap-2 pt-1">
+          {targets
+            .filter((t) => t.status !== "not_submitted")
+            .map((t) => (
+              <span key={t.id} className="flex items-center gap-1.5 text-xs text-white/70">
+                {t.platform.replace("_", " ")} <StatusBadge status={t.status} />
+              </span>
+            ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function DistributionPage() {
   const { toast } = useToast();
   const { data: releases, isLoading } = useMyReleases();
   const createRelease = useCreateRelease();
-  const submit = useSubmitToDSPs();
 
   const [title, setTitle] = useState("");
   const [artist, setArtist] = useState("");
   const [selectedRelease, setSelectedRelease] = useState<string | null>(null);
-  const [chosen, setChosen] = useState<string[]>(SUPPORTED_DSPS);
+  const [explainerDismissed, setExplainerDismissed] = useState(true);
 
-  const { data: targets } = useReleaseTargets(selectedRelease ?? undefined);
+  useEffect(() => {
+    setExplainerDismissed(localStorage.getItem(EXPLAINER_KEY) === "1");
+  }, []);
 
-  const toggle = (p: string) =>
-    setChosen((c) => (c.includes(p) ? c.filter((x) => x !== p) : [...c, p]));
+  const dismissExplainer = () => {
+    localStorage.setItem(EXPLAINER_KEY, "1");
+    setExplainerDismissed(true);
+  };
 
   return (
     <div className="mobile-safe-content max-w-3xl mx-auto p-4 space-y-6">
-      <header className="flex items-center gap-3">
-        <Disc3 className="h-6 w-6 text-primary" />
-        <h1 className="text-2xl font-bold">Music Distribution</h1>
+      <Helmet>
+        <title>Release Tracker — UPLY</title>
+        <meta
+          name="description"
+          content="Track where your music is live across DSPs. UPLY does not distribute on your behalf."
+        />
+      </Helmet>
+
+      <header className="space-y-2">
+        <div className="flex items-center gap-3">
+          <Radio className="h-6 w-6 text-primary" />
+          <h1 className="text-2xl font-bold">Release Tracker</h1>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Track where your music is live across DSPs. UPLY does not distribute on your behalf — submit
+          through your distributor of choice, then log status here.
+        </p>
       </header>
 
+      {!explainerDismissed && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="p-4 flex items-start gap-3">
+            <div className="text-2xl leading-none">📡</div>
+            <div className="flex-1 text-sm text-white/80 space-y-1">
+              <p className="font-semibold text-white">How this works</p>
+              <p>
+                UPLY isn't a distributor. To get your music on Spotify, Apple Music, and other DSPs
+                you'll need a service like DistroKid, TuneCore, CD Baby, or Ditto. Once submitted,
+                mark each platform's status here to keep everything organized — and to power your
+                "Listen anywhere" universal links automatically.
+              </p>
+            </div>
+            <button
+              onClick={dismissExplainer}
+              aria-label="Dismiss"
+              className="p-1.5 rounded-md hover:bg-white/10"
+              style={{ minWidth: 36, minHeight: 36 }}
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
-        <CardHeader><CardTitle className="text-base">New release</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-base">Track a new release</CardTitle>
+        </CardHeader>
         <CardContent className="space-y-3">
           <div className="space-y-1.5">
             <Label htmlFor="title">Title</Label>
@@ -54,15 +176,16 @@ export default function DistributionPage() {
             onClick={async () => {
               try {
                 await createRelease.mutateAsync({ title, artist_name: artist });
-                setTitle(""); setArtist("");
-                toast({ title: "Release created" });
+                setTitle("");
+                setArtist("");
+                toast({ title: "Release added" });
               } catch (e: any) {
                 toast({ title: "Failed", description: e.message, variant: "destructive" });
               }
             }}
           >
             {createRelease.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-            Create release
+            Add release
           </Button>
         </CardContent>
       </Card>
@@ -90,44 +213,7 @@ export default function DistributionPage() {
                 </Button>
               </div>
 
-              {selectedRelease === r.id && (
-                <div className="space-y-3 pt-2 border-t">
-                  <div className="grid grid-cols-2 gap-2">
-                    {SUPPORTED_DSPS.map((p) => (
-                      <label key={p} className="flex items-center gap-2 text-sm">
-                        <Checkbox
-                          checked={chosen.includes(p)}
-                          onCheckedChange={() => toggle(p)}
-                        />
-                        {p.replace("_", " ")}
-                      </label>
-                    ))}
-                  </div>
-                  <Button
-                    size="sm"
-                    disabled={chosen.length === 0 || submit.isPending}
-                    onClick={async () => {
-                      try {
-                        await submit.mutateAsync({ releaseId: r.id, platforms: chosen });
-                        toast({ title: "Submitted to DSPs" });
-                      } catch (e: any) {
-                        toast({ title: "Failed", description: e.message, variant: "destructive" });
-                      }
-                    }}
-                  >
-                    {submit.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                    Submit / Update delivery
-                  </Button>
-
-                  {targets && targets.length > 0 && (
-                    <div className="flex flex-wrap gap-2 pt-1">
-                      {targets.map((t) => (
-                        <DSPStatusBadge key={t.id} platform={t.platform} status={t.status} />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+              {selectedRelease === r.id && <ReleaseManager releaseId={r.id} />}
             </CardContent>
           </Card>
         ))}
