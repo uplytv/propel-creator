@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
-  Video, Music, Disc3, MessageSquare, Radio, Mic,
-  Calendar, Ticket, ListMusic, ShoppingBag, Briefcase
+  Video, Music, Disc3, MessageSquare, Radio,
+  Calendar, ListMusic, ShoppingBag, Briefcase
 } from "lucide-react";
 
 type Tile = { icon: React.ElementType; title: string; desc: string; to: string };
