@@ -26,12 +26,16 @@ export function useSearch() {
     setLoading(true);
     const term = `%${q.trim()}%`;
 
-    const [profiles, products, streams, recordings, jobs] = await Promise.all([
+    const sb = supabase as any;
+    const [profiles, products, streams, recordings, jobs, tracks, albums, artists] = await Promise.all([
       supabase.from("profiles_public").select("user_id, display_name, username, avatar_url").or(`display_name.ilike.${term},username.ilike.${term}`).limit(5),
       supabase.from("products").select("id, name, image_url, type, price").ilike("name", term).eq("status", "active").limit(5),
       supabase.from("mux_live_streams_public").select("id, title, user_id, status, mux_playback_id").ilike("title", term).limit(5),
       supabase.from("stream_recordings").select("id, title, creator_id, playback_id").ilike("title", term).eq("is_published", true).limit(5),
       supabase.from("jobs").select("id, title, status, skill_category").ilike("title", term).eq("status", "open").limit(5),
+      sb.from("tracks").select("id, title, cover_art_url, creator_id").ilike("title", term).eq("is_published", true).limit(5),
+      sb.from("albums").select("id, title, cover_art_url, creator_id").ilike("title", term).eq("is_published", true).limit(3),
+      sb.from("artist_profiles").select("user_id, monthly_listeners_cache, profiles:profiles_public!inner(display_name, username, avatar_url)").or(`display_name.ilike.${term},username.ilike.${term}`, { foreignTable: "profiles" }).limit(3),
     ]);
 
     const mapped: SearchResult[] = [
