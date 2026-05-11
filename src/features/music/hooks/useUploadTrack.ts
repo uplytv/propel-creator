@@ -121,6 +121,24 @@ export function useUploadTrack() {
       activeUploadRef.current = null;
       setStage('success');
       setUploading(false);
+
+      // Fan-out activity feed event so followers see the new upload.
+      // Mux processing may still be 'pending' here — that's fine; the feed
+      // card resolves the latest track row at render time.
+      try {
+        const sb = supabase as unknown as any;
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await sb.from('activity_feed_events').insert({
+            actor_id: user.id,
+            event_type: 'track_uploaded',
+            target_track_id: init.trackId,
+          });
+        }
+      } catch {
+        /* ignore — feed event is non-essential */
+      }
+
       return init.trackId;
     } catch (e: any) {
       activeUploadRef.current = null;
