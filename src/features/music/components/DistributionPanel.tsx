@@ -28,7 +28,49 @@ export default function DistributionPanel({ trackId, isOwner }: Props) {
   });
 
   const { data: splits = [], addSplit, removeSplit, totalPercent } = useRoyaltySplits(trackId);
-  const { data: exports = [], requestExport } = useDistributionExports(trackId);
+  useDistributionExports(trackId);
+
+  // Find or allow creating a release row for this track (Release Tracker)
+  const { data: release } = useQuery({
+    queryKey: ["distribution-release-by-track", trackId],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("music_distribution_releases")
+        .select("id, title, artist_name")
+        .eq("track_id", trackId)
+        .maybeSingle();
+      return data as { id: string; title: string; artist_name: string } | null;
+    },
+  });
+
+  const createReleaseForTrack = useMutation({
+    mutationFn: async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) throw new Error("Not signed in");
+      const { data: t } = await (supabase as any)
+        .from("tracks")
+        .select("title, creator_id, profiles:creator_id(display_name, username)")
+        .eq("id", trackId)
+        .maybeSingle();
+      const artistName =
+        t?.profiles?.display_name || t?.profiles?.username || "Unknown artist";
+      const { error } = await (supabase as any)
+        .from("music_distribution_releases")
+        .insert({
+          owner_id: u.user.id,
+          track_id: trackId,
+          title: t?.title ?? "Untitled",
+          artist_name: artistName,
+        });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["distribution-release-by-track", trackId] });
+    },
+  });
+
+  const { data: targets } = useReleaseTargets(release?.id);
+  const targetByPlatform = new Map((targets ?? []).map((t) => [t.platform, t]));
 
   const updateMeta = useMutation({
     mutationFn: async (patch: any) => {
