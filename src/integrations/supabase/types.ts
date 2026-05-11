@@ -433,6 +433,7 @@ export type Database = {
           id: string
           is_published: boolean
           release_date: string | null
+          search_vector: unknown
           title: string
         }
         Insert: {
@@ -444,6 +445,7 @@ export type Database = {
           id?: string
           is_published?: boolean
           release_date?: string | null
+          search_vector?: unknown
           title: string
         }
         Update: {
@@ -455,6 +457,7 @@ export type Database = {
           id?: string
           is_published?: boolean
           release_date?: string | null
+          search_vector?: unknown
           title?: string
         }
         Relationships: []
@@ -3741,6 +3744,39 @@ export type Database = {
           label?: string
           price_usd?: number
           stripe_price_id?: string | null
+        }
+        Relationships: []
+      }
+      daily_mixes: {
+        Row: {
+          description: string | null
+          id: string
+          refreshed_at: string
+          seed_genres: string[]
+          slot: number
+          title: string
+          track_ids: string[]
+          user_id: string
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          refreshed_at?: string
+          seed_genres?: string[]
+          slot: number
+          title: string
+          track_ids?: string[]
+          user_id: string
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          refreshed_at?: string
+          seed_genres?: string[]
+          slot?: number
+          title?: string
+          track_ids?: string[]
+          user_id?: string
         }
         Relationships: []
       }
@@ -16526,6 +16562,27 @@ export type Database = {
         }
         Relationships: []
       }
+      recent_searches: {
+        Row: {
+          id: string
+          query: string
+          searched_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          query: string
+          searched_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          query?: string
+          searched_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       recording_likes: {
         Row: {
           created_at: string
@@ -18500,6 +18557,42 @@ export type Database = {
           },
         ]
       }
+      track_co_plays: {
+        Row: {
+          co_play_count: number
+          track_a: string
+          track_b: string
+          updated_at: string
+        }
+        Insert: {
+          co_play_count?: number
+          track_a: string
+          track_b: string
+          updated_at?: string
+        }
+        Update: {
+          co_play_count?: number
+          track_a?: string
+          track_b?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "track_co_plays_track_a_fkey"
+            columns: ["track_a"]
+            isOneToOne: false
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "track_co_plays_track_b_fkey"
+            columns: ["track_b"]
+            isOneToOne: false
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       track_comment_likes: {
         Row: {
           comment_id: string
@@ -18675,6 +18768,35 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "track_drops_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: true
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      track_embeddings: {
+        Row: {
+          embedding: string | null
+          generated_at: string
+          model: string
+          track_id: string
+        }
+        Insert: {
+          embedding?: string | null
+          generated_at?: string
+          model?: string
+          track_id: string
+        }
+        Update: {
+          embedding?: string | null
+          generated_at?: string
+          model?: string
+          track_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "track_embeddings_track_id_fkey"
             columns: ["track_id"]
             isOneToOne: true
             referencedRelation: "tracks"
@@ -19006,6 +19128,7 @@ export type Database = {
           price_cents: number
           release_date: string | null
           repost_count: number
+          search_vector: unknown
           spatial_url: string | null
           tags: string[]
           title: string
@@ -19047,6 +19170,7 @@ export type Database = {
           price_cents?: number
           release_date?: string | null
           repost_count?: number
+          search_vector?: unknown
           spatial_url?: string | null
           tags?: string[]
           title: string
@@ -19088,6 +19212,7 @@ export type Database = {
           price_cents?: number
           release_date?: string | null
           repost_count?: number
+          search_vector?: unknown
           spatial_url?: string | null
           tags?: string[]
           title?: string
@@ -19398,6 +19523,36 @@ export type Database = {
         Update: {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_taste_profiles: {
+        Row: {
+          avg_bpm: number | null
+          bpm_max: number | null
+          bpm_min: number | null
+          refreshed_at: string
+          top_artist_ids: string[]
+          top_genres: string[]
+          user_id: string
+        }
+        Insert: {
+          avg_bpm?: number | null
+          bpm_max?: number | null
+          bpm_min?: number | null
+          refreshed_at?: string
+          top_artist_ids?: string[]
+          top_genres?: string[]
+          user_id: string
+        }
+        Update: {
+          avg_bpm?: number | null
+          bpm_max?: number | null
+          bpm_min?: number | null
+          refreshed_at?: string
+          top_artist_ids?: string[]
+          top_genres?: string[]
           user_id?: string
         }
         Relationships: []
@@ -20779,6 +20934,261 @@ export type Database = {
         }
       }
       record_music_search: { Args: { _query: string }; Returns: undefined }
+      recs_because_you_listened: {
+        Args: { p_limit?: number; p_seed: string }
+        Returns: {
+          allow_download: boolean
+          audio_mux_asset_id: string | null
+          audio_mux_playback_id: string | null
+          audio_status: string
+          audio_upload_id: string | null
+          bpm: number | null
+          buy_url: string | null
+          comment_count: number
+          copyright_notice: string | null
+          cover_art_url: string | null
+          created_at: string
+          creator_id: string
+          description: string | null
+          download_count: number
+          duration_seconds: number | null
+          embed_enabled: boolean
+          genre: string | null
+          has_lossless: boolean
+          has_spatial: boolean
+          hires_url: string | null
+          id: string
+          is_explicit: boolean
+          is_paid: boolean
+          is_published: boolean
+          isrc: string | null
+          iswc: string | null
+          key_signature: string | null
+          label: string | null
+          like_count: number
+          monetization_type: string
+          play_count: number
+          price_cents: number
+          release_date: string | null
+          repost_count: number
+          search_vector: unknown
+          spatial_url: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+          waveform_peaks: Json | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "tracks"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      recs_for_you: {
+        Args: { p_limit?: number; p_user: string }
+        Returns: {
+          allow_download: boolean
+          audio_mux_asset_id: string | null
+          audio_mux_playback_id: string | null
+          audio_status: string
+          audio_upload_id: string | null
+          bpm: number | null
+          buy_url: string | null
+          comment_count: number
+          copyright_notice: string | null
+          cover_art_url: string | null
+          created_at: string
+          creator_id: string
+          description: string | null
+          download_count: number
+          duration_seconds: number | null
+          embed_enabled: boolean
+          genre: string | null
+          has_lossless: boolean
+          has_spatial: boolean
+          hires_url: string | null
+          id: string
+          is_explicit: boolean
+          is_paid: boolean
+          is_published: boolean
+          isrc: string | null
+          iswc: string | null
+          key_signature: string | null
+          label: string | null
+          like_count: number
+          monetization_type: string
+          play_count: number
+          price_cents: number
+          release_date: string | null
+          repost_count: number
+          search_vector: unknown
+          spatial_url: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+          waveform_peaks: Json | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "tracks"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      recs_new_releases: {
+        Args: { p_limit?: number }
+        Returns: {
+          allow_download: boolean
+          audio_mux_asset_id: string | null
+          audio_mux_playback_id: string | null
+          audio_status: string
+          audio_upload_id: string | null
+          bpm: number | null
+          buy_url: string | null
+          comment_count: number
+          copyright_notice: string | null
+          cover_art_url: string | null
+          created_at: string
+          creator_id: string
+          description: string | null
+          download_count: number
+          duration_seconds: number | null
+          embed_enabled: boolean
+          genre: string | null
+          has_lossless: boolean
+          has_spatial: boolean
+          hires_url: string | null
+          id: string
+          is_explicit: boolean
+          is_paid: boolean
+          is_published: boolean
+          isrc: string | null
+          iswc: string | null
+          key_signature: string | null
+          label: string | null
+          like_count: number
+          monetization_type: string
+          play_count: number
+          price_cents: number
+          release_date: string | null
+          repost_count: number
+          search_vector: unknown
+          spatial_url: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+          waveform_peaks: Json | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "tracks"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      recs_similar_by_embedding: {
+        Args: { p_limit?: number; p_track: string }
+        Returns: {
+          allow_download: boolean
+          audio_mux_asset_id: string | null
+          audio_mux_playback_id: string | null
+          audio_status: string
+          audio_upload_id: string | null
+          bpm: number | null
+          buy_url: string | null
+          comment_count: number
+          copyright_notice: string | null
+          cover_art_url: string | null
+          created_at: string
+          creator_id: string
+          description: string | null
+          download_count: number
+          duration_seconds: number | null
+          embed_enabled: boolean
+          genre: string | null
+          has_lossless: boolean
+          has_spatial: boolean
+          hires_url: string | null
+          id: string
+          is_explicit: boolean
+          is_paid: boolean
+          is_published: boolean
+          isrc: string | null
+          iswc: string | null
+          key_signature: string | null
+          label: string | null
+          like_count: number
+          monetization_type: string
+          play_count: number
+          price_cents: number
+          release_date: string | null
+          repost_count: number
+          search_vector: unknown
+          spatial_url: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+          waveform_peaks: Json | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "tracks"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      recs_trending: {
+        Args: { p_limit?: number }
+        Returns: {
+          allow_download: boolean
+          audio_mux_asset_id: string | null
+          audio_mux_playback_id: string | null
+          audio_status: string
+          audio_upload_id: string | null
+          bpm: number | null
+          buy_url: string | null
+          comment_count: number
+          copyright_notice: string | null
+          cover_art_url: string | null
+          created_at: string
+          creator_id: string
+          description: string | null
+          download_count: number
+          duration_seconds: number | null
+          embed_enabled: boolean
+          genre: string | null
+          has_lossless: boolean
+          has_spatial: boolean
+          hires_url: string | null
+          id: string
+          is_explicit: boolean
+          is_paid: boolean
+          is_published: boolean
+          isrc: string | null
+          iswc: string | null
+          key_signature: string | null
+          label: string | null
+          like_count: number
+          monetization_type: string
+          play_count: number
+          price_cents: number
+          release_date: string | null
+          repost_count: number
+          search_vector: unknown
+          spatial_url: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+          waveform_peaks: Json | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "tracks"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       release_ticket_inventory: {
         Args: { p_quantity: number; p_tier_id: string }
         Returns: undefined
@@ -20798,6 +21208,17 @@ export type Database = {
         }[]
       }
       rotate_ticket_qr: { Args: { p_ticket_id: string }; Returns: string }
+      search_music: {
+        Args: { p_limit?: number; p_query: string }
+        Returns: {
+          id: string
+          image_url: string
+          kind: string
+          rank: number
+          subtitle: string
+          title: string
+        }[]
+      }
       send_creator_lifecycle_emails_batch: { Args: never; Returns: undefined }
       send_member_lifecycle_emails_batch: { Args: never; Returns: undefined }
       send_weekly_discovery_digest: { Args: never; Returns: undefined }
