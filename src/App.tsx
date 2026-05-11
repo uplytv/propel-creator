@@ -110,6 +110,8 @@ const MusicLibrary = lazy(() => import("./features/music/pages/MusicLibrary"));
 const MusicUpload = lazy(() => import("./features/music/pages/MusicUpload"));
 const GenrePage = lazy(() => import("./features/music/pages/GenrePage"));
 const TrackPage = lazy(() => import("./features/music/pages/TrackPage"));
+const PresaveCampaignSetupPage = lazy(() => import("./features/music/pages/PresaveCampaignSetupPage"));
+const PresaveLandingPage = lazy(() => import("./features/music/pages/PresaveLandingPage"));
 const AlbumPage = lazy(() => import("./features/music/pages/AlbumPage"));
 const PlaylistPage = lazy(() => import("./features/music/pages/PlaylistPage"));
 const MusicBlendPage = lazy(() => import("./features/music/pages/MusicBlendPage"));
