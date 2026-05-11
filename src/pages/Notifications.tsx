@@ -4,7 +4,7 @@ import {
   Bell, Check, CheckCheck, AlertTriangle, Flag, Briefcase,
   CheckCircle2, XCircle, Eye, Star, Filter, Trash2,
   MessageSquare, Heart, UserPlus, Coins, Users, Megaphone,
-  Trophy, Package, Gift, Zap, Calendar, Ticket, MapPin
+  Trophy, Package, Gift, Zap, Calendar, Ticket, MapPin, Music, Repeat2
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useNotifications, AppNotification } from "@/hooks/useNotifications";
