@@ -22,14 +22,12 @@ const groups: Group[] = [
     label: "Go Live",
     tiles: [
       { icon: Radio, title: "Live stream", desc: "Start broadcasting now", to: "/go-live" },
-      { icon: Mic, title: "Audio room", desc: "Spin up a live audio room", to: "/music/room/new" },
     ],
   },
   {
     label: "Plan",
     tiles: [
       { icon: Calendar, title: "Event", desc: "Schedule a virtual or IRL event", to: "/events/create" },
-      { icon: Ticket, title: "Ticketed release", desc: "Sell tickets for a drop", to: "/events/create?type=ticketed" },
       { icon: ListMusic, title: "Playlist", desc: "Curate a new playlist", to: "/music/library" },
     ],
   },
