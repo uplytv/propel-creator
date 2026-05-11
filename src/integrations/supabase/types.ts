@@ -16208,6 +16208,124 @@ export type Database = {
         }
         Relationships: []
       }
+      presave_campaigns: {
+        Row: {
+          apple_album_id: string | null
+          campaign_url_slug: string | null
+          cover_art_url: string | null
+          created_at: string
+          creator_id: string
+          description: string | null
+          distribution_confirmed_apple: boolean
+          distribution_confirmed_spotify: boolean
+          id: string
+          release_at: string
+          spotify_track_uri: string | null
+          status: string
+          track_id: string
+          updated_at: string
+        }
+        Insert: {
+          apple_album_id?: string | null
+          campaign_url_slug?: string | null
+          cover_art_url?: string | null
+          created_at?: string
+          creator_id: string
+          description?: string | null
+          distribution_confirmed_apple?: boolean
+          distribution_confirmed_spotify?: boolean
+          id?: string
+          release_at: string
+          spotify_track_uri?: string | null
+          status?: string
+          track_id: string
+          updated_at?: string
+        }
+        Update: {
+          apple_album_id?: string | null
+          campaign_url_slug?: string | null
+          cover_art_url?: string | null
+          created_at?: string
+          creator_id?: string
+          description?: string | null
+          distribution_confirmed_apple?: boolean
+          distribution_confirmed_spotify?: boolean
+          id?: string
+          release_at?: string
+          spotify_track_uri?: string | null
+          status?: string
+          track_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "presave_campaigns_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      presave_subscribers: {
+        Row: {
+          apple_music_user_token: string | null
+          campaign_id: string
+          consent_follow_artist: boolean
+          consent_save_track: boolean
+          created_at: string
+          email: string
+          failure_reason: string | null
+          fulfilled: boolean
+          fulfilled_at: string | null
+          id: string
+          platform: string
+          spotify_access_token: string | null
+          spotify_refresh_token: string | null
+          spotify_user_id: string | null
+        }
+        Insert: {
+          apple_music_user_token?: string | null
+          campaign_id: string
+          consent_follow_artist?: boolean
+          consent_save_track?: boolean
+          created_at?: string
+          email: string
+          failure_reason?: string | null
+          fulfilled?: boolean
+          fulfilled_at?: string | null
+          id?: string
+          platform: string
+          spotify_access_token?: string | null
+          spotify_refresh_token?: string | null
+          spotify_user_id?: string | null
+        }
+        Update: {
+          apple_music_user_token?: string | null
+          campaign_id?: string
+          consent_follow_artist?: boolean
+          consent_save_track?: boolean
+          created_at?: string
+          email?: string
+          failure_reason?: string | null
+          fulfilled?: boolean
+          fulfilled_at?: string | null
+          id?: string
+          platform?: string
+          spotify_access_token?: string | null
+          spotify_refresh_token?: string | null
+          spotify_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "presave_subscribers_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "presave_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_purchases: {
         Row: {
           amount: number
