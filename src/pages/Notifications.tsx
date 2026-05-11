@@ -186,6 +186,37 @@ export default function Notifications() {
           </TabsList>
         </Tabs>
 
+        {(filter === "all" || filter === "activity") && musicNotifs.length > 0 && (
+          <div className="mb-4 rounded-xl border border-border bg-card overflow-hidden">
+            <div className="px-5 py-3 flex items-center gap-2 border-b border-border/50 bg-secondary/30">
+              <Music className="w-4 h-4 text-primary" />
+              <span className="text-xs font-semibold uppercase tracking-wide">Music activity</span>
+            </div>
+            {musicNotifs.map((m) => {
+              const cfg = socialNotifIcon[m.type];
+              const Icon = cfg?.icon ?? Music;
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => navigate(m.link)}
+                  className="w-full text-left px-5 py-3 flex gap-3 items-start hover:bg-secondary/40 border-b border-border/40 last:border-0"
+                >
+                  <div className={`flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center ${cfg?.color ?? "bg-primary/10 text-primary"}`}>
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{m.title}</p>
+                    <p className="text-xs text-muted-foreground truncate">{m.message}</p>
+                    <p className="text-[11px] text-muted-foreground/50 mt-0.5">
+                      {formatDistanceToNow(new Date(m.created_at), { addSuffix: true })}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         <div className="rounded-xl border border-border bg-card overflow-hidden">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
