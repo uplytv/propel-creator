@@ -60,19 +60,47 @@ export default function PresaveCallback() {
     }
 
     (async () => {
-      const fnName = flow === "follow" ? "spotify-follow-callback" : "spotify-presave-callback";
-      const { data, error: fnErr } = await supabase.functions.invoke(fnName, {
-        body: {
-          code,
-          redirect_uri: getSpotifyRedirectUri(),
-          link_slug: parsedState.slug,
-          fan_email: parsedState.email || undefined,
-        },
-      });
+      const fnName =
+        flow === "follow"
+          ? "spotify-follow-callback"
+          : flow === "campaign"
+          ? "presave-spotify-callback"
+          : "spotify-presave-callback";
+      const body: any =
+        flow === "campaign"
+          ? {
+              code,
+              redirect_uri: getSpotifyRedirectUri(),
+              campaign_slug: parsedState.slug,
+              fan_email: parsedState.email || undefined,
+              scopes: "user-library-modify user-read-email",
+            }
+          : {
+              code,
+              redirect_uri: getSpotifyRedirectUri(),
+              link_slug: parsedState.slug,
+              fan_email: parsedState.email || undefined,
+            };
+      const { data, error: fnErr } = await supabase.functions.invoke(fnName, { body });
 
       if (fnErr || data?.error) {
         setStatus("error");
         setMessage(data?.error || fnErr?.message || "Something went wrong");
+        return;
+      }
+
+      if (flow === "campaign") {
+        try {
+          sessionStorage.removeItem("presave_pending_email");
+          sessionStorage.removeItem("presave_pending_slug");
+        } catch {}
+        setStatus("success");
+        setMessage(
+          data?.immediate
+            ? "Saved to your Spotify library! 🎉"
+            : "You're all set — we'll save it the moment it drops.",
+        );
+        setTimeout(() => navigate(`/presave/${parsedState.slug}`), 3500);
         return;
       }
 
