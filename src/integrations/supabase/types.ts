@@ -68,6 +68,61 @@ export type Database = {
         }
         Relationships: []
       }
+      activity_feed_events: {
+        Row: {
+          actor_id: string
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          target_album_id: string | null
+          target_playlist_id: string | null
+          target_track_id: string | null
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          target_album_id?: string | null
+          target_playlist_id?: string | null
+          target_track_id?: string | null
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          target_album_id?: string | null
+          target_playlist_id?: string | null
+          target_track_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_feed_events_target_album_id_fkey"
+            columns: ["target_album_id"]
+            isOneToOne: false
+            referencedRelation: "albums"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_feed_events_target_playlist_id_fkey"
+            columns: ["target_playlist_id"]
+            isOneToOne: false
+            referencedRelation: "music_playlists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_feed_events_target_track_id_fkey"
+            columns: ["target_track_id"]
+            isOneToOne: false
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ad_campaigns_published: {
         Row: {
           brief: Json
@@ -1410,7 +1465,10 @@ export type Database = {
           id: string
           is_verified: boolean
           monthly_listeners_cache: number
+          pinned_playlist_id: string | null
+          related_artists: string[]
           social_links: Json
+          spotlight_track_ids: string[]
           updated_at: string
           user_id: string
         }
@@ -1421,7 +1479,10 @@ export type Database = {
           id?: string
           is_verified?: boolean
           monthly_listeners_cache?: number
+          pinned_playlist_id?: string | null
+          related_artists?: string[]
           social_links?: Json
+          spotlight_track_ids?: string[]
           updated_at?: string
           user_id: string
         }
@@ -1432,11 +1493,22 @@ export type Database = {
           id?: string
           is_verified?: boolean
           monthly_listeners_cache?: number
+          pinned_playlist_id?: string | null
+          related_artists?: string[]
           social_links?: Json
+          spotlight_track_ids?: string[]
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "artist_profiles_pinned_playlist_id_fkey"
+            columns: ["pinned_playlist_id"]
+            isOneToOne: false
+            referencedRelation: "music_playlists"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       artist_sub_tiers: {
         Row: {
@@ -4117,6 +4189,48 @@ export type Database = {
           trigger_event?: string
           trigger_tag?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      dsp_connections: {
+        Row: {
+          access_token: string | null
+          created_at: string
+          external_user_id: string | null
+          id: string
+          metadata: Json | null
+          provider: string
+          refresh_token: string | null
+          scope: string | null
+          token_expires_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token?: string | null
+          created_at?: string
+          external_user_id?: string | null
+          id?: string
+          metadata?: Json | null
+          provider: string
+          refresh_token?: string | null
+          scope?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string | null
+          created_at?: string
+          external_user_id?: string | null
+          id?: string
+          metadata?: Json | null
+          provider?: string
+          refresh_token?: string | null
+          scope?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -18386,32 +18500,74 @@ export type Database = {
           },
         ]
       }
+      track_comment_likes: {
+        Row: {
+          comment_id: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "track_comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "track_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       track_comments: {
         Row: {
           content: string
           created_at: string
           id: string
+          like_count: number
+          parent_id: string | null
           timestamp_seconds: number | null
           track_id: string
+          updated_at: string
           user_id: string
         }
         Insert: {
           content: string
           created_at?: string
           id?: string
+          like_count?: number
+          parent_id?: string | null
           timestamp_seconds?: number | null
           track_id: string
+          updated_at?: string
           user_id: string
         }
         Update: {
           content?: string
           created_at?: string
           id?: string
+          like_count?: number
+          parent_id?: string | null
           timestamp_seconds?: number | null
           track_id?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "track_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "track_comments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "track_comments_track_id_fkey"
             columns: ["track_id"]
@@ -18816,16 +18972,22 @@ export type Database = {
       }
       tracks: {
         Row: {
+          allow_download: boolean
           audio_mux_asset_id: string | null
           audio_mux_playback_id: string | null
           audio_status: string
           audio_upload_id: string | null
+          bpm: number | null
+          buy_url: string | null
+          comment_count: number
           copyright_notice: string | null
           cover_art_url: string | null
           created_at: string
           creator_id: string
           description: string | null
+          download_count: number
           duration_seconds: number | null
+          embed_enabled: boolean
           genre: string | null
           has_lossless: boolean
           has_spatial: boolean
@@ -18836,27 +18998,37 @@ export type Database = {
           is_published: boolean
           isrc: string | null
           iswc: string | null
+          key_signature: string | null
           label: string | null
           like_count: number
           monetization_type: string
           play_count: number
           price_cents: number
           release_date: string | null
+          repost_count: number
           spatial_url: string | null
+          tags: string[]
           title: string
           updated_at: string
+          waveform_peaks: Json | null
         }
         Insert: {
+          allow_download?: boolean
           audio_mux_asset_id?: string | null
           audio_mux_playback_id?: string | null
           audio_status?: string
           audio_upload_id?: string | null
+          bpm?: number | null
+          buy_url?: string | null
+          comment_count?: number
           copyright_notice?: string | null
           cover_art_url?: string | null
           created_at?: string
           creator_id: string
           description?: string | null
+          download_count?: number
           duration_seconds?: number | null
+          embed_enabled?: boolean
           genre?: string | null
           has_lossless?: boolean
           has_spatial?: boolean
@@ -18867,27 +19039,37 @@ export type Database = {
           is_published?: boolean
           isrc?: string | null
           iswc?: string | null
+          key_signature?: string | null
           label?: string | null
           like_count?: number
           monetization_type?: string
           play_count?: number
           price_cents?: number
           release_date?: string | null
+          repost_count?: number
           spatial_url?: string | null
+          tags?: string[]
           title: string
           updated_at?: string
+          waveform_peaks?: Json | null
         }
         Update: {
+          allow_download?: boolean
           audio_mux_asset_id?: string | null
           audio_mux_playback_id?: string | null
           audio_status?: string
           audio_upload_id?: string | null
+          bpm?: number | null
+          buy_url?: string | null
+          comment_count?: number
           copyright_notice?: string | null
           cover_art_url?: string | null
           created_at?: string
           creator_id?: string
           description?: string | null
+          download_count?: number
           duration_seconds?: number | null
+          embed_enabled?: boolean
           genre?: string | null
           has_lossless?: boolean
           has_spatial?: boolean
@@ -18898,15 +19080,19 @@ export type Database = {
           is_published?: boolean
           isrc?: string | null
           iswc?: string | null
+          key_signature?: string | null
           label?: string | null
           like_count?: number
           monetization_type?: string
           play_count?: number
           price_cents?: number
           release_date?: string | null
+          repost_count?: number
           spatial_url?: string | null
+          tags?: string[]
           title?: string
           updated_at?: string
+          waveform_peaks?: Json | null
         }
         Relationships: []
       }
