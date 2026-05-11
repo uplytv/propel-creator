@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Search as SearchIcon, X, Users, Package, Radio, Film, Briefcase, Loader2 } from "lucide-react";
+import { Search as SearchIcon, X, Users, Package, Radio, Film, Briefcase, Loader2, Music, Disc3, Mic2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
@@ -16,6 +16,9 @@ const typeIcon: Record<string, typeof Users> = {
   stream: Radio,
   recording: Film,
   job: Briefcase,
+  track: Music,
+  album: Disc3,
+  artist: Mic2,
 };
 
 const typeLabel: Record<string, string> = {
@@ -24,11 +27,17 @@ const typeLabel: Record<string, string> = {
   stream: "Stream",
   recording: "Recording",
   job: "Job",
+  track: "Track",
+  album: "Album",
+  artist: "Artist",
 };
 
 const filterOptions = [
   { value: "all", label: "All" },
   { value: "creator", label: "Creators" },
+  { value: "track", label: "Tracks" },
+  { value: "album", label: "Albums" },
+  { value: "artist", label: "Artists" },
   { value: "product", label: "Products" },
   { value: "stream", label: "Streams" },
   { value: "recording", label: "Recordings" },

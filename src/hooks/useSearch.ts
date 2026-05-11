@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 
 export interface SearchResult {
   id: string;
-  type: "creator" | "product" | "stream" | "recording" | "job";
+  type: "creator" | "product" | "stream" | "recording" | "job" | "track" | "album" | "artist";
   title: string;
   subtitle?: string;
   image?: string | null;
@@ -26,12 +26,16 @@ export function useSearch() {
     setLoading(true);
     const term = `%${q.trim()}%`;
 
-    const [profiles, products, streams, recordings, jobs] = await Promise.all([
+    const sb = supabase as any;
+    const [profiles, products, streams, recordings, jobs, tracks, albums, artists] = await Promise.all([
       supabase.from("profiles_public").select("user_id, display_name, username, avatar_url").or(`display_name.ilike.${term},username.ilike.${term}`).limit(5),
       supabase.from("products").select("id, name, image_url, type, price").ilike("name", term).eq("status", "active").limit(5),
       supabase.from("mux_live_streams_public").select("id, title, user_id, status, mux_playback_id").ilike("title", term).limit(5),
       supabase.from("stream_recordings").select("id, title, creator_id, playback_id").ilike("title", term).eq("is_published", true).limit(5),
       supabase.from("jobs").select("id, title, status, skill_category").ilike("title", term).eq("status", "open").limit(5),
+      sb.from("tracks").select("id, title, cover_art_url, creator_id").ilike("title", term).eq("is_published", true).limit(5),
+      sb.from("albums").select("id, title, cover_art_url, creator_id").ilike("title", term).eq("is_published", true).limit(3),
+      sb.from("artist_profiles").select("user_id, monthly_listeners_cache, profiles:profiles_public!inner(display_name, username, avatar_url)").or(`display_name.ilike.${term},username.ilike.${term}`, { foreignTable: "profiles" }).limit(3),
     ]);
 
     const mapped: SearchResult[] = [
@@ -74,6 +78,30 @@ export function useSearch() {
         subtitle: j.skill_category,
         image: null,
         link: `/jobs/${j.id}`,
+      })),
+      ...((tracks?.data as any[]) ?? []).map((t: any) => ({
+        id: t.id,
+        type: "track" as const,
+        title: t.title,
+        subtitle: "Track",
+        image: t.cover_art_url,
+        link: `/music/track/${t.id}`,
+      })),
+      ...((albums?.data as any[]) ?? []).map((a: any) => ({
+        id: a.id,
+        type: "album" as const,
+        title: a.title,
+        subtitle: "Album",
+        image: a.cover_art_url,
+        link: `/music/album/${a.id}`,
+      })),
+      ...((artists?.data as any[]) ?? []).map((a: any) => ({
+        id: a.user_id,
+        type: "artist" as const,
+        title: a.profiles?.display_name || a.profiles?.username || "Artist",
+        subtitle: a.monthly_listeners_cache ? `${a.monthly_listeners_cache.toLocaleString()} monthly listeners` : "Artist",
+        image: a.profiles?.avatar_url,
+        link: `/music/artist/${a.user_id}`,
       })),
     ];
 

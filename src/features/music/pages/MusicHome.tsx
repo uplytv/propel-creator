@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Upload, Library, Search, Radio } from 'lucide-react';
+import { Upload, Library, Search, Radio, MoreHorizontal, Bell, Sparkles } from 'lucide-react';
 import { useRadioStations } from '../hooks/useRadioStations';
 import RadioStationCard from '../components/RadioStationCard';
 import { useUpcomingPremieres } from '../hooks/usePremieres';
@@ -37,6 +38,7 @@ function Row({ title, children }: { title: string; children: React.ReactNode }) 
 
 export default function MusicHome() {
   const { user } = useAuth();
+  const [overflowOpen, setOverflowOpen] = useState(false);
   const { data, isLoading } = useMusicFeed(user?.id);
   const { data: recentlyPlayed } = useRecentlyPlayed(12);
   const { data: dailyMixes } = useDailyMixes(20);
@@ -63,35 +65,83 @@ export default function MusicHome() {
           <p className="text-xs text-white/50">stream what creators are dropping</p>
         </div>
         <div className="flex gap-2 items-center">
-          {user && <NotificationBell />}
-          <Link
-            to="/music/search"
-            className="p-2 rounded-full bg-white/5 text-white"
-            aria-label="Search"
-          >
-            <Search className="w-5 h-5" />
-          </Link>
-          <Link
-            to="/music/library"
-            className="p-2 rounded-full bg-white/5 text-white"
-            aria-label="Library"
-          >
-            <Library className="w-5 h-5" />
-          </Link>
+          {/* Desktop / >=sm: full icon group */}
+          <div className="hidden sm:flex gap-2 items-center">
+            {user && <NotificationBell />}
+            <Link to="/music/search" className="p-2 rounded-full bg-white/5 text-white" aria-label="Search">
+              <Search className="w-5 h-5" />
+            </Link>
+            <Link to="/music/library" className="p-2 rounded-full bg-white/5 text-white" aria-label="Library">
+              <Library className="w-5 h-5" />
+            </Link>
+            <Link
+              to="/music/labs"
+              className="px-3 py-2 rounded-full bg-white/5 text-[#00FF85] text-xs font-semibold flex items-center gap-1"
+              aria-label="Music Labs — every feature"
+              title="Music Labs — every feature"
+            >
+              <span aria-hidden>✦</span> Labs
+            </Link>
+          </div>
+
+          {/* Mobile: collapse bell/search/library/labs into a "…" overflow */}
+          <div className="sm:hidden relative">
+            <button
+              onClick={() => setOverflowOpen((v) => !v)}
+              className="p-2 rounded-full bg-white/5 text-white"
+              aria-label="More"
+              aria-expanded={overflowOpen}
+            >
+              <MoreHorizontal className="w-5 h-5" />
+            </button>
+            {overflowOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setOverflowOpen(false)}
+                />
+                <div className="absolute right-0 mt-2 z-50 min-w-[180px] rounded-xl border border-white/10 bg-[#0A0A0A] shadow-xl py-1.5">
+                  {user && (
+                    <Link
+                      to="/music/notifications"
+                      onClick={() => setOverflowOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 text-sm text-white hover:bg-white/5"
+                    >
+                      <Bell className="w-4 h-4" /> Notifications
+                    </Link>
+                  )}
+                  <Link
+                    to="/music/search"
+                    onClick={() => setOverflowOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-white hover:bg-white/5"
+                  >
+                    <Search className="w-4 h-4" /> Search
+                  </Link>
+                  <Link
+                    to="/music/library"
+                    onClick={() => setOverflowOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-white hover:bg-white/5"
+                  >
+                    <Library className="w-4 h-4" /> Library
+                  </Link>
+                  <Link
+                    to="/music/labs"
+                    onClick={() => setOverflowOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-[#00FF85] hover:bg-white/5"
+                  >
+                    <Sparkles className="w-4 h-4" /> Labs
+                  </Link>
+                </div>
+              </>
+            )}
+          </div>
+
           <Link
             to="/music/feed"
             className="px-3 py-2 rounded-full bg-white/5 text-white text-xs font-semibold"
             aria-label="Feed"
           >
             Feed
-          </Link>
-          <Link
-            to="/music/labs"
-            className="px-3 py-2 rounded-full bg-white/5 text-[#00FF85] text-xs font-semibold flex items-center gap-1"
-            aria-label="Music Labs — every feature"
-            title="Music Labs — every feature"
-          >
-            <span aria-hidden>✦</span> Labs
           </Link>
           <Link
             to="/music/upload"

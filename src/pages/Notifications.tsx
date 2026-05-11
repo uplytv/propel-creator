@@ -4,7 +4,7 @@ import {
   Bell, Check, CheckCheck, AlertTriangle, Flag, Briefcase,
   CheckCircle2, XCircle, Eye, Star, Filter, Trash2,
   MessageSquare, Heart, UserPlus, Coins, Users, Megaphone,
-  Trophy, Package, Gift, Zap, Calendar, Ticket, MapPin
+  Trophy, Package, Gift, Zap, Calendar, Ticket, MapPin, Music, Repeat2
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useNotifications, AppNotification } from "@/hooks/useNotifications";
@@ -40,6 +40,10 @@ const socialNotifIcon: Record<string, { icon: any; color: string }> = {
   ticket_confirmed: { icon: Ticket, color: "bg-primary/15 text-primary" },
   waitlist_available: { icon: Ticket, color: "bg-primary/10 text-primary" },
   going_out: { icon: MapPin, color: "bg-primary/10 text-primary" },
+  // TODO: when activity_feed_events ships, route those into these icons
+  track_uploaded: { icon: Music, color: "bg-primary/15 text-primary" },
+  track_reposted: { icon: Repeat2, color: "bg-primary/10 text-primary" },
+  track_comment: { icon: MessageSquare, color: "bg-primary/10 text-primary" },
 };
 
 const jobNotifIcon: Record<string, { icon: any; color: string; label: string }> = {

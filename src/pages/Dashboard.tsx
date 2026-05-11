@@ -28,6 +28,7 @@ import ScheduleFirstShowCard from "@/components/scheduled/ScheduleFirstShowCard"
 import { useInviteCodes } from "@/hooks/useInviteCodes";
 import FirstDollarWizard from "@/components/dashboard/FirstDollarWizard";
 import DiscoveryInsights from "@/components/dashboard/DiscoveryInsights";
+import MusicDiscoveryBanner from "@/components/dashboard/MusicDiscoveryBanner";
 import GrowthPlanCard from "@/components/dashboard/GrowthPlanCard";
 import AICoachWidget from "@/components/dashboard/AICoachWidget";
 import { useMilestoneTracker } from "@/hooks/useMilestoneTracker";
@@ -120,6 +121,7 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <div className="max-w-5xl mx-auto pb-20 md:pb-8">
+        <MusicDiscoveryBanner />
         <MilestoneProgressPill />
 
         {/* First Dollar Wizard */}
