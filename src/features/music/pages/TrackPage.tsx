@@ -14,6 +14,7 @@ import StartPartyButton from '../components/StartPartyButton';
 import BuyTrackButton from '../components/BuyTrackButton';
 import TipTrackButton from '../components/TipTrackButton';
 import TrackPriceEditor from '../components/TrackPriceEditor';
+import UniversalLinksList from '../components/UniversalLinksList';
 import { formatDuration } from '../lib/formatDuration';
 import { useAuth } from '@/context/AuthContext';
 
