@@ -132,7 +132,7 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
               return (
                 <button
                   key="create"
-                  onClick={() => { setAriaOpen(false); setCreateOpen(false); navigate("/camera"); }}
+                  onClick={() => { setAriaOpen(false); setCreateOpen(true); }}
                   aria-label="Create"
                   className="relative flex items-center justify-center -mt-4"
                 >
