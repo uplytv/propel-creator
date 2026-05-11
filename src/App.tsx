@@ -370,6 +370,33 @@ const App = () => (
                       <Route path="blends" element={<ProtectedRoute><GroupBlendsPage /></ProtectedRoute>} />
                       <Route path="concerts" element={<ConcertsPage />} />
                       <Route path="concerts/:id" element={<ConcertPage />} />
+                      <Route path="labs" element={<MusicLabsHub />} />
+                      <Route path="connections" element={<ProtectedRoute><DSPConnectionsPage /></ProtectedRoute>} />
+                      <Route path="charts" element={<MusicChartsPage />} />
+                      <Route path="creator-analytics" element={<ProtectedRoute><MusicCreatorAnalyticsPage /></ProtectedRoute>} />
+                      <Route path="podcast" element={<MusicPodcastPage />} />
+                      <Route path="karaoke" element={<KaraokePage />} />
+                      <Route path="lyrics-sync" element={<LyricsSyncPage />} />
+                      <Route path="dj" element={<DJConsolePage />} />
+                      <Route path="longform" element={<LongformPlayerPage />} />
+                      <Route path="radio-player" element={<FanRadioPlayerPage />} />
+                      <Route path="tour" element={<TourCalendarPage />} />
+                      <Route path="tour-merch" element={<TourMerchPage />} />
+                      <Route path="booking" element={<ProtectedRoute><BookingInquiryPage /></ProtectedRoute>} />
+                      <Route path="distribution" element={<ProtectedRoute><MusicDistributionPage /></ProtectedRoute>} />
+                      <Route path="royalties" element={<ProtectedRoute><RoyaltyPayoutsPage /></ProtectedRoute>} />
+                      <Route path="publishing" element={<ProtectedRoute><PublishingPage /></ProtectedRoute>} />
+                      <Route path="splits" element={<ProtectedRoute><SplitSheetsPage /></ProtectedRoute>} />
+                      <Route path="sync" element={<SyncLicensingPage />} />
+                      <Route path="stems" element={<StemMarketplacePage />} />
+                      <Route path="samples" element={<SamplePackPage />} />
+                      <Route path="nft-drops" element={<NFTDropsPage />} />
+                      <Route path="merch-bundles" element={<MerchBundlesPage />} />
+                      <Route path="super-thanks" element={<SuperThanksPage />} />
+                      <Route path="collab" element={<ProtectedRoute><CollabStudioPage /></ProtectedRoute>} />
+                      <Route path="gigs" element={<GigMarketplacePage />} />
+                      <Route path="verify" element={<ProtectedRoute><ArtistVerificationPage /></ProtectedRoute>} />
+                      <Route path="smart-playlists" element={<ProtectedRoute><SmartPlaylistsPage /></ProtectedRoute>} />
                     </Route>
 
                     <Route path="/:username" element={<BioPage />} />
