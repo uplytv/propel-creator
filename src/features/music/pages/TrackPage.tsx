@@ -109,7 +109,7 @@ export default function TrackPage() {
             <LikeButton trackId={track.id} />
             <RepostButton trackId={track.id} />
             <AddToPlaylistMenu trackId={track.id} />
-            {ready && <DownloadButton trackId={track.id} />}
+            {(ready && allowDownload) || isOwner ? <DownloadButton trackId={track.id} /> : null}
             {!ready && <PresaveButton trackId={track.id} />}
             <button
               onClick={() => setShareOpen(true)}
@@ -117,6 +117,20 @@ export default function TrackPage() {
             >
               <Share2 className="w-3.5 h-3.5" /> Share
             </button>
+            <button
+              onClick={() => setEmbedOpen(true)}
+              className="px-3 py-1.5 rounded-full text-xs bg-white/5 hover:bg-white/10 text-white inline-flex items-center gap-1"
+            >
+              <Code className="w-3.5 h-3.5" /> Embed
+            </button>
+            {isOwner && (
+              <Link
+                to={`/music/track/${track.id}/insights`}
+                className="px-3 py-1.5 rounded-full text-xs bg-white/5 hover:bg-white/10 text-white inline-flex items-center gap-1"
+              >
+                <BarChart3 className="w-3.5 h-3.5" /> Insights
+              </Link>
+            )}
             <StartPartyButton />
             {user?.id !== track.creator_id && (
               <TipTrackButton creatorId={track.creator_id} trackId={track.id} />
@@ -124,7 +138,7 @@ export default function TrackPage() {
             {track.is_paid && track.price_cents && user?.id !== track.creator_id ? (
               <BuyTrackButton trackId={track.id} priceCents={track.price_cents} />
             ) : null}
-            {user?.id === track.creator_id && (
+            {isOwner && (
               <TrackPriceEditor
                 trackId={track.id}
                 isPaid={!!track.is_paid}
@@ -132,12 +146,56 @@ export default function TrackPage() {
               />
             )}
           </div>
+          {isOwner && (
+            <label className="flex items-center gap-2 mt-3 text-xs text-white/60">
+              <input
+                type="checkbox"
+                checked={allowDownload}
+                onChange={(e) => setAllowDownload(e.target.checked)}
+              />
+              Allow listeners to download this track
+            </label>
+          )}
         </div>
       </div>
-      <div className="mt-6">
+
+      {/* Waveform with timestamped comments overlay */}
+      {ready && (
+        <div className="relative mt-8">
+          <WaveformBar trackId={track.id} peaks={peaks ?? undefined} />
+          <WaveformComments trackId={track.id} />
+        </div>
+      )}
+
+      <CommentComposer trackId={track.id} />
+      <CommentThread trackId={track.id} />
+
+      <div className="mt-8">
         <UniversalLinksList trackId={track.id} />
       </div>
+
+      {isOwner && (
+        <section className="mt-8 rounded-2xl bg-white/[0.03] border border-white/5">
+          <button
+            onClick={() => setDistOpen((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 text-left"
+            style={{ minHeight: 44 }}
+          >
+            <span className="text-sm font-bold text-white">Distribution &amp; rights</span>
+            <ChevronDown className={`w-4 h-4 text-white/60 transition ${distOpen ? 'rotate-180' : ''}`} />
+          </button>
+          {distOpen && (
+            <div className="px-4 pb-4">
+              <DistributionPanel trackId={track.id} />
+            </div>
+          )}
+        </section>
+      )}
+
+      <RelatedTracks trackId={track.id} />
+
       <ShareTrackSheet track={track} open={shareOpen} onClose={() => setShareOpen(false)} />
+      <EmbedCodeModal trackId={track.id} open={embedOpen} onClose={() => setEmbedOpen(false)} />
     </div>
   );
 }
