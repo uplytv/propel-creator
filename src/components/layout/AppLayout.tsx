@@ -11,7 +11,7 @@ import {
   Zap, Crown, Sparkles, BarChart3, Radio, Menu, X, Wallet, LayoutGrid, ChevronDown,
   GraduationCap, DollarSign, Bot, Briefcase, Handshake, Share2, Film,
   Trophy, Plug, MessageSquare, Bell as BellIcon, UserCheck, Search, Rocket,
-  Video, CreditCard, UserPlus, User, Globe, Mail, Mic, Gift, Rss, Tv, Code
+  Video, CreditCard, UserPlus, User, Globe, Mail, Mic, Gift, Rss, Tv, Code, Music
 } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import { useApp, tierNames } from "@/context/AppContext";
@@ -51,6 +51,22 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
       { label: "Podcast RSS", icon: Rss, path: "/podcast-rss", desc: "Submit to Apple Podcasts & Spotify", featureKey: "content" },
       { label: "Distribution", icon: Globe, path: "/distribution", desc: "Publish everywhere at once" },
       { label: "SmartLinks", icon: Share2, path: "/smart-links", desc: "Music smart links & pre-saves" },
+    ],
+  },
+  {
+    core: "music",
+    label: "MUSIC",
+    icon: Music,
+    items: [
+      { label: "Music Home", icon: Music, path: "/music", desc: "Stream what creators drop" },
+      { label: "Feed", icon: Tv, path: "/music/feed", desc: "Activity from artists you follow" },
+      { label: "Search", icon: Search, path: "/music/search", desc: "Find tracks, albums, artists" },
+      { label: "Library", icon: Package, path: "/music/library", desc: "Your saved music" },
+      { label: "Charts", icon: TrendingUp, path: "/music/charts", desc: "What's trending now" },
+      { label: "Upload", icon: Video, path: "/music/upload", desc: "Drop a track or album" },
+      { label: "Distribution", icon: Globe, path: "/music/distribution", desc: "Spotify, Apple Music & more" },
+      { label: "DSP Connections", icon: Plug, path: "/music/connections", desc: "Connect Spotify & Apple" },
+      { label: "Music Labs", icon: Sparkles, path: "/music/labs", desc: "Every music feature" },
     ],
   },
   {

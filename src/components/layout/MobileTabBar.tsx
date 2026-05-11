@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Search, Users, DollarSign, Sparkles, Plus, Radio, Upload, Calendar, X, Bot, Rocket, TrendingUp, Ticket, GraduationCap } from "lucide-react";
+import { Search, Users, DollarSign, Sparkles, Plus, X, Bot, Rocket, TrendingUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { useLiveCount } from "@/context/NetworkContext";
+import CreateSheet from "@/components/CreateSheet";
 
 interface MobileTabBarProps {
   onUploadVideo?: () => void;
@@ -46,13 +47,7 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
     p => location.pathname === p || location.pathname.startsWith(p + "/")
   );
 
-  const createActions = [
-    { label: "Go Live", icon: Radio, onClick: () => { setCreateOpen(false); navigate("/go-live"); } },
-    { label: "Upload Video", icon: Upload, onClick: () => { setCreateOpen(false); onUploadVideo?.(); } },
-    { label: "Schedule Stream", icon: Calendar, onClick: () => { setCreateOpen(false); navigate("/go-live?tab=schedule"); } },
-    { label: "Create Event", icon: Ticket, onClick: () => { setCreateOpen(false); navigate("/events/create"); } },
-    { label: "Add Course", icon: GraduationCap, onClick: () => { setCreateOpen(false); navigate(user ? `/community/${user.id}/classroom` : "/dashboard"); } },
-  ];
+  // Create actions are now rendered by <CreateSheet />.
 
   const ariaActions = [
     { label: "AI Team", icon: Bot, path: "/dashboard/ai-team", desc: "Your 5 AI agents" },
@@ -63,52 +58,8 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
 
   return (
     <>
-      {/* Create action sheet backdrop */}
-      <AnimatePresence>
-        {createOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm md:hidden"
-            onClick={() => setCreateOpen(false)}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Create action sheet */}
-      <AnimatePresence>
-        {createOpen && (
-          <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed bottom-16 left-0 right-0 z-[61] md:hidden bg-card border-t border-border rounded-t-2xl safe-area-bottom"
-          >
-            <div className="p-4 space-y-1">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Create</p>
-                <button onClick={() => setCreateOpen(false)} className="p-1 rounded-lg text-muted-foreground hover:text-foreground">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              {createActions.map((action) => (
-                <button
-                  key={action.label}
-                  onClick={action.onClick}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-foreground hover:bg-secondary/60 transition-colors"
-                >
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <action.icon className="w-5 h-5 text-primary" />
-                  </div>
-                  {action.label}
-                </button>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Universal Create sheet */}
+      <CreateSheet open={createOpen} onClose={() => setCreateOpen(false)} />
 
       {/* ARIA action sheet backdrop */}
       <AnimatePresence>
@@ -181,7 +132,7 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
               return (
                 <button
                   key="create"
-                  onClick={() => { setAriaOpen(false); setCreateOpen(false); navigate("/camera"); }}
+                  onClick={() => { setAriaOpen(false); setCreateOpen(true); }}
                   aria-label="Create"
                   className="relative flex items-center justify-center -mt-4"
                 >

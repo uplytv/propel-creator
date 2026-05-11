@@ -17,6 +17,7 @@ import RouteErrorBoundary from "@/components/RouteErrorBoundary";
 import InstallPrompt from "@/components/InstallPrompt";
 import PushNotificationPermission from "@/components/PushNotificationPermission";
 import UploadRecovery from "@/components/UploadRecovery";
+import PersistentPlayer from "@/features/music/components/AudioPlayer/PersistentPlayer";
 import OfflineScreen from "@/components/OfflineScreen";
 import SplashScreen from "@/components/SplashScreen";
 import { useNativeInit, useKeyboardState } from "@/hooks/useNativePlatform";
@@ -499,6 +500,7 @@ const App = () => (
                   </RouteErrorBoundary>
                 </Suspense>
                 </ErrorBoundary>
+                <PersistentPlayer />
               </BrowserRouter>
               </AppWithSplash>
               </NativeShell>
