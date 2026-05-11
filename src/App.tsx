@@ -150,6 +150,10 @@ const CollabStudioPage = lazy(() => import("./features/music/pages/CollabStudioP
 const GigMarketplacePage = lazy(() => import("./features/music/pages/GigMarketplacePage"));
 const ArtistVerificationPage = lazy(() => import("./features/music/pages/ArtistVerificationPage"));
 const SmartPlaylistsPage = lazy(() => import("./features/music/pages/SmartPlaylistsPage"));
+const ArtistPage = lazy(() => import("./features/music/pages/ArtistPage"));
+const MusicFeedPage = lazy(() => import("./features/music/pages/MusicFeedPage"));
+const TrackInsightsPage = lazy(() => import("./features/music/pages/TrackInsightsPage"));
+const EmbedTrackPage = lazy(() => import("./features/music/pages/EmbedTrackPage"));
 const ContentStudio = lazy(() => import("./pages/ContentStudio"));
 const AITeamDashboard = lazy(() => import("./pages/AITeamDashboard"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
@@ -348,6 +352,9 @@ const App = () => (
                     <Route path="/tv/watch/:streamId" element={<TVWatch />} />
                     <Route path="/buy/:token" element={<TVBuyRedirect />} />
 
+                    {/* Music embed (bare, no MusicLayout chrome) */}
+                    <Route path="/embed/track/:id" element={<EmbedTrackPage />} />
+
                     {/* Music module (must come before /:username catch-all) */}
                     <Route path="/music" element={<MusicLayout />}>
                       <Route index element={<MusicHome />} />
@@ -397,6 +404,9 @@ const App = () => (
                       <Route path="gigs" element={<GigMarketplacePage />} />
                       <Route path="verify" element={<ProtectedRoute><ArtistVerificationPage /></ProtectedRoute>} />
                       <Route path="smart-playlists" element={<ProtectedRoute><SmartPlaylistsPage /></ProtectedRoute>} />
+                      <Route path="artist/:id" element={<ArtistPage />} />
+                      <Route path="feed" element={<ProtectedRoute><MusicFeedPage /></ProtectedRoute>} />
+                      <Route path="track/:id/insights" element={<ProtectedRoute><TrackInsightsPage /></ProtectedRoute>} />
                     </Route>
 
                     <Route path="/:username" element={<BioPage />} />
