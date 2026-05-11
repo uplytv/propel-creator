@@ -17,7 +17,10 @@ export default function UniversalLinksList({ trackId }: Props) {
 
   return (
     <section className="rounded-xl bg-white/5 p-4 space-y-2">
-      <h3 className="text-white font-bold text-sm mb-2">Listen anywhere</h3>
+      <h3 className="text-white font-bold text-sm mb-1">Listen anywhere</h3>
+      <p className="text-white/40 text-xs mb-2">
+        Auto-populated when you mark a DSP as "Live" in your Release Tracker. You can also edit links manually.
+      </p>
       {links.map((l) => {
         const meta = UNIVERSAL_PLATFORMS.find((p) => p.id === l.platform);
         return (
