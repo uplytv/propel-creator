@@ -9346,9 +9346,12 @@ export type Database = {
           external_url: string | null
           id: string
           live_at: string | null
+          live_url: string | null
+          notes: string | null
           platform: string
           release_id: string
           status: string
+          status_updated_at: string | null
           updated_at: string
         }
         Insert: {
@@ -9359,9 +9362,12 @@ export type Database = {
           external_url?: string | null
           id?: string
           live_at?: string | null
+          live_url?: string | null
+          notes?: string | null
           platform: string
           release_id: string
           status?: string
+          status_updated_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -9372,9 +9378,12 @@ export type Database = {
           external_url?: string | null
           id?: string
           live_at?: string | null
+          live_url?: string | null
+          notes?: string | null
           platform?: string
           release_id?: string
           status?: string
+          status_updated_at?: string | null
           updated_at?: string
         }
         Relationships: [
