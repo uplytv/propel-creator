@@ -12,6 +12,7 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import {
   usePresaveCampaign,
+  usePresaveCampaignAnalytics,
   useUpsertPresaveCampaign,
 } from "../hooks/usePresaveCampaign";
 import PresaveDistributionWarning from "../components/PresaveDistributionWarning";
@@ -22,6 +23,7 @@ export default function PresaveCampaignSetupPage() {
   const navigate = useNavigate();
   const { data: existing, isLoading } = usePresaveCampaign(trackId);
   const upsert = useUpsertPresaveCampaign();
+  const { data: analytics } = usePresaveCampaignAnalytics(existing?.id, existing?.release_at);
 
   const [track, setTrack] = useState<any>(null);
   const [confSpotify, setConfSpotify] = useState(false);
@@ -209,6 +211,87 @@ export default function PresaveCampaignSetupPage() {
           <Textarea value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
       </Card>
+
+      {existing && analytics && (
+        <Card className="p-4 bg-white/[0.03] border-white/10 space-y-4">
+          <div className="flex items-baseline justify-between">
+            <h2 className="text-white font-semibold">Campaign analytics</h2>
+            <span className="text-xs text-white/50">{analytics.total} subscriber{analytics.total === 1 ? "" : "s"}</span>
+          </div>
+
+          <div>
+            <div className="text-xs text-white/50 mb-2 uppercase tracking-wide">By platform</div>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: "Spotify", value: analytics.byPlatform.spotify },
+                { label: "Apple Music", value: analytics.byPlatform.apple_music },
+                { label: "Email only", value: analytics.byPlatform.email_only },
+              ].map((p) => (
+                <div key={p.label} className="rounded-md bg-white/[0.04] border border-white/10 p-2 text-center">
+                  <div className="text-lg font-semibold text-white">{p.value}</div>
+                  <div className="text-[11px] text-white/60">{p.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div className="text-xs text-white/50 mb-2 uppercase tracking-wide">Consent rates</div>
+            <div className="space-y-1 text-sm text-white/80">
+              <div className="flex justify-between">
+                <span>Save track on release</span>
+                <span className="text-white">
+                  {analytics.consent.saveTrack} ({Math.round(analytics.consent.saveRate * 100)}%)
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Follow artist</span>
+                <span className="text-white">
+                  {analytics.consent.followArtist} ({Math.round(analytics.consent.followRate * 100)}%)
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div className="text-xs text-white/50 mb-2 uppercase tracking-wide">Release-day fulfillment</div>
+            {(() => {
+              const f = analytics.fulfillment;
+              const released = existing.release_at && new Date(existing.release_at).getTime() <= Date.now();
+              let status = "Awaiting release";
+              let cls = "text-white/70";
+              if (f.complete) { status = "Complete"; cls = "text-primary"; }
+              else if (released && f.pending > 0) { status = "In progress"; cls = "text-yellow-400"; }
+              else if (released && f.failed > 0 && f.pending === 0) { status = "Completed with errors"; cls = "text-orange-400"; }
+              return (
+                <>
+                  <div className={`text-sm font-medium ${cls} mb-2`}>{status}</div>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="rounded-md bg-white/[0.04] border border-white/10 p-2">
+                      <div className="text-lg font-semibold text-white">{f.fulfilled}</div>
+                      <div className="text-[11px] text-white/60">Fulfilled</div>
+                    </div>
+                    <div className="rounded-md bg-white/[0.04] border border-white/10 p-2">
+                      <div className="text-lg font-semibold text-white">{f.pending}</div>
+                      <div className="text-[11px] text-white/60">Pending</div>
+                    </div>
+                    <div className="rounded-md bg-white/[0.04] border border-white/10 p-2">
+                      <div className="text-lg font-semibold text-white">{f.failed}</div>
+                      <div className="text-[11px] text-white/60">Failed</div>
+                    </div>
+                  </div>
+                  {analytics.total > 0 && (
+                    <div className="text-xs text-white/50 mt-2">
+                      {Math.round(f.fulfillmentRate * 100)}% fulfilled
+                      {f.lastFulfilledAt && ` · last at ${new Date(f.lastFulfilledAt).toLocaleString()}`}
+                    </div>
+                  )}
+                </>
+              );
+            })()}
+          </div>
+        </Card>
+      )}
 
       <div className="flex gap-2">
         <Button variant="outline" onClick={() => save(false)} disabled={upsert.isPending}>
