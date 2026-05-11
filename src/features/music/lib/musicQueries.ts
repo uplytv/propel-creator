@@ -10,6 +10,11 @@ export async function fetchTrack(id: string): Promise<Track | null> {
 }
 
 export async function fetchPublishedTracks(limit = 24): Promise<Track[]> {
+  // Try the new releases RPC first (filtered by audio_status='ready'), fall back to a plain query.
+  try {
+    const { data, error } = await sb.rpc('recs_new_releases', { p_limit: limit });
+    if (!error && Array.isArray(data) && data.length > 0) return data as Track[];
+  } catch (_) { /* fall through */ }
   const { data } = await sb
     .from('tracks')
     .select('*')
@@ -20,6 +25,11 @@ export async function fetchPublishedTracks(limit = 24): Promise<Track[]> {
 }
 
 export async function fetchTrendingTracks(limit = 24): Promise<Track[]> {
+  // Recency-weighted trending RPC (last 7d play counts) with fallback to all-time play_count.
+  try {
+    const { data, error } = await sb.rpc('recs_trending', { p_limit: limit });
+    if (!error && Array.isArray(data) && data.length > 0) return data as Track[];
+  } catch (_) { /* fall through */ }
   const { data } = await sb
     .from('tracks')
     .select('*')
@@ -29,8 +39,14 @@ export async function fetchTrendingTracks(limit = 24): Promise<Track[]> {
   return (data as Track[]) ?? [];
 }
 
-export async function fetchForYouTracks(limit = 24): Promise<Track[]> {
-  // (play_count*0.6 + like_count*0.4) — approximate by sorting client-side.
+export async function fetchForYouTracks(userId?: string | null, limit = 24): Promise<Track[]> {
+  // Personalized RPC when we have a user + taste profile; otherwise heuristic fallback.
+  if (userId) {
+    try {
+      const { data, error } = await sb.rpc('recs_for_you', { p_user: userId, p_limit: limit });
+      if (!error && Array.isArray(data) && data.length > 0) return data as Track[];
+    } catch (_) { /* fall through */ }
+  }
   const { data } = await sb
     .from('tracks')
     .select('*')
