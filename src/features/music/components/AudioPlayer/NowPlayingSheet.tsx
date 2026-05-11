@@ -32,6 +32,8 @@ export default function NowPlayingSheet({
   const seek = usePlayerStore((s) => s.seek);
   const autoplayRadio = usePlayerStore((s) => s.autoplayRadio);
   const setAutoplayRadio = usePlayerStore((s) => s.setAutoplayRadio);
+  const crossfadeSeconds = usePlayerStore((s) => s.crossfadeSeconds);
+  const setCrossfade = usePlayerStore((s) => s.setCrossfade);
 
   const [queueOpen, setQueueOpen] = useState(false);
   const [tab, setTab] = useState<Tab>('now');
