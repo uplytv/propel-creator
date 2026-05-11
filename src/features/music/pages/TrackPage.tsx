@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Play, Pause, Loader2, AlertTriangle, Share2 } from 'lucide-react';
+import { ArrowLeft, Play, Pause, Loader2, AlertTriangle, Share2, Code, BarChart3, ChevronDown } from 'lucide-react';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import { useTrack } from '../hooks/useTrack';
 import { useTrackProcessing } from '../hooks/useTrackProcessing';
 import { usePlayerStore } from '../hooks/usePlayerStore';
@@ -15,6 +17,13 @@ import BuyTrackButton from '../components/BuyTrackButton';
 import TipTrackButton from '../components/TipTrackButton';
 import TrackPriceEditor from '../components/TrackPriceEditor';
 import UniversalLinksList from '../components/UniversalLinksList';
+import DistributionPanel from '../components/DistributionPanel';
+import WaveformBar from '../components/AudioPlayer/WaveformBar';
+import WaveformComments from '../components/Comments/WaveformComments';
+import CommentComposer from '../components/Comments/CommentComposer';
+import CommentThread from '../components/Comments/CommentThread';
+import RelatedTracks from '../components/RelatedTracks';
+import EmbedCodeModal from '../components/EmbedCodeModal';
 import { formatDuration } from '../lib/formatDuration';
 import { useAuth } from '@/context/AuthContext';
 
@@ -28,6 +37,8 @@ export default function TrackPage() {
   const isCurrent = usePlayerStore((s) => s.queue[s.currentIndex]?.id === track?.id);
   const isPlaying = usePlayerStore((s) => s.isPlaying && isCurrent);
   const [shareOpen, setShareOpen] = useState(false);
+  const [embedOpen, setEmbedOpen] = useState(false);
+  const [distOpen, setDistOpen] = useState(false);
 
   if (isLoading) return <div className="p-8 text-white/50">Loading…</div>;
   if (!track) return <div className="p-8 text-white/50">Track not found.</div>;
@@ -35,6 +46,18 @@ export default function TrackPage() {
   const ready = track.audio_status === 'ready' && !!track.audio_mux_playback_id;
   const errored = track.audio_status === 'errored';
   const processing = !ready && !errored;
+  const isOwner = user?.id === track.creator_id;
+  const allowDownload = (track as any).allow_download ?? false;
+  const peaks = (track as any).waveform_peaks as number[] | null | undefined;
+
+  const setAllowDownload = async (next: boolean) => {
+    const { error } = await (supabase as any)
+      .from('tracks')
+      .update({ allow_download: next })
+      .eq('id', track.id);
+    if (error) toast.error(error.message);
+    else toast.success(next ? 'Downloads enabled' : 'Downloads disabled');
+  };
 
   return (
     <div className="pb-40 max-w-3xl mx-auto px-4 pt-4">
