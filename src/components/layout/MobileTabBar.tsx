@@ -58,52 +58,8 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
 
   return (
     <>
-      {/* Create action sheet backdrop */}
-      <AnimatePresence>
-        {createOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm md:hidden"
-            onClick={() => setCreateOpen(false)}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Create action sheet */}
-      <AnimatePresence>
-        {createOpen && (
-          <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed bottom-16 left-0 right-0 z-[61] md:hidden bg-card border-t border-border rounded-t-2xl safe-area-bottom"
-          >
-            <div className="p-4 space-y-1">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Create</p>
-                <button onClick={() => setCreateOpen(false)} className="p-1 rounded-lg text-muted-foreground hover:text-foreground">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              {createActions.map((action) => (
-                <button
-                  key={action.label}
-                  onClick={action.onClick}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-foreground hover:bg-secondary/60 transition-colors"
-                >
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <action.icon className="w-5 h-5 text-primary" />
-                  </div>
-                  {action.label}
-                </button>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Universal Create sheet */}
+      <CreateSheet open={createOpen} onClose={() => setCreateOpen(false)} />
 
       {/* ARIA action sheet backdrop */}
       <AnimatePresence>
