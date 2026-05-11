@@ -27,15 +27,23 @@ export default function PresaveCallback() {
       return;
     }
 
-    let parsedState: { slug: string; email: string | null; nonce?: string; flow?: "presave" | "follow" };
+    let parsedState: { slug: string; email: string | null; nonce?: string; flow?: "presave" | "follow" | "campaign" };
     try {
       parsedState = JSON.parse(atob(stateParam));
     } catch {
-      setStatus("error");
-      setMessage("Invalid state");
-      return;
+      // New presave_campaigns flow uses plain slug as state.
+      const pendingEmail = sessionStorage.getItem("presave_pending_email");
+      const pendingSlug = sessionStorage.getItem("presave_pending_slug");
+      if (stateParam && pendingSlug && stateParam === pendingSlug) {
+        parsedState = { slug: stateParam, email: pendingEmail, flow: "campaign" };
+      } else {
+        setStatus("error");
+        setMessage("Invalid state");
+        return;
+      }
     }
-    const flow: "presave" | "follow" = parsedState.flow === "follow" ? "follow" : "presave";
+    const flow: "presave" | "follow" | "campaign" =
+      parsedState.flow === "follow" ? "follow" : parsedState.flow === "campaign" ? "campaign" : "presave";
 
     // CSRF verification: compare nonce to value stored when we built the auth URL.
     try {
