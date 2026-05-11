@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 
 export interface SearchResult {
   id: string;
-  type: "creator" | "product" | "stream" | "recording" | "job";
+  type: "creator" | "product" | "stream" | "recording" | "job" | "track" | "album" | "artist";
   title: string;
   subtitle?: string;
   image?: string | null;
