@@ -1,4 +1,15 @@
 import { useEffect, useState } from "react";
+
+function DocTitle({ title }: { title: string }) {
+  useEffect(() => {
+    const prev = document.title;
+    document.title = title;
+    return () => {
+      document.title = prev;
+    };
+  }, [title]);
+  return null;
+}
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
