@@ -10,6 +10,11 @@ export async function fetchTrack(id: string): Promise<Track | null> {
 }
 
 export async function fetchPublishedTracks(limit = 24): Promise<Track[]> {
+  // Try the new releases RPC first (filtered by audio_status='ready'), fall back to a plain query.
+  try {
+    const { data, error } = await sb.rpc('recs_new_releases', { p_limit: limit });
+    if (!error && Array.isArray(data) && data.length > 0) return data as Track[];
+  } catch (_) { /* fall through */ }
   const { data } = await sb
     .from('tracks')
     .select('*')
@@ -20,6 +25,11 @@ export async function fetchPublishedTracks(limit = 24): Promise<Track[]> {
 }
 
 export async function fetchTrendingTracks(limit = 24): Promise<Track[]> {
+  // Recency-weighted trending RPC (last 7d play counts) with fallback to all-time play_count.
+  try {
+    const { data, error } = await sb.rpc('recs_trending', { p_limit: limit });
+    if (!error && Array.isArray(data) && data.length > 0) return data as Track[];
+  } catch (_) { /* fall through */ }
   const { data } = await sb
     .from('tracks')
     .select('*')
@@ -29,8 +39,14 @@ export async function fetchTrendingTracks(limit = 24): Promise<Track[]> {
   return (data as Track[]) ?? [];
 }
 
-export async function fetchForYouTracks(limit = 24): Promise<Track[]> {
-  // (play_count*0.6 + like_count*0.4) — approximate by sorting client-side.
+export async function fetchForYouTracks(userId?: string | null, limit = 24): Promise<Track[]> {
+  // Personalized RPC when we have a user + taste profile; otherwise heuristic fallback.
+  if (userId) {
+    try {
+      const { data, error } = await sb.rpc('recs_for_you', { p_user: userId, p_limit: limit });
+      if (!error && Array.isArray(data) && data.length > 0) return data as Track[];
+    } catch (_) { /* fall through */ }
+  }
   const { data } = await sb
     .from('tracks')
     .select('*')
@@ -144,15 +160,18 @@ export async function searchMusicAdvanced(
   q: string,
   filters: SearchFilters = {},
 ): Promise<{ tracks: Track[]; albums: Album[] }> {
-  const term = q.trim().length ? `%${q.trim()}%` : null;
+  const term = q.trim();
   const allowedGenres = [
     ...(filters.genres ?? []),
     ...(filters.moodGenres ?? []),
   ];
   const uniqueGenres = Array.from(new Set(allowedGenres));
 
-  let tq = sb.from('tracks').select('*').eq('is_published', true);
-  if (term) tq = tq.or(`title.ilike.${term},description.ilike.${term}`);
+  let tq = sb.from('tracks').select('*').eq('is_published', true).eq('audio_status', 'ready');
+  if (term) {
+    // Postgres full-text search via the maintained `search_vector` column.
+    tq = tq.textSearch('search_vector', term, { type: 'websearch', config: 'simple' });
+  }
   if (uniqueGenres.length) tq = tq.in('genre', uniqueGenres);
   if (filters.hideExplicit) tq = tq.eq('is_explicit', false);
   if (filters.monetization && filters.monetization !== 'any') {
@@ -173,11 +192,42 @@ export async function searchMusicAdvanced(
       .order('like_count', { ascending: false });
 
   let aq = sb.from('albums').select('*').eq('is_published', true);
-  if (term) aq = aq.ilike('title', term);
+  if (term) {
+    aq = aq.textSearch('search_vector', term, { type: 'websearch', config: 'simple' });
+  }
   aq = aq.order('release_date', { ascending: false, nullsFirst: false }).limit(20);
 
   const [{ data: t }, { data: a }] = await Promise.all([tq.limit(60), aq]);
   return { tracks: (t as Track[]) ?? [], albums: (a as Album[]) ?? [] };
+}
+
+/**
+ * Lightweight typeahead — uses the `search_music` SECURITY DEFINER RPC which
+ * returns ranked tracks and albums with creator subtitle. Used for instant
+ * suggestions while the user is typing.
+ */
+export interface SearchSuggestion {
+  kind: 'track' | 'album';
+  id: string;
+  title: string;
+  subtitle: string;
+  image_url: string | null;
+  rank: number;
+}
+
+export async function searchMusicTypeahead(
+  q: string,
+  limit = 12,
+): Promise<SearchSuggestion[]> {
+  const term = q.trim();
+  if (term.length < 2) return [];
+  try {
+    const { data, error } = await sb.rpc('search_music', { p_query: term, p_limit: limit });
+    if (error) return [];
+    return (data ?? []) as SearchSuggestion[];
+  } catch {
+    return [];
+  }
 }
 
 export interface ChartFilters {

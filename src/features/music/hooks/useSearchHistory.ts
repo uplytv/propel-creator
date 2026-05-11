@@ -44,7 +44,12 @@ export function useRecordSearch() {
     mutationFn: async (query: string) => {
       const q = query.trim();
       if (!user || q.length < 2) return;
-      await sb.from("music_search_history").insert({ user_id: user.id, query: q });
+      // Mirror into both legacy `music_search_history` and the new `recent_searches`
+      // table introduced in the Tier 2 search migration.
+      await Promise.all([
+        sb.from("music_search_history").insert({ user_id: user.id, query: q }),
+        sb.from("recent_searches").insert({ user_id: user.id, query: q }),
+      ]);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["music-search-history"] }),
   });

@@ -14,6 +14,7 @@ import {
   useDailyMixes,
   useBecauseYouListened,
 } from '../hooks/usePersonalizedMixes';
+import { useDailyMixesFromTable } from '../hooks/useRecs';
 import TrackCard from '../components/TrackCard';
 import DailyMixCard from '../components/DailyMixCard';
 import ChartsSection from '../components/ChartsSection';
@@ -42,6 +43,7 @@ export default function MusicHome() {
   const { data, isLoading } = useMusicFeed(user?.id);
   const { data: recentlyPlayed } = useRecentlyPlayed(12);
   const { data: dailyMixes } = useDailyMixes(20);
+  const { data: dailyMixesTable } = useDailyMixesFromTable();
   const { data: because } = useBecauseYouListened(12);
   const { data: stations } = useRadioStations();
   const { data: premieres } = useUpcomingPremieres();
@@ -202,7 +204,20 @@ export default function MusicHome() {
 
         {user && <FriendActivityRail />}
 
-        {user && (dailyMixes?.length ?? 0) > 0 && (
+        {user && (dailyMixesTable?.length ?? 0) > 0 && (
+          <Row title="Made For You">
+            {dailyMixesTable!.map(({ mix, tracks }) => (
+              <DailyMixCard
+                key={mix.id}
+                title={mix.title}
+                subtitle={mix.description ?? mix.seed_genres.join(' · ')}
+                tracks={tracks}
+              />
+            ))}
+          </Row>
+        )}
+
+        {user && (dailyMixesTable?.length ?? 0) === 0 && (dailyMixes?.length ?? 0) > 0 && (
           <Row title="Made For You">
             {dailyMixes!.map((mix) => (
               <DailyMixCard
@@ -228,7 +243,15 @@ export default function MusicHome() {
             <TrackCard key={t.id} track={t} queue={data?.forYou} />
           ))}
           {!isLoading && !data?.forYou.length && (
-            <div className="text-sm text-white/40 px-1">Nothing yet — check back soon.</div>
+            <div className="text-sm text-white/50 px-1 flex flex-col gap-2">
+              <span>Play a few tracks to personalize this.</span>
+              <Link
+                to="/music/browse"
+                className="self-start text-xs px-3 py-1.5 rounded-full bg-[#00FF85] text-black font-semibold"
+              >
+                Browse music
+              </Link>
+            </div>
           )}
         </Row>
 

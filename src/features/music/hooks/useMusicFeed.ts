@@ -14,7 +14,7 @@ export function useMusicFeed(userId?: string | null) {
     queryKey: ['music', 'feed', userId ?? null],
     queryFn: async () => {
       const [forYou, newReleases, trending] = await Promise.all([
-        fetchForYouTracks(),
+        fetchForYouTracks(userId ?? null),
         fetchPublishedTracks(),
         fetchTrendingTracks(),
       ]);
