@@ -59,6 +59,8 @@ const ENTRIES: Entry[] = [
   { group: "Creator", label: "Analytics", to: "/music/analytics" },
   // Connect
   { group: "Connect", label: "DSP Connections", to: "/music/connections" },
+  { group: "Connect", label: "Artist Profile", to: "/music/artist/me" },
+  { group: "Connect", label: "Track Insights", to: "/music/track/me/insights", note: "Open from a track you own" },
 ];
 
 const GROUPS = [
