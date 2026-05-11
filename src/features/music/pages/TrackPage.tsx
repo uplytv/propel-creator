@@ -181,7 +181,7 @@ export default function TrackPage() {
             className="w-full flex items-center justify-between px-4 py-3 text-left"
             style={{ minHeight: 44 }}
           >
-            <span className="text-sm font-bold text-white">Distribution &amp; rights</span>
+            <span className="text-sm font-bold text-white">Release status</span>
             <ChevronDown className={`w-4 h-4 text-white/60 transition ${distOpen ? 'rotate-180' : ''}`} />
           </button>
           {distOpen && (

@@ -64,7 +64,7 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
       { label: "Library", icon: Package, path: "/music/library", desc: "Your saved music" },
       { label: "Charts", icon: TrendingUp, path: "/music/charts", desc: "What's trending now" },
       { label: "Upload", icon: Video, path: "/music/upload", desc: "Drop a track or album" },
-      { label: "Distribution", icon: Globe, path: "/music/distribution", desc: "Spotify, Apple Music & more" },
+      { label: "Release Tracker", icon: Globe, path: "/music/distribution", desc: "Log DSP submissions across Spotify, Apple Music & more" },
       { label: "DSP Connections", icon: Plug, path: "/music/connections", desc: "Connect Spotify & Apple" },
       { label: "Music Labs", icon: Sparkles, path: "/music/labs", desc: "Every music feature" },
     ],
