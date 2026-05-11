@@ -869,6 +869,9 @@ export default function CreatorProfile() {
         </section>
       )}
 
+      {/* MUSIC */}
+      <CreatorMusicSection userId={profile?.user_id} username={profile?.username} isOwner={!!isOwner} />
+
       {/* DIGITAL PRODUCTS / SHOP */}
       {products.length > 0 && (
         <section className="max-w-[720px] mx-auto px-4 mb-8">
