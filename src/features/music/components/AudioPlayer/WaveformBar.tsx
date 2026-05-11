@@ -2,23 +2,32 @@ import { useMemo } from 'react';
 import { usePlayerStore } from '../../hooks/usePlayerStore';
 
 /**
- * Lightweight pseudo-waveform: 60 deterministic bars driven by track id,
- * highlighted up to current position. Avoids Web Audio decoding cost.
+ * Lightweight waveform: uses real `peaks` if provided (from
+ * tracks.waveform_peaks), otherwise falls back to a deterministic
+ * pseudo-waveform derived from the trackId so the UI never looks empty.
  */
-export default function WaveformBar({ trackId }: { trackId: string }) {
+export default function WaveformBar({
+  trackId,
+  peaks,
+}: {
+  trackId: string;
+  peaks?: number[] | null;
+}) {
   const position = usePlayerStore((s) => s.positionSeconds);
   const duration = usePlayerStore((s) => s.durationSeconds);
   const seek = usePlayerStore((s) => s.seek);
 
   const bars = useMemo(() => {
-    // simple hash → 60 heights between 0.25 and 1
+    if (peaks && peaks.length > 0) {
+      return peaks.map((p) => Math.max(0.05, Math.min(1, p)));
+    }
     let seed = 0;
     for (let i = 0; i < trackId.length; i++) seed = (seed * 31 + trackId.charCodeAt(i)) >>> 0;
     return Array.from({ length: 60 }, () => {
       seed = (seed * 1103515245 + 12345) & 0x7fffffff;
-      return 0.25 + (seed % 1000) / 1333; // 0.25 .. ~1
+      return 0.25 + (seed % 1000) / 1333;
     });
-  }, [trackId]);
+  }, [trackId, peaks]);
 
   const progress = duration > 0 ? position / duration : 0;
 
