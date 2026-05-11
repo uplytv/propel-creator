@@ -105,6 +105,84 @@ export function useUpsertPresaveCampaign() {
   });
 }
 
+export interface PresaveCampaignAnalytics {
+  total: number;
+  byPlatform: { spotify: number; apple_music: number; email_only: number };
+  consent: { saveTrack: number; followArtist: number; saveRate: number; followRate: number };
+  fulfillment: {
+    fulfilled: number;
+    pending: number;
+    failed: number;
+    fulfillmentRate: number;
+    lastFulfilledAt: string | null;
+    complete: boolean;
+  };
+}
+
+export function usePresaveCampaignAnalytics(campaignId?: string, releaseAt?: string | null) {
+  return useQuery({
+    queryKey: ["presave-campaign-analytics", campaignId],
+    enabled: !!campaignId,
+    queryFn: async (): Promise<PresaveCampaignAnalytics> => {
+      const { data, error } = await (supabase as any)
+        .from("presave_subscribers")
+        .select("platform, consent_save_track, consent_follow_artist, fulfilled, fulfilled_at, failure_reason")
+        .eq("campaign_id", campaignId!);
+      if (error) throw error;
+      const rows = (data ?? []) as Array<{
+        platform: string;
+        consent_save_track: boolean | null;
+        consent_follow_artist: boolean | null;
+        fulfilled: boolean | null;
+        fulfilled_at: string | null;
+        failure_reason: string | null;
+      }>;
+      const total = rows.length;
+      const byPlatform = { spotify: 0, apple_music: 0, email_only: 0 };
+      let saveTrack = 0;
+      let followArtist = 0;
+      let fulfilled = 0;
+      let failed = 0;
+      let lastFulfilledAt: string | null = null;
+      for (const r of rows) {
+        if (r.platform === "spotify") byPlatform.spotify++;
+        else if (r.platform === "apple_music") byPlatform.apple_music++;
+        else byPlatform.email_only++;
+        if (r.consent_save_track) saveTrack++;
+        if (r.consent_follow_artist) followArtist++;
+        if (r.fulfilled) {
+          fulfilled++;
+          if (r.fulfilled_at && (!lastFulfilledAt || r.fulfilled_at > lastFulfilledAt)) {
+            lastFulfilledAt = r.fulfilled_at;
+          }
+        } else if (r.failure_reason) {
+          failed++;
+        }
+      }
+      const pending = total - fulfilled - failed;
+      const released = releaseAt ? new Date(releaseAt).getTime() <= Date.now() : false;
+      return {
+        total,
+        byPlatform,
+        consent: {
+          saveTrack,
+          followArtist,
+          saveRate: total ? saveTrack / total : 0,
+          followRate: total ? followArtist / total : 0,
+        },
+        fulfillment: {
+          fulfilled,
+          pending,
+          failed,
+          fulfillmentRate: total ? fulfilled / total : 0,
+          lastFulfilledAt,
+          complete: released && total > 0 && pending === 0,
+        },
+      };
+    },
+  });
+}
+
 export function usePresaveSubscribe() {
   return useMutation({
     mutationFn: async (input: {
