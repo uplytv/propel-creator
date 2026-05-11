@@ -43,6 +43,7 @@ export default function MusicHome() {
   const { data, isLoading } = useMusicFeed(user?.id);
   const { data: recentlyPlayed } = useRecentlyPlayed(12);
   const { data: dailyMixes } = useDailyMixes(20);
+  const { data: dailyMixesTable } = useDailyMixesFromTable();
   const { data: because } = useBecauseYouListened(12);
   const { data: stations } = useRadioStations();
   const { data: premieres } = useUpcomingPremieres();
