@@ -133,7 +133,7 @@ Deno.serve(async (req) => {
 
   const { data: campaigns, error } = await supabase
     .from("presave_campaigns")
-    .select("*, tracks!inner(id, title, cover_url, creator_id)")
+    .select("*, tracks!inner(id, title, cover_art_url, creator_id)")
     .eq("status", "active")
     .lte("release_at", new Date().toISOString());
 
@@ -221,7 +221,7 @@ Deno.serve(async (req) => {
           liveEmailHtml({
             trackTitle: track.title,
             artistName,
-            coverUrl: campaign.cover_art_url || track.cover_url,
+            coverUrl: campaign.cover_art_url || track.cover_art_url,
             spotifySaved,
             links,
           })

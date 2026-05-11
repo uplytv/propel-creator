@@ -61,10 +61,10 @@ Deno.serve(async (req) => {
 
     let campaign: any = null;
     if (campaign_id) {
-      const r = await supabase.from("presave_campaigns").select("*, tracks!inner(title, cover_url, creator_id)").eq("id", campaign_id).maybeSingle();
+      const r = await supabase.from("presave_campaigns").select("*, tracks!inner(title, cover_art_url, creator_id)").eq("id", campaign_id).maybeSingle();
       campaign = r.data;
     } else if (campaign_slug) {
-      const r = await supabase.from("presave_campaigns").select("*, tracks!inner(title, cover_url, creator_id)").eq("campaign_url_slug", campaign_slug).maybeSingle();
+      const r = await supabase.from("presave_campaigns").select("*, tracks!inner(title, cover_art_url, creator_id)").eq("campaign_url_slug", campaign_slug).maybeSingle();
       campaign = r.data;
     }
 
@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
             artistName,
             releaseDate,
             platform,
-            coverUrl: campaign.cover_art_url || campaign.tracks.cover_url,
+            coverUrl: campaign.cover_art_url || campaign.tracks.cover_art_url,
           }),
         }),
       }).catch(() => {});
