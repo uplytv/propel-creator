@@ -11,7 +11,7 @@ import {
   Zap, Crown, Sparkles, BarChart3, Radio, Menu, X, Wallet, LayoutGrid, ChevronDown,
   GraduationCap, DollarSign, Bot, Briefcase, Handshake, Share2, Film,
   Trophy, Plug, MessageSquare, Bell as BellIcon, UserCheck, Search, Rocket,
-  Video, CreditCard, UserPlus, User, Globe, Mail, Mic, Gift, Rss, Tv, Code
+  Video, CreditCard, UserPlus, User, Globe, Mail, Mic, Gift, Rss, Tv, Code, Music
 } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import { useApp, tierNames } from "@/context/AppContext";
