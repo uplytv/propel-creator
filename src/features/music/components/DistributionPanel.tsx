@@ -95,9 +95,44 @@ export default function DistributionPanel({ trackId, isOwner }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* Metadata */}
+      {/* Release Tracker (compact) */}
       <section className="rounded-xl bg-white/5 p-4 space-y-3">
-        <h3 className="text-white font-bold text-sm">Distribution Metadata</h3>
+        <div className="space-y-1">
+          <h3 className="text-white font-bold text-sm">Release status</h3>
+          <p className="text-white/40 text-xs">
+            UPLY tracks status only — distribute via your DSP service of choice.
+          </p>
+        </div>
+
+        {!release && (
+          <button
+            onClick={() => createReleaseForTrack.mutate()}
+            disabled={createReleaseForTrack.isPending}
+            className="w-full rounded-lg bg-white/10 text-white font-bold py-3 text-sm"
+            style={{ minHeight: 44 }}
+          >
+            {createReleaseForTrack.isPending ? "Creating…" : "Start tracking this release"}
+          </button>
+        )}
+
+        {release && (
+          <div className="space-y-2">
+            {SUPPORTED_DSPS.map((p) => (
+              <ReleaseStatusRow
+                key={p}
+                releaseId={release.id}
+                platform={p}
+                target={targetByPlatform.get(p)}
+                compact
+              />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Rights & metadata */}
+      <section className="rounded-xl bg-white/5 p-4 space-y-3">
+        <h3 className="text-white font-bold text-sm">Rights &amp; metadata</h3>
         <Input label="ISRC" value={isrc} onChange={(v) => setMeta({ ...meta, isrc: v })} placeholder="US-XXX-YY-NNNNN" />
         <Input label="ISWC" value={iswc} onChange={(v) => setMeta({ ...meta, iswc: v })} placeholder="T-XXX.XXX.XXX-N" />
         <Input label="Label" value={label} onChange={(v) => setMeta({ ...meta, label: v })} />
@@ -107,7 +142,7 @@ export default function DistributionPanel({ trackId, isOwner }: Props) {
           className="w-full rounded-lg bg-[#00FF85] text-black font-bold py-3 text-sm"
           style={{ minHeight: 44 }}
         >
-          Save Metadata
+          Save metadata
         </button>
       </section>
 
@@ -169,39 +204,6 @@ export default function DistributionPanel({ trackId, isOwner }: Props) {
           >
             <Plus className="w-4 h-4" /> Add Split
           </button>
-        </div>
-      </section>
-
-      {/* External platforms */}
-      <section className="rounded-xl bg-white/5 p-4 space-y-3">
-        <h3 className="text-white font-bold text-sm">Export to Platforms</h3>
-        <div className="grid grid-cols-2 gap-2">
-          {DISTRIBUTION_PLATFORMS.map((p) => {
-            const exp = exports.find((e) => e.platform === p.id);
-            const status = exp?.status;
-            return (
-              <button
-                key={p.id}
-                onClick={() => !exp && requestExport.mutate(p.id)}
-                disabled={!!exp}
-                className="rounded-lg bg-white/5 p-3 text-left disabled:opacity-60"
-                style={{ minHeight: 60 }}
-              >
-                <p className="text-white text-sm font-medium">{p.name}</p>
-                {status ? (
-                  <p className="text-xs flex items-center gap-1 mt-1">
-                    {status === "completed" && <><Check className="w-3 h-3 text-[#00FF85]" /><span className="text-[#00FF85]">Live</span></>}
-                    {status === "pending" && <><Clock className="w-3 h-3 text-yellow-400" /><span className="text-yellow-400">Pending</span></>}
-                    {status === "failed" && <><X className="w-3 h-3 text-red-400" /><span className="text-red-400">Failed</span></>}
-                  </p>
-                ) : (
-                  <p className="text-xs text-white/40 flex items-center gap-1 mt-1">
-                    <Send className="w-3 h-3" /> Request
-                  </p>
-                )}
-              </button>
-            );
-          })}
         </div>
       </section>
     </div>
