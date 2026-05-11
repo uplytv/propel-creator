@@ -113,13 +113,7 @@ export default function DistributionPage() {
 
   return (
     <div className="mobile-safe-content max-w-3xl mx-auto p-4 space-y-6">
-      <Helmet>
-        <title>Release Tracker — UPLY</title>
-        <meta
-          name="description"
-          content="Track where your music is live across DSPs. UPLY does not distribute on your behalf."
-        />
-      </Helmet>
+      <DocTitle title="Release Tracker — UPLY" />
 
       <header className="space-y-2">
         <div className="flex items-center gap-3">
