@@ -228,7 +228,15 @@ export default function MusicHome() {
             <TrackCard key={t.id} track={t} queue={data?.forYou} />
           ))}
           {!isLoading && !data?.forYou.length && (
-            <div className="text-sm text-white/40 px-1">Nothing yet — check back soon.</div>
+            <div className="text-sm text-white/50 px-1 flex flex-col gap-2">
+              <span>Play a few tracks to personalize this.</span>
+              <Link
+                to="/music/browse"
+                className="self-start text-xs px-3 py-1.5 rounded-full bg-[#00FF85] text-black font-semibold"
+              >
+                Browse music
+              </Link>
+            </div>
           )}
         </Row>
 
