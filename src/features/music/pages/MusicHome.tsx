@@ -79,6 +79,14 @@ export default function MusicHome() {
             <Library className="w-5 h-5" />
           </Link>
           <Link
+            to="/music/labs"
+            className="p-2 rounded-full bg-white/5 text-[#00FF85]"
+            aria-label="Music Labs"
+            title="Music Labs — every feature"
+          >
+            ✦
+          </Link>
+          <Link
             to="/music/upload"
             className="px-4 py-2 rounded-full text-white font-semibold flex items-center gap-1.5 text-sm"
             style={{ background: 'linear-gradient(90deg,#3D7CFF,#B025FF)' }}
