@@ -500,6 +500,9 @@ const App = () => (
                   </RouteErrorBoundary>
                 </Suspense>
                 </ErrorBoundary>
+                <PersistentPlayer />
+                </Suspense>
+                </ErrorBoundary>
               </BrowserRouter>
               </AppWithSplash>
               </NativeShell>
