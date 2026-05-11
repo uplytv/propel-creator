@@ -186,7 +186,7 @@ export default function TrackPage() {
           </button>
           {distOpen && (
             <div className="px-4 pb-4">
-              <DistributionPanel trackId={track.id} />
+              <DistributionPanel trackId={track.id} isOwner={isOwner} />
             </div>
           )}
         </section>
