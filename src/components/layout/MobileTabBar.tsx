@@ -47,13 +47,7 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
     p => location.pathname === p || location.pathname.startsWith(p + "/")
   );
 
-  const createActions = [
-    { label: "Go Live", icon: Radio, onClick: () => { setCreateOpen(false); navigate("/go-live"); } },
-    { label: "Upload Video", icon: Upload, onClick: () => { setCreateOpen(false); onUploadVideo?.(); } },
-    { label: "Schedule Stream", icon: Calendar, onClick: () => { setCreateOpen(false); navigate("/go-live?tab=schedule"); } },
-    { label: "Create Event", icon: Ticket, onClick: () => { setCreateOpen(false); navigate("/events/create"); } },
-    { label: "Add Course", icon: GraduationCap, onClick: () => { setCreateOpen(false); navigate(user ? `/community/${user.id}/classroom` : "/dashboard"); } },
-  ];
+  // Create actions are now rendered by <CreateSheet />.
 
   const ariaActions = [
     { label: "AI Team", icon: Bot, path: "/dashboard/ai-team", desc: "Your 5 AI agents" },
