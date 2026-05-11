@@ -54,6 +54,22 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
     ],
   },
   {
+    core: "music",
+    label: "MUSIC",
+    icon: Music,
+    items: [
+      { label: "Music Home", icon: Music, path: "/music", desc: "Stream what creators drop" },
+      { label: "Feed", icon: Tv, path: "/music/feed", desc: "Activity from artists you follow" },
+      { label: "Search", icon: Search, path: "/music/search", desc: "Find tracks, albums, artists" },
+      { label: "Library", icon: Package, path: "/music/library", desc: "Your saved music" },
+      { label: "Charts", icon: TrendingUp, path: "/music/charts", desc: "What's trending now" },
+      { label: "Upload", icon: Video, path: "/music/upload", desc: "Drop a track or album" },
+      { label: "Distribution", icon: Globe, path: "/music/distribution", desc: "Spotify, Apple Music & more" },
+      { label: "DSP Connections", icon: Plug, path: "/music/connections", desc: "Connect Spotify & Apple" },
+      { label: "Music Labs", icon: Sparkles, path: "/music/labs", desc: "Every music feature" },
+    ],
+  },
+  {
     core: "earn",
     label: "EARN",
     icon: DollarSign,
