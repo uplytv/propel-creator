@@ -23,6 +23,7 @@ export default function PresaveCampaignSetupPage() {
   const navigate = useNavigate();
   const { data: existing, isLoading } = usePresaveCampaign(trackId);
   const upsert = useUpsertPresaveCampaign();
+  const { data: analytics } = usePresaveCampaignAnalytics(existing?.id, existing?.release_at);
 
   const [track, setTrack] = useState<any>(null);
   const [confSpotify, setConfSpotify] = useState(false);
