@@ -21,16 +21,36 @@ export type DistributionRelease = {
   updated_at: string;
 };
 
+export type ReleaseStatus =
+  | "not_submitted"
+  | "submitted"
+  | "pending_review"
+  | "live"
+  | "rejected"
+  | "removed";
+
+export const RELEASE_STATUSES: { value: ReleaseStatus; label: string }[] = [
+  { value: "not_submitted", label: "Not submitted" },
+  { value: "submitted", label: "Submitted" },
+  { value: "pending_review", label: "Pending review" },
+  { value: "live", label: "Live" },
+  { value: "rejected", label: "Rejected" },
+  { value: "removed", label: "Removed" },
+];
+
 export type DistributionTarget = {
   id: string;
   release_id: string;
   platform: string;
-  status: string;
+  status: ReleaseStatus;
   external_id: string | null;
   external_url: string | null;
   error_message: string | null;
   delivered_at: string | null;
   live_at: string | null;
+  live_url: string | null;
+  notes: string | null;
+  status_updated_at: string | null;
 };
 
 export const SUPPORTED_DSPS = [
@@ -42,6 +62,16 @@ export const SUPPORTED_DSPS = [
   "deezer",
   "soundcloud",
 ];
+
+export const DSP_LABELS: Record<string, string> = {
+  spotify: "Spotify",
+  apple_music: "Apple Music",
+  amazon_music: "Amazon Music",
+  youtube_music: "YouTube Music",
+  tidal: "Tidal",
+  deezer: "Deezer",
+  soundcloud: "SoundCloud",
+};
 
 export function useMyReleases() {
   return useQuery({
@@ -90,15 +120,89 @@ export function useCreateRelease() {
   });
 }
 
+/**
+ * Update a single release-tracker row (status / live URL / notes).
+ * Upserts by (release_id, platform). UPLY does not deliver to any DSP — this
+ * only records what the creator has submitted via their distributor.
+ */
+export function useUpdateReleaseStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      releaseId: string;
+      platform: string;
+      status: ReleaseStatus;
+      liveUrl?: string | null;
+      notes?: string | null;
+    }) => {
+      const row: any = {
+        release_id: input.releaseId,
+        platform: input.platform,
+        status: input.status,
+      };
+      if (input.liveUrl !== undefined) row.live_url = input.liveUrl;
+      if (input.notes !== undefined) row.notes = input.notes;
+      const { error } = await supabase
+        .from("music_distribution_targets")
+        .upsert(row, { onConflict: "release_id,platform" });
+      if (error) throw error;
+    },
+    onSuccess: (_, v) => {
+      qc.invalidateQueries({ queryKey: ["distribution-targets", v.releaseId] });
+      qc.invalidateQueries({ queryKey: ["distribution-releases"] });
+      qc.invalidateQueries({ queryKey: ["universal-links"] });
+    },
+  });
+}
+
+/** Bulk-flip not_submitted → submitted across all DSPs for a release. */
+export function useMarkAllSubmitted() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ releaseId, platforms }: { releaseId: string; platforms: string[] }) => {
+      const { data: existing } = await supabase
+        .from("music_distribution_targets")
+        .select("platform,status")
+        .eq("release_id", releaseId);
+      const existingPlatforms = new Set((existing ?? []).map((r: any) => r.platform));
+      const toInsert = platforms
+        .filter((p) => !existingPlatforms.has(p))
+        .map((p) => ({ release_id: releaseId, platform: p, status: "submitted" }));
+      if (toInsert.length) {
+        const { error } = await supabase.from("music_distribution_targets").insert(toInsert);
+        if (error) throw error;
+      }
+      const { error: uErr } = await supabase
+        .from("music_distribution_targets")
+        .update({ status: "submitted" })
+        .eq("release_id", releaseId)
+        .eq("status", "not_submitted");
+      if (uErr) throw uErr;
+    },
+    onSuccess: (_, v) => {
+      qc.invalidateQueries({ queryKey: ["distribution-targets", v.releaseId] });
+      qc.invalidateQueries({ queryKey: ["distribution-releases"] });
+    },
+  });
+}
+
+/**
+ * @deprecated Use `useUpdateReleaseStatus` per platform. Kept for one batch to
+ * avoid breaking older callers. UPLY does not deliver to DSPs; this just marks
+ * the platforms as submitted in the local Release Tracker.
+ */
 export function useSubmitToDSPs() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ releaseId, platforms }: { releaseId: string; platforms: string[] }) => {
+      // eslint-disable-next-line no-console
+      console.warn(
+        "[useSubmitToDSPs] deprecated — use useUpdateReleaseStatus. UPLY does not deliver to DSPs."
+      );
       const rows = platforms.map((p) => ({
         release_id: releaseId,
         platform: p,
         status: "submitted",
-        delivered_at: new Date().toISOString(),
       }));
       const { error } = await supabase
         .from("music_distribution_targets")
