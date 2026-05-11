@@ -21,6 +21,7 @@ const ENTRIES: Entry[] = [
   { group: "Discovery", label: "Search", to: "/music/search" },
   { group: "Discovery", label: "Charts", to: "/music/charts" },
   { group: "Discovery", label: "Live Now", to: "/music/live" },
+  { group: "Discovery", label: "Activity Feed", to: "/music/feed" },
   { group: "Discovery", label: "Notifications", to: "/music/notifications" },
   // Library / Personal
   { group: "Library", label: "My Library", to: "/music/library" },
