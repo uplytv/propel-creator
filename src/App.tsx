@@ -110,6 +110,8 @@ const MusicLibrary = lazy(() => import("./features/music/pages/MusicLibrary"));
 const MusicUpload = lazy(() => import("./features/music/pages/MusicUpload"));
 const GenrePage = lazy(() => import("./features/music/pages/GenrePage"));
 const TrackPage = lazy(() => import("./features/music/pages/TrackPage"));
+const PresaveCampaignSetupPage = lazy(() => import("./features/music/pages/PresaveCampaignSetupPage"));
+const PresaveLandingPage = lazy(() => import("./features/music/pages/PresaveLandingPage"));
 const AlbumPage = lazy(() => import("./features/music/pages/AlbumPage"));
 const PlaylistPage = lazy(() => import("./features/music/pages/PlaylistPage"));
 const MusicBlendPage = lazy(() => import("./features/music/pages/MusicBlendPage"));
@@ -343,6 +345,7 @@ const App = () => (
                     {/* SmartLinks — MUST be before /:username catch-all */}
                     <Route path="/link/:slug" element={<SmartLinkPage />} />
                     <Route path="/presave/callback" element={<PresaveCallback />} />
+                    <Route path="/presave/:slug" element={<PresaveLandingPage />} />
                     <Route path="/smart-links" element={<ProtectedRoute><SmartLinks /></ProtectedRoute>} />
                     <Route path="/smart-links/campaign" element={<ProtectedRoute><SmartLinkCampaign /></ProtectedRoute>} />
                     <Route path="/smart-links/:id/analytics" element={<ProtectedRoute><SmartLinkAnalyticsPage /></ProtectedRoute>} />
@@ -364,6 +367,7 @@ const App = () => (
                       <Route path="upload" element={<ProtectedRoute><MusicUpload /></ProtectedRoute>} />
                       <Route path="genre/:genre" element={<GenrePage />} />
                       <Route path="track/:id" element={<TrackPage />} />
+                      <Route path="track/:id/presave/setup" element={<ProtectedRoute><PresaveCampaignSetupPage /></ProtectedRoute>} />
                       <Route path="album/:id" element={<AlbumPage />} />
                       <Route path="playlist/:id" element={<PlaylistPage />} />
                       <Route path="blend/:userId" element={<ProtectedRoute><MusicBlendPage /></ProtectedRoute>} />

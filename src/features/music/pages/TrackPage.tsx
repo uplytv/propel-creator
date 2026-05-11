@@ -24,6 +24,7 @@ import CommentComposer from '../components/Comments/CommentComposer';
 import CommentThread from '../components/Comments/CommentThread';
 import RelatedTracks from '../components/RelatedTracks';
 import EmbedCodeModal from '../components/EmbedCodeModal';
+import PresaveCampaignCTA from '../components/PresaveCampaignCTA';
 import { formatDuration } from '../lib/formatDuration';
 import { useAuth } from '@/context/AuthContext';
 
@@ -191,6 +192,8 @@ export default function TrackPage() {
           )}
         </section>
       )}
+
+      {isOwner && <PresaveCampaignCTA trackId={track.id} />}
 
       <RelatedTracks trackId={track.id} />
 
