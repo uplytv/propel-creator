@@ -79,6 +79,30 @@ export function useSearch() {
         image: null,
         link: `/jobs/${j.id}`,
       })),
+      ...((tracks?.data as any[]) ?? []).map((t: any) => ({
+        id: t.id,
+        type: "track" as const,
+        title: t.title,
+        subtitle: "Track",
+        image: t.cover_art_url,
+        link: `/music/track/${t.id}`,
+      })),
+      ...((albums?.data as any[]) ?? []).map((a: any) => ({
+        id: a.id,
+        type: "album" as const,
+        title: a.title,
+        subtitle: "Album",
+        image: a.cover_art_url,
+        link: `/music/album/${a.id}`,
+      })),
+      ...((artists?.data as any[]) ?? []).map((a: any) => ({
+        id: a.user_id,
+        type: "artist" as const,
+        title: a.profiles?.display_name || a.profiles?.username || "Artist",
+        subtitle: a.monthly_listeners_cache ? `${a.monthly_listeners_cache.toLocaleString()} monthly listeners` : "Artist",
+        image: a.profiles?.avatar_url,
+        link: `/music/artist/${a.user_id}`,
+      })),
     ];
 
     setResults(mapped);
