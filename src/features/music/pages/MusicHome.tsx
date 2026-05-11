@@ -14,6 +14,7 @@ import {
   useDailyMixes,
   useBecauseYouListened,
 } from '../hooks/usePersonalizedMixes';
+import { useDailyMixesFromTable } from '../hooks/useRecs';
 import TrackCard from '../components/TrackCard';
 import DailyMixCard from '../components/DailyMixCard';
 import ChartsSection from '../components/ChartsSection';
