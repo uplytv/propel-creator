@@ -14,6 +14,7 @@ import StartPartyButton from '../components/StartPartyButton';
 import BuyTrackButton from '../components/BuyTrackButton';
 import TipTrackButton from '../components/TipTrackButton';
 import TrackPriceEditor from '../components/TrackPriceEditor';
+import UniversalLinksList from '../components/UniversalLinksList';
 import { formatDuration } from '../lib/formatDuration';
 import { useAuth } from '@/context/AuthContext';
 
@@ -109,6 +110,9 @@ export default function TrackPage() {
             )}
           </div>
         </div>
+      </div>
+      <div className="mt-6">
+        <UniversalLinksList trackId={track.id} />
       </div>
       <ShareTrackSheet track={track} open={shareOpen} onClose={() => setShareOpen(false)} />
     </div>

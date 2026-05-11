@@ -123,6 +123,33 @@ const MusicAnalyticsPage = lazy(() => import("./features/music/pages/MusicAnalyt
 const GroupBlendsPage = lazy(() => import("./features/music/pages/GroupBlendsPage"));
 const ConcertsPage = lazy(() => import("./features/music/pages/ConcertsPage"));
 const ConcertPage = lazy(() => import("./features/music/pages/ConcertPage"));
+const MusicLabsHub = lazy(() => import("./features/music/pages/MusicLabsHub"));
+const DSPConnectionsPage = lazy(() => import("./features/music/pages/DSPConnectionsPage"));
+const MusicChartsPage = lazy(() => import("./features/music/pages/MusicChartsPage"));
+const MusicCreatorAnalyticsPage = lazy(() => import("./features/music/pages/MusicCreatorAnalyticsPage"));
+const MusicPodcastPage = lazy(() => import("./features/music/pages/MusicPodcastPage"));
+const KaraokePage = lazy(() => import("./features/music/pages/KaraokePage"));
+const LyricsSyncPage = lazy(() => import("./features/music/pages/LyricsSyncPage"));
+const DJConsolePage = lazy(() => import("./features/music/pages/DJConsolePage"));
+const LongformPlayerPage = lazy(() => import("./features/music/pages/LongformPlayerPage"));
+const FanRadioPlayerPage = lazy(() => import("./features/music/pages/FanRadioPlayerPage"));
+const TourCalendarPage = lazy(() => import("./features/music/pages/TourCalendarPage"));
+const TourMerchPage = lazy(() => import("./features/music/pages/TourMerchPage"));
+const BookingInquiryPage = lazy(() => import("./features/music/pages/BookingInquiryPage"));
+const MusicDistributionPage = lazy(() => import("./features/music/pages/DistributionPage"));
+const RoyaltyPayoutsPage = lazy(() => import("./features/music/pages/RoyaltyPayoutsPage"));
+const PublishingPage = lazy(() => import("./features/music/pages/PublishingPage"));
+const SplitSheetsPage = lazy(() => import("./features/music/pages/SplitSheetsPage"));
+const SyncLicensingPage = lazy(() => import("./features/music/pages/SyncLicensingPage"));
+const StemMarketplacePage = lazy(() => import("./features/music/pages/StemMarketplacePage"));
+const SamplePackPage = lazy(() => import("./features/music/pages/SamplePackPage"));
+const NFTDropsPage = lazy(() => import("./features/music/pages/NFTDropsPage"));
+const MerchBundlesPage = lazy(() => import("./features/music/pages/MerchBundlesPage"));
+const SuperThanksPage = lazy(() => import("./features/music/pages/SuperThanksPage"));
+const CollabStudioPage = lazy(() => import("./features/music/pages/CollabStudioPage"));
+const GigMarketplacePage = lazy(() => import("./features/music/pages/GigMarketplacePage"));
+const ArtistVerificationPage = lazy(() => import("./features/music/pages/ArtistVerificationPage"));
+const SmartPlaylistsPage = lazy(() => import("./features/music/pages/SmartPlaylistsPage"));
 const ContentStudio = lazy(() => import("./pages/ContentStudio"));
 const AITeamDashboard = lazy(() => import("./pages/AITeamDashboard"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
@@ -343,6 +370,33 @@ const App = () => (
                       <Route path="blends" element={<ProtectedRoute><GroupBlendsPage /></ProtectedRoute>} />
                       <Route path="concerts" element={<ConcertsPage />} />
                       <Route path="concerts/:id" element={<ConcertPage />} />
+                      <Route path="labs" element={<MusicLabsHub />} />
+                      <Route path="connections" element={<ProtectedRoute><DSPConnectionsPage /></ProtectedRoute>} />
+                      <Route path="charts" element={<MusicChartsPage />} />
+                      <Route path="creator-analytics" element={<ProtectedRoute><MusicCreatorAnalyticsPage /></ProtectedRoute>} />
+                      <Route path="podcast" element={<MusicPodcastPage />} />
+                      <Route path="karaoke" element={<KaraokePage />} />
+                      <Route path="lyrics-sync" element={<LyricsSyncPage />} />
+                      <Route path="dj" element={<DJConsolePage />} />
+                      <Route path="longform" element={<LongformPlayerPage />} />
+                      <Route path="radio-player" element={<FanRadioPlayerPage />} />
+                      <Route path="tour" element={<TourCalendarPage />} />
+                      <Route path="tour-merch" element={<TourMerchPage />} />
+                      <Route path="booking" element={<ProtectedRoute><BookingInquiryPage /></ProtectedRoute>} />
+                      <Route path="distribution" element={<ProtectedRoute><MusicDistributionPage /></ProtectedRoute>} />
+                      <Route path="royalties" element={<ProtectedRoute><RoyaltyPayoutsPage /></ProtectedRoute>} />
+                      <Route path="publishing" element={<ProtectedRoute><PublishingPage /></ProtectedRoute>} />
+                      <Route path="splits" element={<ProtectedRoute><SplitSheetsPage /></ProtectedRoute>} />
+                      <Route path="sync" element={<SyncLicensingPage />} />
+                      <Route path="stems" element={<StemMarketplacePage />} />
+                      <Route path="samples" element={<SamplePackPage />} />
+                      <Route path="nft-drops" element={<NFTDropsPage />} />
+                      <Route path="merch-bundles" element={<MerchBundlesPage />} />
+                      <Route path="super-thanks" element={<SuperThanksPage />} />
+                      <Route path="collab" element={<ProtectedRoute><CollabStudioPage /></ProtectedRoute>} />
+                      <Route path="gigs" element={<GigMarketplacePage />} />
+                      <Route path="verify" element={<ProtectedRoute><ArtistVerificationPage /></ProtectedRoute>} />
+                      <Route path="smart-playlists" element={<ProtectedRoute><SmartPlaylistsPage /></ProtectedRoute>} />
                     </Route>
 
                     <Route path="/:username" element={<BioPage />} />
