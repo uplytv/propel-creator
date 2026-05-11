@@ -111,6 +111,9 @@ export default function TrackPage() {
           </div>
         </div>
       </div>
+      <div className="mt-6">
+        <UniversalLinksList trackId={track.id} />
+      </div>
       <ShareTrackSheet track={track} open={shareOpen} onClose={() => setShareOpen(false)} />
     </div>
   );
