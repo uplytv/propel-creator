@@ -133,6 +133,7 @@ function NotificationItem({
 
 export default function Notifications() {
   const { notifications, unreadCount, markRead, markAllRead, deleteNotification, isLoading } = useNotifications();
+  const { data: musicNotifs = [] } = useMusicActivityNotifications(15);
   const [filter, setFilter] = useState<FilterTab>("all");
   const navigate = useNavigate();
 
