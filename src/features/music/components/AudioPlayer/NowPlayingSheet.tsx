@@ -32,6 +32,8 @@ export default function NowPlayingSheet({
   const seek = usePlayerStore((s) => s.seek);
   const autoplayRadio = usePlayerStore((s) => s.autoplayRadio);
   const setAutoplayRadio = usePlayerStore((s) => s.setAutoplayRadio);
+  const crossfadeSeconds = usePlayerStore((s) => s.crossfadeSeconds);
+  const setCrossfade = usePlayerStore((s) => s.setCrossfade);
 
   const [queueOpen, setQueueOpen] = useState(false);
   const [tab, setTab] = useState<Tab>('now');
@@ -156,6 +158,39 @@ export default function NowPlayingSheet({
               <PlaybackSpeedMenu />
               <EqPresetMenu />
               <VolumeControl />
+            </div>
+
+            <div className="mt-5 rounded-2xl bg-white/5 border border-white/10 p-3">
+              <div className="flex items-center justify-between text-[11px] uppercase tracking-wide text-white/60">
+                <span>Crossfade</span>
+                <span className="text-white/80">
+                  {crossfadeSeconds === 0 ? 'Off' : `${crossfadeSeconds}s`}
+                </span>
+              </div>
+              <Slider
+                className="mt-2"
+                value={[crossfadeSeconds]}
+                min={0}
+                max={12}
+                step={1}
+                onValueChange={(v) => setCrossfade(v[0])}
+                aria-label="Crossfade seconds"
+              />
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {[0, 3, 6, 9, 12].map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setCrossfade(s)}
+                    className={`text-[11px] px-2 py-0.5 rounded-full border ${
+                      crossfadeSeconds === s
+                        ? 'bg-[#00FF85] text-black border-[#00FF85]'
+                        : 'border-white/15 text-white/70 hover:bg-white/5'
+                    }`}
+                  >
+                    {s === 0 ? 'Off' : `${s}s`}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>

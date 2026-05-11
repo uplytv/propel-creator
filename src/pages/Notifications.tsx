@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useNotifications, AppNotification } from "@/hooks/useNotifications";
+import { useMusicActivityNotifications } from "@/features/music/hooks/useMusicActivityNotifications";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -40,7 +41,7 @@ const socialNotifIcon: Record<string, { icon: any; color: string }> = {
   ticket_confirmed: { icon: Ticket, color: "bg-primary/15 text-primary" },
   waitlist_available: { icon: Ticket, color: "bg-primary/10 text-primary" },
   going_out: { icon: MapPin, color: "bg-primary/10 text-primary" },
-  // TODO: when activity_feed_events ships, route those into these icons
+  // Music activity notifications (rendered separately via useMusicActivityNotifications).
   track_uploaded: { icon: Music, color: "bg-primary/15 text-primary" },
   track_reposted: { icon: Repeat2, color: "bg-primary/10 text-primary" },
   track_comment: { icon: MessageSquare, color: "bg-primary/10 text-primary" },
@@ -132,6 +133,7 @@ function NotificationItem({
 
 export default function Notifications() {
   const { notifications, unreadCount, markRead, markAllRead, deleteNotification, isLoading } = useNotifications();
+  const { data: musicNotifs = [] } = useMusicActivityNotifications(15);
   const [filter, setFilter] = useState<FilterTab>("all");
   const navigate = useNavigate();
 
@@ -183,6 +185,37 @@ export default function Notifications() {
             <TabsTrigger value="purchases" className="text-xs flex-1">Purchases</TabsTrigger>
           </TabsList>
         </Tabs>
+
+        {(filter === "all" || filter === "activity") && musicNotifs.length > 0 && (
+          <div className="mb-4 rounded-xl border border-border bg-card overflow-hidden">
+            <div className="px-5 py-3 flex items-center gap-2 border-b border-border/50 bg-secondary/30">
+              <Music className="w-4 h-4 text-primary" />
+              <span className="text-xs font-semibold uppercase tracking-wide">Music activity</span>
+            </div>
+            {musicNotifs.map((m) => {
+              const cfg = socialNotifIcon[m.type];
+              const Icon = cfg?.icon ?? Music;
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => navigate(m.link)}
+                  className="w-full text-left px-5 py-3 flex gap-3 items-start hover:bg-secondary/40 border-b border-border/40 last:border-0"
+                >
+                  <div className={`flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center ${cfg?.color ?? "bg-primary/10 text-primary"}`}>
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{m.title}</p>
+                    <p className="text-xs text-muted-foreground truncate">{m.message}</p>
+                    <p className="text-[11px] text-muted-foreground/50 mt-0.5">
+                      {formatDistanceToNow(new Date(m.created_at), { addSuffix: true })}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         <div className="rounded-xl border border-border bg-card overflow-hidden">
           {isLoading ? (

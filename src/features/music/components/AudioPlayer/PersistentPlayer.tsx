@@ -223,6 +223,8 @@ export default function PersistentPlayer() {
     playbackRate,
   ]);
 
+  // Hide global player on bare embed routes — the embed page renders its own scoped player.
+  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/embed/')) return null;
   if (!current) return null;
 
   return (
