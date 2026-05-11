@@ -21,6 +21,9 @@ import NowPlayingSheet from './NowPlayingSheet';
 
 export default function PersistentPlayer() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const xfadeRef = useRef<HTMLAudioElement | null>(null);
+  const xfadeHlsRef = useRef<Hls | null>(null);
+  const xfadeStartedForRef = useRef<string | null>(null);
   const hlsRef = useRef<Hls | null>(null);
   const lastTrackIdRef = useRef<string | null>(null);
   const [queueOpen, setQueueOpen] = useState(false);
@@ -35,6 +38,7 @@ export default function PersistentPlayer() {
   const muted = usePlayerStore((s) => s.muted);
   const playbackRate = usePlayerStore((s) => s.playbackRate);
   const seekRequest = usePlayerStore((s) => s._seekRequest);
+  const crossfadeSeconds = usePlayerStore((s) => s.crossfadeSeconds);
 
   const setPos = usePlayerStore((s) => s._setPosition);
   const setDur = usePlayerStore((s) => s._setDuration);
@@ -54,6 +58,7 @@ export default function PersistentPlayer() {
   useEqualizer(audioRef);
 
   const current = queue[currentIndex];
+  const nextTrack = queue[currentIndex + 1];
   const playbackId = current?.audio_mux_playback_id || null;
 
   // Load track when it changes
@@ -157,6 +162,67 @@ export default function PersistentPlayer() {
     } catch {}
   }, [positionSeconds, durationSeconds, playbackRate]);
 
+  // Reset xfade tracker when current track changes
+  useEffect(() => {
+    xfadeStartedForRef.current = null;
+    if (xfadeRef.current) {
+      try {
+        xfadeRef.current.pause();
+        xfadeRef.current.removeAttribute('src');
+      } catch {}
+    }
+    if (xfadeHlsRef.current) {
+      xfadeHlsRef.current.destroy();
+      xfadeHlsRef.current = null;
+    }
+  }, [current?.id]);
+
+  // Crossfade: when remaining < crossfadeSeconds, ramp out current and ramp in next
+  useEffect(() => {
+    const xs = crossfadeSeconds;
+    if (!xs || xs <= 0) return;
+    if (!current || !nextTrack?.audio_mux_playback_id) return;
+    if (!durationSeconds || !audioRef.current || !xfadeRef.current) return;
+
+    const remaining = durationSeconds - positionSeconds;
+    if (remaining > xs || remaining <= 0) return;
+
+    if (xfadeStartedForRef.current !== nextTrack.id) {
+      xfadeStartedForRef.current = nextTrack.id;
+      const url = muxHlsUrl(nextTrack.audio_mux_playback_id);
+      const x = xfadeRef.current;
+      x.volume = 0;
+      x.muted = muted;
+      x.playbackRate = playbackRate;
+      const canNative = x.canPlayType('application/vnd.apple.mpegurl');
+      if (canNative) {
+        x.src = url;
+      } else if (Hls.isSupported()) {
+        const hls = new Hls({ enableWorker: true });
+        hls.loadSource(url);
+        hls.attachMedia(x);
+        xfadeHlsRef.current = hls;
+      } else {
+        x.src = url;
+      }
+      x.play().catch(() => {});
+    }
+
+    const t = Math.max(0, Math.min(1, 1 - remaining / xs));
+    audioRef.current.volume = Math.max(0, volume * (1 - t));
+    xfadeRef.current.volume = Math.max(0, volume * t);
+  }, [
+    positionSeconds,
+    durationSeconds,
+    crossfadeSeconds,
+    current?.id,
+    nextTrack?.id,
+    nextTrack?.audio_mux_playback_id,
+    volume,
+    muted,
+    playbackRate,
+  ]);
+
   if (!current) return null;
 
   return (
@@ -173,6 +239,7 @@ export default function PersistentPlayer() {
         preload="metadata"
         playsInline
       />
+      <audio ref={xfadeRef} preload="auto" playsInline />
 
       <div
         className="fixed left-0 right-0 z-40 backdrop-blur-xl border-t border-white/10"
