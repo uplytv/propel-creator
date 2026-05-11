@@ -204,7 +204,20 @@ export default function MusicHome() {
 
         {user && <FriendActivityRail />}
 
-        {user && (dailyMixes?.length ?? 0) > 0 && (
+        {user && (dailyMixesTable?.length ?? 0) > 0 && (
+          <Row title="Made For You">
+            {dailyMixesTable!.map(({ mix, tracks }) => (
+              <DailyMixCard
+                key={mix.id}
+                title={mix.title}
+                subtitle={mix.description ?? mix.seed_genres.join(' · ')}
+                tracks={tracks}
+              />
+            ))}
+          </Row>
+        )}
+
+        {user && (dailyMixesTable?.length ?? 0) === 0 && (dailyMixes?.length ?? 0) > 0 && (
           <Row title="Made For You">
             {dailyMixes!.map((mix) => (
               <DailyMixCard
