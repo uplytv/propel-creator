@@ -87,11 +87,11 @@ export default function MusicHome() {
           </Link>
           <Link
             to="/music/labs"
-            className="p-2 rounded-full bg-white/5 text-[#00FF85]"
-            aria-label="Music Labs"
+            className="px-3 py-2 rounded-full bg-white/5 text-[#00FF85] text-xs font-semibold flex items-center gap-1"
+            aria-label="Music Labs — every feature"
             title="Music Labs — every feature"
           >
-            ✦
+            <span aria-hidden>✦</span> Labs
           </Link>
           <Link
             to="/music/upload"
