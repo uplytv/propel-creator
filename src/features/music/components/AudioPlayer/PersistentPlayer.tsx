@@ -21,6 +21,9 @@ import NowPlayingSheet from './NowPlayingSheet';
 
 export default function PersistentPlayer() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const xfadeRef = useRef<HTMLAudioElement | null>(null);
+  const xfadeHlsRef = useRef<Hls | null>(null);
+  const xfadeStartedForRef = useRef<string | null>(null);
   const hlsRef = useRef<Hls | null>(null);
   const lastTrackIdRef = useRef<string | null>(null);
   const [queueOpen, setQueueOpen] = useState(false);
@@ -35,6 +38,7 @@ export default function PersistentPlayer() {
   const muted = usePlayerStore((s) => s.muted);
   const playbackRate = usePlayerStore((s) => s.playbackRate);
   const seekRequest = usePlayerStore((s) => s._seekRequest);
+  const crossfadeSeconds = usePlayerStore((s) => s.crossfadeSeconds);
 
   const setPos = usePlayerStore((s) => s._setPosition);
   const setDur = usePlayerStore((s) => s._setDuration);
@@ -54,6 +58,7 @@ export default function PersistentPlayer() {
   useEqualizer(audioRef);
 
   const current = queue[currentIndex];
+  const nextTrack = queue[currentIndex + 1];
   const playbackId = current?.audio_mux_playback_id || null;
 
   // Load track when it changes
