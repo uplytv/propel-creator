@@ -23,6 +23,7 @@ import { CalendarDays } from "lucide-react";
 import { useInviteCodes } from "@/hooks/useInviteCodes";
 import { fireMetaEvent, fireGoogleEvent } from "@/lib/adTracking";
 import AddFriendButton from "@/components/social/AddFriendButton";
+import CreatorMusicSection from "@/features/music/components/CreatorMusicSection";
 
 // Social platform icons as simple SVG components
 const socialIcons: Record<string, React.FC<{ className?: string }>> = {
