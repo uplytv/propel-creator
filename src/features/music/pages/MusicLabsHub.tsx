@@ -40,7 +40,7 @@ const ENTRIES: Entry[] = [
   { group: "Events", label: "Tour Merch", to: "/music/tour-merch" },
   { group: "Events", label: "Booking Inquiries", to: "/music/booking" },
   // Monetize
-  { group: "Monetize", label: "Release Tracker", to: "/music/distribution", desc: "Track your DSP submissions in one place" },
+  { group: "Monetize", label: "Release Tracker", to: "/music/distribution" },
   { group: "Monetize", label: "Royalty Payouts", to: "/music/royalties" },
   { group: "Monetize", label: "Publishing", to: "/music/publishing" },
   { group: "Monetize", label: "Split Sheets", to: "/music/splits" },
