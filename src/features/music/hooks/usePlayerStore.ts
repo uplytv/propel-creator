@@ -29,6 +29,7 @@ interface PlayerState {
   autoplayRadio: boolean;
   sleepTimerEndsAt: number | null; // epoch ms; null = off
   sleepEndOfTrack: boolean;
+  crossfadeSeconds: number; // 0..12; 0 = disabled
 
   loadTrack: (track: Track, queue?: Track[]) => void;
   enqueue: (tracks: Track[]) => void;
@@ -53,6 +54,7 @@ interface PlayerState {
   setAutoplayRadio: (b: boolean) => void;
   setSleepTimer: (minutesFromNow: number | null) => void;
   setSleepEndOfTrack: (b: boolean) => void;
+  setCrossfade: (seconds: number) => void;
 
   // internal — wired by PersistentPlayer
   _setPosition: (s: number) => void;
@@ -79,6 +81,7 @@ export const usePlayerStore = create<PlayerState>()(
       autoplayRadio: true,
       sleepTimerEndsAt: null,
       sleepEndOfTrack: false,
+      crossfadeSeconds: 0,
       _seekRequest: null,
 
       loadTrack: (track, queue) => {
@@ -198,6 +201,7 @@ export const usePlayerStore = create<PlayerState>()(
           sleepEndOfTrack: false,
         }),
       setSleepEndOfTrack: (b) => set({ sleepEndOfTrack: b, sleepTimerEndsAt: null }),
+      setCrossfade: (s) => set({ crossfadeSeconds: Math.max(0, Math.min(12, s)) }),
 
       _setPosition: (s) => set({ positionSeconds: s }),
       _setDuration: (s) => set({ durationSeconds: s }),
@@ -218,6 +222,7 @@ export const usePlayerStore = create<PlayerState>()(
         playbackRate: s.playbackRate,
         eqPreset: s.eqPreset,
         autoplayRadio: s.autoplayRadio,
+        crossfadeSeconds: s.crossfadeSeconds,
       }),
     }
   )

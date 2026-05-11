@@ -79,6 +79,13 @@ export default function MusicHome() {
             <Library className="w-5 h-5" />
           </Link>
           <Link
+            to="/music/feed"
+            className="px-3 py-2 rounded-full bg-white/5 text-white text-xs font-semibold"
+            aria-label="Feed"
+          >
+            Feed
+          </Link>
+          <Link
             to="/music/labs"
             className="p-2 rounded-full bg-white/5 text-[#00FF85]"
             aria-label="Music Labs"

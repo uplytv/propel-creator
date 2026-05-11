@@ -30,22 +30,18 @@ export default function DSPConnectionsPage() {
   const [apple, setApple] = useState<ProviderStatus>({ connected: false });
   const [busy, setBusy] = useState<string | null>(null);
 
-  // Read existing connections (best-effort, table may not exist yet)
+  // Read existing connections
   useEffect(() => {
     if (!user) return;
     (async () => {
-      try {
-        const { data } = await (supabase as any)
-          .from("dsp_connections")
-          .select("provider,external_user_id")
-          .eq("user_id", user.id);
-        const sp = data?.find((d: any) => d.provider === "spotify");
-        const ap = data?.find((d: any) => d.provider === "apple_music");
-        if (sp) setSpotify({ connected: true, externalUserId: sp.external_user_id });
-        if (ap) setApple({ connected: true, externalUserId: ap.external_user_id });
-      } catch {
-        /* table optional */
-      }
+      const { data } = await supabase
+        .from("dsp_connections")
+        .select("provider,external_user_id")
+        .eq("user_id", user.id);
+      const sp = data?.find((d) => d.provider === "spotify");
+      const ap = data?.find((d) => d.provider === "apple_music");
+      if (sp) setSpotify({ connected: true, externalUserId: sp.external_user_id });
+      if (ap) setApple({ connected: true, externalUserId: ap.external_user_id });
     })();
   }, [user]);
 
@@ -106,8 +102,8 @@ export default function DSPConnectionsPage() {
       });
       const music = MusicKit.getInstance();
       const userToken = await music.authorize();
-      await (supabase as any).from("dsp_connections").upsert({
-        user_id: user?.id,
+      await supabase.from("dsp_connections").upsert({
+        user_id: user!.id,
         provider: "apple_music",
         access_token: userToken,
         external_user_id: userToken?.slice(0, 16) ?? null,

@@ -1,7 +1,8 @@
-import { Play, Pause } from 'lucide-react';
+import { Play, Pause, Heart, Repeat2, MessageCircle } from 'lucide-react';
 import type { Track } from '../types';
 import { usePlayerStore } from '../hooks/usePlayerStore';
 import { formatDuration } from '../lib/formatDuration';
+import RepostButton from './RepostButton';
 
 export default function TrackRow({
   track,
@@ -20,44 +21,62 @@ export default function TrackRow({
   const isPlaying = usePlayerStore((s) => s.isPlaying && isCurrent);
   const playable = track.audio_status === 'ready' && !!track.audio_mux_playback_id;
 
+  const repostCount = (track as any).repost_count ?? 0;
+  const commentCount = (track as any).comment_count ?? 0;
+
   return (
-    <button
-      disabled={!playable}
-      onClick={() => {
-        if (isCurrent) return toggle();
-        const filtered = queue?.filter(
-          (t) => t.audio_status === 'ready' && !!t.audio_mux_playback_id,
-        );
-        load(track, filtered);
-      }}
-      className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 text-left disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      <span className="w-6 text-center text-white/40 text-xs">
-        {isCurrent ? (
-          isPlaying ? (
-            <Pause className="w-4 h-4 mx-auto text-white" />
-          ) : (
-            <Play className="w-4 h-4 mx-auto text-white" />
-          )
-        ) : (
-          (index ?? 0) + 1
-        )}
-      </span>
-      <div
-        className="w-10 h-10 rounded-md flex-shrink-0"
-        style={{
-          background: track.cover_art_url
-            ? `url(${track.cover_art_url}) center/cover`
-            : 'linear-gradient(135deg,#3D7CFF,#B025FF)',
+    <div className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-white/5">
+      <button
+        disabled={!playable}
+        onClick={() => {
+          if (isCurrent) return toggle();
+          const filtered = queue?.filter(
+            (t) => t.audio_status === 'ready' && !!t.audio_mux_playback_id,
+          );
+          load(track, filtered);
         }}
-      />
-      <div className="flex-1 min-w-0">
-        <div className="text-sm text-white truncate">{track.title}</div>
-        <div className="text-xs text-white/50 truncate">
-          {playable ? track.genre || 'Music' : 'Processing…'}
+        className="flex items-center gap-3 flex-1 min-w-0 text-left disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <span className="w-6 text-center text-white/40 text-xs">
+          {isCurrent ? (
+            isPlaying ? (
+              <Pause className="w-4 h-4 mx-auto text-white" />
+            ) : (
+              <Play className="w-4 h-4 mx-auto text-white" />
+            )
+          ) : (
+            (index ?? 0) + 1
+          )}
+        </span>
+        <div
+          className="w-10 h-10 rounded-md flex-shrink-0"
+          style={{
+            background: track.cover_art_url
+              ? `url(${track.cover_art_url}) center/cover`
+              : 'linear-gradient(135deg,#3D7CFF,#B025FF)',
+          }}
+        />
+        <div className="flex-1 min-w-0">
+          <div className="text-sm text-white truncate">{track.title}</div>
+          <div className="flex items-center gap-2 text-[10px] text-white/40 truncate">
+            <span>{playable ? track.genre || 'Music' : 'Processing…'}</span>
+            <span className="inline-flex items-center gap-0.5">
+              <Play className="w-2.5 h-2.5" /> {Number(track.play_count || 0).toLocaleString()}
+            </span>
+            <span className="inline-flex items-center gap-0.5">
+              <Heart className="w-2.5 h-2.5" /> {track.like_count || 0}
+            </span>
+            <span className="inline-flex items-center gap-0.5">
+              <Repeat2 className="w-2.5 h-2.5" /> {repostCount}
+            </span>
+            <span className="inline-flex items-center gap-0.5">
+              <MessageCircle className="w-2.5 h-2.5" /> {commentCount}
+            </span>
+          </div>
         </div>
-      </div>
-      <span className="text-xs text-white/40">{formatDuration(track.duration_seconds)}</span>
-    </button>
+        <span className="text-xs text-white/40">{formatDuration(track.duration_seconds)}</span>
+      </button>
+      <RepostButton trackId={track.id} size="sm" />
+    </div>
   );
 }

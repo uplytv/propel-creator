@@ -43,10 +43,22 @@ export function useToggleRepost(trackId: string) {
         .from('track_reposts')
         .insert({ user_id: user.id, track_id: trackId, caption: caption ?? null });
       if (error) throw error;
+      // Fan-out activity feed event (non-fatal if it fails)
+      try {
+        await sb.from('activity_feed_events').insert({
+          actor_id: user.id,
+          event_type: 'track_reposted',
+          target_track_id: trackId,
+          metadata: caption ? { note: caption } : {},
+        });
+      } catch {
+        /* ignore */
+      }
       return true;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['music', 'repost', trackId, user?.id] });
+      qc.invalidateQueries({ queryKey: ['music', 'feed'] });
     },
   });
 }
