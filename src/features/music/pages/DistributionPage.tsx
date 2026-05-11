@@ -114,11 +114,11 @@ export default function DistributionPage() {
   const [explainerDismissed, setExplainerDismissed] = useState(true);
 
   useEffect(() => {
-    setExplainerDismissed(localStorage.getItem(EXPLAINER_KEY) === "1");
+    setExplainerDismissed(localStorage.getItem(EXPLAINER_KEY) === "true");
   }, []);
 
   const dismissExplainer = () => {
-    localStorage.setItem(EXPLAINER_KEY, "1");
+    localStorage.setItem(EXPLAINER_KEY, "true");
     setExplainerDismissed(true);
   };
 
