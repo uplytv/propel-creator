@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Calendar, Check, Copy, ExternalLink, Music } from "lucide-react";
+import { Calendar, Check, Copy, Download, ExternalLink, Music } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -214,9 +214,63 @@ export default function PresaveCampaignSetupPage() {
 
       {existing && analytics && (
         <Card className="p-4 bg-white/[0.03] border-white/10 space-y-4">
-          <div className="flex items-baseline justify-between">
+          <div className="flex items-baseline justify-between gap-2">
             <h2 className="text-white font-semibold">Campaign analytics</h2>
-            <span className="text-xs text-white/50">{analytics.total} subscriber{analytics.total === 1 ? "" : "s"}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-white/50">{analytics.total} subscriber{analytics.total === 1 ? "" : "s"}</span>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  const f = analytics.fulfillment;
+                  const released = existing.release_at && new Date(existing.release_at).getTime() <= Date.now();
+                  let status = "Awaiting release";
+                  if (f.complete) status = "Complete";
+                  else if (released && f.pending > 0) status = "In progress";
+                  else if (released && f.failed > 0 && f.pending === 0) status = "Completed with errors";
+                  const pct = (n: number) => `${Math.round(n * 100)}%`;
+                  const esc = (v: any) => {
+                    const s = v == null ? "" : String(v);
+                    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+                  };
+                  const rows: Array<[string, string | number]> = [
+                    ["Metric", "Value"],
+                    ["Track", track.title],
+                    ["Campaign slug", existing.campaign_url_slug ?? ""],
+                    ["Release at", existing.release_at ?? ""],
+                    ["Campaign status", existing.status],
+                    ["Total subscribers", analytics.total],
+                    ["Subscribers — Spotify", analytics.byPlatform.spotify],
+                    ["Subscribers — Apple Music", analytics.byPlatform.apple_music],
+                    ["Subscribers — Email only", analytics.byPlatform.email_only],
+                    ["Consent — Save track (count)", analytics.consent.saveTrack],
+                    ["Consent — Save track (rate)", pct(analytics.consent.saveRate)],
+                    ["Consent — Follow artist (count)", analytics.consent.followArtist],
+                    ["Consent — Follow artist (rate)", pct(analytics.consent.followRate)],
+                    ["Fulfillment status", status],
+                    ["Fulfillment — Fulfilled", f.fulfilled],
+                    ["Fulfillment — Pending", f.pending],
+                    ["Fulfillment — Failed", f.failed],
+                    ["Fulfillment rate", pct(f.fulfillmentRate)],
+                    ["Last fulfilled at", f.lastFulfilledAt ?? ""],
+                    ["Exported at", new Date().toISOString()],
+                  ];
+                  const csv = rows.map((r) => r.map(esc).join(",")).join("\n");
+                  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `presave-analytics-${existing.campaign_url_slug ?? existing.id}.csv`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                  toast.success("Analytics exported");
+                }}
+              >
+                <Download className="h-3 w-3 mr-1" /> Export CSV
+              </Button>
+            </div>
           </div>
 
           <div>
