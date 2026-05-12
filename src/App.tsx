@@ -390,7 +390,7 @@ const App = () => (
                       <Route path="live" element={<MusicLivePage />} />
                       <Route path="radio/:id" element={<RadioStationPage />} />
                       <Route path="premiere/:id" element={<PremierePage />} />
-                      <Route path="room/:id" element={<AudioRoomPage />} />
+                      {/* archived: room/:id (audio-rooms) */}
                       <Route path="browse" element={<MusicBrowsePage />} />
                       <Route path="notifications" element={<ProtectedRoute><MusicNotificationsPage /></ProtectedRoute>} />
                       <Route path="analytics" element={<ProtectedRoute><MusicAnalyticsPage /></ProtectedRoute>} />
