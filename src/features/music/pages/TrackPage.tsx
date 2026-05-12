@@ -17,7 +17,7 @@ import BuyTrackButton from '../components/BuyTrackButton';
 import TipTrackButton from '../components/TipTrackButton';
 import TrackPriceEditor from '../components/TrackPriceEditor';
 import UniversalLinksList from '../components/UniversalLinksList';
-import DistributionPanel from '../components/DistributionPanel';
+// royalties archived
 import WaveformBar from '../components/AudioPlayer/WaveformBar';
 import WaveformComments from '../components/Comments/WaveformComments';
 import CommentComposer from '../components/Comments/CommentComposer';
