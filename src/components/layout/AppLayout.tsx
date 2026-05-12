@@ -299,6 +299,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       {/* Discover + Home */}
       {renderNavItem({ label: "Discover", icon: Search, path: "/discover", desc: "Find creators" }, collapsed)}
       {renderNavItem({ label: "Home", icon: Home, path: "/dashboard", desc: "Overview" }, collapsed)}
+      {renderNavItem({ label: "Your Page", icon: Globe, path: yourPagePath, desc: "Your public artist page" }, collapsed)}
 
       {/* 5 Cores */}
       {coreNav.map(group => {
