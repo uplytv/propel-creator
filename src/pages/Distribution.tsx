@@ -218,7 +218,7 @@ export default function Distribution() {
               <Globe className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Distribution</h1>
+              <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Content Syndication</h1>
               <p className="text-sm text-muted-foreground">Publish once on UPLY. Reach everywhere.</p>
             </div>
           </div>
