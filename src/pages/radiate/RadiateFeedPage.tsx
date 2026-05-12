@@ -14,16 +14,13 @@ export default function RadiateFeedPage() {
   const { data: radiates = [], isLoading } = useNearbyRadiates(coords, maxKm);
 
   useEffect(() => {
+    document.title = "Radiate · Local discovery on UPLY";
     radiates.forEach((r) => trackRadiate(r.id, "view"));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [radiates.length]);
 
   return (
     <div className="min-h-screen bg-background mobile-safe-content">
-      <Helmet>
-        <title>Radiate · Local discovery on UPLY</title>
-        <meta name="description" content="Discover what creators near you are radiating right now." />
-      </Helmet>
 
       <header className="sticky top-0 z-20 bg-background/90 backdrop-blur border-b border-border/40 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
