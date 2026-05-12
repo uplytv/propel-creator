@@ -168,6 +168,9 @@ const FunnelEditor = lazy(() => import("./pages/FunnelEditor"));
 const Marketplace = lazy(() => import("./pages/Marketplace"));
 const BrandDeal = lazy(() => import("./pages/BrandDeal"));
 const Podcast = lazy(() => import("./pages/Podcast"));
+const RadiateFeedPage = lazy(() => import("./pages/radiate/RadiateFeedPage"));
+const RadiateNewPage = lazy(() => import("./pages/radiate/RadiateNewPage"));
+const RadiateManagePage = lazy(() => import("./pages/radiate/RadiateManagePage"));
 const BioPage = lazy(() => import("./pages/BioPage"));
 const PodcastRSS = lazy(() => import("./pages/PodcastRSS"));
 const NetworkFeed = lazy(() => import("./pages/NetworkFeed"));
@@ -358,6 +361,11 @@ const App = () => (
                     <Route path="/smart-links/campaign" element={<ProtectedRoute><SmartLinkCampaign /></ProtectedRoute>} />
                     <Route path="/smart-links/:id/analytics" element={<ProtectedRoute><SmartLinkAnalyticsPage /></ProtectedRoute>} />
                     <Route path="/smart-links/domains" element={<ProtectedRoute><SmartLinkDomains /></ProtectedRoute>} />
+
+                    {/* Radiate — geo-radius local discovery */}
+                    <Route path="/radiate" element={<RadiateFeedPage />} />
+                    <Route path="/radiate/new" element={<ProtectedRoute><RadiateNewPage /></ProtectedRoute>} />
+                    <Route path="/radiate/manage" element={<ProtectedRoute><RadiateManagePage /></ProtectedRoute>} />
 
                     {/* UPLY TV (must come before /:username catch-all) */}
                     <Route path="/tv" element={<TVDiscover />} />

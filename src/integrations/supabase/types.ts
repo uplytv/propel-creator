@@ -16725,6 +16725,95 @@ export type Database = {
         }
         Relationships: []
       }
+      radiate_broadcasts: {
+        Row: {
+          city: string | null
+          click_count: number
+          content_id: string | null
+          content_type: string
+          created_at: string
+          expires_at: string
+          id: string
+          lat: number
+          link_url: string | null
+          lng: number
+          message: string | null
+          radius_km: number
+          title: string
+          updated_at: string
+          user_id: string
+          view_count: number
+        }
+        Insert: {
+          city?: string | null
+          click_count?: number
+          content_id?: string | null
+          content_type?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          lat: number
+          link_url?: string | null
+          lng: number
+          message?: string | null
+          radius_km?: number
+          title: string
+          updated_at?: string
+          user_id: string
+          view_count?: number
+        }
+        Update: {
+          city?: string | null
+          click_count?: number
+          content_id?: string | null
+          content_type?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          lat?: number
+          link_url?: string | null
+          lng?: number
+          message?: string | null
+          radius_km?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+          view_count?: number
+        }
+        Relationships: []
+      }
+      radiate_impressions: {
+        Row: {
+          action: string
+          broadcast_id: string
+          created_at: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          action?: string
+          broadcast_id: string
+          created_at?: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          broadcast_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "radiate_impressions_broadcast_id_fkey"
+            columns: ["broadcast_id"]
+            isOneToOne: false
+            referencedRelation: "radiate_broadcasts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recent_searches: {
         Row: {
           id: string
@@ -20930,6 +21019,10 @@ export type Database = {
         Args: { p_amount?: number; p_id: string }
         Returns: undefined
       }
+      increment_radiate_counter: {
+        Args: { _broadcast_id: string; _kind: string }
+        Returns: undefined
+      }
       increment_referral_count: { Args: { p_code: string }; Returns: undefined }
       increment_subscriber_engagement: {
         Args: { p_email: string; p_field: string }
@@ -21013,6 +21106,25 @@ export type Database = {
           unique_listeners: number
         }[]
       }
+      nearby_radiates: {
+        Args: { max_km?: number; user_lat: number; user_lng: number }
+        Returns: {
+          city: string
+          content_id: string
+          content_type: string
+          created_at: string
+          distance_km: number
+          expires_at: string
+          id: string
+          lat: number
+          link_url: string
+          lng: number
+          message: string
+          radius_km: number
+          title: string
+          user_id: string
+        }[]
+      }
       nearby_tour_dates: {
         Args: {
           _lat: number
@@ -21044,6 +21156,10 @@ export type Database = {
           p_type: string
         }
         Returns: undefined
+      }
+      radiate_distance_km: {
+        Args: { lat1: number; lat2: number; lng1: number; lng2: number }
+        Returns: number
       }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }

@@ -64,6 +64,7 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
     icon: TrendingUp,
     items: [
       { label: "SmartLinks", icon: Share2, path: "/smart-links", desc: "Music smart links & pre-saves" },
+      { label: "Radiate", icon: Radio, path: "/radiate", desc: "Broadcast to nearby fans" },
       { label: "Ad Campaigns", icon: Plug, path: "/ad-integrations", desc: "Boost streams", featureKey: "stream_boost" },
       { label: "Affiliates", icon: Handshake, path: "/affiliates", desc: "Referral program", featureKey: "affiliates" },
       { label: "Content Syndication", icon: Globe, path: "/distribution", desc: "Publish everywhere at once" },
