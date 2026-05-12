@@ -17,7 +17,7 @@ import BuyTrackButton from '../components/BuyTrackButton';
 import TipTrackButton from '../components/TipTrackButton';
 import TrackPriceEditor from '../components/TrackPriceEditor';
 import UniversalLinksList from '../components/UniversalLinksList';
-import DistributionPanel from '../components/DistributionPanel';
+// royalties archived
 import WaveformBar from '../components/AudioPlayer/WaveformBar';
 import WaveformComments from '../components/Comments/WaveformComments';
 import CommentComposer from '../components/Comments/CommentComposer';
@@ -175,23 +175,7 @@ export default function TrackPage() {
         <UniversalLinksList trackId={track.id} />
       </div>
 
-      {isOwner && (
-        <section className="mt-8 rounded-2xl bg-white/[0.03] border border-white/5">
-          <button
-            onClick={() => setDistOpen((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 text-left"
-            style={{ minHeight: 44 }}
-          >
-            <span className="text-sm font-bold text-white">Release status</span>
-            <ChevronDown className={`w-4 h-4 text-white/60 transition ${distOpen ? 'rotate-180' : ''}`} />
-          </button>
-          {distOpen && (
-            <div className="px-4 pb-4">
-              <DistributionPanel trackId={track.id} isOwner={isOwner} />
-            </div>
-          )}
-        </section>
-      )}
+      {/* royalties archived: distribution panel removed */}
 
       {isOwner && <PresaveCampaignCTA trackId={track.id} />}
 

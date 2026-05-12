@@ -5,8 +5,7 @@ import { useRadioStations, useCreateRadioStation } from "../hooks/useRadioStatio
 import RadioStationCard from "../components/RadioStationCard";
 import { useUpcomingPremieres } from "../hooks/usePremieres";
 import PremiereCard from "../components/PremiereCard";
-import { useLiveAudioRooms, useStartAudioRoom } from "../hooks/useAudioRooms";
-import AudioRoomCard from "../components/AudioRoomCard";
+// audio-rooms archived
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -16,9 +15,9 @@ export default function MusicLivePage() {
   const nav = useNavigate();
   const { data: stations } = useRadioStations();
   const { data: premieres } = useUpcomingPremieres();
-  const { data: rooms } = useLiveAudioRooms();
+  const rooms: any[] = []; // audio-rooms archived
   const createStation = useCreateRadioStation();
-  const startRoom = useStartAudioRoom();
+  const startRoom = { isPending: false, mutateAsync: async (_: any) => ({ id: '' }) };
 
   const [stationName, setStationName] = useState("");
   const [roomTitle, setRoomTitle] = useState("");
@@ -134,9 +133,7 @@ export default function MusicLivePage() {
           </div>
         )}
         <div className="flex gap-3 overflow-x-auto px-4 pb-2">
-          {(rooms ?? []).map((r) => (
-            <AudioRoomCard key={r.id} room={r} />
-          ))}
+          {/* audio-rooms archived */}
           {!rooms?.length && (
             <div className="text-sm text-white/40">No rooms live right now.</div>
           )}

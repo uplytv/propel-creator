@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { Calendar, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useConcert, useMyTicket, usePurchaseTicket } from "../hooks/useConcerts";
-import { EncoreBidPanel } from "../components/EncoreBidPanel";
+// encore-bids archived
 import { ConcertMerchCarousel } from "../components/ConcertMerchCarousel";
 import { toast } from "sonner";
 
@@ -61,7 +61,7 @@ export default function ConcertPage() {
       )}
 
       <ConcertMerchCarousel concertId={concert.id} />
-      <EncoreBidPanel concertId={concert.id} />
+      {/* encore-bids archived */}
     </div>
   );
 }

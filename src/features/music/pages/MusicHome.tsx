@@ -5,8 +5,7 @@ import { useRadioStations } from '../hooks/useRadioStations';
 import RadioStationCard from '../components/RadioStationCard';
 import { useUpcomingPremieres } from '../hooks/usePremieres';
 import PremiereCard from '../components/PremiereCard';
-import { useLiveAudioRooms } from '../hooks/useAudioRooms';
-import AudioRoomCard from '../components/AudioRoomCard';
+// audio-rooms archived
 import { useAuth } from '@/context/AuthContext';
 import { useMusicFeed } from '../hooks/useMusicFeed';
 import { useRecentlyPlayed } from '../hooks/useRecentlyPlayed';
@@ -47,7 +46,7 @@ export default function MusicHome() {
   const { data: because } = useBecauseYouListened(12);
   const { data: stations } = useRadioStations();
   const { data: premieres } = useUpcomingPremieres();
-  const { data: liveRooms } = useLiveAudioRooms();
+  const liveRooms: any[] = []; // audio-rooms archived
   const { data: spotlights } = useEditorialSpotlights();
 
   return (
@@ -184,9 +183,7 @@ export default function MusicHome() {
               {(stations ?? []).filter((s) => s.is_live).map((s) => (
                 <RadioStationCard key={s.id} station={s} />
               ))}
-              {(liveRooms ?? []).map((r) => (
-                <AudioRoomCard key={r.id} room={r} />
-              ))}
+              {/* audio-rooms archived */}
               {(premieres ?? []).slice(0, 4).map((p) => (
                 <PremiereCard key={p.id} premiere={p} />
               ))}

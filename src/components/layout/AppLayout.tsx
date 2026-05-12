@@ -55,7 +55,7 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
       { label: "Upload", icon: Video, path: "/music/upload", desc: "Drop a track or album" },
       { label: "Release Tracker", icon: Globe, path: "/music/distribution", desc: "Log DSP submissions across Spotify, Apple Music & more" },
       { label: "DSP Connections", icon: Plug, path: "/music/connections", desc: "Connect Spotify & Apple" },
-      { label: "Music Labs", icon: Sparkles, path: "/music/labs", desc: "Every music feature" },
+      // archived: Music Labs (music-labs)
     ],
   },
   {
