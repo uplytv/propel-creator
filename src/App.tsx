@@ -120,37 +120,31 @@ const ListeningPartyPage = lazy(() => import("./features/music/pages/ListeningPa
 const MusicLivePage = lazy(() => import("./features/music/pages/MusicLivePage"));
 const RadioStationPage = lazy(() => import("./features/music/pages/RadioStationPage"));
 const PremierePage = lazy(() => import("./features/music/pages/PremierePage"));
-const AudioRoomPage = lazy(() => import("./features/music/pages/AudioRoomPage"));
+// archived: AudioRoomPage (audio-rooms)
 const MusicBrowsePage = lazy(() => import("./features/music/pages/MusicBrowsePage"));
 const MusicNotificationsPage = lazy(() => import("./features/music/pages/MusicNotificationsPage"));
 const MusicAnalyticsPage = lazy(() => import("./features/music/pages/MusicAnalyticsPage"));
 const GroupBlendsPage = lazy(() => import("./features/music/pages/GroupBlendsPage"));
 const ConcertsPage = lazy(() => import("./features/music/pages/ConcertsPage"));
 const ConcertPage = lazy(() => import("./features/music/pages/ConcertPage"));
-const MusicLabsHub = lazy(() => import("./features/music/pages/MusicLabsHub"));
+// archived: MusicLabsHub (music-labs)
 const DSPConnectionsPage = lazy(() => import("./features/music/pages/DSPConnectionsPage"));
 const MusicChartsPage = lazy(() => import("./features/music/pages/MusicChartsPage"));
 const MusicCreatorAnalyticsPage = lazy(() => import("./features/music/pages/MusicCreatorAnalyticsPage"));
 const MusicPodcastPage = lazy(() => import("./features/music/pages/MusicPodcastPage"));
-const KaraokePage = lazy(() => import("./features/music/pages/KaraokePage"));
+// archived: KaraokePage (karaoke)
 const LyricsSyncPage = lazy(() => import("./features/music/pages/LyricsSyncPage"));
-const DJConsolePage = lazy(() => import("./features/music/pages/DJConsolePage"));
+// archived: DJConsolePage (dj-console)
 const LongformPlayerPage = lazy(() => import("./features/music/pages/LongformPlayerPage"));
-const FanRadioPlayerPage = lazy(() => import("./features/music/pages/FanRadioPlayerPage"));
+// archived: FanRadioPlayerPage (fan-radio)
 const TourCalendarPage = lazy(() => import("./features/music/pages/TourCalendarPage"));
 const TourMerchPage = lazy(() => import("./features/music/pages/TourMerchPage"));
 const BookingInquiryPage = lazy(() => import("./features/music/pages/BookingInquiryPage"));
 const MusicDistributionPage = lazy(() => import("./features/music/pages/DistributionPage"));
-const RoyaltyPayoutsPage = lazy(() => import("./features/music/pages/RoyaltyPayoutsPage"));
-const PublishingPage = lazy(() => import("./features/music/pages/PublishingPage"));
-const SplitSheetsPage = lazy(() => import("./features/music/pages/SplitSheetsPage"));
-const SyncLicensingPage = lazy(() => import("./features/music/pages/SyncLicensingPage"));
-const StemMarketplacePage = lazy(() => import("./features/music/pages/StemMarketplacePage"));
-const SamplePackPage = lazy(() => import("./features/music/pages/SamplePackPage"));
-const NFTDropsPage = lazy(() => import("./features/music/pages/NFTDropsPage"));
+// archived: RoyaltyPayoutsPage (royalties), PublishingPage (publishing), SplitSheetsPage (split-sheets), SyncLicensingPage (sync-licensing), StemMarketplacePage (stem-marketplace), SamplePackPage (sample-packs), NFTDropsPage (nft-drops)
 const MerchBundlesPage = lazy(() => import("./features/music/pages/MerchBundlesPage"));
 const SuperThanksPage = lazy(() => import("./features/music/pages/SuperThanksPage"));
-const CollabStudioPage = lazy(() => import("./features/music/pages/CollabStudioPage"));
+// archived: CollabStudioPage (collab-studio)
 const GigMarketplacePage = lazy(() => import("./features/music/pages/GigMarketplacePage"));
 const ArtistVerificationPage = lazy(() => import("./features/music/pages/ArtistVerificationPage"));
 const SmartPlaylistsPage = lazy(() => import("./features/music/pages/SmartPlaylistsPage"));
