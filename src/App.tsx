@@ -402,25 +402,19 @@ const App = () => (
                       <Route path="charts" element={<MusicChartsPage />} />
                       <Route path="creator-analytics" element={<ProtectedRoute><MusicCreatorAnalyticsPage /></ProtectedRoute>} />
                       <Route path="podcast" element={<MusicPodcastPage />} />
-                      <Route path="karaoke" element={<KaraokePage />} />
+                      {/* archived: karaoke */}
                       <Route path="lyrics-sync" element={<LyricsSyncPage />} />
-                      <Route path="dj" element={<DJConsolePage />} />
+                      {/* archived: dj (dj-console) */}
                       <Route path="longform" element={<LongformPlayerPage />} />
-                      <Route path="radio-player" element={<FanRadioPlayerPage />} />
+                      {/* archived: radio-player (fan-radio) */}
                       <Route path="tour" element={<TourCalendarPage />} />
                       <Route path="tour-merch" element={<TourMerchPage />} />
                       <Route path="booking" element={<ProtectedRoute><BookingInquiryPage /></ProtectedRoute>} />
                       <Route path="distribution" element={<ProtectedRoute><MusicDistributionPage /></ProtectedRoute>} />
-                      <Route path="royalties" element={<ProtectedRoute><RoyaltyPayoutsPage /></ProtectedRoute>} />
-                      <Route path="publishing" element={<ProtectedRoute><PublishingPage /></ProtectedRoute>} />
-                      <Route path="splits" element={<ProtectedRoute><SplitSheetsPage /></ProtectedRoute>} />
-                      <Route path="sync" element={<SyncLicensingPage />} />
-                      <Route path="stems" element={<StemMarketplacePage />} />
-                      <Route path="samples" element={<SamplePackPage />} />
-                      <Route path="nft-drops" element={<NFTDropsPage />} />
+                      {/* archived: royalties, publishing, splits, sync, stems, samples, nft-drops */}
                       <Route path="merch-bundles" element={<MerchBundlesPage />} />
                       <Route path="super-thanks" element={<SuperThanksPage />} />
-                      <Route path="collab" element={<ProtectedRoute><CollabStudioPage /></ProtectedRoute>} />
+                      {/* archived: collab (collab-studio) */}
                       <Route path="gigs" element={<GigMarketplacePage />} />
                       <Route path="verify" element={<ProtectedRoute><ArtistVerificationPage /></ProtectedRoute>} />
                       <Route path="smart-playlists" element={<ProtectedRoute><SmartPlaylistsPage /></ProtectedRoute>} />
