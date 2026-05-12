@@ -41,6 +41,7 @@ export default function TrackUploadForm({
     const trackId = await upload({
       title,
       genre,
+      category,
       is_explicit: explicit,
       description,
       cover_art_url: coverUrl,
