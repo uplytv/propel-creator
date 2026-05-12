@@ -362,6 +362,11 @@ const App = () => (
                     <Route path="/smart-links/:id/analytics" element={<ProtectedRoute><SmartLinkAnalyticsPage /></ProtectedRoute>} />
                     <Route path="/smart-links/domains" element={<ProtectedRoute><SmartLinkDomains /></ProtectedRoute>} />
 
+                    {/* Radiate — geo-radius local discovery */}
+                    <Route path="/radiate" element={<RadiateFeedPage />} />
+                    <Route path="/radiate/new" element={<ProtectedRoute><RadiateNewPage /></ProtectedRoute>} />
+                    <Route path="/radiate/manage" element={<ProtectedRoute><RadiateManagePage /></ProtectedRoute>} />
+
                     {/* UPLY TV (must come before /:username catch-all) */}
                     <Route path="/tv" element={<TVDiscover />} />
                     <Route path="/tv/watch/:streamId" element={<TVWatch />} />
