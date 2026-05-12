@@ -1,3 +1,9 @@
+/**
+ * @deprecated Use `<GatedContent>` from `@/components/GatedContent` instead.
+ * GatedContent is the canonical gating pattern (see Core memory). This file is
+ * preserved because it has live importers; migrate them, then archive.
+ * Current importers: SpaceCommunityTab, SpaceClassroomTab.
+ */
 import { Lock, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";

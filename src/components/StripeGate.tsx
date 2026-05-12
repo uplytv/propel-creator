@@ -1,3 +1,9 @@
+/**
+ * @deprecated Use `<GatedContent>` from `@/components/GatedContent` instead.
+ * GatedContent is the canonical gating pattern (see Core memory). This file is
+ * preserved because it has live importers; migrate them, then archive.
+ * Current importers: pages/Wallet.
+ */
 import { useState } from "react";
 import { CreditCard, Loader2, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
