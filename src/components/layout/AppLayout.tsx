@@ -478,10 +478,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             </Tooltip>
           )}
 
-          {/* Profile */}
+          {/* Profile — clickable shortcut to your public artist page */}
           <button
-            onClick={() => setProfileOpen(!profileOpen)}
-            className={`w-full flex items-center gap-3 rounded-lg hover:bg-secondary/60 transition-colors ${collapsed ? "p-2 justify-center" : "px-3 py-2"}`}
+            onClick={() => navigate(yourPagePath)}
+            className={`w-full flex items-center gap-3 rounded-lg hover:bg-white/5 transition-colors ${collapsed ? "p-2 justify-center" : "px-3 py-2"}`}
           >
             {profile.avatarUrl ? (
               <img src={profile.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
@@ -493,7 +493,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             {!collapsed && (
               <div className="flex-1 text-left min-w-0">
                 <p className="text-sm font-medium truncate">{profile.name}</p>
-                <p className="text-[10px] text-muted-foreground">Manage account</p>
+                <p className="text-[10px] text-muted-foreground truncate">
+                  {vanitySlug ? `uply.tv/@${vanitySlug}` : "Claim your @ →"}
+                </p>
               </div>
             )}
           </button>
