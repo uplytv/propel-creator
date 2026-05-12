@@ -658,17 +658,31 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
               <div className="px-4 py-3 border-b border-border">
                 <div className="flex items-center gap-3">
-                  {profile.avatarUrl ? (
-                    <img src={profile.avatarUrl} alt="" className="w-10 h-10 rounded-full object-cover" />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">
-                      {profile.name.charAt(0)}
+                  <button
+                    onClick={() => { navigate(yourPagePath); setMobileMenuOpen(false); }}
+                    className="flex items-center gap-3 flex-1 min-w-0 rounded-lg px-1 py-1 -mx-1 hover:bg-white/5 transition-colors text-left"
+                  >
+                    {profile.avatarUrl ? (
+                      <img src={profile.avatarUrl} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary flex-shrink-0">
+                        {profile.name.charAt(0)}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium truncate">{profile.name}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        {vanitySlug ? `uply.tv/@${vanitySlug}` : "Claim your @ →"}
+                      </p>
                     </div>
-                  )}
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">{profile.name}</p>
+                  </button>
+                  <button
+                    onClick={() => { navigate("/settings"); setMobileMenuOpen(false); }}
+                    aria-label="Plan settings"
+                    className="flex-shrink-0"
+                  >
                     <TierBadge tier={profile.tier} tierName={profile.tierName} size="sm" />
-                  </div>
+                  </button>
                 </div>
               </div>
 
