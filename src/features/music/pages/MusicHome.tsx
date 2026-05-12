@@ -183,9 +183,7 @@ export default function MusicHome() {
               {(stations ?? []).filter((s) => s.is_live).map((s) => (
                 <RadioStationCard key={s.id} station={s} />
               ))}
-              {(liveRooms ?? []).map((r) => (
-                <AudioRoomCard key={r.id} room={r} />
-              ))}
+              {/* audio-rooms archived */}
               {(premieres ?? []).slice(0, 4).map((p) => (
                 <PremiereCard key={p.id} premiere={p} />
               ))}
