@@ -699,6 +699,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               <nav aria-label="Mobile navigation" className="flex-1 py-2 px-3 overflow-y-auto">
                 {renderNavItem({ label: "Discover", icon: Search, path: "/discover", desc: "Find creators" }, false, () => setMobileMenuOpen(false))}
                 {renderNavItem({ label: "Home", icon: Home, path: "/dashboard", desc: "Overview" }, false, () => setMobileMenuOpen(false))}
+                {renderNavItem({ label: "Your Page", icon: Globe, path: yourPagePath, desc: "Your public artist page" }, false, () => setMobileMenuOpen(false))}
 
                 {coreNav.map(group => {
                   if (!isCoreEnabled(group.core)) return null;
