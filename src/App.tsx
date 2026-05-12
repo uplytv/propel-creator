@@ -22,6 +22,7 @@ import OfflineScreen from "@/components/OfflineScreen";
 import SplashScreen from "@/components/SplashScreen";
 import { useNativeInit, useKeyboardState } from "@/hooks/useNativePlatform";
 import { AnimatePresence } from "framer-motion";
+import { capturePageView } from "@/lib/posthog";
 
 // Lazy-loaded pages
 const Landing = lazy(() => import("./pages/Landing"));
@@ -227,6 +228,10 @@ function ScrollToTop() {
     const mainContent = document.getElementById("main-content");
     mainContent?.scrollTo({ top: 0, left: 0, behavior: "auto" });
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [location.pathname, location.search]);
+
+  useEffect(() => {
+    capturePageView(location.pathname + location.search);
   }, [location.pathname, location.search]);
 
   return null;
