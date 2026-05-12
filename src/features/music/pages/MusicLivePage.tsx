@@ -133,9 +133,7 @@ export default function MusicLivePage() {
           </div>
         )}
         <div className="flex gap-3 overflow-x-auto px-4 pb-2">
-          {(rooms ?? []).map((r) => (
-            <AudioRoomCard key={r.id} room={r} />
-          ))}
+          {/* audio-rooms archived */}
           {!rooms?.length && (
             <div className="text-sm text-white/40">No rooms live right now.</div>
           )}
