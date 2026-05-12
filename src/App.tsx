@@ -154,6 +154,8 @@ const GigMarketplacePage = lazy(() => import("./features/music/pages/GigMarketpl
 const ArtistVerificationPage = lazy(() => import("./features/music/pages/ArtistVerificationPage"));
 const SmartPlaylistsPage = lazy(() => import("./features/music/pages/SmartPlaylistsPage"));
 const ArtistPage = lazy(() => import("./features/music/pages/ArtistPage"));
+const ArtistPageEditor = lazy(() => import("./features/music/pages/ArtistPageEditor"));
+const PublicArtistPage = lazy(() => import("./features/music/pages/PublicArtistPage"));
 const MusicFeedPage = lazy(() => import("./features/music/pages/MusicFeedPage"));
 const TrackInsightsPage = lazy(() => import("./features/music/pages/TrackInsightsPage"));
 const EmbedTrackPage = lazy(() => import("./features/music/pages/EmbedTrackPage"));
@@ -225,6 +227,12 @@ function ScrollToTop() {
   }, [location.pathname, location.search]);
 
   return null;
+}
+
+function PersistentPlayerGate() {
+  const { pathname } = useLocation();
+  if (pathname.startsWith('/@')) return null;
+  return <PersistentPlayer />;
 }
 
 function NativeShell({ children }: { children: React.ReactNode }) {
@@ -410,9 +418,13 @@ const App = () => (
                       <Route path="verify" element={<ProtectedRoute><ArtistVerificationPage /></ProtectedRoute>} />
                       <Route path="smart-playlists" element={<ProtectedRoute><SmartPlaylistsPage /></ProtectedRoute>} />
                       <Route path="artist/:id" element={<ArtistPage />} />
+                      <Route path="artist/:id/edit" element={<ProtectedRoute><ArtistPageEditor /></ProtectedRoute>} />
                       <Route path="feed" element={<ProtectedRoute><MusicFeedPage /></ProtectedRoute>} />
                       <Route path="track/:id/insights" element={<ProtectedRoute><TrackInsightsPage /></ProtectedRoute>} />
                     </Route>
+
+                    {/* Public artist landing page (bare, outside app shell) */}
+                    <Route path="/@:slug" element={<PublicArtistPage />} />
 
                     <Route path="/:username" element={<BioPage />} />
                     <Route path="/:username/page" element={<BioPage />} />
@@ -504,7 +516,7 @@ const App = () => (
                   </RouteErrorBoundary>
                 </Suspense>
                 </ErrorBoundary>
-                <PersistentPlayer />
+                <PersistentPlayerGate />
               </BrowserRouter>
               </AppWithSplash>
               </NativeShell>

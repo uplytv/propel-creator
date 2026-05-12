@@ -17,6 +17,7 @@ export interface UploadOptions {
   is_explicit?: boolean;
   description?: string | null;
   cover_art_url?: string | null;
+  category?: string | null;
   file: File;
   onProgress?: (pct: number) => void;
 }
@@ -84,6 +85,7 @@ export function useUploadTrack() {
       const patch: Record<string, any> = {};
       if (opts.description) patch.description = opts.description;
       if (opts.cover_art_url) patch.cover_art_url = opts.cover_art_url;
+      if (opts.category) patch.category = opts.category;
       if (Object.keys(patch).length) {
         await sb.from('tracks').update(patch).eq('id', init.trackId);
       }

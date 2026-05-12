@@ -18,6 +18,7 @@ export default function TrackUploadForm({
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [genre, setGenre] = useState<string>('Hip-Hop');
+  const [category, setCategory] = useState<string>('song');
   const [description, setDescription] = useState('');
   const [explicit, setExplicit] = useState(false);
   const [cover, setCover] = useState<File | null>(null);
@@ -40,6 +41,7 @@ export default function TrackUploadForm({
     const trackId = await upload({
       title,
       genre,
+      category,
       is_explicit: explicit,
       description,
       cover_art_url: coverUrl,
@@ -90,6 +92,26 @@ export default function TrackUploadForm({
               </option>
             ))}
           </select>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white"
+            style={{ fontSize: 16 }}
+          >
+            <option value="song" className="bg-[#0A0A0A]">Song</option>
+            <option value="remix" className="bg-[#0A0A0A]">Remix</option>
+            <option value="dj_set" className="bg-[#0A0A0A]">DJ Set</option>
+            <option value="live_set" className="bg-[#0A0A0A]">Live Set</option>
+            <option value="demo" className="bg-[#0A0A0A]">Demo</option>
+            <option value="interlude" className="bg-[#0A0A0A]">Interlude</option>
+          </select>
+          {(category === 'remix' || category === 'dj_set') && (
+            <p className="text-xs text-white/50">
+              {category === 'remix'
+                ? 'Remixes appear in your artist page’s Remixes section'
+                : 'DJ sets appear in your artist page’s DJ Sets section'}
+            </p>
+          )}
           <label className="flex items-center gap-2 text-sm text-white/70">
             <input
               type="checkbox"
