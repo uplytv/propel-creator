@@ -18,6 +18,7 @@ export default function TrackUploadForm({
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [genre, setGenre] = useState<string>('Hip-Hop');
+  const [category, setCategory] = useState<string>('song');
   const [description, setDescription] = useState('');
   const [explicit, setExplicit] = useState(false);
   const [cover, setCover] = useState<File | null>(null);
