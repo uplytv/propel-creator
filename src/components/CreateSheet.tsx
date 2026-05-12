@@ -2,12 +2,14 @@ import { useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   Video, Music, Disc3, MessageSquare, Radio,
-  Calendar, ListMusic, ShoppingBag, Briefcase
+  Calendar, ListMusic, ShoppingBag, Briefcase,
+  Share2, Mail,
 } from "lucide-react";
 
 type Tile = { icon: React.ElementType; title: string; desc: string; to: string };
 type Group = { label: string; tiles: Tile[] };
 
+// Only routes that exist in the app are listed; dead links are omitted.
 const groups: Group[] = [
   {
     label: "Share",
@@ -29,6 +31,13 @@ const groups: Group[] = [
     tiles: [
       { icon: Calendar, title: "Event", desc: "Schedule a virtual or IRL event", to: "/events/create" },
       { icon: ListMusic, title: "Playlist", desc: "Curate a new playlist", to: "/music/library" },
+    ],
+  },
+  {
+    label: "Promote",
+    tiles: [
+      { icon: Share2, title: "SmartLink", desc: "Music smart link or pre-save", to: "/smart-links" },
+      { icon: Mail, title: "Broadcast", desc: "Email your subscribers", to: "/dashboard/broadcast" },
     ],
   },
   {
