@@ -61,7 +61,7 @@ export default function ConcertPage() {
       )}
 
       <ConcertMerchCarousel concertId={concert.id} />
-      <EncoreBidPanel concertId={concert.id} />
+      {/* encore-bids archived */}
     </div>
   );
 }
