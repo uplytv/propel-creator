@@ -11,7 +11,7 @@ import {
   Zap, Crown, Sparkles, BarChart3, Radio, Menu, X, Wallet, LayoutGrid, ChevronDown,
   GraduationCap, DollarSign, Bot, Briefcase, Handshake, Share2, Film,
   Trophy, Plug, MessageSquare, Bell as BellIcon, UserCheck, Search, Rocket,
-  Video, CreditCard, UserPlus, User, Globe, Mail, Mic, Gift, Rss, Tv, Code, Music
+  Video, CreditCard, UserPlus, User, Globe, Mail, Mic, Gift, Rss, Tv, Code, Music, Calendar
 } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import { useApp, tierNames } from "@/context/AppContext";
@@ -28,29 +28,18 @@ import { useInviteCodes } from "@/hooks/useInviteCodes";
 
 type NavItem = { label: string; icon: React.ElementType; path: string; desc: string; requiresTier?: number; badgeKey?: string; featureKey?: string };
 
-// 5 Core sections with their embedded/advanced sub-items
+// Sections in display order. MUSIC is open by default; all others collapsed.
 const coreNav: { core: string; label: string; icon: React.ElementType; items: NavItem[] }[] = [
-  {
-    core: "space",
-    label: "COMMUNITY",
-    icon: LayoutGrid,
-    items: [
-      { label: "My Community", icon: LayoutGrid, path: "__space__", desc: "Your community hub" },
-      { label: "Network Feed", icon: Tv, path: "/network", desc: "Live · Trending · Shop" },
-      { label: "Leaderboard", icon: Trophy, path: "/leaderboard", desc: "Top members", featureKey: "leaderboard" },
-    ],
-  },
   {
     core: "live",
     label: "CONTENT",
     icon: Film,
     items: [
       { label: "Content Library", icon: Film, path: "/content-library", desc: "Videos & uploads", featureKey: "content_library" },
-      { label: "Ad Campaigns", icon: Plug, path: "/ad-integrations", desc: "Boost streams", featureKey: "stream_boost" },
       { label: "Podcast", icon: Mic, path: "/podcast", desc: "Host your podcast", featureKey: "podcast" },
       { label: "Podcast RSS", icon: Rss, path: "/podcast-rss", desc: "Submit to Apple Podcasts & Spotify", featureKey: "content" },
-      { label: "Distribution", icon: Globe, path: "/distribution", desc: "Publish everywhere at once" },
-      { label: "SmartLinks", icon: Share2, path: "/smart-links", desc: "Music smart links & pre-saves" },
+      { label: "Events", icon: Calendar, path: "/events", desc: "Schedule virtual or IRL events" },
+      { label: "Go Live", icon: Radio, path: "/go-live", desc: "Start a live stream" },
     ],
   },
   {
@@ -70,6 +59,40 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
     ],
   },
   {
+    core: "grow",
+    label: "GROW",
+    icon: TrendingUp,
+    items: [
+      { label: "SmartLinks", icon: Share2, path: "/smart-links", desc: "Music smart links & pre-saves" },
+      { label: "Ad Campaigns", icon: Plug, path: "/ad-integrations", desc: "Boost streams", featureKey: "stream_boost" },
+      { label: "Affiliates", icon: Handshake, path: "/affiliates", desc: "Referral program", featureKey: "affiliates" },
+      { label: "Content Syndication", icon: Globe, path: "/distribution", desc: "Publish everywhere at once" },
+      { label: "Brand Deals", icon: Briefcase, path: "/marketplace", desc: "Sponsored opportunities" },
+    ],
+  },
+  {
+    core: "space",
+    label: "COMMUNITY",
+    icon: LayoutGrid,
+    items: [
+      { label: "My Community", icon: LayoutGrid, path: "__space__", desc: "Your community hub" },
+      { label: "Network Feed", icon: Tv, path: "/network", desc: "Live · Trending · Shop" },
+      { label: "Leaderboard", icon: Trophy, path: "/leaderboard", desc: "Top members", featureKey: "leaderboard" },
+    ],
+  },
+  {
+    core: "audience",
+    label: "AUDIENCE",
+    icon: Mail,
+    items: [
+      { label: "Newsletter", icon: Mail, path: "/newsletter", desc: "Email your members", featureKey: "newsletter" },
+      { label: "Subscribers", icon: UserPlus, path: "/dashboard/subscribers", desc: "Email capture & leads" },
+      { label: "Broadcast", icon: Radio, path: "/dashboard/broadcast", desc: "Email your list" },
+      { label: "Drip Sequences", icon: Zap, path: "/dashboard/drip-sequences", desc: "Automated emails" },
+      { label: "Email Analytics", icon: BarChart3, path: "/dashboard/email-analytics", desc: "Open & click rates" },
+    ],
+  },
+  {
     core: "earn",
     label: "EARN",
     icon: DollarSign,
@@ -79,15 +102,6 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
       { label: "Buy Credits", icon: CreditCard, path: "/buy-credits", desc: "Purchase credits" },
       { label: "Jobs & Talent", icon: Briefcase, path: "/jobs", desc: "Freelance marketplace", featureKey: "jobs_marketplace" },
       { label: "Collaborate", icon: Handshake, path: "/collaborate", desc: "Co-creator collabs", badgeKey: "collaborate", featureKey: "collaborations" },
-      { label: "Affiliates", icon: Share2, path: "/affiliates", desc: "Referral program", featureKey: "affiliates" },
-      { label: "Newsletter", icon: Mail, path: "/newsletter", desc: "Email your members", featureKey: "newsletter" },
-      { label: "Subscribers", icon: UserPlus, path: "/dashboard/subscribers", desc: "Email capture & leads" },
-      { label: "Broadcast", icon: Radio, path: "/dashboard/broadcast", desc: "Email your list" },
-      { label: "Email Analytics", icon: BarChart3, path: "/dashboard/email-analytics", desc: "Open & click rates" },
-      { label: "Drip Sequences", icon: Zap, path: "/dashboard/drip-sequences", desc: "Automated emails" },
-      { label: "My Page", icon: Globe, path: "/my-page", desc: "Bio link & funnel pages" },
-      { label: "Brand Deals", icon: Briefcase, path: "/marketplace", desc: "Sponsored opportunities" },
-      { label: "Developer API", icon: Code, path: "/developer", desc: "API keys & webhooks" },
     ],
   },
   {
@@ -96,18 +110,18 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
     icon: Bot,
     items: [
       { label: "AI Team", icon: Bot, path: "/dashboard/ai-team", desc: "Your 5 AI agents" },
-      { label: "Grow", icon: Sparkles, path: "/grow", desc: "Growth tasks", featureKey: "growth_tasks" },
+      { label: "Growth Agent", icon: Sparkles, path: "/grow", desc: "Growth tasks", featureKey: "growth_tasks" },
       { label: "Launchpad", icon: Rocket, path: "/launchpad", desc: "Launch something new" },
     ],
   },
 ];
 
 const utilityNav: NavItem[] = [
-  { label: "My Public Profile", icon: Globe, path: "__public_profile__", desc: "Your public page" },
+  { label: "Settings", icon: Settings, path: "/settings", desc: "Preferences" },
+  { label: "Developer API", icon: Code, path: "/developer", desc: "API keys & webhooks" },
   { label: "Messages", icon: MessageSquare, path: "/job-messages", desc: "Conversations", badgeKey: "job-messages" },
   { label: "Notifications", icon: BellIcon, path: "/notifications", desc: "Alerts", badgeKey: "notifications" },
   { label: "My Rep", icon: UserCheck, path: "/my-rep", desc: "Growth partner", requiresTier: 3 },
-  { label: "Settings", icon: Settings, path: "/settings", desc: "Preferences" },
 ];
 
 const tierIcons = [Shield, TrendingUp, Zap, Crown];
@@ -146,7 +160,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [expandedCores, setExpandedCores] = useState<string[]>([]);
+  const [expandedCores, setExpandedCores] = useState<string[]>(["music"]);
   const [uploadSheetOpen, setUploadSheetOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
@@ -159,6 +173,22 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     },
     enabled: !!user,
   });
+
+  // Vanity slug for the user's public artist page
+  const { data: vanitySlug } = useQuery({
+    queryKey: ["nav-vanity-slug", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("artist_profiles" as any)
+        .select("vanity_slug")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return (data as any)?.vanity_slug as string | null;
+    },
+    enabled: !!user,
+  });
+
+  const yourPagePath = user ? `/music/artist/${user.id}/edit` : "/auth";
 
   const getBadge = (item: NavItem) => {
     if (item.badgeKey === "collaborate") return unreadCount;
@@ -269,6 +299,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       {/* Discover + Home */}
       {renderNavItem({ label: "Discover", icon: Search, path: "/discover", desc: "Find creators" }, collapsed)}
       {renderNavItem({ label: "Home", icon: Home, path: "/dashboard", desc: "Overview" }, collapsed)}
+      {renderNavItem({ label: "Your Page", icon: Globe, path: yourPagePath, desc: "Your public artist page" }, collapsed)}
 
       {/* 5 Cores */}
       {coreNav.map(group => {
@@ -447,10 +478,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             </Tooltip>
           )}
 
-          {/* Profile */}
+          {/* Profile — clickable shortcut to your public artist page */}
           <button
-            onClick={() => setProfileOpen(!profileOpen)}
-            className={`w-full flex items-center gap-3 rounded-lg hover:bg-secondary/60 transition-colors ${collapsed ? "p-2 justify-center" : "px-3 py-2"}`}
+            onClick={() => navigate(yourPagePath)}
+            className={`w-full flex items-center gap-3 rounded-lg hover:bg-white/5 transition-colors ${collapsed ? "p-2 justify-center" : "px-3 py-2"}`}
           >
             {profile.avatarUrl ? (
               <img src={profile.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
@@ -462,7 +493,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             {!collapsed && (
               <div className="flex-1 text-left min-w-0">
                 <p className="text-sm font-medium truncate">{profile.name}</p>
-                <p className="text-[10px] text-muted-foreground">Manage account</p>
+                <p className="text-[10px] text-muted-foreground truncate">
+                  {vanitySlug ? `uply.tv/@${vanitySlug}` : "Claim your @ →"}
+                </p>
               </div>
             )}
           </button>
@@ -625,17 +658,31 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
               <div className="px-4 py-3 border-b border-border">
                 <div className="flex items-center gap-3">
-                  {profile.avatarUrl ? (
-                    <img src={profile.avatarUrl} alt="" className="w-10 h-10 rounded-full object-cover" />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">
-                      {profile.name.charAt(0)}
+                  <button
+                    onClick={() => { navigate(yourPagePath); setMobileMenuOpen(false); }}
+                    className="flex items-center gap-3 flex-1 min-w-0 rounded-lg px-1 py-1 -mx-1 hover:bg-white/5 transition-colors text-left"
+                  >
+                    {profile.avatarUrl ? (
+                      <img src={profile.avatarUrl} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary flex-shrink-0">
+                        {profile.name.charAt(0)}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium truncate">{profile.name}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        {vanitySlug ? `uply.tv/@${vanitySlug}` : "Claim your @ →"}
+                      </p>
                     </div>
-                  )}
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">{profile.name}</p>
+                  </button>
+                  <button
+                    onClick={() => { navigate("/settings"); setMobileMenuOpen(false); }}
+                    aria-label="Plan settings"
+                    className="flex-shrink-0"
+                  >
                     <TierBadge tier={profile.tier} tierName={profile.tierName} size="sm" />
-                  </div>
+                  </button>
                 </div>
               </div>
 
@@ -643,7 +690,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 <div className="px-4 py-2">
                   <button
                     onClick={() => { navigate("/invite-codes"); setMobileMenuOpen(false); }}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/5 border border-primary/20 group"
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-primary/5 border border-primary/20 group"
                   >
                     <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                       <Gift className="w-4 h-4 text-primary" />
@@ -668,6 +715,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               <nav aria-label="Mobile navigation" className="flex-1 py-2 px-3 overflow-y-auto">
                 {renderNavItem({ label: "Discover", icon: Search, path: "/discover", desc: "Find creators" }, false, () => setMobileMenuOpen(false))}
                 {renderNavItem({ label: "Home", icon: Home, path: "/dashboard", desc: "Overview" }, false, () => setMobileMenuOpen(false))}
+                {renderNavItem({ label: "Your Page", icon: Globe, path: yourPagePath, desc: "Your public artist page" }, false, () => setMobileMenuOpen(false))}
 
                 {coreNav.map(group => {
                   if (!isCoreEnabled(group.core)) return null;
