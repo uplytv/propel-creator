@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, RefObject } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { RefObject as ReactRefObject } from 'react';
 
 interface Props {
