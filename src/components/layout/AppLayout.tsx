@@ -28,29 +28,18 @@ import { useInviteCodes } from "@/hooks/useInviteCodes";
 
 type NavItem = { label: string; icon: React.ElementType; path: string; desc: string; requiresTier?: number; badgeKey?: string; featureKey?: string };
 
-// 5 Core sections with their embedded/advanced sub-items
+// Sections in display order. MUSIC is open by default; all others collapsed.
 const coreNav: { core: string; label: string; icon: React.ElementType; items: NavItem[] }[] = [
-  {
-    core: "space",
-    label: "COMMUNITY",
-    icon: LayoutGrid,
-    items: [
-      { label: "My Community", icon: LayoutGrid, path: "__space__", desc: "Your community hub" },
-      { label: "Network Feed", icon: Tv, path: "/network", desc: "Live · Trending · Shop" },
-      { label: "Leaderboard", icon: Trophy, path: "/leaderboard", desc: "Top members", featureKey: "leaderboard" },
-    ],
-  },
   {
     core: "live",
     label: "CONTENT",
     icon: Film,
     items: [
       { label: "Content Library", icon: Film, path: "/content-library", desc: "Videos & uploads", featureKey: "content_library" },
-      { label: "Ad Campaigns", icon: Plug, path: "/ad-integrations", desc: "Boost streams", featureKey: "stream_boost" },
       { label: "Podcast", icon: Mic, path: "/podcast", desc: "Host your podcast", featureKey: "podcast" },
       { label: "Podcast RSS", icon: Rss, path: "/podcast-rss", desc: "Submit to Apple Podcasts & Spotify", featureKey: "content" },
-      { label: "Distribution", icon: Globe, path: "/distribution", desc: "Publish everywhere at once" },
-      { label: "SmartLinks", icon: Share2, path: "/smart-links", desc: "Music smart links & pre-saves" },
+      { label: "Events", icon: Calendar, path: "/events", desc: "Schedule virtual or IRL events" },
+      { label: "Go Live", icon: Radio, path: "/go-live", desc: "Start a live stream" },
     ],
   },
   {
@@ -70,6 +59,40 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
     ],
   },
   {
+    core: "grow",
+    label: "GROW",
+    icon: TrendingUp,
+    items: [
+      { label: "SmartLinks", icon: Share2, path: "/smart-links", desc: "Music smart links & pre-saves" },
+      { label: "Ad Campaigns", icon: Plug, path: "/ad-integrations", desc: "Boost streams", featureKey: "stream_boost" },
+      { label: "Affiliates", icon: Handshake, path: "/affiliates", desc: "Referral program", featureKey: "affiliates" },
+      { label: "Content Syndication", icon: Globe, path: "/distribution", desc: "Publish everywhere at once" },
+      { label: "Brand Deals", icon: Briefcase, path: "/marketplace", desc: "Sponsored opportunities" },
+    ],
+  },
+  {
+    core: "space",
+    label: "COMMUNITY",
+    icon: LayoutGrid,
+    items: [
+      { label: "My Community", icon: LayoutGrid, path: "__space__", desc: "Your community hub" },
+      { label: "Network Feed", icon: Tv, path: "/network", desc: "Live · Trending · Shop" },
+      { label: "Leaderboard", icon: Trophy, path: "/leaderboard", desc: "Top members", featureKey: "leaderboard" },
+    ],
+  },
+  {
+    core: "audience",
+    label: "AUDIENCE",
+    icon: Mail,
+    items: [
+      { label: "Newsletter", icon: Mail, path: "/newsletter", desc: "Email your members", featureKey: "newsletter" },
+      { label: "Subscribers", icon: UserPlus, path: "/dashboard/subscribers", desc: "Email capture & leads" },
+      { label: "Broadcast", icon: Radio, path: "/dashboard/broadcast", desc: "Email your list" },
+      { label: "Drip Sequences", icon: Zap, path: "/dashboard/drip-sequences", desc: "Automated emails" },
+      { label: "Email Analytics", icon: BarChart3, path: "/dashboard/email-analytics", desc: "Open & click rates" },
+    ],
+  },
+  {
     core: "earn",
     label: "EARN",
     icon: DollarSign,
@@ -79,15 +102,6 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
       { label: "Buy Credits", icon: CreditCard, path: "/buy-credits", desc: "Purchase credits" },
       { label: "Jobs & Talent", icon: Briefcase, path: "/jobs", desc: "Freelance marketplace", featureKey: "jobs_marketplace" },
       { label: "Collaborate", icon: Handshake, path: "/collaborate", desc: "Co-creator collabs", badgeKey: "collaborate", featureKey: "collaborations" },
-      { label: "Affiliates", icon: Share2, path: "/affiliates", desc: "Referral program", featureKey: "affiliates" },
-      { label: "Newsletter", icon: Mail, path: "/newsletter", desc: "Email your members", featureKey: "newsletter" },
-      { label: "Subscribers", icon: UserPlus, path: "/dashboard/subscribers", desc: "Email capture & leads" },
-      { label: "Broadcast", icon: Radio, path: "/dashboard/broadcast", desc: "Email your list" },
-      { label: "Email Analytics", icon: BarChart3, path: "/dashboard/email-analytics", desc: "Open & click rates" },
-      { label: "Drip Sequences", icon: Zap, path: "/dashboard/drip-sequences", desc: "Automated emails" },
-      { label: "My Page", icon: Globe, path: "/my-page", desc: "Bio link & funnel pages" },
-      { label: "Brand Deals", icon: Briefcase, path: "/marketplace", desc: "Sponsored opportunities" },
-      { label: "Developer API", icon: Code, path: "/developer", desc: "API keys & webhooks" },
     ],
   },
   {
@@ -96,18 +110,18 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
     icon: Bot,
     items: [
       { label: "AI Team", icon: Bot, path: "/dashboard/ai-team", desc: "Your 5 AI agents" },
-      { label: "Grow", icon: Sparkles, path: "/grow", desc: "Growth tasks", featureKey: "growth_tasks" },
+      { label: "Growth Agent", icon: Sparkles, path: "/grow", desc: "Growth tasks", featureKey: "growth_tasks" },
       { label: "Launchpad", icon: Rocket, path: "/launchpad", desc: "Launch something new" },
     ],
   },
 ];
 
 const utilityNav: NavItem[] = [
-  { label: "My Public Profile", icon: Globe, path: "__public_profile__", desc: "Your public page" },
+  { label: "Settings", icon: Settings, path: "/settings", desc: "Preferences" },
+  { label: "Developer API", icon: Code, path: "/developer", desc: "API keys & webhooks" },
   { label: "Messages", icon: MessageSquare, path: "/job-messages", desc: "Conversations", badgeKey: "job-messages" },
   { label: "Notifications", icon: BellIcon, path: "/notifications", desc: "Alerts", badgeKey: "notifications" },
   { label: "My Rep", icon: UserCheck, path: "/my-rep", desc: "Growth partner", requiresTier: 3 },
-  { label: "Settings", icon: Settings, path: "/settings", desc: "Preferences" },
 ];
 
 const tierIcons = [Shield, TrendingUp, Zap, Crown];
