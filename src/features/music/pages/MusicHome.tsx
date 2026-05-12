@@ -46,7 +46,7 @@ export default function MusicHome() {
   const { data: because } = useBecauseYouListened(12);
   const { data: stations } = useRadioStations();
   const { data: premieres } = useUpcomingPremieres();
-  const { data: liveRooms } = useLiveAudioRooms();
+  const liveRooms: any[] = []; // audio-rooms archived
   const { data: spotlights } = useEditorialSpotlights();
 
   return (
