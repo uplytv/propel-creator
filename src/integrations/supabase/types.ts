@@ -1462,46 +1462,82 @@ export type Database = {
       }
       artist_profiles: {
         Row: {
+          about_md: string | null
           artist_bio: string | null
           created_at: string
           header_image_url: string | null
+          hero_image_url: string | null
+          hero_logo_url: string | null
           id: string
           is_verified: boolean
           monthly_listeners_cache: number
+          page_published: boolean
+          page_theme: Json
           pinned_playlist_id: string | null
           related_artists: string[]
+          section_order: string[]
+          section_visibility: Json
+          seo_description: string | null
+          seo_og_image: string | null
+          seo_title: string | null
           social_links: Json
           spotlight_track_ids: string[]
+          tagline: string | null
           updated_at: string
           user_id: string
+          vanity_slug: string | null
         }
         Insert: {
+          about_md?: string | null
           artist_bio?: string | null
           created_at?: string
           header_image_url?: string | null
+          hero_image_url?: string | null
+          hero_logo_url?: string | null
           id?: string
           is_verified?: boolean
           monthly_listeners_cache?: number
+          page_published?: boolean
+          page_theme?: Json
           pinned_playlist_id?: string | null
           related_artists?: string[]
+          section_order?: string[]
+          section_visibility?: Json
+          seo_description?: string | null
+          seo_og_image?: string | null
+          seo_title?: string | null
           social_links?: Json
           spotlight_track_ids?: string[]
+          tagline?: string | null
           updated_at?: string
           user_id: string
+          vanity_slug?: string | null
         }
         Update: {
+          about_md?: string | null
           artist_bio?: string | null
           created_at?: string
           header_image_url?: string | null
+          hero_image_url?: string | null
+          hero_logo_url?: string | null
           id?: string
           is_verified?: boolean
           monthly_listeners_cache?: number
+          page_published?: boolean
+          page_theme?: Json
           pinned_playlist_id?: string | null
           related_artists?: string[]
+          section_order?: string[]
+          section_visibility?: Json
+          seo_description?: string | null
+          seo_og_image?: string | null
+          seo_title?: string | null
           social_links?: Json
           spotlight_track_ids?: string[]
+          tagline?: string | null
           updated_at?: string
           user_id?: string
+          vanity_slug?: string | null
         }
         Relationships: [
           {
@@ -19228,6 +19264,7 @@ export type Database = {
           audio_upload_id: string | null
           bpm: number | null
           buy_url: string | null
+          category: string
           comment_count: number
           copyright_notice: string | null
           cover_art_url: string | null
@@ -19270,6 +19307,7 @@ export type Database = {
           audio_upload_id?: string | null
           bpm?: number | null
           buy_url?: string | null
+          category?: string
           comment_count?: number
           copyright_notice?: string | null
           cover_art_url?: string | null
@@ -19312,6 +19350,7 @@ export type Database = {
           audio_upload_id?: string | null
           bpm?: number | null
           buy_url?: string | null
+          category?: string
           comment_count?: number
           copyright_notice?: string | null
           cover_art_url?: string | null
@@ -21071,6 +21110,7 @@ export type Database = {
           audio_upload_id: string | null
           bpm: number | null
           buy_url: string | null
+          category: string
           comment_count: number
           copyright_notice: string | null
           cover_art_url: string | null
@@ -21122,6 +21162,7 @@ export type Database = {
           audio_upload_id: string | null
           bpm: number | null
           buy_url: string | null
+          category: string
           comment_count: number
           copyright_notice: string | null
           cover_art_url: string | null
@@ -21173,6 +21214,7 @@ export type Database = {
           audio_upload_id: string | null
           bpm: number | null
           buy_url: string | null
+          category: string
           comment_count: number
           copyright_notice: string | null
           cover_art_url: string | null
@@ -21224,6 +21266,7 @@ export type Database = {
           audio_upload_id: string | null
           bpm: number | null
           buy_url: string | null
+          category: string
           comment_count: number
           copyright_notice: string | null
           cover_art_url: string | null
@@ -21275,6 +21318,7 @@ export type Database = {
           audio_upload_id: string | null
           bpm: number | null
           buy_url: string | null
+          category: string
           comment_count: number
           copyright_notice: string | null
           cover_art_url: string | null
@@ -21358,6 +21402,7 @@ export type Database = {
         Returns: undefined
       }
       validate_invite_code: { Args: { p_code: string }; Returns: Json }
+      validate_vanity_slug: { Args: { p_slug: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
