@@ -410,9 +410,13 @@ const App = () => (
                       <Route path="verify" element={<ProtectedRoute><ArtistVerificationPage /></ProtectedRoute>} />
                       <Route path="smart-playlists" element={<ProtectedRoute><SmartPlaylistsPage /></ProtectedRoute>} />
                       <Route path="artist/:id" element={<ArtistPage />} />
+                      <Route path="artist/:id/edit" element={<ProtectedRoute><ArtistPageEditor /></ProtectedRoute>} />
                       <Route path="feed" element={<ProtectedRoute><MusicFeedPage /></ProtectedRoute>} />
                       <Route path="track/:id/insights" element={<ProtectedRoute><TrackInsightsPage /></ProtectedRoute>} />
                     </Route>
+
+                    {/* Public artist landing page (bare, outside app shell) */}
+                    <Route path="/@:slug" element={<PublicArtistPage />} />
 
                     <Route path="/:username" element={<BioPage />} />
                     <Route path="/:username/page" element={<BioPage />} />
