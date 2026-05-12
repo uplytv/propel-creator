@@ -5,8 +5,7 @@ import { useRadioStations } from '../hooks/useRadioStations';
 import RadioStationCard from '../components/RadioStationCard';
 import { useUpcomingPremieres } from '../hooks/usePremieres';
 import PremiereCard from '../components/PremiereCard';
-import { useLiveAudioRooms } from '../hooks/useAudioRooms';
-import AudioRoomCard from '../components/AudioRoomCard';
+// audio-rooms archived
 import { useAuth } from '@/context/AuthContext';
 import { useMusicFeed } from '../hooks/useMusicFeed';
 import { useRecentlyPlayed } from '../hooks/useRecentlyPlayed';
