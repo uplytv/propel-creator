@@ -332,6 +332,7 @@ export default function GoLive() {
       setStreamStatus("idle");
       setStreamStartTime(Date.now());
       trackEvent("stream_created", { mode, category, orientation, has_featured_product: !!featuredProductId, simulcast: simulcastEnabled, total_ms: ms });
+      trackEvent("stream_started", { mode, category, orientation, simulcast: simulcastEnabled });
       pushStep("ready", "ok", "Broadcast studio ready");
       toast.success("Stream created!", { description: "Your broadcast studio is ready." });
 

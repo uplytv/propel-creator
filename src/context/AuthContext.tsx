@@ -20,18 +20,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const enrichIdentify = async (userId: string, email?: string | null) => {
+      try {
+        const { data } = await (supabase as any)
+          .from('profiles')
+          .select('tier, role_type, creator_type, onboarding_complete')
+          .eq('id', userId)
+          .maybeSingle();
+        identifyUser(userId, {
+          tier: data?.tier ?? null,
+          role_type: data?.role_type ?? null,
+          creator_type: data?.creator_type ?? null,
+          onboarding_complete: data?.onboarding_complete ?? null,
+        });
+      } catch {
+        identifyUser(userId, {});
+      }
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setLoading(false);
 
       if (session?.user) {
         setSentryUser(session.user.id);
-        identifyUser(session.user.id, {
-          email: session.user.email,
-          created_at: session.user.created_at,
-        });
+        // Defer DB call out of the auth callback (Supabase best practice)
+        setTimeout(() => enrichIdentify(session.user.id, session.user.email), 0);
         if (isNative() && event === 'SIGNED_IN') {
-          // Fire-and-forget native push registration
           registerNativePush(session.user.id).catch((e) =>
             console.error('[push] native registration failed', e)
           );
@@ -49,10 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       if (session?.user) {
         setSentryUser(session.user.id);
-        identifyUser(session.user.id, {
-          email: session.user.email,
-          created_at: session.user.created_at,
-        });
+        setTimeout(() => enrichIdentify(session.user.id, session.user.email), 0);
       }
     });
 

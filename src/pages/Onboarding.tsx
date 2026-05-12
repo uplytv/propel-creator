@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight, ArrowLeft, Camera, Check, X, Loader2, AlertTriangle, RotateCcw, Settings as SettingsIcon } from "lucide-react";
 import { toast } from "sonner";
 import { getAffiliateCookie, clearAffiliateCookie, getReferralData, clearReferralData } from "@/lib/affiliateCookies";
+import { trackEvent } from "@/lib/posthog";
 import logoImg from "@/assets/logo.png";
 import MilestoneProgressPill from "@/components/onboarding/MilestoneProgressPill";
 import { useAutoRetryPreference } from "@/hooks/useAutoRetryPreference";
@@ -366,6 +367,12 @@ export default function Onboarding() {
         creator_type: creatorType || "Content Creator",
       })
       .eq("user_id", user.id);
+
+    trackEvent("onboarding_completed", {
+      creator_type: creatorType || "Content Creator",
+      is_approved: isApproved,
+      has_social: !!socialHandle,
+    });
 
     // Clear persisted Step 3 & Step 4 drafts now that onboarding is submitted
     try {

@@ -2,6 +2,7 @@ import { Component, type ReactNode } from "react";
 import { AlertTriangle, RefreshCw, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sentry } from "@/lib/sentry";
+import { trackEvent } from "@/lib/posthog";
 
 interface Props {
   children: ReactNode;
@@ -32,6 +33,10 @@ export default class RouteErrorBoundary extends Component<Props, State> {
     Sentry.captureException(error, {
       tags: { context: "route_error_boundary", section: this.props.section || "unknown" },
       extra: { componentStack: info.componentStack },
+    });
+    trackEvent("error_boundary_triggered", {
+      section: this.props.section || "unknown",
+      error_message: error?.message?.slice(0, 200),
     });
   }
 
