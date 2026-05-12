@@ -154,6 +154,8 @@ const GigMarketplacePage = lazy(() => import("./features/music/pages/GigMarketpl
 const ArtistVerificationPage = lazy(() => import("./features/music/pages/ArtistVerificationPage"));
 const SmartPlaylistsPage = lazy(() => import("./features/music/pages/SmartPlaylistsPage"));
 const ArtistPage = lazy(() => import("./features/music/pages/ArtistPage"));
+const ArtistPageEditor = lazy(() => import("./features/music/pages/ArtistPageEditor"));
+const PublicArtistPage = lazy(() => import("./features/music/pages/PublicArtistPage"));
 const MusicFeedPage = lazy(() => import("./features/music/pages/MusicFeedPage"));
 const TrackInsightsPage = lazy(() => import("./features/music/pages/TrackInsightsPage"));
 const EmbedTrackPage = lazy(() => import("./features/music/pages/EmbedTrackPage"));
