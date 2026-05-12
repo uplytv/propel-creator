@@ -15,9 +15,9 @@ export default function MusicLivePage() {
   const nav = useNavigate();
   const { data: stations } = useRadioStations();
   const { data: premieres } = useUpcomingPremieres();
-  const { data: rooms } = useLiveAudioRooms();
+  const rooms: any[] = []; // audio-rooms archived
   const createStation = useCreateRadioStation();
-  const startRoom = useStartAudioRoom();
+  const startRoom = { isPending: false, mutateAsync: async (_: any) => ({ id: '' }) };
 
   const [stationName, setStationName] = useState("");
   const [roomTitle, setRoomTitle] = useState("");
