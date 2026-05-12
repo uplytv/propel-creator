@@ -174,6 +174,22 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     enabled: !!user,
   });
 
+  // Vanity slug for the user's public artist page
+  const { data: vanitySlug } = useQuery({
+    queryKey: ["nav-vanity-slug", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("artist_profiles" as any)
+        .select("vanity_slug")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return (data as any)?.vanity_slug as string | null;
+    },
+    enabled: !!user,
+  });
+
+  const yourPagePath = user ? `/music/artist/${user.id}/edit` : "/auth";
+
   const getBadge = (item: NavItem) => {
     if (item.badgeKey === "collaborate") return unreadCount;
     if (item.badgeKey === "job-messages") return jobUnreadCount;
