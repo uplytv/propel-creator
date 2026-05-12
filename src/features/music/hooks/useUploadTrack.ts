@@ -17,6 +17,7 @@ export interface UploadOptions {
   is_explicit?: boolean;
   description?: string | null;
   cover_art_url?: string | null;
+  category?: string | null;
   file: File;
   onProgress?: (pct: number) => void;
 }
