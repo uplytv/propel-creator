@@ -397,7 +397,7 @@ const App = () => (
                       <Route path="blends" element={<ProtectedRoute><GroupBlendsPage /></ProtectedRoute>} />
                       <Route path="concerts" element={<ConcertsPage />} />
                       <Route path="concerts/:id" element={<ConcertPage />} />
-                      <Route path="labs" element={<MusicLabsHub />} />
+                      {/* archived: labs (music-labs) */}
                       <Route path="connections" element={<ProtectedRoute><DSPConnectionsPage /></ProtectedRoute>} />
                       <Route path="charts" element={<MusicChartsPage />} />
                       <Route path="creator-analytics" element={<ProtectedRoute><MusicCreatorAnalyticsPage /></ProtectedRoute>} />
