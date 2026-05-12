@@ -510,7 +510,7 @@ const App = () => (
                   </RouteErrorBoundary>
                 </Suspense>
                 </ErrorBoundary>
-                <PersistentPlayer />
+                <PersistentPlayerGate />
               </BrowserRouter>
               </AppWithSplash>
               </NativeShell>
