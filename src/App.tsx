@@ -229,6 +229,12 @@ function ScrollToTop() {
   return null;
 }
 
+function PersistentPlayerGate() {
+  const { pathname } = useLocation();
+  if (pathname.startsWith('/@')) return null;
+  return <PersistentPlayer />;
+}
+
 function NativeShell({ children }: { children: React.ReactNode }) {
   useNativeInit();
   useKeyboardState();
