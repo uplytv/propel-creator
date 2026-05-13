@@ -20819,12 +20819,16 @@ export type Database = {
           business_category: string | null
           cover_image_url: string | null
           created_at: string | null
+          creator_layout: string | null
           creator_stage: string | null
           creator_type: string | null
           display_name: string | null
           id: string | null
+          location_label: string | null
+          members: number | null
           tier: number | null
           tier_name: string | null
+          travel_city: string | null
           updated_at: string | null
           user_id: string | null
           user_type: string | null
@@ -20837,12 +20841,16 @@ export type Database = {
           business_category?: string | null
           cover_image_url?: string | null
           created_at?: string | null
+          creator_layout?: string | null
           creator_stage?: string | null
           creator_type?: string | null
           display_name?: string | null
           id?: string | null
+          location_label?: string | null
+          members?: number | null
           tier?: number | null
           tier_name?: string | null
+          travel_city?: string | null
           updated_at?: string | null
           user_id?: string | null
           user_type?: string | null
@@ -20855,12 +20863,16 @@ export type Database = {
           business_category?: string | null
           cover_image_url?: string | null
           created_at?: string | null
+          creator_layout?: string | null
           creator_stage?: string | null
           creator_type?: string | null
           display_name?: string | null
           id?: string | null
+          location_label?: string | null
+          members?: number | null
           tier?: number | null
           tier_name?: string | null
+          travel_city?: string | null
           updated_at?: string | null
           user_id?: string | null
           user_type?: string | null
@@ -21076,6 +21088,40 @@ export type Database = {
           station_id: string
           title: string
           track_position: number
+        }[]
+      }
+      get_public_profile_by_user_id: {
+        Args: { _user_id: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          cover_image_url: string
+          creator_layout: string
+          creator_type: string
+          display_name: string
+          id: string
+          location_label: string
+          members: number
+          travel_city: string
+          user_id: string
+          username: string
+        }[]
+      }
+      get_public_profile_by_username: {
+        Args: { _username: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          cover_image_url: string
+          creator_layout: string
+          creator_type: string
+          display_name: string
+          id: string
+          location_label: string
+          members: number
+          travel_city: string
+          user_id: string
+          username: string
         }[]
       }
       get_super_fans: {

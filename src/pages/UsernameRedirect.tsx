@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Navigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import SocialCreatorPage from "@/components/creatorprofile/social/SocialCreatorPage";
 
 /**
  * Resolves /:username (and /:username/page) to the canonical /@<slug> social
@@ -20,10 +21,9 @@ export default function UsernameRedirect() {
         setTarget(null);
         return;
       }
+      const normalizedUsername = username.replace(/^@+/, "");
       const { data: profile } = await (supabase as any)
-        .from("profiles")
-        .select("user_id, username")
-        .eq("username", username)
+        .rpc("get_public_profile_by_username", { _username: normalizedUsername })
         .maybeSingle();
 
       if (!profile) {
@@ -45,6 +45,10 @@ export default function UsernameRedirect() {
       cancelled = true;
     };
   }, [username]);
+
+  if (username?.startsWith("@")) {
+    return <SocialCreatorPage />;
+  }
 
   if (target === undefined) {
     return <div className="min-h-screen bg-background" aria-hidden />;
