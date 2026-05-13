@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Pencil, Settings2 } from "lucide-react";
+import { useRef, useState } from "react";
+import { Pencil, Settings2, Upload, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useUpsertArtistProfile } from "@/features/music/hooks/useArtistProfile";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+const sb = supabase as unknown as any;
 
 interface Props {
   initial: {
