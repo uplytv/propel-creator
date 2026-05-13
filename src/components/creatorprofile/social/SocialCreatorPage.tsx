@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Share2, Plus, Gift, Radio } from "lucide-react";
+import { ArrowLeft, Plus, Gift, Radio } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -92,14 +92,37 @@ export default function SocialCreatorPage() {
   const handleShare = async () => {
     const url = `${getSiteUrl()}/@${slug}`;
     const title = `${slug} on UPLY`;
+    // Try Web Share first; fall through to clipboard if unavailable, blocked
+    // (e.g. inside a preview iframe), or rejected by the user agent.
     try {
-      if (navigator.share) {
+      if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
         await navigator.share({ title, url });
-      } else {
-        await navigator.clipboard.writeText(url);
-        toast.success("Link copied");
+        return;
       }
-    } catch {/* user cancelled */}
+    } catch (err: any) {
+      if (err?.name === "AbortError") return; // user cancelled
+      // fall through to clipboard
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied");
+    } catch {
+      // Final fallback: hidden textarea + execCommand
+      const ta = document.createElement("textarea");
+      ta.value = url;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+        toast.success("Link copied");
+      } catch {
+        toast.error("Could not copy link");
+      } finally {
+        document.body.removeChild(ta);
+      }
+    }
   };
 
   const { data, isLoading } = useQuery({
@@ -346,8 +369,8 @@ export default function SocialCreatorPage() {
 
   return (
     <main className="relative min-h-screen bg-background text-foreground pb-24">
-      {/* Floating top actions over cover */}
-      <div className="absolute top-3 left-0 right-0 z-30 flex items-center justify-between px-3 sm:px-4 max-w-[1100px] mx-auto">
+      {/* Floating top actions over cover (back only — share lives inline next to the name) */}
+      <div className="absolute top-3 left-3 z-30">
         <button
           type="button"
           onClick={() => navigate("/")}
@@ -355,14 +378,6 @@ export default function SocialCreatorPage() {
           className="h-11 w-11 rounded-full bg-black/45 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/60 transition"
         >
           <ArrowLeft className="h-5 w-5" />
-        </button>
-        <button
-          type="button"
-          onClick={handleShare}
-          aria-label="Share profile"
-          className="h-11 w-11 rounded-full bg-black/45 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/60 transition"
-        >
-          <Share2 className="h-5 w-5" />
         </button>
       </div>
 
@@ -397,6 +412,7 @@ export default function SocialCreatorPage() {
         onFollow={handleFollowClick}
         isFollowing={!!userId && isFollowing(userId)}
         messageHref={user && !isOwner ? `/messages?to=${userId}` : undefined}
+        onShare={handleShare}
         onSubscribe={() => {
           window.location.href = `/community/${userId}`;
         }}
