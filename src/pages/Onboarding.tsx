@@ -775,6 +775,36 @@ export default function Onboarding() {
 
             <div className="space-y-4 mb-6">
               <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">How will your profile look?</label>
+                <p className="text-xs text-muted-foreground mb-2">Pick the layout that best fits your work. You can change it later.</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { value: "musician", emoji: "🎵", label: "Musician" },
+                    { value: "dj_producer", emoji: "🎧", label: "DJ / Producer" },
+                    { value: "podcaster", emoji: "🎙️", label: "Podcaster" },
+                    { value: "filmmaker", emoji: "🎬", label: "Filmmaker" },
+                    { value: "visual_artist", emoji: "🎨", label: "Visual Artist" },
+                    { value: "content_creator", emoji: "📹", label: "Content Creator" },
+                    { value: "generic", emoji: "✨", label: "Something else" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setCreatorLayout(opt.value)}
+                      className={`min-h-[44px] rounded-xl p-3 text-left border-2 transition-all flex items-center gap-2 ${
+                        creatorLayout === opt.value
+                          ? "border-primary bg-primary/5"
+                          : "border-border bg-card hover:border-primary/30"
+                      }`}
+                    >
+                      <span className="text-xl">{opt.emoji}</span>
+                      <span className="text-xs font-medium text-foreground">{opt.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">What type of creator are you?</label>
                 <Select value={creatorType} onValueChange={setCreatorType}>
                   <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
