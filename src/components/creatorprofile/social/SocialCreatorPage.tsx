@@ -210,8 +210,14 @@ export default function SocialCreatorPage() {
         .maybeSingle();
       return data;
     },
-    staleTime: 30_000,
+    staleTime: 0,
+    refetchInterval: 15_000,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
   });
+
+  // Also poll shop products so featured live product flips off quickly
+  // (realtime subscription handles instant flips; polling is a safety net)
 
   // Total classroom lessons for KPI strip
   const { data: lessonsCount = 0 } = useQuery({
