@@ -21090,6 +21090,40 @@ export type Database = {
           track_position: number
         }[]
       }
+      get_public_profile_by_user_id: {
+        Args: { _user_id: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          cover_image_url: string
+          creator_layout: string
+          creator_type: string
+          display_name: string
+          id: string
+          location_label: string
+          members: number
+          travel_city: string
+          user_id: string
+          username: string
+        }[]
+      }
+      get_public_profile_by_username: {
+        Args: { _username: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          cover_image_url: string
+          creator_layout: string
+          creator_type: string
+          display_name: string
+          id: string
+          location_label: string
+          members: number
+          travel_city: string
+          user_id: string
+          username: string
+        }[]
+      }
       get_super_fans: {
         Args: { _artist_id: string; _limit?: number }
         Returns: {
