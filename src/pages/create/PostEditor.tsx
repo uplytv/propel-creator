@@ -24,7 +24,9 @@ export default function PostEditor() {
     if (!mediaRef.current) {
       toast.error("No photo found", { description: "Capture again from the camera." });
       navigate("/camera?mode=POST", { replace: true });
+      return;
     }
+    if (mediaRef.current.caption) setCaption(mediaRef.current.caption);
     return () => {
       if (mediaRef.current?.previewUrl) {
         try {
