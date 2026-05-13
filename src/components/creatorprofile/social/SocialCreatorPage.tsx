@@ -276,11 +276,11 @@ export default function SocialCreatorPage() {
         displayName={displayName}
       />
 
-      {/* Owner-only floating compose FAB */}
+      {/* Owner-only floating compose FAB — opens the unified camera/create flow */}
       {isOwner && (
         <Link
-          to="/create/post/editor"
-          aria-label="Create a post"
+          to="/camera?mode=POST"
+          aria-label="Create new post, story, short, video or live"
           className="fixed z-40 bottom-28 right-5 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition"
         >
           <Plus className="h-6 w-6" />
