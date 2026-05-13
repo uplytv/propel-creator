@@ -192,6 +192,12 @@ export default function NowPlayingSheet({
                   <ThumbsDown className="w-5 h-5" />
                 </button>
               )}
+              <StartStationButton
+                seed={{ seedType: 'track', seedId: current.id, seedName: current.title }}
+                firstTrack={current}
+                variant="icon"
+                className="text-white/70 hover:text-white"
+              />
               <SleepTimerMenu />
               <PlaybackSpeedMenu />
               <EqPresetMenu />
