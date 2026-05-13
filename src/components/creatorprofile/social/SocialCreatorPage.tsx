@@ -83,7 +83,8 @@ export default function SocialCreatorPage() {
     queryKey: ["social-creator", slug],
     enabled: !!slug,
     queryFn: async () => {
-      // Try artist_profiles by vanity_slug first
+      // Try artist_profiles by vanity_slug first. Profile rows are private via
+      // RLS, so public pages must resolve only safe fields through RPC helpers.
       const { data: ap } = await sb
         .from("artist_profiles")
         .select("*")
@@ -92,20 +93,12 @@ export default function SocialCreatorPage() {
       let basic: BasicProfile | null = null;
       if (ap) {
         const { data: b } = await sb
-          .from("profiles")
-          .select(
-            "id,user_id,username,display_name,avatar_url,cover_image_url,bio,travel_city,location_label,creator_type,creator_layout,members",
-          )
-          .eq("user_id", ap.user_id)
+          .rpc("get_public_profile_by_user_id", { _user_id: ap.user_id })
           .maybeSingle();
         basic = b as BasicProfile | null;
       } else {
         const { data: b } = await sb
-          .from("profiles")
-          .select(
-            "id,user_id,username,display_name,avatar_url,cover_image_url,bio,travel_city,location_label,creator_type,creator_layout,members",
-          )
-          .eq("username", slug)
+          .rpc("get_public_profile_by_username", { _username: slug })
           .maybeSingle();
         basic = b as BasicProfile | null;
         if (basic) {

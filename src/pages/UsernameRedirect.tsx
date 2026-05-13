@@ -20,10 +20,9 @@ export default function UsernameRedirect() {
         setTarget(null);
         return;
       }
+      const normalizedUsername = username.replace(/^@+/, "");
       const { data: profile } = await (supabase as any)
-        .from("profiles")
-        .select("user_id, username")
-        .eq("username", username)
+        .rpc("get_public_profile_by_username", { _username: normalizedUsername })
         .maybeSingle();
 
       if (!profile) {
