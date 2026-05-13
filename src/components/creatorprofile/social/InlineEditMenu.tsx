@@ -32,7 +32,7 @@ interface Props {
  *
  * Keeps things minimal — power editing remains in /artist-page-editor.
  */
-export default function InlineEditMenu({ initial, ownerMode }: Props) {
+export default function InlineEditMenu({ initial, ownerMode, userId }: Props) {
   const [openCover, setOpenCover] = useState(false);
   const [openBio, setOpenBio] = useState(false);
   const upsert = useUpsertArtistProfile();
