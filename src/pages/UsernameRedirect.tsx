@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Navigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import SocialCreatorPage from "@/components/creatorprofile/social/SocialCreatorPage";
+import { getProfileHandleCandidates } from "@/lib/profileSlug";
 
 /**
  * Resolves /:username (and /:username/page) to the canonical /@<slug> social
@@ -21,10 +22,15 @@ export default function UsernameRedirect() {
         setTarget(null);
         return;
       }
-      const normalizedUsername = username.replace(/^@+/, "");
-      const { data: profile } = await (supabase as any)
-        .rpc("get_public_profile_by_username", { _username: normalizedUsername })
-        .maybeSingle();
+      const candidates = getProfileHandleCandidates(username);
+      const results = await Promise.all(
+        candidates.map((candidate) =>
+          (supabase as any)
+            .rpc("get_public_profile_by_username", { _username: candidate })
+            .maybeSingle()
+        )
+      );
+      const profile = results.find(({ data }) => data)?.data;
 
       if (!profile) {
         if (!cancelled) setTarget(null);
