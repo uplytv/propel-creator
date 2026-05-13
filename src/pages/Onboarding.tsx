@@ -118,6 +118,7 @@ export default function Onboarding() {
 
   // Step 2: Creator Profile
   const [creatorType, setCreatorType] = useState("");
+  const [creatorLayout, setCreatorLayout] = useState<string>("generic");
   const [followerCount, setFollowerCount] = useState("");
   const [primaryPlatform, setPrimaryPlatform] = useState("");
   const [isMonetizing, setIsMonetizing] = useState<string | null>(null);
@@ -365,6 +366,7 @@ export default function Onboarding() {
         onboarding_complete: true,
         is_approved: isApproved,
         creator_type: creatorType || "Content Creator",
+        creator_layout: creatorLayout || "generic",
       })
       .eq("user_id", user.id);
 
