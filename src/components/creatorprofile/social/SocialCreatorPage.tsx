@@ -399,7 +399,6 @@ export default function SocialCreatorPage() {
           { label: "Followers", value: counts.followers },
           { label: "Lessons", value: lessonsCount, href: `/community/${userId}` },
           { label: "Plays", value: counts.plays },
-          { label: "Works", value: counts.works },
         ]}
       />
 
