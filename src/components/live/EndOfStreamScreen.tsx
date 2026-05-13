@@ -62,7 +62,7 @@ export default function EndOfStreamScreen({
   const [shareOpen, setShareOpen] = useState(false);
   const [courseOpen, setCourseOpen] = useState(false);
   const [recordingTarget, setRecordingTarget] = useState<{ id: string; slug: string | null } | null>(null);
-  const [shareUrl, setShareUrl] = useState<string>(`${getSiteUrl()}/stream/${streamId}`);
+  const [shareUrl, setShareUrl] = useState<string>(buildStreamShareUrl(streamId, "web_share"));
   const { downloadRecording, downloading, progress: downloadProgress } = useStreamDownload();
   const autoClips = useAutoClipAI(streamId, creatorId);
   const streamAchievements = useStreamAchievements();
