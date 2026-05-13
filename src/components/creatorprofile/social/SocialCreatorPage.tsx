@@ -281,6 +281,7 @@ export default function SocialCreatorPage() {
 
       <InlineEditMenu
         ownerMode={isOwner}
+        userId={userId}
         initial={{
           header_image_url: artist?.header_image_url,
           artist_bio: artist?.artist_bio,
