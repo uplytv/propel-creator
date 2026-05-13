@@ -3,10 +3,8 @@ import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 
-const mockBuildProfileShareUrl = vi.fn(() => "https://uply.tv/@testcreator?utm_source=profile&utm_medium=web_share&utm_campaign=testcreator");
-
 vi.mock("@/lib/shareUrls", () => ({
-  buildProfileShareUrl: (...args: any[]) => mockBuildProfileShareUrl(...args),
+  buildProfileShareUrl: vi.fn(),
   buildTrackShareUrl: vi.fn(),
   buildStreamShareUrl: vi.fn(),
 }));
@@ -59,6 +57,9 @@ vi.mock("@/features/music/components/ArtistPage/ArtistPageContent", () => ({
 }));
 
 import SocialCreatorPage from "@/components/creatorprofile/social/SocialCreatorPage";
+import { buildProfileShareUrl } from "@/lib/shareUrls";
+
+const mockBuildProfileShareUrl = vi.mocked(buildProfileShareUrl);
 
 function createTestQueryClient() {
   return new QueryClient({
