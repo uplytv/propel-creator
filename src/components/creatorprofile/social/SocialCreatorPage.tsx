@@ -77,9 +77,23 @@ export default function SocialCreatorPage() {
   const { slug: rawSlug, username: rawUsername } = useParams<{ slug?: string; username?: string }>();
   // Defensive: strip any leading "@" so /@@handle resolves the same as /@handle.
   const slug = (rawSlug || rawUsername || "").replace(/^@+/, "");
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { isFollowing, follow, unfollow } = useFollows();
   const [tab, setTab] = useState("posts");
+
+  const handleShare = async () => {
+    const url = `${getSiteUrl()}/@${slug}`;
+    const title = `${slug} on UPLY`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast.success("Link copied");
+      }
+    } catch {/* user cancelled */}
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ["social-creator", slug],
