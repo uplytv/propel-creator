@@ -22,21 +22,16 @@ vi.mock("@/lib/optimisticRegistry", () => ({
   shouldAcceptRealtime: () => true,
 }));
 
-const mockUnsubscribe = vi.fn();
-const mockChannel = {
-  on: vi.fn().mockReturnThis(),
-  subscribe: vi.fn().mockReturnValue({ unsubscribe: mockUnsubscribe }),
-};
-
-const mockSupabase = {
-  from: vi.fn(),
-  rpc: vi.fn(),
-  channel: vi.fn().mockReturnValue(mockChannel),
-  removeChannel: vi.fn(),
-};
-
 vi.mock("@/integrations/supabase/client", () => ({
-  supabase: mockSupabase,
+  supabase: {
+    from: vi.fn(),
+    rpc: vi.fn(),
+    channel: vi.fn(() => ({
+      on: vi.fn().mockReturnThis(),
+      subscribe: vi.fn(() => ({ unsubscribe: vi.fn() })),
+    })),
+    removeChannel: vi.fn(),
+  },
 }));
 
 vi.mock("@/context/AuthContext", () => ({
@@ -58,8 +53,10 @@ vi.mock("@/features/music/components/ArtistPage/ArtistPageContent", () => ({
 
 import SocialCreatorPage from "@/components/creatorprofile/social/SocialCreatorPage";
 import { buildProfileShareUrl } from "@/lib/shareUrls";
+import { supabase } from "@/integrations/supabase/client";
 
 const mockBuildProfileShareUrl = vi.mocked(buildProfileShareUrl);
+const mockSupabase = supabase as unknown as any;
 
 function createTestQueryClient() {
   return new QueryClient({
