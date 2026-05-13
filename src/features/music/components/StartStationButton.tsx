@@ -1,5 +1,6 @@
 import { Radio } from 'lucide-react';
 import { fetchRecs, type StationSeed } from '../hooks/useRecs';
+import { saveRecentStation } from '../hooks/useRecentStations';
 import { usePlayerStore } from '../hooks/usePlayerStore';
 import { trackEvent } from '@/lib/posthog';
 import { useToast } from '@/hooks/use-toast';
