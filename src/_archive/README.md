@@ -60,3 +60,9 @@ Nothing archived. Added:
 - Onboarding step 2 gains a 7-card layout picker (default `generic`).
 
 Plans/Radiate decision: option (a) **kept separate**. `WeeklyPlansStrip` reads from the existing `attendance` table (same source as `MyPlansCard`/`GoingOutWeekCard`); `radiate_broadcasts` remains a geo-only feature.
+
+## bio-page (2026-05-13)
+Archived `BioPage.tsx` and `LinkInBioRenderer.tsx`. `/:username` now redirects
+to `/@<slug>` via `UsernameRedirect`. The unified social profile at `/@:slug`
+(`SocialCreatorPage`) reads from `bio_links` directly through `LinksShelf`.
+Editor preview in `MyPage` was repointed to the archive path.

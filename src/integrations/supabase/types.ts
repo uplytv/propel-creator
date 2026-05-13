@@ -1465,6 +1465,8 @@ export type Database = {
           about_md: string | null
           artist_bio: string | null
           created_at: string
+          cta_label: string | null
+          cta_url: string | null
           header_image_url: string | null
           hero_image_url: string | null
           hero_logo_url: string | null
@@ -1491,6 +1493,8 @@ export type Database = {
           about_md?: string | null
           artist_bio?: string | null
           created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
           header_image_url?: string | null
           hero_image_url?: string | null
           hero_logo_url?: string | null
@@ -1517,6 +1521,8 @@ export type Database = {
           about_md?: string | null
           artist_bio?: string | null
           created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
           header_image_url?: string | null
           hero_image_url?: string | null
           hero_logo_url?: string | null
@@ -18085,7 +18091,10 @@ export type Database = {
           created_at: string | null
           event_id: string | null
           expires_at: string | null
+          highlight_cover_url: string | null
+          highlight_title: string | null
           id: string
+          is_highlight: boolean
           location_label: string | null
           media_type: string | null
           media_url: string
@@ -18096,7 +18105,10 @@ export type Database = {
           created_at?: string | null
           event_id?: string | null
           expires_at?: string | null
+          highlight_cover_url?: string | null
+          highlight_title?: string | null
           id?: string
+          is_highlight?: boolean
           location_label?: string | null
           media_type?: string | null
           media_url: string
@@ -18107,7 +18119,10 @@ export type Database = {
           created_at?: string | null
           event_id?: string | null
           expires_at?: string | null
+          highlight_cover_url?: string | null
+          highlight_title?: string | null
           id?: string
+          is_highlight?: boolean
           location_label?: string | null
           media_type?: string | null
           media_url?: string

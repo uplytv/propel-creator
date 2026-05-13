@@ -16,7 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import SEOHead from "@/components/SEOHead";
-import LinkInBioRenderer from "@/components/pages/LinkInBioRenderer";
+import LinkInBioRenderer from "@/_archive/bio-page/components/pages/LinkInBioRenderer";
 
 export default function MyPage() {
   const { user } = useAuth();
