@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useFollows } from "@/hooks/useFollows";
 import { usePageMeta } from "@/features/music/components/ArtistPage/usePageMeta";
+import { getSiteUrl } from "@/lib/siteUrl";
 import CoverHeader from "./CoverHeader";
 import IdentityRow from "./IdentityRow";
 import StatsStrip from "./StatsStrip";
@@ -164,6 +165,8 @@ export default function SocialCreatorPage() {
   const displayName = basic?.display_name || basic?.username || "Creator";
 
   // SEO + JSON-LD (Person + optional MusicGroup if musician)
+  const canonicalSlug = artist?.vanity_slug || basic?.username || slug;
+  const canonicalUrl = `${getSiteUrl()}/@${canonicalSlug}`;
   const ogImage =
     artist?.seo_og_image ||
     artist?.header_image_url ||
@@ -181,7 +184,7 @@ export default function SocialCreatorPage() {
     "@context": "https://schema.org",
     "@type": layout === "musician" ? "MusicGroup" : "Person",
     name: displayName,
-    url: typeof window !== "undefined" ? window.location.href : undefined,
+    url: canonicalUrl,
     image: ogImage || undefined,
     description: desc || undefined,
     sameAs: sameAs.length ? sameAs : undefined,
@@ -190,6 +193,7 @@ export default function SocialCreatorPage() {
     title: artist?.seo_title || `${displayName} | UPLY`,
     description: desc,
     ogImage,
+    url: canonicalUrl,
     jsonLd: personLd,
   });
 
