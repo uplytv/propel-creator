@@ -412,6 +412,7 @@ export default function SocialCreatorPage() {
         onFollow={handleFollowClick}
         isFollowing={!!userId && isFollowing(userId)}
         messageHref={user && !isOwner ? `/messages?to=${userId}` : undefined}
+        onShare={handleShare}
         onSubscribe={() => {
           window.location.href = `/community/${userId}`;
         }}
