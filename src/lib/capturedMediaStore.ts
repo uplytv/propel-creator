@@ -20,6 +20,8 @@ export interface CapturedMedia {
   /** Original filename, for imports. */
   fileName?: string;
   mimeType: string;
+  /** Optional caption pre-filled from the camera "Aa" overlay. */
+  caption?: string;
 }
 
 let stash: CapturedMedia | null = null;
