@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Track } from '../types';
+import type { StationSeed } from './useRecs';
+import { excludeTrackFromStation } from './useRecs';
 
 export type RepeatMode = 'off' | 'all' | 'one';
 export type EqPreset =
@@ -31,6 +33,10 @@ interface PlayerState {
   sleepEndOfTrack: boolean;
   crossfadeSeconds: number; // 0..12; 0 = disabled
 
+  // Algorithmic radio station
+  station: StationSeed | null;
+  stationTrackIds: string[]; // tracks added by the station (for "Why this track?" hints)
+
   loadTrack: (track: Track, queue?: Track[]) => void;
   enqueue: (tracks: Track[]) => void;
   enqueueNext: (tracks: Track[]) => void;
@@ -55,6 +61,11 @@ interface PlayerState {
   setSleepTimer: (minutesFromNow: number | null) => void;
   setSleepEndOfTrack: (b: boolean) => void;
   setCrossfade: (seconds: number) => void;
+
+  startStation: (seed: StationSeed, recs: Track[], firstTrack?: Track) => void;
+  stopStation: () => void;
+  appendStationRecs: (recs: Track[]) => void;
+  excludeFromStation: (trackId: string) => void;
 
   // internal — wired by PersistentPlayer
   _setPosition: (s: number) => void;
@@ -82,6 +93,8 @@ export const usePlayerStore = create<PlayerState>()(
       sleepTimerEndsAt: null,
       sleepEndOfTrack: false,
       crossfadeSeconds: 0,
+      station: null,
+      stationTrackIds: [],
       _seekRequest: null,
 
       loadTrack: (track, queue) => {
@@ -203,6 +216,52 @@ export const usePlayerStore = create<PlayerState>()(
       setSleepEndOfTrack: (b) => set({ sleepEndOfTrack: b, sleepTimerEndsAt: null }),
       setCrossfade: (s) => set({ crossfadeSeconds: Math.max(0, Math.min(12, s)) }),
 
+      startStation: (seed, recs, firstTrack) => {
+        const seed_track = firstTrack ?? recs[0];
+        if (!seed_track) {
+          set({ station: seed, stationTrackIds: recs.map((t) => t.id) });
+          return;
+        }
+        const queue = [seed_track, ...recs.filter((t) => t.id !== seed_track.id)];
+        set({
+          station: seed,
+          stationTrackIds: queue.slice(1).map((t) => t.id),
+          queue,
+          currentIndex: 0,
+          positionSeconds: 0,
+          isPlaying: true,
+          autoplayRadio: true,
+          _seekRequest: 0,
+        });
+      },
+      stopStation: () => set({ station: null, stationTrackIds: [] }),
+      appendStationRecs: (recs) =>
+        set((s) => ({
+          queue: [...s.queue, ...recs],
+          stationTrackIds: [...s.stationTrackIds, ...recs.map((t) => t.id)],
+        })),
+      excludeFromStation: (trackId) => {
+        const { station, queue, currentIndex, stationTrackIds } = get();
+        if (!station) return;
+        // fire-and-forget
+        excludeTrackFromStation(station, trackId).catch(() => {});
+        const idx = queue.findIndex((t) => t.id === trackId);
+        if (idx >= 0) {
+          const next = queue.slice();
+          next.splice(idx, 1);
+          let nextIdx = currentIndex;
+          if (idx < currentIndex) nextIdx = currentIndex - 1;
+          else if (idx === currentIndex) nextIdx = Math.min(currentIndex, next.length - 1);
+          set({
+            queue: next,
+            currentIndex: nextIdx,
+            stationTrackIds: stationTrackIds.filter((id) => id !== trackId),
+            positionSeconds: idx === currentIndex ? 0 : get().positionSeconds,
+            _seekRequest: idx === currentIndex ? 0 : get()._seekRequest,
+          });
+        }
+      },
+
       _setPosition: (s) => set({ positionSeconds: s }),
       _setDuration: (s) => set({ durationSeconds: s }),
       _setIsPlaying: (b) => set({ isPlaying: b }),
@@ -223,6 +282,7 @@ export const usePlayerStore = create<PlayerState>()(
         eqPreset: s.eqPreset,
         autoplayRadio: s.autoplayRadio,
         crossfadeSeconds: s.crossfadeSeconds,
+        station: s.station,
       }),
     }
   )
