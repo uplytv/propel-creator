@@ -2,8 +2,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSwipeable } from "react-swipeable";
 import { motion } from "framer-motion";
-import { RefreshCw, Image as ImageIcon } from "lucide-react";
+import { RefreshCw, Image as ImageIcon, FlipHorizontal, Grid3x3 } from "lucide-react";
 import { toast } from "sonner";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 import CameraTopBar from "@/components/camera/CameraTopBar";
 import LeftToolRail from "@/components/camera/LeftToolRail";
@@ -43,6 +46,22 @@ export default function Camera() {
   const [resolution, setResolution] = useState<"1080p" | "4K">("1080p");
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [showMismatch, setShowMismatch] = useState(false);
+
+  // Camera enhancements (all wired to working UI)
+  const FILTERS = [
+    { name: "None", css: "none" },
+    { name: "Vivid", css: "saturate(1.4) contrast(1.1)" },
+    { name: "Mono", css: "grayscale(1) contrast(1.1)" },
+    { name: "Warm", css: "sepia(0.4) saturate(1.2)" },
+    { name: "Cool", css: "hue-rotate(-10deg) saturate(1.1) brightness(1.05)" },
+    { name: "Fade", css: "contrast(0.9) brightness(1.05) saturate(0.85)" },
+  ];
+  const [filterIndex, setFilterIndex] = useState(0);
+  const [showGrid, setShowGrid] = useState(false);
+  const [mirrorFront, setMirrorFront] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showText, setShowText] = useState(false);
+  const [textOverlay, setTextOverlay] = useState("");
 
   const longPressTimer = useRef<number | null>(null);
   const longPressFiredRef = useRef(false);
@@ -109,6 +128,7 @@ export default function Camera() {
       previewUrl: url,
       durationSeconds: result.seconds,
       mimeType: result.blob.type || "video/webm",
+      caption: textOverlay.trim() || undefined,
     });
     hapticImpact();
     navigate(POST_CAPTURE_ROUTE[mode]);
@@ -124,6 +144,8 @@ export default function Camera() {
     canvas.height = h;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+    // Bake the active CSS filter into the captured photo so what you see is what you get.
+    ctx.filter = FILTERS[filterIndex].css === "none" ? "none" : FILTERS[filterIndex].css;
     ctx.drawImage(video, 0, 0, w, h);
     const blob: Blob | null = await new Promise((res) =>
       canvas.toBlob((b) => res(b), "image/jpeg", 0.92)
@@ -137,6 +159,7 @@ export default function Camera() {
       width: w,
       height: h,
       mimeType: "image/jpeg",
+      caption: textOverlay.trim() || undefined,
     });
     hapticImpact();
     navigate(POST_CAPTURE_ROUTE[mode]);
@@ -306,7 +329,7 @@ export default function Camera() {
         onClose={handleClose}
         onToggleFlash={() => setFlash((f) => (f === "off" ? "on" : f === "on" ? "auto" : "off"))}
         onToggleResolution={() => setResolution((r) => (r === "4K" ? "1080p" : "4K"))}
-        onOpenSettings={() => toast("Camera settings coming soon", { description: "Grid, timer, mirror" })}
+        onOpenSettings={() => setShowSettings(true)}
       />
 
       {/* Viewfinder + swipe surface */}
@@ -322,17 +345,56 @@ export default function Camera() {
               muted
               autoPlay
               className="h-full w-full object-cover"
-              style={{ transform: facing === "front" ? "scaleX(-1)" : undefined }}
+              style={{
+                transform: facing === "front" && mirrorFront ? "scaleX(-1)" : undefined,
+                filter: FILTERS[filterIndex].css,
+              }}
             />
             {!isReady && (
               <div className="absolute inset-0 flex items-center justify-center text-sm text-white/60">
                 {error ? error : "Starting camera…"}
               </div>
             )}
+
+            {/* Rule-of-thirds grid overlay */}
+            {showGrid && (
+              <div className="pointer-events-none absolute inset-0">
+                <div className="absolute left-1/3 top-0 h-full w-px bg-white/30" />
+                <div className="absolute left-2/3 top-0 h-full w-px bg-white/30" />
+                <div className="absolute top-1/3 left-0 w-full h-px bg-white/30" />
+                <div className="absolute top-2/3 left-0 w-full h-px bg-white/30" />
+              </div>
+            )}
+
+            {/* Text overlay (caption preview pinned over the viewfinder) */}
+            {textOverlay.trim() && (
+              <div className="pointer-events-none absolute inset-x-4 bottom-6 z-20 text-center">
+                <span className="inline-block max-w-full rounded-lg bg-black/55 px-3 py-1.5 text-base font-bold text-white backdrop-blur-sm">
+                  {textOverlay}
+                </span>
+              </div>
+            )}
+
+            {/* Filter name pill */}
+            {filterIndex > 0 && (
+              <div className="pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 rounded-full bg-black/55 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white">
+                {FILTERS[filterIndex].name}
+              </div>
+            )}
           </div>
         </div>
 
-        <LeftToolRail mode={mode} />
+        <LeftToolRail
+          mode={mode}
+          filterIndex={filterIndex}
+          onCycleFilter={() => {
+            setFilterIndex((i) => (i + 1) % FILTERS.length);
+            hapticTick();
+          }}
+          onText={() => setShowText(true)}
+          onLoop={() => toast("Boomerang/loop coming soon")}
+          onLayout={() => toast("Layout/collage coming soon")}
+        />
 
         {/* Recording timer bar (top of viewfinder) for SHORT/VIDEO/STORY */}
         {recorder.isRecording && MODE_MAX_SECONDS[mode] > 0 && (
@@ -400,6 +462,67 @@ export default function Camera() {
           setPendingFile(null);
         }}
       />
+
+      {/* Settings sheet — grid + mirror toggles */}
+      <Sheet open={showSettings} onOpenChange={setShowSettings}>
+        <SheetContent side="bottom" className="bg-[#0A0A0A] border-white/10 text-white">
+          <SheetHeader>
+            <SheetTitle className="text-white">Camera settings</SheetTitle>
+          </SheetHeader>
+          <div className="mt-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="grid-toggle" className="flex items-center gap-2 text-sm">
+                <Grid3x3 className="h-4 w-4" /> Show rule-of-thirds grid
+              </Label>
+              <Switch id="grid-toggle" checked={showGrid} onCheckedChange={setShowGrid} />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="mirror-toggle" className="flex items-center gap-2 text-sm">
+                <FlipHorizontal className="h-4 w-4" /> Mirror front camera
+              </Label>
+              <Switch id="mirror-toggle" checked={mirrorFront} onCheckedChange={setMirrorFront} />
+            </div>
+            <p className="text-xs text-white/40">More options (timer, beauty filters) are coming soon.</p>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Text overlay sheet — caption pre-fills the editor */}
+      <Sheet open={showText} onOpenChange={setShowText}>
+        <SheetContent side="bottom" className="bg-[#0A0A0A] border-white/10 text-white">
+          <SheetHeader>
+            <SheetTitle className="text-white">Add text</SheetTitle>
+          </SheetHeader>
+          <div className="mt-4 space-y-3">
+            <textarea
+              value={textOverlay}
+              onChange={(e) => setTextOverlay(e.target.value)}
+              placeholder="Type a caption… it'll show on the preview and pre-fill your post."
+              rows={3}
+              maxLength={140}
+              className="w-full resize-none rounded-xl border border-white/10 bg-white/5 p-3 text-base text-white placeholder-white/40 outline-none"
+            />
+            <div className="flex items-center justify-between text-xs text-white/40">
+              <span>{textOverlay.length}/140</span>
+              <button
+                type="button"
+                onClick={() => setTextOverlay("")}
+                className="text-white/70 hover:text-white"
+              >
+                Clear
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowText(false)}
+              className="w-full rounded-full py-3 text-sm font-bold"
+              style={{ background: "#00FF85", color: "#0A0A0A" }}
+            >
+              Done
+            </button>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

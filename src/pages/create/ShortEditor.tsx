@@ -27,7 +27,9 @@ export default function ShortEditor() {
     if (!mediaRef.current || mediaRef.current.kind !== "video") {
       toast.error("No video found");
       navigate("/camera?mode=SHORT", { replace: true });
+      return;
     }
+    if (mediaRef.current.caption) setCaption(mediaRef.current.caption);
     return () => {
       if (mediaRef.current?.previewUrl) {
         try {

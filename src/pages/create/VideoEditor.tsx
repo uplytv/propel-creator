@@ -34,7 +34,9 @@ export default function VideoEditor() {
     if (!mediaRef.current || mediaRef.current.kind !== "video") {
       toast.error("No video found");
       navigate("/camera?mode=VIDEO", { replace: true });
+      return;
     }
+    if (mediaRef.current.caption) setDescription(mediaRef.current.caption);
     return () => {
       if (mediaRef.current?.previewUrl) {
         try {

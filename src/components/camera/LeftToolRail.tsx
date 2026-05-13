@@ -4,10 +4,11 @@ import type { CameraMode } from "@/lib/cameraModes";
 
 interface Props {
   mode: CameraMode;
+  filterIndex?: number;
+  onCycleFilter?: () => void;
   onText?: () => void;
   onLoop?: () => void;
   onLayout?: () => void;
-  onFilters?: () => void;
 }
 
 /**
@@ -17,7 +18,7 @@ interface Props {
  *   - ▢ layout: STORY + POST only
  *   - filters: all
  */
-export default function LeftToolRail({ mode, onText, onLoop, onLayout, onFilters }: Props) {
+export default function LeftToolRail({ mode, filterIndex = 0, onCycleFilter, onText, onLoop, onLayout }: Props) {
   const [collapsed, setCollapsed] = useState(false);
 
   const showLoop = mode === "SHORT" || mode === "STORY";
@@ -44,8 +45,8 @@ export default function LeftToolRail({ mode, onText, onLoop, onLayout, onFilters
                 <LayoutGrid className="h-5 w-5 text-white" />
               </RailButton>
             )}
-            <RailButton ariaLabel="Filters" onClick={onFilters}>
-              <Sparkles className="h-5 w-5 text-white" />
+            <RailButton ariaLabel="Filters" onClick={onCycleFilter}>
+              <Sparkles className="h-5 w-5" style={{ color: filterIndex > 0 ? "#00FF85" : "#fff" }} />
             </RailButton>
           </>
         )}
