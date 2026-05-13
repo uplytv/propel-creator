@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import { markPending, clearPending } from "@/lib/optimisticRegistry";
 
 export function useProducts() {
   const { user } = useAuth();
@@ -119,6 +120,7 @@ export function useUpdateProduct() {
     },
     onMutate: async ({ id, ...updates }) => {
       if (!user?.id) return;
+      markPending("products", id);
       const ownerKey = ["products", user.id];
       const shopKey = ["creator-shop-products", user.id];
       await Promise.all([
@@ -150,7 +152,7 @@ export function useUpdateProduct() {
         }
         return list;
       });
-      return { prevOwner, prevShop, ownerKey, shopKey };
+      return { prevOwner, prevShop, ownerKey, shopKey, id };
     },
     onError: (e: Error, _v, ctx: any) => {
       if (ctx?.ownerKey) qc.setQueryData(ctx.ownerKey, ctx.prevOwner);
@@ -160,7 +162,8 @@ export function useUpdateProduct() {
     onSuccess: () => {
       toast.success("Product updated!");
     },
-    onSettled: () => {
+    onSettled: (_d, _e, vars: any) => {
+      if (vars?.id) clearPending("products", vars.id);
       qc.invalidateQueries({ queryKey: ["products"] });
       if (user?.id) qc.invalidateQueries({ queryKey: ["creator-shop-products", user.id] });
     },
@@ -178,6 +181,7 @@ export function useDeleteProduct() {
     },
     onMutate: async (id) => {
       if (!user?.id) return;
+      markPending("products", id);
       const ownerKey = ["products", user.id];
       const shopKey = ["creator-shop-products", user.id];
       await Promise.all([
@@ -196,7 +200,8 @@ export function useDeleteProduct() {
       toast.error(e.message);
     },
     onSuccess: () => toast.success("Product deleted"),
-    onSettled: () => {
+    onSettled: (_d, _e, id: any) => {
+      if (typeof id === "string") clearPending("products", id);
       qc.invalidateQueries({ queryKey: ["products"] });
       if (user?.id) qc.invalidateQueries({ queryKey: ["creator-shop-products", user.id] });
     },
