@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import ArtistPageContent from '../components/ArtistPage/ArtistPageContent';
+import CreatorLandingRenderer from '@/components/creatorprofile/CreatorLandingRenderer';
 import { usePageMeta } from '../components/ArtistPage/usePageMeta';
 
 const sb = supabase as unknown as any;
@@ -14,10 +14,29 @@ export default function PublicArtistPage() {
     queryKey: ['public-artist-page', slug],
     enabled: !!slug,
     queryFn: async () => {
-      const { data: profile } = await sb.from('artist_profiles').select('*').eq('vanity_slug', slug).maybeSingle();
-      if (!profile) return { profile: null, basic: null };
-      const { data: basic } = await sb.from('profiles').select('id,username,display_name,avatar_url').eq('id', profile.user_id).maybeSingle();
-      return { profile, basic };
+      // Try artist_profiles first (musicians with a custom landing page)
+      const { data: profile } = await sb
+        .from('artist_profiles')
+        .select('*')
+        .eq('vanity_slug', slug)
+        .maybeSingle();
+
+      if (profile) {
+        const { data: basic } = await sb
+          .from('profiles')
+          .select('id,user_id,username,display_name,avatar_url,creator_type,creator_layout')
+          .eq('user_id', profile.user_id)
+          .maybeSingle();
+        return { profile, basic };
+      }
+
+      // No artist_profiles row → fall back to plain profile by username
+      const { data: basic } = await sb
+        .from('profiles')
+        .select('id,user_id,username,display_name,avatar_url,creator_type,creator_layout')
+        .eq('username', slug)
+        .maybeSingle();
+      return { profile: null, basic };
     },
   });
 
@@ -41,19 +60,20 @@ export default function PublicArtistPage() {
     return <div style={{ minHeight: '100vh', background: '#0A0E27' }} />;
   }
 
-  if (!profile) {
+  if (!basic && !profile) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-white px-6 text-center" style={{ background: '#0A0E27' }}>
-        <h1 className="text-4xl font-bold mb-4">Artist not found</h1>
-        <p className="opacity-70 mb-8">No artist with the handle <span className="font-mono">@{slug}</span></p>
+        <h1 className="text-4xl font-bold mb-4">Not found</h1>
+        <p className="opacity-70 mb-8">No creator with the handle <span className="font-mono">@{slug}</span></p>
         <Link to="/music/search" className="px-6 py-3 rounded-full font-semibold border border-white/30 hover:bg-white/10 transition">
-          Search artists
+          Search creators
         </Link>
       </div>
     );
   }
 
-  if (!profile.page_published) {
+  // Musician with custom artist page that hasn't been published yet
+  if (profile && !profile.page_published) {
     const bg = theme.background_color || '#0A0E27';
     const text = theme.text_color || '#FFFFFF';
     return (
@@ -64,5 +84,26 @@ export default function PublicArtistPage() {
     );
   }
 
-  return <ArtistPageContent userId={profile.user_id} profile={profile} basicProfile={basic} mode="public" />;
+  // Resolve effective layout: explicit creator_layout wins; else musician if they have an
+  // artist_profiles row; else "generic". This guarantees existing musicians stay pixel-identical.
+  const effectiveLayout: string =
+    basic?.creator_layout || (profile ? 'musician' : 'generic');
+
+  if (profile && effectiveLayout === 'musician') {
+    return <ArtistPageContent userId={profile.user_id} profile={profile} basicProfile={basic} mode="public" />;
+  }
+
+  if (basic) {
+    return (
+      <CreatorLandingRenderer
+        creatorType={effectiveLayout}
+        basicProfile={basic}
+        artistProfile={profile}
+        mode="public"
+      />
+    );
+  }
+
+  return null;
 }
+

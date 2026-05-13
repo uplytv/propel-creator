@@ -50,3 +50,13 @@ Implemented under the existing player surface — no new `/music/radio` route, n
 - `useAutoplayRadio` now consumes `fetchRecs` when a station is active (co-plays → daily_mixes → popular fallback), and falls back to genre/creator otherwise.
 - `StartStationButton` surfaced on `TrackRow`, `TrackCard`, `ArtistHeader`. Station badge + thumbs-down + stop-station rendered in `PersistentPlayer` and `NowPlayingSheet`.
 - PostHog events: `station_started`, `station_thumbs_down`, `autoplay_radio_continued`.
+
+## Section 5 — Creator-type Profile Unification (additive)
+
+Nothing archived. Added:
+- DB: `creator_works` table + `profiles.creator_layout` column (musicians backfilled to `musician`).
+- `src/components/creatorprofile/`: `CreatorLandingRenderer`, `CreatorHero`, `WeeklyPlansStrip`, `UpcomingEventsStrip`, `CreatorWorksGrid`, `EpisodeFeed`.
+- `PublicArtistPage` now delegates non-musicians (and any profile with `creator_layout != musician`) to `CreatorLandingRenderer`. Musicians with a published `artist_profiles` row keep pixel-identical behavior via `ArtistPageContent`.
+- Onboarding step 2 gains a 7-card layout picker (default `generic`).
+
+Plans/Radiate decision: option (a) **kept separate**. `WeeklyPlansStrip` reads from the existing `attendance` table (same source as `MyPlansCard`/`GoingOutWeekCard`); `radiate_broadcasts` remains a geo-only feature.
