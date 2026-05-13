@@ -63,6 +63,14 @@ export default function Camera() {
   const [showSettings, setShowSettings] = useState(false);
   const [showText, setShowText] = useState(false);
   const [textOverlay, setTextOverlay] = useState("");
+  const [audioMuted, setAudioMuted] = useState(false);
+
+  // Apply mute state to live audio tracks
+  useEffect(() => {
+    const stream = streamRef.current;
+    if (!stream) return;
+    stream.getAudioTracks().forEach((t) => { t.enabled = !audioMuted; });
+  }, [audioMuted, streamRef, isReady]);
 
   const longPressTimer = useRef<number | null>(null);
   const longPressFiredRef = useRef(false);
