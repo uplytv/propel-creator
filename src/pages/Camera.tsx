@@ -14,6 +14,7 @@ import ModeSelector from "@/components/camera/ModeSelector";
 import ModeChangeToast from "@/components/camera/ModeChangeToast";
 import CaptureButton from "@/components/camera/CaptureButton";
 import ShortMismatchModal from "@/components/camera/ShortMismatchModal";
+import CameraQuickSwitcher from "@/components/camera/CameraQuickSwitcher";
 
 import { useCameraStream } from "@/hooks/useCameraStream";
 import { useMediaRecorder } from "@/hooks/useMediaRecorder";
