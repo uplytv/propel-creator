@@ -1,5 +1,6 @@
 import { BadgeCheck, Globe, Instagram, Twitter, Music2 } from "lucide-react";
 import { ArtistProfile } from "../hooks/useArtistProfile";
+import StartStationButton from "./StartStationButton";
 
 interface Props {
   profile: ArtistProfile | null;
@@ -38,6 +39,14 @@ export default function ArtistHeader({ profile, displayName, username, monthlyLi
         </p>
         {profile?.artist_bio && (
           <p className="text-white/60 text-xs mt-2 line-clamp-2">{profile.artist_bio}</p>
+        )}
+        {profile?.user_id && (
+          <div className="mt-3">
+            <StartStationButton
+              variant="pill"
+              seed={{ seedType: 'artist', seedId: profile.user_id, seedName: displayName }}
+            />
+          </div>
         )}
         {(links.website || links.instagram || links.twitter || links.spotify) && (
           <div className="flex items-center gap-3 mt-3">

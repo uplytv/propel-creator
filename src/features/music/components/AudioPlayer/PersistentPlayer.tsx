@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import Hls from 'hls.js';
-import { Pause, Play, SkipBack, SkipForward, ListMusic, ChevronUp } from 'lucide-react';
+import { Pause, Play, SkipBack, SkipForward, ListMusic, ChevronUp, Radio } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { usePlayerStore } from '../../hooks/usePlayerStore';
 import { muxHlsUrl } from '../../lib/musicQueries';
@@ -39,6 +39,7 @@ export default function PersistentPlayer() {
   const playbackRate = usePlayerStore((s) => s.playbackRate);
   const seekRequest = usePlayerStore((s) => s._seekRequest);
   const crossfadeSeconds = usePlayerStore((s) => s.crossfadeSeconds);
+  const station = usePlayerStore((s) => s.station);
 
   const setPos = usePlayerStore((s) => s._setPosition);
   const setDur = usePlayerStore((s) => s._setDuration);
@@ -282,8 +283,18 @@ export default function PersistentPlayer() {
               }}
             />
             <div className="min-w-0">
-              <div className="text-sm font-semibold text-white truncate">{current.title}</div>
-              <div className="text-xs text-white/50 truncate">{current.genre || 'Music'}</div>
+              <div className="flex items-center gap-1.5 min-w-0">
+                {station && (
+                  <Radio
+                    className="w-3 h-3 flex-shrink-0 text-[#00FF85]"
+                    aria-label="Station active"
+                  />
+                )}
+                <div className="text-sm font-semibold text-white truncate">{current.title}</div>
+              </div>
+              <div className="text-xs text-white/50 truncate">
+                {station ? `Station${station.seedName ? ` · ${station.seedName}` : ''}` : current.genre || 'Music'}
+              </div>
             </div>
           </button>
           <Link

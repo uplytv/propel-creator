@@ -1,18 +1,23 @@
 import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { usePlayerStore } from './usePlayerStore';
+import { fetchRecs } from './useRecs';
+import { trackEvent } from '@/lib/posthog';
 import type { Track } from '../types';
 
 const sb = supabase as unknown as any;
 
 /**
- * When the queue is about to end, fetch related tracks (same genre or same creator)
- * and append them so playback keeps going — Spotify-style autoplay radio.
+ * When the queue is about to end, append more tracks so playback keeps going.
+ * - If a station is active, we feed from the recs pipeline (track_co_plays /
+ *   daily_mixes / popular fallback), filtering thumbs-down exclusions.
+ * - Otherwise we fall back to "same genre, then same creator" of the seed.
  */
 export function useAutoplayRadio() {
   const queue = usePlayerStore((s) => s.queue);
   const currentIndex = usePlayerStore((s) => s.currentIndex);
   const autoplayRadio = usePlayerStore((s) => s.autoplayRadio);
+  const station = usePlayerStore((s) => s.station);
   const fetchingRef = useRef(false);
 
   useEffect(() => {
@@ -28,9 +33,25 @@ export function useAutoplayRadio() {
     (async () => {
       try {
         const existingIds = new Set(queue.map((t) => t.id));
-        let related: Track[] = [];
+        let picks: Track[] = [];
 
-        // 1) try same genre
+        if (station) {
+          // Station mode — pull from recs pipeline
+          picks = await fetchRecs(station, { excludeIds: existingIds, limit: 5 });
+          if (picks.length) {
+            usePlayerStore.getState().appendStationRecs(picks);
+            trackEvent('autoplay_radio_continued', {
+              source: 'station',
+              station_seed_type: station.seedType,
+              station_seed_id: station.seedId,
+              added: picks.length,
+            });
+            return;
+          }
+          // fall through to genre/creator fallback if station produced nothing
+        }
+
+        let related: Track[] = [];
         if (seed.genre) {
           const { data } = await sb
             .from('tracks')
@@ -42,8 +63,6 @@ export function useAutoplayRadio() {
             .limit(15);
           related = (data || []).filter((t: Track) => !existingIds.has(t.id));
         }
-
-        // 2) fallback: same creator
         if (related.length < 5) {
           const { data } = await sb
             .from('tracks')
@@ -59,16 +78,15 @@ export function useAutoplayRadio() {
             }
           }
         }
-
-        // shuffle a bit and take 5
         related.sort(() => Math.random() - 0.5);
-        const picks = related.slice(0, 5);
+        picks = related.slice(0, 5);
         if (picks.length) {
           usePlayerStore.getState().enqueue(picks);
+          trackEvent('autoplay_radio_continued', { source: 'genre_creator', added: picks.length });
         }
       } finally {
         fetchingRef.current = false;
       }
     })();
-  }, [queue, currentIndex, autoplayRadio]);
+  }, [queue, currentIndex, autoplayRadio, station]);
 }

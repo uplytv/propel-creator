@@ -3,6 +3,7 @@ import type { Track } from '../types';
 import { usePlayerStore } from '../hooks/usePlayerStore';
 import { formatDuration } from '../lib/formatDuration';
 import RepostButton from './RepostButton';
+import StartStationButton from './StartStationButton';
 
 export default function TrackRow({
   track,
@@ -77,6 +78,10 @@ export default function TrackRow({
         <span className="text-xs text-white/40">{formatDuration(track.duration_seconds)}</span>
       </button>
       <RepostButton trackId={track.id} size="sm" />
+      <StartStationButton
+        seed={{ seedType: 'track', seedId: track.id, seedName: track.title }}
+        firstTrack={track}
+      />
     </div>
   );
 }
