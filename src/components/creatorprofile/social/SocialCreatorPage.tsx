@@ -504,6 +504,14 @@ export default function SocialCreatorPage() {
         </>
       )}
 
+      {tab === "shop" && userId && (
+        <CreatorShopTab
+          creatorUserId={userId}
+          liveStreamId={(liveStream as any)?.id || null}
+          liveFeaturedProductId={(liveStream as any)?.featured_product_id || null}
+        />
+      )}
+
       {tab === "events" && (
         <>
           <UpcomingEventsStrip creatorUserId={userId!} />
