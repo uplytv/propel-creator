@@ -14,6 +14,7 @@ import ModeSelector from "@/components/camera/ModeSelector";
 import ModeChangeToast from "@/components/camera/ModeChangeToast";
 import CaptureButton from "@/components/camera/CaptureButton";
 import ShortMismatchModal from "@/components/camera/ShortMismatchModal";
+import CameraQuickSwitcher from "@/components/camera/CameraQuickSwitcher";
 
 import { useCameraStream } from "@/hooks/useCameraStream";
 import { useMediaRecorder } from "@/hooks/useMediaRecorder";
@@ -330,6 +331,13 @@ export default function Camera() {
         onToggleFlash={() => setFlash((f) => (f === "off" ? "on" : f === "on" ? "auto" : "off"))}
         onToggleResolution={() => setResolution((r) => (r === "4K" ? "1080p" : "4K"))}
         onOpenSettings={() => setShowSettings(true)}
+      />
+
+      {/* One-tap mode switcher pinned under the top bar */}
+      <CameraQuickSwitcher
+        active={mode}
+        onChange={changeMode}
+        disabled={recorder.isRecording}
       />
 
       {/* Viewfinder + swipe surface */}
