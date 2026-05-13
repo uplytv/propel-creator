@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Gift, Radio } from "lucide-react";
@@ -90,36 +90,53 @@ export default function SocialCreatorPage() {
   const { isFollowing, follow, unfollow } = useFollows();
   const [tab, setTab] = useState("posts");
   const [isSharing, setIsSharing] = useState(false);
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
   const queryClient = useQueryClient();
 
   const handleShare = async () => {
-    if (isSharing) return;
+    if (isSharing || !mountedRef.current) return;
     setIsSharing(true);
     const url = buildProfileShareUrl(canonicalSlug, "web_share");
     const title = `${displayName} (@${canonicalSlug}) on UPLY`;
+
+    const finish = (v = false) => {
+      if (mountedRef.current) setIsSharing(v);
+    };
+    const track = (method: string) => {
+      if (mountedRef.current) trackEvent("profile_shared", { medium: "web_share", slug: canonicalSlug, method });
+    };
+
     // Try Web Share first; fall through to clipboard if unavailable, blocked
     // (e.g. inside a preview iframe), or rejected by the user agent.
     try {
       if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
         await navigator.share({ title, url });
-        trackEvent("profile_shared", { medium: "web_share", slug: canonicalSlug, method: "native_share" });
-        setIsSharing(false);
+        track("native_share");
+        finish(false);
         return;
       }
     } catch (err: any) {
+      if (!mountedRef.current) { finish(false); return; }
       if (err?.name === "AbortError") {
-        trackEvent("profile_shared", { medium: "web_share", slug: canonicalSlug, method: "cancelled" });
-        setIsSharing(false);
+        track("cancelled");
+        finish(false);
         return; // user cancelled
       }
       // fall through to clipboard
     }
+    if (!mountedRef.current) { finish(false); return; }
     try {
       await navigator.clipboard.writeText(url);
-      trackEvent("profile_shared", { medium: "web_share", slug: canonicalSlug, method: "clipboard" });
-      setIsSharing(false);
+      track("clipboard");
+      finish(false);
       toast.success("Link copied");
     } catch {
+      if (!mountedRef.current) { finish(false); return; }
       // Final fallback: hidden textarea + execCommand
       const ta = document.createElement("textarea");
       ta.value = url;
@@ -129,12 +146,12 @@ export default function SocialCreatorPage() {
       ta.select();
       try {
         document.execCommand("copy");
-        trackEvent("profile_shared", { medium: "web_share", slug: canonicalSlug, method: "clipboard_fallback" });
-        setIsSharing(false);
+        track("clipboard_fallback");
+        finish(false);
         toast.success("Link copied");
       } catch {
-        trackEvent("profile_shared", { medium: "web_share", slug: canonicalSlug, method: "failed" });
-        setIsSharing(false);
+        track("failed");
+        finish(false);
         toast.error("Could not copy link");
       } finally {
         document.body.removeChild(ta);
