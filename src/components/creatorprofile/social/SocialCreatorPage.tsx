@@ -342,10 +342,49 @@ export default function SocialCreatorPage() {
         }}
       />
 
+      {/* LIVE NOW pill — quick scroll to live section below */}
+      {isLive && (
+        <div className="flex justify-center mt-2 px-4">
+          <a
+            href="#live-section"
+            className="inline-flex items-center gap-1.5 px-3 h-9 rounded-full text-[12px] font-bold text-white animate-pulse"
+            style={{ background: "hsl(var(--destructive))", boxShadow: "0 0 18px rgba(255,59,59,0.35)" }}
+          >
+            <span className="w-2 h-2 rounded-full bg-white" /> LIVE NOW · Tap to watch
+          </a>
+        </div>
+      )}
+
+      {/* Owner-only beta invites card */}
+      {isOwner && remainingInvites > 0 && (
+        <div className="mt-4 max-w-[560px] mx-auto px-4">
+          <button
+            onClick={() => navigate("/invite-codes")}
+            className="w-full flex items-center gap-3 p-4 rounded-xl border border-primary/25 bg-primary/5 hover:bg-primary/10 transition-all group text-left"
+          >
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Gift className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground">
+                {remainingInvites} beta invite{remainingInvites !== 1 ? "s" : ""} to give
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Share with creators you want on UPLY — they skip the entire waitlist
+              </p>
+            </div>
+            <span className="text-xs font-semibold text-primary group-hover:translate-x-0.5 transition-transform shrink-0">
+              Share →
+            </span>
+          </button>
+        </div>
+      )}
+
       <StatsStrip
         stats={[
           { label: "Members", value: basic.members || 0, href: `/community/${userId}` },
           { label: "Followers", value: counts.followers },
+          { label: "Lessons", value: lessonsCount, href: `/community/${userId}` },
           { label: "Plays", value: counts.plays },
           { label: "Works", value: counts.works },
         ]}
@@ -356,6 +395,41 @@ export default function SocialCreatorPage() {
         ctaLabel={artist?.cta_label || null}
         ctaUrl={artist?.cta_url || null}
       />
+
+      {userId && <SocialIconsRow userId={userId} />}
+
+      {/* LIVE NOW player section — anchor target for the LIVE pill above */}
+      {isLive && liveStream?.mux_playback_id && (
+        <section id="live-section" className="max-w-[720px] mx-auto px-4 mt-6">
+          <div
+            className="rounded-xl p-3"
+            style={{ background: "hsl(var(--card))", border: "2px solid #FF3B3B", boxShadow: "0 0 20px rgba(255,59,59,0.15)" }}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <span
+                className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold text-white animate-pulse"
+                style={{ background: "hsl(var(--destructive))" }}
+              >
+                <Radio className="w-3 h-3" /> LIVE NOW
+              </span>
+              <span className="text-foreground text-sm font-semibold flex-1 truncate">
+                {liveStream.title || "Untitled stream"}
+              </span>
+              <span className="text-muted-foreground text-xs whitespace-nowrap">
+                {liveStream.viewer_count || 0} watching
+              </span>
+            </div>
+            <div className="aspect-video rounded-lg overflow-hidden bg-black">
+              <iframe
+                src={`https://stream.mux.com/${liveStream.mux_playback_id}/stream.html`}
+                className="w-full h-full"
+                allow="autoplay; fullscreen"
+                title={liveStream.title || "Live stream"}
+              />
+            </div>
+          </div>
+        </section>
+      )}
 
       <HighlightsRow creatorUserId={userId!} />
 
