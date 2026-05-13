@@ -36,6 +36,7 @@ export default function StartStationButton({ seed, firstTrack, variant = 'icon',
         return;
       }
       startStation(seed, recs, firstTrack);
+      saveRecentStation(seed);
       trackEvent('station_started', {
         seed_type: seed.seedType,
         seed_id: seed.seedId,
