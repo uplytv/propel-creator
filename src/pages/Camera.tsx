@@ -348,6 +348,35 @@ export default function Camera() {
         disabled={recorder.isRecording}
       />
 
+      {/* One-tap mute + flash toggles flanking the mode switcher */}
+      <div
+        className="pointer-events-none absolute left-0 right-0 z-30 flex items-center justify-between px-3"
+        style={{ top: "calc(env(safe-area-inset-top, 0px) + 64px)" }}
+      >
+        <button
+          type="button"
+          aria-label={audioMuted ? "Unmute microphone" : "Mute microphone"}
+          aria-pressed={audioMuted}
+          onClick={() => { hapticTick(); setAudioMuted((m) => !m); }}
+          className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/55 text-white backdrop-blur-md transition-all active:scale-95"
+          style={{ background: audioMuted ? "#FF3B30" : "rgba(0,0,0,0.55)", color: audioMuted ? "#0A0A0A" : "#fff" }}
+        >
+          {audioMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+        </button>
+        <button
+          type="button"
+          aria-label={`Flash ${flash}`}
+          onClick={() => { hapticTick(); setFlash((f) => (f === "off" ? "on" : f === "on" ? "auto" : "off")); }}
+          className="pointer-events-auto relative flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/55 text-white backdrop-blur-md transition-all active:scale-95"
+          style={{ background: flash !== "off" ? "#00FF85" : "rgba(0,0,0,0.55)", color: flash !== "off" ? "#0A0A0A" : "#fff" }}
+        >
+          {flash === "off" ? <ZapOff className="h-4 w-4" /> : <Zap className="h-4 w-4" />}
+          {flash === "auto" && (
+            <span className="absolute -bottom-1 -right-1 rounded-full bg-black px-1 text-[8px] font-bold text-white">A</span>
+          )}
+        </button>
+      </div>
+
       {/* Viewfinder + swipe surface */}
       <div {...swipeHandlers} className="relative flex-1 overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center">
