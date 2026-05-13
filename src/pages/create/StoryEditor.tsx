@@ -22,7 +22,9 @@ export default function StoryEditor() {
     if (!mediaRef.current) {
       toast.error("No media found");
       navigate("/camera?mode=STORY", { replace: true });
+      return;
     }
+    if (mediaRef.current.caption) setCaption(mediaRef.current.caption);
     return () => {
       if (mediaRef.current?.previewUrl) {
         try {
