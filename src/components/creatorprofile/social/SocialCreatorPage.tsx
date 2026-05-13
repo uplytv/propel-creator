@@ -89,9 +89,12 @@ export default function SocialCreatorPage() {
   const { user } = useAuth();
   const { isFollowing, follow, unfollow } = useFollows();
   const [tab, setTab] = useState("posts");
+  const [isSharing, setIsSharing] = useState(false);
   const queryClient = useQueryClient();
 
   const handleShare = async () => {
+    if (isSharing) return;
+    setIsSharing(true);
     const url = buildProfileShareUrl(canonicalSlug, "web_share");
     const title = `${displayName} (@${canonicalSlug}) on UPLY`;
     // Try Web Share first; fall through to clipboard if unavailable, blocked
@@ -100,11 +103,13 @@ export default function SocialCreatorPage() {
       if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
         await navigator.share({ title, url });
         trackEvent("profile_shared", { medium: "web_share", slug: canonicalSlug, method: "native_share" });
+        setIsSharing(false);
         return;
       }
     } catch (err: any) {
       if (err?.name === "AbortError") {
         trackEvent("profile_shared", { medium: "web_share", slug: canonicalSlug, method: "cancelled" });
+        setIsSharing(false);
         return; // user cancelled
       }
       // fall through to clipboard
@@ -112,6 +117,7 @@ export default function SocialCreatorPage() {
     try {
       await navigator.clipboard.writeText(url);
       trackEvent("profile_shared", { medium: "web_share", slug: canonicalSlug, method: "clipboard" });
+      setIsSharing(false);
       toast.success("Link copied");
     } catch {
       // Final fallback: hidden textarea + execCommand
@@ -124,9 +130,11 @@ export default function SocialCreatorPage() {
       try {
         document.execCommand("copy");
         trackEvent("profile_shared", { medium: "web_share", slug: canonicalSlug, method: "clipboard_fallback" });
+        setIsSharing(false);
         toast.success("Link copied");
       } catch {
         trackEvent("profile_shared", { medium: "web_share", slug: canonicalSlug, method: "failed" });
+        setIsSharing(false);
         toast.error("Could not copy link");
       } finally {
         document.body.removeChild(ta);
