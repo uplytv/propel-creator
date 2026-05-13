@@ -369,8 +369,8 @@ export default function SocialCreatorPage() {
 
   return (
     <main className="relative min-h-screen bg-background text-foreground pb-24">
-      {/* Floating top actions over cover */}
-      <div className="absolute top-3 left-0 right-0 z-30 flex items-center justify-between px-3 sm:px-4 max-w-[1100px] mx-auto">
+      {/* Floating top actions over cover (back only — share lives inline next to the name) */}
+      <div className="absolute top-3 left-3 z-30">
         <button
           type="button"
           onClick={() => navigate("/")}
@@ -378,14 +378,6 @@ export default function SocialCreatorPage() {
           className="h-11 w-11 rounded-full bg-black/45 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/60 transition"
         >
           <ArrowLeft className="h-5 w-5" />
-        </button>
-        <button
-          type="button"
-          onClick={handleShare}
-          aria-label="Share profile"
-          className="h-11 w-11 rounded-full bg-black/45 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/60 transition"
-        >
-          <Share2 className="h-5 w-5" />
         </button>
       </div>
 
