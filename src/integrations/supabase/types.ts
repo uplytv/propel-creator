@@ -16814,6 +16814,33 @@ export type Database = {
           },
         ]
       }
+      radio_station_exclusions: {
+        Row: {
+          created_at: string
+          excluded_track_id: string
+          id: string
+          seed_id: string
+          seed_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          excluded_track_id: string
+          id?: string
+          seed_id: string
+          seed_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          excluded_track_id?: string
+          id?: string
+          seed_id?: string
+          seed_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       recent_searches: {
         Row: {
           id: string
