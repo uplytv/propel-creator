@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { Share2, Download } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { SITE_URL } from "@/lib/siteUrl";
+import { buildTrackShareUrl } from "@/lib/shareUrls";
 
 interface Props {
   trackId: string;
