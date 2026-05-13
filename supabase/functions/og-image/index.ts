@@ -532,20 +532,32 @@ Deno.serve(async (req) => {
       const [, username] = profileMatch;
       const { data: profile } = await supabase
         .from("profiles")
-        .select("display_name, avatar_url, bio, username, creator_type")
+        .select("user_id, display_name, avatar_url, bio, username, creator_type, cover_image_url")
         .eq("username", decodeURIComponent(username))
         .maybeSingle();
 
       if (profile) {
-        const spaceBio = profile.bio || `Check out ${profile.display_name || username} on UPLY`;
+        // Enrich with artist_profiles data if available
+        const { data: artist } = await supabase
+          .from("artist_profiles")
+          .select("header_image_url, hero_image_url, tagline, artist_bio, seo_title, seo_description, seo_og_image, is_verified, vanity_slug")
+          .eq("user_id", profile.user_id)
+          .maybeSingle();
+
+        const displayName = profile.display_name || username;
         const creatorType = profile.creator_type ? ` · ${profile.creator_type}` : "";
+        const title = (artist?.seo_title || `${displayName}${creatorType} — UPLY`).slice(0, 70);
+        const descRaw = artist?.seo_description || artist?.tagline || artist?.artist_bio || profile.bio || `Check out ${displayName} on UPLY`;
+        const description = descRaw.length > 160 ? descRaw.slice(0, 157) + "…" : descRaw;
+        const image = artist?.seo_og_image || artist?.header_image_url || artist?.hero_image_url || profile.cover_image_url || profile.avatar_url || DEFAULT_IMAGE;
+        const url = `${SITE_URL}/${artist?.vanity_slug ? `@${artist.vanity_slug}` : profile.username || username}`;
 
         return new Response(
           buildHtml({
-            title: `${profile.display_name || username}${creatorType} — UPLY`,
-            description: spaceBio.length > 160 ? spaceBio.slice(0, 157) + "…" : spaceBio,
-            image: profile.avatar_url || DEFAULT_IMAGE,
-            url: canonicalUrl,
+            title,
+            description,
+            image,
+            url,
             type: "profile",
             twitterCard: "summary_large_image",
             siteName: "Uply",
