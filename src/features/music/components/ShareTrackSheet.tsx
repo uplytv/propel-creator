@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Share2, Download, Copy, X, Check } from 'lucide-react';
+import { buildTrackShareUrl } from '@/lib/shareUrls';
 import type { Track } from '../types';
 
 interface Props {
