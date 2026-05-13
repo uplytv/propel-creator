@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSwipeable } from "react-swipeable";
 import { motion } from "framer-motion";
-import { RefreshCw, Image as ImageIcon, FlipHorizontal, Grid3x3 } from "lucide-react";
+import { RefreshCw, Image as ImageIcon, FlipHorizontal, Grid3x3, Mic, MicOff, Zap, ZapOff } from "lucide-react";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
@@ -63,6 +63,7 @@ export default function Camera() {
   const [showSettings, setShowSettings] = useState(false);
   const [showText, setShowText] = useState(false);
   const [textOverlay, setTextOverlay] = useState("");
+  const [audioMuted, setAudioMuted] = useState(false);
 
   const longPressTimer = useRef<number | null>(null);
   const longPressFiredRef = useRef(false);
@@ -80,6 +81,13 @@ export default function Camera() {
       // The auto-stop handler in onTap finalizes the capture; nothing to do here.
     },
   });
+
+  // Apply mute state to live audio tracks
+  useEffect(() => {
+    const stream = streamRef.current;
+    if (!stream) return;
+    stream.getAudioTracks().forEach((t) => { t.enabled = !audioMuted; });
+  }, [audioMuted, streamRef, isReady]);
 
   // Auto-route LIVE → /go-live as soon as it becomes the active mode.
   useEffect(() => {
@@ -339,6 +347,35 @@ export default function Camera() {
         onChange={changeMode}
         disabled={recorder.isRecording}
       />
+
+      {/* One-tap mute + flash toggles flanking the mode switcher */}
+      <div
+        className="pointer-events-none absolute left-0 right-0 z-30 flex items-center justify-between px-3"
+        style={{ top: "calc(env(safe-area-inset-top, 0px) + 64px)" }}
+      >
+        <button
+          type="button"
+          aria-label={audioMuted ? "Unmute microphone" : "Mute microphone"}
+          aria-pressed={audioMuted}
+          onClick={() => { hapticTick(); setAudioMuted((m) => !m); }}
+          className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/55 text-white backdrop-blur-md transition-all active:scale-95"
+          style={{ background: audioMuted ? "#FF3B30" : "rgba(0,0,0,0.55)", color: audioMuted ? "#0A0A0A" : "#fff" }}
+        >
+          {audioMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+        </button>
+        <button
+          type="button"
+          aria-label={`Flash ${flash}`}
+          onClick={() => { hapticTick(); setFlash((f) => (f === "off" ? "on" : f === "on" ? "auto" : "off")); }}
+          className="pointer-events-auto relative flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/55 text-white backdrop-blur-md transition-all active:scale-95"
+          style={{ background: flash !== "off" ? "#00FF85" : "rgba(0,0,0,0.55)", color: flash !== "off" ? "#0A0A0A" : "#fff" }}
+        >
+          {flash === "off" ? <ZapOff className="h-4 w-4" /> : <Zap className="h-4 w-4" />}
+          {flash === "auto" && (
+            <span className="absolute -bottom-1 -right-1 rounded-full bg-black px-1 text-[8px] font-bold text-white">A</span>
+          )}
+        </button>
+      </div>
 
       {/* Viewfinder + swipe surface */}
       <div {...swipeHandlers} className="relative flex-1 overflow-hidden">
