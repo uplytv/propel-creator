@@ -222,6 +222,22 @@ describe("SocialCreatorPage share integration", () => {
     expect(mockBuildProfileShareUrl).toHaveBeenCalledWith("testcreator", "web_share");
   });
 
+  it("triggers navigator.share with the expected title and URL when the share button is clicked", async () => {
+    renderPage();
+
+    const shareBtn = await screen.findByRole("button", { name: /share profile/i });
+    fireEvent.click(shareBtn);
+
+    await waitFor(() => {
+      expect(navigator.share).toHaveBeenCalledTimes(1);
+    });
+
+    expect(navigator.share).toHaveBeenCalledWith({
+      title: "Test Creator (@testcreator) on UPLY",
+      url: "https://uply.tv/@testcreator?utm_source=profile&utm_medium=web_share&utm_campaign=testcreator",
+    });
+  });
+
   it("falls back to clipboard when navigator.share is unavailable", async () => {
     (navigator as any).share = undefined;
     const writeTextSpy = vi.fn().mockResolvedValue(undefined);
