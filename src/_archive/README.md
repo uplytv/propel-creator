@@ -41,3 +41,12 @@ Lossless duplicates resolved in Section 2 (see duplicates/README.md if present, 
 
 ## Restoring a feature
 Each feature folder has a `RESTORE.md` with the exact `git mv` and route restoration steps. Database tables, migrations, and edge functions for these features were intentionally left in place — restoring is purely a file-move + route-restore operation.
+
+## Section 4 — Algorithmic Radio (kept in production, NOT archived)
+Implemented under the existing player surface — no new `/music/radio` route, no archived files.
+- New table: `radio_station_exclusions` (per-user thumbs-down memory).
+- New hook exports in `src/features/music/hooks/useRecs.ts`: `fetchRecs`, `excludeTrackFromStation`, `StationSeed`.
+- `usePlayerStore` gains `station`, `stationTrackIds`, `startStation`, `stopStation`, `appendStationRecs`, `excludeFromStation`. `station` is persisted.
+- `useAutoplayRadio` now consumes `fetchRecs` when a station is active (co-plays → daily_mixes → popular fallback), and falls back to genre/creator otherwise.
+- `StartStationButton` surfaced on `TrackRow`, `TrackCard`, `ArtistHeader`. Station badge + thumbs-down + stop-station rendered in `PersistentPlayer` and `NowPlayingSheet`.
+- PostHog events: `station_started`, `station_thumbs_down`, `autoplay_radio_continued`.
