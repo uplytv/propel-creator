@@ -197,6 +197,7 @@ export default function SocialCreatorPage() {
         .select("title,viewer_count,mux_playback_id,user_id")
         .eq("user_id", userId)
         .eq("status", "active")
+        .is("ended_at", null)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
