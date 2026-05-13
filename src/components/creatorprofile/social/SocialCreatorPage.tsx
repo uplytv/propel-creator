@@ -90,6 +90,12 @@ export default function SocialCreatorPage() {
   const { isFollowing, follow, unfollow } = useFollows();
   const [tab, setTab] = useState("posts");
   const [isSharing, setIsSharing] = useState(false);
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
   const queryClient = useQueryClient();
 
   const handleShare = async () => {
