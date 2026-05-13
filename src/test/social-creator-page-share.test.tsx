@@ -74,6 +74,7 @@ vi.mock("@/components/creatorprofile/social/CoverHeader", () => ({
 
 import SocialCreatorPage from "@/components/creatorprofile/social/SocialCreatorPage";
 import { buildProfileShareUrl } from "@/lib/shareUrls";
+import { trackEvent } from "@/lib/posthog";
 import { supabase } from "@/integrations/supabase/client";
 
 const mockBuildProfileShareUrl = vi.mocked(buildProfileShareUrl);
