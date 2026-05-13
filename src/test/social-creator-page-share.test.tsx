@@ -318,4 +318,62 @@ describe("SocialCreatorPage share integration", () => {
       method: "clipboard",
     });
   });
+
+  it.each([
+    { slug: "dj-marshmello", displayName: "DJ Marshmello" },
+    { slug: "charli-xcx", displayName: "Charli XCX" },
+    { slug: "someone-else-123", displayName: "Someone Else" },
+  ])("fires analytics with correct slug for $slug", async ({ slug, displayName }) => {
+    // Re-configure mocks for this specific slug
+    mockBuildProfileShareUrl.mockReturnValue(
+      `https://uply.tv/@${slug}?utm_source=profile&utm_medium=web_share&utm_campaign=${slug}`
+    );
+
+    // Update the RPC mock to return the parameterized slug
+    mockSupabase.rpc.mockImplementation((name: string, params: any) => {
+      if (name === "get_public_profile_by_username") {
+        return {
+          maybeSingle: vi.fn().mockResolvedValue({
+            data: {
+              id: "profile-1",
+              user_id: "user-123",
+              username: params._username,
+              display_name: displayName,
+              avatar_url: null,
+              cover_image_url: null,
+              bio: "Just a test creator.",
+              creator_type: null,
+              creator_layout: null,
+              members: 0,
+            },
+          }),
+        };
+      }
+      return { maybeSingle: vi.fn().mockResolvedValue({ data: null }) };
+    });
+
+    const queryClient = createTestQueryClient();
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={[`/${slug}`]}>
+          <Routes>
+            <Route path=":slug" element={<SocialCreatorPage />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    const shareBtn = await screen.findByRole("button", { name: /share profile/i });
+    fireEvent.click(shareBtn);
+
+    await waitFor(() => {
+      expect(mockTrackEvent).toHaveBeenCalledTimes(1);
+    });
+
+    expect(mockTrackEvent).toHaveBeenCalledWith("profile_shared", {
+      medium: "web_share",
+      slug,
+      method: "native_share",
+    });
+  });
 });
