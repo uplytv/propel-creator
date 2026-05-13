@@ -4,10 +4,11 @@ import type { CameraMode } from "@/lib/cameraModes";
 
 interface Props {
   mode: CameraMode;
+  filterIndex?: number;
+  onCycleFilter?: () => void;
   onText?: () => void;
   onLoop?: () => void;
   onLayout?: () => void;
-  onFilters?: () => void;
 }
 
 /**
