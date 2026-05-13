@@ -63,6 +63,11 @@ vi.mock("@/features/music/components/ArtistPage/ArtistPageContent", () => ({
   default: () => null,
 }));
 
+// Child components that fetch their own data — no-op to keep test focused
+vi.mock("@/components/creatorprofile/social/CoverHeader", () => ({
+  default: () => null,
+}));
+
 import SocialCreatorPage from "@/components/creatorprofile/social/SocialCreatorPage";
 import { buildProfileShareUrl } from "@/lib/shareUrls";
 import { supabase } from "@/integrations/supabase/client";
