@@ -329,7 +329,7 @@ const App = () => (
                     <Route path="/join/:username/:code" element={<ReferralRedirect />} />
                     <Route path="/join/:code" element={<ReferralRedirect />} />
                     <Route path="/invite/:code" element={<ReferralRedirect />} />
-                    <Route path="/creator/:username" element={<CreatorProfile />} />
+                    <Route path="/creator/:username" element={<UsernameRedirect />} />
                     <Route path="/community/:creatorId" element={<CreatorSpace />} />
                     <Route path="/community/:creatorId/:tab" element={<CreatorSpace />} />
                     <Route path="/space/:creatorId" element={<CreatorSpace />} />
