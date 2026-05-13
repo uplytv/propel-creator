@@ -1,4 +1,5 @@
-import { ChevronDown, ListMusic, Music, Sparkles, Radio } from 'lucide-react';
+import { ChevronDown, ListMusic, Music, Sparkles, Radio, ThumbsDown, X } from 'lucide-react';
+import { trackEvent } from '@/lib/posthog';
 import { Slider } from '@/components/ui/slider';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
@@ -34,6 +35,10 @@ export default function NowPlayingSheet({
   const setAutoplayRadio = usePlayerStore((s) => s.setAutoplayRadio);
   const crossfadeSeconds = usePlayerStore((s) => s.crossfadeSeconds);
   const setCrossfade = usePlayerStore((s) => s.setCrossfade);
+  const station = usePlayerStore((s) => s.station);
+  const stationTrackIds = usePlayerStore((s) => s.stationTrackIds);
+  const stopStation = usePlayerStore((s) => s.stopStation);
+  const excludeFromStation = usePlayerStore((s) => s.excludeFromStation);
 
   const [queueOpen, setQueueOpen] = useState(false);
   const [tab, setTab] = useState<Tab>('now');
@@ -42,6 +47,8 @@ export default function NowPlayingSheet({
   const color = useColorExtraction(current?.cover_art_url ?? null);
 
   if (!open || !current) return null;
+
+  const isStationTrack = !!station && stationTrackIds.includes(current.id);
 
   const bgGradient = color
     ? `radial-gradient(ellipse at top, hsl(${color.h} ${Math.min(80, color.s)}% ${Math.min(35, color.l + 10)}%) 0%, #0A0A0A 70%)`
