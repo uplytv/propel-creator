@@ -132,20 +132,47 @@ export default function InlineEditMenu({ initial, ownerMode, userId }: Props) {
           <SheetHeader>
             <SheetTitle>Cover image</SheetTitle>
             <SheetDescription>
-              Paste an image URL. Leave blank to fall back to your latest post.
+              Pick a photo from your library. Leave blank to fall back to your latest post.
             </SheetDescription>
           </SheetHeader>
           <div className="mt-4 space-y-3">
-            <Label htmlFor="cover-url">Image URL</Label>
-            <Input
-              id="cover-url"
-              value={coverUrl}
-              onChange={(e) => setCoverUrl(e.target.value)}
-              placeholder="https://…"
+            {coverUrl && (
+              <div className="rounded-lg overflow-hidden border border-border aspect-[16/9] bg-muted">
+                <img src={coverUrl} alt="Current cover" className="w-full h-full object-cover" />
+              </div>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handlePickCover(f);
+                e.target.value = "";
+              }}
             />
-            <Button onClick={saveCover} disabled={upsert.isPending} className="w-full min-h-[44px]">
-              Save
+            <Button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading || upsert.isPending}
+              className="w-full min-h-[48px]"
+            >
+              {uploading ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Uploading…</>
+              ) : (
+                <><Upload className="h-4 w-4 mr-2" /> Upload from library</>
+              )}
             </Button>
+            {coverUrl && (
+              <Button
+                variant="outline"
+                onClick={clearCover}
+                disabled={uploading || upsert.isPending}
+                className="w-full min-h-[44px]"
+              >
+                Remove cover
+              </Button>
+            )}
           </div>
         </SheetContent>
       </Sheet>
