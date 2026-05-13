@@ -194,7 +194,7 @@ export default function SocialCreatorPage() {
     queryFn: async () => {
       const { data } = await sb
         .from("mux_live_streams_public")
-        .select("title,viewer_count,mux_playback_id,user_id")
+        .select("id,title,viewer_count,mux_playback_id,user_id,featured_product_id")
         .eq("user_id", userId)
         .eq("status", "active")
         .is("ended_at", null)
