@@ -181,6 +181,7 @@ export function useDeleteProduct() {
     },
     onMutate: async (id) => {
       if (!user?.id) return;
+      markPending("products", id);
       const ownerKey = ["products", user.id];
       const shopKey = ["creator-shop-products", user.id];
       await Promise.all([
@@ -199,7 +200,8 @@ export function useDeleteProduct() {
       toast.error(e.message);
     },
     onSuccess: () => toast.success("Product deleted"),
-    onSettled: () => {
+    onSettled: (_d, _e, id: any) => {
+      if (typeof id === "string") clearPending("products", id);
       qc.invalidateQueries({ queryKey: ["products"] });
       if (user?.id) qc.invalidateQueries({ queryKey: ["creator-shop-products", user.id] });
     },
