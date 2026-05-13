@@ -422,6 +422,7 @@ const App = () => (
                       <Route path="smart-playlists" element={<ProtectedRoute><SmartPlaylistsPage /></ProtectedRoute>} />
                       <Route path="artist/:id" element={<ArtistPage />} />
                       <Route path="artist/:id/edit" element={<ProtectedRoute><ArtistPageEditor /></ProtectedRoute>} />
+                      <Route path="artist/:id/edit/advanced" element={<ProtectedRoute><ArtistPageEditorAdvanced /></ProtectedRoute>} />
                       <Route path="feed" element={<ProtectedRoute><MusicFeedPage /></ProtectedRoute>} />
                       <Route path="track/:id/insights" element={<ProtectedRoute><TrackInsightsPage /></ProtectedRoute>} />
                     </Route>
