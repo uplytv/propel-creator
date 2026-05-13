@@ -559,12 +559,16 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                       transition={{ duration: 0.15 }}
                       className="absolute top-full right-0 mt-2 min-w-[200px] rounded-xl bg-card border border-border shadow-xl py-2 z-50"
                     >
-                      <div className="px-4 py-2 border-b border-border mb-1">
+                      <button
+                        onClick={() => { navigate(user ? `/creator/${profile.name || user.id}` : "/auth"); setProfileOpen(false); }}
+                        className="w-full text-left px-4 py-2 border-b border-border mb-1 hover:bg-secondary transition-colors"
+                      >
                         <p className="text-sm font-medium">{profile.name}</p>
-                        <div className="mt-1">
+                        <div className="mt-1 flex items-center justify-between gap-2">
                           <TierBadge tier={profile.tier} tierName={profile.tierName} size="sm" />
+                          <span className="text-[10px] text-primary font-semibold">View profile →</span>
                         </div>
-                      </div>
+                      </button>
                       <button
                         onClick={() => { navigate("/dashboard"); setProfileOpen(false); }}
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
