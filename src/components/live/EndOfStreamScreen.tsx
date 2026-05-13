@@ -17,6 +17,7 @@ import { useStreamAchievements } from "@/hooks/useStreamAchievements";
 import StreamAchievements from "./StreamAchievements";
 import { toast } from "sonner";
 import { getSiteUrl } from "@/lib/siteUrl";
+import { buildStreamShareUrl } from "@/lib/shareUrls";
 
 interface EndOfStreamScreenProps {
   streamId: string;
