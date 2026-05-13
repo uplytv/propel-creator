@@ -144,6 +144,8 @@ export default function Camera() {
     canvas.height = h;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+    // Bake the active CSS filter into the captured photo so what you see is what you get.
+    ctx.filter = FILTERS[filterIndex].css === "none" ? "none" : FILTERS[filterIndex].css;
     ctx.drawImage(video, 0, 0, w, h);
     const blob: Blob | null = await new Promise((res) =>
       canvas.toBlob((b) => res(b), "image/jpeg", 0.92)
