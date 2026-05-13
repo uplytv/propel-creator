@@ -15,6 +15,7 @@ import LyricsPanel from './LyricsPanel';
 import SleepTimerMenu from './SleepTimerMenu';
 import PlaybackSpeedMenu from './PlaybackSpeedMenu';
 import EqPresetMenu from './EqPresetMenu';
+import StartStationButton from '../StartStationButton';
 
 type Tab = 'now' | 'lyrics';
 
