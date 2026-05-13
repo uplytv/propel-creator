@@ -166,7 +166,8 @@ const Podcast = lazy(() => import("./pages/Podcast"));
 const RadiateFeedPage = lazy(() => import("./pages/radiate/RadiateFeedPage"));
 const RadiateNewPage = lazy(() => import("./pages/radiate/RadiateNewPage"));
 const RadiateManagePage = lazy(() => import("./pages/radiate/RadiateManagePage"));
-const BioPage = lazy(() => import("./pages/BioPage"));
+const UsernameRedirect = lazy(() => import("./pages/UsernameRedirect"));
+const SocialCreatorPage = lazy(() => import("./components/creatorprofile/social/SocialCreatorPage"));
 const PodcastRSS = lazy(() => import("./pages/PodcastRSS"));
 const NetworkFeed = lazy(() => import("./pages/NetworkFeed"));
 const Distribution = lazy(() => import("./pages/Distribution"));
@@ -424,11 +425,11 @@ const App = () => (
                       <Route path="track/:id/insights" element={<ProtectedRoute><TrackInsightsPage /></ProtectedRoute>} />
                     </Route>
 
-                    {/* Public artist landing page (bare, outside app shell) */}
-                    <Route path="/@:slug" element={<PublicArtistPage />} />
-
-                    <Route path="/:username" element={<BioPage />} />
-                    <Route path="/:username/page" element={<BioPage />} />
+                    {/* Public social creator page (Instagram-style + portfolio fused) */}
+                    <Route path="/@:slug" element={<SocialCreatorPage />} />
+                    {/* Legacy /:username and /:username/page redirect to /@<slug> */}
+                    <Route path="/:username" element={<UsernameRedirect />} />
+                    <Route path="/:username/page" element={<UsernameRedirect />} />
 
                     {/* Onboarding & Waitlist (auth required but no approval needed) */}
                     <Route path="/onboarding" element={<Onboarding />} />
