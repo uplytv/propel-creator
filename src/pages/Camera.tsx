@@ -327,7 +327,7 @@ export default function Camera() {
         onClose={handleClose}
         onToggleFlash={() => setFlash((f) => (f === "off" ? "on" : f === "on" ? "auto" : "off"))}
         onToggleResolution={() => setResolution((r) => (r === "4K" ? "1080p" : "4K"))}
-        onOpenSettings={() => toast("Camera settings coming soon", { description: "Grid, timer, mirror" })}
+        onOpenSettings={() => setShowSettings(true)}
       />
 
       {/* Viewfinder + swipe surface */}
@@ -343,17 +343,56 @@ export default function Camera() {
               muted
               autoPlay
               className="h-full w-full object-cover"
-              style={{ transform: facing === "front" ? "scaleX(-1)" : undefined }}
+              style={{
+                transform: facing === "front" && mirrorFront ? "scaleX(-1)" : undefined,
+                filter: FILTERS[filterIndex].css,
+              }}
             />
             {!isReady && (
               <div className="absolute inset-0 flex items-center justify-center text-sm text-white/60">
                 {error ? error : "Starting camera…"}
               </div>
             )}
+
+            {/* Rule-of-thirds grid overlay */}
+            {showGrid && (
+              <div className="pointer-events-none absolute inset-0">
+                <div className="absolute left-1/3 top-0 h-full w-px bg-white/30" />
+                <div className="absolute left-2/3 top-0 h-full w-px bg-white/30" />
+                <div className="absolute top-1/3 left-0 w-full h-px bg-white/30" />
+                <div className="absolute top-2/3 left-0 w-full h-px bg-white/30" />
+              </div>
+            )}
+
+            {/* Text overlay (caption preview pinned over the viewfinder) */}
+            {textOverlay.trim() && (
+              <div className="pointer-events-none absolute inset-x-4 bottom-6 z-20 text-center">
+                <span className="inline-block max-w-full rounded-lg bg-black/55 px-3 py-1.5 text-base font-bold text-white backdrop-blur-sm">
+                  {textOverlay}
+                </span>
+              </div>
+            )}
+
+            {/* Filter name pill */}
+            {filterIndex > 0 && (
+              <div className="pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 rounded-full bg-black/55 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white">
+                {FILTERS[filterIndex].name}
+              </div>
+            )}
           </div>
         </div>
 
-        <LeftToolRail mode={mode} />
+        <LeftToolRail
+          mode={mode}
+          filterIndex={filterIndex}
+          onCycleFilter={() => {
+            setFilterIndex((i) => (i + 1) % FILTERS.length);
+            hapticTick();
+          }}
+          onText={() => setShowText(true)}
+          onLoop={() => toast("Boomerang/loop coming soon")}
+          onLayout={() => toast("Layout/collage coming soon")}
+        />
 
         {/* Recording timer bar (top of viewfinder) for SHORT/VIDEO/STORY */}
         {recorder.isRecording && MODE_MAX_SECONDS[mode] > 0 && (
