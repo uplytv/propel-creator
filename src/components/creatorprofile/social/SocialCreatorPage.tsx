@@ -25,6 +25,7 @@ import WeeklyPlansStrip from "../WeeklyPlansStrip";
 import UpcomingEventsStrip from "../UpcomingEventsStrip";
 import CreatorWorksGrid from "../CreatorWorksGrid";
 import EpisodeFeed from "../EpisodeFeed";
+import CreatorShopTab from "./CreatorShopTab";
 
 const ArtistPageContent = lazy(
   () => import("@/features/music/components/ArtistPage/ArtistPageContent"),
