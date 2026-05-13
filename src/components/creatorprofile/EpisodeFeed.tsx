@@ -25,7 +25,7 @@ export default function EpisodeFeed({ creatorUserId, limit = 12 }: Props) {
     enabled: !!creatorUserId,
     queryFn: async () => {
       const { data: podcast } = await (supabase as any)
-        .from("podcasts")
+        .from("creator_podcasts")
         .select("id")
         .eq("creator_id", creatorUserId)
         .maybeSingle();
