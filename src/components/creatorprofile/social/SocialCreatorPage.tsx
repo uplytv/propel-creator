@@ -249,12 +249,43 @@ export default function SocialCreatorPage() {
 
   return (
     <main className="min-h-screen bg-background text-foreground pb-24">
+      {/* Floating top actions over cover */}
+      <div className="absolute top-3 left-0 right-0 z-30 flex items-center justify-between px-3 sm:px-4 max-w-[1100px] mx-auto">
+        <button
+          type="button"
+          onClick={() => navigate("/")}
+          aria-label="Back to UPLY"
+          className="h-11 w-11 rounded-full bg-black/45 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/60 transition"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </button>
+        <button
+          type="button"
+          onClick={handleShare}
+          aria-label="Share profile"
+          className="h-11 w-11 rounded-full bg-black/45 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/60 transition"
+        >
+          <Share2 className="h-5 w-5" />
+        </button>
+      </div>
+
       <CoverHeader
         manualCoverUrl={artist?.header_image_url || basic.cover_image_url}
         creatorUserId={userId}
         avatarUrl={basic.avatar_url}
         displayName={displayName}
       />
+
+      {/* Owner-only floating compose FAB */}
+      {isOwner && (
+        <Link
+          to="/create/post/editor"
+          aria-label="Create a post"
+          className="fixed z-40 bottom-28 right-5 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition"
+        >
+          <Plus className="h-6 w-6" />
+        </Link>
+      )}
 
       <IdentityRow
         displayName={displayName}
