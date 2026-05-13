@@ -370,9 +370,31 @@ describe("SocialCreatorPage share integration", () => {
       expect(mockTrackEvent).toHaveBeenCalledTimes(1);
     });
 
+      expect(mockTrackEvent).toHaveBeenCalledWith("profile_shared", {
+        medium: "web_share",
+        slug,
+        method: "native_share",
+      });
+    });
+
+  it("only fires one analytics event when the share button is clicked multiple times rapidly", async () => {
+    renderPage();
+
+    const shareBtn = await screen.findByRole("button", { name: /share profile/i });
+
+    // Click three times in rapid succession
+    fireEvent.click(shareBtn);
+    fireEvent.click(shareBtn);
+    fireEvent.click(shareBtn);
+
+    await waitFor(() => {
+      expect(mockTrackEvent).toHaveBeenCalledTimes(1);
+    });
+
+    // Ensure it was the correct event
     expect(mockTrackEvent).toHaveBeenCalledWith("profile_shared", {
       medium: "web_share",
-      slug,
+      slug: "testcreator",
       method: "native_share",
     });
   });
