@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { BadgeCheck, MapPin, MessageCircle, UserPlus, Sparkles } from "lucide-react";
+import { BadgeCheck, MapPin, MessageCircle, UserPlus, Sparkles, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Props {
