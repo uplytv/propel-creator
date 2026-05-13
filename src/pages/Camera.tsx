@@ -333,6 +333,13 @@ export default function Camera() {
         onOpenSettings={() => setShowSettings(true)}
       />
 
+      {/* One-tap mode switcher pinned under the top bar */}
+      <CameraQuickSwitcher
+        active={mode}
+        onChange={changeMode}
+        disabled={recorder.isRecording}
+      />
+
       {/* Viewfinder + swipe surface */}
       <div {...swipeHandlers} className="relative flex-1 overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center">
