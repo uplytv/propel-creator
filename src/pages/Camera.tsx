@@ -128,6 +128,7 @@ export default function Camera() {
       previewUrl: url,
       durationSeconds: result.seconds,
       mimeType: result.blob.type || "video/webm",
+      caption: textOverlay.trim() || undefined,
     });
     hapticImpact();
     navigate(POST_CAPTURE_ROUTE[mode]);
