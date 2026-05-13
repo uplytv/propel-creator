@@ -19,6 +19,8 @@ interface Props {
   };
   /** When true, show edit affordance buttons inline. */
   ownerMode: boolean;
+  /** Owner's user id — used to deep-link the advanced editor. */
+  userId?: string | null;
 }
 
 /**
