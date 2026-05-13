@@ -50,6 +50,7 @@ export default function MusicHome() {
   const { data: premieres } = useUpcomingPremieres();
   const liveRooms: any[] = []; // audio-rooms archived
   const { data: spotlights } = useEditorialSpotlights();
+  const { list: recentStations } = useRecentStations();
 
   return (
     <div className="pb-40">
