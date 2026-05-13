@@ -99,14 +99,19 @@ export default function SocialCreatorPage() {
     try {
       if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
         await navigator.share({ title, url });
+        trackEvent("profile_shared", { medium: "web_share", slug: canonicalSlug, method: "native_share" });
         return;
       }
     } catch (err: any) {
-      if (err?.name === "AbortError") return; // user cancelled
+      if (err?.name === "AbortError") {
+        trackEvent("profile_shared", { medium: "web_share", slug: canonicalSlug, method: "cancelled" });
+        return; // user cancelled
+      }
       // fall through to clipboard
     }
     try {
       await navigator.clipboard.writeText(url);
+      trackEvent("profile_shared", { medium: "web_share", slug: canonicalSlug, method: "clipboard" });
       toast.success("Link copied");
     } catch {
       // Final fallback: hidden textarea + execCommand
@@ -118,8 +123,10 @@ export default function SocialCreatorPage() {
       ta.select();
       try {
         document.execCommand("copy");
+        trackEvent("profile_shared", { medium: "web_share", slug: canonicalSlug, method: "clipboard_fallback" });
         toast.success("Link copied");
       } catch {
+        trackEvent("profile_shared", { medium: "web_share", slug: canonicalSlug, method: "failed" });
         toast.error("Could not copy link");
       } finally {
         document.body.removeChild(ta);
