@@ -21,6 +21,10 @@ vi.mock("@/lib/shareUrls", () => ({
   buildStreamShareUrl: vi.fn(),
 }));
 
+vi.mock("@/lib/posthog", () => ({
+  trackEvent: vi.fn(),
+}));
+
 vi.mock("@/features/music/components/ArtistPage/usePageMeta", () => ({
   usePageMeta: vi.fn(),
 }));
@@ -70,9 +74,11 @@ vi.mock("@/components/creatorprofile/social/CoverHeader", () => ({
 
 import SocialCreatorPage from "@/components/creatorprofile/social/SocialCreatorPage";
 import { buildProfileShareUrl } from "@/lib/shareUrls";
+import { trackEvent } from "@/lib/posthog";
 import { supabase } from "@/integrations/supabase/client";
 
 const mockBuildProfileShareUrl = vi.mocked(buildProfileShareUrl);
+const mockTrackEvent = vi.mocked(trackEvent);
 const mockSupabase = supabase as unknown as any;
 
 function createTestQueryClient() {
@@ -275,5 +281,41 @@ describe("SocialCreatorPage share integration", () => {
     expect(shareBtn).toHaveAttribute("type", "button");
     shareBtn.focus();
     expect(shareBtn).toHaveFocus();
+  });
+
+  it("fires an analytics event with medium and slug when the share button is clicked via native share", async () => {
+    renderPage();
+
+    const shareBtn = await screen.findByRole("button", { name: /share profile/i });
+    fireEvent.click(shareBtn);
+
+    await waitFor(() => {
+      expect(mockTrackEvent).toHaveBeenCalledTimes(1);
+    });
+
+    expect(mockTrackEvent).toHaveBeenCalledWith("profile_shared", {
+      medium: "web_share",
+      slug: "testcreator",
+      method: "native_share",
+    });
+  });
+
+  it("fires an analytics event with medium and slug when falling back to clipboard", async () => {
+    (navigator as any).share = undefined;
+
+    renderPage();
+
+    const shareBtn = await screen.findByRole("button", { name: /share profile/i });
+    fireEvent.click(shareBtn);
+
+    await waitFor(() => {
+      expect(mockTrackEvent).toHaveBeenCalledTimes(1);
+    });
+
+    expect(mockTrackEvent).toHaveBeenCalledWith("profile_shared", {
+      medium: "web_share",
+      slug: "testcreator",
+      method: "clipboard",
+    });
   });
 });
