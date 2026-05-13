@@ -499,6 +499,15 @@ export default function SocialCreatorPage() {
       )}
 
       {tab === "links" && <LinksShelf profileId={profileId!} />}
+      {/* Sticky bottom Join Community CTA for non-owners */}
+      {!isOwner && userId && (
+        <StickyJoinCTA
+          creatorUserId={userId}
+          creatorName={displayName}
+          avatarUrl={basic.avatar_url}
+          isLive={isLive}
+        />
+      )}
     </main>
   );
 }
