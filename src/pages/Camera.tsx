@@ -82,6 +82,13 @@ export default function Camera() {
     },
   });
 
+  // Apply mute state to live audio tracks
+  useEffect(() => {
+    const stream = streamRef.current;
+    if (!stream) return;
+    stream.getAudioTracks().forEach((t) => { t.enabled = !audioMuted; });
+  }, [audioMuted, streamRef, isReady]);
+
   // Auto-route LIVE → /go-live as soon as it becomes the active mode.
   useEffect(() => {
     if (mode === "LIVE") {
