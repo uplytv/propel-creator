@@ -157,6 +157,7 @@ export default function Camera() {
       width: w,
       height: h,
       mimeType: "image/jpeg",
+      caption: textOverlay.trim() || undefined,
     });
     hapticImpact();
     navigate(POST_CAPTURE_ROUTE[mode]);
