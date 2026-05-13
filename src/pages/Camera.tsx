@@ -462,6 +462,67 @@ export default function Camera() {
           setPendingFile(null);
         }}
       />
+
+      {/* Settings sheet — grid + mirror toggles */}
+      <Sheet open={showSettings} onOpenChange={setShowSettings}>
+        <SheetContent side="bottom" className="bg-[#0A0A0A] border-white/10 text-white">
+          <SheetHeader>
+            <SheetTitle className="text-white">Camera settings</SheetTitle>
+          </SheetHeader>
+          <div className="mt-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="grid-toggle" className="flex items-center gap-2 text-sm">
+                <Grid3x3 className="h-4 w-4" /> Show rule-of-thirds grid
+              </Label>
+              <Switch id="grid-toggle" checked={showGrid} onCheckedChange={setShowGrid} />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="mirror-toggle" className="flex items-center gap-2 text-sm">
+                <FlipHorizontal className="h-4 w-4" /> Mirror front camera
+              </Label>
+              <Switch id="mirror-toggle" checked={mirrorFront} onCheckedChange={setMirrorFront} />
+            </div>
+            <p className="text-xs text-white/40">More options (timer, beauty filters) are coming soon.</p>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Text overlay sheet — caption pre-fills the editor */}
+      <Sheet open={showText} onOpenChange={setShowText}>
+        <SheetContent side="bottom" className="bg-[#0A0A0A] border-white/10 text-white">
+          <SheetHeader>
+            <SheetTitle className="text-white">Add text</SheetTitle>
+          </SheetHeader>
+          <div className="mt-4 space-y-3">
+            <textarea
+              value={textOverlay}
+              onChange={(e) => setTextOverlay(e.target.value)}
+              placeholder="Type a caption… it'll show on the preview and pre-fill your post."
+              rows={3}
+              maxLength={140}
+              className="w-full resize-none rounded-xl border border-white/10 bg-white/5 p-3 text-base text-white placeholder-white/40 outline-none"
+            />
+            <div className="flex items-center justify-between text-xs text-white/40">
+              <span>{textOverlay.length}/140</span>
+              <button
+                type="button"
+                onClick={() => setTextOverlay("")}
+                className="text-white/70 hover:text-white"
+              >
+                Clear
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowText(false)}
+              className="w-full rounded-full py-3 text-sm font-bold"
+              style={{ background: "#00FF85", color: "#0A0A0A" }}
+            >
+              Done
+            </button>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
