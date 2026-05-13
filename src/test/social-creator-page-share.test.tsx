@@ -239,4 +239,25 @@ describe("SocialCreatorPage share integration", () => {
       "https://uply.tv/@testcreator?utm_source=profile&utm_medium=web_share&utm_campaign=testcreator"
     );
   });
+
+  it("exposes the correct accessible name on the share button", async () => {
+    renderPage();
+
+    const shareBtn = await screen.findByRole("button", { name: /share profile/i });
+
+    expect(shareBtn).toHaveAccessibleName("Share profile");
+    expect(shareBtn).toHaveAttribute("aria-label", "Share profile");
+  });
+
+  it("keeps the share button keyboard accessible as a native button", async () => {
+    renderPage();
+
+    const shareBtn = await screen.findByRole("button", { name: /share profile/i });
+
+    // Native <button> is focusable by default and responds to Enter/Space
+    expect(shareBtn.tagName.toLowerCase()).toBe("button");
+    expect(shareBtn).toHaveAttribute("type", "button");
+    shareBtn.focus();
+    expect(shareBtn).toHaveFocus();
+  });
 });
