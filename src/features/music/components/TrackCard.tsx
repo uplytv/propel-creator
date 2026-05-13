@@ -3,6 +3,7 @@ import { Play, Heart, Repeat2, MessageCircle } from 'lucide-react';
 import type { Track } from '../types';
 import { usePlayerStore } from '../hooks/usePlayerStore';
 import RepostButton from './RepostButton';
+import StartStationButton from './StartStationButton';
 
 export default function TrackCard({ track, queue }: { track: Track; queue?: Track[] }) {
   const load = usePlayerStore((s) => s.loadTrack);
@@ -55,6 +56,10 @@ export default function TrackCard({ track, queue }: { track: Track; queue?: Trac
             {track.title}
           </Link>
           <RepostButton trackId={track.id} size="sm" />
+          <StartStationButton
+            seed={{ seedType: 'track', seedId: track.id, seedName: track.title }}
+            firstTrack={track}
+          />
         </div>
         <div className="text-xs text-white/50 truncate">{track.genre || 'Music'}</div>
         <div className="flex items-center gap-2 mt-1 text-[10px] text-white/40">
