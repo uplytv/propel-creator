@@ -19,6 +19,8 @@ interface Props {
   };
   /** When true, show edit affordance buttons inline. */
   ownerMode: boolean;
+  /** Owner's user id — used to deep-link the advanced editor. */
+  userId?: string | null;
 }
 
 /**
@@ -30,7 +32,7 @@ interface Props {
  *
  * Keeps things minimal — power editing remains in /artist-page-editor.
  */
-export default function InlineEditMenu({ initial, ownerMode }: Props) {
+export default function InlineEditMenu({ initial, ownerMode, userId }: Props) {
   const [openCover, setOpenCover] = useState(false);
   const [openBio, setOpenBio] = useState(false);
   const upsert = useUpsertArtistProfile();
@@ -78,11 +80,13 @@ export default function InlineEditMenu({ initial, ownerMode }: Props) {
           <Button size="sm" variant="outline" onClick={() => setOpenBio(true)} className="min-h-[40px]">
             <Pencil className="h-3.5 w-3.5 mr-1.5" /> Edit bio
           </Button>
-          <Button asChild size="sm" variant="ghost" className="min-h-[40px] text-muted-foreground">
-            <Link to="/artist-page-editor">
-              <Settings2 className="h-3.5 w-3.5 mr-1.5" /> Advanced settings
-            </Link>
-          </Button>
+          {userId && (
+            <Button asChild size="sm" variant="ghost" className="min-h-[40px] text-muted-foreground">
+              <Link to={`/artist/${userId}/edit/advanced`}>
+                <Settings2 className="h-3.5 w-3.5 mr-1.5" /> Advanced settings
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
 
