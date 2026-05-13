@@ -92,14 +92,37 @@ export default function SocialCreatorPage() {
   const handleShare = async () => {
     const url = `${getSiteUrl()}/@${slug}`;
     const title = `${slug} on UPLY`;
+    // Try Web Share first; fall through to clipboard if unavailable, blocked
+    // (e.g. inside a preview iframe), or rejected by the user agent.
     try {
-      if (navigator.share) {
+      if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
         await navigator.share({ title, url });
-      } else {
-        await navigator.clipboard.writeText(url);
-        toast.success("Link copied");
+        return;
       }
-    } catch {/* user cancelled */}
+    } catch (err: any) {
+      if (err?.name === "AbortError") return; // user cancelled
+      // fall through to clipboard
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied");
+    } catch {
+      // Final fallback: hidden textarea + execCommand
+      const ta = document.createElement("textarea");
+      ta.value = url;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+        toast.success("Link copied");
+      } catch {
+        toast.error("Could not copy link");
+      } finally {
+        document.body.removeChild(ta);
+      }
+    }
   };
 
   const { data, isLoading } = useQuery({
