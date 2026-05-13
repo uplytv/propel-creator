@@ -17,7 +17,7 @@ interface Props {
 export default function NowPlayingShareCard({ trackId, title, artist, coverUrl }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const shareUrl = `${SITE_URL}/music/track/${trackId}`;
+  const shareUrl = buildTrackShareUrl(trackId, "web_share");
 
   const onShare = async () => {
     const text = `Now playing: ${title} — ${artist}`;
