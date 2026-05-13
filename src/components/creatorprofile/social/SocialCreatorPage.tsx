@@ -284,6 +284,7 @@ export default function SocialCreatorPage() {
   const baseTabs: TabItem[] = [
     { id: "posts", label: "Posts" },
     { id: layout === "musician" ? "music" : "work", label: layout === "musician" ? "Music" : "Work" },
+    { id: "shop", label: "Shop" },
     { id: "events", label: "Events" },
     { id: "links", label: "Links" },
   ];
