@@ -398,4 +398,30 @@ describe("SocialCreatorPage share integration", () => {
       method: "native_share",
     });
   });
+
+  it("does not fire analytics or set state after unmount during an in-flight share", async () => {
+    let resolveShare: () => void;
+    const sharePromise = new Promise<void>((resolve) => {
+      resolveShare = resolve;
+    });
+    (navigator as any).share = vi.fn().mockReturnValue(sharePromise);
+
+    const { unmount } = renderPage();
+
+    const shareBtn = await screen.findByRole("button", { name: /share profile/i });
+    fireEvent.click(shareBtn);
+
+    // Unmount while share is in-flight
+    unmount();
+
+    // Resolve the share promise after unmount
+    resolveShare!();
+
+    // Give any microtasks a chance to run
+    await new Promise((r) => setTimeout(r, 0));
+
+    // trackEvent should never have been called because the component unmounted
+    // before the share promise resolved
+    expect(mockTrackEvent).not.toHaveBeenCalled();
+  });
 });
