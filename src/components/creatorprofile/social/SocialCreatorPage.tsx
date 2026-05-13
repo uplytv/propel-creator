@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useFollows } from "@/hooks/useFollows";
 import { usePageMeta } from "@/features/music/components/ArtistPage/usePageMeta";
+import { getSiteUrl } from "@/lib/siteUrl";
 import CoverHeader from "./CoverHeader";
 import IdentityRow from "./IdentityRow";
 import StatsStrip from "./StatsStrip";
