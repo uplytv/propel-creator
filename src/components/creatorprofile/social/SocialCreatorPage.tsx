@@ -233,6 +233,32 @@ export default function SocialCreatorPage() {
   const displayName = basic?.display_name || basic?.username || "Creator";
   const isLive = !!liveStream;
 
+  // Realtime: flip the LIVE badge / shopping CTA / product list the moment
+  // Mux webhooks update the stream row or the creator changes a product.
+  useEffect(() => {
+    if (!userId) return;
+    const channel = supabase
+      .channel(`creator-live-${userId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "mux_live_streams", filter: `user_id=eq.${userId}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["creator-live-status", userId] });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "products", filter: `user_id=eq.${userId}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["creator-shop-products", userId] });
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, queryClient]);
+
   // SEO + JSON-LD (Person + optional MusicGroup if musician)
   const canonicalSlug = artist?.vanity_slug || basic?.username || slug;
   const canonicalUrl = `${getSiteUrl()}/@${canonicalSlug}`;
