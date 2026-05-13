@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Pencil, Settings2 } from "lucide-react";
+import { useRef, useState } from "react";
+import { Pencil, Settings2, Upload, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useUpsertArtistProfile } from "@/features/music/hooks/useArtistProfile";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+const sb = supabase as unknown as any;
 
 interface Props {
   initial: {
@@ -36,6 +39,8 @@ export default function InlineEditMenu({ initial, ownerMode, userId }: Props) {
   const [openCover, setOpenCover] = useState(false);
   const [openBio, setOpenBio] = useState(false);
   const upsert = useUpsertArtistProfile();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const [coverUrl, setCoverUrl] = useState(initial.header_image_url || "");
   const [bio, setBio] = useState(initial.artist_bio || "");
@@ -45,10 +50,42 @@ export default function InlineEditMenu({ initial, ownerMode, userId }: Props) {
 
   if (!ownerMode) return null;
 
-  async function saveCover() {
+  async function handlePickCover(file: File) {
+    if (!userId) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please choose an image file");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image must be under 10MB");
+      return;
+    }
     try {
-      await upsert.mutateAsync({ header_image_url: coverUrl || null } as any);
+      setUploading(true);
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${userId}/cover-${Date.now()}.${ext}`;
+      const { error: upErr } = await sb.storage
+        .from("content-media")
+        .upload(path, file, { upsert: true, cacheControl: "3600" });
+      if (upErr) throw upErr;
+      const { data: pub } = sb.storage.from("content-media").getPublicUrl(path);
+      const url = pub?.publicUrl as string;
+      setCoverUrl(url);
+      await upsert.mutateAsync({ header_image_url: url } as any);
       toast.success("Cover updated");
+      setOpenCover(false);
+    } catch (e: any) {
+      toast.error(e?.message || "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function clearCover() {
+    try {
+      await upsert.mutateAsync({ header_image_url: null } as any);
+      setCoverUrl("");
+      toast.success("Cover cleared");
       setOpenCover(false);
     } catch (e: any) {
       toast.error(e?.message || "Could not save");
@@ -95,20 +132,47 @@ export default function InlineEditMenu({ initial, ownerMode, userId }: Props) {
           <SheetHeader>
             <SheetTitle>Cover image</SheetTitle>
             <SheetDescription>
-              Paste an image URL. Leave blank to fall back to your latest post.
+              Pick a photo from your library. Leave blank to fall back to your latest post.
             </SheetDescription>
           </SheetHeader>
           <div className="mt-4 space-y-3">
-            <Label htmlFor="cover-url">Image URL</Label>
-            <Input
-              id="cover-url"
-              value={coverUrl}
-              onChange={(e) => setCoverUrl(e.target.value)}
-              placeholder="https://…"
+            {coverUrl && (
+              <div className="rounded-lg overflow-hidden border border-border aspect-[16/9] bg-muted">
+                <img src={coverUrl} alt="Current cover" className="w-full h-full object-cover" />
+              </div>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handlePickCover(f);
+                e.target.value = "";
+              }}
             />
-            <Button onClick={saveCover} disabled={upsert.isPending} className="w-full min-h-[44px]">
-              Save
+            <Button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading || upsert.isPending}
+              className="w-full min-h-[48px]"
+            >
+              {uploading ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Uploading…</>
+              ) : (
+                <><Upload className="h-4 w-4 mr-2" /> Upload from library</>
+              )}
             </Button>
+            {coverUrl && (
+              <Button
+                variant="outline"
+                onClick={clearCover}
+                disabled={uploading || upsert.isPending}
+                className="w-full min-h-[44px]"
+              >
+                Remove cover
+              </Button>
+            )}
           </div>
         </SheetContent>
       </Sheet>

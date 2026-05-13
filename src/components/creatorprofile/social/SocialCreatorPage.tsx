@@ -25,6 +25,7 @@ import WeeklyPlansStrip from "../WeeklyPlansStrip";
 import UpcomingEventsStrip from "../UpcomingEventsStrip";
 import CreatorWorksGrid from "../CreatorWorksGrid";
 import EpisodeFeed from "../EpisodeFeed";
+import CreatorShopTab from "./CreatorShopTab";
 
 const ArtistPageContent = lazy(
   () => import("@/features/music/components/ArtistPage/ArtistPageContent"),
@@ -194,9 +195,10 @@ export default function SocialCreatorPage() {
     queryFn: async () => {
       const { data } = await sb
         .from("mux_live_streams_public")
-        .select("title,viewer_count,mux_playback_id,user_id")
+        .select("id,title,viewer_count,mux_playback_id,user_id,featured_product_id")
         .eq("user_id", userId)
         .eq("status", "active")
+        .is("ended_at", null)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -283,6 +285,7 @@ export default function SocialCreatorPage() {
   const baseTabs: TabItem[] = [
     { id: "posts", label: "Posts" },
     { id: layout === "musician" ? "music" : "work", label: layout === "musician" ? "Music" : "Work" },
+    { id: "shop", label: "Shop" },
     { id: "events", label: "Events" },
     { id: "links", label: "Links" },
   ];
@@ -331,9 +334,9 @@ export default function SocialCreatorPage() {
         <Link
           to="/camera?mode=POST"
           aria-label="Create new post, story, short, video or live"
-          className="fixed z-40 bottom-28 right-5 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition"
+          className="fixed z-40 bottom-[calc(env(safe-area-inset-bottom)+5rem)] right-4 h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition"
         >
-          <Plus className="h-6 w-6" />
+          <Plus className="h-5 w-5" />
         </Link>
       )}
 
@@ -398,7 +401,6 @@ export default function SocialCreatorPage() {
           { label: "Followers", value: counts.followers },
           { label: "Lessons", value: lessonsCount, href: `/community/${userId}` },
           { label: "Plays", value: counts.plays },
-          { label: "Works", value: counts.works },
         ]}
       />
 
@@ -501,6 +503,14 @@ export default function SocialCreatorPage() {
             />
           )}
         </>
+      )}
+
+      {tab === "shop" && userId && (
+        <CreatorShopTab
+          creatorUserId={userId}
+          liveStreamId={(liveStream as any)?.id || null}
+          liveFeaturedProductId={(liveStream as any)?.featured_product_id || null}
+        />
       )}
 
       {tab === "events" && (
