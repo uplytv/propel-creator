@@ -463,7 +463,7 @@ Deno.serve(async (req) => {
       const [, slug] = atSlugMatch;
 
       // Try artist_profiles vanity_slug first, then profiles username
-      const { data: artist } = await supabase
+      let { data: artist } = await supabase
         .from("artist_profiles")
         .select("user_id, vanity_slug, header_image_url, hero_image_url, tagline, artist_bio, seo_title, seo_description, seo_og_image, is_verified, social_links")
         .eq("vanity_slug", decodeURIComponent(slug))
@@ -504,14 +504,13 @@ Deno.serve(async (req) => {
         const descRaw = artist?.seo_description || artist?.tagline || artist?.artist_bio || profile.bio || `Check out ${displayName} on UPLY`;
         const description = descRaw.length > 160 ? descRaw.slice(0, 157) + "…" : descRaw;
         const image = artist?.seo_og_image || artist?.header_image_url || artist?.hero_image_url || profile.cover_image_url || profile.avatar_url || DEFAULT_IMAGE;
-        const url = `${SITE_URL}/@${artist?.vanity_slug || profile.username || slug}`;
 
         return new Response(
           buildHtml({
             title,
             description,
             image,
-            url,
+            url: canonicalUrl,
             type: "profile",
             twitterCard: "summary_large_image",
             siteName: "Uply",
