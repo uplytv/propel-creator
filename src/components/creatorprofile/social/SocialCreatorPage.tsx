@@ -72,9 +72,9 @@ interface ArtistProfileLite {
 }
 
 export default function SocialCreatorPage() {
-  const { slug: rawSlug } = useParams<{ slug: string }>();
+  const { slug: rawSlug, username: rawUsername } = useParams<{ slug?: string; username?: string }>();
   // Defensive: strip any leading "@" so /@@handle resolves the same as /@handle.
-  const slug = (rawSlug || "").replace(/^@+/, "");
+  const slug = (rawSlug || rawUsername || "").replace(/^@+/, "");
   const { user } = useAuth();
   const { isFollowing, follow, unfollow } = useFollows();
   const [tab, setTab] = useState("posts");
