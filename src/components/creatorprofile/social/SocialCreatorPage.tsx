@@ -9,6 +9,7 @@ import { useFollows } from "@/hooks/useFollows";
 import { useInviteCodes } from "@/hooks/useInviteCodes";
 import { usePageMeta } from "@/features/music/components/ArtistPage/usePageMeta";
 import { getSiteUrl } from "@/lib/siteUrl";
+import { buildProfileShareUrl } from "@/lib/shareUrls";
 import { getProfileHandleCandidates, normalizeProfileSlugInput } from "@/lib/profileSlug";
 import { shouldAcceptRealtime } from "@/lib/optimisticRegistry";
 import CoverHeader from "./CoverHeader";
@@ -90,8 +91,8 @@ export default function SocialCreatorPage() {
   const queryClient = useQueryClient();
 
   const handleShare = async () => {
-    const url = `${getSiteUrl()}/@${slug}`;
-    const title = `${slug} on UPLY`;
+    const url = buildProfileShareUrl(canonicalSlug, "web_share");
+    const title = `${displayName} (@${canonicalSlug}) on UPLY`;
     // Try Web Share first; fall through to clipboard if unavailable, blocked
     // (e.g. inside a preview iframe), or rejected by the user agent.
     try {

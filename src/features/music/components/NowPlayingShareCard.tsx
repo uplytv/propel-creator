@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { Share2, Download } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { SITE_URL } from "@/lib/siteUrl";
+import { buildTrackShareUrl } from "@/lib/shareUrls";
 
 interface Props {
   trackId: string;
@@ -17,7 +17,7 @@ interface Props {
 export default function NowPlayingShareCard({ trackId, title, artist, coverUrl }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const shareUrl = `${SITE_URL}/music/track/${trackId}`;
+  const shareUrl = buildTrackShareUrl(trackId, "web_share");
 
   const onShare = async () => {
     const text = `Now playing: ${title} — ${artist}`;

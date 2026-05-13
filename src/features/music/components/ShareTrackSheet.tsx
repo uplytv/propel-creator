@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Share2, Download, Copy, X, Check } from 'lucide-react';
+import { buildTrackShareUrl } from '@/lib/shareUrls';
 import type { Track } from '../types';
 
 interface Props {
@@ -8,9 +9,6 @@ interface Props {
   onClose: () => void;
 }
 
-const PLATFORM_URL =
-  typeof window !== 'undefined' ? window.location.origin : 'https://uply.tv';
-
 /**
  * Generates a 9:16 story-card image for a track and offers Web Share / save / copy link.
  */
@@ -18,7 +16,7 @@ export default function ShareTrackSheet({ track, open, onClose }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [dataUrl, setDataUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const trackUrl = `${PLATFORM_URL}/music/track/${track.id}`;
+  const trackUrl = buildTrackShareUrl(track.id, "web_share");
 
   useEffect(() => {
     if (!open) return;
