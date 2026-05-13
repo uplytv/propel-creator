@@ -16538,6 +16538,7 @@ export type Database = {
           cover_image_url: string | null
           created_at: string
           creator_challenge: string | null
+          creator_layout: string | null
           creator_level: number | null
           creator_stage: string | null
           creator_type: string | null
@@ -16604,6 +16605,7 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string
           creator_challenge?: string | null
+          creator_layout?: string | null
           creator_level?: number | null
           creator_stage?: string | null
           creator_type?: string | null
@@ -16670,6 +16672,7 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string
           creator_challenge?: string | null
+          creator_layout?: string | null
           creator_level?: number | null
           creator_stage?: string | null
           creator_type?: string | null
