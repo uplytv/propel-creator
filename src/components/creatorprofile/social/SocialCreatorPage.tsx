@@ -249,14 +249,19 @@ export default function SocialCreatorPage() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "mux_live_streams", filter: `user_id=eq.${userId}` },
-        () => {
+        (payload: any) => {
+          const row = payload?.new || payload?.old;
+          // Skip echoes of our own optimistic edits while pending.
+          if (row?.id && !shouldAcceptRealtime("mux_live_streams", row.id, row)) return;
           queryClient.invalidateQueries({ queryKey: ["creator-live-status", userId] });
         },
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "products", filter: `user_id=eq.${userId}` },
-        () => {
+        (payload: any) => {
+          const row = payload?.new || payload?.old;
+          if (row?.id && !shouldAcceptRealtime("products", row.id, row)) return;
           queryClient.invalidateQueries({ queryKey: ["creator-shop-products", userId] });
         },
       )
