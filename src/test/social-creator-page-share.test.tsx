@@ -282,4 +282,40 @@ describe("SocialCreatorPage share integration", () => {
     shareBtn.focus();
     expect(shareBtn).toHaveFocus();
   });
+
+  it("fires an analytics event with medium and slug when the share button is clicked via native share", async () => {
+    renderPage();
+
+    const shareBtn = await screen.findByRole("button", { name: /share profile/i });
+    fireEvent.click(shareBtn);
+
+    await waitFor(() => {
+      expect(mockTrackEvent).toHaveBeenCalledTimes(1);
+    });
+
+    expect(mockTrackEvent).toHaveBeenCalledWith("profile_shared", {
+      medium: "web_share",
+      slug: "testcreator",
+      method: "native_share",
+    });
+  });
+
+  it("fires an analytics event with medium and slug when falling back to clipboard", async () => {
+    (navigator as any).share = undefined;
+
+    renderPage();
+
+    const shareBtn = await screen.findByRole("button", { name: /share profile/i });
+    fireEvent.click(shareBtn);
+
+    await waitFor(() => {
+      expect(mockTrackEvent).toHaveBeenCalledTimes(1);
+    });
+
+    expect(mockTrackEvent).toHaveBeenCalledWith("profile_shared", {
+      medium: "web_share",
+      slug: "testcreator",
+      method: "clipboard",
+    });
+  });
 });
