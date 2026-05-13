@@ -193,13 +193,18 @@ export default function SocialCreatorPage() {
     queryKey: ["creator-live-status", userId],
     enabled: !!userId,
     queryFn: async () => {
+      // Truly active = status active, not ended, AND a recent heartbeat
+      // (Mux webhooks bump updated_at). Prevents stale "active" rows
+      // from rendering the LIVE badge / live shopping CTA.
+      const freshSince = new Date(Date.now() - 10 * 60 * 1000).toISOString();
       const { data } = await sb
         .from("mux_live_streams_public")
-        .select("id,title,viewer_count,mux_playback_id,user_id,featured_product_id")
+        .select("id,title,viewer_count,mux_playback_id,user_id,featured_product_id,updated_at")
         .eq("user_id", userId)
         .eq("status", "active")
         .is("ended_at", null)
-        .order("created_at", { ascending: false })
+        .gte("updated_at", freshSince)
+        .order("updated_at", { ascending: false })
         .limit(1)
         .maybeSingle();
       return data;
