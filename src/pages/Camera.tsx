@@ -47,6 +47,22 @@ export default function Camera() {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [showMismatch, setShowMismatch] = useState(false);
 
+  // Camera enhancements (all wired to working UI)
+  const FILTERS = [
+    { name: "None", css: "none" },
+    { name: "Vivid", css: "saturate(1.4) contrast(1.1)" },
+    { name: "Mono", css: "grayscale(1) contrast(1.1)" },
+    { name: "Warm", css: "sepia(0.4) saturate(1.2)" },
+    { name: "Cool", css: "hue-rotate(-10deg) saturate(1.1) brightness(1.05)" },
+    { name: "Fade", css: "contrast(0.9) brightness(1.05) saturate(0.85)" },
+  ];
+  const [filterIndex, setFilterIndex] = useState(0);
+  const [showGrid, setShowGrid] = useState(false);
+  const [mirrorFront, setMirrorFront] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showText, setShowText] = useState(false);
+  const [textOverlay, setTextOverlay] = useState("");
+
   const longPressTimer = useRef<number | null>(null);
   const longPressFiredRef = useRef(false);
 
