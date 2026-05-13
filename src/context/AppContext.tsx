@@ -17,6 +17,7 @@ export interface CreatorProfile {
   totalRevenue: number;
   healthScore: number;
   name: string;
+  username: string | null;
   avatarUrl: string | null;
   isApproved: boolean;
 }
@@ -46,6 +47,7 @@ const defaultProfile: CreatorProfile = {
   totalRevenue: 0,
   healthScore: 0,
   name: "Creator",
+  username: null,
   avatarUrl: null,
   isApproved: false,
 };
@@ -78,6 +80,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         totalRevenue: Number(data.total_revenue) || 0,
         healthScore: data.health_score || 0,
         name: data.display_name || "Creator",
+        username: data.username || null,
         avatarUrl: data.avatar_url || null,
         isApproved: !!(data as any).is_approved,
       });

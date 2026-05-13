@@ -25,6 +25,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useInviteCodes } from "@/hooks/useInviteCodes";
+import { getProfileHandleCandidates } from "@/lib/profileSlug";
 
 type NavItem = { label: string; icon: React.ElementType; path: string; desc: string; requiresTier?: number; badgeKey?: string; featureKey?: string };
 
@@ -189,6 +190,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     enabled: !!user,
   });
 
+  const publicProfilePath = user ? `/@${vanitySlug || profile.username || getProfileHandleCandidates(profile.name)[0] || user.id}` : "/auth";
   const yourPagePath = user ? `/music/artist/${user.id}/edit` : "/auth";
 
   const getBadge = (item: NavItem) => {
@@ -481,7 +483,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
           {/* Profile — clickable shortcut to your public artist page */}
           <button
-            onClick={() => navigate(yourPagePath)}
+            onClick={() => navigate(publicProfilePath)}
             className={`w-full flex items-center gap-3 rounded-lg hover:bg-white/5 transition-colors ${collapsed ? "p-2 justify-center" : "px-3 py-2"}`}
           >
             {profile.avatarUrl ? (
@@ -560,7 +562,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                       className="absolute top-full right-0 mt-2 min-w-[200px] rounded-xl bg-card border border-border shadow-xl py-2 z-50"
                     >
                       <button
-                        onClick={() => { navigate(user ? `/creator/${profile.name || user.id}` : "/auth"); setProfileOpen(false); }}
+                         onClick={() => { navigate(publicProfilePath); setProfileOpen(false); }}
                         className="w-full text-left px-4 py-2 border-b border-border mb-1 hover:bg-secondary transition-colors"
                       >
                         <p className="text-sm font-medium">{profile.name}</p>
@@ -664,7 +666,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               <div className="px-4 py-3 border-b border-border">
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={() => { navigate(yourPagePath); setMobileMenuOpen(false); }}
+                    onClick={() => { navigate(publicProfilePath); setMobileMenuOpen(false); }}
                     className="flex items-center gap-3 flex-1 min-w-0 rounded-lg px-1 py-1 -mx-1 hover:bg-white/5 transition-colors text-left"
                   >
                     {profile.avatarUrl ? (

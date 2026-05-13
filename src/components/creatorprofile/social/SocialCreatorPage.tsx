@@ -9,6 +9,7 @@ import { useFollows } from "@/hooks/useFollows";
 import { useInviteCodes } from "@/hooks/useInviteCodes";
 import { usePageMeta } from "@/features/music/components/ArtistPage/usePageMeta";
 import { getSiteUrl } from "@/lib/siteUrl";
+import { getProfileHandleCandidates, normalizeProfileSlugInput } from "@/lib/profileSlug";
 import CoverHeader from "./CoverHeader";
 import IdentityRow from "./IdentityRow";
 import StatsStrip from "./StatsStrip";
@@ -79,7 +80,7 @@ interface ArtistProfileLite {
 export default function SocialCreatorPage() {
   const { slug: rawSlug, username: rawUsername } = useParams<{ slug?: string; username?: string }>();
   // Defensive: strip any leading "@" so /@@handle resolves the same as /@handle.
-  const slug = (rawSlug || rawUsername || "").replace(/^@+/, "");
+  const slug = normalizeProfileSlugInput(rawSlug || rawUsername);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isFollowing, follow, unfollow } = useFollows();
@@ -104,11 +105,17 @@ export default function SocialCreatorPage() {
     queryFn: async () => {
       // Try artist_profiles by vanity_slug first. Profile rows are private via
       // RLS, so public pages must resolve only safe fields through RPC helpers.
-      const { data: ap } = await sb
-        .from("artist_profiles")
-        .select("*")
-        .eq("vanity_slug", slug)
-        .maybeSingle();
+      const candidates = getProfileHandleCandidates(slug);
+      const artistResults = await Promise.all(
+        candidates.map((candidate) =>
+          sb
+            .from("artist_profiles")
+            .select("*")
+            .eq("vanity_slug", candidate)
+            .maybeSingle()
+        )
+      );
+      const ap = artistResults.find(({ data }) => data)?.data;
       let basic: BasicProfile | null = null;
       if (ap) {
         const { data: b } = await sb
@@ -116,9 +123,14 @@ export default function SocialCreatorPage() {
           .maybeSingle();
         basic = b as BasicProfile | null;
       } else {
-        const { data: b } = await sb
-          .rpc("get_public_profile_by_username", { _username: slug })
-          .maybeSingle();
+        const basicResults = await Promise.all(
+          candidates.map((candidate) =>
+            sb
+              .rpc("get_public_profile_by_username", { _username: candidate })
+              .maybeSingle()
+          )
+        );
+        const b = basicResults.find(({ data }) => data)?.data;
         basic = b as BasicProfile | null;
         if (basic) {
           const { data: ap2 } = await sb
