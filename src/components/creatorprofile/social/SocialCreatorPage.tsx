@@ -10,6 +10,7 @@ import { useInviteCodes } from "@/hooks/useInviteCodes";
 import { usePageMeta } from "@/features/music/components/ArtistPage/usePageMeta";
 import { getSiteUrl } from "@/lib/siteUrl";
 import { buildProfileShareUrl } from "@/lib/shareUrls";
+import { trackEvent } from "@/lib/posthog";
 import { getProfileHandleCandidates, normalizeProfileSlugInput } from "@/lib/profileSlug";
 import { shouldAcceptRealtime } from "@/lib/optimisticRegistry";
 import CoverHeader from "./CoverHeader";
