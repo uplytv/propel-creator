@@ -42,7 +42,7 @@ interface Props {
   creatorType: CreatorType | string | null | undefined;
   basicProfile: BasicProfile;
   artistProfile?: ArtistProfile | null;
-  mode?: "public" | "owner";
+  mode?: "public" | "app";
 }
 
 export default function CreatorLandingRenderer({
@@ -149,7 +149,7 @@ export default function CreatorLandingRenderer({
           {Header}
           <Suspense fallback={null}>
             <div className="max-w-[1200px] mx-auto px-6 py-8">
-              <DJSetsSection userId={userId} />
+              <DJSetsSection userId={userId} mode={mode} />
             </div>
           </Suspense>
           <CreatorWorksGrid
