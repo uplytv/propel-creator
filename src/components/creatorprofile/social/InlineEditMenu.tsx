@@ -62,13 +62,13 @@ export default function InlineEditMenu({ initial, ownerMode, userId }: Props) {
     }
     try {
       setUploading(true);
-      const ext = file.name.split(".").pop() || "jpg";
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
       const path = `${userId}/cover-${Date.now()}.${ext}`;
       const { error: upErr } = await sb.storage
-        .from("content-media")
-        .upload(path, file, { upsert: true, cacheControl: "3600" });
+        .from("covers")
+        .upload(path, file, { upsert: true, cacheControl: "3600", contentType: file.type });
       if (upErr) throw upErr;
-      const { data: pub } = sb.storage.from("content-media").getPublicUrl(path);
+      const { data: pub } = sb.storage.from("covers").getPublicUrl(path);
       const url = pub?.publicUrl as string;
       setCoverUrl(url);
       await upsert.mutateAsync({ header_image_url: url } as any);

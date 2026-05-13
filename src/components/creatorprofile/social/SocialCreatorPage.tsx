@@ -327,6 +327,7 @@ export default function SocialCreatorPage() {
         creatorUserId={userId}
         avatarUrl={basic.avatar_url}
         displayName={displayName}
+        isOwner={isOwner}
       />
 
       {/* Owner-only floating compose FAB — opens the unified camera/create flow */}
