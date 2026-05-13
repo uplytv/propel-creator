@@ -3759,6 +3759,66 @@ export type Database = {
         }
         Relationships: []
       }
+      creator_works: {
+        Row: {
+          created_at: string
+          creator_id: string
+          description: string | null
+          display_order: number
+          external_url: string | null
+          id: string
+          is_member_only: boolean
+          media_url: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          work_type: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          description?: string | null
+          display_order?: number
+          external_url?: string | null
+          id?: string
+          is_member_only?: boolean
+          media_url?: string | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          work_type: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          description?: string | null
+          display_order?: number
+          external_url?: string | null
+          id?: string
+          is_member_only?: boolean
+          media_url?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          work_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_works_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_works_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       credit_packages: {
         Row: {
           credits: number
