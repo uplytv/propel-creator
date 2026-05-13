@@ -82,7 +82,7 @@ export default function InlineEditMenu({ initial, ownerMode, userId }: Props) {
           </Button>
           {userId && (
             <Button asChild size="sm" variant="ghost" className="min-h-[40px] text-muted-foreground">
-              <Link to={`/artist/${userId}/edit/advanced`}>
+              <Link to={`/music/artist/${userId}/edit/advanced`}>
                 <Settings2 className="h-3.5 w-3.5 mr-1.5" /> Advanced settings
               </Link>
             </Button>

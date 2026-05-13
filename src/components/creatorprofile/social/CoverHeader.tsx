@@ -61,7 +61,7 @@ export default function CoverHeader({
               }
             : {
                 background:
-                  "linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--background)))",
+                  "linear-gradient(135deg, hsl(var(--muted) / 0.4), hsl(var(--background)))",
               }
         }
         aria-hidden={!cover}
