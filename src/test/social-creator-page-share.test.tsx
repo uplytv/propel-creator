@@ -78,6 +78,7 @@ import { trackEvent } from "@/lib/posthog";
 import { supabase } from "@/integrations/supabase/client";
 
 const mockBuildProfileShareUrl = vi.mocked(buildProfileShareUrl);
+const mockTrackEvent = vi.mocked(trackEvent);
 const mockSupabase = supabase as unknown as any;
 
 function createTestQueryClient() {
