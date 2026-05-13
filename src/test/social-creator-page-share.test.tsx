@@ -21,6 +21,10 @@ vi.mock("@/lib/shareUrls", () => ({
   buildStreamShareUrl: vi.fn(),
 }));
 
+vi.mock("@/lib/posthog", () => ({
+  trackEvent: vi.fn(),
+}));
+
 vi.mock("@/features/music/components/ArtistPage/usePageMeta", () => ({
   usePageMeta: vi.fn(),
 }));
