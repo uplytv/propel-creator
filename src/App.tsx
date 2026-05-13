@@ -150,6 +150,7 @@ const ArtistVerificationPage = lazy(() => import("./features/music/pages/ArtistV
 const SmartPlaylistsPage = lazy(() => import("./features/music/pages/SmartPlaylistsPage"));
 const ArtistPage = lazy(() => import("./features/music/pages/ArtistPage"));
 const ArtistPageEditor = lazy(() => import("./features/music/pages/ArtistPageEditor"));
+const ArtistPageEditorAdvanced = lazy(() => import("./features/music/pages/ArtistPageEditorAdvanced"));
 const PublicArtistPage = lazy(() => import("./features/music/pages/PublicArtistPage"));
 const MusicFeedPage = lazy(() => import("./features/music/pages/MusicFeedPage"));
 const TrackInsightsPage = lazy(() => import("./features/music/pages/TrackInsightsPage"));
