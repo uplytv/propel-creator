@@ -116,6 +116,19 @@ export default function NowPlayingSheet({
           />
 
           <div className="w-full max-w-md mt-6 px-2">
+            {station && (
+              <div className="mb-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#00FF85]/15 text-[#00FF85] border border-[#00FF85]/30">
+                <Radio className="w-3 h-3" />
+                <span>Station{station.seedName ? ` · ${station.seedName}` : ''}</span>
+                <button
+                  onClick={() => stopStation()}
+                  aria-label="Stop station"
+                  className="ml-1 -mr-1 p-0.5 rounded-full hover:bg-white/10"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            )}
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <Link
@@ -161,6 +174,23 @@ export default function NowPlayingSheet({
               >
                 <Radio className="w-5 h-5" />
               </button>
+              {isStationTrack && (
+                <button
+                  onClick={() => {
+                    trackEvent('station_thumbs_down', {
+                      track_id: current.id,
+                      station_seed_type: station?.seedType,
+                      station_seed_id: station?.seedId,
+                    });
+                    excludeFromStation(current.id);
+                  }}
+                  aria-label="Not for me"
+                  title="Not for me — don't play again on this station"
+                  className="p-2 rounded-full text-white/70 hover:text-white"
+                >
+                  <ThumbsDown className="w-5 h-5" />
+                </button>
+              )}
               <SleepTimerMenu />
               <PlaybackSpeedMenu />
               <EqPresetMenu />
