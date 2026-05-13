@@ -175,8 +175,43 @@ export default function SocialCreatorPage() {
     staleTime: 60_000,
   });
 
+  // Live status — drives LIVE pill + sticky CTA marker
+  const { data: liveStream } = useQuery({
+    queryKey: ["creator-live-status", userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data } = await sb
+        .from("mux_live_streams_public")
+        .select("title,viewer_count,mux_playback_id,user_id")
+        .eq("user_id", userId)
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+    staleTime: 30_000,
+  });
+
+  // Total classroom lessons for KPI strip
+  const { data: lessonsCount = 0 } = useQuery({
+    queryKey: ["creator-lessons-count", userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { count } = await sb
+        .from("classroom_lessons")
+        .select("*", { count: "exact", head: true })
+        .eq("creator_id", userId);
+      return count || 0;
+    },
+    staleTime: 60_000,
+  });
+
   const isOwner = !!user && !!userId && user.id === userId;
+  const { data: inviteData } = useInviteCodes();
+  const remainingInvites = isOwner ? inviteData?.remaining ?? 0 : 0;
   const displayName = basic?.display_name || basic?.username || "Creator";
+  const isLive = !!liveStream;
 
   // SEO + JSON-LD (Person + optional MusicGroup if musician)
   const canonicalSlug = artist?.vanity_slug || basic?.username || slug;
