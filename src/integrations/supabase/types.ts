@@ -20819,12 +20819,16 @@ export type Database = {
           business_category: string | null
           cover_image_url: string | null
           created_at: string | null
+          creator_layout: string | null
           creator_stage: string | null
           creator_type: string | null
           display_name: string | null
           id: string | null
+          location_label: string | null
+          members: number | null
           tier: number | null
           tier_name: string | null
+          travel_city: string | null
           updated_at: string | null
           user_id: string | null
           user_type: string | null
@@ -20837,12 +20841,16 @@ export type Database = {
           business_category?: string | null
           cover_image_url?: string | null
           created_at?: string | null
+          creator_layout?: string | null
           creator_stage?: string | null
           creator_type?: string | null
           display_name?: string | null
           id?: string | null
+          location_label?: string | null
+          members?: number | null
           tier?: number | null
           tier_name?: string | null
+          travel_city?: string | null
           updated_at?: string | null
           user_id?: string | null
           user_type?: string | null
@@ -20855,12 +20863,16 @@ export type Database = {
           business_category?: string | null
           cover_image_url?: string | null
           created_at?: string | null
+          creator_layout?: string | null
           creator_stage?: string | null
           creator_type?: string | null
           display_name?: string | null
           id?: string | null
+          location_label?: string | null
+          members?: number | null
           tier?: number | null
           tier_name?: string | null
+          travel_city?: string | null
           updated_at?: string | null
           user_id?: string | null
           user_type?: string | null
