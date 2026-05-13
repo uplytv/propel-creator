@@ -332,9 +332,9 @@ export default function SocialCreatorPage() {
         <Link
           to="/camera?mode=POST"
           aria-label="Create new post, story, short, video or live"
-          className="fixed z-40 bottom-28 right-5 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition"
+          className="fixed z-40 bottom-[calc(env(safe-area-inset-bottom)+5rem)] right-4 h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition"
         >
-          <Plus className="h-6 w-6" />
+          <Plus className="h-5 w-5" />
         </Link>
       )}
 
