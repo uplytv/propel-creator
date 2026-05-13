@@ -24,7 +24,7 @@ export default function PublicArtistPage() {
       if (profile) {
         const { data: basic } = await sb
           .from('profiles')
-          .select('id,user_id,username,display_name,avatar_url,creator_type')
+          .select('id,user_id,username,display_name,avatar_url,creator_type,creator_layout')
           .eq('user_id', profile.user_id)
           .maybeSingle();
         return { profile, basic };
@@ -33,7 +33,7 @@ export default function PublicArtistPage() {
       // No artist_profiles row → fall back to plain profile by username
       const { data: basic } = await sb
         .from('profiles')
-        .select('id,user_id,username,display_name,avatar_url,creator_type')
+        .select('id,user_id,username,display_name,avatar_url,creator_type,creator_layout')
         .eq('username', slug)
         .maybeSingle();
       return { profile: null, basic };
@@ -84,17 +84,19 @@ export default function PublicArtistPage() {
     );
   }
 
-  // Musicians with a published artist_profiles row keep pixel-identical layout.
-  // Use ArtistPageContent directly to avoid any wrapper differences.
-  if (profile && (basic?.creator_type === 'musician' || !basic?.creator_type)) {
+  // Resolve effective layout: explicit creator_layout wins; else musician if they have an
+  // artist_profiles row; else "generic". This guarantees existing musicians stay pixel-identical.
+  const effectiveLayout: string =
+    basic?.creator_layout || (profile ? 'musician' : 'generic');
+
+  if (profile && effectiveLayout === 'musician') {
     return <ArtistPageContent userId={profile.user_id} profile={profile} basicProfile={basic} mode="public" />;
   }
 
-  // All other creator types → delegate to renderer.
   if (basic) {
     return (
       <CreatorLandingRenderer
-        creatorType={basic.creator_type}
+        creatorType={effectiveLayout}
         basicProfile={basic}
         artistProfile={profile}
         mode="public"
