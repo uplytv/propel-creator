@@ -2,8 +2,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSwipeable } from "react-swipeable";
 import { motion } from "framer-motion";
-import { RefreshCw, Image as ImageIcon } from "lucide-react";
+import { RefreshCw, Image as ImageIcon, FlipHorizontal, Grid3x3 } from "lucide-react";
 import { toast } from "sonner";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 import CameraTopBar from "@/components/camera/CameraTopBar";
 import LeftToolRail from "@/components/camera/LeftToolRail";
