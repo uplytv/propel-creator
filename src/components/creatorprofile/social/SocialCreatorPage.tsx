@@ -86,6 +86,7 @@ export default function SocialCreatorPage() {
   const { user } = useAuth();
   const { isFollowing, follow, unfollow } = useFollows();
   const [tab, setTab] = useState("posts");
+  const queryClient = useQueryClient();
 
   const handleShare = async () => {
     const url = `${getSiteUrl()}/@${slug}`;
