@@ -15,6 +15,7 @@ interface Props {
   onFollow?: () => void;
   isFollowing?: boolean;
   messageHref?: string;
+  onShare?: () => void;
 }
 
 export default function IdentityRow({
