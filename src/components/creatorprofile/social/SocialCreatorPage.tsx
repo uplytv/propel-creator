@@ -248,7 +248,7 @@ export default function SocialCreatorPage() {
     : null;
 
   return (
-    <main className="min-h-screen bg-background text-foreground pb-24">
+    <main className="relative min-h-screen bg-background text-foreground pb-24">
       {/* Floating top actions over cover */}
       <div className="absolute top-3 left-0 right-0 z-30 flex items-center justify-between px-3 sm:px-4 max-w-[1100px] mx-auto">
         <button
