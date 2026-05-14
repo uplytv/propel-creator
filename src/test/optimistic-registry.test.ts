@@ -88,7 +88,7 @@ describe("optimisticRegistry", () => {
     ).toBe(false);
 
     // After the grace window, marker is gone.
-    vi.advanceTimersByTime(5_000);
+    setTime("2026-01-01T00:00:15.000Z");
     expect(hasPending("products", "p1")).toBe(false);
     expect(
       shouldAcceptRealtime("products", "p1", {
