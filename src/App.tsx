@@ -157,6 +157,7 @@ const TrackInsightsPage = lazy(() => import("./features/music/pages/TrackInsight
 const EmbedTrackPage = lazy(() => import("./features/music/pages/EmbedTrackPage"));
 const ContentStudio = lazy(() => import("./pages/ContentStudio"));
 const AITeamDashboard = lazy(() => import("./pages/AITeamDashboard"));
+const AriaCommandPage = lazy(() => import("./features/aria-command/pages/AriaCommandPage"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const Newsletter = lazy(() => import("./pages/Newsletter"));
 const MyPage = lazy(() => import("./pages/MyPage"));
@@ -482,6 +483,7 @@ const App = () => (
                     <Route path="/invite-codes" element={<ProtectedRoute><InviteCodes /></ProtectedRoute>} />
                     <Route path="/dashboard/content-studio" element={<ProtectedRoute><ContentStudio /></ProtectedRoute>} />
                     <Route path="/dashboard/ai-team" element={<ProtectedRoute><AITeamDashboard /></ProtectedRoute>} />
+                    <Route path="/aria-command" element={<ProtectedRoute><AriaCommandPage /></ProtectedRoute>} />
                     <Route path="/newsletter" element={<ProtectedRoute><Newsletter /></ProtectedRoute>} />
                     <Route path="/my-page" element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
                     <Route path="/my-page/funnel/:pageId" element={<ProtectedRoute><FunnelEditor /></ProtectedRoute>} />

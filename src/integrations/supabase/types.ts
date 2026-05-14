@@ -534,6 +534,48 @@ export type Database = {
         }
         Relationships: []
       }
+      aria_actions: {
+        Row: {
+          created_at: string
+          creator_id: string
+          error: string | null
+          executed_at: string | null
+          id: string
+          intent: string
+          parsed_params: Json
+          requires_approval: boolean
+          result: Json | null
+          status: string
+          summary: string | null
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          error?: string | null
+          executed_at?: string | null
+          id?: string
+          intent: string
+          parsed_params?: Json
+          requires_approval?: boolean
+          result?: Json | null
+          status?: string
+          summary?: string | null
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          error?: string | null
+          executed_at?: string | null
+          id?: string
+          intent?: string
+          parsed_params?: Json
+          requires_approval?: boolean
+          result?: Json | null
+          status?: string
+          summary?: string | null
+        }
+        Relationships: []
+      }
       aria_agent_handoffs: {
         Row: {
           created_at: string | null
@@ -20927,6 +20969,10 @@ export type Database = {
           _tip_cents?: number
         }
         Returns: undefined
+      }
+      aria_command_count_last_hour: {
+        Args: { _creator: string }
+        Returns: number
       }
       bump_trending_search: { Args: { p_term: string }; Returns: undefined }
       bump_viewer_affinity: {
