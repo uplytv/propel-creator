@@ -483,6 +483,7 @@ const App = () => (
                     <Route path="/invite-codes" element={<ProtectedRoute><InviteCodes /></ProtectedRoute>} />
                     <Route path="/dashboard/content-studio" element={<ProtectedRoute><ContentStudio /></ProtectedRoute>} />
                     <Route path="/dashboard/ai-team" element={<ProtectedRoute><AITeamDashboard /></ProtectedRoute>} />
+                    <Route path="/aria-command" element={<ProtectedRoute><AriaCommandPage /></ProtectedRoute>} />
                     <Route path="/newsletter" element={<ProtectedRoute><Newsletter /></ProtectedRoute>} />
                     <Route path="/my-page" element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
                     <Route path="/my-page/funnel/:pageId" element={<ProtectedRoute><FunnelEditor /></ProtectedRoute>} />
