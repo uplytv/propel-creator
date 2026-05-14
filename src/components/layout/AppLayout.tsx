@@ -190,7 +190,21 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     enabled: !!user,
   });
 
-  const publicProfilePath = user ? `/@${vanitySlug || profile.username || getProfileHandleCandidates(profile.name)[0] || user.id}` : "/auth";
+  // Resolve a public handle for the current user. We only build a /@ URL when
+  // we actually have a slug-like handle (vanity slug or claimed username) — a
+  // raw user.id won't resolve on SocialCreatorPage and produced a 404 dead-end
+  // when clicked from the nav bar's Profile shortcut. Fall back to /dashboard
+  // (or /auth when signed out) so the link always lands somewhere real.
+  const handleCandidate =
+    vanitySlug ||
+    profile.username ||
+    getProfileHandleCandidates(profile.name)[0] ||
+    null;
+  const publicProfilePath = user
+    ? handleCandidate
+      ? `/@${handleCandidate}`
+      : "/dashboard"
+    : "/auth";
   const yourPagePath = user ? `/music/artist/${user.id}/edit` : "/auth";
 
   const getBadge = (item: NavItem) => {
