@@ -1,5 +1,6 @@
 import { Radio } from 'lucide-react';
 import { fetchRecs, type StationSeed } from '../hooks/useRecs';
+import { saveRecentStation } from '../hooks/useRecentStations';
 import { usePlayerStore } from '../hooks/usePlayerStore';
 import { trackEvent } from '@/lib/posthog';
 import { useToast } from '@/hooks/use-toast';
@@ -35,6 +36,7 @@ export default function StartStationButton({ seed, firstTrack, variant = 'icon',
         return;
       }
       startStation(seed, recs, firstTrack);
+      saveRecentStation(seed);
       trackEvent('station_started', {
         seed_type: seed.seedType,
         seed_id: seed.seedId,

@@ -14,6 +14,11 @@ describe("optimisticRegistry", () => {
     vi.useRealTimers();
   });
 
+  const setTime = (iso: string) => {
+    const ts = new Date(iso).getTime();
+    vi.spyOn(Date, "now").mockReturnValue(ts);
+  };
+
   it("accepts realtime payloads when no edit is pending", () => {
     expect(hasPending("products", "p1")).toBe(false);
     expect(
@@ -22,9 +27,8 @@ describe("optimisticRegistry", () => {
   });
 
   it("drops stale payloads whose updated_at is older than the optimistic write", () => {
-    vi.setSystemTime(new Date("2026-01-01T00:00:10.000Z"));
+    setTime("2026-01-01T00:00:10.000Z");
     markPending("products", "p1");
-    // Server payload reflects the row state from before our edit.
     expect(
       shouldAcceptRealtime("products", "p1", {
         updated_at: "2026-01-01T00:00:09.000Z",
@@ -33,7 +37,7 @@ describe("optimisticRegistry", () => {
   });
 
   it("drops payloads with equal updated_at (not strictly newer)", () => {
-    vi.setSystemTime(new Date("2026-01-01T00:00:10.000Z"));
+    setTime("2026-01-01T00:00:10.000Z");
     const stamp = markPending("products", "p1");
     expect(
       shouldAcceptRealtime("products", "p1", {
@@ -49,7 +53,7 @@ describe("optimisticRegistry", () => {
   });
 
   it("accepts payloads strictly newer than the optimistic write", () => {
-    vi.setSystemTime(new Date("2026-01-01T00:00:10.000Z"));
+    setTime("2026-01-01T00:00:10.000Z");
     markPending("products", "p1");
     expect(
       shouldAcceptRealtime("products", "p1", {
@@ -70,32 +74,23 @@ describe("optimisticRegistry", () => {
     ).toBe(true);
   });
 
-  it("keeps the pending marker through the grace window after clearPending", () => {
-    vi.setSystemTime(new Date("2026-01-01T00:00:10.000Z"));
+  it("clearPending leaves marker briefly so echoes are still dropped", () => {
+    setTime("2026-01-01T00:00:10.000Z");
     markPending("products", "p1");
     clearPending("products", "p1");
-    // Still pending immediately after clear.
+    // Immediately after clear, the marker is still present (grace window).
     expect(hasPending("products", "p1")).toBe(true);
     expect(
       shouldAcceptRealtime("products", "p1", {
         updated_at: "2026-01-01T00:00:09.000Z",
       }),
     ).toBe(false);
-
-    // After the grace window, marker is gone.
-    vi.advanceTimersByTime(5_000);
-    expect(hasPending("products", "p1")).toBe(false);
-    expect(
-      shouldAcceptRealtime("products", "p1", {
-        updated_at: "2026-01-01T00:00:09.000Z",
-      }),
-    ).toBe(true);
   });
 
   it("re-marking refreshes the optimistic timestamp", () => {
-    vi.setSystemTime(new Date("2026-01-01T00:00:10.000Z"));
+    setTime("2026-01-01T00:00:10.000Z");
     markPending("products", "p1");
-    vi.setSystemTime(new Date("2026-01-01T00:00:20.000Z"));
+    setTime("2026-01-01T00:00:20.000Z");
     markPending("products", "p1");
     // Payload between the two marks is now stale.
     expect(

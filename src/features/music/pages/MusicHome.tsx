@@ -24,6 +24,8 @@ import SpotlightCard from '../components/SpotlightCard';
 import { useEditorialSpotlights } from '../hooks/useEditorialSpotlights';
 import NotificationBell from '../components/NotificationBell';
 import WeeklyRecapCard from '../components/WeeklyRecapCard';
+import { useRecentStations } from '../hooks/useRecentStations';
+import StartStationButton from '../components/StartStationButton';
 
 function Row({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -48,6 +50,7 @@ export default function MusicHome() {
   const { data: premieres } = useUpcomingPremieres();
   const liveRooms: any[] = []; // audio-rooms archived
   const { data: spotlights } = useEditorialSpotlights();
+  const { list: recentStations } = useRecentStations();
 
   return (
     <div className="pb-40">
@@ -186,6 +189,45 @@ export default function MusicHome() {
               {/* audio-rooms archived */}
               {(premieres ?? []).slice(0, 4).map((p) => (
                 <PremiereCard key={p.id} premiere={p} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {recentStations.length > 0 && (
+          <section className="space-y-3">
+            <div className="flex items-center justify-between px-4">
+              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                <Radio className="w-4 h-4 text-[#00FF85]" /> Recent Stations
+              </h2>
+              <button
+                onClick={() => {
+                  localStorage.removeItem('uply:recent-stations:v1');
+                  window.location.reload();
+                }}
+                className="text-xs text-white/60 hover:text-white"
+              >
+                Clear
+              </button>
+            </div>
+            <div className="flex gap-3 overflow-x-auto px-4 pb-2">
+              {recentStations.map((rs) => (
+                <div
+                  key={`${rs.seed.seedType}-${rs.seed.seedId}`}
+                  className="flex-shrink-0 w-36 sm:w-40"
+                >
+                  <StartStationButton
+                    seed={rs.seed}
+                    variant="pill"
+                    className="w-full justify-center"
+                  />
+                  <p className="text-[10px] text-white/40 mt-1.5 text-center">
+                    {new Date(rs.startedAt).toLocaleDateString(undefined, {
+                      month: 'short',
+                      day: 'numeric',
+                    })}
+                  </p>
+                </div>
               ))}
             </div>
           </section>
