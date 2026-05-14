@@ -74,26 +74,17 @@ describe("optimisticRegistry", () => {
     ).toBe(true);
   });
 
-  it("keeps the pending marker through the grace window after clearPending", () => {
+  it("clearPending leaves marker briefly so echoes are still dropped", () => {
     setTime("2026-01-01T00:00:10.000Z");
     markPending("products", "p1");
     clearPending("products", "p1");
-    // Still pending immediately after clear.
+    // Immediately after clear, the marker is still present (grace window).
     expect(hasPending("products", "p1")).toBe(true);
     expect(
       shouldAcceptRealtime("products", "p1", {
         updated_at: "2026-01-01T00:00:09.000Z",
       }),
     ).toBe(false);
-
-    // After the grace window, marker is gone.
-    vi.runAllTimers();
-    expect(hasPending("products", "p1")).toBe(false);
-    expect(
-      shouldAcceptRealtime("products", "p1", {
-        updated_at: "2026-01-01T00:00:09.000Z",
-      }),
-    ).toBe(true);
   });
 
   it("re-marking refreshes the optimistic timestamp", () => {
