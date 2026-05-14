@@ -56,20 +56,15 @@ export default function MusicHome() {
 
   return (
     <div className="pb-40">
-      <header className="px-4 pt-6 pb-4 flex items-center justify-between">
-        <div>
-          <h1
-            className="text-3xl font-black"
-            style={{
-              background: 'linear-gradient(90deg,#3D7CFF,#B025FF)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            uply music
-          </h1>
-          <p className="text-xs text-white/50">stream what creators are dropping</p>
-        </div>
+      <BackNav fallback="/dashboard" label="Back" />
+      <header className="px-4 pt-2 pb-4 flex items-center justify-between">
+        <Link to="/music" className="flex items-center gap-3" aria-label="uply music home">
+          <img src={logoImg} alt="Uply" className="h-9 w-auto" />
+          <div>
+            <h1 className="text-base font-bold text-white leading-tight">music</h1>
+            <p className="text-[11px] text-white/50">stream what creators are dropping</p>
+          </div>
+        </Link>
         <div className="flex gap-2 items-center">
           {/* Desktop / >=sm: full icon group */}
           <div className="hidden sm:flex gap-2 items-center">
