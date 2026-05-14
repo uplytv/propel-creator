@@ -121,6 +121,7 @@ export default function SocialFriends() {
 
         <FriendRequestsSection />
         <OutgoingFriendRequestsSection />
+        <HangoutMatchSection />
         <PeopleYouMayKnowSection />
 
         {isLoading ? (
