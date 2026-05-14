@@ -333,6 +333,14 @@ export default function Dashboard() {
             transition={{ duration: 0.25 }}
             className="px-2 md:px-4"
           >
+            <div className="flex justify-end mb-2">
+              <Link
+                to="/aria-command"
+                className="text-[11px] uppercase tracking-wide px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-500/15 to-purple-600/15 border border-white/10 text-white/80 hover:text-white"
+              >
+                ⚡ Command Mode
+              </Link>
+            </div>
             <AriaChat />
           </motion.div>
         )}
