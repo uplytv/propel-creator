@@ -27,7 +27,7 @@ describe("optimisticRegistry", () => {
   });
 
   it("drops stale payloads whose updated_at is older than the optimistic write", () => {
-    vi.setSystemTime(new Date("2026-01-01T00:00:10.000Z"));
+    setTime(new Date("2026-01-01T00:00:10.000Z"));
     markPending("products", "p1");
     // Server payload reflects the row state from before our edit.
     expect(
@@ -38,7 +38,7 @@ describe("optimisticRegistry", () => {
   });
 
   it("drops payloads with equal updated_at (not strictly newer)", () => {
-    vi.setSystemTime(new Date("2026-01-01T00:00:10.000Z"));
+    setTime(new Date("2026-01-01T00:00:10.000Z"));
     const stamp = markPending("products", "p1");
     expect(
       shouldAcceptRealtime("products", "p1", {
@@ -54,7 +54,7 @@ describe("optimisticRegistry", () => {
   });
 
   it("accepts payloads strictly newer than the optimistic write", () => {
-    vi.setSystemTime(new Date("2026-01-01T00:00:10.000Z"));
+    setTime(new Date("2026-01-01T00:00:10.000Z"));
     markPending("products", "p1");
     expect(
       shouldAcceptRealtime("products", "p1", {
@@ -76,7 +76,7 @@ describe("optimisticRegistry", () => {
   });
 
   it("keeps the pending marker through the grace window after clearPending", () => {
-    vi.setSystemTime(new Date("2026-01-01T00:00:10.000Z"));
+    setTime(new Date("2026-01-01T00:00:10.000Z"));
     markPending("products", "p1");
     clearPending("products", "p1");
     // Still pending immediately after clear.
@@ -98,9 +98,9 @@ describe("optimisticRegistry", () => {
   });
 
   it("re-marking refreshes the optimistic timestamp", () => {
-    vi.setSystemTime(new Date("2026-01-01T00:00:10.000Z"));
+    setTime(new Date("2026-01-01T00:00:10.000Z"));
     markPending("products", "p1");
-    vi.setSystemTime(new Date("2026-01-01T00:00:20.000Z"));
+    setTime(new Date("2026-01-01T00:00:20.000Z"));
     markPending("products", "p1");
     // Payload between the two marks is now stale.
     expect(
