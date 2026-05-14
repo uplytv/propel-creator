@@ -10,6 +10,7 @@ import StoriesRow from "@/components/social/StoriesRow";
 import FriendRequestsSection from "@/components/social/FriendRequestsSection";
 import OutgoingFriendRequestsSection from "@/components/social/OutgoingFriendRequestsSection";
 import PeopleYouMayKnowSection from "@/components/social/PeopleYouMayKnowSection";
+import HangoutMatchSection from "@/components/social/HangoutMatchSection";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface FeedItem {
@@ -120,6 +121,7 @@ export default function SocialFriends() {
 
         <FriendRequestsSection />
         <OutgoingFriendRequestsSection />
+        <HangoutMatchSection />
         <PeopleYouMayKnowSection />
 
         {isLoading ? (
