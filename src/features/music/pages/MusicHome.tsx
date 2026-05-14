@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Upload, Library, Search, Radio, MoreHorizontal, Bell, Sparkles } from 'lucide-react';
+import BackNav from '@/components/BackNav';
+import logoImg from '@/assets/logo.png';
 import { useRadioStations } from '../hooks/useRadioStations';
 import RadioStationCard from '../components/RadioStationCard';
 import { useUpcomingPremieres } from '../hooks/usePremieres';
