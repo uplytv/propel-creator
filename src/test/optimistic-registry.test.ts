@@ -14,6 +14,11 @@ describe("optimisticRegistry", () => {
     vi.useRealTimers();
   });
 
+  const setTime = (iso: string) => {
+    const ts = new Date(iso).getTime();
+    vi.spyOn(Date, "now").mockReturnValue(ts);
+  };
+
   it("accepts realtime payloads when no edit is pending", () => {
     expect(hasPending("products", "p1")).toBe(false);
     expect(
