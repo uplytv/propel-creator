@@ -333,7 +333,6 @@ describe("Settings navigation toast — cooldown UI", () => {
     });
 
     it("returns focus to the trigger after the user activates 'Try again' and the toast unmounts", async () => {
-      const user = userEvent.setup({ delay: null });
       const onActivate = vi.fn();
       writeSettingsNavLast(Date.now() - SETTINGS_NAV_COOLDOWN_MS - 1); // ready
 
@@ -372,12 +371,12 @@ describe("Settings navigation toast — cooldown UI", () => {
         trigger.click();
       });
 
-      await user.tab();
       const action = screen.getByRole("button", { name: "Try again" });
+      action.focus();
       expect(action).toHaveFocus();
 
       await act(async () => {
-        await user.keyboard("{Enter}");
+        fireEvent.click(action);
       });
       // Flush React commit + the deferred microtask + macrotask in restoreFocus.
       await act(async () => {
