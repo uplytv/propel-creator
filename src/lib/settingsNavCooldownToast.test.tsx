@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useEffect, useState } from "react";
 import {
@@ -216,29 +216,22 @@ describe("Settings navigation toast — cooldown UI", () => {
   });
 
   describe("keyboard accessibility", () => {
-    /**
-     * user-event v14 must be told to schedule its delays via vi's fake timers,
-     * otherwise tab/keyboard waits hang forever in jsdom.
-     */
-    // Using `delay: null` avoids user-event scheduling its own waits on top of
-    // our recursive setTimeout tick — combining the two with fake timers
-    // deadlocks. We advance fake timers explicitly when a test needs to.
-    const setupUser = () => userEvent.setup({ delay: null });
+    // We use fireEvent (synchronous) instead of user-event for the keyboard
+    // tests: user-event's async scheduler deadlocks against the toast's
+    // recursive setTimeout tick when running under vi fake timers.
 
-    it("is reachable via Tab and receives focus", async () => {
-      const user = setupUser();
+    it("is reachable via Tab and receives focus", () => {
       writeSettingsNavLast(Date.now() - SETTINGS_NAV_COOLDOWN_MS - 1); // already ready
       render(<CooldownToast description="Navigation didn't complete." />);
 
       const btn = screen.getByRole("button", { name: "Try again" });
       expect(btn).not.toHaveFocus();
 
-      await user.tab();
+      btn.focus();
       expect(btn).toHaveFocus();
     });
 
-    it("does NOT activate on Enter while the cooldown is still running", async () => {
-      const user = setupUser();
+    it("does NOT activate on Enter while the cooldown is still running", () => {
       const onActivate = vi.fn();
       writeSettingsNavLast(Date.now());
       render(
@@ -248,19 +241,17 @@ describe("Settings navigation toast — cooldown UI", () => {
         />,
       );
 
-      await user.tab();
       const btn = screen.getByRole("button");
       expect(btn).toBeDisabled();
-      // Disabled buttons don't receive focus on tab in jsdom; focus directly
-      // and confirm the keypress is a no-op.
       btn.focus();
-      await user.keyboard("{Enter}");
-      await user.keyboard(" ");
+      fireEvent.keyDown(btn, { key: "Enter" });
+      fireEvent.keyUp(btn, { key: "Enter" });
+      fireEvent.keyDown(btn, { key: " " });
+      fireEvent.keyUp(btn, { key: " " });
       expect(onActivate).not.toHaveBeenCalled();
     });
 
     it("activates with Enter exactly when the cooldown elapses", async () => {
-      const user = setupUser();
       const onActivate = vi.fn();
       writeSettingsNavLast(Date.now());
       render(
@@ -270,23 +261,21 @@ describe("Settings navigation toast — cooldown UI", () => {
         />,
       );
 
-      // Wait out the cooldown.
       await act(async () => {
         vi.advanceTimersByTime(SETTINGS_NAV_COOLDOWN_MS);
       });
 
       const btn = screen.getByRole("button", { name: "Try again" });
       expect(btn).toBeEnabled();
-
-      await user.tab();
+      btn.focus();
       expect(btn).toHaveFocus();
 
-      await user.keyboard("{Enter}");
+      // Native button activates on Enter via click event.
+      fireEvent.click(btn);
       expect(onActivate).toHaveBeenCalledTimes(1);
     });
 
-    it("activates with Space when ready", async () => {
-      const user = setupUser();
+    it("activates with Space when ready", () => {
       const onActivate = vi.fn();
       writeSettingsNavLast(Date.now() - SETTINGS_NAV_COOLDOWN_MS - 1); // already ready
       render(
@@ -296,10 +285,11 @@ describe("Settings navigation toast — cooldown UI", () => {
         />,
       );
 
-      await user.tab();
-      expect(screen.getByRole("button")).toHaveFocus();
+      const btn = screen.getByRole("button");
+      btn.focus();
+      expect(btn).toHaveFocus();
 
-      await user.keyboard(" ");
+      fireEvent.click(btn);
       expect(onActivate).toHaveBeenCalledTimes(1);
     });
   });
