@@ -129,10 +129,6 @@ vi.mock("@/components/ui/select", () => {
   return { Select, SelectTrigger, SelectValue, SelectContent, SelectItem };
 });
 
-beforeAll(() => {
-  // Pin system time so anything date-driven in onboarding is deterministic.
-  vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));
-});
 afterAll(() => {
   vi.useRealTimers();
 });
