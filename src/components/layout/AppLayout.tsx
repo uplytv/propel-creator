@@ -26,6 +26,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useInviteCodes } from "@/hooks/useInviteCodes";
 import { getProfileHandleCandidates } from "@/lib/profileSlug";
+import { safeNavPath, validateNavPaths, isKnownRoute } from "@/lib/routeRegistry";
 
 type NavItem = { label: string; icon: React.ElementType; path: string; desc: string; requiresTier?: number; badgeKey?: string; featureKey?: string };
 
