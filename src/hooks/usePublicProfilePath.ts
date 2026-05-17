@@ -15,7 +15,7 @@ import { getProfileHandleCandidates } from "@/lib/profileSlug";
  * Used by AppLayout's profile shortcut and the branded 404 CTA so both share
  * one source of truth.
  */
-export function usePublicProfilePath(): string {
+export function usePublicProfileInfo(): { path: string; handle: string | null } {
   const { user } = useAuth();
   const { profile } = useApp();
 
@@ -32,7 +32,7 @@ export function usePublicProfilePath(): string {
     enabled: !!user,
   });
 
-  if (!user) return "/auth";
+  if (!user) return { path: "/auth", handle: null };
 
   const handle =
     vanitySlug ||
@@ -40,5 +40,9 @@ export function usePublicProfilePath(): string {
     getProfileHandleCandidates(profile.name)[0] ||
     null;
 
-  return handle ? `/@${handle}` : "/dashboard";
+  return { path: handle ? `/@${handle}` : "/dashboard", handle };
+}
+
+export function usePublicProfilePath(): string {
+  return usePublicProfileInfo().path;
 }
