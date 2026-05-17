@@ -180,7 +180,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   // Resolve a public handle for the current user via shared hook so the
   // sidebar Profile shortcut and the branded 404 CTA stay in lockstep.
-  const publicProfilePath = usePublicProfilePath();
+  const { path: publicProfilePath, handle: vanitySlug } = usePublicProfileInfo();
   const yourPagePath = user ? `/music/artist/${user.id}/edit` : "/auth";
 
   const getBadge = (item: NavItem) => {
