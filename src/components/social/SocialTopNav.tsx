@@ -46,7 +46,7 @@ export default function SocialTopNav() {
         {tabs.map((tab) => (
           <button
             key={tab.path}
-            onClick={() => navigate(tab.path)}
+            onClick={() => navigate(safeNavPath(tab.path))}
             className="relative flex-1 flex items-center justify-center"
             style={{
               fontFamily: "'Plus Jakarta Sans', sans-serif",
