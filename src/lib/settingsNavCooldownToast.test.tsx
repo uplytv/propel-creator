@@ -220,8 +220,10 @@ describe("Settings navigation toast — cooldown UI", () => {
      * user-event v14 must be told to schedule its delays via vi's fake timers,
      * otherwise tab/keyboard waits hang forever in jsdom.
      */
-    const setupUser = () =>
-      userEvent.setup({ advanceTimers: vi.advanceTimersByTime.bind(vi) });
+    // Using `delay: null` avoids user-event scheduling its own waits on top of
+    // our recursive setTimeout tick — combining the two with fake timers
+    // deadlocks. We advance fake timers explicitly when a test needs to.
+    const setupUser = () => userEvent.setup({ delay: null });
 
     it("is reachable via Tab and receives focus", async () => {
       const user = setupUser();
