@@ -105,7 +105,7 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
                 return (
                   <button
                     key={action.label}
-                    onClick={() => { setAriaOpen(false); navigate(action.path); }}
+                    onClick={() => { setAriaOpen(false); navigate(safeNavPath(action.path)); }}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
                       isCurrentPage ? "bg-primary/10 text-primary" : "text-foreground hover:bg-secondary/60"
                     }`}
