@@ -1,0 +1,449 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Landing page — visual regression (DOM snapshots) > HomepageFinalCTA matches snapshot 1`] = `
+<section
+  class="relative w-full min-h-[90svh] flex items-center justify-center px-4 sm:px-6 py-20 overflow-hidden"
+>
+  <div
+    class="absolute inset-0 pointer-events-none"
+  >
+    <div
+      class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] max-w-[700px] max-h-[700px] rounded-full bg-primary/15 blur-[120px]"
+    />
+  </div>
+  <div
+    class="relative max-w-4xl mx-auto text-center"
+  >
+    <h2
+      class="font-display text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-foreground leading-tight mb-6"
+    >
+      You weren't early to YouTube. You weren't early to Instagram.
+       
+      <span
+        class="text-primary"
+      >
+        You weren't early to TikTok Shop.
+      </span>
+    </h2>
+    <p
+      class="text-base sm:text-lg md:text-xl text-foreground/70 max-w-3xl mx-auto leading-relaxed mb-8"
+    >
+      Every platform that made creators rich — the ones who got there first won the biggest. UPLY is the creator operating system. The infrastructure. The one platform that does everything — and pays you like a partner, not a landlord.
+    </p>
+    <p
+      class="text-foreground/60 mb-8"
+    >
+      Beta is live. Founding creators are building now.
+    </p>
+    <a
+      href="/auth"
+    >
+      <button
+        class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97] font-display hover:-translate-y-px hover:shadow-[var(--shadow-glow)] rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_60px_hsl(var(--primary)/0.5)] font-bold text-base px-8 py-6 h-auto"
+      >
+        Claim Your Founding Creator Spot 
+        <svg
+          class="lucide lucide-arrow-right w-5 h-5 ml-2"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M5 12h14"
+          />
+          <path
+            d="m12 5 7 7-7 7"
+          />
+        </svg>
+      </button>
+    </a>
+    <div
+      class="mt-6 text-sm text-foreground/60 font-mono"
+    >
+      uply.tv/founding
+    </div>
+    <p
+      class="mt-6 text-sm text-primary font-semibold"
+    >
+      100,000 creators and this offer closes. Forever.
+    </p>
+  </div>
+</section>
+`;
+
+exports[`Landing page — visual regression (DOM snapshots) > HomepageFooter matches snapshot (system time pinned to 2026) 1`] = `
+<footer
+  class="border-t border-border/40 bg-background py-12 px-4 sm:px-6"
+>
+  <div
+    class="max-w-7xl mx-auto flex flex-col md:flex-row items-center md:items-start justify-between gap-6"
+  >
+    <div
+      class="flex flex-col items-center md:items-start gap-2"
+    >
+      <div
+        class="flex items-center gap-2"
+      >
+        <img
+          alt="UPLY"
+          class="h-7 w-7 rounded-md"
+          src="/src/assets/logo.png"
+        />
+        <span
+          class="font-display text-lg font-bold tracking-tight text-foreground"
+        >
+          UPLY
+        </span>
+      </div>
+      <div
+        class="text-sm text-primary font-semibold"
+      >
+        Get up. Get UPLY.
+      </div>
+    </div>
+    <div
+      class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm"
+    >
+      <a
+        class="text-foreground/70 hover:text-foreground"
+        href="/pricing"
+      >
+        Pricing
+      </a>
+      <a
+        class="text-foreground/70 hover:text-foreground"
+        href="/privacy"
+      >
+        Privacy
+      </a>
+      <a
+        class="text-foreground/70 hover:text-foreground"
+        href="/terms"
+      >
+        Terms
+      </a>
+      <a
+        class="text-foreground/70 hover:text-foreground"
+        href="/auth"
+      >
+        Sign In
+      </a>
+    </div>
+    <div
+      class="text-xs text-foreground/50"
+    >
+      © 
+      2026
+       UPLY
+    </div>
+  </div>
+</footer>
+`;
+
+exports[`Landing page — visual regression (DOM snapshots) > HomepageHero matches snapshot (initial rotating headline) 1`] = `
+<section
+  class="relative min-h-[100svh] w-full flex flex-col items-center justify-center overflow-hidden px-4 sm:px-6 pt-20 pb-12"
+>
+  <div
+    class="absolute inset-0 pointer-events-none"
+  >
+    <div
+      class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] max-w-[900px] max-h-[900px] rounded-full bg-primary/20 blur-[120px] animate-pulse"
+    />
+    <div
+      class="absolute inset-0 bg-gradient-to-b from-transparent via-background/60 to-background"
+    />
+  </div>
+  <div
+    class="relative z-10 w-full max-w-5xl mx-auto text-center flex flex-col items-center gap-6 sm:gap-8"
+  >
+    <div
+      class="min-h-[140px] sm:min-h-[180px] flex items-center justify-center"
+    >
+      <h1
+        class="font-display text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-foreground leading-tight animate-fade-in"
+      >
+        If you're a musician, ToneDen is dead. We replaced it.
+      </h1>
+    </div>
+    <p
+      class="text-base sm:text-lg md:text-xl text-foreground/70 max-w-3xl leading-relaxed"
+    >
+      Stream. Teach. Sell. Build Community. Release Music. Promote Events. Keep 
+      <span
+        class="text-primary font-semibold"
+      >
+        95%
+      </span>
+       of everything. One platform. Every screen — including Roku TV.
+    </p>
+    <div
+      class="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto"
+    >
+      <a
+        class="w-full sm:w-auto"
+        href="/auth"
+      >
+        <button
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97] font-display hover:-translate-y-px hover:shadow-[var(--shadow-glow)] h-12 rounded-xl px-8 text-base w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_40px_hsl(var(--primary)/0.4)] font-bold"
+        >
+          Get Up. Get UPLY 
+          <svg
+            class="lucide lucide-arrow-right w-4 h-4 ml-1"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M5 12h14"
+            />
+            <path
+              d="m12 5 7 7-7 7"
+            />
+          </svg>
+        </button>
+      </a>
+      <a
+        class="w-full sm:w-auto"
+        href="#streamers"
+      >
+        <button
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-semibold ring-offset-background transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97] font-display border bg-transparent hover:-translate-y-px h-12 rounded-xl px-8 text-base w-full sm:w-auto border-foreground/30 text-foreground hover:bg-foreground/5"
+        >
+          <svg
+            class="lucide lucide-circle-play w-4 h-4 mr-1"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <polygon
+              points="10 8 16 12 10 16 10 8"
+            />
+          </svg>
+           Watch Demo
+        </button>
+      </a>
+    </div>
+    <div
+      class="flex flex-wrap items-center justify-center gap-2 sm:gap-3"
+    >
+      <span
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/40 text-primary text-xs sm:text-sm font-medium"
+      >
+        <svg
+          class="lucide lucide-trophy w-3.5 h-3.5"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"
+          />
+          <path
+            d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"
+          />
+          <path
+            d="M4 22h16"
+          />
+          <path
+            d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"
+          />
+          <path
+            d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"
+          />
+          <path
+            d="M18 2H6v7a6 6 0 0 0 12 0V2Z"
+          />
+        </svg>
+         100,000 Members
+      </span>
+      <span
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/40 text-primary text-xs sm:text-sm font-medium"
+      >
+        <svg
+          class="lucide lucide-zap w-3.5 h-3.5"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"
+          />
+        </svg>
+         UPLY Awards
+      </span>
+      <span
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/40 text-primary text-xs sm:text-sm font-medium"
+      >
+        <svg
+          class="lucide lucide-gamepad2 w-3.5 h-3.5"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <line
+            x1="6"
+            x2="10"
+            y1="11"
+            y2="11"
+          />
+          <line
+            x1="8"
+            x2="8"
+            y1="9"
+            y2="13"
+          />
+          <line
+            x1="15"
+            x2="15.01"
+            y1="12"
+            y2="12"
+          />
+          <line
+            x1="18"
+            x2="18.01"
+            y1="10"
+            y2="10"
+          />
+          <path
+            d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"
+          />
+        </svg>
+         Creator Games
+      </span>
+    </div>
+    <p
+      class="text-xs sm:text-sm text-primary/90 font-medium tracking-wide max-w-xl"
+    >
+      Founding creator spots are open.
+      <br />
+      100,000 members and this offer is gone — forever.
+    </p>
+    <div
+      class="w-full max-w-md mx-auto rounded-2xl border border-primary/40 bg-card/60 backdrop-blur-md p-5 sm:p-6 text-left shadow-[0_0_40px_hsl(var(--primary)/0.15)]"
+    >
+      <div
+        class="flex flex-col gap-1 mb-4 text-center"
+      >
+        <span
+          class="text-xs font-semibold tracking-[0.2em] text-primary uppercase"
+        >
+          Invite Only — Beta Access
+        </span>
+        <p
+          class="text-sm text-foreground/70"
+        >
+          Already have a beta code? Enter it below to bypass the waitlist.
+        </p>
+      </div>
+      <form
+        class="flex flex-col sm:flex-row gap-2"
+      >
+        <input
+          autocomplete="off"
+          class="flex w-full rounded-md border px-3.5 py-2 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-0 focus-visible:border-primary disabled:cursor-not-allowed disabled:opacity-50 transition-colors duration-150 flex-1 bg-background/60 border-border/60 text-foreground placeholder:text-foreground/40 h-11 text-base"
+          placeholder="Enter beta code"
+          spellcheck="false"
+          value=""
+        />
+        <button
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-button)] text-sm ring-offset-background transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97] font-display hover:-translate-y-px hover:shadow-[var(--shadow-glow)] px-5 py-2 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold h-11"
+          type="submit"
+        >
+          Activate Access
+        </button>
+      </form>
+      <p
+        class="text-xs text-foreground/55 mt-3 text-center"
+      >
+        Don't have a code? Each founding creator gets 5 invites to share.
+      </p>
+    </div>
+  </div>
+</section>
+`;
+
+exports[`Landing page — visual regression (DOM snapshots) > HomepageNav matches snapshot 1`] = `
+<header
+  class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-transparent"
+>
+  <div
+    class="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 h-14 sm:h-16"
+  >
+    <a
+      aria-label="UPLY home"
+      class="flex items-center"
+      href="/"
+    >
+      <img
+        alt="UPLY"
+        class="h-8 w-8 rounded-md"
+        src="/src/assets/logo.png"
+      />
+    </a>
+    <div
+      class="flex items-center gap-2 sm:gap-3"
+    >
+      <a
+        href="/auth"
+      >
+        <button
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-semibold ring-offset-background transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97] font-display hover:bg-secondary h-9 rounded-md px-3 text-xs text-foreground/80 hover:text-foreground"
+        >
+          Sign In
+        </button>
+      </a>
+      <a
+        href="/auth"
+      >
+        <button
+          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-semibold ring-offset-background transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97] font-display hover:-translate-y-px hover:shadow-[var(--shadow-glow)] h-9 rounded-md px-3 text-xs bg-primary text-primary-foreground hover:bg-primary/90"
+        >
+          Get Started
+        </button>
+      </a>
+    </div>
+  </div>
+</header>
+`;
