@@ -17,6 +17,7 @@ Object.defineProperty(window, "matchMedia", {
 // jsdom doesn't ship IntersectionObserver — stub a no-op so components that
 // rely on it (e.g. SectionShell reveal-on-scroll) render in tests.
 class MockIntersectionObserver {
+  constructor(_cb?: unknown, _opts?: unknown) {}
   observe = () => {};
   unobserve = () => {};
   disconnect = () => {};
