@@ -27,6 +27,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useInviteCodes } from "@/hooks/useInviteCodes";
 import { getProfileHandleCandidates } from "@/lib/profileSlug";
 import { safeNavPath, validateNavPaths, isKnownRoute } from "@/lib/routeRegistry";
+import { usePublicProfileInfo } from "@/hooks/usePublicProfilePath";
 
 type NavItem = { label: string; icon: React.ElementType; path: string; desc: string; requiresTier?: number; badgeKey?: string; featureKey?: string };
 
@@ -177,35 +178,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     enabled: !!user,
   });
 
-  // Vanity slug for the user's public artist page
-  const { data: vanitySlug } = useQuery({
-    queryKey: ["nav-vanity-slug", user?.id],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("artist_profiles" as any)
-        .select("vanity_slug")
-        .eq("user_id", user!.id)
-        .maybeSingle();
-      return (data as any)?.vanity_slug as string | null;
-    },
-    enabled: !!user,
-  });
-
-  // Resolve a public handle for the current user. We only build a /@ URL when
-  // we actually have a slug-like handle (vanity slug or claimed username) — a
-  // raw user.id won't resolve on SocialCreatorPage and produced a 404 dead-end
-  // when clicked from the nav bar's Profile shortcut. Fall back to /dashboard
-  // (or /auth when signed out) so the link always lands somewhere real.
-  const handleCandidate =
-    vanitySlug ||
-    profile.username ||
-    getProfileHandleCandidates(profile.name)[0] ||
-    null;
-  const publicProfilePath = user
-    ? handleCandidate
-      ? `/@${handleCandidate}`
-      : "/dashboard"
-    : "/auth";
+  // Resolve a public handle for the current user via shared hook so the
+  // sidebar Profile shortcut and the branded 404 CTA stay in lockstep.
+  const { path: publicProfilePath, handle: vanitySlug } = usePublicProfileInfo();
   const yourPagePath = user ? `/music/artist/${user.id}/edit` : "/auth";
 
   const getBadge = (item: NavItem) => {
