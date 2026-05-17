@@ -188,6 +188,9 @@ export function isKnownRoute(pathname: string | null | undefined): boolean {
   if (pathname === "__space__" || pathname.startsWith("#")) return true;
   const clean = pathname.split("?")[0].split("#")[0];
   if (!clean.startsWith("/")) return false;
+  // react-router's matchRoutes can't parse "@:slug" prefix params; handle the
+  // public handle route (/@handle) manually so nav links to it pass validation.
+  if (/^\/@[^/]+$/.test(clean)) return true;
   return matchRoutes(ROUTE_OBJECTS, clean) !== null;
 }
 
