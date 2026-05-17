@@ -1,6 +1,8 @@
+import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useNotifications } from "@/hooks/useNotifications";
 import { Bell } from "lucide-react";
+import { safeNavPath, validateNavPaths } from "@/lib/routeRegistry";
 
 const tabs = [
   { label: "Home", path: "/social" },
@@ -14,6 +16,10 @@ export default function SocialTopNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const { notifications } = useNotifications();
+
+  useEffect(() => {
+    validateNavPaths(tabs, "SocialTopNav");
+  }, []);
 
   const unreadSocialCount = (notifications || []).filter(
     (n) => !n.read && ["hey", "super_hey", "story_view"].includes(n.type)
