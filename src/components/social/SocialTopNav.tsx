@@ -100,7 +100,7 @@ export default function SocialTopNav() {
 
       {/* Notification bell */}
       <button
-        onClick={() => navigate("/notifications")}
+        onClick={() => navigate(safeNavPath("/notifications"))}
         className="relative flex items-center justify-center"
         style={{ width: 40, height: 40 }}
       >
