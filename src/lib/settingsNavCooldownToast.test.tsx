@@ -343,9 +343,7 @@ describe("Settings navigation toast — cooldown UI", () => {
     });
 
     it("returns focus to the trigger after the user activates 'Try again' and the toast unmounts", async () => {
-      const user = userEvent.setup({
-        advanceTimers: vi.advanceTimersByTime.bind(vi),
-      });
+      const user = userEvent.setup({ delay: null });
       const onActivate = vi.fn();
       writeSettingsNavLast(Date.now() - SETTINGS_NAV_COOLDOWN_MS - 1); // ready
 
