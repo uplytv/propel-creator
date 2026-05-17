@@ -85,14 +85,9 @@ const KNOWN_PATTERNS: string[] = [
   "/new",
 
   // Music (sub-routes are owned by MusicLayout — register the parent)
+  // Music (nested children live under /music/* — splat covers album, artist, etc.)
   "/music",
-  "/music/feed",
-  "/music/search",
-  "/music/library",
-  "/music/charts",
-  "/music/upload",
-  "/music/distribution",
-  "/music/connections",
+  "/music/*",
 
   // Discovery & feeds
   "/discover",
