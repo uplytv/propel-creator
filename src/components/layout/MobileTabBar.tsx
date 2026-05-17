@@ -188,7 +188,7 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
             return (
               <button
                 key={tab.label}
-                onClick={() => { setCreateOpen(false); setAriaOpen(false); navigate(tab.path); }}
+                onClick={() => { setCreateOpen(false); setAriaOpen(false); navigate(safeNavPath(tab.path)); }}
                 aria-label={tab.label}
                 aria-current={active ? "page" : undefined}
                 role="tab"
