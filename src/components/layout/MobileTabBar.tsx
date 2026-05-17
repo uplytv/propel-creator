@@ -29,6 +29,14 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
     { label: "ARIA", icon: Sparkles, path: "" },
   ];
 
+  useEffect(() => {
+    validateNavPaths(
+      [...tabs.filter((t) => t.path), ...ariaActions],
+      "MobileTabBar",
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [communityPath]);
+
   const isActive = (path: string) => {
     if (!path) return false;
     const basePath = path.split("?")[0];
