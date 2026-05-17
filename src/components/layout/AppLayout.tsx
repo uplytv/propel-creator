@@ -26,6 +26,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useInviteCodes } from "@/hooks/useInviteCodes";
 import { getProfileHandleCandidates } from "@/lib/profileSlug";
+import { safeNavPath, validateNavPaths, isKnownRoute } from "@/lib/routeRegistry";
 
 type NavItem = { label: string; icon: React.ElementType; path: string; desc: string; requiresTier?: number; badgeKey?: string; featureKey?: string };
 
@@ -224,6 +225,21 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   useEffect(() => { setMobileMenuOpen(false); }, [location.pathname]);
 
+  // Sanity-check that every nav entry points at a registered route. Dev-only.
+  useEffect(() => {
+    const allItems = [
+      ...coreNav.flatMap((g) => g.items),
+      ...utilityNav,
+      { label: "Public Profile", path: publicProfilePath },
+      { label: "Your Page (edit)", path: yourPagePath },
+    ].filter((i) => i.path && !i.path.startsWith("__"));
+    validateNavPaths(allItems as { label: string; path: string }[], "AppLayout");
+    if (import.meta.env.DEV && !isKnownRoute(publicProfilePath)) {
+      // eslint-disable-next-line no-console
+      console.error("[AppLayout] publicProfilePath unresolved:", publicProfilePath);
+    }
+  }, [publicProfilePath, yourPagePath]);
+
   // Auto-expand the core that contains the active route
   useEffect(() => {
     for (const group of coreNav) {
@@ -273,7 +289,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         data-tour={tourKey}
         onClick={() => {
           if (!isLocked) {
-            navigate(resolvedPath);
+            navigate(safeNavPath(resolvedPath));
             onNavigate?.();
           }
         }}

@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Search, Users, DollarSign, Sparkles, Plus, X, Bot, Rocket, TrendingUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { useLiveCount } from "@/context/NetworkContext";
 import CreateSheet from "@/components/CreateSheet";
+import { safeNavPath, validateNavPaths } from "@/lib/routeRegistry";
 
 interface MobileTabBarProps {
   onUploadVideo?: () => void;
@@ -27,6 +28,14 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
     { label: "Earn", icon: DollarSign, path: "/wallet" },
     { label: "ARIA", icon: Sparkles, path: "" },
   ];
+
+  useEffect(() => {
+    validateNavPaths(
+      [...tabs.filter((t) => t.path), ...ariaActions],
+      "MobileTabBar",
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [communityPath]);
 
   const isActive = (path: string) => {
     if (!path) return false;
@@ -96,7 +105,7 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
                 return (
                   <button
                     key={action.label}
-                    onClick={() => { setAriaOpen(false); navigate(action.path); }}
+                    onClick={() => { setAriaOpen(false); navigate(safeNavPath(action.path)); }}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
                       isCurrentPage ? "bg-primary/10 text-primary" : "text-foreground hover:bg-secondary/60"
                     }`}
@@ -179,7 +188,7 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
             return (
               <button
                 key={tab.label}
-                onClick={() => { setCreateOpen(false); setAriaOpen(false); navigate(tab.path); }}
+                onClick={() => { setCreateOpen(false); setAriaOpen(false); navigate(safeNavPath(tab.path)); }}
                 aria-label={tab.label}
                 aria-current={active ? "page" : undefined}
                 role="tab"

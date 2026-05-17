@@ -1,6 +1,8 @@
+import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useNotifications } from "@/hooks/useNotifications";
 import { Bell } from "lucide-react";
+import { safeNavPath, validateNavPaths } from "@/lib/routeRegistry";
 
 const tabs = [
   { label: "Home", path: "/social" },
@@ -14,6 +16,10 @@ export default function SocialTopNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const { notifications } = useNotifications();
+
+  useEffect(() => {
+    validateNavPaths(tabs, "SocialTopNav");
+  }, []);
 
   const unreadSocialCount = (notifications || []).filter(
     (n) => !n.read && ["hey", "super_hey", "story_view"].includes(n.type)
@@ -40,7 +46,7 @@ export default function SocialTopNav() {
         {tabs.map((tab) => (
           <button
             key={tab.path}
-            onClick={() => navigate(tab.path)}
+            onClick={() => navigate(safeNavPath(tab.path))}
             className="relative flex-1 flex items-center justify-center"
             style={{
               fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -94,7 +100,7 @@ export default function SocialTopNav() {
 
       {/* Notification bell */}
       <button
-        onClick={() => navigate("/notifications")}
+        onClick={() => navigate(safeNavPath("/notifications"))}
         className="relative flex items-center justify-center"
         style={{ width: 40, height: 40 }}
       >
