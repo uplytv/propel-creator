@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+
 import { useEffect, useState } from "react";
 import {
   SETTINGS_NAV_COOLDOWN_MS,
