@@ -274,7 +274,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         data-tour={tourKey}
         onClick={() => {
           if (!isLocked) {
-            navigate(resolvedPath);
+            navigate(safeNavPath(resolvedPath));
             onNavigate?.();
           }
         }}
