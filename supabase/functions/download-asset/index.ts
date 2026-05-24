@@ -43,8 +43,9 @@ serve(async (req) => {
       })
     }
 
-    // Look up the mux_asset_id from the relevant table
+    // Look up the mux_asset_id from the relevant table AND verify the caller owns the asset.
     let muxAssetId: string | null = null
+    let ownerOk = false
 
     const adminSupabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
@@ -54,29 +55,39 @@ serve(async (req) => {
     if (asset_type === 'clip') {
       const { data } = await adminSupabase
         .from('clips')
-        .select('clip_asset_id')
+        .select('clip_asset_id, creator_id, clipped_by_user_id')
         .eq('id', asset_id)
         .single()
       muxAssetId = data?.clip_asset_id || null
+      ownerOk = !!data && (data.creator_id === user.id || data.clipped_by_user_id === user.id)
     } else if (asset_type === 'recording') {
       const { data } = await adminSupabase
         .from('stream_recordings')
-        .select('mux_asset_id')
+        .select('mux_asset_id, creator_id')
         .eq('id', asset_id)
         .single()
       muxAssetId = data?.mux_asset_id || null
+      ownerOk = !!data && data.creator_id === user.id
     } else if (asset_type === 'vod') {
       const { data } = await adminSupabase
         .from('mux_assets')
-        .select('mux_asset_id')
+        .select('mux_asset_id, user_id')
         .eq('id', asset_id)
         .single()
       muxAssetId = data?.mux_asset_id || null
+      ownerOk = !!data && (data as any).user_id === user.id
     }
 
     if (!muxAssetId) {
       return new Response(JSON.stringify({ error: 'Asset not found' }), {
         status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    if (!ownerOk) {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+        status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
