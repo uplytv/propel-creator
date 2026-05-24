@@ -19,12 +19,37 @@ Deno.serve(async (req) => {
   );
 
   try {
+    // Require authentication. Either a valid user JWT (whose id will be used as
+    // creator_id) or a service-role bearer token (for internal callers).
+    const authHeader = req.headers.get("Authorization") || "";
+    const bearer = authHeader.replace(/^Bearer\s+/i, "");
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const isServiceRole = bearer && bearer === serviceKey;
+
+    let authedUserId: string | null = null;
+    if (!isServiceRole) {
+      const userClient = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_ANON_KEY")!,
+        { global: { headers: { Authorization: authHeader } } }
+      );
+      const { data: { user }, error: authErr } = await userClient.auth.getUser();
+      if (authErr || !user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      authedUserId = user.id;
+    }
+
     const body = await req.json();
     let jobId = body.job_id;
 
     // Create job if not provided
     if (!jobId) {
-      const { source_type, source_id, creator_id } = body;
+      const { source_type, source_id } = body;
+      // Force creator_id to authenticated user when not service-role
+      const creator_id = isServiceRole ? body.creator_id : authedUserId;
       if (!source_type || !source_id || !creator_id) {
         return new Response(JSON.stringify({ error: "Missing source_type, source_id, or creator_id" }), {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
