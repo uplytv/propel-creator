@@ -53,6 +53,16 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    // Internal-only: require service-role bearer token. Callers (stripe-webhook,
+    // pg_cron, etc.) already pass SUPABASE_SERVICE_ROLE_KEY.
+    const authHeader = req.headers.get("Authorization") || "";
+    const bearer = authHeader.replace(/^Bearer\s+/i, "");
+    if (!bearer || bearer !== Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const body = await req.json();
     const { event_type, member_id, creator_id, subscription_id, module_name, lesson_count } = body;
     const supabase = supabaseClient();

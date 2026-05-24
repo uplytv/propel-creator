@@ -34,7 +34,7 @@ serve(async (req) => {
       })
     }
 
-    const { source_asset_id, start_time, end_time, caption, creator_id } = await req.json()
+    const { source_asset_id, start_time, end_time, caption } = await req.json()
 
     if (!source_asset_id || start_time === undefined || end_time === undefined) {
       return new Response(JSON.stringify({ error: 'Missing required fields: source_asset_id, start_time, end_time' }), {
@@ -102,7 +102,7 @@ serve(async (req) => {
     const { data: clip, error: insertError } = await adminSupabase
       .from('clips')
       .insert({
-        creator_id: creator_id || user.id,
+        creator_id: user.id,
         clipped_by_user_id: user.id,
         clip_asset_id: clipAsset.id,
         clip_playback_id: clipPlaybackId,
