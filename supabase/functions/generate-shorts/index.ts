@@ -12,11 +12,47 @@ serve(async (req) => {
   }
 
   try {
-    const { stream_id, mux_stream_id, user_id } = await req.json()
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+
+    // AuthN: require JWT or service-role; derive user_id from token
+    const authHeader = req.headers.get('Authorization') || ''
+    const token = authHeader.replace(/^Bearer\s+/i, '')
+    if (!token) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+    let user_id: string | null = null
+    if (token === SERVICE_KEY) {
+      const body = await req.clone().json().catch(() => ({}))
+      user_id = body?.user_id || null
+    } else {
+      const userClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!)
+      const { data: { user }, error: authErr } = await userClient.auth.getUser(token)
+      if (authErr || !user) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+      user_id = user.id
+    }
+
+    const { stream_id, mux_stream_id } = await req.json()
 
     if (!mux_stream_id || !user_id) {
-      return new Response(JSON.stringify({ error: 'Missing mux_stream_id or user_id' }), {
+      return new Response(JSON.stringify({ error: 'Missing mux_stream_id' }), {
         status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Verify the requesting user actually owns this mux_stream
+    const adminCheck = createClient(supabaseUrl, SERVICE_KEY)
+    const { data: streamRow } = await adminCheck
+      .from('mux_live_streams')
+      .select('user_id')
+      .eq('mux_stream_id', mux_stream_id)
+      .maybeSingle()
+    if (!streamRow || streamRow.user_id !== user_id) {
+      return new Response(JSON.stringify({ error: 'Stream not found or access denied' }), {
+        status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
