@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Copy, Check, Trophy, Crown, Shield, MessageCircle, Twitter, LogOut, ArrowLeft, Ticket, Loader2 } from "lucide-react";
+import { Copy, Check, Trophy, Crown, Shield, MessageCircle, Twitter, LogOut, ArrowLeft, Ticket, Loader2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -41,6 +41,24 @@ export default function WaitlistPage() {
   const [showPostApp, setShowPostApp] = useState(false);
   const [inviteInput, setInviteInput] = useState("");
   const [redeemingCode, setRedeemingCode] = useState(false);
+  const [foundersLoading, setFoundersLoading] = useState(false);
+
+  const startFoundersCheckout = async () => {
+    if (!user) return;
+    setFoundersLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-founders-checkout");
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
+    } catch (e: any) {
+      toast.error(e.message || "Could not start checkout");
+      setFoundersLoading(false);
+    }
+  };
 
   const redeemInviteCode = async () => {
     if (!user || !inviteInput.trim()) return;
@@ -141,13 +159,38 @@ export default function WaitlistPage() {
       return;
     }
 
+    // Verify founders access purchase if returning from Stripe
+    const foundersSession = searchParams.get("founders_session");
+    if (foundersSession) {
+      (async () => {
+        try {
+          const { data, error } = await supabase.functions.invoke("verify-founders-access", {
+            body: { session_id: foundersSession },
+          });
+          if (error) throw error;
+          if (data?.granted) {
+            toast.success("🚀 Founders Access activated. Welcome in!");
+            navigate("/discover", { replace: true });
+            return;
+          }
+          toast.error("Payment is still processing. Refresh in a moment.");
+        } catch (e: any) {
+          toast.error(e.message || "Could not verify your purchase");
+        }
+      })();
+    }
+
+    if (searchParams.get("founders_cancelled")) {
+      toast.info("Founders Access checkout cancelled");
+    }
+
     fetchData();
     const channel = supabase
       .channel("waitlist-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "waitlist" }, () => fetchData())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [loading, user, navigate]);
+  }, [loading, user, navigate, searchParams]);
 
   const referralCode = (profile as any)?.referral_code || "";
   const profileUsername = (profile as any)?.username || (profile as any)?.display_name;
@@ -285,6 +328,50 @@ export default function WaitlistPage() {
             <p className="text-xs text-muted-foreground">out of {totalWaitlist.toLocaleString()} creators</p>
           </motion.div>
         )}
+
+        {/* Founders Access — skip the waitlist for $99/mo */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.03 }}
+          className="rounded-xl p-5 mb-6 relative overflow-hidden"
+          style={{
+            background: "linear-gradient(135deg, hsl(var(--primary) / 0.12), hsl(var(--background)))",
+            border: "2px solid hsl(var(--primary))",
+            boxShadow: "0 0 40px hsl(var(--primary) / 0.15)",
+          }}
+        >
+          <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wider">
+            Founders
+          </div>
+          <div className="flex items-center gap-2 mb-2">
+            <Zap className="w-5 h-5 text-primary" />
+            <h3 className="text-sm font-bold text-foreground">Skip the waitlist — get in today</h3>
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">
+            For creators who want the UPLY operating system before public launch.
+            Instant access, founding-creator status, and automatic entry into the{" "}
+            <span className="text-foreground font-semibold">UPLY Games</span> competition.
+          </p>
+          <ul className="text-xs text-foreground/80 space-y-1.5 mb-4">
+            <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" /> Immediate beta access — no waiting</li>
+            <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" /> Permanent UPLY Origin badge</li>
+            <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" /> Entry into the UPLY Games competition</li>
+            <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" /> 95% payout on all earnings</li>
+            <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" /> Cancel anytime</li>
+          </ul>
+          <div className="flex items-baseline gap-1 mb-3">
+            <span className="text-3xl font-black text-foreground" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>$99</span>
+            <span className="text-sm text-muted-foreground">/month</span>
+          </div>
+          <Button
+            onClick={startFoundersCheckout}
+            disabled={foundersLoading}
+            className="w-full bg-primary text-primary-foreground font-bold hover:bg-primary/90 min-h-[44px]"
+          >
+            {foundersLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Get instant access — $99/mo"}
+          </Button>
+        </motion.div>
 
         {/* Have an invite code? */}
         <motion.div
