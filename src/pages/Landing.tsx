@@ -82,6 +82,7 @@ export default function Landing() {
       </main>
 
       <HomepageFooter />
+      <FoundersStickyCTA />
     </div>
   );
 }
