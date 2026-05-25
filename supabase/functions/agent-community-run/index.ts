@@ -13,7 +13,23 @@ serve(async (req) => {
 
   try {
     const { creator_id, task_type, member_id } = await req.json();
-    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
+    // AuthZ: allow service-role bearer (internal/cron) OR a user JWT matching creator_id
+    const authHeader = req.headers.get("Authorization") || "";
+    const token = authHeader.replace(/^Bearer\s+/i, "");
+    const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    if (!token) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    if (token !== SERVICE_KEY) {
+      const userClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!);
+      const { data: { user }, error: authErr } = await userClient.auth.getUser(token);
+      if (authErr || !user || user.id !== creator_id) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
+
+    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, SERVICE_KEY);
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     // Budget check
