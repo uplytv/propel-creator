@@ -20958,6 +20958,7 @@ export type Database = {
       }
     }
     Functions: {
+      _user_referral_total: { Args: { p_user_id: string }; Returns: number }
       accept_playlist_invite: { Args: { _token: string }; Returns: string }
       add_fan_points: {
         Args: {
@@ -21122,6 +21123,7 @@ export type Database = {
           track_id: string
         }[]
       }
+      get_my_stream_key: { Args: { p_stream_id: string }; Returns: string }
       get_personalized_fan_radio: {
         Args: { _limit?: number; _station_id: string }
         Returns: {
