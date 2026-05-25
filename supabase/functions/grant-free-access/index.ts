@@ -35,6 +35,30 @@ Deno.serve(async (req) => {
       throw new Error("resource_type and resource_id required");
     }
 
+    // AuthZ: only allow self-grant for resources that are actually free.
+    let isFree = false;
+    if (resource_type === "event") {
+      const { data } = await supabaseAdmin.from("events").select("is_free, ticket_price").eq("id", resource_id).maybeSingle();
+      isFree = !!(data?.is_free || (data && Number(data.ticket_price) === 0));
+    } else if (resource_type === "space" || resource_type === "community") {
+      const { data } = await supabaseAdmin.from("creator_spaces").select("is_free, price").eq("id", resource_id).maybeSingle();
+      isFree = !!(data?.is_free || (data && Number(data.price) === 0));
+    } else if (resource_type === "product") {
+      const { data } = await supabaseAdmin.from("products").select("price").eq("id", resource_id).maybeSingle();
+      isFree = !!(data && Number(data.price) === 0);
+    } else if (resource_type === "stream") {
+      // Public streams are openly viewable; only allow grant on streams marked public
+      const { data } = await supabaseAdmin.from("mux_live_streams").select("is_public").eq("id", resource_id).maybeSingle();
+      isFree = !!data?.is_public;
+    }
+
+    if (!isFree) {
+      return new Response(JSON.stringify({ error: "Resource is not free" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 403,
+      });
+    }
+
     // Insert access grant using service role (bypasses RLS)
     const { error: insertError } = await supabaseAdmin
       .from("access_grants")
