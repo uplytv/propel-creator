@@ -329,6 +329,50 @@ export default function WaitlistPage() {
           </motion.div>
         )}
 
+        {/* Founders Access — skip the waitlist for $99/mo */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.03 }}
+          className="rounded-xl p-5 mb-6 relative overflow-hidden"
+          style={{
+            background: "linear-gradient(135deg, hsl(var(--primary) / 0.12), hsl(var(--background)))",
+            border: "2px solid hsl(var(--primary))",
+            boxShadow: "0 0 40px hsl(var(--primary) / 0.15)",
+          }}
+        >
+          <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wider">
+            Founders
+          </div>
+          <div className="flex items-center gap-2 mb-2">
+            <Zap className="w-5 h-5 text-primary" />
+            <h3 className="text-sm font-bold text-foreground">Skip the waitlist — get in today</h3>
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">
+            For creators who want the UPLY operating system before public launch.
+            Instant access, founding-creator status, and automatic entry into the{" "}
+            <span className="text-foreground font-semibold">UPLY Games</span> competition.
+          </p>
+          <ul className="text-xs text-foreground/80 space-y-1.5 mb-4">
+            <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" /> Immediate beta access — no waiting</li>
+            <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" /> Permanent UPLY Origin badge</li>
+            <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" /> Entry into the UPLY Games competition</li>
+            <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" /> 95% payout on all earnings</li>
+            <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" /> Cancel anytime</li>
+          </ul>
+          <div className="flex items-baseline gap-1 mb-3">
+            <span className="text-3xl font-black text-foreground" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>$99</span>
+            <span className="text-sm text-muted-foreground">/month</span>
+          </div>
+          <Button
+            onClick={startFoundersCheckout}
+            disabled={foundersLoading}
+            className="w-full bg-primary text-primary-foreground font-bold hover:bg-primary/90 min-h-[44px]"
+          >
+            {foundersLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Get instant access — $99/mo"}
+          </Button>
+        </motion.div>
+
         {/* Have an invite code? */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
