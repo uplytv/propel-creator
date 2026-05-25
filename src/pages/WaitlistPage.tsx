@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Copy, Check, Trophy, Crown, Shield, MessageCircle, Twitter, LogOut, ArrowLeft, Ticket, Loader2 } from "lucide-react";
+import { Copy, Check, Trophy, Crown, Shield, MessageCircle, Twitter, LogOut, ArrowLeft, Ticket, Loader2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -41,6 +41,24 @@ export default function WaitlistPage() {
   const [showPostApp, setShowPostApp] = useState(false);
   const [inviteInput, setInviteInput] = useState("");
   const [redeemingCode, setRedeemingCode] = useState(false);
+  const [foundersLoading, setFoundersLoading] = useState(false);
+
+  const startFoundersCheckout = async () => {
+    if (!user) return;
+    setFoundersLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-founders-checkout");
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
+    } catch (e: any) {
+      toast.error(e.message || "Could not start checkout");
+      setFoundersLoading(false);
+    }
+  };
 
   const redeemInviteCode = async () => {
     if (!user || !inviteInput.trim()) return;
