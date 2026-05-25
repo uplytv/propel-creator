@@ -18215,6 +18215,30 @@ export type Database = {
           },
         ]
       }
+      stream_live_notifications: {
+        Row: {
+          created_at: string
+          creator_id: string
+          id: string
+          recipient_count: number
+          stream_id: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          id?: string
+          recipient_count?: number
+          stream_id: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          id?: string
+          recipient_count?: number
+          stream_id?: string
+        }
+        Relationships: []
+      }
       stream_recordings: {
         Row: {
           created_at: string
