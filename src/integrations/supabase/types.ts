@@ -16599,6 +16599,9 @@ export type Database = {
           first_name: string | null
           first_payment_email_sent_at: string | null
           first_stream_email_sent_at: string | null
+          founders_access: boolean
+          founders_plan: string | null
+          founders_since: string | null
           health_score: number
           heydar_active_until: string | null
           id: string
@@ -16666,6 +16669,9 @@ export type Database = {
           first_name?: string | null
           first_payment_email_sent_at?: string | null
           first_stream_email_sent_at?: string | null
+          founders_access?: boolean
+          founders_plan?: string | null
+          founders_since?: string | null
           health_score?: number
           heydar_active_until?: string | null
           id?: string
@@ -16733,6 +16739,9 @@ export type Database = {
           first_name?: string | null
           first_payment_email_sent_at?: string | null
           first_stream_email_sent_at?: string | null
+          founders_access?: boolean
+          founders_plan?: string | null
+          founders_since?: string | null
           health_score?: number
           heydar_active_until?: string | null
           id?: string
@@ -21096,6 +21105,7 @@ export type Database = {
           total_revenue: number
         }[]
       }
+      get_founders_stats: { Args: never; Returns: Json }
       get_friend_music_activity: {
         Args: { _limit?: number; _viewer: string }
         Returns: {
