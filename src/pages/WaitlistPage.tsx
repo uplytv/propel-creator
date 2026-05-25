@@ -159,13 +159,38 @@ export default function WaitlistPage() {
       return;
     }
 
+    // Verify founders access purchase if returning from Stripe
+    const foundersSession = searchParams.get("founders_session");
+    if (foundersSession) {
+      (async () => {
+        try {
+          const { data, error } = await supabase.functions.invoke("verify-founders-access", {
+            body: { session_id: foundersSession },
+          });
+          if (error) throw error;
+          if (data?.granted) {
+            toast.success("🚀 Founders Access activated. Welcome in!");
+            navigate("/discover", { replace: true });
+            return;
+          }
+          toast.error("Payment is still processing. Refresh in a moment.");
+        } catch (e: any) {
+          toast.error(e.message || "Could not verify your purchase");
+        }
+      })();
+    }
+
+    if (searchParams.get("founders_cancelled")) {
+      toast.info("Founders Access checkout cancelled");
+    }
+
     fetchData();
     const channel = supabase
       .channel("waitlist-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "waitlist" }, () => fetchData())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [loading, user, navigate]);
+  }, [loading, user, navigate, searchParams]);
 
   const referralCode = (profile as any)?.referral_code || "";
   const profileUsername = (profile as any)?.username || (profile as any)?.display_name;
