@@ -30,6 +30,7 @@ const Auth = lazy(() => import("./pages/Auth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const WaitlistPage = lazy(() => import("./pages/WaitlistPage"));
+const Founders = lazy(() => import("./pages/Founders"));
 const InviteCodes = lazy(() => import("./pages/InviteCodes"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Products = lazy(() => import("./pages/Products"));
@@ -437,6 +438,7 @@ const App = () => (
                     {/* Onboarding & Waitlist (auth required but no approval needed) */}
                     <Route path="/onboarding" element={<Onboarding />} />
                     <Route path="/waitlist" element={<WaitlistPage />} />
+                    <Route path="/founders" element={<Founders />} />
 
                     {/* Protected routes */}
                     <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

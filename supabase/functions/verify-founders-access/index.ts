@@ -37,7 +37,6 @@ serve(async (req) => {
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const session = await stripe.checkout.sessions.retrieve(session_id);
 
-    // Verify the session belongs to this user and was paid
     const sessionUserId = session.metadata?.user_id;
     if (sessionUserId !== user.id) {
       throw new Error("Session does not belong to user");
@@ -52,17 +51,21 @@ serve(async (req) => {
       );
     }
 
-    // Grant beta access
+    const plan = session.metadata?.founders_plan || "monthly";
+
     const { error: updErr } = await supabase
       .from("profiles")
       .update({
         is_approved: true,
         beta_access_granted_at: new Date().toISOString(),
+        founders_access: true,
+        founders_plan: plan,
+        founders_since: new Date().toISOString(),
       })
       .eq("user_id", user.id);
     if (updErr) throw updErr;
 
-    return new Response(JSON.stringify({ granted: true }), {
+    return new Response(JSON.stringify({ granted: true, plan }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

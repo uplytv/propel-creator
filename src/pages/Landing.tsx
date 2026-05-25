@@ -17,6 +17,7 @@ import HomepageB2B from "@/components/landing/v2/HomepageB2B";
 import HomepagePricing from "@/components/landing/v2/HomepagePricing";
 import HomepageFinalCTA from "@/components/landing/v2/HomepageFinalCTA";
 import HomepageFooter from "@/components/landing/v2/HomepageFooter";
+import FoundersStickyCTA from "@/components/founders/FoundersStickyCTA";
 
 const JSON_LD = {
   "@context": "https://schema.org",
@@ -81,6 +82,7 @@ export default function Landing() {
       </main>
 
       <HomepageFooter />
+      <FoundersStickyCTA />
     </div>
   );
 }
