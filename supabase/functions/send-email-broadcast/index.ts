@@ -28,6 +28,22 @@ Deno.serve(async (req) => {
     const resendKey = Deno.env.get('RESEND_API_KEY')!
     const supabase = createClient(supabaseUrl, serviceKey)
 
+    // AuthN: require JWT
+    const authHeader = req.headers.get('Authorization') || ''
+    const token = authHeader.replace(/^Bearer\s+/i, '')
+    if (!token) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+    let userId: string | null = null
+    if (token !== serviceKey) {
+      const userClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!)
+      const { data: { user }, error: authErr } = await userClient.auth.getUser(token)
+      if (authErr || !user) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+      userId = user.id
+    }
+
     const { broadcastId, subject, htmlBody, recipients, creatorName, creatorAvatar } = await req.json()
 
     if (!broadcastId || !subject || !htmlBody || !recipients?.length) {
@@ -35,6 +51,37 @@ Deno.serve(async (req) => {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
+    }
+
+    // AuthZ: verify the broadcast belongs to the authenticated user (skip for service-role)
+    if (userId) {
+      const { data: bcast } = await supabase
+        .from('email_broadcasts')
+        .select('creator_id')
+        .eq('id', broadcastId)
+        .maybeSingle()
+      if (!bcast || bcast.creator_id !== userId) {
+        return new Response(JSON.stringify({ error: 'Broadcast not found or access denied' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      // Limit recipients to this creator's actual subscribers — blocks arbitrary-recipient phishing
+      const requested = recipients.map((r: any) => r.email).filter(Boolean)
+      const { data: validSubs } = await supabase
+        .from('subscribers')
+        .select('email')
+        .eq('creator_id', userId)
+        .in('email', requested)
+      const allowed = new Set((validSubs || []).map((s: any) => s.email))
+      ;(recipients as any[]).splice(0, recipients.length, ...recipients.filter((r: any) => allowed.has(r.email)))
+      if (!recipients.length) {
+        return new Response(JSON.stringify({ error: 'No valid recipients' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
     }
 
     const trackBaseUrl = `${supabaseUrl}/functions/v1/track-email`
