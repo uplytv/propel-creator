@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Zap, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
-
+import { isIOS, isNative } from "@/lib/native/platform";
 const DISMISSED_KEY = "uply_founders_cta_dismissed";
 
 /**
@@ -34,6 +34,8 @@ export default function FoundersStickyCTA() {
     return () => clearTimeout(t);
   }, []);
 
+  // App Store policy: hide paid-access promo inside iOS native shell.
+  if (isNative() && isIOS()) return null;
   // Only show on landing-style public pages
   const allowedPaths = ["/", "/index", "/pricing"];
   if (!allowedPaths.includes(pathname)) return null;
