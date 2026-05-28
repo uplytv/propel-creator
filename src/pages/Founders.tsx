@@ -259,6 +259,9 @@ export default function Founders() {
             </>
           )}
         </div>
+
+        {/* FAQ */}
+        <section className="mt-14">
           <h2 className="font-display text-2xl font-bold mb-5 text-center">Questions</h2>
           <div className="space-y-3">
             {FAQ.map((f) => (
