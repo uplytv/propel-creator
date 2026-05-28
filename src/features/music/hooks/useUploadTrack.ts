@@ -11,7 +11,20 @@ interface InitResp {
 export type UploadStage = 'idle' | 'initializing' | 'uploading' | 'success' | 'error';
 export type UploadErrorPhase = 'init' | 'upload' | null;
 
-export interface UploadOptions {
+export interface LockFields {
+  is_locked?: boolean;
+  unlock_type?: 'purchase' | 'subscription' | 'both' | null;
+  unlock_price_cents?: number | null;
+  required_tier_id?: string | null;
+  release_status?: 'released' | 'unreleased';
+  scheduled_release_at?: string | null;
+  preview_start_seconds?: number | null;
+  preview_duration_seconds?: number | null;
+  preview_url?: string | null;
+  allow_download?: boolean;
+}
+
+export interface UploadOptions extends LockFields {
   title: string;
   genre?: string | null;
   is_explicit?: boolean;
