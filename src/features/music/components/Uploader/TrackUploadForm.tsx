@@ -8,7 +8,20 @@ import { uploadCoverArt } from '../../lib/musicQueries';
 import { useUploadTrack } from '../../hooks/useUploadTrack';
 import CoverArtPicker from './CoverArtPicker';
 import MuxAudioUploader from './MuxAudioUploader';
+import LockTrackEditor, { type LockTrackEditorValue } from '../LockTrackEditor';
 
+const DEFAULT_LOCK: LockTrackEditorValue = {
+  is_locked: false,
+  unlock_type: null,
+  unlock_price_cents: null,
+  required_tier_id: null,
+  release_status: 'released',
+  scheduled_release_at: null,
+  preview_start_seconds: 0,
+  preview_duration_seconds: 45,
+  preview_url: null,
+  allow_download: false,
+};
 export default function TrackUploadForm({
   onAriaPrompt,
 }: {
