@@ -119,6 +119,29 @@ export default function Settings() {
   const [soundEnabled, setSoundEnabled] = useState(() => localStorage.getItem("notif_sound_enabled") !== "false");
   const { enabled: autoRetryEnabled, setEnabled: setAutoRetryEnabled } = useAutoRetryPreference();
   const autoRetryRef = useRef<HTMLDivElement>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteText, setDeleteText] = useState("");
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    if (deleteText !== "DELETE") {
+      toast.error("Type DELETE to confirm");
+      return;
+    }
+    setDeleting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("delete-account", {
+        body: { confirm: "DELETE" },
+      });
+      if (error || (data as any)?.error) throw new Error(error?.message || (data as any)?.error || "Failed");
+      toast.success("Account deleted. Goodbye 👋");
+      await supabase.auth.signOut();
+      window.location.href = "/";
+    } catch (e: any) {
+      toast.error(e.message || "Could not delete account");
+      setDeleting(false);
+    }
+  };
 
   // If linked with ?highlight=auto-retry, scroll the section into view + toast
   useEffect(() => {
@@ -655,11 +678,51 @@ export default function Settings() {
                 <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-sm hover:bg-secondary transition-colors" disabled>
                   <Download className="w-4 h-4" /> Export Data
                 </button>
-                <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-destructive/40 text-sm text-destructive hover:bg-destructive/10 transition-colors" disabled>
+                <button
+                  onClick={() => { setShowDeleteConfirm(true); setDeleteText(""); }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-destructive/40 text-sm text-destructive hover:bg-destructive/10 transition-colors min-h-[44px]"
+                >
                   <Trash2 className="w-4 h-4" /> Delete Account
                 </button>
               </div>
-              <p className="text-xs text-muted-foreground">These features are not yet available.</p>
+              <p className="text-xs text-muted-foreground">
+                Deleting your account is permanent. Your profile, posts, and content will be removed.
+              </p>
+
+              {showDeleteConfirm && (
+                <div className="mt-4 rounded-xl border border-destructive/40 bg-background p-4 space-y-3">
+                  <p className="text-sm font-semibold text-destructive">This cannot be undone.</p>
+                  <p className="text-xs text-muted-foreground">
+                    Your account, profile, content, and access will be permanently deleted. Type <span className="font-mono font-bold text-foreground">DELETE</span> to confirm.
+                  </p>
+                  <input
+                    type="text"
+                    value={deleteText}
+                    onChange={(e) => setDeleteText(e.target.value)}
+                    placeholder="DELETE"
+                    className="w-full px-3 py-2 rounded-lg bg-background border border-border text-sm font-mono"
+                    style={{ fontSize: "16px" }}
+                    autoFocus
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      onClick={() => setShowDeleteConfirm(false)}
+                      disabled={deleting}
+                      className="px-4 py-2 rounded-lg border border-border text-sm hover:bg-secondary transition-colors min-h-[40px]"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleDeleteAccount}
+                      disabled={deleting || deleteText !== "DELETE"}
+                      className="px-4 py-2 rounded-lg bg-destructive text-destructive-foreground text-sm font-bold hover:bg-destructive/90 transition-colors min-h-[40px] disabled:opacity-50 inline-flex items-center gap-2"
+                    >
+                      {deleting && <Loader2 className="w-4 h-4 animate-spin" />}
+                      Permanently delete
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </motion.div>
         )}

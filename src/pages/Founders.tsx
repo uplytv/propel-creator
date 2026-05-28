@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Zap, Check, Trophy, Rocket, Shield, Crown, ArrowRight, Loader2 } from "lucide-react";
+import { Zap, Check, Trophy, Rocket, Shield, Crown, ArrowRight, Loader2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import SEOHead from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { isIOS, isNative } from "@/lib/native/platform";
 import logoImg from "@/assets/logo.png";
+
+const IOS_BLOCKED = isNative() && isIOS();
 
 type Plan = "monthly" | "annual";
 
@@ -148,79 +151,113 @@ export default function Founders() {
 
         {/* Plan toggle + price */}
         <div className="rounded-2xl p-6 sm:p-8 border-2 border-primary bg-card/40" style={{ boxShadow: "0 0 60px hsl(var(--primary)/0.15)" }}>
-          <div className="flex justify-center mb-6">
-            <div className="inline-flex items-center gap-1 p-1 rounded-full border border-border bg-background">
-              <button
-                onClick={() => setPlan("monthly")}
-                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${plan === "monthly" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+          {IOS_BLOCKED ? (
+            <div className="text-center py-6">
+              <h3 className="font-display text-2xl font-bold mb-2">Available on the web</h3>
+              <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-5">
+                Founders Access is purchased on our website. Open uply.tv/founders in Safari to claim your seat.
+              </p>
+              <a
+                href="https://uply.tv/founders"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-lg border-2 border-primary text-primary font-bold text-sm hover:bg-primary/10 transition-colors min-h-[44px]"
               >
-                Monthly
-              </button>
-              <button
-                onClick={() => setPlan("annual")}
-                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors relative ${plan === "annual" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
-              >
-                Annual
-                <span className="ml-1 text-[10px] opacity-90">Save $198</span>
-              </button>
+                Open uply.tv/founders <ExternalLink className="w-4 h-4" />
+              </a>
+              <ul className="space-y-2 mt-7 mb-1 max-w-md mx-auto text-left">
+                {[
+                  { icon: Rocket, label: "Instant beta access — skip the waitlist entirely" },
+                  { icon: Crown, label: "Permanent UPLY Origin badge on your profile" },
+                  { icon: Trophy, label: "Automatic entry into the UPLY Games competition" },
+                  { icon: Shield, label: "95% payout on all earnings — always" },
+                ].map(({ icon: Icon, label }) => (
+                  <li key={label} className="flex items-start gap-3 text-sm">
+                    <span className="shrink-0 mt-0.5 w-5 h-5 rounded-full bg-primary/15 flex items-center justify-center">
+                      <Icon className="w-3 h-3 text-primary" />
+                    </span>
+                    <span className="text-foreground/90">{label}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
-          </div>
-
-          <div className="text-center mb-6">
-            {plan === "monthly" ? (
-              <>
-                <div className="flex items-baseline justify-center gap-1">
-                  <span className="font-display text-6xl font-black">${monthlyPrice}</span>
-                  <span className="text-muted-foreground">/month</span>
+          ) : (
+            <>
+              <div className="flex justify-center mb-6">
+                <div className="inline-flex items-center gap-1 p-1 rounded-full border border-border bg-background">
+                  <button
+                    onClick={() => setPlan("monthly")}
+                    className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${plan === "monthly" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+                  >
+                    Monthly
+                  </button>
+                  <button
+                    onClick={() => setPlan("annual")}
+                    className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors relative ${plan === "annual" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+                  >
+                    Annual
+                    <span className="ml-1 text-[10px] opacity-90">Save $198</span>
+                  </button>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Cancel anytime · No setup fees</p>
-              </>
-            ) : (
-              <>
-                <div className="flex items-baseline justify-center gap-1">
-                  <span className="font-display text-6xl font-black">${annualPrice}</span>
-                  <span className="text-muted-foreground">/year</span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  ≈ ${annualMonthly}/mo · Save $198 vs monthly
-                </p>
-              </>
-            )}
-          </div>
+              </div>
 
-          <ul className="space-y-3 mb-6 max-w-md mx-auto">
-            {[
-              { icon: Rocket, label: "Instant beta access — skip the waitlist entirely" },
-              { icon: Crown, label: "Permanent UPLY Origin badge on your profile" },
-              { icon: Trophy, label: "Automatic entry into the UPLY Games competition" },
-              { icon: Shield, label: "95% payout on all earnings — always" },
-              { icon: Check, label: "Cancel anytime — keep access through period end" },
-            ].map(({ icon: Icon, label }) => (
-              <li key={label} className="flex items-start gap-3 text-sm">
-                <span className="shrink-0 mt-0.5 w-5 h-5 rounded-full bg-primary/15 flex items-center justify-center">
-                  <Icon className="w-3 h-3 text-primary" />
-                </span>
-                <span className="text-foreground/90">{label}</span>
-              </li>
-            ))}
-          </ul>
+              <div className="text-center mb-6">
+                {plan === "monthly" ? (
+                  <>
+                    <div className="flex items-baseline justify-center gap-1">
+                      <span className="font-display text-6xl font-black">${monthlyPrice}</span>
+                      <span className="text-muted-foreground">/month</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">Cancel anytime · No setup fees</p>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-baseline justify-center gap-1">
+                      <span className="font-display text-6xl font-black">${annualPrice}</span>
+                      <span className="text-muted-foreground">/year</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      ≈ ${annualMonthly}/mo · Save $198 vs monthly
+                    </p>
+                  </>
+                )}
+              </div>
 
-          <Button
-            onClick={startCheckout}
-            disabled={submitting || authLoading}
-            className="w-full bg-primary text-primary-foreground font-bold hover:bg-primary/90 min-h-[52px] text-base"
-          >
-            {submitting ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <>
-                Claim founders access <ArrowRight className="w-4 h-4 ml-2" />
-              </>
-            )}
-          </Button>
-          <p className="text-center text-[11px] text-muted-foreground mt-3">
-            Secure checkout via Stripe · Receipt emailed instantly
-          </p>
+              <ul className="space-y-3 mb-6 max-w-md mx-auto">
+                {[
+                  { icon: Rocket, label: "Instant beta access — skip the waitlist entirely" },
+                  { icon: Crown, label: "Permanent UPLY Origin badge on your profile" },
+                  { icon: Trophy, label: "Automatic entry into the UPLY Games competition" },
+                  { icon: Shield, label: "95% payout on all earnings — always" },
+                  { icon: Check, label: "Cancel anytime — keep access through period end" },
+                ].map(({ icon: Icon, label }) => (
+                  <li key={label} className="flex items-start gap-3 text-sm">
+                    <span className="shrink-0 mt-0.5 w-5 h-5 rounded-full bg-primary/15 flex items-center justify-center">
+                      <Icon className="w-3 h-3 text-primary" />
+                    </span>
+                    <span className="text-foreground/90">{label}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Button
+                onClick={startCheckout}
+                disabled={submitting || authLoading}
+                className="w-full bg-primary text-primary-foreground font-bold hover:bg-primary/90 min-h-[52px] text-base"
+              >
+                {submitting ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <>
+                    Claim founders access <ArrowRight className="w-4 h-4 ml-2" />
+                  </>
+                )}
+              </Button>
+              <p className="text-center text-[11px] text-muted-foreground mt-3">
+                Secure checkout via Stripe · Receipt emailed instantly
+              </p>
+            </>
+          )}
         </div>
 
         {/* FAQ */}
@@ -240,29 +277,31 @@ export default function Founders() {
         </section>
       </main>
 
-      {/* Sticky bottom CTA */}
-      <div
-        className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-background/95 backdrop-blur-md px-4 py-3"
-        style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0) + 0.75rem)" }}
-      >
-        <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
-          <div className="min-w-0">
-            <div className="text-xs text-muted-foreground">
-              {seatsLeft > 0 ? `${seatsLeft} founder seats left` : "Waitlist only"}
+      {/* Sticky bottom CTA — hidden on iOS native per App Store policy */}
+      {!IOS_BLOCKED && (
+        <div
+          className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-background/95 backdrop-blur-md px-4 py-3"
+          style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0) + 0.75rem)" }}
+        >
+          <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="text-xs text-muted-foreground">
+                {seatsLeft > 0 ? `${seatsLeft} founder seats left` : "Waitlist only"}
+              </div>
+              <div className="font-bold text-sm truncate">
+                ${plan === "monthly" ? monthlyPrice : annualPrice}{plan === "monthly" ? "/mo" : "/yr"} · Skip the line
+              </div>
             </div>
-            <div className="font-bold text-sm truncate">
-              ${plan === "monthly" ? monthlyPrice : annualPrice}{plan === "monthly" ? "/mo" : "/yr"} · Skip the line
-            </div>
+            <Button
+              onClick={startCheckout}
+              disabled={submitting || authLoading || seatsLeft === 0}
+              className="bg-primary text-primary-foreground font-bold hover:bg-primary/90 min-h-[44px] shrink-0"
+            >
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Get instant access"}
+            </Button>
           </div>
-          <Button
-            onClick={startCheckout}
-            disabled={submitting || authLoading || seatsLeft === 0}
-            className="bg-primary text-primary-foreground font-bold hover:bg-primary/90 min-h-[44px] shrink-0"
-          >
-            {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Get instant access"}
-          </Button>
         </div>
-      </div>
+      )}
     </div>
   );
 }
