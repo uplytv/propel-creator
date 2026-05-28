@@ -13,6 +13,9 @@ import logoImg from "@/assets/logo.png";
 import { buildReferralUrl, buildReferralUrlDisplay, getFirstName, getShareMessages } from "@/lib/referralUrls";
 import { getReferralData } from "@/lib/affiliateCookies";
 import PostApplicationScreen from "@/components/waitlist/PostApplicationScreen";
+import { isIOS, isNative } from "@/lib/native/platform";
+
+const IOS_BLOCKED = isNative() && isIOS();
 
 interface LeaderboardEntry {
   user_id: string;
@@ -332,6 +335,10 @@ export default function WaitlistPage() {
         {/* Founders Access — skip the waitlist for $99/mo */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
+        {/* Founders Access — skip the waitlist. Hidden on iOS native per App Store policy. */}
+        {!IOS_BLOCKED && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.03 }}
           className="rounded-xl p-5 mb-6 relative overflow-hidden"
@@ -372,9 +379,7 @@ export default function WaitlistPage() {
             {foundersLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Get instant access — $99/mo"}
           </Button>
         </motion.div>
-
-        {/* Have an invite code? */}
-        <motion.div
+        )}
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
