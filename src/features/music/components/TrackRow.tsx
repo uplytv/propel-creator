@@ -14,6 +14,8 @@ export default function TrackRow({
 }: {
   track: Track;
   queue?: Track[];
+  index?: number;
+}) {
   const load = usePlayerStore((s) => s.loadTrack);
   const toggle = usePlayerStore((s) => s.toggle);
   const isCurrent = usePlayerStore(
@@ -27,11 +29,45 @@ export default function TrackRow({
     !!track.audio_mux_playback_id &&
     (!isLocked || hasAccess);
 
-  const isPlaying = usePlayerStore((s) => s.isPlaying && isCurrent);
-  const playable = track.audio_status === 'ready' && !!track.audio_mux_playback_id;
-
   const repostCount = (track as any).repost_count ?? 0;
   const commentCount = (track as any).comment_count ?? 0;
+
+  if (isLocked && !hasAccess) {
+    return (
+      <div className="w-full flex items-start gap-3 p-2 rounded-lg hover:bg-white/5">
+        <span className="w-6 text-center text-white/40 text-xs pt-1">
+          <Lock className="w-4 h-4 mx-auto text-white/70" />
+        </span>
+        <div
+          className="w-10 h-10 rounded-md flex-shrink-0"
+          style={{
+            background: (track as any).cover_art_url
+              ? `url(${(track as any).cover_art_url}) center/cover`
+              : 'linear-gradient(135deg,#3D7CFF,#B025FF)',
+          }}
+        />
+        <div className="flex-1 min-w-0">
+          <div className="text-sm text-white truncate mb-2">{track.title}</div>
+          <LockedTrackPlayer
+            track={{
+              id: track.id,
+              title: track.title,
+              creator_id: (track as any).creator_id,
+              is_locked: true,
+              unlock_type: (track as any).unlock_type ?? null,
+              unlock_price_cents: (track as any).unlock_price_cents ?? null,
+              required_tier_id: (track as any).required_tier_id ?? null,
+              preview_url: (track as any).preview_url ?? null,
+              preview_duration_seconds: (track as any).preview_duration_seconds ?? 30,
+              required_tier_name: (track as any).required_tier_name ?? null,
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+
 
   return (
     <div className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-white/5">
