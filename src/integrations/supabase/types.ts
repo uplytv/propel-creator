@@ -19389,6 +19389,47 @@ export type Database = {
         }
         Relationships: []
       }
+      track_private_assets: {
+        Row: {
+          created_at: string
+          creator_id: string
+          mux_asset_id: string | null
+          mux_playback_id: string | null
+          storage_bucket: string | null
+          storage_path: string | null
+          track_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          mux_asset_id?: string | null
+          mux_playback_id?: string | null
+          storage_bucket?: string | null
+          storage_path?: string | null
+          track_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          mux_asset_id?: string | null
+          mux_playback_id?: string | null
+          storage_bucket?: string | null
+          storage_path?: string | null
+          track_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "track_private_assets_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: true
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       track_purchases: {
         Row: {
           amount_cents: number
@@ -19549,6 +19590,7 @@ export type Database = {
           hires_url: string | null
           id: string
           is_explicit: boolean
+          is_locked: boolean
           is_paid: boolean
           is_published: boolean
           isrc: string | null
@@ -19558,13 +19600,21 @@ export type Database = {
           like_count: number
           monetization_type: string
           play_count: number
+          preview_duration_seconds: number
+          preview_start_seconds: number
+          preview_url: string | null
           price_cents: number
           release_date: string | null
+          release_status: string
           repost_count: number
+          required_tier_id: string | null
+          scheduled_release_at: string | null
           search_vector: unknown
           spatial_url: string | null
           tags: string[]
           title: string
+          unlock_price_cents: number | null
+          unlock_type: string | null
           updated_at: string
           waveform_peaks: Json | null
         }
@@ -19592,6 +19642,7 @@ export type Database = {
           hires_url?: string | null
           id?: string
           is_explicit?: boolean
+          is_locked?: boolean
           is_paid?: boolean
           is_published?: boolean
           isrc?: string | null
@@ -19601,13 +19652,21 @@ export type Database = {
           like_count?: number
           monetization_type?: string
           play_count?: number
+          preview_duration_seconds?: number
+          preview_start_seconds?: number
+          preview_url?: string | null
           price_cents?: number
           release_date?: string | null
+          release_status?: string
           repost_count?: number
+          required_tier_id?: string | null
+          scheduled_release_at?: string | null
           search_vector?: unknown
           spatial_url?: string | null
           tags?: string[]
           title: string
+          unlock_price_cents?: number | null
+          unlock_type?: string | null
           updated_at?: string
           waveform_peaks?: Json | null
         }
@@ -19635,6 +19694,7 @@ export type Database = {
           hires_url?: string | null
           id?: string
           is_explicit?: boolean
+          is_locked?: boolean
           is_paid?: boolean
           is_published?: boolean
           isrc?: string | null
@@ -19644,17 +19704,33 @@ export type Database = {
           like_count?: number
           monetization_type?: string
           play_count?: number
+          preview_duration_seconds?: number
+          preview_start_seconds?: number
+          preview_url?: string | null
           price_cents?: number
           release_date?: string | null
+          release_status?: string
           repost_count?: number
+          required_tier_id?: string | null
+          scheduled_release_at?: string | null
           search_vector?: unknown
           spatial_url?: string | null
           tags?: string[]
           title?: string
+          unlock_price_cents?: number | null
+          unlock_type?: string | null
           updated_at?: string
           waveform_peaks?: Json | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tracks_required_tier_id_fkey"
+            columns: ["required_tier_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       transactions: {
         Row: {
@@ -21244,6 +21320,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      has_track_access: {
+        Args: { _track_id: string; _user_id: string }
+        Returns: boolean
+      }
       increment_podcast_episode_plays: {
         Args: { _episode_id: string }
         Returns: undefined
@@ -21475,6 +21555,7 @@ export type Database = {
           hires_url: string | null
           id: string
           is_explicit: boolean
+          is_locked: boolean
           is_paid: boolean
           is_published: boolean
           isrc: string | null
@@ -21484,13 +21565,21 @@ export type Database = {
           like_count: number
           monetization_type: string
           play_count: number
+          preview_duration_seconds: number
+          preview_start_seconds: number
+          preview_url: string | null
           price_cents: number
           release_date: string | null
+          release_status: string
           repost_count: number
+          required_tier_id: string | null
+          scheduled_release_at: string | null
           search_vector: unknown
           spatial_url: string | null
           tags: string[]
           title: string
+          unlock_price_cents: number | null
+          unlock_type: string | null
           updated_at: string
           waveform_peaks: Json | null
         }[]
@@ -21527,6 +21616,7 @@ export type Database = {
           hires_url: string | null
           id: string
           is_explicit: boolean
+          is_locked: boolean
           is_paid: boolean
           is_published: boolean
           isrc: string | null
@@ -21536,13 +21626,21 @@ export type Database = {
           like_count: number
           monetization_type: string
           play_count: number
+          preview_duration_seconds: number
+          preview_start_seconds: number
+          preview_url: string | null
           price_cents: number
           release_date: string | null
+          release_status: string
           repost_count: number
+          required_tier_id: string | null
+          scheduled_release_at: string | null
           search_vector: unknown
           spatial_url: string | null
           tags: string[]
           title: string
+          unlock_price_cents: number | null
+          unlock_type: string | null
           updated_at: string
           waveform_peaks: Json | null
         }[]
@@ -21579,6 +21677,7 @@ export type Database = {
           hires_url: string | null
           id: string
           is_explicit: boolean
+          is_locked: boolean
           is_paid: boolean
           is_published: boolean
           isrc: string | null
@@ -21588,13 +21687,21 @@ export type Database = {
           like_count: number
           monetization_type: string
           play_count: number
+          preview_duration_seconds: number
+          preview_start_seconds: number
+          preview_url: string | null
           price_cents: number
           release_date: string | null
+          release_status: string
           repost_count: number
+          required_tier_id: string | null
+          scheduled_release_at: string | null
           search_vector: unknown
           spatial_url: string | null
           tags: string[]
           title: string
+          unlock_price_cents: number | null
+          unlock_type: string | null
           updated_at: string
           waveform_peaks: Json | null
         }[]
@@ -21631,6 +21738,7 @@ export type Database = {
           hires_url: string | null
           id: string
           is_explicit: boolean
+          is_locked: boolean
           is_paid: boolean
           is_published: boolean
           isrc: string | null
@@ -21640,13 +21748,21 @@ export type Database = {
           like_count: number
           monetization_type: string
           play_count: number
+          preview_duration_seconds: number
+          preview_start_seconds: number
+          preview_url: string | null
           price_cents: number
           release_date: string | null
+          release_status: string
           repost_count: number
+          required_tier_id: string | null
+          scheduled_release_at: string | null
           search_vector: unknown
           spatial_url: string | null
           tags: string[]
           title: string
+          unlock_price_cents: number | null
+          unlock_type: string | null
           updated_at: string
           waveform_peaks: Json | null
         }[]
@@ -21683,6 +21799,7 @@ export type Database = {
           hires_url: string | null
           id: string
           is_explicit: boolean
+          is_locked: boolean
           is_paid: boolean
           is_published: boolean
           isrc: string | null
@@ -21692,13 +21809,21 @@ export type Database = {
           like_count: number
           monetization_type: string
           play_count: number
+          preview_duration_seconds: number
+          preview_start_seconds: number
+          preview_url: string | null
           price_cents: number
           release_date: string | null
+          release_status: string
           repost_count: number
+          required_tier_id: string | null
+          scheduled_release_at: string | null
           search_vector: unknown
           spatial_url: string | null
           tags: string[]
           title: string
+          unlock_price_cents: number | null
+          unlock_type: string | null
           updated_at: string
           waveform_peaks: Json | null
         }[]
