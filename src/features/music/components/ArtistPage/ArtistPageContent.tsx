@@ -8,6 +8,7 @@ import RemixesSection from './RemixesSection';
 import DJSetsSection from './DJSetsSection';
 import AboutSection from './AboutSection';
 import PageFooter from './PageFooter';
+import VaultSection from './VaultSection';
 
 interface Props {
   userId: string;
@@ -18,15 +19,18 @@ interface Props {
 
 const TAB_LABEL: Record<string, string> = {
   music: 'Songs',
+  vault: 'Vault',
   shows: 'Shows',
   remixes: 'Remixes',
   djsets: 'DJ Sets',
   about: 'About',
 };
 
+
 export default function ArtistPageContent({ userId, profile, basicProfile, mode }: Props) {
   const theme = (profile?.page_theme || {}) as Record<string, any>;
-  const sectionOrder: string[] = profile?.section_order ?? ['hero', 'social', 'music', 'shows', 'remixes', 'djsets', 'about'];
+  const sectionOrder: string[] = profile?.section_order ?? ['hero', 'social', 'music', 'vault', 'shows', 'remixes', 'djsets', 'about'];
+
   const visibility: Record<string, boolean> = profile?.section_visibility ?? {};
   const isVisible = (k: string) => visibility[k] !== false;
 
@@ -44,8 +48,9 @@ export default function ArtistPageContent({ userId, profile, basicProfile, mode 
   };
 
   const tabs = useMemo(() => sectionOrder
-    .filter((s) => ['music', 'shows', 'remixes', 'djsets'].includes(s) && isVisible(s))
+    .filter((s) => ['music', 'vault', 'shows', 'remixes', 'djsets'].includes(s) && isVisible(s))
     .map((s) => ({ id: s, label: TAB_LABEL[s] })), [sectionOrder, JSON.stringify(visibility)]);
+
 
   return (
     <div
@@ -73,6 +78,9 @@ export default function ArtistPageContent({ userId, profile, basicProfile, mode 
             );
           case 'music':
             return <MusicSection key={s} userId={userId} mode={mode} />;
+          case 'vault':
+            return <VaultSection key={s} userId={userId} />;
+
           case 'shows':
             return <ShowsSection key={s} userId={userId} />;
           case 'remixes':
