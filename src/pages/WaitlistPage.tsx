@@ -377,6 +377,9 @@ export default function WaitlistPage() {
           </Button>
         </motion.div>
         )}
+
+        {/* Have an invite code? */}
+        <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
