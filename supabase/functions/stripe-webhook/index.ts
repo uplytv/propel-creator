@@ -85,15 +85,32 @@ async function updateWallet(supabase: any, creatorId: string, amount: number, fe
   }
 }
 
+// Stripe signature tolerance window (seconds) — rejects replayed events older than this
+const SIGNATURE_TOLERANCE_SECONDS = 300;
+// Stale "processing" lock window — if a prior attempt has been processing longer than this,
+// we assume it crashed and allow a re-attempt.
+const PROCESSING_LOCK_STALE_MS = 60_000;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
   const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
   if (!stripeKey || !webhookSecret) {
-    return new Response(JSON.stringify({ error: "Missing Stripe configuration" }), { status: 500, headers: corsHeaders });
+    logStep("Missing Stripe configuration");
+    return new Response(JSON.stringify({ error: "Server misconfigured" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
@@ -103,48 +120,114 @@ Deno.serve(async (req) => {
     { auth: { persistSession: false } }
   );
 
+  // Read raw body for signature verification — never JSON.parse before verifying.
   const body = await req.text();
   const sig = req.headers.get("stripe-signature");
   if (!sig) {
-    return new Response(JSON.stringify({ error: "Missing signature" }), { status: 400, headers: corsHeaders });
+    logStep("Missing stripe-signature header");
+    return new Response(JSON.stringify({ error: "Missing signature" }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
+  // Use async variant — required for Deno (WebCrypto-backed HMAC verification).
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
-  } catch (err) {
-    logStep("Signature verification failed", { error: err.message });
-    return new Response(JSON.stringify({ error: "Invalid signature" }), { status: 400, headers: corsHeaders });
+    event = await stripe.webhooks.constructEventAsync(
+      body,
+      sig,
+      webhookSecret,
+      SIGNATURE_TOLERANCE_SECONDS,
+      Stripe.createSubtleCryptoProvider(),
+    );
+  } catch (err: any) {
+    // Includes invalid signature, malformed header, OR timestamp outside tolerance (replay protection).
+    logStep("Signature verification failed", { error: err?.message });
+    return new Response(JSON.stringify({ error: "Invalid signature" }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   logStep("Event received", { type: event.type, id: event.id });
 
-  // Idempotency check
-  const { data: existingLog } = await supabase
+  // --- Atomic idempotency claim ---
+  // 1) Try to INSERT a fresh log row. The UNIQUE constraint on stripe_event_id
+  //    guarantees only one webhook invocation wins the race.
+  // 2) If insert succeeds → we own the lock and proceed.
+  // 3) If insert fails (duplicate) → another invocation already handled or is handling it.
+  let logEntryId: string | null = null;
+  const nowIso = new Date().toISOString();
+  const { data: inserted, error: insertErr } = await supabase
     .from("stripe_webhook_log")
-    .select("id, status, attempts")
-    .eq("stripe_event_id", event.id)
-    .maybeSingle();
-
-  if (existingLog?.status === "processed") {
-    logStep("Event already processed, skipping", { id: event.id });
-    return new Response(JSON.stringify({ received: true, skipped: true }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
-    });
-  }
-
-  const { data: logEntry } = await supabase
-    .from("stripe_webhook_log")
-    .upsert({
+    .insert({
       stripe_event_id: event.id,
       event_type: event.type,
-      payload: JSON.parse(body),
-      status: "pending",
-      attempts: ((existingLog as any)?.attempts || 0) + 1,
-      last_attempted_at: new Date().toISOString(),
-    }, { onConflict: "stripe_event_id" })
+      payload: event as unknown as Record<string, unknown>,
+      status: "processing",
+      attempts: 1,
+      last_attempted_at: nowIso,
+    })
     .select("id")
     .maybeSingle();
+
+  if (inserted?.id) {
+    logEntryId = inserted.id;
+  } else {
+    // Either a duplicate (race) or a true failure
+    const { data: existing } = await supabase
+      .from("stripe_webhook_log")
+      .select("id, status, attempts, last_attempted_at")
+      .eq("stripe_event_id", event.id)
+      .maybeSingle();
+
+    if (!existing) {
+      logStep("Failed to claim webhook log row", { error: insertErr?.message });
+      // Return 500 so Stripe retries
+      return new Response(JSON.stringify({ error: "Could not record event" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (existing.status === "processed") {
+      logStep("Event already processed, skipping", { id: event.id });
+      return new Response(JSON.stringify({ received: true, skipped: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // status is 'pending', 'processing', or 'failed'.
+    // If another worker is actively processing (recent lock), ack so Stripe doesn't pile retries.
+    const lastAt = existing.last_attempted_at ? new Date(existing.last_attempted_at).getTime() : 0;
+    const lockFresh = existing.status === "processing" && Date.now() - lastAt < PROCESSING_LOCK_STALE_MS;
+    if (lockFresh) {
+      logStep("Event currently being processed by another worker, acking", { id: event.id });
+      return new Response(JSON.stringify({ received: true, inflight: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Stale lock or prior failure → re-claim this attempt
+    const { data: reclaimed } = await supabase
+      .from("stripe_webhook_log")
+      .update({
+        status: "processing",
+        attempts: (existing.attempts || 0) + 1,
+        last_attempted_at: nowIso,
+        error_message: null,
+      })
+      .eq("id", existing.id)
+      .select("id")
+      .maybeSingle();
+    logEntryId = reclaimed?.id ?? existing.id;
+    logStep("Re-claiming previously-failed/stale event", { id: event.id, attempts: (existing.attempts || 0) + 1 });
+  }
+
+  const logEntry = { id: logEntryId } as { id: string | null };
 
   try {
     switch (event.type) {
