@@ -99,6 +99,25 @@ export function useUploadTrack() {
       if (opts.description) patch.description = opts.description;
       if (opts.cover_art_url) patch.cover_art_url = opts.cover_art_url;
       if (opts.category) patch.category = opts.category;
+
+      // Lock / unreleased fields (additive — only set when provided)
+      if (opts.is_locked !== undefined) patch.is_locked = opts.is_locked;
+      if (opts.unlock_type !== undefined) patch.unlock_type = opts.unlock_type;
+      if (opts.unlock_price_cents !== undefined) patch.unlock_price_cents = opts.unlock_price_cents;
+      if (opts.required_tier_id !== undefined) patch.required_tier_id = opts.required_tier_id;
+      if (opts.release_status !== undefined) patch.release_status = opts.release_status;
+      if (opts.scheduled_release_at !== undefined) patch.scheduled_release_at = opts.scheduled_release_at;
+      if (opts.preview_start_seconds !== undefined) patch.preview_start_seconds = opts.preview_start_seconds;
+      if (opts.preview_duration_seconds !== undefined) patch.preview_duration_seconds = opts.preview_duration_seconds;
+      if (opts.preview_url !== undefined) patch.preview_url = opts.preview_url;
+      if (opts.allow_download !== undefined) patch.allow_download = opts.allow_download;
+
+      // If locked, default visibility to unpublished until release time
+      if (opts.is_locked) {
+        patch.is_published = false;
+        if (!opts.release_status) patch.release_status = 'unreleased';
+      }
+
       if (Object.keys(patch).length) {
         await sb.from('tracks').update(patch).eq('id', init.trackId);
       }
