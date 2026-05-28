@@ -76,7 +76,6 @@ serve(async (req) => {
         },
         quantity: 1,
       }],
-      }],
       mode: "payment",
       payment_intent_data: {
         application_fee_amount: feeCents,
