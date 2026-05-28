@@ -14,13 +14,19 @@ export default function TrackRow({
 }: {
   track: Track;
   queue?: Track[];
-  index?: number;
-}) {
   const load = usePlayerStore((s) => s.loadTrack);
   const toggle = usePlayerStore((s) => s.toggle);
   const isCurrent = usePlayerStore(
     (s) => s.queue[s.currentIndex]?.id === track.id,
   );
+  const isPlaying = usePlayerStore((s) => s.isPlaying && isCurrent);
+  const isLocked = !!(track as any).is_locked;
+  const { hasAccess } = useAccess('track', track.id);
+  const playable =
+    track.audio_status === 'ready' &&
+    !!track.audio_mux_playback_id &&
+    (!isLocked || hasAccess);
+
   const isPlaying = usePlayerStore((s) => s.isPlaying && isCurrent);
   const playable = track.audio_status === 'ready' && !!track.audio_mux_playback_id;
 
