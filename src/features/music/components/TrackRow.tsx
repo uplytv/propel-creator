@@ -1,9 +1,11 @@
-import { Play, Pause, Heart, Repeat2, MessageCircle } from 'lucide-react';
+import { Play, Pause, Heart, Repeat2, MessageCircle, Lock } from 'lucide-react';
 import type { Track } from '../types';
 import { usePlayerStore } from '../hooks/usePlayerStore';
 import { formatDuration } from '../lib/formatDuration';
 import RepostButton from './RepostButton';
 import StartStationButton from './StartStationButton';
+import LockedTrackPlayer from './LockedTrackPlayer';
+import { useAccess } from '@/hooks/useAccess';
 
 export default function TrackRow({
   track,
