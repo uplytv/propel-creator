@@ -904,23 +904,34 @@ Deno.serve(async (req) => {
     if (logEntry?.id) {
       await supabase
         .from("stripe_webhook_log")
-        .update({ status: "processed", error_message: null })
+        .update({ status: "processed", error_message: null, last_attempted_at: new Date().toISOString() })
         .eq("id", logEntry.id);
     }
 
     return new Response(JSON.stringify({ received: true }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200,
     });
-  } catch (error) {
-    logStep("Error processing event", { error: error.message });
+  } catch (error: any) {
+    const errMsg = error?.message || "Unknown error";
+    logStep("Error processing event", { id: event.id, type: event.type, error: errMsg });
     if (logEntry?.id) {
       await supabase
         .from("stripe_webhook_log")
-        .update({ status: "failed", error_message: error.message || "Unknown error" })
+        .update({
+          status: "failed",
+          error_message: errMsg.slice(0, 1000),
+          last_attempted_at: new Date().toISOString(),
+        })
         .eq("id", logEntry.id);
     }
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500,
+    // Return 500 so Stripe retries with exponential backoff.
+    // Do NOT leak internal error details to the response body.
+    return new Response(JSON.stringify({ error: "Processing failed", event_id: event.id }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500,
     });
   }
+});
+
 });
