@@ -36,6 +36,7 @@ export default function TrackUploadForm({
   const [explicit, setExplicit] = useState(false);
   const [cover, setCover] = useState<File | null>(null);
   const [audio, setAudio] = useState<File | null>(null);
+  const [lock, setLock] = useState<LockTrackEditorValue>(DEFAULT_LOCK);
   const { upload, retry, cancel, uploading, progress, error, errorPhase, stage, canRetry } =
     useUploadTrack();
 
@@ -49,6 +50,20 @@ export default function TrackUploadForm({
       toast.error('Title and audio file are required');
       return;
     }
+    if (lock.is_locked) {
+      if (!lock.unlock_type) {
+        toast.error('Pick an unlock method for this locked track');
+        return;
+      }
+      if ((lock.unlock_type === 'purchase' || lock.unlock_type === 'both') && !lock.unlock_price_cents) {
+        toast.error('Set an unlock price');
+        return;
+      }
+      if ((lock.unlock_type === 'subscription' || lock.unlock_type === 'both') && !lock.required_tier_id) {
+        toast.error('Pick a required tier');
+        return;
+      }
+    }
     let coverUrl: string | null = null;
     if (cover) coverUrl = await uploadCoverArt(user.id, cover);
     const trackId = await upload({
@@ -59,6 +74,16 @@ export default function TrackUploadForm({
       description,
       cover_art_url: coverUrl,
       file: audio,
+      is_locked: lock.is_locked,
+      unlock_type: lock.is_locked ? lock.unlock_type : null,
+      unlock_price_cents: lock.is_locked ? lock.unlock_price_cents : null,
+      required_tier_id: lock.is_locked ? lock.required_tier_id : null,
+      release_status: lock.release_status,
+      scheduled_release_at: lock.scheduled_release_at,
+      preview_start_seconds: lock.preview_start_seconds,
+      preview_duration_seconds: lock.preview_duration_seconds,
+      preview_url: lock.preview_url,
+      allow_download: lock.allow_download,
     });
     if (trackId) {
       toast.success("Processing… we'll email you when it's live");
