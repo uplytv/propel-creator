@@ -335,7 +335,6 @@ export default function WaitlistPage() {
         {/* Founders Access — skip the waitlist. Hidden on iOS native per App Store policy. */}
         {!IOS_BLOCKED && (
         <motion.div
-        <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.03 }}
