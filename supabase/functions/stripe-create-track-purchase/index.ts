@@ -33,11 +33,20 @@ serve(async (req) => {
 
     const { data: track } = await supabase
       .from("tracks")
-      .select("id, title, price_cents, is_paid, creator_id, cover_art_url")
+      .select("id, title, price_cents, is_paid, creator_id, cover_art_url, is_locked, unlock_type, unlock_price_cents")
       .eq("id", track_id)
       .maybeSingle();
     if (!track) throw new Error("Track not found");
-    if (!track.is_paid || !track.price_cents) throw new Error("Track is not for sale");
+
+    // Resolve the price: locked tracks use unlock_price_cents; legacy paid tracks use price_cents.
+    const lockedPurchaseAllowed = track.is_locked && (track.unlock_type === "purchase" || track.unlock_type === "both");
+    const priceCents = lockedPurchaseAllowed
+      ? (track.unlock_price_cents || 0)
+      : (track.is_paid ? (track.price_cents || 0) : 0);
+
+    if (!priceCents || priceCents <= 0) {
+      throw new Error("Track is not available for purchase");
+    }
 
     const { data: stripeAcct } = await supabase
       .from("creator_stripe_accounts")
@@ -51,7 +60,7 @@ serve(async (req) => {
     const customerId = customers.data[0]?.id;
 
     const origin = req.headers.get("origin") || "https://uply.tv";
-    const feeCents = Math.round(track.price_cents * 0.05);
+    const feeCents = Math.round(priceCents * 0.05);
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -59,13 +68,14 @@ serve(async (req) => {
       line_items: [{
         price_data: {
           currency: "usd",
-          unit_amount: track.price_cents,
+          unit_amount: priceCents,
           product_data: {
             name: track.title,
             images: track.cover_art_url ? [track.cover_art_url] : undefined,
           },
         },
         quantity: 1,
+      }],
       }],
       mode: "payment",
       payment_intent_data: {
