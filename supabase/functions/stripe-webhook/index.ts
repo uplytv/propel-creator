@@ -236,7 +236,52 @@ Deno.serve(async (req) => {
         const metadata = session.metadata || {};
         const purchaseType = metadata.purchase_type || "subscription";
 
-        if (purchaseType === "tip") {
+        if (purchaseType === "track") {
+          // Locked-track one-time unlock. Mirrors the product/course branch.
+          const { buyer_id, track_id, creator_id } = metadata;
+          const amount = (session.amount_total || 0) / 100;
+          const fee = Math.round(amount * 0.05 * 100) / 100;
+          const pi = session.payment_intent as string;
+
+          if (buyer_id && track_id) {
+            await supabase.from("access_grants").insert({
+              user_id: buyer_id,
+              resource_type: "track",
+              resource_id: track_id,
+              access_level: "full",
+              source: "checkout",
+              stripe_payment_intent_id: pi,
+              stripe_customer_id: session.customer as string,
+              metadata: { purchase_type: "track", creator_id },
+            }).then(({ error: agErr }) => {
+              if (agErr && !agErr.message?.includes("duplicate") && !agErr.message?.includes("unique")) {
+                console.error("access_grants track insert error:", agErr);
+              }
+            });
+
+            // Best-effort purchase log (table may not exist in all envs)
+            await supabase.from("track_purchases").insert({
+              track_id,
+              buyer_id,
+              creator_id,
+              amount_cents: session.amount_total || 0,
+              stripe_session_id: session.id,
+              stripe_payment_intent_id: pi,
+            }).then(({ error }) => {
+              if (error && !error.message?.includes("duplicate")) {
+                console.warn("track_purchases insert skipped:", error.message);
+              }
+            });
+
+            if (creator_id) {
+              await updateWallet(supabase, creator_id, amount, fee, "Track unlock", pi);
+            }
+            logStep("Track unlock processed", { buyer_id, track_id, amount });
+          } else {
+            console.error("track purchase missing buyer_id or track_id", metadata);
+          }
+
+        } else if (purchaseType === "tip") {
           const { sender_id, creator_id, stream_id, message, amount } = metadata;
           const tipAmount = parseFloat(amount || "0");
           const fee = Math.round(tipAmount * 0.05 * 100) / 100;
