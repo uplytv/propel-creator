@@ -181,6 +181,9 @@ export default function TrackUploadForm({
         onCancel={uploading ? cancel : undefined}
       />
 
+      <LockTrackEditor value={lock} onChange={setLock} />
+
+
       {onAriaPrompt && (
         <div className="space-y-2">
           <div className="text-xs uppercase tracking-wide text-white/50 flex items-center gap-1">
