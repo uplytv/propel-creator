@@ -77,7 +77,7 @@ export default function ArtistPageEditor() {
           Set it once and your profile becomes editable inline.
         </p>
         <Link
-          to={`/artist/${id}/edit/advanced`}
+          to={`/music/artist/${id}/edit/advanced`}
           className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-primary px-6 font-semibold text-primary-foreground"
         >
           Set up handle
