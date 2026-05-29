@@ -38,6 +38,7 @@ export function useArtistVault(creatorId: string | undefined) {
         const cb = b.created_at ? new Date(b.created_at).getTime() : 0;
         return cb - ca;
       });
-
+    },
   });
+
 }
