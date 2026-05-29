@@ -11,7 +11,7 @@ export function useArtistVault(creatorId: string | undefined) {
     enabled: !!creatorId,
     queryFn: async () => {
       const { data, error } = await supabase
-      const { data, error } = await supabase
+
         .from("tracks")
         .select("id, title, cover_art_url, is_locked, unlock_type, unlock_price_cents, required_tier_id, preview_url, preview_duration_seconds, creator_id, release_status, scheduled_release_at, created_at")
         .eq("creator_id", creatorId!)
