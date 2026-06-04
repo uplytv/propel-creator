@@ -9,8 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import logoImg from "@/assets/logo.png";
 
-// Admin: replace with your real Cal.com booking link.
-const CALCOM_BOOKING_URL = "https://cal.com/uply/intro";
+const CALCOM_BOOKING_URL = "https://cal.com/uplytv";
 
 const CREATOR_TYPES = [
   "Music", "Streaming", "Education", "Fitness", "Gaming",
