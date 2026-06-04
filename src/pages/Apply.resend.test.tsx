@@ -111,6 +111,7 @@ describe("Apply — resend confirmation flow", () => {
     toastMock.success.mockReset();
     toastMock.error.mockReset();
     navigateMock.mockReset();
+    trackEventMock.mockReset();
     // Default: every invoke resolves
     invokeMock.mockResolvedValue({ data: { ok: true }, error: null });
   });
