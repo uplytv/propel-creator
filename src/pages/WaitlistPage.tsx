@@ -378,6 +378,29 @@ export default function WaitlistPage() {
         </motion.div>
         )}
 
+        {/* Apply for beta — short 5-question application */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.04 }}
+          className="rounded-xl p-5 mb-6 bg-card border border-border"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles className="w-5 h-5 text-primary" />
+            <h3 className="text-sm font-semibold text-foreground">Apply for beta access</h3>
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">
+            Answer 5 quick questions (under 60 seconds). If you qualify, you'll be invited to book a call with the UPLY team and get fast-tracked in.
+          </p>
+          <Button
+            onClick={() => navigate("/apply")}
+            variant="outline"
+            className="w-full min-h-[44px] border-primary/40 hover:bg-primary/10"
+          >
+            Start application <ArrowRight className="w-4 h-4 ml-1" />
+          </Button>
+        </motion.div>
+
         {/* Have an invite code? */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
