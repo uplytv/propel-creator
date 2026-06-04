@@ -45,10 +45,10 @@ export default function Landing() {
         .eq("user_id", user.id)
         .single();
       const p = profile as any;
-      if (!p?.onboarding_complete) {
-        navigate("/onboarding", { replace: true });
-      } else if (p?.is_approved) {
+      if (p?.is_approved) {
         navigate("/discover", { replace: true });
+      } else if (!p?.onboarding_complete) {
+        navigate("/apply", { replace: true });
       } else {
         navigate("/waitlist", { replace: true });
       }
