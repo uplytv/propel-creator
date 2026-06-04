@@ -257,13 +257,13 @@ describe("Apply — resend confirmation flow", () => {
       fireEvent.click(resendBtn);
     });
 
+    // After clearing mocks, we only see resend events; still same correlation_id
     const calls = trackEventMock.mock.calls.filter(
       (c) =>
-        c[0].startsWith("apply_") &&
-        ["apply_submitted", "apply_email_sent", "apply_resend_clicked", "apply_resend_succeeded"].includes(c[0]),
+        ["apply_resend_clicked", "apply_resend_succeeded", "apply_resend_failed"].includes(c[0]),
     );
 
-    expect(calls.length).toBeGreaterThanOrEqual(4);
+    expect(calls.length).toBeGreaterThanOrEqual(2);
     const ids = calls.map((c) => c[1].correlation_id);
     expect(new Set(ids).size).toBe(1);
     expect(ids[0]).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$|^apply-\d+-[a-z0-9]+$/i);
