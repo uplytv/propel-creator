@@ -197,19 +197,21 @@ describe("Apply — resend confirmation flow", () => {
       fireEvent.click(resendBtn);
     });
 
-    expect(trackEventMock).toHaveBeenCalledWith("apply_resend_clicked", {
+    expect(trackEventMock).toHaveBeenCalledWith("apply_resend_clicked", expect.objectContaining({
       user_id: "user-123",
       qualified: true,
       creator_type: "Music",
       platform: "Instagram",
       follower_count: "50K-100K",
       monthly_earnings: "$2K-10K",
-    });
-    expect(trackEventMock).toHaveBeenCalledWith("apply_resend_failed", {
+      correlation_id: expect.any(String),
+    }));
+    expect(trackEventMock).toHaveBeenCalledWith("apply_resend_failed", expect.objectContaining({
       user_id: "user-123",
       qualified: true,
       error: "Network down",
-    });
+      correlation_id: expect.any(String),
+    }));
     expect(trackEventMock).not.toHaveBeenCalledWith("apply_resend_succeeded", expect.anything());
 
     expect(toastMock.error).toHaveBeenCalledWith(expect.stringMatching(/Network down/i));
