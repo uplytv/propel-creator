@@ -184,15 +184,31 @@ describe("Apply — resend confirmation flow", () => {
     expect((btnAfter as HTMLButtonElement).disabled).toBe(false);
   });
 
-  it("shows an error toast and re-enables the button when resend fails", async () => {
+  it("shows an error toast, tracks failure analytics, and re-enables the button when resend fails", async () => {
     await walkThroughFormToSuccess();
     invokeMock.mockClear();
+    trackEventMock.mockClear();
     invokeMock.mockRejectedValueOnce(new Error("Network down"));
 
     const resendBtn = screen.getByRole("button", { name: /Resend confirmation email/i });
     await act(async () => {
       fireEvent.click(resendBtn);
     });
+
+    expect(trackEventMock).toHaveBeenCalledWith("apply_resend_clicked", {
+      user_id: "user-123",
+      qualified: true,
+      creator_type: "Music",
+      platform: "Instagram",
+      follower_count: "50K-100K",
+      monthly_earnings: "$2K-10K",
+    });
+    expect(trackEventMock).toHaveBeenCalledWith("apply_resend_failed", {
+      user_id: "user-123",
+      qualified: true,
+      error: "Network down",
+    });
+    expect(trackEventMock).not.toHaveBeenCalledWith("apply_resend_succeeded", expect.anything());
 
     expect(toastMock.error).toHaveBeenCalledWith(expect.stringMatching(/Network down/i));
     expect(toastMock.success).not.toHaveBeenCalled();
