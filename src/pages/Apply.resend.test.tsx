@@ -249,19 +249,21 @@ describe("Apply — resend confirmation flow", () => {
   it("tracks apply_submitted and apply_email_sent on initial submission", async () => {
     await walkThroughFormToSuccess();
 
-    expect(trackEventMock).toHaveBeenCalledWith("apply_submitted", {
+    expect(trackEventMock).toHaveBeenCalledWith("apply_submitted", expect.objectContaining({
       user_id: "user-123",
       qualified: true,
       creator_type: "Music",
       platform: "Instagram",
       follower_count: "50K-100K",
       monthly_earnings: "$2K-10K",
-    });
-    expect(trackEventMock).toHaveBeenCalledWith("apply_email_sent", {
+      correlation_id: expect.any(String),
+    }));
+    expect(trackEventMock).toHaveBeenCalledWith("apply_email_sent", expect.objectContaining({
       user_id: "user-123",
       qualified: true,
       template: "application-confirmation",
-    });
+      correlation_id: expect.any(String),
+    }));
   });
 
   it("tracks apply_email_failed when initial email send fails", async () => {
@@ -299,11 +301,12 @@ describe("Apply — resend confirmation flow", () => {
     });
 
     await waitFor(() => {
-      expect(trackEventMock).toHaveBeenCalledWith("apply_email_failed", {
+      expect(trackEventMock).toHaveBeenCalledWith("apply_email_failed", expect.objectContaining({
         user_id: "user-123",
         qualified: true,
         error: "SMTP timeout",
-      });
+        correlation_id: expect.any(String),
+      }));
     });
   });
 });
