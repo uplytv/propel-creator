@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Check, Loader2, Calendar, Sparkles, Zap, LogOut } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Loader2, Calendar, Sparkles, Zap, LogOut, PartyPopper, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
