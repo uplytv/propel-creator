@@ -246,6 +246,29 @@ describe("Apply — resend confirmation flow", () => {
     }
   });
 
+  it("uses the same correlation_id across all apply and resend events in a single journey", async () => {
+    await walkThroughFormToSuccess();
+    invokeMock.mockClear();
+    trackEventMock.mockClear();
+    invokeMock.mockResolvedValueOnce({ data: { ok: true }, error: null });
+
+    const resendBtn = screen.getByRole("button", { name: /Resend confirmation email/i });
+    await act(async () => {
+      fireEvent.click(resendBtn);
+    });
+
+    const calls = trackEventMock.mock.calls.filter(
+      (c) =>
+        c[0].startsWith("apply_") &&
+        ["apply_submitted", "apply_email_sent", "apply_resend_clicked", "apply_resend_succeeded"].includes(c[0]),
+    );
+
+    expect(calls.length).toBeGreaterThanOrEqual(4);
+    const ids = calls.map((c) => c[1].correlation_id);
+    expect(new Set(ids).size).toBe(1);
+    expect(ids[0]).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$|^apply-\d+-[a-z0-9]+$/i);
+  });
+
   it("tracks apply_submitted and apply_email_sent on initial submission", async () => {
     await walkThroughFormToSuccess();
 
