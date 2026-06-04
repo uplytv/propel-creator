@@ -92,6 +92,15 @@ export default function Apply() {
     setSubmitting(true);
     const isQualified = followers.qualifies || earnings.qualifies;
 
+    trackEvent("apply_submitted", {
+      user_id: user.id,
+      qualified: isQualified,
+      creator_type: creatorType,
+      platform,
+      follower_count: followers.key,
+      monthly_earnings: earnings.key,
+    });
+
     try {
       // Upsert into waitlist (using existing schema)
       await (supabase as any)
@@ -130,12 +139,23 @@ export default function Apply() {
         },
       });
 
+      trackEvent("apply_email_sent", {
+        user_id: user.id,
+        qualified: isQualified,
+        template: "application-confirmation",
+      });
+
       setShowSuccess(true);
       setTimeout(() => {
         setShowSuccess(false);
         setQualified(isQualified);
       }, 2500);
     } catch (e: any) {
+      trackEvent("apply_email_failed", {
+        user_id: user.id,
+        qualified: isQualified,
+        error: e.message || "unknown",
+      });
       toast.error(e.message || "Could not submit application");
       setSubmitting(false);
     }
