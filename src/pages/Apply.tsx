@@ -140,6 +140,25 @@ export default function Apply() {
     }
   };
 
+  const resendEmail = async () => {
+    if (!user || !followers || !earnings) return;
+    setResending(true);
+    try {
+      await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "application-confirmation",
+          recipientEmail: user.email!,
+          idempotencyKey: `apply-confirm-${user.id}-${Date.now()}`,
+          templateData: { name: fullName.trim(), qualified: followers.qualifies || earnings.qualifies },
+        },
+      });
+      toast.success("Confirmation email resent! Check your inbox.");
+    } catch (e: any) {
+      toast.error(e.message || "Could not resend email");
+    }
+    setResending(false);
+  };
+
   if (loading || !user) {
     return (
       <div className="min-h-[100dvh] flex items-center justify-center bg-background">
