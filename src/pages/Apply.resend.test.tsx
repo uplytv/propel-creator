@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, act, waitFor } from "@testing-library/react";
 
 // Hoisted mocks — accessible inside vi.mock factories (which are hoisted to top)
-const { invokeMock, fromMock, toastMock, navigateMock } = vi.hoisted(() => ({
+const { invokeMock, fromMock, toastMock, navigateMock, trackEventMock } = vi.hoisted(() => ({
   invokeMock: vi.fn(),
   fromMock: vi.fn((_table?: string) => ({
     select: () => ({
@@ -20,6 +20,7 @@ const { invokeMock, fromMock, toastMock, navigateMock } = vi.hoisted(() => ({
   })),
   toastMock: { success: vi.fn(), error: vi.fn(), message: vi.fn() },
   navigateMock: vi.fn(),
+  trackEventMock: vi.fn(),
 }));
 
 vi.mock("@/context/AuthContext", () => ({
@@ -42,6 +43,8 @@ vi.mock("@/integrations/supabase/client", () => ({
 }));
 
 vi.mock("sonner", () => ({ toast: toastMock }));
+
+vi.mock("@/lib/posthog", () => ({ trackEvent: trackEventMock }));
 
 vi.mock("@/assets/logo.png", () => ({ default: "logo.png" }));
 
@@ -108,6 +111,7 @@ describe("Apply — resend confirmation flow", () => {
     toastMock.success.mockReset();
     toastMock.error.mockReset();
     navigateMock.mockReset();
+    trackEventMock.mockReset();
     // Default: every invoke resolves
     invokeMock.mockResolvedValue({ data: { ok: true }, error: null });
   });
@@ -144,15 +148,31 @@ describe("Apply — resend confirmation flow", () => {
     }
   });
 
-  it("shows success toast and re-enables the button on a successful resend", async () => {
+  it("shows success toast, tracks analytics, and re-enables the button on a successful resend", async () => {
     await walkThroughFormToSuccess();
     invokeMock.mockClear();
+    trackEventMock.mockClear();
     invokeMock.mockResolvedValueOnce({ data: { ok: true }, error: null });
 
     const resendBtn = screen.getByRole("button", { name: /Resend confirmation email/i });
     await act(async () => {
       fireEvent.click(resendBtn);
     });
+
+    expect(trackEventMock).toHaveBeenCalledWith("apply_resend_clicked", {
+      user_id: "user-123",
+      qualified: true,
+      creator_type: "Music",
+      platform: "Instagram",
+      follower_count: "50K-100K",
+      monthly_earnings: "$2K-10K",
+    });
+    expect(trackEventMock).toHaveBeenCalledWith("apply_resend_succeeded", {
+      user_id: "user-123",
+      qualified: true,
+      template: "application-confirmation",
+    });
+    expect(trackEventMock).not.toHaveBeenCalledWith("apply_resend_failed", expect.anything());
 
     expect(toastMock.success).toHaveBeenCalledWith(
       expect.stringMatching(/resent/i),
@@ -164,15 +184,31 @@ describe("Apply — resend confirmation flow", () => {
     expect((btnAfter as HTMLButtonElement).disabled).toBe(false);
   });
 
-  it("shows an error toast and re-enables the button when resend fails", async () => {
+  it("shows an error toast, tracks failure analytics, and re-enables the button when resend fails", async () => {
     await walkThroughFormToSuccess();
     invokeMock.mockClear();
+    trackEventMock.mockClear();
     invokeMock.mockRejectedValueOnce(new Error("Network down"));
 
     const resendBtn = screen.getByRole("button", { name: /Resend confirmation email/i });
     await act(async () => {
       fireEvent.click(resendBtn);
     });
+
+    expect(trackEventMock).toHaveBeenCalledWith("apply_resend_clicked", {
+      user_id: "user-123",
+      qualified: true,
+      creator_type: "Music",
+      platform: "Instagram",
+      follower_count: "50K-100K",
+      monthly_earnings: "$2K-10K",
+    });
+    expect(trackEventMock).toHaveBeenCalledWith("apply_resend_failed", {
+      user_id: "user-123",
+      qualified: true,
+      error: "Network down",
+    });
+    expect(trackEventMock).not.toHaveBeenCalledWith("apply_resend_succeeded", expect.anything());
 
     expect(toastMock.error).toHaveBeenCalledWith(expect.stringMatching(/Network down/i));
     expect(toastMock.success).not.toHaveBeenCalled();
@@ -204,5 +240,66 @@ describe("Apply — resend confirmation flow", () => {
     for (const k of keys) {
       expect(k).toMatch(/^apply-confirm-user-123-\d+$/);
     }
+  });
+
+  it("tracks apply_submitted and apply_email_sent on initial submission", async () => {
+    await walkThroughFormToSuccess();
+
+    expect(trackEventMock).toHaveBeenCalledWith("apply_submitted", {
+      user_id: "user-123",
+      qualified: true,
+      creator_type: "Music",
+      platform: "Instagram",
+      follower_count: "50K-100K",
+      monthly_earnings: "$2K-10K",
+    });
+    expect(trackEventMock).toHaveBeenCalledWith("apply_email_sent", {
+      user_id: "user-123",
+      qualified: true,
+      template: "application-confirmation",
+    });
+  });
+
+  it("tracks apply_email_failed when initial email send fails", async () => {
+    invokeMock.mockReset();
+    invokeMock.mockRejectedValueOnce(new Error("SMTP timeout"));
+
+    render(<Apply />);
+    await waitFor(() => {
+      const input = screen.getByPlaceholderText(/First and last name/i) as HTMLInputElement;
+      expect(input.value).toBe("Alex Lee");
+    });
+
+    const clickContinueOrSubmit = () => {
+      const btn = screen
+        .getAllByRole("button")
+        .find(
+          (b) =>
+            !(b as HTMLButtonElement).disabled &&
+            /Continue|Submit|See my result/i.test(b.textContent || ""),
+        );
+      if (!btn) throw new Error("No actionable button found");
+      fireEvent.click(btn);
+    };
+
+    clickContinueOrSubmit();
+    fireEvent.click(await screen.findByRole("button", { name: "Music" }));
+    clickContinueOrSubmit();
+    fireEvent.click(await screen.findByRole("button", { name: "Instagram" }));
+    clickContinueOrSubmit();
+    fireEvent.click(await screen.findByRole("button", { name: /50K – 100K/i }));
+    clickContinueOrSubmit();
+    fireEvent.click(await screen.findByRole("button", { name: /\$2K – \$10K \/ mo/i }));
+    await act(async () => {
+      clickContinueOrSubmit();
+    });
+
+    await waitFor(() => {
+      expect(trackEventMock).toHaveBeenCalledWith("apply_email_failed", {
+        user_id: "user-123",
+        qualified: true,
+        error: "SMTP timeout",
+      });
+    });
   });
 });

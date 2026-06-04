@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { trackEvent } from "@/lib/posthog";
 import logoImg from "@/assets/logo.png";
 
 const CALCOM_BOOKING_URL = "https://cal.com/uplytv";
@@ -91,6 +92,15 @@ export default function Apply() {
     setSubmitting(true);
     const isQualified = followers.qualifies || earnings.qualifies;
 
+    trackEvent("apply_submitted", {
+      user_id: user.id,
+      qualified: isQualified,
+      creator_type: creatorType,
+      platform,
+      follower_count: followers.key,
+      monthly_earnings: earnings.key,
+    });
+
     try {
       // Upsert into waitlist (using existing schema)
       await (supabase as any)
@@ -129,12 +139,23 @@ export default function Apply() {
         },
       });
 
+      trackEvent("apply_email_sent", {
+        user_id: user.id,
+        qualified: isQualified,
+        template: "application-confirmation",
+      });
+
       setShowSuccess(true);
       setTimeout(() => {
         setShowSuccess(false);
         setQualified(isQualified);
       }, 2500);
     } catch (e: any) {
+      trackEvent("apply_email_failed", {
+        user_id: user.id,
+        qualified: isQualified,
+        error: e.message || "unknown",
+      });
       toast.error(e.message || "Could not submit application");
       setSubmitting(false);
     }
@@ -143,17 +164,38 @@ export default function Apply() {
   const resendEmail = async () => {
     if (!user || !followers || !earnings) return;
     setResending(true);
+    const isQualified = followers.qualifies || earnings.qualifies;
+
+    trackEvent("apply_resend_clicked", {
+      user_id: user.id,
+      qualified: isQualified,
+      creator_type: creatorType,
+      platform,
+      follower_count: followers.key,
+      monthly_earnings: earnings.key,
+    });
+
     try {
       await supabase.functions.invoke("send-transactional-email", {
         body: {
           templateName: "application-confirmation",
           recipientEmail: user.email!,
           idempotencyKey: `apply-confirm-${user.id}-${Date.now()}`,
-          templateData: { name: fullName.trim(), qualified: followers.qualifies || earnings.qualifies },
+          templateData: { name: fullName.trim(), qualified: isQualified },
         },
+      });
+      trackEvent("apply_resend_succeeded", {
+        user_id: user.id,
+        qualified: isQualified,
+        template: "application-confirmation",
       });
       toast.success("Confirmation email resent! Check your inbox.");
     } catch (e: any) {
+      trackEvent("apply_resend_failed", {
+        user_id: user.id,
+        qualified: isQualified,
+        error: e.message || "unknown",
+      });
       toast.error(e.message || "Could not resend email");
     }
     setResending(false);
