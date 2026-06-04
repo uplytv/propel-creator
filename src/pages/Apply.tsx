@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { trackEvent } from "@/lib/posthog";
 import logoImg from "@/assets/logo.png";
 
 const CALCOM_BOOKING_URL = "https://cal.com/uplytv";
