@@ -20,5 +20,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'digital-product-receipt': digitalProductReceipt,
   'beta-access-granted': betaAccessGranted,
   'ticket-confirmation': ticketConfirmation,
-  'music-track-ready': musicTrackReady,
+  'application-confirmation': applicationConfirmation,
 }
