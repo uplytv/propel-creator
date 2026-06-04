@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Check, Loader2, Calendar, Sparkles, Zap, LogOut, PartyPopper, Mail } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Loader2, Calendar, Sparkles, Zap, LogOut, PartyPopper, Mail, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
@@ -47,6 +47,7 @@ export default function Apply() {
   const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [qualified, setQualified] = useState<boolean | null>(null);
+  const [resending, setResending] = useState(false);
 
   const [fullName, setFullName] = useState("");
   const [creatorType, setCreatorType] = useState("");
@@ -139,6 +140,25 @@ export default function Apply() {
     }
   };
 
+  const resendEmail = async () => {
+    if (!user || !followers || !earnings) return;
+    setResending(true);
+    try {
+      await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "application-confirmation",
+          recipientEmail: user.email!,
+          idempotencyKey: `apply-confirm-${user.id}-${Date.now()}`,
+          templateData: { name: fullName.trim(), qualified: followers.qualifies || earnings.qualifies },
+        },
+      });
+      toast.success("Confirmation email resent! Check your inbox.");
+    } catch (e: any) {
+      toast.error(e.message || "Could not resend email");
+    }
+    setResending(false);
+  };
+
   if (loading || !user) {
     return (
       <div className="min-h-[100dvh] flex items-center justify-center bg-background">
@@ -181,6 +201,14 @@ export default function Apply() {
               <Mail className="w-3.5 h-3.5" />
               <span>Sent to {user.email}</span>
             </div>
+            <button
+              onClick={resendEmail}
+              disabled={resending}
+              className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline disabled:opacity-50 disabled:pointer-events-none"
+            >
+              {resending ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+              {resending ? "Resending..." : "Resend confirmation email"}
+            </button>
           </motion.div>
         </div>
       </div>
