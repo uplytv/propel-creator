@@ -438,6 +438,7 @@ const App = () => (
 
                     {/* Onboarding & Waitlist (auth required but no approval needed) */}
                     <Route path="/onboarding" element={<Onboarding />} />
+                    <Route path="/apply" element={<Apply />} />
                     <Route path="/waitlist" element={<WaitlistPage />} />
                     <Route path="/founders" element={<Founders />} />
 
