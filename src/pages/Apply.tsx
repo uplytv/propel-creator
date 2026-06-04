@@ -47,6 +47,7 @@ export default function Apply() {
   const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [qualified, setQualified] = useState<boolean | null>(null);
+  const [resending, setResending] = useState(false);
 
   const [fullName, setFullName] = useState("");
   const [creatorType, setCreatorType] = useState("");
