@@ -45,6 +45,7 @@ export default function Apply() {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>(0);
   const [submitting, setSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [qualified, setQualified] = useState<boolean | null>(null);
 
   const [fullName, setFullName] = useState("");
