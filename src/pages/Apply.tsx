@@ -147,6 +147,46 @@ export default function Apply() {
     );
   }
 
+  // ============= POST-SUBMIT: SUCCESS SCREEN =============
+  if (showSuccess) {
+    return (
+      <div className="min-h-[100dvh] bg-background text-foreground flex flex-col">
+        <Header onSignOut={signOut} />
+        <div className="flex-1 flex items-center justify-center px-6">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4 }}
+            className="max-w-sm w-full text-center"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.15, type: "spring", stiffness: 200 }}
+              className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-6"
+              style={{ background: "linear-gradient(135deg, hsl(var(--primary) / 0.2), hsl(var(--primary) / 0.05))", border: "2px solid hsl(var(--primary))" }}
+            >
+              <PartyPopper className="w-9 h-9 text-primary" />
+            </motion.div>
+            <h1
+              className="text-3xl font-black mb-3"
+              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            >
+              Application sent!
+            </h1>
+            <p className="text-sm text-muted-foreground mb-6">
+              We received your application. Check your inbox for a confirmation email with next steps.
+            </p>
+            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground/60">
+              <Mail className="w-3.5 h-3.5" />
+              <span>Sent to {user.email}</span>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
   // ============= POST-SUBMIT: QUALIFIED =============
   if (qualified === true) {
     return (
