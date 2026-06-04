@@ -241,4 +241,65 @@ describe("Apply — resend confirmation flow", () => {
       expect(k).toMatch(/^apply-confirm-user-123-\d+$/);
     }
   });
+
+  it("tracks apply_submitted and apply_email_sent on initial submission", async () => {
+    await walkThroughFormToSuccess();
+
+    expect(trackEventMock).toHaveBeenCalledWith("apply_submitted", {
+      user_id: "user-123",
+      qualified: true,
+      creator_type: "Music",
+      platform: "Instagram",
+      follower_count: "50K-100K",
+      monthly_earnings: "$2K-10K",
+    });
+    expect(trackEventMock).toHaveBeenCalledWith("apply_email_sent", {
+      user_id: "user-123",
+      qualified: true,
+      template: "application-confirmation",
+    });
+  });
+
+  it("tracks apply_email_failed when initial email send fails", async () => {
+    invokeMock.mockReset();
+    invokeMock.mockRejectedValueOnce(new Error("SMTP timeout"));
+
+    render(<Apply />);
+    await waitFor(() => {
+      const input = screen.getByPlaceholderText(/First and last name/i) as HTMLInputElement;
+      expect(input.value).toBe("Alex Lee");
+    });
+
+    const clickContinueOrSubmit = () => {
+      const btn = screen
+        .getAllByRole("button")
+        .find(
+          (b) =>
+            !(b as HTMLButtonElement).disabled &&
+            /Continue|Submit|See my result/i.test(b.textContent || ""),
+        );
+      if (!btn) throw new Error("No actionable button found");
+      fireEvent.click(btn);
+    };
+
+    clickContinueOrSubmit();
+    fireEvent.click(await screen.findByRole("button", { name: "Music" }));
+    clickContinueOrSubmit();
+    fireEvent.click(await screen.findByRole("button", { name: "Instagram" }));
+    clickContinueOrSubmit();
+    fireEvent.click(await screen.findByRole("button", { name: /50K – 100K/i }));
+    clickContinueOrSubmit();
+    fireEvent.click(await screen.findByRole("button", { name: /\$2K – \$10K \/ mo/i }));
+    await act(async () => {
+      clickContinueOrSubmit();
+    });
+
+    await waitFor(() => {
+      expect(trackEventMock).toHaveBeenCalledWith("apply_email_failed", {
+        user_id: "user-123",
+        qualified: true,
+        error: "SMTP timeout",
+      });
+    });
+  });
 });
