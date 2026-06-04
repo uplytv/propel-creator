@@ -159,19 +159,21 @@ describe("Apply — resend confirmation flow", () => {
       fireEvent.click(resendBtn);
     });
 
-    expect(trackEventMock).toHaveBeenCalledWith("apply_resend_clicked", {
+    expect(trackEventMock).toHaveBeenCalledWith("apply_resend_clicked", expect.objectContaining({
       user_id: "user-123",
       qualified: true,
       creator_type: "Music",
       platform: "Instagram",
       follower_count: "50K-100K",
       monthly_earnings: "$2K-10K",
-    });
-    expect(trackEventMock).toHaveBeenCalledWith("apply_resend_succeeded", {
+      correlation_id: expect.any(String),
+    }));
+    expect(trackEventMock).toHaveBeenCalledWith("apply_resend_succeeded", expect.objectContaining({
       user_id: "user-123",
       qualified: true,
       template: "application-confirmation",
-    });
+      correlation_id: expect.any(String),
+    }));
     expect(trackEventMock).not.toHaveBeenCalledWith("apply_resend_failed", expect.anything());
 
     expect(toastMock.success).toHaveBeenCalledWith(
@@ -195,19 +197,21 @@ describe("Apply — resend confirmation flow", () => {
       fireEvent.click(resendBtn);
     });
 
-    expect(trackEventMock).toHaveBeenCalledWith("apply_resend_clicked", {
+    expect(trackEventMock).toHaveBeenCalledWith("apply_resend_clicked", expect.objectContaining({
       user_id: "user-123",
       qualified: true,
       creator_type: "Music",
       platform: "Instagram",
       follower_count: "50K-100K",
       monthly_earnings: "$2K-10K",
-    });
-    expect(trackEventMock).toHaveBeenCalledWith("apply_resend_failed", {
+      correlation_id: expect.any(String),
+    }));
+    expect(trackEventMock).toHaveBeenCalledWith("apply_resend_failed", expect.objectContaining({
       user_id: "user-123",
       qualified: true,
       error: "Network down",
-    });
+      correlation_id: expect.any(String),
+    }));
     expect(trackEventMock).not.toHaveBeenCalledWith("apply_resend_succeeded", expect.anything());
 
     expect(toastMock.error).toHaveBeenCalledWith(expect.stringMatching(/Network down/i));
@@ -242,22 +246,47 @@ describe("Apply — resend confirmation flow", () => {
     }
   });
 
+  it("uses the same correlation_id across all apply and resend events in a single journey", async () => {
+    await walkThroughFormToSuccess();
+    invokeMock.mockClear();
+    trackEventMock.mockClear();
+    invokeMock.mockResolvedValueOnce({ data: { ok: true }, error: null });
+
+    const resendBtn = screen.getByRole("button", { name: /Resend confirmation email/i });
+    await act(async () => {
+      fireEvent.click(resendBtn);
+    });
+
+    // After clearing mocks, we only see resend events; still same correlation_id
+    const calls = trackEventMock.mock.calls.filter(
+      (c) =>
+        ["apply_resend_clicked", "apply_resend_succeeded", "apply_resend_failed"].includes(c[0]),
+    );
+
+    expect(calls.length).toBeGreaterThanOrEqual(2);
+    const ids = calls.map((c) => c[1].correlation_id);
+    expect(new Set(ids).size).toBe(1);
+    expect(ids[0]).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$|^apply-\d+-[a-z0-9]+$/i);
+  });
+
   it("tracks apply_submitted and apply_email_sent on initial submission", async () => {
     await walkThroughFormToSuccess();
 
-    expect(trackEventMock).toHaveBeenCalledWith("apply_submitted", {
+    expect(trackEventMock).toHaveBeenCalledWith("apply_submitted", expect.objectContaining({
       user_id: "user-123",
       qualified: true,
       creator_type: "Music",
       platform: "Instagram",
       follower_count: "50K-100K",
       monthly_earnings: "$2K-10K",
-    });
-    expect(trackEventMock).toHaveBeenCalledWith("apply_email_sent", {
+      correlation_id: expect.any(String),
+    }));
+    expect(trackEventMock).toHaveBeenCalledWith("apply_email_sent", expect.objectContaining({
       user_id: "user-123",
       qualified: true,
       template: "application-confirmation",
-    });
+      correlation_id: expect.any(String),
+    }));
   });
 
   it("tracks apply_email_failed when initial email send fails", async () => {
@@ -295,11 +324,12 @@ describe("Apply — resend confirmation flow", () => {
     });
 
     await waitFor(() => {
-      expect(trackEventMock).toHaveBeenCalledWith("apply_email_failed", {
+      expect(trackEventMock).toHaveBeenCalledWith("apply_email_failed", expect.objectContaining({
         user_id: "user-123",
         qualified: true,
         error: "SMTP timeout",
-      });
+        correlation_id: expect.any(String),
+      }));
     });
   });
 });

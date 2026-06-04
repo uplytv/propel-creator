@@ -49,6 +49,13 @@ export default function Apply() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [qualified, setQualified] = useState<boolean | null>(null);
   const [resending, setResending] = useState(false);
+  const [correlationId] = useState(() => {
+    try {
+      return crypto.randomUUID();
+    } catch {
+      return `apply-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    }
+  });
 
   const [fullName, setFullName] = useState("");
   const [creatorType, setCreatorType] = useState("");
@@ -94,6 +101,7 @@ export default function Apply() {
 
     trackEvent("apply_submitted", {
       user_id: user.id,
+      correlation_id: correlationId,
       qualified: isQualified,
       creator_type: creatorType,
       platform,
@@ -141,6 +149,7 @@ export default function Apply() {
 
       trackEvent("apply_email_sent", {
         user_id: user.id,
+        correlation_id: correlationId,
         qualified: isQualified,
         template: "application-confirmation",
       });
@@ -153,6 +162,7 @@ export default function Apply() {
     } catch (e: any) {
       trackEvent("apply_email_failed", {
         user_id: user.id,
+        correlation_id: correlationId,
         qualified: isQualified,
         error: e.message || "unknown",
       });
@@ -168,6 +178,7 @@ export default function Apply() {
 
     trackEvent("apply_resend_clicked", {
       user_id: user.id,
+      correlation_id: correlationId,
       qualified: isQualified,
       creator_type: creatorType,
       platform,
@@ -186,6 +197,7 @@ export default function Apply() {
       });
       trackEvent("apply_resend_succeeded", {
         user_id: user.id,
+        correlation_id: correlationId,
         qualified: isQualified,
         template: "application-confirmation",
       });
@@ -193,6 +205,7 @@ export default function Apply() {
     } catch (e: any) {
       trackEvent("apply_resend_failed", {
         user_id: user.id,
+        correlation_id: correlationId,
         qualified: isQualified,
         error: e.message || "unknown",
       });
