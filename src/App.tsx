@@ -29,6 +29,7 @@ const Landing = lazy(() => import("./pages/Landing"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
+const Apply = lazy(() => import("./pages/Apply"));
 const WaitlistPage = lazy(() => import("./pages/WaitlistPage"));
 const Founders = lazy(() => import("./pages/Founders"));
 const InviteCodes = lazy(() => import("./pages/InviteCodes"));
