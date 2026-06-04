@@ -201,6 +201,14 @@ export default function Apply() {
               <Mail className="w-3.5 h-3.5" />
               <span>Sent to {user.email}</span>
             </div>
+            <button
+              onClick={resendEmail}
+              disabled={resending}
+              className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline disabled:opacity-50 disabled:pointer-events-none"
+            >
+              {resending ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+              {resending ? "Resending..." : "Resend confirmation email"}
+            </button>
           </motion.div>
         </div>
       </div>
