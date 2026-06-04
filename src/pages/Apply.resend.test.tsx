@@ -16,7 +16,7 @@ vi.mock("react-router-dom", () => ({
 }));
 
 const invokeMock = vi.fn();
-const fromMock = vi.fn(() => ({
+const fromMock = vi.fn((_table?: string) => ({
   select: () => ({
     eq: () => ({
       maybeSingle: async () => ({
@@ -25,14 +25,14 @@ const fromMock = vi.fn(() => ({
       }),
     }),
   }),
-  upsert: async () => ({ data: null, error: null }),
-  update: () => ({ eq: async () => ({ data: null, error: null }) }),
+  upsert: async (_v: unknown) => ({ data: null, error: null }),
+  update: (_v: unknown) => ({ eq: async (_c: string, _val: unknown) => ({ data: null, error: null }) }),
 }));
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
-    from: (table: any) => fromMock(table),
-    functions: { invoke: (...args: any[]) => invokeMock(...args) },
+    from: (table: string) => fromMock(table),
+    functions: { invoke: (name: string, opts: unknown) => invokeMock(name, opts) },
   },
 }));
 
