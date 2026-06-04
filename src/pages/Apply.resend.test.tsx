@@ -1,7 +1,27 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, act, waitFor } from "@testing-library/react";
 
-// --- Mocks ---
+// Hoisted mocks — accessible inside vi.mock factories (which are hoisted to top)
+const { invokeMock, fromMock, toastMock, navigateMock } = vi.hoisted(() => ({
+  invokeMock: vi.fn(),
+  fromMock: vi.fn((_table?: string) => ({
+    select: () => ({
+      eq: () => ({
+        maybeSingle: async () => ({
+          data: { first_name: "Alex", last_name: "Lee", display_name: null, is_approved: false },
+          error: null,
+        }),
+      }),
+    }),
+    upsert: async (_v: unknown) => ({ data: null, error: null }),
+    update: (_v: unknown) => ({
+      eq: async (_c: string, _val: unknown) => ({ data: null, error: null }),
+    }),
+  })),
+  toastMock: { success: vi.fn(), error: vi.fn(), message: vi.fn() },
+  navigateMock: vi.fn(),
+}));
+
 vi.mock("@/context/AuthContext", () => ({
   useAuth: () => ({
     user: { id: "user-123", email: "creator@example.com" },
@@ -10,23 +30,8 @@ vi.mock("@/context/AuthContext", () => ({
   }),
 }));
 
-const navigateMock = vi.fn();
 vi.mock("react-router-dom", () => ({
   useNavigate: () => navigateMock,
-}));
-
-const invokeMock = vi.fn();
-const fromMock = vi.fn((_table?: string) => ({
-  select: () => ({
-    eq: () => ({
-      maybeSingle: async () => ({
-        data: { first_name: "Alex", last_name: "Lee", display_name: null, is_approved: false },
-        error: null,
-      }),
-    }),
-  }),
-  upsert: async (_v: unknown) => ({ data: null, error: null }),
-  update: (_v: unknown) => ({ eq: async (_c: string, _val: unknown) => ({ data: null, error: null }) }),
 }));
 
 vi.mock("@/integrations/supabase/client", () => ({
@@ -36,8 +41,9 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 
-const toastMock = { success: vi.fn(), error: vi.fn(), message: vi.fn() };
 vi.mock("sonner", () => ({ toast: toastMock }));
+
+vi.mock("@/assets/logo.png", () => ({ default: "logo.png" }));
 
 vi.mock("framer-motion", async () => {
   const React = await import("react");
@@ -52,6 +58,7 @@ vi.mock("framer-motion", async () => {
 });
 
 import Apply from "./Apply";
+
 
 async function walkThroughFormToSuccess() {
   render(<Apply />);
