@@ -49,6 +49,13 @@ export default function Apply() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [qualified, setQualified] = useState<boolean | null>(null);
   const [resending, setResending] = useState(false);
+  const [correlationId] = useState(() => {
+    try {
+      return crypto.randomUUID();
+    } catch {
+      return `apply-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    }
+  });
 
   const [fullName, setFullName] = useState("");
   const [creatorType, setCreatorType] = useState("");
