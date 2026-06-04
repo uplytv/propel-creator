@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, act, waitFor } from "@testing-library/react";
 
 // Hoisted mocks — accessible inside vi.mock factories (which are hoisted to top)
-const { invokeMock, fromMock, toastMock, navigateMock } = vi.hoisted(() => ({
+const { invokeMock, fromMock, toastMock, navigateMock, trackEventMock } = vi.hoisted(() => ({
   invokeMock: vi.fn(),
   fromMock: vi.fn((_table?: string) => ({
     select: () => ({
@@ -20,6 +20,7 @@ const { invokeMock, fromMock, toastMock, navigateMock } = vi.hoisted(() => ({
   })),
   toastMock: { success: vi.fn(), error: vi.fn(), message: vi.fn() },
   navigateMock: vi.fn(),
+  trackEventMock: vi.fn(),
 }));
 
 vi.mock("@/context/AuthContext", () => ({
@@ -42,6 +43,8 @@ vi.mock("@/integrations/supabase/client", () => ({
 }));
 
 vi.mock("sonner", () => ({ toast: toastMock }));
+
+vi.mock("@/lib/posthog", () => ({ trackEvent: trackEventMock }));
 
 vi.mock("@/assets/logo.png", () => ({ default: "logo.png" }));
 
