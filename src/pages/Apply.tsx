@@ -118,11 +118,25 @@ export default function Apply() {
         })
         .eq("user_id", user.id);
 
-      setQualified(isQualified);
+      // Send confirmation email
+      await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "application-confirmation",
+          recipientEmail: user.email!,
+          idempotencyKey: `apply-confirm-${user.id}`,
+          templateData: { name: fullName.trim(), qualified: isQualified },
+        },
+      });
+
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+        setQualified(isQualified);
+      }, 2500);
     } catch (e: any) {
       toast.error(e.message || "Could not submit application");
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   if (loading || !user) {
