@@ -148,15 +148,31 @@ describe("Apply — resend confirmation flow", () => {
     }
   });
 
-  it("shows success toast and re-enables the button on a successful resend", async () => {
+  it("shows success toast, tracks analytics, and re-enables the button on a successful resend", async () => {
     await walkThroughFormToSuccess();
     invokeMock.mockClear();
+    trackEventMock.mockClear();
     invokeMock.mockResolvedValueOnce({ data: { ok: true }, error: null });
 
     const resendBtn = screen.getByRole("button", { name: /Resend confirmation email/i });
     await act(async () => {
       fireEvent.click(resendBtn);
     });
+
+    expect(trackEventMock).toHaveBeenCalledWith("apply_resend_clicked", {
+      user_id: "user-123",
+      qualified: true,
+      creator_type: "Music",
+      platform: "Instagram",
+      follower_count: "50K-100K",
+      monthly_earnings: "$2K-10K",
+    });
+    expect(trackEventMock).toHaveBeenCalledWith("apply_resend_succeeded", {
+      user_id: "user-123",
+      qualified: true,
+      template: "application-confirmation",
+    });
+    expect(trackEventMock).not.toHaveBeenCalledWith("apply_resend_failed", expect.anything());
 
     expect(toastMock.success).toHaveBeenCalledWith(
       expect.stringMatching(/resent/i),
