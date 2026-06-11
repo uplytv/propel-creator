@@ -48,6 +48,33 @@ export default function ScanEvent() {
   const [occupancy, setOccupancy] = useState<number | null>(null);
   const [pending, setPending] = useState(0);
   const [manual, setManual] = useState("");
+  const [wbOpen, setWbOpen] = useState(false);
+  const [wbTicket, setWbTicket] = useState("");
+  const [wbCode, setWbCode] = useState("");
+  const [wbBusy, setWbBusy] = useState(false);
+
+  const linkWristband = async () => {
+    if (wbTicket.trim().length < 8 || !wbCode.trim()) return;
+    setWbBusy(true);
+    try {
+      const { data, error } = await (supabase as any).rpc("link_wristband", {
+        p_qr_secret: wbTicket.trim(),
+        p_event_id: eventId,
+        p_wristband_code: wbCode.trim(),
+      });
+      if (error) throw error;
+      if ((data as any)?.ok) {
+        toast.success("Wristband linked", { description: "It now works as the ticket at gates." });
+        setWbTicket(""); setWbCode("");
+      } else {
+        toast.error((data as any)?.message ?? "Couldn't link");
+      }
+    } catch (e: any) {
+      toast.error("Link failed", { description: e?.message });
+    } finally {
+      setWbBusy(false);
+    }
+  };
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const readerRef = useRef<BrowserMultiFormatReader | null>(null);
@@ -270,6 +297,21 @@ export default function ScanEvent() {
           />
           <Button disabled={manual.length < 8} onClick={() => { doScan(manual.trim()); setManual(""); }}>Go</Button>
         </div>
+
+        {/* Wristband activation (box office) */}
+        <button onClick={() => setWbOpen((o) => !o)} className="text-xs text-muted-foreground underline">
+          {wbOpen ? "Hide" : "Link a wristband"}
+        </button>
+        {wbOpen && (
+          <div className="rounded-lg border border-border p-3 space-y-2">
+            <p className="text-xs text-muted-foreground">Scan/enter the ticket code, then the wristband barcode.</p>
+            <Input placeholder="Ticket code (QR)" value={wbTicket} onChange={(e) => setWbTicket(e.target.value)} />
+            <Input placeholder="Wristband barcode" value={wbCode} onChange={(e) => setWbCode(e.target.value)} />
+            <Button className="w-full" disabled={wbBusy || wbTicket.length < 8 || !wbCode.trim()} onClick={linkWristband}>
+              {wbBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : "Link wristband"}
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Recent scans */}
