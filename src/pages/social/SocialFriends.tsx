@@ -184,6 +184,7 @@ export default function SocialFriends() {
                       src={item.media_url}
                       className="w-12 h-16 rounded-lg object-cover flex-shrink-0"
                       alt=""
+                      loading="lazy"
                     />
                   )}
                 </div>

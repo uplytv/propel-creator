@@ -121,7 +121,7 @@ export function ListeningPartyPage() {
       <Card className="p-4 bg-card/40 border-border/40 space-y-3">
         {party.cover_url && (
           <div className="aspect-square w-full max-w-[240px] mx-auto rounded-xl overflow-hidden bg-muted/20">
-            <img src={party.cover_url} alt="" className="w-full h-full object-cover" />
+            <img src={party.cover_url} alt="" loading="lazy" className="w-full h-full object-cover" />
           </div>
         )}
         <div className="text-center">

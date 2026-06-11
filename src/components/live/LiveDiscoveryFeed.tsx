@@ -404,7 +404,7 @@ export default function LiveDiscoveryFeed({ searchQuery = "" }: Props) {
                   <div className="mt-2.5 flex gap-2.5">
                     <div className="flex-shrink-0 w-9 h-9 rounded-full bg-card flex items-center justify-center text-[11px] font-bold text-muted-foreground overflow-hidden">
                       {asset.creator_avatar ? (
-                        <img src={asset.creator_avatar} alt="" className="w-full h-full object-cover" />
+                        <img src={asset.creator_avatar} alt={asset.creator_name || 'Creator'} loading="lazy" className="w-full h-full object-cover" />
                       ) : (
                         (asset.creator_name || 'C').slice(0, 2).toUpperCase()
                       )}

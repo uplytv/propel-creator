@@ -44,7 +44,7 @@ export default function WeeklyRecapCard() {
                 >
                   <span className="w-5 text-center text-xs text-white/40 tabular-nums">{i + 1}</span>
                   {t.cover_art_url ? (
-                    <img src={t.cover_art_url} alt="" className="w-9 h-9 rounded object-cover" />
+                    <img src={t.cover_art_url} alt={t.title} loading="lazy" className="w-9 h-9 rounded object-cover" />
                   ) : (
                     <div className="w-9 h-9 rounded bg-white/10" />
                   )}
@@ -60,7 +60,7 @@ export default function WeeklyRecapCard() {
             {recap.topArtists.map((a) => (
               <div key={a.creator_id} className="flex flex-col items-center gap-1 min-w-[64px]">
                 {a.avatar_url ? (
-                  <img src={a.avatar_url} alt="" className="w-12 h-12 rounded-full object-cover border-2 border-white/10" />
+                  <img src={a.avatar_url} alt={a.display_name} loading="lazy" className="w-12 h-12 rounded-full object-cover border-2 border-white/10" />
                 ) : (
                   <div className="w-12 h-12 rounded-full bg-white/10" />
                 )}

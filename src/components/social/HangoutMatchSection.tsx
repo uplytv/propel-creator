@@ -175,7 +175,8 @@ export default function HangoutMatchSection() {
             {current.avatar_url ? (
               <img
                 src={current.avatar_url}
-                alt=""
+                alt={current.display_name || current.username || "Someone new"}
+                loading="lazy"
                 className="absolute inset-0 w-full h-full object-cover pointer-events-none"
                 draggable={false}
               />

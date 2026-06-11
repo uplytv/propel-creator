@@ -524,7 +524,7 @@ export default function CreatorProfile() {
         {/* Cover */}
         <div className="h-44 w-full relative overflow-hidden">
           {profile.cover_image_url ? (
-            <img src={profile.cover_image_url} alt="" className="w-full h-full object-cover" />
+            <img src={profile.cover_image_url} alt="" loading="lazy" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full bg-gradient-to-b from-card to-background" />
           )}
@@ -537,7 +537,7 @@ export default function CreatorProfile() {
           <div className="flex justify-center relative">
             <div className="relative">
               {profile.avatar_url ? (
-                <img src={profile.avatar_url} alt={creatorName} className="w-24 h-24 rounded-full object-cover border-[3px] border-primary" />
+                <img src={profile.avatar_url} alt={creatorName} loading="lazy" className="w-24 h-24 rounded-full object-cover border-[3px] border-primary" />
               ) : (
                 <div className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold border-[3px] border-primary bg-secondary text-primary">
                   {creatorName.charAt(0).toUpperCase()}
@@ -656,6 +656,7 @@ export default function CreatorProfile() {
                 {!isOwner && user && (
                   <button
                     onClick={() => navigate(`/messages?to=${profile.user_id}`)}
+                    aria-label={`Message ${creatorName}`}
                     className="px-4 py-3 rounded-xl text-sm font-semibold bg-secondary border border-border text-muted-foreground"
                   >
                     <MessageCircle className="w-4 h-4" />
@@ -709,6 +710,7 @@ export default function CreatorProfile() {
                     <AddFriendButton targetUserId={profile.user_id} size="md" />
                     <button
                       onClick={() => navigate(`/messages?to=${profile.user_id}`)}
+                      aria-label={`Message ${creatorName}`}
                       className="px-4 py-3 rounded-xl text-sm font-semibold bg-secondary border border-border text-muted-foreground"
                     >
                       <MessageCircle className="w-4 h-4" />
@@ -776,7 +778,7 @@ export default function CreatorProfile() {
                 )}
                 <div className="flex items-center gap-2 mb-2">
                   {(post as any).profiles?.avatar_url ? (
-                    <img src={(post as any).profiles.avatar_url} className="w-8 h-8 rounded-full object-cover" alt="" />
+                    <img src={(post as any).profiles.avatar_url} className="w-8 h-8 rounded-full object-cover" alt="" loading="lazy" />
                   ) : (
                     <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "hsl(var(--card))", color: "hsl(var(--primary))" }}>
                       {((post as any).profiles?.display_name || "U").charAt(0)}
@@ -890,7 +892,7 @@ export default function CreatorProfile() {
                   style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}
                 >
                   {product.image_url && (
-                    <img src={product.image_url} alt={product.name} className="w-full h-32 object-cover" />
+                    <img src={product.image_url} alt={product.name} loading="lazy" className="w-full h-32 object-cover" />
                   )}
                   <div className="p-4">
                     <div className="flex items-center gap-2 mb-1">
@@ -958,7 +960,7 @@ export default function CreatorProfile() {
               >
                 <div className="aspect-square bg-muted flex items-center justify-center overflow-hidden relative">
                   {sl.cover_image_url ? (
-                    <img src={sl.cover_image_url} alt={sl.title} className="w-full h-full object-cover" />
+                    <img src={sl.cover_image_url} alt={sl.title} loading="lazy" className="w-full h-full object-cover" />
                   ) : (
                     <span className="text-3xl">🎵</span>
                   )}
@@ -1001,7 +1003,7 @@ export default function CreatorProfile() {
             style={{ background: "rgba(10,10,10,0.95)", borderTop: "1px solid #1E1E1E", backdropFilter: "blur(12px)" }}
           >
             {profile.avatar_url ? (
-              <img src={profile.avatar_url} className="w-8 h-8 rounded-full object-cover shrink-0" style={{ border: "2px solid #00FF85" }} alt="" />
+              <img src={profile.avatar_url} className="w-8 h-8 rounded-full object-cover shrink-0" style={{ border: "2px solid #00FF85" }} alt="" loading="lazy" />
             ) : (
               <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: "hsl(var(--card))", color: "hsl(var(--primary))", border: "2px solid #00FF85" }}>
                 {creatorName.charAt(0)}

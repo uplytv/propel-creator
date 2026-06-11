@@ -52,7 +52,7 @@ export default function SpaceMembersTab({ creatorId }: Props) {
               style={{ background: "hsl(var(--background))", border: "1px solid #1e1e1e" }}
             >
               {member.avatar_url ? (
-                <img src={member.avatar_url} alt="" className="w-12 h-12 rounded-full mx-auto mb-2 object-cover" />
+                <img src={member.avatar_url} alt="" loading="lazy" className="w-12 h-12 rounded-full mx-auto mb-2 object-cover" />
               ) : (
                 <div className="w-12 h-12 rounded-full mx-auto mb-2 flex items-center justify-center text-sm font-bold" style={{ background: "hsl(var(--card))", color: "hsl(var(--foreground))" }}>
                   {(member.display_name || "M").charAt(0)}

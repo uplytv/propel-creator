@@ -74,7 +74,7 @@ export default function PlaylistDetail() {
                   className="flex items-center gap-3 flex-1 min-w-0 text-left"
                 >
                   {v.thumbnail_url ? (
-                    <img src={v.thumbnail_url} alt="" className="w-24 h-14 object-cover rounded-md shrink-0" />
+                    <img src={v.thumbnail_url} alt={v.title || ""} className="w-24 h-14 object-cover rounded-md shrink-0" loading="lazy" />
                   ) : (
                     <div className="w-24 h-14 bg-secondary rounded-md flex items-center justify-center shrink-0">
                       <Play className="w-4 h-4 text-muted-foreground" />

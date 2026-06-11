@@ -58,7 +58,7 @@ export function TagToEventButton({ creatorId, streamId, videoId, variant = "outl
             {!loading && results.length === 0 && <div className="text-sm text-muted-foreground p-4 text-center">No events found</div>}
             {results.map((e) => (
               <button key={e.id} onClick={() => tag(e.id)} className="w-full text-left p-3 rounded-lg border border-border hover:border-primary bg-card transition flex gap-3">
-                {e.image_url && <img src={e.image_url} alt="" className="w-14 h-14 rounded object-cover shrink-0" />}
+                {e.image_url && <img src={e.image_url} alt={e.title} loading="lazy" className="w-14 h-14 rounded object-cover shrink-0" />}
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-sm line-clamp-1">{e.title}</div>
                   <div className="text-xs text-muted-foreground flex items-center gap-2 mt-1">

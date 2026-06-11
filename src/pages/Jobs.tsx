@@ -32,7 +32,7 @@ function JobCard({ job, onClick }: { job: Job; onClick: () => void }) {
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary flex-shrink-0">
             {job.creator_avatar ? (
-              <img src={job.creator_avatar} alt="" className="w-full h-full rounded-full object-cover" />
+              <img src={job.creator_avatar} alt={job.creator_name || ""} className="w-full h-full rounded-full object-cover" loading="lazy" />
             ) : (
               job.creator_name?.charAt(0) || "C"
             )}
@@ -94,7 +94,7 @@ function TalentSpotlightCard({ talent }: { talent: any }) {
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">
           {talent.avatar_url ? (
-            <img src={talent.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
+            <img src={talent.avatar_url} alt={talent.display_name || ""} className="w-full h-full rounded-full object-cover" loading="lazy" />
           ) : (
             talent.display_name?.charAt(0) || "T"
           )}

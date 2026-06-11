@@ -114,7 +114,7 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
         <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-2">Featured — Preview</p>
         <div className="flex items-center gap-3">
           {product.image_url ? (
-            <img src={product.image_url} alt="" className="w-12 h-12 rounded-lg object-cover" />
+            <img src={product.image_url} alt={product.name} loading="lazy" className="w-12 h-12 rounded-lg object-cover" />
           ) : (
             <div className="w-12 h-12 rounded-lg bg-white/5 flex items-center justify-center text-xl">{getEmoji(product.type)}</div>
           )}
@@ -141,7 +141,7 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
         <div className="mx-3 mb-3 rounded-xl overflow-hidden" style={{ backgroundColor: "rgba(10,10,10,0.92)", backdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.08)" }}>
           <button onClick={handleCTAClick} className="w-full p-3 flex items-center gap-3 text-left">
             {product.image_url ? (
-              <img src={product.image_url} alt="" className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
+              <img src={product.image_url} alt={product.name} loading="lazy" className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
             ) : (
               <div className="w-14 h-14 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 text-xl">{getEmoji(product.type)}</div>
             )}
@@ -163,11 +163,11 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
             <motion.div initial={{ y: 100 }} animate={{ y: 0 }} exit={{ y: 100 }} onClick={(e) => e.stopPropagation()} className="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden" style={{ backgroundColor: "hsl(var(--background))" }}>
               <div className="flex items-center justify-between p-4">
                 <span className="text-xs font-semibold text-white/40 uppercase tracking-wider">{getLabel(product.type)}</span>
-                <button onClick={() => !loading && setModalOpen(false)} className="text-white/40 hover:text-white"><X className="w-5 h-5" /></button>
+                <button onClick={() => !loading && setModalOpen(false)} aria-label="Close" className="text-white/40 hover:text-white"><X className="w-5 h-5" /></button>
               </div>
 
               {product.image_url ? (
-                <img src={product.image_url} alt="" className="w-full aspect-video object-cover" />
+                <img src={product.image_url} alt={product.name} loading="lazy" className="w-full aspect-video object-cover" />
               ) : (
                 <div className="w-full aspect-video bg-white/5 flex items-center justify-center text-5xl">{getEmoji(product.type)}</div>
               )}

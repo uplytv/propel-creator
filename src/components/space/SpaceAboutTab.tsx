@@ -99,7 +99,7 @@ function SortableThumb({
         {thumb.isVideo && !thumb.playbackId ? (
           <video src={thumb.src} muted playsInline preload="metadata" className="w-full h-full object-cover" />
         ) : (
-          <img src={thumb.src} alt="" className="w-full h-full object-cover" />
+          <img src={thumb.src} alt="" loading="lazy" className="w-full h-full object-cover" />
         )}
         {thumb.isVideo && !editMode && !isActive && (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -118,6 +118,7 @@ function SortableThumb({
             e.stopPropagation();
             onDelete(thumb.id);
           }}
+          aria-label="Delete media"
           className="absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-destructive flex items-center justify-center shadow-md z-10"
         >
           <X className="w-3 h-3 text-destructive-foreground" />
@@ -420,10 +421,10 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
             <Input value={nameInput} onChange={(e) => setNameInput(e.target.value)}
               className="text-lg font-bold h-9 flex-1" autoFocus
               onKeyDown={(e) => e.key === "Enter" && handleSaveName()} />
-            <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={handleSaveName}>
+            <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={handleSaveName} aria-label="Save name">
               <Check className="w-4 h-4 text-primary" />
             </Button>
-            <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => setEditingName(false)}>
+            <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => setEditingName(false)} aria-label="Cancel editing name">
               <X className="w-4 h-4 text-muted-foreground" />
             </Button>
           </div>
@@ -431,7 +432,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
           <div className="flex items-center gap-2 group">
             <h2 className="text-xl font-bold text-foreground">{spaceName}</h2>
             {isOwner && (
-              <button onClick={() => { setNameInput(spaceName); setEditingName(true); }}
+              <button onClick={() => { setNameInput(spaceName); setEditingName(true); }} aria-label="Edit name"
                 className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-md hover:bg-secondary/50">
                 <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
               </button>
@@ -454,7 +455,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
               ) : activeAsset.isVideo && !activeAsset.playbackId ? (
                 <video src={activeAsset.src} muted playsInline preload="metadata" className="w-full h-full object-contain bg-black" />
               ) : (
-                <img src={activeAsset.src} alt="" className="w-full h-full object-contain bg-black" />
+                <img src={activeAsset.src} alt="" loading="lazy" className="w-full h-full object-contain bg-black" />
               )}
 
               {activeAsset.isVideo && !isPlayingVideo && (
@@ -520,7 +521,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
 
               {/* Add media */}
               {isOwner && (
-                <button onClick={() => mediaInputRef.current?.click()}
+                <button onClick={() => mediaInputRef.current?.click()} aria-label="Add media"
                   className="flex-shrink-0 w-20 h-14 rounded-lg border-2 border-dashed border-border hover:border-primary/40 flex items-center justify-center transition-colors">
                   {uploadingMedia ? <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
                     : <Plus className="w-5 h-5 text-muted-foreground" />}
@@ -615,7 +616,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             {avatar ? (
-              <img src={avatar} alt="" className="w-5 h-5 rounded-full object-cover" />
+              <img src={avatar} alt="" loading="lazy" className="w-5 h-5 rounded-full object-cover" />
             ) : (
               <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">
                 {spaceName.charAt(0)}

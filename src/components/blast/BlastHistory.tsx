@@ -102,7 +102,7 @@ export default function BlastHistory({ creatorId }: BlastHistoryProps) {
                   <p className="text-sm text-muted-foreground whitespace-pre-wrap">{blast.message}</p>
 
                   {blast.media_type === "image" && blast.media_url && (
-                    <img src={blast.media_url} alt="" className="w-full max-h-[300px] object-cover rounded-lg" />
+                    <img src={blast.media_url} alt={blast.subject} loading="lazy" className="w-full max-h-[300px] object-cover rounded-lg" />
                   )}
                   {blast.media_type === "video" && blast.mux_playback_id && (
                     <UPLYMuxPlayer playbackId={blast.mux_playback_id} autoPlay={false} />

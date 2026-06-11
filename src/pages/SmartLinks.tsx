@@ -423,7 +423,7 @@ export default function SmartLinks() {
                     onChange={(e) => setCoverFile(e.target.files?.[0] || null)}
                   />
                   {form.cover_image_url && !coverFile && (
-                    <img src={form.cover_image_url} alt="" className="mt-2 w-24 h-24 rounded object-cover" />
+                    <img src={form.cover_image_url} alt={form.title} className="mt-2 w-24 h-24 rounded object-cover" loading="lazy" />
                   )}
                 </div>
 
@@ -789,7 +789,7 @@ export default function SmartLinks() {
                   <div className="flex items-center gap-4">
                     <div className="w-16 h-16 rounded-lg bg-muted overflow-hidden flex-shrink-0 ring-1 ring-border">
                       {link.cover_image_url ? (
-                        <img src={link.cover_image_url} alt="" className="w-full h-full object-cover" />
+                        <img src={link.cover_image_url} alt={link.title} className="w-full h-full object-cover" loading="lazy" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center"><Music className="h-6 w-6 text-muted-foreground" /></div>
                       )}

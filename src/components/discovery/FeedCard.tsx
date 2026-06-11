@@ -262,6 +262,7 @@ const FeedCard = memo(forwardRef<HTMLDivElement, FeedCardProps>(function FeedCar
             onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
             className="w-8 h-8 flex items-center justify-center rounded-full"
             style={{ background: "rgba(0,0,0,0.7)" }}
+            aria-label="More options"
           >
             <MoreVertical className="w-4 h-4 text-white" />
           </button>
@@ -311,6 +312,7 @@ const FeedCard = memo(forwardRef<HTMLDivElement, FeedCardProps>(function FeedCar
             navigate(`/creator/${encodeURIComponent(item.creatorName)}`);
           }}
           className="shrink-0"
+          aria-label={`View ${item.creatorName}'s profile`}
         >
           {item.creatorAvatar ? (
             <img

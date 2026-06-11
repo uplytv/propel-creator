@@ -126,7 +126,7 @@ const SearchSuggestions = memo(function SearchSuggestions({ onSearchSubmit }: Se
             style={{ fontFamily: "Plus Jakarta Sans, sans-serif" }}
           />
           {query && (
-            <button type="button" onClick={() => { setQuery(""); setSuggestions([]); }} className="text-muted-foreground hover:text-foreground">
+            <button type="button" onClick={() => { setQuery(""); setSuggestions([]); }} className="text-muted-foreground hover:text-foreground" aria-label="Clear search">
               <X className="w-4 h-4" />
             </button>
           )}
@@ -154,7 +154,7 @@ const SearchSuggestions = memo(function SearchSuggestions({ onSearchSubmit }: Se
                       className="flex items-center gap-3 w-full px-3 py-2.5 hover:bg-secondary/50 transition-colors"
                     >
                       {s.image ? (
-                        <img src={s.image} alt="" className={cn("w-8 h-8 object-cover", type === "video" ? "rounded" : "rounded-full")} />
+                        <img src={s.image} alt={s.title} loading="lazy" className={cn("w-8 h-8 object-cover", type === "video" ? "rounded" : "rounded-full")} />
                       ) : (
                         <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
                           <Icon className="w-4 h-4 text-muted-foreground" />

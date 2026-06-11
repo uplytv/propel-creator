@@ -127,7 +127,7 @@ function EventAnalyticsPanel({ event }: { event: EventRow }) {
               return (
                 <div key={t.id} className="flex items-center justify-between text-xs py-1.5 border-b border-border last:border-0">
                   <div className="flex items-center gap-2">
-                    {profile?.avatar_url && <img src={profile.avatar_url} className="w-5 h-5 rounded-full" loading="lazy" />}
+                    {profile?.avatar_url && <img src={profile.avatar_url} alt={profile.display_name || profile.username || ""} className="w-5 h-5 rounded-full" loading="lazy" />}
                     <span className="text-foreground">{profile?.display_name || profile?.username || "—"}</span>
                   </div>
                   <div className="flex items-center gap-3">
@@ -172,7 +172,7 @@ function EventCard({ event, username }: { event: EventRow; username?: string }) 
         >
           {event.cover_image_url && (
             <div className="aspect-video w-full overflow-hidden">
-              <img src={event.cover_image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+              <img src={event.cover_image_url} alt={event.title} className="w-full h-full object-cover" loading="lazy" />
             </div>
           )}
           <div className="p-4 space-y-2">

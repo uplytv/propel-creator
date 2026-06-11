@@ -57,7 +57,7 @@ export default function TVFeatureProductButton({ streamId }: Props) {
                 onClick={() => featureIt(p.id)}
                 className="w-full flex items-center gap-3 p-2 rounded-lg border border-border hover:border-primary hover:bg-primary/5 transition text-left disabled:opacity-50"
               >
-                {p.image_url && <img src={p.image_url} alt="" className="w-12 h-12 rounded object-cover" />}
+                {p.image_url && <img src={p.image_url} alt={p.name} loading="lazy" className="w-12 h-12 rounded object-cover" />}
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-semibold truncate">{p.name}</div>
                   <div className="text-xs text-muted-foreground">${Number(p.price).toFixed(2)}</div>

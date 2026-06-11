@@ -57,7 +57,7 @@ export default function ChallengeDetailPage() {
     <div className="min-h-screen bg-background mobile-safe-content max-w-3xl mx-auto px-4 py-6">
       <div className="aspect-video rounded-lg overflow-hidden bg-muted mb-4">
         {challenge.artwork_url && (
-          <img src={challenge.artwork_url} alt={challenge.title} className="w-full h-full object-cover" />
+          <img src={challenge.artwork_url} alt={challenge.title} loading="lazy" className="w-full h-full object-cover" />
         )}
       </div>
 
@@ -105,7 +105,7 @@ export default function ChallengeDetailPage() {
               <Card key={e.id} className="p-3">
                 <div className="flex items-start gap-3">
                   {e.artwork_url ? (
-                    <img src={e.artwork_url} alt="" className="w-14 h-14 rounded object-cover" />
+                    <img src={e.artwork_url} alt={e.title} loading="lazy" className="w-14 h-14 rounded object-cover" />
                   ) : (
                     <div className="w-14 h-14 rounded bg-muted" />
                   )}

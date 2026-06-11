@@ -73,7 +73,7 @@ export default function CreatorShopPanel({ streamId }: Props) {
                 style={{ backgroundColor: "rgba(0,255,133,0.05)", borderColor: "hsl(var(--primary))" }}>
                 <div className="flex items-center gap-2">
                   {p.image_url ? (
-                    <img src={p.image_url} alt="" className="w-10 h-10 rounded object-cover flex-shrink-0" />
+                    <img src={p.image_url} alt={p.title} loading="lazy" className="w-10 h-10 rounded object-cover flex-shrink-0" />
                   ) : (
                     <div className="w-10 h-10 rounded bg-white/5 flex items-center justify-center text-sm">🛍️</div>
                   )}
@@ -109,7 +109,7 @@ export default function CreatorShopPanel({ streamId }: Props) {
             <div key={p.id} className="rounded-lg p-2.5 mb-1.5 flex items-center gap-2"
               style={{ backgroundColor: "rgba(255,255,255,0.03)" }}>
               {p.image_url ? (
-                <img src={p.image_url} alt="" className="w-10 h-10 rounded object-cover flex-shrink-0" />
+                <img src={p.image_url} alt={p.title} loading="lazy" className="w-10 h-10 rounded object-cover flex-shrink-0" />
               ) : (
                 <div className="w-10 h-10 rounded bg-white/5 flex items-center justify-center text-sm">🛍️</div>
               )}

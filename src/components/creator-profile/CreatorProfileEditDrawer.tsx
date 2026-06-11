@@ -120,7 +120,7 @@ export default function CreatorProfileEditDrawer({ open, onOpenChange, profile, 
             <Label className="text-muted-foreground text-xs mb-1.5">Avatar</Label>
             <label className="flex items-center gap-3 cursor-pointer">
               {profile.avatar_url ? (
-                <img src={profile.avatar_url} className="w-14 h-14 rounded-full object-cover" style={{ border: "2px solid #00FF85" }} alt="" />
+                <img src={profile.avatar_url} className="w-14 h-14 rounded-full object-cover" style={{ border: "2px solid #00FF85" }} alt={`${displayName} avatar`} loading="lazy" />
               ) : (
                 <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--card))", border: "2px solid #00FF85", color: "hsl(var(--primary))" }}>
                   {displayName.charAt(0) || "U"}
@@ -139,7 +139,7 @@ export default function CreatorProfileEditDrawer({ open, onOpenChange, profile, 
             <Label className="text-muted-foreground text-xs mb-1.5">Cover Image</Label>
             <label className="block cursor-pointer rounded-lg overflow-hidden h-20" style={{ background: "hsl(var(--background))", border: "1px dashed #1E1E1E" }}>
               {profile.cover_image_url ? (
-                <img src={profile.cover_image_url} className="w-full h-full object-cover" alt="" />
+                <img src={profile.cover_image_url} className="w-full h-full object-cover" alt="" loading="lazy" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
                   {coverUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Click to upload cover"}
@@ -196,7 +196,7 @@ export default function CreatorProfileEditDrawer({ open, onOpenChange, profile, 
                     className="flex-1"
                     style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--card))", color: "white" }}
                   />
-                  <button onClick={() => removeLink(idx)} className="text-muted-foreground hover:text-destructive transition-colors">
+                  <button onClick={() => removeLink(idx)} aria-label="Remove link" className="text-muted-foreground hover:text-destructive transition-colors">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>

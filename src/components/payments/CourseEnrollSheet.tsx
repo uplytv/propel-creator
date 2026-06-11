@@ -127,6 +127,7 @@ export default function CourseEnrollSheet({
               <button
                 onClick={onClose}
                 className="absolute top-4 right-4 z-10 p-1.5 rounded-full bg-background/60 text-muted-foreground hover:text-foreground"
+                aria-label="Close"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -134,7 +135,7 @@ export default function CourseEnrollSheet({
               {/* Thumbnail */}
               {product.image_url && (
                 <div className="aspect-video w-full overflow-hidden">
-                  <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                  <img src={product.image_url} alt={product.name} loading="lazy" className="w-full h-full object-cover" />
                 </div>
               )}
 
@@ -144,7 +145,7 @@ export default function CourseEnrollSheet({
                   <h3 className="text-xl font-bold text-foreground">{product.name}</h3>
                   <div className="flex items-center gap-2 mt-2">
                     {creatorAvatar ? (
-                      <img src={creatorAvatar} className="w-8 h-8 rounded-full object-cover" alt="" />
+                      <img src={creatorAvatar} className="w-8 h-8 rounded-full object-cover" alt={`${creatorName || "Creator"} avatar`} loading="lazy" />
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-foreground">
                         {(creatorName || "C").charAt(0)}

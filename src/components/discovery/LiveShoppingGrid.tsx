@@ -271,7 +271,7 @@ export default function LiveShoppingGrid() {
               {s.featured_product && (
                 <div className="flex items-center gap-2 pt-1 transition-all">
                   {s.featured_product.image_url && (
-                    <img src={s.featured_product.image_url} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
+                    <img src={s.featured_product.image_url} alt={s.featured_product.name} loading="lazy" className="w-8 h-8 rounded object-cover shrink-0" />
                   )}
                   <div className="min-w-0 flex-1">
                     <div className="text-[11px] text-muted-foreground line-clamp-1">{s.featured_product.name}</div>

@@ -47,7 +47,7 @@ function EventCard({ event }: { event: EventRow }) {
     >
       <div className="aspect-video w-full overflow-hidden relative">
         {event.cover_image_url ? (
-          <img src={event.cover_image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+          <img src={event.cover_image_url} alt={event.title} className="w-full h-full object-cover" loading="lazy" />
         ) : (
           <div className="w-full h-full bg-muted flex items-center justify-center">
             <CalendarDays className="w-10 h-10 text-muted-foreground" />
@@ -62,7 +62,7 @@ function EventCard({ event }: { event: EventRow }) {
       <div className="p-3 space-y-1.5">
         <h3 className="font-semibold text-foreground text-sm truncate">{event.title}</h3>
         <div className="flex items-center gap-2">
-          {creator?.avatar_url && <img src={creator.avatar_url} className="w-5 h-5 rounded-full" loading="lazy" />}
+          {creator?.avatar_url && <img src={creator.avatar_url} alt={`${creator.display_name || creator.username} avatar`} className="w-5 h-5 rounded-full" loading="lazy" />}
           <span className="text-xs text-muted-foreground">{creator?.display_name || creator?.username}</span>
         </div>
         <p className="text-xs text-primary">{format(new Date(event.starts_at), "EEE MMM d · h:mm a")}</p>

@@ -96,7 +96,7 @@ export default function StoryViewer({ userId, stories, allUserIds, onClose, onNa
           <p className="text-sm font-semibold text-white">{profile?.display_name}</p>
           <p className="text-[10px] text-white/50">{formatDistanceToNow(new Date(story.created_at), { addSuffix: true })}</p>
         </div>
-        <button onClick={onClose} className="p-1">
+        <button onClick={onClose} aria-label="Close" className="p-1">
           <X className="w-6 h-6 text-white" />
         </button>
       </div>
@@ -106,7 +106,7 @@ export default function StoryViewer({ userId, stories, allUserIds, onClose, onNa
         {story.media_type === "video" ? (
           <video src={story.media_url} className="max-h-full max-w-full rounded-xl object-contain" autoPlay muted playsInline />
         ) : (
-          <img src={story.media_url} className="max-h-full max-w-full rounded-xl object-contain" alt="" />
+          <img src={story.media_url} className="max-h-full max-w-full rounded-xl object-contain" alt={`Story by ${profile?.display_name || "user"}`} loading="lazy" />
         )}
       </div>
 

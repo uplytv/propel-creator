@@ -179,9 +179,9 @@ export default function DiscoverMarketplace() {
                 {/* Image */}
                 <div className="w-14 h-14 rounded-xl overflow-hidden bg-secondary flex-shrink-0">
                   {item.imageUrl ? (
-                    <img src={item.imageUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
+                    <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
                   ) : item.creatorAvatar ? (
-                    <img src={item.creatorAvatar} alt="" className="w-full h-full object-cover" loading="lazy" />
+                    <img src={item.creatorAvatar} alt={`${item.creatorName} avatar`} className="w-full h-full object-cover" loading="lazy" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/10">
                       {item.type === "course" ? <BookOpen className="w-6 h-6 text-primary/40" /> :

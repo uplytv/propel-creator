@@ -134,7 +134,7 @@ export default function MusicCreatorAnalyticsPage() {
                   {i + 1}
                 </span>
                 {t.cover_art_url ? (
-                  <img src={t.cover_art_url} alt="" className="h-12 w-12 rounded-md object-cover" />
+                  <img src={t.cover_art_url} alt={t.title} loading="lazy" className="h-12 w-12 rounded-md object-cover" />
                 ) : (
                   <div className="h-12 w-12 rounded-md bg-muted" />
                 )}

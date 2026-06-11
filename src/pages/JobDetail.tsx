@@ -99,7 +99,7 @@ export default function JobDetail() {
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-lg font-bold text-primary flex-shrink-0">
               {job.creator_avatar ? (
-                <img src={job.creator_avatar} alt="" className="w-full h-full rounded-full object-cover" />
+                <img src={job.creator_avatar} alt={job.creator_name || ""} className="w-full h-full rounded-full object-cover" loading="lazy" />
               ) : (
                 job.creator_name?.charAt(0) || "C"
               )}
@@ -244,7 +244,7 @@ export default function JobDetail() {
                           <div className="flex items-center gap-3">
                             <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
                               {app.applicant_avatar ? (
-                                <img src={app.applicant_avatar} alt="" className="w-full h-full rounded-full object-cover" />
+                                <img src={app.applicant_avatar} alt={app.applicant_name || ""} className="w-full h-full rounded-full object-cover" loading="lazy" />
                               ) : (
                                 app.applicant_name?.charAt(0) || "U"
                               )}

@@ -193,7 +193,7 @@ export default function CreatorSpace() {
       {/* Top Header */}
       <div className="px-4 pb-2 flex items-center gap-3">
         {spaceAvatar ? (
-          <img src={spaceAvatar} alt="" className="w-8 h-8 rounded-full object-cover" />
+          <img src={spaceAvatar} alt="" loading="lazy" className="w-8 h-8 rounded-full object-cover" />
         ) : (
           <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-surface-raised text-foreground">
             {spaceName.charAt(0)}

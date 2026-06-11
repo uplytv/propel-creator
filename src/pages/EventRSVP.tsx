@@ -109,7 +109,7 @@ export default function EventRSVP() {
       {/* Cover Image */}
       {event.cover_image_url && (
         <div className="relative h-48 w-full">
-          <img src={event.cover_image_url} alt="" className="w-full h-full object-cover" />
+          <img src={event.cover_image_url} alt={event.title} className="w-full h-full object-cover" loading="eager" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] to-transparent" />
         </div>
       )}
@@ -119,7 +119,7 @@ export default function EventRSVP() {
         {creator && (
           <div className="flex items-center gap-2 mb-4">
             {creator.avatar_url ? (
-              <img src={creator.avatar_url} className="w-8 h-8 rounded-full object-cover" alt="" />
+              <img src={creator.avatar_url} className="w-8 h-8 rounded-full object-cover" alt={creator.display_name || ""} loading="lazy" />
             ) : (
               <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white text-sm font-bold">
                 {creator.display_name?.[0]}

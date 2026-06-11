@@ -98,7 +98,7 @@ export function SubscriptionsTab() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {creator?.avatar_url ? (
-                  <img src={creator.avatar_url} className="w-10 h-10 rounded-full object-cover" alt="" />
+                  <img src={creator.avatar_url} className="w-10 h-10 rounded-full object-cover" alt={`${creator.display_name || "Creator"} avatar`} loading="lazy" />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
                     {(creator?.display_name || "C").charAt(0)}

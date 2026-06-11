@@ -151,6 +151,7 @@ export default function LiveEventStreamsSection({ title, filterFollowing, follow
                   <img
                     src={`https://image.mux.com/${stream.mux_playback_id}/thumbnail.webp?width=400&height=225&time=0`}
                     alt={stream.title}
+                    loading="lazy"
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -170,7 +171,7 @@ export default function LiveEventStreamsSection({ title, filterFollowing, follow
               <div className="p-2.5 space-y-1.5">
                 <div className="flex items-center gap-2">
                   {stream.profile?.avatar_url ? (
-                    <img src={stream.profile.avatar_url} className="w-6 h-6 rounded-full object-cover" alt="" />
+                    <img src={stream.profile.avatar_url} className="w-6 h-6 rounded-full object-cover" alt={stream.profile?.display_name || "Creator"} loading="lazy" />
                   ) : (
                     <div className="w-6 h-6 rounded-full bg-secondary" />
                   )}

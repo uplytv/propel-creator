@@ -79,7 +79,7 @@ function MyTicketsTab() {
             className="flex gap-3 p-3 rounded-xl bg-card border border-border cursor-pointer hover:border-primary/40 transition-colors"
           >
             {event?.cover_image_url && (
-              <img src={event.cover_image_url} className="w-20 h-14 rounded-lg object-cover flex-shrink-0" loading="lazy" />
+              <img src={event.cover_image_url} alt={event.title || ""} className="w-20 h-14 rounded-lg object-cover flex-shrink-0" loading="lazy" />
             )}
             <div className="flex-1 min-w-0">
               <h4 className="text-sm font-semibold text-foreground truncate">{event?.title || "Event"}</h4>
@@ -264,7 +264,7 @@ export default function Settings() {
               <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                 <div className="w-20 h-20 rounded-full bg-secondary border-2 border-border overflow-hidden">
                   {dbProfile?.avatar_url ? (
-                    <img src={dbProfile.avatar_url} alt="" className="w-full h-full object-cover" />
+                    <img src={dbProfile.avatar_url} alt={name || ""} className="w-full h-full object-cover" loading="lazy" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                       <User className="w-8 h-8" />

@@ -558,7 +558,7 @@ export default function Onboarding() {
           style={{ background: "hsl(var(--primary) / 0.1)", border: "1px solid hsl(var(--primary) / 0.3)" }}
         >
           {referrerAvatar ? (
-            <img src={referrerAvatar} alt="" className="w-5 h-5 rounded-full object-cover" />
+            <img src={referrerAvatar} alt={referrerName || ""} className="w-5 h-5 rounded-full object-cover" loading="lazy" />
           ) : (
             <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-primary text-[10px] font-bold">
               {referrerName[0]}
@@ -727,7 +727,7 @@ export default function Onboarding() {
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             className="flex flex-col items-center gap-3"
           >
-            <img src={logoImg} alt="UPLY" className="w-24 h-24 object-contain" />
+            <img src={logoImg} alt="UPLY" className="w-24 h-24 object-contain" loading="eager" />
           </motion.div>
         )}
 
@@ -747,7 +747,7 @@ export default function Onboarding() {
             {/* Photo upload */}
             <div className="flex flex-col items-center gap-3 mb-6">
               <button onClick={() => fileRef.current?.click()} className="w-20 h-20 rounded-full border-2 border-dashed border-border hover:border-primary transition-colors flex items-center justify-center overflow-hidden bg-card">
-                {avatarUrl ? <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" /> : <Camera className="w-6 h-6 text-muted-foreground" />}
+                {avatarUrl ? <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" loading="lazy" /> : <Camera className="w-6 h-6 text-muted-foreground" />}
               </button>
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoSelect} />
               <p className="text-xs text-muted-foreground">Add a profile photo (optional)</p>

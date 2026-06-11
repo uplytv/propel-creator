@@ -55,7 +55,7 @@ export default function GlobalEventDetail() {
   return (
     <div className="min-h-screen bg-background">
       <div className="relative aspect-video sm:aspect-[3/1] bg-muted overflow-hidden">
-        {event.image_url && <img src={event.image_url} alt={event.title} className="w-full h-full object-cover" />}
+        {event.image_url && <img src={event.image_url} alt={event.title} className="w-full h-full object-cover" loading="eager" />}
         <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
         <Button asChild variant="ghost" size="sm" className="absolute top-4 left-4 bg-background/80 backdrop-blur">
           <Link to="/events"><ArrowLeft className="w-4 h-4 mr-1" /> Back</Link>
@@ -101,7 +101,7 @@ export default function GlobalEventDetail() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {tags.map((t) => (
                 <Link key={t.id} to={t.profile?.username ? `/${t.profile.username}` : "#"} className="flex items-center gap-2 p-3 rounded-lg bg-card border border-border hover:border-primary/50 transition">
-                  {t.profile?.avatar_url && <img src={t.profile.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover" />}
+                  {t.profile?.avatar_url && <img src={t.profile.avatar_url} alt={t.profile.display_name || t.profile.username || ""} className="w-10 h-10 rounded-full object-cover" loading="lazy" />}
                   <div className="min-w-0">
                     <div className="text-sm font-medium truncate">{t.profile?.display_name || t.profile?.username || "Creator"}</div>
                     <div className="text-xs text-muted-foreground">{t.stream_id ? "Live stream" : "Video"}</div>

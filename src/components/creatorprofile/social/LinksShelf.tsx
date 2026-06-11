@@ -62,7 +62,7 @@ export default function LinksShelf({ profileId }: Props) {
             >
               <span className="flex items-center gap-3 min-w-0">
                 {l.icon ? (
-                  <img src={l.icon} alt="" className="h-6 w-6 rounded" />
+                  <img src={l.icon} alt="" loading="lazy" className="h-6 w-6 rounded" />
                 ) : (
                   <span className="h-6 w-6 rounded bg-primary/15 inline-flex items-center justify-center text-[10px] font-bold text-primary">
                     {l.title.slice(0, 1).toUpperCase()}

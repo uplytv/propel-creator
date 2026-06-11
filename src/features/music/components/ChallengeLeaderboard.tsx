@@ -20,7 +20,7 @@ export function ChallengeLeaderboard({ challengeId }: { challengeId: string }) {
               {rank > 3 && <span>#{rank}</span>}
             </div>
             {row.artwork_url ? (
-              <img src={row.artwork_url} alt="" className="w-10 h-10 rounded object-cover" />
+              <img src={row.artwork_url} alt="" loading="lazy" className="w-10 h-10 rounded object-cover" />
             ) : (
               <div className="w-10 h-10 rounded bg-muted" />
             )}

@@ -477,12 +477,12 @@ export default function Products() {
                 onClick={() => user && navigate(`/community/${user.id}`, { state: { tab: p.type === 'course' ? 'classroom' : 'community' } })}
               >
                 {view === "grid" && (p as any).image_url && (
-                  <img src={(p as any).image_url} alt={p.name} className="w-full h-36 object-cover" />
+                  <img src={(p as any).image_url} alt={p.name} className="w-full h-36 object-cover" loading="lazy" />
                 )}
                 <div className={`flex-1 ${view === "grid" ? "p-5" : ""}`}>
                   {view === "list" && (
                     (p as any).image_url
-                      ? <img src={(p as any).image_url} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                      ? <img src={(p as any).image_url} alt={p.name} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" loading="lazy" />
                       : <div className="text-3xl">{typeIcons[p.type] || "📦"}</div>
                   )}
                   {view === "grid" && !(p as any).image_url && (
@@ -722,7 +722,7 @@ export default function Products() {
                       </Label>
                       {imagePreview ? (
                         <div className="relative rounded-lg overflow-hidden border border-border">
-                          <img src={imagePreview} alt="Preview" className="w-full h-36 object-cover" />
+                          <img src={imagePreview} alt="Preview" className="w-full h-36 object-cover" loading="lazy" />
                           <button
                             onClick={() => { setImageFile(null); setImagePreview(null); }}
                             className="absolute top-2 right-2 p-1 rounded-full bg-background/80 hover:bg-background text-muted-foreground hover:text-foreground transition-colors"
@@ -850,7 +850,7 @@ export default function Products() {
                     <Label className="flex items-center gap-2"><ImageIcon className="w-4 h-4" /> Product Image</Label>
                     {editImagePreview ? (
                       <div className="relative rounded-lg overflow-hidden border border-border">
-                        <img src={editImagePreview} alt="Preview" className="w-full h-36 object-cover" />
+                        <img src={editImagePreview} alt="Preview" className="w-full h-36 object-cover" loading="lazy" />
                         <button
                           onClick={() => { setEditImageFile(null); setEditImagePreview(null); }}
                           className="absolute top-2 right-2 p-1 rounded-full bg-background/80 hover:bg-background text-muted-foreground hover:text-foreground transition-colors"

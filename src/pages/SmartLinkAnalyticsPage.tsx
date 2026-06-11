@@ -203,7 +203,7 @@ export default function SmartLinkAnalyticsPage() {
         <div className="flex items-start gap-4 mb-6">
           <div className="w-20 h-20 rounded bg-muted overflow-hidden flex-shrink-0">
             {link.cover_image_url ? (
-              <img src={link.cover_image_url} alt="" className="w-full h-full object-cover" />
+              <img src={link.cover_image_url} alt={link.title} className="w-full h-full object-cover" loading="lazy" />
             ) : (
               <div className="w-full h-full flex items-center justify-center"><Music className="h-8 w-8 text-muted-foreground" /></div>
             )}

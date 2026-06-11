@@ -52,6 +52,7 @@ export default function TonightOnUPLY() {
                 <img
                   src={stream.playback_id ? `https://image.mux.com/${stream.playback_id}/thumbnail.jpg?width=400` : "/placeholder.svg"}
                   alt={stream.title || "Stream"}
+                  loading="lazy"
                   className="w-full h-full object-cover"
                 />
                 {liveStreams.some((l: any) => l.id === stream.id) && (
@@ -82,7 +83,7 @@ export default function TonightOnUPLY() {
             >
               <div className="mx-auto w-10 h-10 rounded-full overflow-hidden" style={{ border: "2px solid hsl(var(--primary))" }}>
                 {creator.avatar_url ? (
-                  <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
+                  <img src={creator.avatar_url} alt={`${creator.display_name || "Creator"} avatar`} loading="lazy" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
                     {(creator.display_name || "?")[0]}

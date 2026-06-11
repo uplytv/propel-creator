@@ -97,7 +97,7 @@ export default function StoryCreator({ onClose }: StoryCreatorProps) {
 
         <div className="flex items-center justify-between mb-4">
           <h3 style={{ fontSize: 18, fontWeight: 800, color: "#FFFFFF" }}>Share Your Plan</h3>
-          <button onClick={onClose}>
+          <button onClick={onClose} aria-label="Close">
             <X className="w-5 h-5" style={{ color: "rgba(255,255,255,0.5)" }} />
           </button>
         </div>
@@ -111,10 +111,11 @@ export default function StoryCreator({ onClose }: StoryCreatorProps) {
             {selectedFile?.type.startsWith("video") ? (
               <video src={preview} className="w-full h-full object-cover" autoPlay muted playsInline />
             ) : (
-              <img src={preview} className="w-full h-full object-cover" alt="" />
+              <img src={preview} className="w-full h-full object-cover" alt="" loading="lazy" />
             )}
             <button
               onClick={() => { setSelectedFile(null); setPreview(null); }}
+              aria-label="Remove media"
               className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center"
               style={{ background: "rgba(0,0,0,0.6)" }}
             >

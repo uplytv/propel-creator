@@ -361,9 +361,10 @@ export default function BlastComposer({ open, onClose, creatorId, spaceId, lastB
               {/* Image Preview */}
               {mediaType === "image" && mediaUrl && (
                 <div className="relative rounded-lg overflow-hidden">
-                  <img src={mediaUrl} alt="" className="w-full max-h-[300px] object-cover rounded-lg" />
+                  <img src={mediaUrl} alt="" loading="lazy" className="w-full max-h-[300px] object-cover rounded-lg" />
                   <button
                     onClick={removeMedia}
+                    aria-label="Remove media"
                     className="absolute top-2 right-2 p-1.5 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background"
                   >
                     <Trash2 className="w-4 h-4 text-destructive" />
@@ -378,6 +379,7 @@ export default function BlastComposer({ open, onClose, creatorId, spaceId, lastB
                     <img
                       src={`https://image.mux.com/${muxPlaybackId}/thumbnail.jpg`}
                       alt=""
+                      loading="lazy"
                       className="w-full rounded-lg"
                     />
                     <div className="absolute inset-0 flex items-center justify-center">
@@ -388,6 +390,7 @@ export default function BlastComposer({ open, onClose, creatorId, spaceId, lastB
                   </div>
                   <button
                     onClick={removeMedia}
+                    aria-label="Remove media"
                     className="absolute top-2 right-2 p-1.5 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background"
                   >
                     <Trash2 className="w-4 h-4 text-destructive" />

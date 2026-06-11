@@ -72,7 +72,7 @@ export default function FeaturedProductPicker({
             )}
           >
             {p.image_url ? (
-              <img src={p.image_url} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0" />
+              <img src={p.image_url} alt={p.name} loading="lazy" className="w-8 h-8 rounded object-cover flex-shrink-0" />
             ) : (
               <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center flex-shrink-0 text-xs">
                 {ProductEmoji(p.type)}
@@ -105,6 +105,7 @@ export default function FeaturedProductPicker({
           <button
             type="button"
             onClick={() => onSelect?.(null)}
+            aria-label="Clear featured product"
             className="p-1 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
           >
             <X className="w-3.5 h-3.5" />
@@ -117,7 +118,7 @@ export default function FeaturedProductPicker({
           <PopoverTrigger asChild>
             <button type="button" className="w-full flex items-center gap-2.5 p-2 rounded-lg bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-all text-left">
               {selected.image_url ? (
-                <img src={selected.image_url} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                <img src={selected.image_url} alt={selected.name} loading="lazy" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
               ) : (
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 text-sm">
                   {ProductEmoji(selected.type)}

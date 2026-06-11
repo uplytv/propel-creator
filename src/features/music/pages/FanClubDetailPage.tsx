@@ -48,7 +48,7 @@ export default function FanClubDetailPage() {
     <div className="min-h-screen bg-background mobile-safe-content max-w-3xl mx-auto px-4 py-6">
       <div className="aspect-[2/1] rounded-lg overflow-hidden bg-muted mb-4 relative">
         {club.artwork_url ? (
-          <img src={club.artwork_url} alt={club.name} className="w-full h-full object-cover" />
+          <img src={club.artwork_url} alt={club.name} loading="lazy" className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <Sparkles className="w-16 h-16 text-muted-foreground" />
@@ -112,7 +112,7 @@ export default function FanClubDetailPage() {
             {drops.map((d) => (
               <Card key={d.id} className="p-3 flex items-center gap-3">
                 {d.artwork_url ? (
-                  <img src={d.artwork_url} alt="" className="w-14 h-14 rounded object-cover" />
+                  <img src={d.artwork_url} alt={d.title} loading="lazy" className="w-14 h-14 rounded object-cover" />
                 ) : (
                   <div className="w-14 h-14 rounded bg-muted flex items-center justify-center">
                     {isMember ? <Sparkles className="w-5 h-5 text-primary" /> : <Lock className="w-5 h-5 text-muted-foreground" />}

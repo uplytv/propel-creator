@@ -153,7 +153,7 @@ export default function YouTubeImport({ creatorId }: { creatorId: string }) {
         <div className="space-y-3 rounded-xl border border-border bg-card/50 p-4">
           {/* Preview card */}
           <div className="flex gap-3">
-            <img src={metadata.thumbnail_url} alt="" className="w-28 h-16 rounded-lg object-cover flex-shrink-0" />
+            <img src={metadata.thumbnail_url} alt={metadata.title} loading="lazy" className="w-28 h-16 rounded-lg object-cover flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground truncate">{metadata.title}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{metadata.author_name}</p>

@@ -77,7 +77,7 @@ export default function RadioStationPage() {
               >
                 <span className="w-6 text-center text-xs text-white/40 tabular-nums">{i + 1}</span>
                 {t.cover_art_url ? (
-                  <img src={t.cover_art_url} alt="" className="w-10 h-10 rounded object-cover" />
+                  <img src={t.cover_art_url} alt={t.title} loading="lazy" className="w-10 h-10 rounded object-cover" />
                 ) : (
                   <div className="w-10 h-10 rounded bg-white/10" />
                 )}

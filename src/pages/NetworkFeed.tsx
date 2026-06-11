@@ -30,7 +30,7 @@ function ContentCard({ item }: { item: any }) {
       </div>
       <div className="p-3">
         <div className="flex gap-2.5">
-          {item.avatar_url ? <img src={item.avatar_url} className="w-8 h-8 rounded-full object-cover shrink-0" /> : <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">{(item.creator_name || "U")[0]}</div>}
+          {item.avatar_url ? <img src={item.avatar_url} alt={item.creator_name || ""} className="w-8 h-8 rounded-full object-cover shrink-0" loading="lazy" /> : <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">{(item.creator_name || "U")[0]}</div>}
           <div className="min-w-0">
             <p className="text-sm font-semibold text-foreground line-clamp-2">{item.title}</p>
             <p className="text-xs text-muted-foreground mt-0.5">{item.creator_name}</p>
@@ -68,7 +68,7 @@ function CreatorRow({ c }: { c: any }) {
   const following = isFollowing(c.user_id);
   return (
     <div className="flex items-center gap-3 py-2">
-      {c.avatar_url ? <img src={c.avatar_url} className="w-9 h-9 rounded-full object-cover" /> : <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground">{(c.display_name || "U")[0]}</div>}
+      {c.avatar_url ? <img src={c.avatar_url} alt={c.display_name || ""} className="w-9 h-9 rounded-full object-cover" loading="lazy" /> : <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground">{(c.display_name || "U")[0]}</div>}
       <div className="flex-1 min-w-0 cursor-pointer" onClick={() => navigate(`/${c.username}`)}>
         <p className="text-sm font-semibold text-foreground truncate">{c.display_name}</p>
         <p className="text-[10px] text-muted-foreground">{(c.members || 0).toLocaleString()} members</p>

@@ -46,7 +46,8 @@ export default function StickyJoinCTA({ creatorUserId, creatorName, avatarUrl, i
       {avatarUrl ? (
         <img
           src={avatarUrl}
-          alt=""
+          alt={`${creatorName} avatar`}
+          loading="lazy"
           className="w-9 h-9 rounded-full object-cover shrink-0"
           style={{ border: "2px solid #00FF85" }}
         />

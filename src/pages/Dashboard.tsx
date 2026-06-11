@@ -96,8 +96,7 @@ export default function Dashboard() {
           setCreatorUsername((data as any).username);
           if (Number((data as any).total_revenue || 0) === 0) setShowWizard(true);
         }
-      })
-      .catch((e) => console.error("[Dashboard] profile load failed", e));
+      }, (e) => console.error("[Dashboard] profile load failed", e));
   }, [user, wizardDone]);
 
   useEffect(() => {

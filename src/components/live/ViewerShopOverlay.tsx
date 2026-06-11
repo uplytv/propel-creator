@@ -87,7 +87,7 @@ function ProductCard({ product, auction, onBuy, onBid }: { product: LiveProduct;
         <div className="p-3 flex items-start gap-3">
           <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0" style={{ backgroundColor: "hsl(var(--card))" }}>
             {product.image_url ? (
-              <img src={product.image_url} alt="" className="w-full h-full object-cover" />
+              <img src={product.image_url} alt={product.title} loading="lazy" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-2xl">🛍️</div>
             )}
@@ -235,6 +235,7 @@ export default function ViewerShopOverlay({ streamId, creatorUserId }: Props) {
         <div className="absolute bottom-24 right-3 flex flex-col items-center gap-1 z-30">
           <button
             onClick={() => setShopDrawerOpen(true)}
+            aria-label="Open live shop"
             className="w-12 h-12 rounded-full flex items-center justify-center relative"
             style={{ backgroundColor: "rgba(10,10,10,0.85)", backdropFilter: "blur(12px)" }}>
             <ShoppingBag className="w-5 h-5 text-white" />
@@ -282,7 +283,7 @@ export default function ViewerShopOverlay({ streamId, creatorUserId }: Props) {
                 return (
                   <div key={p.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: "rgba(255,255,255,0.04)" }}>
                     {p.image_url ? (
-                      <img src={p.image_url} alt="" className="w-12 h-12 rounded-lg object-cover" />
+                      <img src={p.image_url} alt={p.title} loading="lazy" className="w-12 h-12 rounded-lg object-cover" />
                     ) : (
                       <div className="w-12 h-12 rounded-lg bg-white/5 flex items-center justify-center text-lg">🛍️</div>
                     )}

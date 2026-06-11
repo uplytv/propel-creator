@@ -118,7 +118,7 @@ export default function ClipCreator({ sourceAssetId, creatorId, duration, playba
           <h3 className="text-sm font-bold text-white flex items-center gap-2">
             <Check className="w-4 h-4 text-primary" /> Clip Created!
           </h3>
-          <button onClick={() => { setShareUrl(null); setIsOpen(false); setCaption(""); }} className="text-muted-foreground hover:text-white">
+          <button onClick={() => { setShareUrl(null); setIsOpen(false); setCaption(""); }} aria-label="Close" className="text-muted-foreground hover:text-white">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -145,7 +145,7 @@ export default function ClipCreator({ sourceAssetId, creatorId, duration, playba
         <h3 className="text-sm font-bold text-white flex items-center gap-2">
           <Scissors className="w-4 h-4 text-primary" /> Create Clip
         </h3>
-        <button onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-white">
+        <button onClick={() => setIsOpen(false)} aria-label="Close" className="text-muted-foreground hover:text-white">
           <X className="w-4 h-4" />
         </button>
       </div>

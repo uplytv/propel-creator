@@ -115,7 +115,7 @@ export default function WaitlistLeaderboard({ currentEmail }: { currentEmail: st
                   <PodiumIcon className={`w-4 h-4 ${style.text} mb-1.5`} />
                   <div className={`relative rounded-full ${style.bg} p-0.5 ring-2 ${style.ring} mb-1.5`}>
                     {entry.avatar_url ? (
-                      <img src={entry.avatar_url} alt="" className={`rounded-full object-cover ${isFirst ? "w-14 h-14" : "w-10 h-10"}`} />
+                      <img src={entry.avatar_url} alt="" loading="lazy" className={`rounded-full object-cover ${isFirst ? "w-14 h-14" : "w-10 h-10"}`} />
                     ) : (
                       <div className={`rounded-full flex items-center justify-center font-bold ${style.text} ${isFirst ? "w-14 h-14 text-lg" : "w-10 h-10 text-sm"}`}>
                         {formatName(entry.full_name)[0]?.toUpperCase()}
@@ -164,7 +164,7 @@ export default function WaitlistLeaderboard({ currentEmail }: { currentEmail: st
                   <span className="font-bold text-xs w-6 text-center tabular-nums text-muted-foreground">#{rank}</span>
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 overflow-hidden ${isMe ? "bg-primary/20 text-primary ring-1 ring-primary/30" : "bg-secondary text-muted-foreground"}`}>
                     {entry.avatar_url ? (
-                      <img src={entry.avatar_url} alt="" className="w-full h-full object-cover" />
+                      <img src={entry.avatar_url} alt="" loading="lazy" className="w-full h-full object-cover" />
                     ) : (
                       formatName(entry.full_name)[0]?.toUpperCase()
                     )}

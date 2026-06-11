@@ -150,10 +150,10 @@ export default function FeaturedCarousel() {
           <h2 className="text-sm font-bold tracking-tight text-foreground">Staff Picks</h2>
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => scroll("left")}>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => scroll("left")} aria-label="Scroll left">
             <ChevronLeft className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => scroll("right")}>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => scroll("right")} aria-label="Scroll right">
             <ChevronRight className="w-4 h-4" />
           </Button>
         </div>

@@ -49,7 +49,7 @@ export default function NextUpCard({ next, countdown = 8, triggered, onCancel }:
   return (
     <div className="rounded-xl border border-primary/40 bg-card/95 backdrop-blur-sm p-3 flex items-center gap-3 shadow-lg">
       {next.thumbnail_url ? (
-        <img src={next.thumbnail_url} alt="" className="w-20 h-12 object-cover rounded-md shrink-0" />
+        <img src={next.thumbnail_url} alt="" loading="lazy" className="w-20 h-12 object-cover rounded-md shrink-0" />
       ) : (
         <div className="w-20 h-12 bg-secondary rounded-md flex items-center justify-center shrink-0">
           <Play className="w-4 h-4 text-muted-foreground" />

@@ -482,7 +482,7 @@ END:VCALENDAR`;
         {/* Cover */}
         <div className="relative aspect-video w-full overflow-hidden">
           {event.cover_image_url ? (
-            <img src={event.cover_image_url} alt="" className="w-full h-full object-cover" />
+            <img src={event.cover_image_url} alt={event.title} className="w-full h-full object-cover" loading="eager" />
           ) : (
             <div className="w-full h-full bg-card flex items-center justify-center">
               <CalendarDays className="w-16 h-16 text-muted-foreground" />
@@ -493,7 +493,7 @@ END:VCALENDAR`;
           {/* Creator overlay */}
           <div className="absolute bottom-4 left-4 flex items-center gap-3">
             {creatorProfile?.avatar_url && (
-              <img src={creatorProfile.avatar_url} className="w-10 h-10 rounded-full border-2 border-primary" />
+              <img src={creatorProfile.avatar_url} alt={creatorProfile.display_name || ""} className="w-10 h-10 rounded-full border-2 border-primary" loading="lazy" />
             )}
             <span className="text-sm font-medium text-foreground">{creatorProfile?.display_name}</span>
           </div>

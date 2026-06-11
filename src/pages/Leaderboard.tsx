@@ -117,7 +117,7 @@ export default function Leaderboard() {
                       <div className="relative mb-2">
                         <div className={`rounded-full bg-gradient-to-br ${style.gradient} p-0.5 ring-2 ${style.ring}`}>
                           {c.avatar_url ? (
-                            <img src={c.avatar_url} alt="" className={`rounded-full object-cover ${isFirst ? "w-20 h-20" : "w-14 h-14"}`} />
+                            <img src={c.avatar_url} alt={c.display_name || ""} className={`rounded-full object-cover ${isFirst ? "w-20 h-20" : "w-14 h-14"}`} loading="lazy" />
                           ) : (
                             <div className={`rounded-full flex items-center justify-center font-bold ${style.text} ${
                               isFirst ? "w-20 h-20 text-xl" : "w-14 h-14 text-base"
@@ -170,7 +170,7 @@ export default function Leaderboard() {
                     )}
                   </div>
                   {creator.avatar_url ? (
-                    <img src={creator.avatar_url} alt="" className="flex-shrink-0 w-10 h-10 rounded-full object-cover" />
+                    <img src={creator.avatar_url} alt={creator.display_name || ""} className="flex-shrink-0 w-10 h-10 rounded-full object-cover" loading="lazy" />
                   ) : (
                     <div className="flex-shrink-0 w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-sm font-bold text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
                       {(creator.display_name || "C").charAt(0)}

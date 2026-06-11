@@ -147,10 +147,10 @@ export default function ArtistPageEditorAdvanced() {
               <AccordionContent className="space-y-3">
                 <Label>Hero image</Label>
                 <Input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && uploadImage(e.target.files[0], 'hero_image_url')} />
-                {profile.hero_image_url && <img src={profile.hero_image_url} alt="" className="max-h-40 rounded" />}
+                {profile.hero_image_url && <img src={profile.hero_image_url} alt="" loading="lazy" className="max-h-40 rounded" />}
                 <Label>Hero logo (PNG/SVG)</Label>
                 <Input type="file" accept="image/png,image/svg+xml" onChange={(e) => e.target.files?.[0] && uploadImage(e.target.files[0], 'hero_logo_url')} />
-                {profile.hero_logo_url && <img src={profile.hero_logo_url} alt="" className="max-h-20" />}
+                {profile.hero_logo_url && <img src={profile.hero_logo_url} alt="" loading="lazy" className="max-h-20" />}
                 <Label>Tagline</Label>
                 <Input maxLength={120} value={profile.tagline || ''} onChange={(e) => update({ tagline: e.target.value })} placeholder="Short tagline" className="bg-white/5 border-white/10" />
               </AccordionContent>
@@ -219,7 +219,7 @@ export default function ArtistPageEditorAdvanced() {
               <AccordionContent className="space-y-3">
                 <div><Label>Title</Label><Input value={profile.seo_title || ''} onChange={(e) => update({ seo_title: e.target.value })} className="bg-white/5 border-white/10 mt-1" /></div>
                 <div><Label>Description</Label><Textarea rows={2} value={profile.seo_description || ''} onChange={(e) => update({ seo_description: e.target.value })} className="bg-white/5 border-white/10 mt-1" /></div>
-                <div><Label>OG image</Label><Input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && uploadImage(e.target.files[0], 'seo_og_image')} className="mt-1" />{profile.seo_og_image && <img src={profile.seo_og_image} alt="" className="max-h-32 rounded mt-2" />}</div>
+                <div><Label>OG image</Label><Input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && uploadImage(e.target.files[0], 'seo_og_image')} className="mt-1" />{profile.seo_og_image && <img src={profile.seo_og_image} alt="" loading="lazy" className="max-h-32 rounded mt-2" />}</div>
               </AccordionContent>
             </AccordionItem>
 

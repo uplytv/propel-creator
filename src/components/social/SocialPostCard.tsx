@@ -56,7 +56,7 @@ export default function SocialPostCard({ post }: SocialPostCardProps) {
 
       {/* Media */}
       {post.media_urls?.length > 0 && (
-        <img src={post.media_urls[0]} className="w-full rounded-lg mb-2 max-h-80 object-cover" alt="" />
+        <img src={post.media_urls[0]} className="w-full rounded-lg mb-2 max-h-80 object-cover" alt={`Post by ${profile?.display_name || "user"}`} loading="lazy" />
       )}
 
       {/* Reactions */}

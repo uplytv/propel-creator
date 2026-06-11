@@ -171,7 +171,7 @@ export default function StreamCountdownPage() {
           <div>
             <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-3 text-2xl font-bold text-primary">
               {creator?.avatar_url ? (
-                <img src={creator.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
+                <img src={creator.avatar_url} alt={creator.display_name || ""} className="w-full h-full rounded-full object-cover" loading="lazy" />
               ) : (
                 creator?.display_name?.[0] || '?'
               )}

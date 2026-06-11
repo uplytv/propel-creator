@@ -63,7 +63,7 @@ function ConversationList({
             <div className="flex items-start gap-3">
               <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary flex-shrink-0">
                 {conv.other_avatar ? (
-                  <img src={conv.other_avatar} alt="" className="w-full h-full rounded-full object-cover" />
+                  <img src={conv.other_avatar} alt={conv.other_name || ""} className="w-full h-full rounded-full object-cover" loading="lazy" />
                 ) : (
                   conv.other_name?.charAt(0) || "U"
                 )}
@@ -120,7 +120,7 @@ function ChatPanel({ conversationId, conversation }: { conversationId: string; c
       <div className="p-4 border-b border-border flex items-center gap-3">
         <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary flex-shrink-0">
           {conversation?.other_avatar ? (
-            <img src={conversation.other_avatar} alt="" className="w-full h-full rounded-full object-cover" />
+            <img src={conversation.other_avatar} alt={conversation.other_name || ""} className="w-full h-full rounded-full object-cover" loading="lazy" />
           ) : (
             conversation?.other_name?.charAt(0) || "U"
           )}

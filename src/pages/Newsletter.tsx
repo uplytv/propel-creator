@@ -225,7 +225,7 @@ export default function Newsletter() {
           <DialogHeader><DialogTitle>Email Preview</DialogTitle></DialogHeader>
           <div className="bg-background rounded-lg p-6 border border-border">
             <div className="flex items-center gap-3 mb-4">
-              <img src={profile?.avatar_url || "/favicon.png"} className="w-10 h-10 rounded-full object-cover" alt="" />
+              <img src={profile?.avatar_url || "/favicon.png"} className="w-10 h-10 rounded-full object-cover" alt={profile?.display_name || ""} loading="lazy" />
               <div>
                 <p className="font-semibold text-sm">{profile?.display_name}</p>
                 <p className="text-xs text-muted-foreground">via UPLY</p>

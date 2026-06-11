@@ -74,7 +74,7 @@ export default function SpaceLeaderboardTab({ creatorId }: Props) {
                   )}
                 </div>
                 {entry.avatar_url ? (
-                  <img src={entry.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                  <img src={entry.avatar_url} alt="" loading="lazy" className="w-8 h-8 rounded-full object-cover" />
                 ) : (
                   <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "hsl(var(--card))", color: "hsl(var(--foreground))" }}>
                     {(entry.display_name || "M").charAt(0)}
@@ -104,7 +104,7 @@ export default function SpaceLeaderboardTab({ creatorId }: Props) {
                   <span className="text-sm font-bold" style={{ color: "hsl(var(--muted-foreground))" }}>#{currentUserEntry.rank}</span>
                 </div>
                 {currentUserEntry.avatar_url ? (
-                  <img src={currentUserEntry.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                  <img src={currentUserEntry.avatar_url} alt="" loading="lazy" className="w-8 h-8 rounded-full object-cover" />
                 ) : (
                   <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "hsl(var(--card))", color: "hsl(var(--foreground))" }}>
                     {(currentUserEntry.display_name || "M").charAt(0)}

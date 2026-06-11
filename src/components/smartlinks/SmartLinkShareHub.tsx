@@ -127,7 +127,7 @@ export default function SmartLinkShareHub({ links }: Props) {
               >
                 <div className="w-7 h-7 rounded-md bg-muted overflow-hidden ring-1 ring-border shrink-0">
                   {l.cover_image_url ? (
-                    <img src={l.cover_image_url} alt="" className="w-full h-full object-cover" />
+                    <img src={l.cover_image_url} alt={l.title} loading="lazy" className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <Music className="h-3.5 w-3.5 text-muted-foreground" />

@@ -140,6 +140,7 @@ function ContentCard({
           )}
           <button
             onClick={() => item.mux_clip_playback_id && onPlayClip?.(item.mux_clip_playback_id)}
+            aria-label="Play clip"
             className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/40 transition-colors"
           >
             <Play className="w-8 h-8 text-white" />
@@ -150,7 +151,7 @@ function ContentCard({
       <div className="p-3">
         {/* Header */}
         <div className="flex items-start gap-2 mb-2">
-          <button onClick={onToggleSelect} className="mt-0.5 flex-shrink-0">
+          <button onClick={onToggleSelect} aria-label="Select content" className="mt-0.5 flex-shrink-0">
             <div className={`w-4 h-4 rounded border flex items-center justify-center ${
               selected ? "bg-primary border-primary" : "border-muted-foreground/40"
             }`}>

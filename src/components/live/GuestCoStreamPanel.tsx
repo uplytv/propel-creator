@@ -29,7 +29,7 @@ function GuestVideo({ guest }: { guest: Guest }) {
       ) : (
         <div className="w-full aspect-[3/4] flex items-center justify-center" style={{ backgroundColor: 'rgba(10,10,10,0.9)' }}>
           {guest.avatarUrl ? (
-            <img src={guest.avatarUrl} alt="" className="w-12 h-12 rounded-full object-cover" />
+            <img src={guest.avatarUrl} alt={guest.name} loading="lazy" className="w-12 h-12 rounded-full object-cover" />
           ) : (
             <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-lg">
               {guest.name[0]}
@@ -120,7 +120,7 @@ export default function GuestCoStreamPanel({ streamId, isHost }: Props) {
               <p className="text-sm font-bold text-white">
                 Guests {guests.length}/{4}
               </p>
-              <button onClick={() => setShowPanel(false)} className="text-white/40 hover:text-white">
+              <button onClick={() => setShowPanel(false)} aria-label="Close guest panel" className="text-white/40 hover:text-white">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -146,7 +146,7 @@ export default function GuestCoStreamPanel({ streamId, isHost }: Props) {
                 {pendingRequests.map(req => (
                   <div key={req.userId} className="flex items-center gap-2 py-1.5">
                     {req.avatarUrl ? (
-                      <img src={req.avatarUrl} alt="" className="w-7 h-7 rounded-full object-cover" />
+                      <img src={req.avatarUrl} alt={req.name} loading="lazy" className="w-7 h-7 rounded-full object-cover" />
                     ) : (
                       <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold">
                         <Users className="w-3.5 h-3.5" />
@@ -156,6 +156,7 @@ export default function GuestCoStreamPanel({ streamId, isHost }: Props) {
                     <button
                       onClick={() => acceptGuest(req.userId)}
                       disabled={isFull}
+                      aria-label="Accept guest"
                       className="p-1.5 rounded-lg transition-colors"
                       style={{ backgroundColor: 'rgba(0,255,133,0.2)' }}
                     >
@@ -163,6 +164,7 @@ export default function GuestCoStreamPanel({ streamId, isHost }: Props) {
                     </button>
                     <button
                       onClick={() => rejectGuest(req.userId)}
+                      aria-label="Reject guest"
                       className="p-1.5 rounded-lg transition-colors"
                       style={{ backgroundColor: 'rgba(239,68,68,0.2)' }}
                     >
@@ -180,7 +182,7 @@ export default function GuestCoStreamPanel({ streamId, isHost }: Props) {
                 {guests.map(guest => (
                   <div key={guest.userId} className="flex items-center gap-2 py-1.5">
                     {guest.avatarUrl ? (
-                      <img src={guest.avatarUrl} alt="" className="w-7 h-7 rounded-full object-cover" />
+                      <img src={guest.avatarUrl} alt={guest.name} loading="lazy" className="w-7 h-7 rounded-full object-cover" />
                     ) : (
                       <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold">
                         {guest.name[0]}
@@ -195,10 +197,10 @@ export default function GuestCoStreamPanel({ streamId, isHost }: Props) {
                         {guest.isConnected ? '● Live' : 'Connecting…'}
                       </p>
                     </div>
-                    <button onClick={() => toggleGuestMute(guest.userId)} className="p-1.5 rounded-lg hover:bg-white/10">
+                    <button onClick={() => toggleGuestMute(guest.userId)} aria-label={guest.isMuted ? 'Unmute guest' : 'Mute guest'} className="p-1.5 rounded-lg hover:bg-white/10">
                       {guest.isMuted ? <MicOff className="w-3.5 h-3.5 text-red-400" /> : <Mic className="w-3.5 h-3.5 text-white/60" />}
                     </button>
-                    <button onClick={() => removeGuest(guest.userId)} className="p-1.5 rounded-lg hover:bg-destructive/20">
+                    <button onClick={() => removeGuest(guest.userId)} aria-label="Remove guest" className="p-1.5 rounded-lg hover:bg-destructive/20">
                       <PhoneOff className="w-3.5 h-3.5 text-red-400" />
                     </button>
                   </div>

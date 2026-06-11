@@ -162,7 +162,7 @@ export default function TicketDetail() {
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-2xl overflow-hidden">
           {event?.cover_image_url && (
             <div className="aspect-video w-full overflow-hidden">
-              <img src={event.cover_image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+              <img src={event.cover_image_url} alt={event.title || ""} className="w-full h-full object-cover" loading="lazy" />
             </div>
           )}
 

@@ -43,7 +43,7 @@ export function EventNudge() {
         <X className="w-4 h-4" />
       </button>
       <div className="flex gap-3 pr-6">
-        {event.image_url && <img src={event.image_url} alt="" className="w-14 h-14 rounded object-cover shrink-0" />}
+        {event.image_url && <img src={event.image_url} alt={event.title} loading="lazy" className="w-14 h-14 rounded object-cover shrink-0" />}
         <div className="flex-1 min-w-0">
           <div className="text-xs text-primary font-medium">Going live tonight?</div>
           <div className="text-sm font-semibold line-clamp-1">{event.title}</div>

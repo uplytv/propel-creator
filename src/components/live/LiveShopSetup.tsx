@@ -215,7 +215,7 @@ export default function LiveShopSetup({ streamId, products, onProductsChange, is
                     <label className="w-16 h-16 rounded-lg border border-dashed border-border flex items-center justify-center cursor-pointer hover:border-primary/50 shrink-0">
                       <input type="file" accept="image/*" className="hidden" onChange={e => e.target.files?.[0] && uploadImage(e.target.files[0])} />
                       {form.image_url
-                        ? <img src={form.image_url} alt="" className="w-full h-full rounded-lg object-cover" />
+                        ? <img src={form.image_url} alt="" loading="lazy" className="w-full h-full rounded-lg object-cover" />
                         : uploading ? <span className="text-[10px] text-muted-foreground">…</span>
                         : <Image className="w-4 h-4 text-muted-foreground" />}
                     </label>
@@ -223,7 +223,7 @@ export default function LiveShopSetup({ streamId, products, onProductsChange, is
                       <label key={i} className="w-10 h-10 rounded-lg border border-dashed border-border/50 flex items-center justify-center cursor-pointer hover:border-primary/30 shrink-0">
                         <input type="file" accept="image/*" className="hidden" onChange={e => e.target.files?.[0] && uploadImage(e.target.files[0], true)} />
                         {form.additional_images[i]
-                          ? <img src={form.additional_images[i]} alt="" className="w-full h-full rounded-lg object-cover" />
+                          ? <img src={form.additional_images[i]} alt="" loading="lazy" className="w-full h-full rounded-lg object-cover" />
                           : <Plus className="w-3 h-3 text-muted-foreground/40" />}
                       </label>
                     ))}
@@ -516,7 +516,7 @@ export default function LiveShopSetup({ streamId, products, onProductsChange, is
                             });
                           }}
                           className="rounded border-border" />
-                        {p.image && <img src={p.image} alt="" className="w-10 h-10 rounded object-cover" />}
+                        {p.image && <img src={p.image} alt={p.title} loading="lazy" className="w-10 h-10 rounded object-cover" />}
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-semibold text-foreground truncate">{p.title}</p>
                           <p className="text-[10px] text-muted-foreground">${p.variants?.[0]?.price || "0"}</p>

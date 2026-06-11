@@ -304,7 +304,7 @@ export default function Live() {
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/90 backdrop-blur-xl">
         <div className="container flex h-14 items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="UPLY" className="h-[60px] cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate("/")} />
+            <img src="/logo.png" alt="UPLY" className="h-[60px] cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate("/")} loading="eager" />
             <span className="text-foreground/10">|</span>
             <div className="flex items-center gap-1.5 text-primary">
               <Radio className="w-4 h-4" />
@@ -379,10 +379,10 @@ export default function Live() {
               <div className="relative rounded-xl overflow-hidden border border-border group-hover:border-primary/40 transition-all">
                 <div className="aspect-[21/9] sm:aspect-[21/9] bg-card relative">
                   {heroStream.muxPlaybackId ? (
-                    <img src={`https://image.mux.com/${heroStream.muxPlaybackId}/thumbnail.jpg?time=0&width=1280`} alt={heroStream.title} className="w-full h-full object-cover" />
+                    <img src={`https://image.mux.com/${heroStream.muxPlaybackId}/thumbnail.jpg?time=0&width=1280`} alt={heroStream.title} className="w-full h-full object-cover" loading="eager" />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-primary/10 via-card to-background flex items-center justify-center">
-                      <img src="/logo.png" alt="UPLY" className="h-12 opacity-20" />
+                      <img src="/logo.png" alt="UPLY" className="h-12 opacity-20" loading="eager" />
                     </div>
                   )}
                   {/* Gradient overlay */}
@@ -406,7 +406,7 @@ export default function Live() {
                     <div className="flex items-center gap-2.5 mt-2">
                       <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold text-muted-foreground overflow-hidden">
                         {heroStream.creatorAvatar && String(heroStream.creatorAvatar).startsWith('http') ? (
-                          <img src={String(heroStream.creatorAvatar)} alt="" className="w-full h-full object-cover" />
+                          <img src={String(heroStream.creatorAvatar)} alt={heroStream.creatorName} className="w-full h-full object-cover" loading="lazy" />
                         ) : (
                           String(heroStream.creatorAvatar || heroStream.creatorName.slice(0, 2)).toUpperCase()
                         )}
@@ -552,7 +552,7 @@ export default function Live() {
                           </div>
                           <div className="mt-2 flex gap-2">
                             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold text-muted-foreground overflow-hidden">
-                              {asset.creator_avatar ? <img src={asset.creator_avatar} alt="" className="w-full h-full object-cover" /> : (asset.creator_name || 'C').slice(0, 2).toUpperCase()}
+                              {asset.creator_avatar ? <img src={asset.creator_avatar} alt={asset.creator_name || ''} className="w-full h-full object-cover" loading="lazy" /> : (asset.creator_name || 'C').slice(0, 2).toUpperCase()}
                             </div>
                             <div className="min-w-0">
                               <p className="text-sm font-semibold text-foreground truncate">{asset.title || 'Untitled'}</p>
@@ -596,7 +596,7 @@ export default function Live() {
                         </div>
                         <div className="mt-2 flex gap-2">
                           <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold text-muted-foreground overflow-hidden">
-                            {clip.creator_avatar ? <img src={clip.creator_avatar} alt="" className="w-full h-full object-cover" /> : (clip.creator_name || 'C').slice(0, 2).toUpperCase()}
+                            {clip.creator_avatar ? <img src={clip.creator_avatar} alt={clip.creator_name || ''} className="w-full h-full object-cover" loading="lazy" /> : (clip.creator_name || 'C').slice(0, 2).toUpperCase()}
                           </div>
                           <div className="min-w-0">
                             <p className="text-sm font-semibold text-foreground truncate">{clip.caption || 'Untitled clip'}</p>
@@ -712,7 +712,7 @@ export default function Live() {
                         </div>
                         <div className="mt-2 flex gap-2">
                           <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold text-muted-foreground overflow-hidden">
-                            {item.creator_avatar ? <img src={item.creator_avatar} alt="" className="w-full h-full object-cover" /> : (item.creator_name || 'C').slice(0, 2).toUpperCase()}
+                            {item.creator_avatar ? <img src={item.creator_avatar} alt={item.creator_name || ''} className="w-full h-full object-cover" loading="lazy" /> : (item.creator_name || 'C').slice(0, 2).toUpperCase()}
                           </div>
                           <div className="min-w-0">
                             <p className="text-sm font-semibold text-foreground truncate">{item.title || 'Untitled replay'}</p>
@@ -745,7 +745,7 @@ export default function Live() {
                       className={`p-4 rounded-xl bg-card border ${post.is_pinned ? 'border-l-[3px] border-l-[#00FF85] border-border' : 'border-border'} hover:border-border transition-colors`}>
                       <div className="flex items-center gap-3 mb-3">
                         <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-muted-foreground overflow-hidden">
-                          {post.author_avatar ? <img src={post.author_avatar} alt="" className="w-full h-full object-cover" /> : (post.author_name || 'M').slice(0, 2).toUpperCase()}
+                          {post.author_avatar ? <img src={post.author_avatar} alt={post.author_name || ''} className="w-full h-full object-cover" loading="lazy" /> : (post.author_name || 'M').slice(0, 2).toUpperCase()}
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-foreground">{post.author_name}</p>
@@ -757,7 +757,7 @@ export default function Live() {
                       </div>
                       {post.title && <h4 className="text-sm font-bold text-foreground mb-1">{post.title}</h4>}
                       <p className="text-sm text-foreground/80 leading-relaxed line-clamp-3">{post.body}</p>
-                      {post.image_url && <img src={post.image_url} alt="" className="mt-3 rounded-lg w-full max-h-60 object-cover" />}
+                      {post.image_url && <img src={post.image_url} alt={post.title || ''} className="mt-3 rounded-lg w-full max-h-60 object-cover" loading="lazy" />}
                       <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border">
                         <span className="flex items-center gap-1 text-xs text-muted-foreground"><Flame className="w-3.5 h-3.5" />{post.like_count || 0}</span>
                         <span className="flex items-center gap-1 text-xs text-muted-foreground"><MessageCircle className="w-3.5 h-3.5" />{post.comment_count || 0}</span>

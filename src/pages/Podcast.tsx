@@ -122,7 +122,7 @@ export default function Podcast() {
       </div>,
       <div key="1" className="space-y-3">
         <h3 className="font-semibold">Upload artwork</h3>
-        {artworkUrl && <img src={artworkUrl} className="w-32 h-32 rounded-xl object-cover mx-auto" alt="Artwork" />}
+        {artworkUrl && <img src={artworkUrl} className="w-32 h-32 rounded-xl object-cover mx-auto" alt="Artwork" loading="lazy" />}
         <Input type="file" accept="image/*" onChange={e => e.target.files?.[0] && uploadArtwork(e.target.files[0])} />
       </div>,
       <div key="2" className="space-y-3">
@@ -167,7 +167,7 @@ export default function Podcast() {
 
         {/* Header */}
         <div className="flex items-center gap-4 mt-4">
-          {podcast.artwork_url && <img src={podcast.artwork_url} className="w-16 h-16 rounded-xl object-cover" alt="" />}
+          {podcast.artwork_url && <img src={podcast.artwork_url} className="w-16 h-16 rounded-xl object-cover" alt={podcast.title || ""} loading="lazy" />}
           <div className="flex-1">
             <h2 className="font-bold text-lg">{podcast.title}</h2>
             <p className="text-xs text-muted-foreground">{podcast.subscriber_count} subscribers · {podcast.total_plays} plays</p>

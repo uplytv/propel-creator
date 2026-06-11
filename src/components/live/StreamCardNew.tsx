@@ -57,7 +57,7 @@ const StreamCardNew = memo(function StreamCardNew({ stream, index = 0 }: { strea
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-card to-secondary">
-            <img src="/logo.png" alt="UPLY" className="h-6 opacity-30" />
+            <img src="/logo.png" alt="UPLY" loading="lazy" className="h-6 opacity-30" />
           </div>
         )}
 
@@ -85,7 +85,7 @@ const StreamCardNew = memo(function StreamCardNew({ stream, index = 0 }: { strea
         {/* Creator avatar */}
         <div className="flex-shrink-0 w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-[11px] font-bold text-muted-foreground overflow-hidden">
           {stream.creatorAvatar && stream.creatorAvatar.startsWith('http') ? (
-            <img src={stream.creatorAvatar} alt={`${stream.creatorName}'s avatar`} className="w-full h-full object-cover" />
+            <img src={stream.creatorAvatar} alt={`${stream.creatorName}'s avatar`} loading="lazy" className="w-full h-full object-cover" />
           ) : (
             stream.creatorAvatar || stream.creatorName.slice(0, 2).toUpperCase()
           )}

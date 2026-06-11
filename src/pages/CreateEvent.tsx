@@ -184,7 +184,7 @@ export default function CreateEvent() {
               {uploading ? (
                 <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
               ) : coverUrl ? (
-                <img src={coverUrl} alt="" className="w-full h-full object-cover" />
+                <img src={coverUrl} alt="" loading="lazy" className="w-full h-full object-cover" />
               ) : (
                 <div className="flex flex-col items-center gap-2 text-muted-foreground">
                   <Image className="w-8 h-8" />

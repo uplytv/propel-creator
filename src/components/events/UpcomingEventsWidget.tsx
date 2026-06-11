@@ -71,7 +71,7 @@ export function UpcomingEventsWidget({ userCountry }: { userCountry?: string | n
       <div className="space-y-2">
         {events.map((e) => (
           <Link key={e.id} to={`/events/global/${e.id}`} className="flex gap-3 p-2 rounded-lg hover:bg-accent/50 transition">
-            {e.image_url && <img src={e.image_url} alt="" className="w-12 h-12 rounded object-cover shrink-0" loading="lazy" />}
+            {e.image_url && <img src={e.image_url} alt={e.title} className="w-12 h-12 rounded object-cover shrink-0" loading="lazy" />}
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium line-clamp-1">{e.title}</div>
               <div className="text-xs text-muted-foreground flex items-center gap-2">

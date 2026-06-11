@@ -54,7 +54,7 @@ export default function MusicNotificationsPage() {
             const inner = (
               <div className={`flex items-start gap-3 p-3 ${!n.read_at ? "bg-white/[0.03]" : ""}`}>
                 {n.cover_url ? (
-                  <img src={n.cover_url} alt="" className="w-12 h-12 rounded object-cover" />
+                  <img src={n.cover_url} alt={n.title} loading="lazy" className="w-12 h-12 rounded object-cover" />
                 ) : (
                   <div className="w-12 h-12 rounded bg-white/10 flex items-center justify-center">
                     <Icon className="w-5 h-5 text-white/60" />

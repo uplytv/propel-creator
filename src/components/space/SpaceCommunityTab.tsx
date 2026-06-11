@@ -105,7 +105,7 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
             {cat.emoji} {cat.name}
           </button>
         ))}
-        <button className="px-2 py-1.5 rounded-full border border-border">
+        <button aria-label="Filter posts" className="px-2 py-1.5 rounded-full border border-border">
           <SlidersHorizontal className="w-3.5 h-3.5 text-muted-foreground" />
         </button>
       </div>
@@ -207,7 +207,7 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">
                     {post.author_avatar ? (
-                      <img src={post.author_avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+                      <img src={post.author_avatar} alt="" loading="lazy" className="w-10 h-10 rounded-full object-cover" />
                     ) : (
                       <div className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-muted text-foreground">
                         {(post.author_name || "M").charAt(0)}
@@ -242,6 +242,7 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
                           e.stopPropagation();
                           togglePin.mutate({ postId: post.id, isPinned: post.is_pinned });
                         }}
+                        aria-label="Post options"
                         className="p-1 rounded"
                       >
                         <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
@@ -314,7 +315,7 @@ function PostDetailView({ post, creatorId, isOwner, onClose }: { post: any; crea
     <div className="fixed inset-0 z-50 flex flex-col bg-background">
       {/* Header */}
       <div className="flex items-center gap-3 p-4 border-b border-border">
-        <button onClick={onClose}><ArrowLeft className="w-5 h-5 text-foreground" /></button>
+        <button onClick={onClose} aria-label="Back"><ArrowLeft className="w-5 h-5 text-foreground" /></button>
         <span className="text-sm font-semibold text-foreground">Post</span>
       </div>
 
@@ -322,7 +323,7 @@ function PostDetailView({ post, creatorId, isOwner, onClose }: { post: any; crea
       <div className="flex-1 overflow-y-auto p-4">
         <div className="flex items-center gap-2 mb-3">
           {post.author_avatar ? (
-            <img src={post.author_avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+            <img src={post.author_avatar} alt="" loading="lazy" className="w-10 h-10 rounded-full object-cover" />
           ) : (
             <div className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-muted text-foreground">
               {(post.author_name || "M").charAt(0)}
@@ -349,7 +350,7 @@ function PostDetailView({ post, creatorId, isOwner, onClose }: { post: any; crea
           {comments.map((c: any) => (
             <div key={c.id} className="flex gap-2 mb-4">
               {c.author_avatar ? (
-                <img src={c.author_avatar} alt="" className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
+                <img src={c.author_avatar} alt="" loading="lazy" className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
               ) : (
                 <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 bg-muted text-foreground">
                   {(c.author_name || "M").charAt(0)}
@@ -382,7 +383,7 @@ function PostDetailView({ post, creatorId, isOwner, onClose }: { post: any; crea
             className="flex-1 text-sm bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
             onKeyDown={(e) => e.key === "Enter" && handleComment()}
           />
-          <button onClick={handleComment} disabled={!commentText.trim()}>
+          <button onClick={handleComment} disabled={!commentText.trim()} aria-label="Send comment">
             <Send className={`w-4 h-4 ${commentText.trim() ? "text-primary" : "text-muted-foreground"}`} />
           </button>
         </div>
