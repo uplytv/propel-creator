@@ -15,6 +15,7 @@ import SEOHead from "@/components/SEOHead";
 import BackNav from "@/components/BackNav";
 import AppLayout from "@/components/layout/AppLayout";
 import EventTabs from "@/components/social/EventTabs";
+import EventTierPicker from "@/components/events/EventTierPicker";
 import { PurchaseOverlay } from "@/components/payments/PurchaseOverlay";
 import SeatPicker from "@/components/events/SeatPicker";
 import ResaleListings from "@/components/events/ResaleListings";
@@ -576,6 +577,9 @@ END:VCALENDAR`;
             />
           )}
         </div>
+
+        {/* Multi-tier ticket picker (self-hides when the event has no tiers) */}
+        {!isPast && !myTicket && <EventTierPicker eventId={event.id} eventTitle={event.title} />}
 
         {/* Event tabs: Chat / People / Gallery / Buy-Sell */}
         <EventTabs eventId={event.id} eventTitle={event.title} />
