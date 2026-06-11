@@ -28,6 +28,8 @@ import { capturePageView } from "@/lib/posthog";
 const Landing = lazy(() => import("./pages/Landing"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const Terms = lazy(() => import("./pages/Terms"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Apply = lazy(() => import("./pages/Apply"));
 const WaitlistPage = lazy(() => import("./pages/WaitlistPage"));
@@ -314,6 +316,8 @@ const App = () => (
                     <Route path="/index" element={<Landing />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/terms" element={<Terms />} />
                     <Route path="/p/:slug" element={<JointProduct isPublic />} />
                     <Route path="/live" element={<Live />} />
                     <Route path="/stream/:id" element={<Stream />} />

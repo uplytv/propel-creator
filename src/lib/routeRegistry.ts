@@ -22,6 +22,8 @@ const KNOWN_PATTERNS: string[] = [
   "/waitlist",
   "/pending-approval",
   "/reset-password",
+  "/privacy",
+  "/terms",
   "/email-unsubscribe",
   "/unsubscribe",
 

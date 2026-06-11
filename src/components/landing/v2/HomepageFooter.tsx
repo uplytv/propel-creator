@@ -15,8 +15,8 @@ export default function HomepageFooter() {
 
         <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
           <Link to="/pricing" className="text-foreground/70 hover:text-foreground">Pricing</Link>
-          <a href="/privacy" className="text-foreground/70 hover:text-foreground">Privacy</a>
-          <a href="/terms" className="text-foreground/70 hover:text-foreground">Terms</a>
+          <Link to="/privacy" className="text-foreground/70 hover:text-foreground">Privacy</Link>
+          <Link to="/terms" className="text-foreground/70 hover:text-foreground">Terms</Link>
           <Link to="/auth" className="text-foreground/70 hover:text-foreground">Sign In</Link>
         </div>
 
