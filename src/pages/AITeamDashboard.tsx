@@ -401,9 +401,14 @@ export default function AITeamDashboard() {
   const handleBulkApproveAll = () => {
     const calendarTasks = pendingTasks?.filter(t => t.task_type === "content_calendar") || [];
     if (calendarTasks.length === 0) return;
-    Promise.all(calendarTasks.map(t => approveTask.mutateAsync({ taskId: t.id }))).then(() => {
-      toast.success(`🚀 Approved ${calendarTasks.length} tasks — your AI team is now running!`);
-    });
+    Promise.all(calendarTasks.map(t => approveTask.mutateAsync({ taskId: t.id })))
+      .then(() => {
+        toast.success(`🚀 Approved ${calendarTasks.length} tasks — your AI team is now running!`);
+      })
+      .catch((e) => {
+        console.error("[AITeamDashboard] bulk approve failed", e);
+        toast.error("Some tasks couldn't be approved. Please try again.");
+      });
   };
 
   // Stats

@@ -12,6 +12,21 @@ export default defineConfig(({ mode }) => ({
     hmr: {
       overlay: false,
     },
+    // The Lovable OAuth broker (Google/Apple sign-in) and `/api` routes are served by
+    // Lovable's hosting, not by Vite. Locally those paths 404, so OAuth can't complete.
+    // Proxy them to the hosted sandbox so social login works during `npm run dev`.
+    proxy: {
+      "/~oauth": {
+        target: "https://36e6826b-627b-4e92-aef3-cf7c5112c94d.lovableproject.com",
+        changeOrigin: true,
+        secure: true,
+      },
+      "/api": {
+        target: "https://36e6826b-627b-4e92-aef3-cf7c5112c94d.lovableproject.com",
+        changeOrigin: true,
+        secure: true,
+      },
+    },
   },
   plugins: [
     react(),
@@ -45,6 +60,18 @@ export default defineConfig(({ mode }) => ({
       external: [
         "@capacitor/status-bar",
       ],
+      output: {
+        // Split large, stable vendor libs out of the main entry chunk so the
+        // initial bundle is smaller and vendor code caches across deploys.
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          if (/[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/.test(id)) return "react-vendor";
+          if (id.includes("@supabase")) return "supabase";
+          if (id.includes("@tanstack")) return "query";
+          if (id.includes("@radix-ui")) return "radix";
+          if (id.includes("framer-motion")) return "motion";
+        },
+      },
     },
   },
   resolve: {

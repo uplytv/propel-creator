@@ -248,7 +248,8 @@ export default function Live() {
 
   useEffect(() => {
     Promise.all([fetchLiveStreams(), fetchVodAssets(), fetchClips(), fetchShorts(), fetchRecordings(), fetchCommunityPosts()])
-      .then(() => setLoading(false));
+      .catch((e) => console.error("[Live] initial load failed", e))
+      .finally(() => setLoading(false));
 
     const channel = supabase
       .channel('live-hub')
