@@ -51,7 +51,7 @@ export default function TourDatesList({ artistId }: Props) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 text-xs font-bold px-3 py-2 rounded-full"
-                style={{ background: "#00FF85", color: "#000" }}
+                style={{ background: "#3D7CFF", color: "#000" }}
               >
                 <Ticket className="w-3 h-3" /> Tickets
               </a>

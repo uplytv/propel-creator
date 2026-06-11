@@ -49,12 +49,12 @@ export default function StickyJoinCTA({ creatorUserId, creatorName, avatarUrl, i
           alt={`${creatorName} avatar`}
           loading="lazy"
           className="w-9 h-9 rounded-full object-cover shrink-0"
-          style={{ border: "2px solid #00FF85" }}
+          style={{ border: "2px solid #3D7CFF" }}
         />
       ) : (
         <div
           className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 bg-card text-primary"
-          style={{ border: "2px solid #00FF85" }}
+          style={{ border: "2px solid #3D7CFF" }}
         >
           {creatorName.charAt(0).toUpperCase()}
         </div>
@@ -74,7 +74,7 @@ export default function StickyJoinCTA({ creatorUserId, creatorName, avatarUrl, i
       <Link
         to={`/community/${creatorUserId}`}
         className="px-4 h-11 inline-flex items-center rounded-xl text-sm font-bold shrink-0 bg-primary text-primary-foreground hover:opacity-95 transition"
-        style={{ boxShadow: "0 0 20px rgba(0,255,133,0.25)" }}
+        style={{ boxShadow: "0 0 20px rgba(61, 124, 255,0.25)" }}
       >
         Join Community →
       </Link>

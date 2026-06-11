@@ -13,7 +13,7 @@ export default function WeeklyRecapCard() {
         style={{ background: "linear-gradient(135deg,rgba(61,124,255,0.18),rgba(176,37,255,0.18))" }}
       >
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-[#00FF85]" />
+          <Sparkles className="w-4 h-4 text-[#3D7CFF]" />
           <h2 className="text-sm font-bold text-white uppercase tracking-wider">Your Week in Music</h2>
         </div>
 

@@ -38,7 +38,7 @@ export default function WaveformComments({ trackId }: { trackId: string }) {
                 <span className="text-white font-semibold">
                   @{c.profile?.username ?? 'user'}
                 </span>
-                <span className="text-[#00FF85]">{m}:{s}</span>
+                <span className="text-[#3D7CFF]">{m}:{s}</span>
               </div>
               <div className="text-xs text-white/90 break-words">{c.content}</div>
             </div>

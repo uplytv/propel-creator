@@ -87,7 +87,7 @@ export default function VideoEditor() {
           onClick={onPublish}
           disabled={isPublishing}
           className="rounded-full px-4 py-1.5 text-sm font-bold disabled:opacity-50"
-          style={{ background: "#00FF85", color: "#0A0A0A" }}
+          style={{ background: "#3D7CFF", color: "#0A0A0A" }}
         >
           {isPublishing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Publish"}
         </button>
@@ -134,7 +134,7 @@ export default function VideoEditor() {
               onClick={() => setClassification(opt)}
               className="rounded-xl py-2 text-xs font-bold uppercase transition-colors"
               style={{
-                background: classification === opt ? "#00FF85" : "rgba(255,255,255,0.06)",
+                background: classification === opt ? "#3D7CFF" : "rgba(255,255,255,0.06)",
                 color: classification === opt ? "#0A0A0A" : "#fff",
                 border: "1px solid rgba(255,255,255,0.1)",
               }}

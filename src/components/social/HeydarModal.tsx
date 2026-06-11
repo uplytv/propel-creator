@@ -85,7 +85,7 @@ export default function HeydarModal({ count, onClose }: HeydarModalProps) {
 
         {/* Count */}
         <div className="mb-4">
-          <span style={{ fontSize: 32, fontWeight: 900, color: "#00FF85" }}>{count}</span>
+          <span style={{ fontSize: 32, fontWeight: 900, color: "#3D7CFF" }}>{count}</span>
           <span style={{ fontSize: 18, fontWeight: 700, color: "#FFFFFF", marginLeft: 8 }}>
             People Heyed you locally
           </span>
@@ -102,7 +102,7 @@ export default function HeydarModal({ count, onClose }: HeydarModalProps) {
           className="w-full flex items-center justify-center gap-2 transition-transform active:scale-[0.97]"
           style={{
             height: 52,
-            background: "#00FF85",
+            background: "#3D7CFF",
             borderRadius: 12,
             border: "none",
             fontSize: 15,
@@ -150,10 +150,10 @@ export default function HeydarModal({ count, onClose }: HeydarModalProps) {
                 onClick={() => setSelectedTokens(opt.tokens)}
                 className="flex-1 flex flex-col items-center gap-1 transition-transform active:scale-95"
                 style={{
-                  border: `1.5px solid ${isSelected ? "#00FF85" : "rgba(255,255,255,0.1)"}`,
+                  border: `1.5px solid ${isSelected ? "#3D7CFF" : "rgba(255,255,255,0.1)"}`,
                   borderRadius: 12,
                   padding: "16px 8px",
-                  background: isSelected ? "rgba(0,255,133,0.06)" : "transparent",
+                  background: isSelected ? "rgba(61, 124, 255,0.06)" : "transparent",
                 }}
               >
                 <span style={{ fontSize: 16, fontWeight: 800, color: "#FFFFFF" }}>
@@ -161,7 +161,7 @@ export default function HeydarModal({ count, onClose }: HeydarModalProps) {
                 </span>
                 <span style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>{opt.price}</span>
                 {opt.savings && (
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "#00FF85" }}>{opt.savings}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#3D7CFF" }}>{opt.savings}</span>
                 )}
               </button>
             );

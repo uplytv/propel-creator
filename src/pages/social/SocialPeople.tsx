@@ -51,7 +51,7 @@ export default function SocialPeople() {
         <button
           onClick={() => navigate("/auth")}
           className="px-6 py-3 rounded-xl font-bold text-sm"
-          style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}
+          style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A" }}
         >
           Sign In
         </button>
@@ -80,7 +80,7 @@ export default function SocialPeople() {
           <button
             onClick={() => navigate("/discover")}
             className="px-6 py-3 rounded-xl font-bold text-sm transition-transform active:scale-95"
-            style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}
+            style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A" }}
           >
             Update My Going Out Plan
           </button>
@@ -137,10 +137,10 @@ export default function SocialPeople() {
               width: 68,
               height: 68,
               borderRadius: "50%",
-              background: "#00FF85",
+              background: "#3D7CFF",
               border: "none",
               fontSize: 26,
-              boxShadow: "0 4px 20px rgba(0,255,133,0.4)",
+              boxShadow: "0 4px 20px rgba(61, 124, 255,0.4)",
             }}
           >
             👋

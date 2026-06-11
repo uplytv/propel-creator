@@ -49,14 +49,14 @@ export default function NotFound() {
         <div className="relative mb-6">
           <div
             className="absolute inset-0 blur-3xl opacity-30"
-            style={{ backgroundColor: "#00FF85" }}
+            style={{ backgroundColor: "#3D7CFF" }}
           />
           <h1
             className="relative text-7xl sm:text-8xl font-extrabold tracking-tight"
             style={{
               fontFamily: "'Space Grotesk', sans-serif",
-              color: "#00FF85",
-              textShadow: "0 0 40px rgba(0, 255, 133, 0.4)",
+              color: "#3D7CFF",
+              textShadow: "0 0 40px rgba(61, 124, 255, 0.4)",
             }}
           >
             404
@@ -89,10 +89,10 @@ export default function NotFound() {
           className="w-full flex items-center justify-center gap-2 rounded-xl font-semibold transition-transform active:scale-[0.98]"
           style={{
             minHeight: 48,
-            backgroundColor: "#00FF85",
+            backgroundColor: "#3D7CFF",
             color: "#0A0A0A",
             fontFamily: "'Plus Jakarta Sans', sans-serif",
-            boxShadow: "0 8px 24px rgba(0, 255, 133, 0.25)",
+            boxShadow: "0 8px 24px rgba(61, 124, 255, 0.25)",
           }}
         >
           <Home className="w-4 h-4" />

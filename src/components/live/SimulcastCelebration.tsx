@@ -69,7 +69,7 @@ export default function SimulcastCelebration({ creatorId, connectedPlatforms }: 
             initial={{ y: 40 }}
             animate={{ y: 0 }}
             className="rounded-2xl border border-primary/30 bg-card p-8 text-center max-w-sm mx-4"
-            style={{ boxShadow: "0 0 60px rgba(0,255,133,0.15)" }}
+            style={{ boxShadow: "0 0 60px rgba(61, 124, 255,0.15)" }}
           >
             <p className="text-4xl mb-4">🎉</p>
             <h2 className="text-xl font-bold text-foreground mb-2">

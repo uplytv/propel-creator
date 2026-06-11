@@ -238,8 +238,8 @@ export default function TVAuditAnalytics({ rows, streamMeta }: Props) {
           >
             <defs>
               <linearGradient id="actArea" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#00FF85" stopOpacity={0.4} />
-                <stop offset="95%" stopColor="#00FF85" stopOpacity={0} />
+                <stop offset="5%" stopColor="#3D7CFF" stopOpacity={0.4} />
+                <stop offset="95%" stopColor="#3D7CFF" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="disArea" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0.3} />
@@ -251,7 +251,7 @@ export default function TVAuditAnalytics({ rows, streamMeta }: Props) {
             <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} width={28} />
             <Tooltip contentStyle={tooltipStyle} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
-            <Area type="monotone" dataKey="activated" stroke="#00FF85" fill="url(#actArea)" strokeWidth={2} style={{ cursor: "pointer" }} />
+            <Area type="monotone" dataKey="activated" stroke="#3D7CFF" fill="url(#actArea)" strokeWidth={2} style={{ cursor: "pointer" }} />
             <Area type="monotone" dataKey="dismissed" stroke="hsl(var(--muted-foreground))" fill="url(#disArea)" strokeWidth={2} />
             <Area type="monotone" dataKey="purchased" stroke="#facc15" fill="transparent" strokeWidth={2} />
           </AreaChart>
@@ -284,7 +284,7 @@ export default function TVAuditAnalytics({ rows, streamMeta }: Props) {
                 <Bar dataKey="purchased" stackId="a" fill="#facc15" style={{ cursor: "pointer" }} />
                 <Bar dataKey="dismissed" stackId="a" fill="hsl(var(--muted-foreground))" style={{ cursor: "pointer" }} />
                 <Bar dataKey="expired" stackId="a" fill="#f97316" style={{ cursor: "pointer" }} />
-                <Bar dataKey="active" stackId="a" fill="#00FF85" style={{ cursor: "pointer" }} />
+                <Bar dataKey="active" stackId="a" fill="#3D7CFF" style={{ cursor: "pointer" }} />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -306,7 +306,7 @@ export default function TVAuditAnalytics({ rows, streamMeta }: Props) {
               <XAxis dataKey="range" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
               <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} width={28} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="count" fill="#00FF85" radius={[6, 6, 0, 0]} style={{ cursor: "pointer" }} />
+              <Bar dataKey="count" fill="#3D7CFF" radius={[6, 6, 0, 0]} style={{ cursor: "pointer" }} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -344,7 +344,7 @@ export default function TVAuditAnalytics({ rows, streamMeta }: Props) {
                     <td className="p-2">
                       <button
                         onClick={() => setDrill({ type: "stream", streamId: s.streamId })}
-                        className="text-left hover:text-[#00FF85] underline-offset-2 hover:underline"
+                        className="text-left hover:text-[#3D7CFF] underline-offset-2 hover:underline"
                       >
                         <div className="text-sm font-medium truncate max-w-[260px]">
                           {meta?.title || "Untitled stream"}

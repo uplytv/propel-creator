@@ -138,7 +138,7 @@ export default function SocialFriends() {
             <button
               onClick={() => navigate("/social/people")}
               className="px-6 py-3 rounded-xl font-bold text-sm transition-transform active:scale-95"
-              style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}
+              style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A" }}
             >
               Go to People tab →
             </button>
@@ -167,7 +167,7 @@ export default function SocialFriends() {
                       <span className="text-white/60">{item.text}</span>
                     </p>
                     {item.subtext && (
-                      <p className="text-xs mt-0.5" style={{ color: "#00FF85" }}>
+                      <p className="text-xs mt-0.5" style={{ color: "#3D7CFF" }}>
                         {item.subtext}
                       </p>
                     )}

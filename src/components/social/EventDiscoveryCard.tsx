@@ -61,7 +61,7 @@ export default function EventDiscoveryCard({ event }: EventDiscoveryCardProps) {
           className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold"
           style={{
             backgroundColor: "rgba(0,0,0,0.6)",
-            color: price && price > 0 ? "#FFFFFF" : "#00FF85",
+            color: price && price > 0 ? "#FFFFFF" : "#3D7CFF",
             backdropFilter: "blur(4px)",
           }}
         >
@@ -100,7 +100,7 @@ export default function EventDiscoveryCard({ event }: EventDiscoveryCardProps) {
         {dateStr && (
           <p
             className="text-[11px] font-semibold leading-tight mb-1"
-            style={{ color: "#00FF85" }}
+            style={{ color: "#3D7CFF" }}
           >
             {formatEventDate(dateStr)}
             {venue && ` · ${venue}`}

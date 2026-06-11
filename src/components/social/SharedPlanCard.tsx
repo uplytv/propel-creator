@@ -86,13 +86,13 @@ export default function SharedPlanCard({ eventId, eventTitle }: SharedPlanCardPr
   return (
     <div className="px-4 py-3">
       <div className="flex items-center gap-2 mb-3">
-        <Users className="w-4 h-4" style={{ color: "#00FF85" }} />
+        <Users className="w-4 h-4" style={{ color: "#3D7CFF" }} />
         <h3 className="text-white font-bold text-sm">Group Plans</h3>
       </div>
 
       {/* My plan or create */}
       {myPlan ? (
-        <div className="rounded-xl p-3 mb-2" style={{ background: "rgba(0,255,133,0.08)", border: "1px solid rgba(0,255,133,0.15)" }}>
+        <div className="rounded-xl p-3 mb-2" style={{ background: "rgba(61, 124, 255,0.08)", border: "1px solid rgba(61, 124, 255,0.15)" }}>
           <p className="text-white font-semibold text-sm mb-1">{myPlan.title}</p>
           <div className="flex items-center gap-1">
             <span className="text-white/50 text-xs">
@@ -136,7 +136,7 @@ export default function SharedPlanCard({ eventId, eventTitle }: SharedPlanCardPr
               <button
                 onClick={() => respondToInvite(plan.id, "accepted")}
                 className="w-8 h-8 rounded-full flex items-center justify-center"
-                style={{ background: "#00FF85" }}
+                style={{ background: "#3D7CFF" }}
               >
                 <Check className="w-4 h-4" style={{ color: "#0A0A0A" }} />
               </button>

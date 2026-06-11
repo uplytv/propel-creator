@@ -65,7 +65,7 @@ export default function ExitIntentModal() {
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
             className="relative max-w-sm w-full rounded-2xl border border-primary/20 bg-background p-8 text-center"
-            style={{ boxShadow: "0 0 80px rgba(0,255,133,0.1)" }}
+            style={{ boxShadow: "0 0 80px rgba(61, 124, 255,0.1)" }}
             onClick={(e) => e.stopPropagation()}
           >
             <button

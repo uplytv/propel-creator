@@ -72,7 +72,7 @@ export default function EmbedPlayer({ trackId }: { trackId: string }) {
         <div className="mt-2 h-1 rounded-full bg-white/10 overflow-hidden">
           <div
             className="h-full"
-            style={{ width: `${progress}%`, background: '#00FF85' }}
+            style={{ width: `${progress}%`, background: '#3D7CFF' }}
           />
         </div>
         <div className="flex justify-between text-[10px] text-white/50 mt-0.5">
@@ -88,7 +88,7 @@ export default function EmbedPlayer({ trackId }: { trackId: string }) {
           if (a.paused) a.play().catch(() => {});
           else a.pause();
         }}
-        className="w-12 h-12 rounded-full flex items-center justify-center bg-[#00FF85] text-black disabled:opacity-30"
+        className="w-12 h-12 rounded-full flex items-center justify-center bg-[#3D7CFF] text-black disabled:opacity-30"
         aria-label={playing ? 'Pause' : 'Play'}
       >
         {playing ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}

@@ -51,7 +51,7 @@ export default function CommentThread({ trackId }: { trackId: string }) {
             {ts !== null && (
               <button
                 onClick={() => seek(ts!)}
-                className="text-[#00FF85] hover:underline"
+                className="text-[#3D7CFF] hover:underline"
               >
                 @{fmt(ts!)}
               </button>

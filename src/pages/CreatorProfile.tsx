@@ -529,7 +529,7 @@ export default function CreatorProfile() {
             <div className="w-full h-full bg-gradient-to-b from-card to-background" />
           )}
           {/* Green glow behind avatar */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full" style={{ background: "radial-gradient(circle, rgba(0,255,133,0.05) 0%, transparent 70%)" }} />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full" style={{ background: "radial-gradient(circle, rgba(61, 124, 255,0.05) 0%, transparent 70%)" }} />
         </div>
 
         <div className="max-w-[720px] mx-auto px-4 -mt-12 relative z-10">
@@ -691,7 +691,7 @@ export default function CreatorProfile() {
                   style={{
                     background: "hsl(var(--primary))",
                     color: "hsl(var(--background))",
-                    boxShadow: "0 0 24px rgba(0,255,133,0.3)",
+                    boxShadow: "0 0 24px rgba(61, 124, 255,0.3)",
                     height: 48,
                   }}
                 >
@@ -1003,9 +1003,9 @@ export default function CreatorProfile() {
             style={{ background: "rgba(10,10,10,0.95)", borderTop: "1px solid #1E1E1E", backdropFilter: "blur(12px)" }}
           >
             {profile.avatar_url ? (
-              <img src={profile.avatar_url} className="w-8 h-8 rounded-full object-cover shrink-0" style={{ border: "2px solid #00FF85" }} alt="" loading="lazy" />
+              <img src={profile.avatar_url} className="w-8 h-8 rounded-full object-cover shrink-0" style={{ border: "2px solid #3D7CFF" }} alt="" loading="lazy" />
             ) : (
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: "hsl(var(--card))", color: "hsl(var(--primary))", border: "2px solid #00FF85" }}>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: "hsl(var(--card))", color: "hsl(var(--primary))", border: "2px solid #3D7CFF" }}>
                 {creatorName.charAt(0)}
               </div>
             )}

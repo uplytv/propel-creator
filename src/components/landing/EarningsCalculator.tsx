@@ -76,7 +76,7 @@ export default function EarningsCalculator({ onCTAClick }: EarningsCalculatorPro
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.6, delay: 0.15 }}
           className="max-w-xl mx-auto rounded-xl border border-primary/10 bg-white/[0.02] p-6 md:p-8"
-          style={{ boxShadow: "0 0 60px rgba(0,255,133,0.04), inset 0 1px 0 rgba(255,255,255,0.03)" }}
+          style={{ boxShadow: "0 0 60px rgba(61, 124, 255,0.04), inset 0 1px 0 rgba(255,255,255,0.03)" }}
         >
           <div className="mb-8">
             <div className="flex items-center justify-between mb-3">

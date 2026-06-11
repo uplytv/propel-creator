@@ -54,7 +54,7 @@ export default function ProducerCarousel() {
             }}
             className="flex flex-col items-center gap-1.5 flex-shrink-0"
           >
-            <Avatar className="w-16 h-16 border-2" style={{ borderColor: "#00FF85" }}>
+            <Avatar className="w-16 h-16 border-2" style={{ borderColor: "#3D7CFF" }}>
               <AvatarImage src={p.avatar_url} />
               <AvatarFallback className="bg-white/10 text-white text-xs">
                 {(p.display_name || "P").slice(0, 2)}

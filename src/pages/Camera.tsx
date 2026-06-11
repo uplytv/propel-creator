@@ -368,7 +368,7 @@ export default function Camera() {
           aria-label={`Flash ${flash}`}
           onClick={() => { hapticTick(); setFlash((f) => (f === "off" ? "on" : f === "on" ? "auto" : "off")); }}
           className="pointer-events-auto relative flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/55 text-white backdrop-blur-md transition-all active:scale-95"
-          style={{ background: flash !== "off" ? "#00FF85" : "rgba(0,0,0,0.55)", color: flash !== "off" ? "#0A0A0A" : "#fff" }}
+          style={{ background: flash !== "off" ? "#3D7CFF" : "rgba(0,0,0,0.55)", color: flash !== "off" ? "#0A0A0A" : "#fff" }}
         >
           {flash === "off" ? <ZapOff className="h-4 w-4" /> : <Zap className="h-4 w-4" />}
           {flash === "auto" && (
@@ -447,7 +447,7 @@ export default function Camera() {
             <div className="h-1 w-full overflow-hidden rounded-full bg-white/20">
               <motion.div
                 className="h-full"
-                style={{ background: "#00FF85" }}
+                style={{ background: "#3D7CFF" }}
                 animate={{
                   width: `${Math.min(100, (recorder.elapsed / MODE_MAX_SECONDS[mode]) * 100)}%`,
                 }}
@@ -561,7 +561,7 @@ export default function Camera() {
               type="button"
               onClick={() => setShowText(false)}
               className="w-full rounded-full py-3 text-sm font-bold"
-              style={{ background: "#00FF85", color: "#0A0A0A" }}
+              style={{ background: "#3D7CFF", color: "#0A0A0A" }}
             >
               Done
             </button>

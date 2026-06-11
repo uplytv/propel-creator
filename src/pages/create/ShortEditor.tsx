@@ -83,7 +83,7 @@ export default function ShortEditor() {
           onClick={onPublish}
           disabled={isPublishing}
           className="rounded-full px-4 py-1.5 text-sm font-bold disabled:opacity-50"
-          style={{ background: "#00FF85", color: "#0A0A0A" }}
+          style={{ background: "#3D7CFF", color: "#0A0A0A" }}
         >
           {isPublishing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Publish"}
         </button>
@@ -91,7 +91,7 @@ export default function ShortEditor() {
 
       <div className="flex-1 overflow-y-auto p-4">
         <div className="mb-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold"
-          style={{ background: "rgba(0,255,133,0.12)", color: "#00FF85", border: "1px solid #00FF85" }}>
+          style={{ background: "rgba(61, 124, 255,0.12)", color: "#3D7CFF", border: "1px solid #3D7CFF" }}>
           LOCKED · SHORT (9:16, ≤60s)
         </div>
         {previewUrl && (

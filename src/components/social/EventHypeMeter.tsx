@@ -59,7 +59,7 @@ export default function EventHypeMeter({ eventId, compact }: EventHypeMeterProps
             className="h-full rounded-full transition-all duration-500"
             style={{
               width: `${Math.min(100, (hypeLevel / 4) * 100)}%`,
-              background: `linear-gradient(90deg, #00FF85, ${hypeColors[hypeLevel]})`,
+              background: `linear-gradient(90deg, #3D7CFF, ${hypeColors[hypeLevel]})`,
             }}
           />
         </div>

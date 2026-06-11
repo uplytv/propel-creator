@@ -187,7 +187,7 @@ export default function EmailTemplateLibrary({ onUseTemplate }: Props) {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
-            <Button onClick={() => createMutation.mutate()} disabled={!newName.trim() || !newSubject.trim() || createMutation.isPending} style={{ background: "#00FF85", color: "#0A0A0A" }}>
+            <Button onClick={() => createMutation.mutate()} disabled={!newName.trim() || !newSubject.trim() || createMutation.isPending} style={{ background: "#3D7CFF", color: "#0A0A0A" }}>
               Save Template
             </Button>
           </DialogFooter>

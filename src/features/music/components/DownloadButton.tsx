@@ -18,7 +18,7 @@ export default function DownloadButton({ trackId, className = "" }: Props) {
       aria-label={isDownloaded ? "Remove download" : "Download for offline"}
       className={`min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-full transition ${className}`}
       style={{
-        background: isDownloaded ? "#00FF85" : "rgba(255,255,255,0.08)",
+        background: isDownloaded ? "#3D7CFF" : "rgba(255,255,255,0.08)",
         color: isDownloaded ? "#000" : "#fff",
       }}
     >

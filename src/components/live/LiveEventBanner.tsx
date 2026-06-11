@@ -84,8 +84,8 @@ export default function LiveEventBanner({ eventId, streamId }: LiveEventBannerPr
     <div
       className="mx-4 mb-3 rounded-xl p-3.5"
       style={{
-        background: "rgba(0,255,133,0.06)",
-        border: "1px solid rgba(0,255,133,0.2)",
+        background: "rgba(61, 124, 255,0.06)",
+        border: "1px solid rgba(61, 124, 255,0.2)",
       }}
     >
       <div className="flex items-start gap-2">
@@ -101,11 +101,11 @@ export default function LiveEventBanner({ eventId, streamId }: LiveEventBannerPr
                 <span
                   className="w-2 h-2 rounded-full"
                   style={{
-                    backgroundColor: "#00FF85",
+                    backgroundColor: "#3D7CFF",
                     animation: animateCount ? "countPulse 1s ease-in-out" : undefined,
                   }}
                 />
-                <span style={{ color: "#00FF85" }} className="font-semibold">{attendanceCount}</span>
+                <span style={{ color: "#3D7CFF" }} className="font-semibold">{attendanceCount}</span>
                 <span className="text-white">people there right now</span>
               </span>
             )}

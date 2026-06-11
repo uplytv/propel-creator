@@ -97,13 +97,13 @@ export default function HangoutMatchSection() {
         <div
           className="rounded-2xl p-6 text-center"
           style={{
-            backgroundColor: "rgba(0,255,133,0.06)",
-            border: "1px solid rgba(0,255,133,0.2)",
+            backgroundColor: "rgba(61, 124, 255,0.06)",
+            border: "1px solid rgba(61, 124, 255,0.2)",
           }}
         >
           <Sparkles
             className="w-6 h-6 mx-auto mb-2"
-            style={{ color: "#00FF85" }}
+            style={{ color: "#3D7CFF" }}
           />
           <p className="text-white text-sm font-semibold">
             You've seen everyone for now
@@ -137,7 +137,7 @@ export default function HangoutMatchSection() {
     <div className="px-4 py-3">
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
-          <Sparkles className="w-4 h-4" style={{ color: "#00FF85" }} />
+          <Sparkles className="w-4 h-4" style={{ color: "#3D7CFF" }} />
           Find Hangout Friends
         </h3>
         <span className="text-[10px] text-white/40">Swipe to connect</span>
@@ -235,8 +235,8 @@ export default function HangoutMatchSection() {
           aria-label="Send hangout request"
           className="w-16 h-16 rounded-full flex items-center justify-center transition-transform active:scale-90 shadow-lg"
           style={{
-            backgroundColor: "#00FF85",
-            boxShadow: "0 8px 24px -8px rgba(0,255,133,0.6)",
+            backgroundColor: "#3D7CFF",
+            boxShadow: "0 8px 24px -8px rgba(61, 124, 255,0.6)",
           }}
         >
           <Heart className="w-7 h-7" style={{ color: "#0A0A0A" }} fill="#0A0A0A" />

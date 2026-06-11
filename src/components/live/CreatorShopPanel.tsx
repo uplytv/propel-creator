@@ -70,7 +70,7 @@ export default function CreatorShopPanel({ streamId }: Props) {
             const auction = auctions.find(a => a.live_product_id === p.id && a.status === "active");
             return (
               <motion.div key={p.id} layout className="rounded-lg p-2.5 mb-1.5 border"
-                style={{ backgroundColor: "rgba(0,255,133,0.05)", borderColor: "hsl(var(--primary))" }}>
+                style={{ backgroundColor: "rgba(61, 124, 255,0.05)", borderColor: "hsl(var(--primary))" }}>
                 <div className="flex items-center gap-2">
                   {p.image_url ? (
                     <img src={p.image_url} alt={p.title} loading="lazy" className="w-10 h-10 rounded object-cover flex-shrink-0" />

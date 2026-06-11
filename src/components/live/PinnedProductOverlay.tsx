@@ -77,7 +77,7 @@ export default function PinnedProductOverlay({ streamId }: PinnedProductOverlayP
           style={{
             backgroundColor: "rgba(0,0,0,0.85)",
             backdropFilter: "blur(8px)",
-            border: "1px solid rgba(0,255,133,0.3)",
+            border: "1px solid rgba(61, 124, 255,0.3)",
           }}
         >
           <button onClick={() => setDismissed(true)} className="absolute top-2 right-2 text-white/50 hover:text-white">

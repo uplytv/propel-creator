@@ -6,7 +6,7 @@ interface Props {
 }
 
 export default function LeadScoreBadge({ score, className = "" }: Props) {
-  const color = score >= 70 ? "#00FF85" : score >= 40 ? "#f59e0b" : score >= 10 ? "#3b82f6" : "#666";
+  const color = score >= 70 ? "#3D7CFF" : score >= 40 ? "#f59e0b" : score >= 10 ? "#3b82f6" : "#666";
   const label = score >= 70 ? "Hot" : score >= 40 ? "Warm" : score >= 10 ? "Cool" : "New";
   
   return (

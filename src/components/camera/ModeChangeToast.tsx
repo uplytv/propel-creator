@@ -26,7 +26,7 @@ export default function ModeChangeToast({ mode }: Props) {
             className="rounded-full px-4 py-1.5"
             style={{
               background: "rgba(10,10,10,0.8)",
-              border: "1px solid #00FF85",
+              border: "1px solid #3D7CFF",
               fontFamily: "'Plus Jakarta Sans', sans-serif",
               fontSize: 14,
               fontWeight: 600,

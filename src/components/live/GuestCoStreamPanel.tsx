@@ -87,10 +87,10 @@ export default function GuestCoStreamPanel({ streamId, isHost }: Props) {
           onClick={() => setShowPanel(!showPanel)}
           className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all"
           style={{
-            backgroundColor: connectedGuests.length > 0 ? 'rgba(0,255,133,0.2)' : 'rgba(10,10,10,0.8)',
-            border: connectedGuests.length > 0 ? '1px solid #00FF85' : '1px solid rgba(255,255,255,0.1)',
+            backgroundColor: connectedGuests.length > 0 ? 'rgba(61, 124, 255,0.2)' : 'rgba(10,10,10,0.8)',
+            border: connectedGuests.length > 0 ? '1px solid #3D7CFF' : '1px solid rgba(255,255,255,0.1)',
             backdropFilter: 'blur(12px)',
-            color: connectedGuests.length > 0 ? '#00FF85' : 'white',
+            color: connectedGuests.length > 0 ? '#3D7CFF' : 'white',
           }}
         >
           <UserPlus className="w-4 h-4" />
@@ -131,7 +131,7 @@ export default function GuestCoStreamPanel({ streamId, isHost }: Props) {
               <button
                 onClick={copyInviteLink}
                 className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-semibold transition-all"
-                style={{ backgroundColor: 'rgba(0,255,133,0.15)', color: '#00FF85', border: '1px solid rgba(0,255,133,0.3)' }}
+                style={{ backgroundColor: 'rgba(61, 124, 255,0.15)', color: '#3D7CFF', border: '1px solid rgba(61, 124, 255,0.3)' }}
               >
                 {copiedLink
                   ? <><Check className="w-3.5 h-3.5" /> Copied!</>
@@ -158,7 +158,7 @@ export default function GuestCoStreamPanel({ streamId, isHost }: Props) {
                       disabled={isFull}
                       aria-label="Accept guest"
                       className="p-1.5 rounded-lg transition-colors"
-                      style={{ backgroundColor: 'rgba(0,255,133,0.2)' }}
+                      style={{ backgroundColor: 'rgba(61, 124, 255,0.2)' }}
                     >
                       <Check className="w-3.5 h-3.5 text-green-400" />
                     </button>
@@ -192,7 +192,7 @@ export default function GuestCoStreamPanel({ streamId, isHost }: Props) {
                       <p className="text-xs font-semibold text-white truncate">{guest.name}</p>
                       <p
                         className="text-[10px] font-medium"
-                        style={{ color: guest.isConnected ? '#00FF85' : 'rgba(255,255,255,0.4)' }}
+                        style={{ color: guest.isConnected ? '#3D7CFF' : 'rgba(255,255,255,0.4)' }}
                       >
                         {guest.isConnected ? '● Live' : 'Connecting…'}
                       </p>
@@ -219,9 +219,9 @@ export default function GuestCoStreamPanel({ streamId, isHost }: Props) {
                       onClick={() => setLayout(l.id)}
                       className="flex-1 flex flex-col items-center gap-1 py-2 rounded-lg transition-all text-[10px] font-semibold"
                       style={{
-                        backgroundColor: layout === l.id ? 'rgba(0,255,133,0.15)' : 'rgba(255,255,255,0.05)',
-                        color: layout === l.id ? '#00FF85' : 'rgba(255,255,255,0.5)',
-                        border: layout === l.id ? '1px solid #00FF85' : '1px solid transparent',
+                        backgroundColor: layout === l.id ? 'rgba(61, 124, 255,0.15)' : 'rgba(255,255,255,0.05)',
+                        color: layout === l.id ? '#3D7CFF' : 'rgba(255,255,255,0.5)',
+                        border: layout === l.id ? '1px solid #3D7CFF' : '1px solid transparent',
                       }}
                     >
                       <l.icon className="w-4 h-4" />

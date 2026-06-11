@@ -110,7 +110,7 @@ export default function EventCreator({ onClose }: EventCreatorProps) {
             <div
               key={s}
               className="flex-1 h-1 rounded-full"
-              style={{ background: s <= step ? "#00FF85" : "rgba(255,255,255,0.1)" }}
+              style={{ background: s <= step ? "#3D7CFF" : "rgba(255,255,255,0.1)" }}
             />
           ))}
         </div>
@@ -121,7 +121,7 @@ export default function EventCreator({ onClose }: EventCreatorProps) {
             <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Event name" className="w-full p-3 rounded-xl text-sm text-white placeholder:text-white/30" style={inputStyle} />
             <div className="flex flex-wrap gap-2">
               {EVENT_TYPES.map((t) => (
-                <button key={t} onClick={() => setEventType(t)} className="px-3 py-1.5 rounded-full text-xs font-semibold" style={{ background: eventType === t ? "rgba(0,255,133,0.15)" : "rgba(255,255,255,0.06)", color: eventType === t ? "#00FF85" : "rgba(255,255,255,0.5)", border: `1px solid ${eventType === t ? "rgba(0,255,133,0.3)" : "rgba(255,255,255,0.1)"}` }}>
+                <button key={t} onClick={() => setEventType(t)} className="px-3 py-1.5 rounded-full text-xs font-semibold" style={{ background: eventType === t ? "rgba(61, 124, 255,0.15)" : "rgba(255,255,255,0.06)", color: eventType === t ? "#3D7CFF" : "rgba(255,255,255,0.5)", border: `1px solid ${eventType === t ? "rgba(61, 124, 255,0.3)" : "rgba(255,255,255,0.1)"}` }}>
                   {t}
                 </button>
               ))}
@@ -133,7 +133,7 @@ export default function EventCreator({ onClose }: EventCreatorProps) {
             </div>
             <input value={venue} onChange={(e) => setVenue(e.target.value)} placeholder="Venue name" className="w-full p-3 rounded-xl text-sm text-white placeholder:text-white/30" style={inputStyle} />
             <input value={city} onChange={(e) => setCity(e.target.value)} placeholder="City" className="w-full p-3 rounded-xl text-sm text-white placeholder:text-white/30" style={inputStyle} />
-            <button onClick={() => setStep(2)} disabled={!title.trim() || !eventDate} className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-1" style={{ backgroundColor: title.trim() && eventDate ? "#00FF85" : "rgba(255,255,255,0.1)", color: title.trim() && eventDate ? "#0A0A0A" : "rgba(255,255,255,0.3)" }}>
+            <button onClick={() => setStep(2)} disabled={!title.trim() || !eventDate} className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-1" style={{ backgroundColor: title.trim() && eventDate ? "#3D7CFF" : "rgba(255,255,255,0.1)", color: title.trim() && eventDate ? "#0A0A0A" : "rgba(255,255,255,0.3)" }}>
               Next <ChevronRight className="w-4 h-4" />
             </button>
           </div>
@@ -144,7 +144,7 @@ export default function EventCreator({ onClose }: EventCreatorProps) {
             <h2 className="text-lg font-bold text-white">Details</h2>
             <div className="flex items-center gap-3">
               <label className="text-sm text-white/70">Free event?</label>
-              <button onClick={() => setIsFree(!isFree)} className="px-3 py-1 rounded-full text-xs font-semibold" style={{ background: isFree ? "#00FF85" : "rgba(255,255,255,0.06)", color: isFree ? "#0A0A0A" : "rgba(255,255,255,0.5)" }}>
+              <button onClick={() => setIsFree(!isFree)} className="px-3 py-1 rounded-full text-xs font-semibold" style={{ background: isFree ? "#3D7CFF" : "rgba(255,255,255,0.06)", color: isFree ? "#0A0A0A" : "rgba(255,255,255,0.5)" }}>
                 {isFree ? "Yes" : "No"}
               </button>
             </div>
@@ -154,7 +154,7 @@ export default function EventCreator({ onClose }: EventCreatorProps) {
             <input value={coverCharge} onChange={(e) => setCoverCharge(e.target.value)} placeholder="$ Cover charge (optional)" type="number" className="w-full p-3 rounded-xl text-sm text-white placeholder:text-white/30" style={inputStyle} />
             <div className="flex gap-2">
               {AGE_OPTIONS.map((a) => (
-                <button key={a} onClick={() => setAgeRestriction(a)} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: ageRestriction === a ? "rgba(0,255,133,0.1)" : "rgba(255,255,255,0.04)", border: `1px solid ${ageRestriction === a ? "rgba(0,255,133,0.3)" : "rgba(255,255,255,0.1)"}`, color: ageRestriction === a ? "#00FF85" : "rgba(255,255,255,0.5)" }}>
+                <button key={a} onClick={() => setAgeRestriction(a)} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: ageRestriction === a ? "rgba(61, 124, 255,0.1)" : "rgba(255,255,255,0.04)", border: `1px solid ${ageRestriction === a ? "rgba(61, 124, 255,0.3)" : "rgba(255,255,255,0.1)"}`, color: ageRestriction === a ? "#3D7CFF" : "rgba(255,255,255,0.5)" }}>
                   {a}
                 </button>
               ))}
@@ -164,7 +164,7 @@ export default function EventCreator({ onClose }: EventCreatorProps) {
               <label className="text-xs text-white/50 mb-2 block">Genre Tags</label>
               <div className="flex flex-wrap gap-2">
                 {GENRE_OPTIONS.map((g) => (
-                  <button key={g} onClick={() => toggleGenre(g)} className="px-3 py-1.5 rounded-full text-xs font-semibold" style={{ background: genres.includes(g) ? "rgba(0,255,133,0.15)" : "rgba(255,255,255,0.06)", color: genres.includes(g) ? "#00FF85" : "rgba(255,255,255,0.5)", border: `1px solid ${genres.includes(g) ? "rgba(0,255,133,0.3)" : "rgba(255,255,255,0.1)"}` }}>
+                  <button key={g} onClick={() => toggleGenre(g)} className="px-3 py-1.5 rounded-full text-xs font-semibold" style={{ background: genres.includes(g) ? "rgba(61, 124, 255,0.15)" : "rgba(255,255,255,0.06)", color: genres.includes(g) ? "#3D7CFF" : "rgba(255,255,255,0.5)", border: `1px solid ${genres.includes(g) ? "rgba(61, 124, 255,0.3)" : "rgba(255,255,255,0.1)"}` }}>
                     {g}
                   </button>
                 ))}
@@ -173,7 +173,7 @@ export default function EventCreator({ onClose }: EventCreatorProps) {
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" className="w-full p-3 rounded-xl text-sm text-white placeholder:text-white/30 resize-none" style={{ ...inputStyle, minHeight: 80 }} />
             <div className="flex gap-2">
               <button onClick={() => setStep(1)} className="flex-1 py-3 rounded-xl text-sm font-semibold" style={{ border: "1.5px solid rgba(255,255,255,0.2)", color: "white" }}>Back</button>
-              <button onClick={() => setStep(3)} className="flex-1 py-3 rounded-xl text-sm font-bold" style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}>
+              <button onClick={() => setStep(3)} className="flex-1 py-3 rounded-xl text-sm font-bold" style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A" }}>
                 Preview
               </button>
             </div>
@@ -185,7 +185,7 @@ export default function EventCreator({ onClose }: EventCreatorProps) {
             <h2 className="text-lg font-bold text-white">Preview & Publish</h2>
             <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
               <h3 className="text-white font-bold text-base mb-1">{title}</h3>
-              <p className="text-xs mb-1" style={{ color: "#00FF85" }}>{eventDate} {startTime && `· ${startTime}`} {endTime && `- ${endTime}`}</p>
+              <p className="text-xs mb-1" style={{ color: "#3D7CFF" }}>{eventDate} {startTime && `· ${startTime}`} {endTime && `- ${endTime}`}</p>
               {venue && <p className="text-xs text-white/50">{venue}{city && ` · ${city}`}</p>}
               <p className="text-xs text-white/50 mt-1">{eventType} {!isFree && `· $${ticketPrice}`} {isFree && "· Free"}</p>
               {genres.length > 0 && (
@@ -199,7 +199,7 @@ export default function EventCreator({ onClose }: EventCreatorProps) {
             </div>
             <div className="flex gap-2">
               <button onClick={() => setStep(2)} className="flex-1 py-3 rounded-xl text-sm font-semibold" style={{ border: "1.5px solid rgba(255,255,255,0.2)", color: "white" }}>Back</button>
-              <button onClick={handlePublish} disabled={loading} className="flex-1 py-3 rounded-xl text-sm font-bold transition-transform active:scale-95" style={{ backgroundColor: "#00FF85", color: "#0A0A0A", opacity: loading ? 0.5 : 1 }}>
+              <button onClick={handlePublish} disabled={loading} className="flex-1 py-3 rounded-xl text-sm font-bold transition-transform active:scale-95" style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A", opacity: loading ? 0.5 : 1 }}>
                 {loading ? "Publishing..." : "Publish Event 🎉"}
               </button>
             </div>

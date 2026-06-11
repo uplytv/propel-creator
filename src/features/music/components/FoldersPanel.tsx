@@ -46,7 +46,7 @@ export default function FoldersPanel() {
           type="submit"
           disabled={!name.trim() || create.isPending}
           className="min-h-[44px] inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold disabled:opacity-50"
-          style={{ background: "#00FF85", color: "#000" }}
+          style={{ background: "#3D7CFF", color: "#000" }}
         >
           <FolderPlus className="w-3.5 h-3.5" /> Add
         </button>

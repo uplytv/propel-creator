@@ -56,7 +56,7 @@ export default function MusicAnalyticsPage() {
 
       {/* Summary cards */}
       <div className="grid grid-cols-3 gap-2.5">
-        <StatCard icon={TrendingUp} label="Plays" value={totalPlays.toLocaleString()} color="#00FF85" />
+        <StatCard icon={TrendingUp} label="Plays" value={totalPlays.toLocaleString()} color="#3D7CFF" />
         <StatCard icon={Users} label="Listeners" value={totalListeners.toLocaleString()} color="#00E5FF" />
         <StatCard icon={DollarSign} label="Revenue" value={`$${totalRevenue.toFixed(0)}`} color="#FFD700" />
       </div>
@@ -88,7 +88,7 @@ export default function MusicAnalyticsPage() {
               <XAxis dataKey="day" stroke="rgba(255,255,255,0.4)" fontSize={10} />
               <YAxis stroke="rgba(255,255,255,0.4)" fontSize={10} />
               <Tooltip contentStyle={{ background: "#0A0A0A", border: "1px solid rgba(255,255,255,0.1)" }} />
-              <Line type="monotone" dataKey="plays" stroke="#00FF85" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="plays" stroke="#3D7CFF" strokeWidth={2} dot={false} />
               <Line type="monotone" dataKey="unique_listeners" stroke="#00E5FF" strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>
@@ -105,7 +105,7 @@ export default function MusicAnalyticsPage() {
               <XAxis dataKey="day" stroke="rgba(255,255,255,0.4)" fontSize={10} />
               <YAxis stroke="rgba(255,255,255,0.4)" fontSize={10} />
               <Tooltip contentStyle={{ background: "#0A0A0A", border: "1px solid rgba(255,255,255,0.1)" }} />
-              <Bar dataKey="sales_revenue" stackId="a" fill="#00FF85" />
+              <Bar dataKey="sales_revenue" stackId="a" fill="#3D7CFF" />
               <Bar dataKey="tips_revenue" stackId="a" fill="#FFD700" />
             </BarChart>
           </ResponsiveContainer>

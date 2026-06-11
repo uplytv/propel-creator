@@ -57,7 +57,7 @@ export default function SocialProducers() {
             <button
               onClick={() => setShowRegister(true)}
               className="w-full py-3 rounded-xl font-bold text-sm transition-transform active:scale-95"
-              style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}
+              style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A" }}
             >
               Become a Producer →
             </button>
@@ -67,7 +67,7 @@ export default function SocialProducers() {
         {user && isProducer && (
           <div
             className="mx-4 mt-3 rounded-xl p-4"
-            style={{ background: "rgba(0,255,133,0.04)", border: "1px solid rgba(0,255,133,0.15)" }}
+            style={{ background: "rgba(61, 124, 255,0.04)", border: "1px solid rgba(61, 124, 255,0.15)" }}
           >
             <p className="text-sm text-white font-bold mb-2">🎛️ Your Producer Dashboard</p>
             <div className="flex items-center gap-3">
@@ -76,7 +76,7 @@ export default function SocialProducers() {
               <button
                 onClick={() => setShowEventCreator(true)}
                 className="px-3 py-1.5 rounded-lg text-xs font-bold transition-transform active:scale-95"
-                style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}
+                style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A" }}
               >
                 + Create Event
               </button>

@@ -53,7 +53,7 @@ export default function CameraQuickSwitcher({ active, onChange, disabled }: Prop
                 background: isActive
                   ? isLive
                     ? "#FF3B30"
-                    : "#00FF85"
+                    : "#3D7CFF"
                   : "transparent",
                 color: isActive ? "#0A0A0A" : "rgba(255,255,255,0.85)",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",

@@ -19,7 +19,7 @@ function verbFor(type: FriendActivity['type']) {
     case 'liked':
       return { icon: Heart, label: 'liked', color: 'text-pink-400' };
     case 'reposted':
-      return { icon: Repeat2, label: 'reposted', color: 'text-[#00FF85]' };
+      return { icon: Repeat2, label: 'reposted', color: 'text-[#3D7CFF]' };
     case 'played':
       return { icon: Headphones, label: 'is listening to', color: 'text-blue-400' };
   }
@@ -104,7 +104,7 @@ function ActivityCard({ activity, queue }: { activity: FriendActivity; queue: Fr
         </div>
         <Link
           to={`/music/blend/${activity.actor.id}`}
-          className="flex-shrink-0 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#00FF85] hover:text-white"
+          className="flex-shrink-0 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#3D7CFF] hover:text-white"
         >
           <Sparkles className="w-3 h-3" /> Blend
         </Link>

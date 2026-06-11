@@ -124,7 +124,7 @@ export default function MusicSearch() {
         >
           <SlidersHorizontal className="w-5 h-5" />
           {filterCount > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-5 h-5 rounded-full bg-[#00FF85] text-black text-xs font-bold flex items-center justify-center px-1.5">
+            <span className="absolute -top-1 -right-1 min-w-5 h-5 rounded-full bg-[#3D7CFF] text-black text-xs font-bold flex items-center justify-center px-1.5">
               {filterCount}
             </span>
           )}
@@ -241,7 +241,7 @@ export default function MusicSearch() {
                 type="checkbox"
                 checked={hideExplicit}
                 onChange={(e) => setHideExplicit(e.target.checked)}
-                className="w-4 h-4 accent-[#00FF85]"
+                className="w-4 h-4 accent-[#3D7CFF]"
               />
               Hide explicit
             </label>

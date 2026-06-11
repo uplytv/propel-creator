@@ -27,7 +27,7 @@ export default function MyPage() {
   const [previewMode, setPreviewMode] = useState<"mobile" | "desktop">("mobile");
   const [tagline, setTagline] = useState("");
   const [bgColor, setBgColor] = useState("#0A0A0A");
-  const [accentColor, setAccentColor] = useState("#00FF85");
+  const [accentColor, setAccentColor] = useState("#3D7CFF");
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -72,7 +72,7 @@ export default function MyPage() {
       const c = bioPage.content as any;
       setTagline(c.tagline || "");
       setBgColor(c.bgColor || "#0A0A0A");
-      setAccentColor(c.accentColor || "#00FF85");
+      setAccentColor(c.accentColor || "#3D7CFF");
     }
   }, [bioPage]);
 

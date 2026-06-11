@@ -120,9 +120,9 @@ export default function CreatorProfileEditDrawer({ open, onOpenChange, profile, 
             <Label className="text-muted-foreground text-xs mb-1.5">Avatar</Label>
             <label className="flex items-center gap-3 cursor-pointer">
               {profile.avatar_url ? (
-                <img src={profile.avatar_url} className="w-14 h-14 rounded-full object-cover" style={{ border: "2px solid #00FF85" }} alt={`${displayName} avatar`} loading="lazy" />
+                <img src={profile.avatar_url} className="w-14 h-14 rounded-full object-cover" style={{ border: "2px solid #3D7CFF" }} alt={`${displayName} avatar`} loading="lazy" />
               ) : (
-                <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--card))", border: "2px solid #00FF85", color: "hsl(var(--primary))" }}>
+                <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--card))", border: "2px solid #3D7CFF", color: "hsl(var(--primary))" }}>
                   {displayName.charAt(0) || "U"}
                 </div>
               )}

@@ -93,9 +93,9 @@ export default function ProducerRegistration({ onClose }: ProducerRegistrationPr
                   onClick={() => setType(pt.value)}
                   className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all"
                   style={{
-                    background: type === pt.value ? "rgba(0,255,133,0.1)" : "rgba(255,255,255,0.04)",
-                    border: `1.5px solid ${type === pt.value ? "#00FF85" : "rgba(255,255,255,0.1)"}`,
-                    color: type === pt.value ? "#00FF85" : "rgba(255,255,255,0.6)",
+                    background: type === pt.value ? "rgba(61, 124, 255,0.1)" : "rgba(255,255,255,0.04)",
+                    border: `1.5px solid ${type === pt.value ? "#3D7CFF" : "rgba(255,255,255,0.1)"}`,
+                    color: type === pt.value ? "#3D7CFF" : "rgba(255,255,255,0.6)",
                   }}
                 >
                   {pt.emoji} {pt.label}
@@ -143,7 +143,7 @@ export default function ProducerRegistration({ onClose }: ProducerRegistrationPr
             disabled={loading || !name.trim()}
             className="w-full py-3.5 rounded-xl font-bold text-sm transition-transform active:scale-95"
             style={{
-              backgroundColor: "#00FF85",
+              backgroundColor: "#3D7CFF",
               color: "#0A0A0A",
               opacity: loading || !name.trim() ? 0.5 : 1,
             }}

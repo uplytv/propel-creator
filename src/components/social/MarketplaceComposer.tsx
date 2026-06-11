@@ -64,7 +64,7 @@ export default function MarketplaceComposer({ eventId, onClose }: Props) {
                   onClick={() => setCategory(c)}
                   className="px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
                   style={{
-                    backgroundColor: category === c ? "#00FF85" : "rgba(255,255,255,0.08)",
+                    backgroundColor: category === c ? "#3D7CFF" : "rgba(255,255,255,0.08)",
                     color: category === c ? "#0A0A0A" : "rgba(255,255,255,0.7)",
                   }}
                 >
@@ -100,7 +100,7 @@ export default function MarketplaceComposer({ eventId, onClose }: Props) {
             onClick={() => submit.mutate()}
             disabled={submit.isPending || !content.trim()}
             className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-transform active:scale-95 disabled:opacity-50"
-            style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}
+            style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A" }}
           >
             {submit.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Post Listing"}
           </button>

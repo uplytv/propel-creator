@@ -84,7 +84,7 @@ interface Props {
 
 
 const PRESET_COLORS = [
-  { name: "Electric", fg: "#00FF85", bg: "#0A0A0A" },
+  { name: "Electric", fg: "#3D7CFF", bg: "#0A0A0A" },
   { name: "Mono Dark", fg: "#FFFFFF", bg: "#0A0A0A" },
   { name: "Mono Light", fg: "#000000", bg: "#FFFFFF" },
   { name: "Magenta", fg: "#FF2D87", bg: "#0A0A0A" },
@@ -94,7 +94,7 @@ const PRESET_COLORS = [
 
 export default function BrandedQRBuilder({ url, filenameSlug }: Props) {
   const previewRef = useRef<HTMLCanvasElement>(null);
-  const [fg, setFg] = useState("#00FF85");
+  const [fg, setFg] = useState("#3D7CFF");
   const [bg, setBg] = useState("#0A0A0A");
   const [margin, setMargin] = useState(2);
   const [ecc, setEcc] = useState<ECC>("H");

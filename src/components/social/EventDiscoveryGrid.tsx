@@ -143,7 +143,7 @@ export default function EventDiscoveryGrid({
           <button
             onClick={() => navigate("/social/producers")}
             className="px-4 py-2 rounded-xl text-xs font-bold transition-transform active:scale-95"
-            style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}
+            style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A" }}
           >
             Create an Event
           </button>

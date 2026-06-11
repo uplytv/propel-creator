@@ -67,7 +67,7 @@ export default function NowPlayingShareCard({ trackId, title, artist, coverUrl }
           maxWidth: "100%",
         }}
       >
-        <div className="text-[#00FF85] font-black text-xs tracking-widest mb-3">NOW PLAYING ON UPLY</div>
+        <div className="text-[#3D7CFF] font-black text-xs tracking-widest mb-3">NOW PLAYING ON UPLY</div>
         {coverUrl ? (
           <img
             src={coverUrl}
@@ -82,8 +82,8 @@ export default function NowPlayingShareCard({ trackId, title, artist, coverUrl }
         <p className="text-white/60 text-sm font-medium mb-6">{artist}</p>
         <div className="flex items-end justify-between mt-auto">
           <div className="text-white/40 text-[10px] font-mono">uply.tv</div>
-          <div className="h-6 w-12 rounded bg-[#00FF85]/20 flex items-center justify-center">
-            <span className="text-[#00FF85] text-[10px] font-black">UPLY</span>
+          <div className="h-6 w-12 rounded bg-[#3D7CFF]/20 flex items-center justify-center">
+            <span className="text-[#3D7CFF] text-[10px] font-black">UPLY</span>
           </div>
         </div>
       </div>
@@ -91,7 +91,7 @@ export default function NowPlayingShareCard({ trackId, title, artist, coverUrl }
       <div className="flex gap-2">
         <button
           onClick={onShare}
-          className="flex-1 rounded-lg bg-[#00FF85] text-black font-bold py-3 text-sm flex items-center justify-center gap-2"
+          className="flex-1 rounded-lg bg-[#3D7CFF] text-black font-bold py-3 text-sm flex items-center justify-center gap-2"
           style={{ minHeight: 44 }}
         >
           <Share2 className="w-4 h-4" /> Share

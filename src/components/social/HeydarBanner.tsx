@@ -35,18 +35,18 @@ export default function HeydarBanner() {
         onClick={() => setShowModal(true)}
         className="mx-4 mt-3 w-[calc(100%-2rem)] flex items-center justify-between transition-transform active:scale-[0.98]"
         style={{
-          background: "rgba(0,255,133,0.08)",
-          border: "1px solid rgba(0,255,133,0.25)",
+          background: "rgba(61, 124, 255,0.08)",
+          border: "1px solid rgba(61, 124, 255,0.25)",
           borderRadius: 12,
           padding: "14px 16px",
         }}
       >
-        <span style={{ fontSize: 14, fontWeight: 700, color: "#00FF85" }}>
+        <span style={{ fontSize: 14, fontWeight: 700, color: "#3D7CFF" }}>
           ⚡ {displayCount} Heyed you nearby
         </span>
         <ChevronRight
           className="w-4 h-4"
-          style={{ color: "rgba(0,255,133,0.6)" }}
+          style={{ color: "rgba(61, 124, 255,0.6)" }}
         />
       </button>
 

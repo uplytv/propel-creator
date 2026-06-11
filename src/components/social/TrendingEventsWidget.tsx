@@ -80,8 +80,8 @@ export default function TrendingEventsWidget() {
             <div className="p-2">
               <p className="text-white text-xs font-bold line-clamp-2 mb-1">{event.title}</p>
               <div className="flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" style={{ color: "#00FF85" }} />
-                <span className="text-[10px] font-semibold" style={{ color: "#00FF85" }}>
+                <TrendingUp className="w-3 h-3" style={{ color: "#3D7CFF" }} />
+                <span className="text-[10px] font-semibold" style={{ color: "#3D7CFF" }}>
                   {event.goingCount} going
                 </span>
               </div>

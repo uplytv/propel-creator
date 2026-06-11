@@ -84,7 +84,7 @@ export function LivePollOverlay({ streamId, isHost, userId, username }: LivePoll
                     >
                       <motion.div
                         className="absolute inset-y-0 left-0 rounded-xl"
-                        style={{ backgroundColor: isSelected ? 'rgba(0,255,133,0.25)' : 'rgba(255,255,255,0.08)' }}
+                        style={{ backgroundColor: isSelected ? 'rgba(61, 124, 255,0.25)' : 'rgba(255,255,255,0.08)' }}
                         initial={{ width: 0 }}
                         animate={{ width: `${pct}%` }}
                         transition={{ duration: 0.5 }}

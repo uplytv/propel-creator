@@ -61,7 +61,7 @@ export default function DeliverabilityDashboard() {
     return { totalSent, totalFailed, totalBounces, totalComplaints, deliveryRate, bounceRate, complaintRate, health };
   }, [broadcasts]);
 
-  const healthColor = metrics.health >= 80 ? "#00FF85" : metrics.health >= 50 ? "#f59e0b" : "#ef4444";
+  const healthColor = metrics.health >= 80 ? "#3D7CFF" : metrics.health >= 50 ? "#f59e0b" : "#ef4444";
   const healthLabel = metrics.health >= 80 ? "Excellent" : metrics.health >= 50 ? "Needs Attention" : "Critical";
 
   if (isLoading) return <Skeleton className="h-40 rounded-xl mx-4" />;
@@ -90,27 +90,27 @@ export default function DeliverabilityDashboard() {
           icon={ShieldCheck}
           label="Delivery Rate"
           value={`${metrics.deliveryRate.toFixed(1)}%`}
-          color={metrics.deliveryRate >= 95 ? "#00FF85" : metrics.deliveryRate >= 90 ? "#f59e0b" : "#ef4444"}
+          color={metrics.deliveryRate >= 95 ? "#3D7CFF" : metrics.deliveryRate >= 90 ? "#f59e0b" : "#ef4444"}
         />
         <MetricCard
           icon={TrendingDown}
           label="Bounce Rate"
           value={`${metrics.bounceRate.toFixed(2)}%`}
-          color={metrics.bounceRate <= 2 ? "#00FF85" : metrics.bounceRate <= 5 ? "#f59e0b" : "#ef4444"}
+          color={metrics.bounceRate <= 2 ? "#3D7CFF" : metrics.bounceRate <= 5 ? "#f59e0b" : "#ef4444"}
           warn={metrics.bounceRate > 2}
         />
         <MetricCard
           icon={AlertTriangle}
           label="Complaint Rate"
           value={`${metrics.complaintRate.toFixed(3)}%`}
-          color={metrics.complaintRate <= 0.1 ? "#00FF85" : metrics.complaintRate <= 0.3 ? "#f59e0b" : "#ef4444"}
+          color={metrics.complaintRate <= 0.1 ? "#3D7CFF" : metrics.complaintRate <= 0.3 ? "#f59e0b" : "#ef4444"}
           warn={metrics.complaintRate > 0.1}
         />
         <MetricCard
           icon={Ban}
           label="Suppressed"
           value={suppressedCount.toString()}
-          color={suppressedCount > 0 ? "#f59e0b" : "#00FF85"}
+          color={suppressedCount > 0 ? "#f59e0b" : "#3D7CFF"}
         />
       </div>
 

@@ -164,7 +164,7 @@ export default function SegmentBuilder({ open, onOpenChange, onApply, availableT
 
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={() => { setRules([]); onApply([]); onOpenChange(false); }}>Clear All</Button>
-          <Button onClick={handleApply} style={{ background: "#00FF85", color: "#0A0A0A" }}>
+          <Button onClick={handleApply} style={{ background: "#3D7CFF", color: "#0A0A0A" }}>
             Apply Segment
           </Button>
         </DialogFooter>

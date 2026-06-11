@@ -183,14 +183,14 @@ export default function DistributionSettings() {
         className="flex items-center gap-4 p-4 rounded-xl border border-border"
         style={{
           background:
-            connectedCount > 0 ? "rgba(0,255,133,0.08)" : "hsl(var(--secondary) / 0.3)",
+            connectedCount > 0 ? "rgba(61, 124, 255,0.08)" : "hsl(var(--secondary) / 0.3)",
         }}
       >
         <div
           className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
           style={{
             background:
-              connectedCount > 0 ? "rgba(0,255,133,0.25)" : "hsl(var(--muted))",
+              connectedCount > 0 ? "rgba(61, 124, 255,0.25)" : "hsl(var(--muted))",
           }}
         >
           <Share2 className="w-5 h-5 text-foreground" />

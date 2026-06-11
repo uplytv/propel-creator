@@ -85,7 +85,7 @@ export default function QRTicketScanner({ eventId, onClose }: QRTicketScannerPro
       <div className="px-4 py-3">
         <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.06)" }}>
           <p className="text-white/50 text-xs font-medium mb-1">Checked In</p>
-          <p className="text-3xl font-black" style={{ color: "#00FF85" }}>{checkedCount}</p>
+          <p className="text-3xl font-black" style={{ color: "#3D7CFF" }}>{checkedCount}</p>
         </div>
       </div>
 
@@ -106,10 +106,10 @@ export default function QRTicketScanner({ eventId, onClose }: QRTicketScannerPro
         {result && (
           <div
             className="w-full rounded-xl p-4 mb-4 flex items-center gap-3 animate-in slide-in-from-bottom-4"
-            style={{ background: result.valid ? "rgba(0,255,133,0.1)" : "rgba(255,59,48,0.1)" }}
+            style={{ background: result.valid ? "rgba(61, 124, 255,0.1)" : "rgba(255,59,48,0.1)" }}
           >
             {result.valid ? (
-              <CheckCircle2 className="w-8 h-8 flex-shrink-0" style={{ color: "#00FF85" }} />
+              <CheckCircle2 className="w-8 h-8 flex-shrink-0" style={{ color: "#3D7CFF" }} />
             ) : (
               <XCircle className="w-8 h-8 flex-shrink-0" style={{ color: "#FF3B30" }} />
             )}
@@ -144,7 +144,7 @@ export default function QRTicketScanner({ eventId, onClose }: QRTicketScannerPro
             onClick={() => validateTicket(manualCode)}
             disabled={checking || !manualCode.trim()}
             className="px-5 py-3 rounded-xl font-bold text-sm transition-transform active:scale-95"
-            style={{ background: "#00FF85", color: "#0A0A0A", opacity: checking ? 0.6 : 1 }}
+            style={{ background: "#3D7CFF", color: "#0A0A0A", opacity: checking ? 0.6 : 1 }}
           >
             {checking ? <Loader2 className="w-5 h-5 animate-spin" /> : "Check"}
           </button>

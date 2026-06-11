@@ -160,8 +160,8 @@ export default function EventRSVP() {
 
         {/* RSVP Form */}
         {rsvpDone ? (
-          <div className="text-center py-8 rounded-2xl border" style={{ background: "rgba(0,255,133,0.05)", borderColor: "rgba(0,255,133,0.2)" }}>
-            <Check className="w-12 h-12 mx-auto mb-3" style={{ color: "#00FF85" }} />
+          <div className="text-center py-8 rounded-2xl border" style={{ background: "rgba(61, 124, 255,0.05)", borderColor: "rgba(61, 124, 255,0.2)" }}>
+            <Check className="w-12 h-12 mx-auto mb-3" style={{ color: "#3D7CFF" }} />
             <h2 className="text-lg font-bold text-white mb-1">You're in!</h2>
             <p className="text-sm text-white/50">Check your email for confirmation and event details.</p>
           </div>
@@ -186,7 +186,7 @@ export default function EventRSVP() {
               type="submit"
               disabled={submitting}
               className="w-full h-12 rounded-xl text-sm font-bold gap-2"
-              style={{ background: "#00FF85", color: "#0A0A0A" }}
+              style={{ background: "#3D7CFF", color: "#0A0A0A" }}
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ticket className="w-4 h-4" />}
               RSVP — I'm Going

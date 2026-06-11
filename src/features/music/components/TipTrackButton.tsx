@@ -66,7 +66,7 @@ export default function TipTrackButton({ creatorId, trackId }: Props) {
                 onClick={() => setAmount(p)}
                 className="min-h-[44px] px-4 py-2 rounded-full text-sm font-bold"
                 style={{
-                  background: amount === p ? "#00FF85" : "rgba(255,255,255,0.06)",
+                  background: amount === p ? "#3D7CFF" : "rgba(255,255,255,0.06)",
                   color: amount === p ? "#000" : "#fff",
                 }}
               >
@@ -86,7 +86,7 @@ export default function TipTrackButton({ creatorId, trackId }: Props) {
             onClick={tip}
             disabled={loading}
             className="w-full min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full font-bold"
-            style={{ background: "#00FF85", color: "#000" }}
+            style={{ background: "#3D7CFF", color: "#000" }}
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Heart className="w-4 h-4" />}
             Tip ${amount}

@@ -79,7 +79,7 @@ export default function StoryEditor() {
           onClick={onPublish}
           disabled={isPublishing}
           className="rounded-full px-4 py-1.5 text-sm font-bold disabled:opacity-50"
-          style={{ background: "#00FF85", color: "#0A0A0A" }}
+          style={{ background: "#3D7CFF", color: "#0A0A0A" }}
         >
           {isPublishing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Share"}
         </button>

@@ -74,7 +74,7 @@ export default function StickyBuyTicketBar({ event, streamId }: StickyBuyTicketB
           bottom: "64px",
           background: "rgba(10,10,10,0.96)",
           backdropFilter: "blur(12px)",
-          borderTop: "1px solid rgba(0,255,133,0.2)",
+          borderTop: "1px solid rgba(61, 124, 255,0.2)",
         }}
       >
         <div className="flex items-center gap-2 min-w-0 flex-1 mr-3">
@@ -101,7 +101,7 @@ export default function StickyBuyTicketBar({ event, streamId }: StickyBuyTicketB
             style={{
               background: isUrgent
                 ? "linear-gradient(135deg, #FF6B35, #FF3B30)"
-                : "#00FF85",
+                : "#3D7CFF",
               color: isUrgent ? "#FFFFFF" : "#0A0A0A",
               animation: isUrgent ? "urgencyPulse 1.5s infinite" : undefined,
             }}

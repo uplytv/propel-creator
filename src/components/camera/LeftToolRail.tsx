@@ -46,7 +46,7 @@ export default function LeftToolRail({ mode, filterIndex = 0, onCycleFilter, onT
               </RailButton>
             )}
             <RailButton ariaLabel="Filters" onClick={onCycleFilter}>
-              <Sparkles className="h-5 w-5" style={{ color: filterIndex > 0 ? "#00FF85" : "#fff" }} />
+              <Sparkles className="h-5 w-5" style={{ color: filterIndex > 0 ? "#3D7CFF" : "#fff" }} />
             </RailButton>
           </>
         )}

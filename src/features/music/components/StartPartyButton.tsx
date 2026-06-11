@@ -35,7 +35,7 @@ export default function StartPartyButton({ className = "" }: Props) {
       onClick={start}
       disabled={loading}
       className={`min-h-[44px] inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold ${className}`}
-      style={{ background: "rgba(0,255,133,0.15)", color: "#00FF85", border: "1px solid rgba(0,255,133,0.4)" }}
+      style={{ background: "rgba(61, 124, 255,0.15)", color: "#3D7CFF", border: "1px solid rgba(61, 124, 255,0.4)" }}
     >
       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Users className="w-4 h-4" />}
       Listening Party

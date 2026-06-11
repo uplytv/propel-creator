@@ -42,7 +42,7 @@ export default function SmartLinkShareHub({ links }: Props) {
   const previewUrl = selected ? `/link/${selected.slug}` : "";
 
   const embedSnippet = selected
-    ? `<a href="${url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;background:#00FF85;color:#000;border-radius:999px;font-family:system-ui,sans-serif;font-weight:700;text-decoration:none;">▶ Listen to ${selected.title}</a>`
+    ? `<a href="${url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;background:#3D7CFF;color:#000;border-radius:999px;font-family:system-ui,sans-serif;font-weight:700;text-decoration:none;">▶ Listen to ${selected.title}</a>`
     : "";
 
   const iframeSnippet = selected
@@ -205,7 +205,7 @@ export default function SmartLinkShareHub({ links }: Props) {
                     rel="noopener noreferrer"
                     style={{
                       display: "inline-flex", alignItems: "center", gap: 8,
-                      padding: "12px 20px", background: "#00FF85", color: "#000",
+                      padding: "12px 20px", background: "#3D7CFF", color: "#000",
                       borderRadius: 999, fontWeight: 700, textDecoration: "none", fontSize: 14,
                     }}
                   >

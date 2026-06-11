@@ -1010,7 +1010,7 @@ export default function Stream() {
                               } catch { setJoinStatus('idle'); }
                             }}
                             className="flex-1 py-2.5 rounded-xl text-sm font-bold"
-                            style={{ backgroundColor: '#00FF85', color: '#0A0A0A' }}
+                            style={{ backgroundColor: '#3D7CFF', color: '#0A0A0A' }}
                           >
                             Join Live 🎙️
                           </button>
@@ -1029,7 +1029,7 @@ export default function Stream() {
                       </>
                     )}
                     {joinStatus === 'requesting' && <p className="text-white text-sm">⏳ Waiting for host to accept…</p>}
-                    {joinStatus === 'accepted' && <p className="text-sm" style={{ color: '#00FF85' }}>✅ You're live!</p>}
+                    {joinStatus === 'accepted' && <p className="text-sm" style={{ color: '#3D7CFF' }}>✅ You're live!</p>}
                     {joinStatus === 'rejected' && <p className="text-red-400 text-sm">The host declined your request</p>}
                   </div>
                 </div>

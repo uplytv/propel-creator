@@ -471,7 +471,7 @@ export default function EmailBroadcast() {
                   onClick={() => setConfirmSend(true)}
                   disabled={!subject.trim() || !body.trim() || subCount === 0 || (scheduleEnabled && (!scheduledDate || !scheduledTime)) || (abEnabled && !subjectB.trim())}
                   className="rounded-xl gap-2 flex-1"
-                  style={{ background: "#00FF85", color: "#0A0A0A" }}
+                  style={{ background: "#3D7CFF", color: "#0A0A0A" }}
                 >
                   {scheduleEnabled ? <Clock className="w-4 h-4" /> : <Send className="w-4 h-4" />}
                   {scheduleEnabled ? "Schedule" : `Send to ${subCount}`}
@@ -509,7 +509,7 @@ export default function EmailBroadcast() {
                   <Button
                     onClick={() => sendMutation.mutate()}
                     disabled={sendMutation.isPending}
-                    style={{ background: "#00FF85", color: "#0A0A0A" }}
+                    style={{ background: "#3D7CFF", color: "#0A0A0A" }}
                   >
                     {sendMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : scheduleEnabled ? "Schedule" : "Send Now"}
                   </Button>
@@ -520,7 +520,7 @@ export default function EmailBroadcast() {
         ) : (
           <div className="px-4 space-y-4">
             <div className="flex gap-2">
-              <Button onClick={() => setComposing(true)} className="flex-1 rounded-xl gap-2" style={{ background: "#00FF85", color: "#0A0A0A" }}>
+              <Button onClick={() => setComposing(true)} className="flex-1 rounded-xl gap-2" style={{ background: "#3D7CFF", color: "#0A0A0A" }}>
                 <Mail className="w-4 h-4" /> New Broadcast
               </Button>
               <Button
@@ -565,7 +565,7 @@ export default function EmailBroadcast() {
                         <span className="text-blue-400"><Eye className="w-3 h-3 inline mr-1" />{b.open_count} opens</span>
                       )}
                       {(b.click_count || 0) > 0 && (
-                        <span style={{ color: "#00FF85" }}><MousePointerClick className="w-3 h-3 inline mr-1" />{b.click_count} clicks</span>
+                        <span style={{ color: "#3D7CFF" }}><MousePointerClick className="w-3 h-3 inline mr-1" />{b.click_count} clicks</span>
                       )}
                     </div>
                     {b.scheduled_at && b.status === "scheduled" && (

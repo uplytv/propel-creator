@@ -313,7 +313,7 @@ export default function DripSequences() {
                     onClick={() => addStep.mutate()}
                     disabled={!stepSubject.trim() || addStep.isPending}
                     className="rounded-xl flex-1"
-                    style={{ background: "#00FF85", color: "#0A0A0A" }}
+                    style={{ background: "#3D7CFF", color: "#0A0A0A" }}
                   >
                     Add Step
                   </Button>
@@ -337,7 +337,7 @@ export default function DripSequences() {
         <BackNav label="Drip Sequences" />
 
         <div className="px-4 space-y-4">
-          <Button onClick={() => setShowCreate(true)} className="w-full rounded-xl gap-2" style={{ background: "#00FF85", color: "#0A0A0A" }}>
+          <Button onClick={() => setShowCreate(true)} className="w-full rounded-xl gap-2" style={{ background: "#3D7CFF", color: "#0A0A0A" }}>
             <Plus className="w-4 h-4" /> New Sequence
           </Button>
 
@@ -431,7 +431,7 @@ export default function DripSequences() {
               <Button
                 onClick={() => createMutation.mutate()}
                 disabled={!newName.trim() || createMutation.isPending}
-                style={{ background: "#00FF85", color: "#0A0A0A" }}
+                style={{ background: "#3D7CFF", color: "#0A0A0A" }}
               >
                 Create
               </Button>

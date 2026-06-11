@@ -14,7 +14,7 @@ export default function DropCountdownCard({ trackId }: Props) {
   return (
     <div
       className="rounded-2xl p-5 overflow-hidden relative"
-      style={{ background: "linear-gradient(135deg, #00FF85 0%, #00E5FF 100%)" }}
+      style={{ background: "linear-gradient(135deg, #3D7CFF 0%, #00E5FF 100%)" }}
     >
       <div className="flex items-center gap-2 text-black/80 text-xs font-black tracking-widest mb-2">
         <Sparkles className="w-4 h-4" /> DROPPING SOON
@@ -44,7 +44,7 @@ export default function DropCountdownCard({ trackId }: Props) {
         <button
           onClick={() => setReminder.mutate(!isReminded)}
           className={`rounded-lg px-4 font-bold text-sm flex items-center gap-2 ${
-            isReminded ? "bg-black/20 text-black" : "bg-black text-[#00FF85]"
+            isReminded ? "bg-black/20 text-black" : "bg-black text-[#3D7CFF]"
           }`}
           style={{ minHeight: 44 }}
         >

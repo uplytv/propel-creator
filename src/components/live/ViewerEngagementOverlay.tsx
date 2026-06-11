@@ -83,7 +83,7 @@ function EnergyMilestones({ score }: { score: number }) {
             className="absolute top-2 left-0 right-0 z-50 flex justify-center"
           >
             <div className="px-4 py-2 rounded-full text-sm font-bold"
-              style={{ backgroundColor: "rgba(0,255,133,0.15)", color: "hsl(var(--primary))", backdropFilter: "blur(12px)" }}>
+              style={{ backgroundColor: "rgba(61, 124, 255,0.15)", color: "hsl(var(--primary))", backdropFilter: "blur(12px)" }}>
               🔥 This stream is heating up
             </div>
           </motion.div>
@@ -330,7 +330,7 @@ export default function ViewerEngagementOverlay({ streamId, streamTitle, creator
                   <div className="px-4 py-2">
                     {pinnedMessages.map((pm) => (
                       <div key={pm.id} className="rounded-lg px-3 py-2 text-xs mb-1"
-                        style={{ border: "1px solid hsl(var(--primary))", backgroundColor: "rgba(0,255,133,0.05)" }}>
+                        style={{ border: "1px solid hsl(var(--primary))", backgroundColor: "rgba(61, 124, 255,0.05)" }}>
                         <span className="font-bold" style={{ color: "hsl(var(--primary))" }}>📌 {pm.username}:</span>{" "}
                         <span className="text-white/80">{pm.message}</span>
                       </div>

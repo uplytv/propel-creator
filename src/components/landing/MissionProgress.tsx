@@ -123,7 +123,7 @@ const PLACEHOLDER_ITEMS: TickerItem[] = [
 // ── Reward badge config ──
 const REWARD_BADGES: Record<string, { emoji: string; label: string; bg: string; border: string; text: string }> = {
   platform: { emoji: "⚡", label: "Platform", bg: "rgba(99,102,241,0.15)", border: "rgba(99,102,241,0.4)", text: "#818CF8" },
-  money: { emoji: "💰", label: "Cash Prize", bg: "rgba(0,255,133,0.12)", border: "rgba(0,255,133,0.4)", text: "hsl(var(--primary))" },
+  money: { emoji: "💰", label: "Cash Prize", bg: "rgba(61, 124, 255,0.12)", border: "rgba(61, 124, 255,0.4)", text: "hsl(var(--primary))" },
   status: { emoji: "🏆", label: "Status", bg: "rgba(255,215,0,0.12)", border: "rgba(255,215,0,0.4)", text: "#FFD700" },
   urgency: { emoji: "⚡", label: "Closes at 1M", bg: "rgba(220,38,38,0.15)", border: "rgba(220,38,38,0.5)", text: "#FF4444" },
   
@@ -326,7 +326,7 @@ function AwardsModal({ onClose }: { onClose: () => void }) {
             <div className="flex flex-wrap gap-1.5 mt-2">
               {["✓ Featured placement", "✓ Priority support", "✓ $50K co-marketing", "✓ You own all content"].map(c => (
                 <span key={c} className="px-2.5 py-0.5 rounded-full text-[11px] border"
-                  style={{ background: "transparent", borderColor: "rgba(0,255,133,0.4)", color: "hsl(var(--primary))" }}>{c}</span>
+                  style={{ background: "transparent", borderColor: "rgba(61, 124, 255,0.4)", color: "hsl(var(--primary))" }}>{c}</span>
               ))}
             </div>
           </div>
@@ -382,7 +382,7 @@ function AwardsModal({ onClose }: { onClose: () => void }) {
                   className="block px-3 py-1.5 rounded-md text-[11px] text-center cursor-default"
                   style={{
                     background: "hsl(var(--muted) / 0.3)",
-                    border: c.special === "gold" ? "1px solid rgba(255,215,0,0.4)" : c.special === "og" ? "1px solid rgba(0,255,133,0.4)" : "1px solid hsl(var(--border))",
+                    border: c.special === "gold" ? "1px solid rgba(255,215,0,0.4)" : c.special === "og" ? "1px solid rgba(61, 124, 255,0.4)" : "1px solid hsl(var(--border))",
                     color: c.special === "gold" ? "#FFD700" : c.special === "og" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
                     fontFamily: "'Plus Jakarta Sans', sans-serif",
                   }}
@@ -467,7 +467,7 @@ function MilestoneCard({ m, effectiveCount, isMobile, onOpenAwards }: {
     : "1px solid hsl(var(--border))";
 
   const bgColor = is1M
-    ? "rgba(0,255,133,0.05)"
+    ? "rgba(61, 124, 255,0.05)"
     : passed ? "hsl(var(--primary) / 0.04)"
     : is100M ? "rgba(255,215,0,0.02)"
     : "hsl(var(--card))";
@@ -822,11 +822,11 @@ const MissionProgress = React.memo(function MissionProgress() {
             ) : (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}
                 className="rounded-lg px-4 py-2 inline-block transition-colors duration-500"
-                style={{ backgroundColor: counterFlash ? "rgba(0,255,133,0.15)" : "transparent" }}>
+                style={{ backgroundColor: counterFlash ? "rgba(61, 124, 255,0.15)" : "transparent" }}>
                 <p className="font-heading text-[52px] md:text-[72px] font-extrabold text-primary"
                   style={{
                     transition: 'textShadow 300ms ease',
-                    textShadow: counterFlash ? '0 0 20px rgba(0,255,133,0.8)' : 'none',
+                    textShadow: counterFlash ? '0 0 20px rgba(61, 124, 255,0.8)' : 'none',
                   }}>
                   +{formatCount(animatedValue)}
                 </p>
@@ -849,7 +849,7 @@ const MissionProgress = React.memo(function MissionProgress() {
                 style={{
                   width: isVisible ? `${fillPercentage}%` : "0%",
                   background: "linear-gradient(90deg, hsl(var(--primary)), #00CC6A)",
-                  boxShadow: "0 0 12px rgba(0,255,133,0.25)",
+                  boxShadow: "0 0 12px rgba(61, 124, 255,0.25)",
                   transition: "width 1.5s cubic-bezier(0.22, 1, 0.36, 1)",
                 }}>
                 <div className="absolute inset-0" style={{
@@ -860,7 +860,7 @@ const MissionProgress = React.memo(function MissionProgress() {
               {/* You are here indicator */}
               <div className="absolute top-0" style={{ left: `${fillPercentage}%`, transform: "translateX(-50%)" }}>
                 <p className="text-[10px] text-primary whitespace-nowrap -mt-4 font-medium">You are here</p>
-                <div className="w-2 h-2 rounded-full bg-primary mx-auto -mt-0.5" style={{ boxShadow: "0 0 8px rgba(0,255,133,0.8)" }} />
+                <div className="w-2 h-2 rounded-full bg-primary mx-auto -mt-0.5" style={{ boxShadow: "0 0 8px rgba(61, 124, 255,0.8)" }} />
               </div>
             </div>
           )}
@@ -887,7 +887,7 @@ const MissionProgress = React.memo(function MissionProgress() {
                       style={isNext ? { animation: "pulse-dot 2s infinite" } : undefined} />
                     <p className={`text-[10px] md:text-[11px] font-bold mt-0.5 whitespace-nowrap ${
                       passed ? "text-primary" : isNext ? "text-foreground" : "text-muted-foreground/40"
-                    }`} style={isNext ? { textShadow: "0 0 8px rgba(0,255,133,0.5)" } : undefined}>
+                    }`} style={isNext ? { textShadow: "0 0 8px rgba(61, 124, 255,0.5)" } : undefined}>
                       {passed && "✓ "}{m.label}
                     </p>
                     <p className="text-[9px] text-muted-foreground italic whitespace-nowrap mt-0.5 hidden md:block max-w-[80px] truncate">{m.context}</p>

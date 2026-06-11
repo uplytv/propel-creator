@@ -125,7 +125,7 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
           <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white/10 text-white/50">Preview</span>
         </div>
         {enrollCount > 0 && (
-          <p className="text-[11px] mt-2 font-medium" style={{ color: "#00FF85" }}>🎉 {enrollCount} joined during this stream</p>
+          <p className="text-[11px] mt-2 font-medium" style={{ color: "#3D7CFF" }}>🎉 {enrollCount} joined during this stream</p>
         )}
       </div>
     );
@@ -148,9 +148,9 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
             <div className="flex-1 min-w-0">
               <span className="text-[10px] text-white/40 font-semibold uppercase tracking-wider">{getLabel(product.type)}</span>
               <p className="text-white text-sm font-semibold truncate">{product.name}</p>
-              <p className="text-xs mt-0.5" style={{ color: "#00FF85" }}>{isFree ? "Free" : `$${product.price}`}</p>
+              <p className="text-xs mt-0.5" style={{ color: "#3D7CFF" }}>{isFree ? "Free" : `$${product.price}`}</p>
             </div>
-            <span className="px-4 py-2 rounded-xl text-xs font-bold flex-shrink-0" style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}>
+            <span className="px-4 py-2 rounded-xl text-xs font-bold flex-shrink-0" style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A" }}>
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : enrolled ? <>Access</> : ctaLabel}
             </span>
           </button>
@@ -179,7 +179,7 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
                 {!user ? (
                   <>
                     <p className="text-white/40 text-sm">Sign in to continue</p>
-                    <button onClick={() => { setModalOpen(false); navigate("/auth"); }} className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2" style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}>
+                    <button onClick={() => { setModalOpen(false); navigate("/auth"); }} className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2" style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A" }}>
                       <LogIn className="w-4 h-4" /> Sign In
                     </button>
                   </>
@@ -189,8 +189,8 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
                       <p className="text-2xl font-bold text-white">{product.type === "auction" ? `Starting $${product.price}` : `$${product.price}`}</p>
                       <p className="text-white/40 text-xs">{product.type === "auction" ? "Live auction · Highest bid wins" : "Secure checkout · Ships to you"}</p>
                     </div>
-                    {product.live_product_data?.free_shipping && <p className="text-xs" style={{ color: "#00FF85" }}>✓ Free Shipping</p>}
-                    <button onClick={product.type === "auction" ? () => setModalOpen(false) : handleLiveShopPurchase} disabled={loading} className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2" style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}>
+                    {product.live_product_data?.free_shipping && <p className="text-xs" style={{ color: "#3D7CFF" }}>✓ Free Shipping</p>}
+                    <button onClick={product.type === "auction" ? () => setModalOpen(false) : handleLiveShopPurchase} disabled={loading} className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2" style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A" }}>
                       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : product.type === "auction" ? "Bid in Live Stream" : `Buy Now · $${product.price}`}
                     </button>
                     <p className="text-white/30 text-[10px] text-center">🔒 Secure payment powered by Stripe</p>
@@ -199,7 +199,7 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
                   <>
                     <p className="text-2xl font-bold text-white">Free</p>
                     <p className="text-white/40 text-xs">Instant access · No payment required</p>
-                    <button onClick={handleFreeJoin} disabled={loading} className="w-full py-3 rounded-xl text-sm font-bold" style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}>
+                    <button onClick={handleFreeJoin} disabled={loading} className="w-full py-3 rounded-xl text-sm font-bold" style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A" }}>
                       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Get Instant Access"}
                     </button>
                   </>
@@ -207,7 +207,7 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
                   <>
                     <p className="text-2xl font-bold text-white">${product.price}</p>
                     <p className="text-white/40 text-xs">One-time payment · Lifetime access</p>
-                    <button onClick={handlePaidPurchase} disabled={loading} className="w-full py-3 rounded-xl text-sm font-bold" style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}>
+                    <button onClick={handlePaidPurchase} disabled={loading} className="w-full py-3 rounded-xl text-sm font-bold" style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A" }}>
                       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : `Buy Now · $${product.price}`}
                     </button>
                     <p className="text-white/30 text-[10px] text-center">🔒 Secure payment powered by Stripe</p>
@@ -216,9 +216,9 @@ export default function FeaturedProductCTA({ product, streamId, creatorId, isCre
 
                 {enrolled && (
                   <div className="text-center space-y-2 pt-2">
-                    <Check className="w-6 h-6 mx-auto" style={{ color: "#00FF85" }} />
+                    <Check className="w-6 h-6 mx-auto" style={{ color: "#3D7CFF" }} />
                     <p className="text-white text-sm font-semibold">You're in!</p>
-                    <button onClick={() => navigate(`/community/${creatorId}`, { state: { tab: product.type === "course" ? "classroom" : "community" } })} className="px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 mx-auto" style={{ backgroundColor: "rgba(0,255,133,0.1)", color: "#00FF85" }}>
+                    <button onClick={() => navigate(`/community/${creatorId}`, { state: { tab: product.type === "course" ? "classroom" : "community" } })} className="px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 mx-auto" style={{ backgroundColor: "rgba(61, 124, 255,0.1)", color: "#3D7CFF" }}>
                       <ExternalLink className="w-3 h-3" /> Open {getLabel(product.type)}
                     </button>
                   </div>

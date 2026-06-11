@@ -25,7 +25,7 @@ interface Props {
 
 const fireConfetti = () => {
   const defaults = { startVelocity: 35, spread: 360, ticks: 60, zIndex: 9999 };
-  const colors = ["#00FF85", "#ffffff", "#FFD700"];
+  const colors = ["#3D7CFF", "#ffffff", "#FFD700"];
   confetti({ ...defaults, particleCount: 80, origin: { x: 0.85, y: 0.85 }, colors });
   setTimeout(() => confetti({ ...defaults, particleCount: 50, origin: { x: 0.5, y: 0.6 }, colors }), 150);
 };

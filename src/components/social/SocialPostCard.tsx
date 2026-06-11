@@ -40,7 +40,7 @@ export default function SocialPostCard({ post }: SocialPostCardProps) {
 
       {/* Event tag */}
       {event && (
-        <span className="inline-block text-xs px-2 py-0.5 rounded-md mb-2" style={{ backgroundColor: "rgba(0,255,133,0.1)", color: "#00FF85" }}>
+        <span className="inline-block text-xs px-2 py-0.5 rounded-md mb-2" style={{ backgroundColor: "rgba(61, 124, 255,0.1)", color: "#3D7CFF" }}>
           → {event.title}
         </span>
       )}

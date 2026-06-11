@@ -40,8 +40,8 @@ export default function EventTabs({ eventId, eventTitle }: EventTabsProps) {
               onClick={() => setTab(t.id)}
               className="flex-1 py-3 flex flex-col items-center gap-1 text-[11px] font-semibold transition-colors"
               style={{
-                color: active ? "#00FF85" : "rgba(255,255,255,0.5)",
-                borderBottom: active ? "2px solid #00FF85" : "2px solid transparent",
+                color: active ? "#3D7CFF" : "rgba(255,255,255,0.5)",
+                borderBottom: active ? "2px solid #3D7CFF" : "2px solid transparent",
               }}
             >
               <Icon className="w-4 h-4" />
@@ -168,7 +168,7 @@ function EventChatTab({ eventId }: { eventId: string }) {
           type="submit"
           disabled={!user || !text.trim() || send.isPending}
           className="w-9 h-9 rounded-full flex items-center justify-center transition-transform active:scale-95"
-          style={{ backgroundColor: "#00FF85", color: "#0A0A0A", opacity: !text.trim() ? 0.4 : 1 }}
+          style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A", opacity: !text.trim() ? 0.4 : 1 }}
           aria-label="Send"
         >
           {send.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
@@ -262,7 +262,7 @@ function EventGalleryTab({ eventId }: { eventId: string }) {
     <button
       onClick={() => navigate(`/social?compose=story&event=${eventId}`)}
       className="w-full mt-2 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-transform active:scale-95"
-      style={{ backgroundColor: "rgba(0,255,133,0.12)", color: "#00FF85", border: "1px solid rgba(0,255,133,0.3)" }}
+      style={{ backgroundColor: "rgba(61, 124, 255,0.12)", color: "#3D7CFF", border: "1px solid rgba(61, 124, 255,0.3)" }}
     >
       <Camera className="w-3.5 h-3.5" /> Add to Gallery — Post a Story
     </button>
@@ -331,7 +331,7 @@ function EventMarketplaceTab({ eventId, eventTitle }: { eventId: string; eventTi
         </p>
         <button
           className="px-3 py-1.5 rounded-full text-[11px] font-bold transition-transform active:scale-95"
-          style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}
+          style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A" }}
           onClick={() => {
             if (!user) return toast.error("Sign in to post");
             setComposerOpen(true);
@@ -366,7 +366,7 @@ function EventMarketplaceTab({ eventId, eventTitle }: { eventId: string; eventTi
                     </span>
                   )}
                   {it.price != null && (
-                    <span className="text-xs font-bold" style={{ color: "#00FF85" }}>
+                    <span className="text-xs font-bold" style={{ color: "#3D7CFF" }}>
                       ${Number(it.price).toFixed(0)}
                     </span>
                   )}

@@ -192,8 +192,8 @@ export default function LiveEventStreamsSection({ title, filterFollowing, follow
                   <div className="flex items-center gap-2">
                     {stream.venue_attendance_count > 0 && (
                       <span className="flex items-center gap-1 text-[10px]">
-                        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#00FF85" }} />
-                        <span style={{ color: "#00FF85" }} className="font-semibold">{stream.venue_attendance_count}</span>
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#3D7CFF" }} />
+                        <span style={{ color: "#3D7CFF" }} className="font-semibold">{stream.venue_attendance_count}</span>
                         <span className="text-muted-foreground">there</span>
                       </span>
                     )}
@@ -209,7 +209,7 @@ export default function LiveEventStreamsSection({ title, filterFollowing, follow
                     disabled={purchasingId === stream.id}
                     className="px-3 py-1 rounded-lg text-[10px] font-bold transition-all"
                     style={{
-                      background: isUrgent ? "linear-gradient(135deg, #FF6B35, #FF3B30)" : "#00FF85",
+                      background: isUrgent ? "linear-gradient(135deg, #FF6B35, #FF3B30)" : "#3D7CFF",
                       color: isUrgent ? "#FFFFFF" : "#0A0A0A",
                       opacity: purchasingId === stream.id ? 0.6 : 1,
                     }}

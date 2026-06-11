@@ -139,7 +139,7 @@ export default function TVWatch() {
         <div className="space-y-1 opacity-30">
           {chat.slice(-3).map((m) => (
             <div key={m.id} className="text-sm">
-              <span className="text-[#00FF85] font-semibold">{m.user}:</span> <span>{m.text}</span>
+              <span className="text-[#3D7CFF] font-semibold">{m.user}:</span> <span>{m.text}</span>
             </div>
           ))}
         </div>
@@ -147,12 +147,12 @@ export default function TVWatch() {
 
       {/* Featured product overlay (right third) */}
       {feature && product && (
-        <div className="absolute right-8 top-1/2 -translate-y-1/2 w-[40%] max-w-md bg-[#0A0A0A]/95 border-2 border-[#00FF85] rounded-2xl p-6 z-30 shadow-2xl animate-in slide-in-from-right">
+        <div className="absolute right-8 top-1/2 -translate-y-1/2 w-[40%] max-w-md bg-[#0A0A0A]/95 border-2 border-[#3D7CFF] rounded-2xl p-6 z-30 shadow-2xl animate-in slide-in-from-right">
           {product.image_url && (
             <img src={product.image_url} alt={product.name} className="w-full h-48 object-cover rounded-xl mb-4" />
           )}
           <div className="text-2xl font-bold mb-1">{product.name}</div>
-          <div className="text-3xl font-black text-[#00FF85] mb-4">${Number(product.price).toFixed(2)}</div>
+          <div className="text-3xl font-black text-[#3D7CFF] mb-4">${Number(product.price).toFixed(2)}</div>
           <div className="bg-white p-4 rounded-xl flex justify-center mb-3">
             {buyUrl && <QRCodeCanvas value={buyUrl} size={240} />}
           </div>

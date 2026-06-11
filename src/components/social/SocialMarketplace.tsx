@@ -65,7 +65,7 @@ export default function SocialMarketplace() {
             <button
               onClick={() => setShowCreate(true)}
               className="px-6 py-3 rounded-xl font-bold text-sm"
-              style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}
+              style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A" }}
             >
               Post a Listing
             </button>
@@ -96,7 +96,7 @@ export default function SocialMarketplace() {
                     </div>
                     <p className="text-sm text-white/80 line-clamp-3">{post.content}</p>
                     {post.price && (
-                      <span className="inline-block mt-1 px-2 py-0.5 rounded-md text-xs font-bold" style={{ background: "rgba(0,255,133,0.1)", color: "#00FF85" }}>
+                      <span className="inline-block mt-1 px-2 py-0.5 rounded-md text-xs font-bold" style={{ background: "rgba(61, 124, 255,0.1)", color: "#3D7CFF" }}>
                         ${post.price}
                       </span>
                     )}
@@ -116,7 +116,7 @@ export default function SocialMarketplace() {
         <button
           onClick={() => setShowCreate(true)}
           className="fixed bottom-24 right-4 w-14 h-14 rounded-full flex items-center justify-center shadow-lg z-30 transition-transform active:scale-90"
-          style={{ backgroundColor: "#00FF85" }}
+          style={{ backgroundColor: "#3D7CFF" }}
         >
           <Plus className="w-6 h-6" style={{ color: "#0A0A0A" }} />
         </button>
@@ -134,14 +134,14 @@ export default function SocialMarketplace() {
             <h3 className="text-lg font-bold text-white mb-4">New Listing</h3>
             <div className="flex gap-2 mb-4">
               {CATEGORIES.map((c) => (
-                <button key={c.value} onClick={() => setCategory(c.value)} className="flex-1 py-2 rounded-xl text-xs font-semibold text-center" style={{ background: category === c.value ? "rgba(0,255,133,0.1)" : "rgba(255,255,255,0.04)", border: `1px solid ${category === c.value ? "rgba(0,255,133,0.3)" : "rgba(255,255,255,0.1)"}`, color: category === c.value ? "#00FF85" : "rgba(255,255,255,0.5)" }}>
+                <button key={c.value} onClick={() => setCategory(c.value)} className="flex-1 py-2 rounded-xl text-xs font-semibold text-center" style={{ background: category === c.value ? "rgba(61, 124, 255,0.1)" : "rgba(255,255,255,0.04)", border: `1px solid ${category === c.value ? "rgba(61, 124, 255,0.3)" : "rgba(255,255,255,0.1)"}`, color: category === c.value ? "#3D7CFF" : "rgba(255,255,255,0.5)" }}>
                   {c.emoji}<br />{c.label}
                 </button>
               ))}
             </div>
             <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="What are you offering or looking for?" className="w-full p-3 rounded-xl text-sm text-white placeholder:text-white/30 resize-none mb-3" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", minHeight: 80 }} />
             <input value={price} onChange={(e) => setPrice(e.target.value)} placeholder="$ Price (optional)" type="number" className="w-full p-3 rounded-xl text-sm text-white placeholder:text-white/30 mb-4" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }} />
-            <button onClick={handlePost} disabled={posting || !content.trim()} className="w-full py-3 rounded-xl font-bold text-sm" style={{ backgroundColor: "#00FF85", color: "#0A0A0A", opacity: posting || !content.trim() ? 0.5 : 1 }}>
+            <button onClick={handlePost} disabled={posting || !content.trim()} className="w-full py-3 rounded-xl font-bold text-sm" style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A", opacity: posting || !content.trim() ? 0.5 : 1 }}>
               {posting ? "Posting..." : "Post Listing"}
             </button>
           </div>

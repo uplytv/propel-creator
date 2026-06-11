@@ -59,7 +59,7 @@ export default function TrackInsightsPage() {
               <Tooltip
                 contentStyle={{ background: '#111', border: '1px solid rgba(255,255,255,0.1)' }}
               />
-              <Line type="monotone" dataKey="count" stroke="#00FF85" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="count" stroke="#3D7CFF" strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -67,7 +67,7 @@ export default function TrackInsightsPage() {
 
       <section className="mt-6 rounded-2xl bg-white/[0.03] border border-white/5 p-4">
         <h2 className="text-sm font-bold text-white mb-3">Completion rate</h2>
-        <div className="text-4xl font-black text-[#00FF85]">{completion}%</div>
+        <div className="text-4xl font-black text-[#3D7CFF]">{completion}%</div>
         <div className="text-xs text-white/50 mt-1">
           Average % of the track that listeners played in the last 30 days.
         </div>

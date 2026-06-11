@@ -31,7 +31,7 @@ export default function PlayerControls({ size = 'md', showShuffleRepeat = true }
           onClick={toggleShuffle}
           aria-label="Shuffle"
           className="p-2 transition"
-          style={{ color: shuffle ? '#00FF85' : 'rgba(255,255,255,0.6)' }}
+          style={{ color: shuffle ? '#3D7CFF' : 'rgba(255,255,255,0.6)' }}
         >
           <Shuffle className="w-5 h-5" />
         </button>
@@ -55,7 +55,7 @@ export default function PlayerControls({ size = 'md', showShuffleRepeat = true }
           onClick={cycleRepeat}
           aria-label={`Repeat ${repeatMode}`}
           className="p-2 transition"
-          style={{ color: repeatMode !== 'off' ? '#00FF85' : 'rgba(255,255,255,0.6)' }}
+          style={{ color: repeatMode !== 'off' ? '#3D7CFF' : 'rgba(255,255,255,0.6)' }}
         >
           {repeatMode === 'one' ? <Repeat1 className="w-5 h-5" /> : <Repeat className="w-5 h-5" />}
         </button>

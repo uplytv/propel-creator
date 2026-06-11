@@ -12,7 +12,7 @@ export default function PlaybackSpeedMenu() {
       <PopoverTrigger asChild>
         <button
           aria-label="Playback speed"
-          className={`p-2 rounded-full ${rate !== 1 ? 'text-[#00FF85]' : 'text-white/70 hover:text-white'}`}
+          className={`p-2 rounded-full ${rate !== 1 ? 'text-[#3D7CFF]' : 'text-white/70 hover:text-white'}`}
         >
           <Gauge className="w-5 h-5" />
         </button>
@@ -29,7 +29,7 @@ export default function PlaybackSpeedMenu() {
             key={s}
             onClick={() => setRate(s)}
             className={`w-full text-left px-2 py-2 text-sm rounded-md hover:bg-white/10 ${
-              s === rate ? 'text-[#00FF85]' : ''
+              s === rate ? 'text-[#3D7CFF]' : ''
             }`}
           >
             {s}× {s === 1 && '(Normal)'}

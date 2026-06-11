@@ -54,9 +54,9 @@ export default function LinkEmailGate({ creatorId, creatorName, source = "link",
           <div className="text-center">
             <div
               className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center"
-              style={{ background: "rgba(0,255,133,0.1)" }}
+              style={{ background: "rgba(61, 124, 255,0.1)" }}
             >
-              <Mail className="w-6 h-6" style={{ color: "#00FF85" }} />
+              <Mail className="w-6 h-6" style={{ color: "#3D7CFF" }} />
             </div>
             <h2 className="text-lg font-bold text-foreground">Enter your email to continue</h2>
             <p className="text-xs text-muted-foreground mt-1">
@@ -84,7 +84,7 @@ export default function LinkEmailGate({ creatorId, creatorName, source = "link",
               type="submit"
               disabled={submitting || !email.trim()}
               className="w-full py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50"
-              style={{ background: "#00FF85", color: "#0A0A0A" }}
+              style={{ background: "#3D7CFF", color: "#0A0A0A" }}
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
               Continue

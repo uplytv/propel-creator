@@ -24,7 +24,7 @@ export default function RepostButton({
       }
       disabled={toggle.isPending}
       aria-label={reposted ? 'Remove repost' : 'Repost'}
-      className={`p-2 rounded-full ${reposted ? 'text-[#00FF85]' : 'text-white/70 hover:text-white'}`}
+      className={`p-2 rounded-full ${reposted ? 'text-[#3D7CFF]' : 'text-white/70 hover:text-white'}`}
     >
       <Repeat2 className={dim} />
     </button>

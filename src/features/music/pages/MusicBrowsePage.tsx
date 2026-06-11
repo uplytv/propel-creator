@@ -24,7 +24,7 @@ export default function MusicBrowsePage() {
       {(spotlights?.length ?? 0) > 0 && (
         <section className="space-y-3">
           <h2 className="text-lg font-bold text-white px-4 flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#00FF85]" /> Editor's Picks
+            <Sparkles className="w-4 h-4 text-[#3D7CFF]" /> Editor's Picks
           </h2>
           <div className="flex gap-3 overflow-x-auto px-4 pb-2">
             {spotlights!.map((s) => (

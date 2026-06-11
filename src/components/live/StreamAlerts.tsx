@@ -62,9 +62,9 @@ export default function StreamAlerts({ className }: StreamAlertsProps) {
       glow: '0 0 60px rgba(99, 102, 241, 0.3)',
     },
     milestone: {
-      bg: 'rgba(0, 255, 133, 0.12)',
-      border: 'rgba(0, 255, 133, 0.4)',
-      glow: '0 0 60px rgba(0, 255, 133, 0.3)',
+      bg: 'rgba(61, 124, 255, 0.12)',
+      border: 'rgba(61, 124, 255, 0.4)',
+      glow: '0 0 60px rgba(61, 124, 255, 0.3)',
     },
     raid: {
       bg: 'rgba(239, 68, 68, 0.12)',

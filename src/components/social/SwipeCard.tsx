@@ -134,8 +134,8 @@ export default function SwipeCard({ person, index, onSwipeRight, onSwipeLeft, on
             draggable={false}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center" style={{ background: "rgba(0,255,133,0.05)" }}>
-            <span className="text-6xl" style={{ color: "rgba(0,255,133,0.3)" }}>
+          <div className="w-full h-full flex items-center justify-center" style={{ background: "rgba(61, 124, 255,0.05)" }}>
+            <span className="text-6xl" style={{ color: "rgba(61, 124, 255,0.3)" }}>
               {initials}
             </span>
           </div>
@@ -154,8 +154,8 @@ export default function SwipeCard({ person, index, onSwipeRight, onSwipeLeft, on
           <div
             className="absolute top-6 left-6 px-4 py-2 rounded-xl"
             style={{
-              border: "3px solid #00FF85",
-              color: "#00FF85",
+              border: "3px solid #3D7CFF",
+              color: "#3D7CFF",
               fontSize: 24,
               fontWeight: 900,
               transform: "rotate(-15deg)",
@@ -199,7 +199,7 @@ export default function SwipeCard({ person, index, onSwipeRight, onSwipeLeft, on
           {person.shared_event && (
             <span
               className="inline-block px-2.5 py-1 rounded-lg text-xs font-semibold mb-2"
-              style={{ backgroundColor: "rgba(0,255,133,0.15)", color: "#00FF85" }}
+              style={{ backgroundColor: "rgba(61, 124, 255,0.15)", color: "#3D7CFF" }}
             >
               📍 Going to {person.shared_event}
             </span>

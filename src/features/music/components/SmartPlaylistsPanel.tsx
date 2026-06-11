@@ -26,9 +26,9 @@ function SmartPlaylistRow({ id, title }: { id: string; title: string }) {
         <button onClick={() => setOpen((v) => !v)} className="flex items-center gap-3 flex-1 text-left">
           <div
             className="w-10 h-10 rounded-lg flex items-center justify-center"
-            style={{ background: "rgba(0,255,133,0.15)" }}
+            style={{ background: "rgba(61, 124, 255,0.15)" }}
           >
-            <Sparkles className="w-5 h-5" style={{ color: "#00FF85" }} />
+            <Sparkles className="w-5 h-5" style={{ color: "#3D7CFF" }} />
           </div>
           <div>
             <p className="text-white font-semibold text-sm">{title}</p>

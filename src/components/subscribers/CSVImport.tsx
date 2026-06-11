@@ -101,7 +101,7 @@ export default function CSVImport({ open, onOpenChange }: Props) {
 
         {result ? (
           <div className="text-center py-6 space-y-3">
-            <Check className="w-12 h-12 mx-auto" style={{ color: "#00FF85" }} />
+            <Check className="w-12 h-12 mx-auto" style={{ color: "#3D7CFF" }} />
             <p className="text-sm font-medium text-foreground">{result.imported} subscribers imported</p>
             {result.skipped > 0 && (
               <p className="text-xs text-muted-foreground">{result.skipped} skipped (duplicates or errors)</p>
@@ -156,7 +156,7 @@ export default function CSVImport({ open, onOpenChange }: Props) {
             <Button
               onClick={handleImport}
               disabled={!parsed.length || importing}
-              style={{ background: "#00FF85", color: "#0A0A0A" }}
+              style={{ background: "#3D7CFF", color: "#0A0A0A" }}
             >
               {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : `Import ${parsed.length}`}
             </Button>

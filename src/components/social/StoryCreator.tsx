@@ -171,7 +171,7 @@ export default function StoryCreator({ onClose }: StoryCreatorProps) {
           style={{
             height: 48,
             borderRadius: 12,
-            background: !selectedFile ? "rgba(0,255,133,0.3)" : "#00FF85",
+            background: !selectedFile ? "rgba(61, 124, 255,0.3)" : "#3D7CFF",
             color: "#0A0A0A",
             fontSize: 15,
             fontWeight: 800,

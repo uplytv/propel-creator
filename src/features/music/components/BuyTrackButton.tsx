@@ -75,7 +75,7 @@ export default function BuyTrackButton({ trackId, priceCents }: Props) {
     return (
       <span
         className="min-h-[44px] inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold"
-        style={{ background: "rgba(0,255,133,0.15)", color: "#00FF85" }}
+        style={{ background: "rgba(61, 124, 255,0.15)", color: "#3D7CFF" }}
       >
         <CheckCircle2 className="w-4 h-4" /> Owned
       </span>
@@ -87,7 +87,7 @@ export default function BuyTrackButton({ trackId, priceCents }: Props) {
       onClick={buy}
       disabled={loading}
       className="min-h-[44px] inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm"
-      style={{ background: "#00FF85", color: "#000" }}
+      style={{ background: "#3D7CFF", color: "#000" }}
     >
       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShoppingCart className="w-4 h-4" />}
       Buy ${(priceCents / 100).toFixed(2)}

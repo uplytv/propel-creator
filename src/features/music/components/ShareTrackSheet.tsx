@@ -66,7 +66,7 @@ export default function ShareTrackSheet({ track, open, onClose }: Props) {
       }
 
       // UPLY logo
-      ctx.fillStyle = '#00FF85';
+      ctx.fillStyle = '#3D7CFF';
       ctx.font = 'bold 72px "Space Grotesk", sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('UPLY', W / 2, 200);
@@ -84,7 +84,7 @@ export default function ShareTrackSheet({ track, open, onClose }: Props) {
       ctx.font = '40px "Plus Jakarta Sans", sans-serif';
       if (track.genre) ctx.fillText(track.genre, W / 2, H - 280);
 
-      ctx.fillStyle = '#00FF85';
+      ctx.fillStyle = '#3D7CFF';
       ctx.font = 'bold 44px "Space Grotesk", sans-serif';
       ctx.fillText('uply.tv', W / 2, H - 180);
 
@@ -173,7 +173,7 @@ export default function ShareTrackSheet({ track, open, onClose }: Props) {
         <div className="grid grid-cols-3 gap-2">
           <button
             onClick={handleNativeShare}
-            className="flex flex-col items-center gap-1 py-3 rounded-xl bg-[#00FF85] text-black font-bold text-xs"
+            className="flex flex-col items-center gap-1 py-3 rounded-xl bg-[#3D7CFF] text-black font-bold text-xs"
           >
             <Share2 className="w-5 h-5" /> Share
           </button>
@@ -187,7 +187,7 @@ export default function ShareTrackSheet({ track, open, onClose }: Props) {
             onClick={handleCopy}
             className="flex flex-col items-center gap-1 py-3 rounded-xl bg-white/5 text-white font-bold text-xs"
           >
-            {copied ? <Check className="w-5 h-5 text-[#00FF85]" /> : <Copy className="w-5 h-5" />}
+            {copied ? <Check className="w-5 h-5 text-[#3D7CFF]" /> : <Copy className="w-5 h-5" />}
             {copied ? 'Copied' : 'Copy link'}
           </button>
         </div>

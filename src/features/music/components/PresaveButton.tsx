@@ -15,7 +15,7 @@ export default function PresaveButton({ trackId, className = "" }: Props) {
       disabled={isLoading}
       className={`min-h-[44px] inline-flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm transition ${className}`}
       style={{
-        background: hasPresaved ? "#00FF85" : "rgba(255,255,255,0.08)",
+        background: hasPresaved ? "#3D7CFF" : "rgba(255,255,255,0.08)",
         color: hasPresaved ? "#000" : "#fff",
       }}
       aria-pressed={hasPresaved}

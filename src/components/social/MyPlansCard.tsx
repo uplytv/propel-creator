@@ -90,7 +90,7 @@ export default function MyPlansCard() {
         <h3 style={{ fontSize: 15, fontWeight: 700, color: "#FFFFFF" }}>
           My plans ({upcoming.length})
         </h3>
-        <Link to="/social/friends" style={{ fontSize: 12, color: "#00FF85" }}>See all</Link>
+        <Link to="/social/friends" style={{ fontSize: 12, color: "#3D7CFF" }}>See all</Link>
       </div>
 
       <div className="space-y-2">
@@ -117,14 +117,14 @@ export default function MyPlansCard() {
                 className="flex flex-col items-center justify-center flex-shrink-0"
                 style={{
                   width: 44, height: 44, borderRadius: 10,
-                  background: p.status === "going" ? "rgba(0,255,133,0.12)" : "rgba(255,200,0,0.08)",
-                  border: `1px solid ${p.status === "going" ? "rgba(0,255,133,0.4)" : "rgba(255,200,0,0.4)"}`,
+                  background: p.status === "going" ? "rgba(61, 124, 255,0.12)" : "rgba(255,200,0,0.08)",
+                  border: `1px solid ${p.status === "going" ? "rgba(61, 124, 255,0.4)" : "rgba(255,200,0,0.4)"}`,
                 }}
               >
                 {ev || p.global_event_id ? (
-                  <Ticket className="w-4 h-4" style={{ color: p.status === "going" ? "#00FF85" : "#FFD700" }} />
+                  <Ticket className="w-4 h-4" style={{ color: p.status === "going" ? "#3D7CFF" : "#FFD700" }} />
                 ) : (
-                  <Calendar className="w-4 h-4" style={{ color: p.status === "going" ? "#00FF85" : "#FFD700" }} />
+                  <Calendar className="w-4 h-4" style={{ color: p.status === "going" ? "#3D7CFF" : "#FFD700" }} />
                 )}
               </div>
               <div className="flex-1 min-w-0">
@@ -133,8 +133,8 @@ export default function MyPlansCard() {
                   <span
                     className="text-[10px] px-1.5 py-0.5 rounded-full flex-shrink-0"
                     style={{
-                      background: p.status === "going" ? "rgba(0,255,133,0.12)" : "rgba(255,200,0,0.12)",
-                      color: p.status === "going" ? "#00FF85" : "#FFD700",
+                      background: p.status === "going" ? "rgba(61, 124, 255,0.12)" : "rgba(255,200,0,0.12)",
+                      color: p.status === "going" ? "#3D7CFF" : "#FFD700",
                     }}
                   >
                     {p.status === "going" ? "Going" : "Maybe"}

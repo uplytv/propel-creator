@@ -31,7 +31,7 @@ export default function MusicFeedPage() {
           <p className="text-white/70 text-sm">Follow artists to fill your feed.</p>
           <Link
             to="/music/browse"
-            className="inline-block mt-4 px-5 py-2.5 rounded-full bg-[#00FF85] text-black font-bold text-sm"
+            className="inline-block mt-4 px-5 py-2.5 rounded-full bg-[#3D7CFF] text-black font-bold text-sm"
             style={{ minHeight: 44 }}
           >
             Browse music
@@ -61,7 +61,7 @@ export default function MusicFeedPage() {
             return (
               <article key={ev.id} className="rounded-2xl bg-white/[0.03] border border-white/5 p-3">
                 <div className="flex items-center gap-2 text-xs text-white/60 mb-2">
-                  <Repeat2 className="w-3 h-3 text-[#00FF85]" />
+                  <Repeat2 className="w-3 h-3 text-[#3D7CFF]" />
                   <span className="text-white font-semibold">@{ev.actor?.username ?? actorName}</span>
                   reposted · {ago} ago
                 </div>

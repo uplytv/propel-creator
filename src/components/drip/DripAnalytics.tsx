@@ -78,7 +78,7 @@ export default function DripAnalytics({ sequenceId, steps }: Props) {
           <div className="text-[9px] text-muted-foreground">Active</div>
         </div>
         <div className="p-2 rounded-lg border border-border bg-card text-center">
-          <div className="text-lg font-bold" style={{ color: "#00FF85" }}>{overallStats.completed}</div>
+          <div className="text-lg font-bold" style={{ color: "#3D7CFF" }}>{overallStats.completed}</div>
           <div className="text-[9px] text-muted-foreground">Done</div>
         </div>
         <div className="p-2 rounded-lg border border-border bg-card text-center">
@@ -105,7 +105,7 @@ export default function DripAnalytics({ sequenceId, steps }: Props) {
 
               {/* Funnel bar */}
               <div className="h-2 rounded-full bg-muted overflow-hidden">
-                <div className="h-full rounded-full" style={{ width: `${barWidth}%`, background: "linear-gradient(90deg, #00FF85, #3b82f6)" }} />
+                <div className="h-full rounded-full" style={{ width: `${barWidth}%`, background: "linear-gradient(90deg, #3D7CFF, #3b82f6)" }} />
               </div>
 
               <div className="flex gap-4 text-[10px] text-muted-foreground">
@@ -113,7 +113,7 @@ export default function DripAnalytics({ sequenceId, steps }: Props) {
                   <Eye className="w-3 h-3 text-blue-400" /> {ss.openRate.toFixed(1)}% opens
                 </span>
                 <span className="flex items-center gap-0.5">
-                  <MousePointerClick className="w-3 h-3" style={{ color: "#00FF85" }} /> {ss.clickRate.toFixed(1)}% clicks
+                  <MousePointerClick className="w-3 h-3" style={{ color: "#3D7CFF" }} /> {ss.clickRate.toFixed(1)}% clicks
                 </span>
                 <span className="flex items-center gap-0.5">
                   <CheckCircle className="w-3 h-3 text-muted-foreground" /> {ss.opened}/{ss.total}

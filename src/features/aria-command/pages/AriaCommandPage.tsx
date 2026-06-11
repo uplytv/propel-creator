@@ -133,7 +133,7 @@ function ActionCard({
         <div className="flex gap-2 mt-3">
           <Button
             onClick={() => onApprove(action.id)}
-            className="flex-1 min-h-[44px] bg-[#00FF85] text-black hover:opacity-90"
+            className="flex-1 min-h-[44px] bg-[#3D7CFF] text-black hover:opacity-90"
           >
             <Check className="w-4 h-4 mr-1" /> Approve
           </Button>
@@ -159,7 +159,7 @@ function ActionCard({
 
 function statusColor(s: string) {
   switch (s) {
-    case "executed": return "text-[#00FF85]";
+    case "executed": return "text-[#3D7CFF]";
     case "failed": return "text-red-400";
     case "cancelled": return "text-white/40";
     case "approved": return "text-blue-300";
@@ -210,7 +210,7 @@ function ResultView({ result }: { result: any }) {
   }
   if (result.type === "tier_created") {
     return (
-      <div className="mt-3 text-sm text-[#00FF85]">
+      <div className="mt-3 text-sm text-[#3D7CFF]">
         ✓ Tier created. ID: <span className="font-mono">{result.data?.tier?.id}</span>
       </div>
     );

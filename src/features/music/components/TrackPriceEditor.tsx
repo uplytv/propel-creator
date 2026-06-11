@@ -72,7 +72,7 @@ export default function TrackPriceEditor({ trackId, isPaid, priceCents }: Props)
           onClick={save}
           disabled={saving}
           className="w-full min-h-[44px] inline-flex items-center justify-center gap-2 rounded-full font-bold"
-          style={{ background: "#00FF85", color: "#000" }}
+          style={{ background: "#3D7CFF", color: "#000" }}
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
           Save

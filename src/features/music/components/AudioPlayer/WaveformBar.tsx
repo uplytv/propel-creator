@@ -55,7 +55,7 @@ export default function WaveformBar({
             className="flex-1 rounded-full transition-colors"
             style={{
               height: `${h * 100}%`,
-              background: reached ? '#00FF85' : 'rgba(255,255,255,0.18)',
+              background: reached ? '#3D7CFF' : 'rgba(255,255,255,0.18)',
             }}
           />
         );

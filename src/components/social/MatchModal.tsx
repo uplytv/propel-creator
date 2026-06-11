@@ -53,7 +53,7 @@ export default function MatchModal({ person, onClose }: MatchModalProps) {
             style={{
               width: 6 + Math.random() * 8,
               height: 6 + Math.random() * 8,
-              backgroundColor: "#00FF85",
+              backgroundColor: "#3D7CFF",
               opacity: 0.3 + Math.random() * 0.4,
               left: `${10 + Math.random() * 80}%`,
               top: `${20 + Math.random() * 60}%`,
@@ -68,11 +68,11 @@ export default function MatchModal({ person, onClose }: MatchModalProps) {
         <p className="text-3xl font-black text-white">✨ It's a Match! ✨</p>
 
         <div className="flex items-center gap-4">
-          <Avatar className="w-20 h-20 border-2" style={{ borderColor: "#00FF85" }}>
+          <Avatar className="w-20 h-20 border-2" style={{ borderColor: "#3D7CFF" }}>
             <AvatarFallback className="bg-white/10 text-white text-lg font-bold">{userInitials}</AvatarFallback>
           </Avatar>
           <span className="text-3xl">💚</span>
-          <Avatar className="w-20 h-20 border-2" style={{ borderColor: "#00FF85" }}>
+          <Avatar className="w-20 h-20 border-2" style={{ borderColor: "#3D7CFF" }}>
             <AvatarImage src={person.avatar_url || undefined} />
             <AvatarFallback className="bg-white/10 text-white text-lg font-bold">
               {(person.display_name || "U").slice(0, 2)}
@@ -88,7 +88,7 @@ export default function MatchModal({ person, onClose }: MatchModalProps) {
         <button
           onClick={handleSendMessage}
           className="w-full py-3.5 rounded-xl font-bold text-sm transition-transform active:scale-95"
-          style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}
+          style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A" }}
         >
           Send a Message →
         </button>

@@ -61,8 +61,8 @@ export default function StreamEmailCapture({ creatorId, creatorName, streamId }:
         >
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "rgba(0,255,133,0.15)" }}>
-                <Bell className="w-4 h-4" style={{ color: "#00FF85" }} />
+              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "rgba(61, 124, 255,0.15)" }}>
+                <Bell className="w-4 h-4" style={{ color: "#3D7CFF" }} />
               </div>
               <span className="text-xs font-semibold text-white">Never miss a stream</span>
             </div>
@@ -93,7 +93,7 @@ export default function StreamEmailCapture({ creatorId, creatorName, streamId }:
               type="submit"
               disabled={submitting}
               className="w-full py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all"
-              style={{ background: "#00FF85", color: "#0A0A0A" }}
+              style={{ background: "#3D7CFF", color: "#0A0A0A" }}
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
               Subscribe

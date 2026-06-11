@@ -44,7 +44,7 @@ export default function ModeSelector({ active, onChange }: Props) {
               onClick={() => onChange(mode)}
               className="shrink-0 transition-all duration-200"
               style={{
-                color: isActive ? "#00FF85" : "rgba(255,255,255,0.6)",
+                color: isActive ? "#3D7CFF" : "rgba(255,255,255,0.6)",
                 fontWeight: isActive ? 700 : 500,
                 fontSize: isActive ? 16 : 14,
                 letterSpacing: "0.1em",

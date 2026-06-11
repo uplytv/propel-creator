@@ -82,7 +82,7 @@ export default function AddFriendButton({
       <button
         disabled
         className={`inline-flex items-center font-semibold rounded-lg ${sizeClasses} ${className}`}
-        style={{ backgroundColor: "rgba(0,255,133,0.15)", color: "#00FF85" }}
+        style={{ backgroundColor: "rgba(61, 124, 255,0.15)", color: "#3D7CFF" }}
       >
         <Check className="w-3.5 h-3.5" /> Friends
       </button>
@@ -107,7 +107,7 @@ export default function AddFriendButton({
       <button
         onClick={() => (window.location.href = "/social/friends")}
         className={`inline-flex items-center font-semibold rounded-lg ${sizeClasses} ${className}`}
-        style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}
+        style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A" }}
       >
         Respond
       </button>

@@ -42,8 +42,8 @@ export default function ContactsSyncBanner() {
         <X className="w-4 h-4 text-white/30" />
       </button>
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(0,255,133,0.1)" }}>
-          <Users className="w-5 h-5" style={{ color: "#00FF85" }} />
+        <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(61, 124, 255,0.1)" }}>
+          <Users className="w-5 h-5" style={{ color: "#3D7CFF" }} />
         </div>
         <div className="flex-1">
           <p className="text-sm font-semibold text-white">Find your friends on UPLY</p>
@@ -53,7 +53,7 @@ export default function ContactsSyncBanner() {
       <Button
         onClick={handleInvite}
         className="w-full mt-3 font-semibold text-sm"
-        style={{ backgroundColor: "#00FF85", color: "#000" }}
+        style={{ backgroundColor: "#3D7CFF", color: "#000" }}
       >
         Invite via Link
       </Button>

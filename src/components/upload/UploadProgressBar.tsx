@@ -34,7 +34,7 @@ export default function UploadProgressBar() {
       className="sticky top-0 z-[39] flex items-center gap-3 px-4 py-2 border-b"
       style={{
         background: "rgba(0, 20, 10, 0.97)",
-        borderColor: "rgba(0,255,133,0.3)",
+        borderColor: "rgba(61, 124, 255,0.3)",
       }}
     >
       <Upload className="w-3.5 h-3.5 text-primary flex-shrink-0" />

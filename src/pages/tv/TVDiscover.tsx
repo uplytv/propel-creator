@@ -50,7 +50,7 @@ export default function TVDiscover() {
       <header className="px-12 py-8 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="text-3xl font-black tracking-tight">UPLY</span>
-          <span className="text-xs uppercase tracking-widest text-[#00FF85]">TV</span>
+          <span className="text-xs uppercase tracking-widest text-[#3D7CFF]">TV</span>
         </div>
         <div className="text-sm opacity-60">Press OK to watch · Long-press for products</div>
       </header>
@@ -74,7 +74,7 @@ export default function TVDiscover() {
                 <Link
                   key={s.id}
                   to={`/tv/watch/${s.id}`}
-                  className="group block rounded-xl overflow-hidden bg-white/5 focus:outline-none focus:ring-4 focus:ring-[#00FF85] transition-transform hover:scale-105 focus:scale-105"
+                  className="group block rounded-xl overflow-hidden bg-white/5 focus:outline-none focus:ring-4 focus:ring-[#3D7CFF] transition-transform hover:scale-105 focus:scale-105"
                 >
                   <div className="aspect-video bg-black relative">
                     {thumbFor(s.mux_playback_id) ? (

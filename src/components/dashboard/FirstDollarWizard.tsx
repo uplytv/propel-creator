@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { SITE_URL } from "@/lib/siteUrl";
 
 const MODES = [
-  { id: "live_shop", icon: ShoppingBag, emoji: "🛍️", label: "Live Shop", desc: "Sell products on stream. Auctions, flash sales, instant checkout.", color: "#00FF85" },
+  { id: "live_shop", icon: ShoppingBag, emoji: "🛍️", label: "Live Shop", desc: "Sell products on stream. Auctions, flash sales, instant checkout.", color: "#3D7CFF" },
   { id: "community", icon: Users, emoji: "🤝", label: "Paid Community", desc: "Monthly subscription. Exclusive posts, videos, direct access.", color: "#00AEEF" },
   { id: "course", icon: BookOpen, emoji: "📚", label: "Sell a Course", desc: "Package your knowledge. One-time payment, 95% yours.", color: "#F59E0B" },
   { id: "tips", icon: Zap, emoji: "⚡", label: "Tips & Live", desc: "Go live and accept tips instantly. Lowest barrier to first dollar.", color: "#9333EA" },

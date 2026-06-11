@@ -803,7 +803,7 @@ export default function BroadcastStudio({
                     {coachingNudge && (
                       <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }}
                         className="absolute top-16 inset-x-0 z-20 pointer-events-none mx-auto w-fit rounded-xl px-4 py-2 text-xs font-bold text-center"
-                        style={{ backgroundColor: "rgba(0,255,133,0.15)", color: "hsl(var(--primary))", backdropFilter: "blur(12px)" }}>
+                        style={{ backgroundColor: "rgba(61, 124, 255,0.15)", color: "hsl(var(--primary))", backdropFilter: "blur(12px)" }}>
                         {coachingNudge}
                       </motion.div>
                     )}
@@ -834,8 +834,8 @@ export default function BroadcastStudio({
                     className="absolute right-3 top-24 bottom-28 z-20 flex flex-col gap-3 items-center overflow-y-auto overscroll-contain pb-1 pr-1"
                     style={{ WebkitOverflowScrolling: "touch" }}
                   >
-                    <ActionButton onClick={() => setShowShopPanel(!showShopPanel)} active={showShopPanel} activeBg="rgba(0,255,133,0.3)" icon={<ShoppingBag className="w-4.5 h-4.5 text-white" />} />
-                    <ActionButton onClick={() => setShowSharePanel(true)} bg="rgba(0,255,133,0.25)" icon={<Share2 className="w-4.5 h-4.5 text-white" />} />
+                    <ActionButton onClick={() => setShowShopPanel(!showShopPanel)} active={showShopPanel} activeBg="rgba(61, 124, 255,0.3)" icon={<ShoppingBag className="w-4.5 h-4.5 text-white" />} />
+                    <ActionButton onClick={() => setShowSharePanel(true)} bg="rgba(61, 124, 255,0.25)" icon={<Share2 className="w-4.5 h-4.5 text-white" />} />
                     <ActionButton onClick={async () => {
                       const ok = await safeClipboardWrite(liveShareUrl);
                       ok ? toast.success("Live link copied ✓", { description: liveShareUrl }) : toast.error("Could not copy link");
@@ -1094,7 +1094,7 @@ function ActionButton({ onClick, icon, active, bg, activeBg }: {
   activeBg?: string;
 }) {
   const defaultBg = "rgba(255,255,255,0.15)";
-  const resolvedBg = bg ?? (active ? (activeBg ?? "rgba(0,255,133,0.3)") : defaultBg);
+  const resolvedBg = bg ?? (active ? (activeBg ?? "rgba(61, 124, 255,0.3)") : defaultBg);
   return (
     <button onClick={onClick} className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center" style={{ backgroundColor: resolvedBg, backdropFilter: "blur(8px)" }}>
       {icon}

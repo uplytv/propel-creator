@@ -62,7 +62,7 @@ export default function SpaceLeaderboardTab({ creatorId }: Props) {
                 key={entry.user_id}
                 className="flex items-center gap-3 p-3 rounded-lg"
                 style={{
-                  background: isCurrentUser ? "rgba(0,255,133,0.1)" : "hsl(var(--background))",
+                  background: isCurrentUser ? "rgba(61, 124, 255,0.1)" : "hsl(var(--background))",
                   border: `1px solid ${isCurrentUser ? "hsl(var(--primary))" : "hsl(var(--card))"}`,
                 }}
               >
@@ -98,7 +98,7 @@ export default function SpaceLeaderboardTab({ creatorId }: Props) {
               </div>
               <div
                 className="flex items-center gap-3 p-3 rounded-lg"
-                style={{ background: "rgba(0,255,133,0.1)", border: "1px solid #00FF85" }}
+                style={{ background: "rgba(61, 124, 255,0.1)", border: "1px solid #3D7CFF" }}
               >
                 <div className="w-8 text-center">
                   <span className="text-sm font-bold" style={{ color: "hsl(var(--muted-foreground))" }}>#{currentUserEntry.rank}</span>

@@ -30,7 +30,7 @@ export default function ArtistHeader({ profile, displayName, username, monthlyLi
         <div className="flex items-center gap-2 mb-1">
           <h1 className="text-2xl sm:text-3xl font-black text-white">{displayName}</h1>
           {profile?.is_verified && (
-            <BadgeCheck className="w-6 h-6" style={{ color: "#00FF85" }} aria-label="Verified artist" />
+            <BadgeCheck className="w-6 h-6" style={{ color: "#3D7CFF" }} aria-label="Verified artist" />
           )}
         </div>
         {username && <p className="text-white/50 text-sm">@{username}</p>}

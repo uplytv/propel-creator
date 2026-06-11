@@ -111,8 +111,8 @@ export default function EmailAnalytics() {
                         <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="clickGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#00FF85" stopOpacity={0.3} />
-                        <stop offset="100%" stopColor="#00FF85" stopOpacity={0} />
+                        <stop offset="0%" stopColor="#3D7CFF" stopOpacity={0.3} />
+                        <stop offset="100%" stopColor="#3D7CFF" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#666' }} interval={6} axisLine={false} tickLine={false} />
@@ -122,7 +122,7 @@ export default function EmailAnalytics() {
                       labelStyle={{ color: '#999' }}
                     />
                     <Area type="monotone" dataKey="opens" stroke="#3b82f6" fill="url(#openGrad)" strokeWidth={2} name="Opens" />
-                    <Area type="monotone" dataKey="clicks" stroke="#00FF85" fill="url(#clickGrad)" strokeWidth={2} name="Clicks" />
+                    <Area type="monotone" dataKey="clicks" stroke="#3D7CFF" fill="url(#clickGrad)" strokeWidth={2} name="Clicks" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -146,7 +146,7 @@ export default function EmailAnalytics() {
                         formatter={(v: number, name: string) => [`${v}%`, name]}
                       />
                       <Bar dataKey="openRate" fill="#3b82f6" radius={[0, 4, 4, 0]} name="Open Rate" />
-                      <Bar dataKey="clickRate" fill="#00FF85" radius={[0, 4, 4, 0]} name="Click Rate" />
+                      <Bar dataKey="clickRate" fill="#3D7CFF" radius={[0, 4, 4, 0]} name="Click Rate" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -168,7 +168,7 @@ export default function EmailAnalytics() {
                     <div className="flex gap-4 text-xs text-muted-foreground">
                       <span><Users className="w-3 h-3 inline mr-0.5" />{b.total_recipients || 0}</span>
                       <span className="text-blue-400"><Eye className="w-3 h-3 inline mr-0.5" />{b.open_count || 0} ({b.total_recipients ? Math.round((b.open_count || 0) / b.total_recipients * 100) : 0}%)</span>
-                      <span style={{ color: "#00FF85" }}><MousePointerClick className="w-3 h-3 inline mr-0.5" />{b.click_count || 0}</span>
+                      <span style={{ color: "#3D7CFF" }}><MousePointerClick className="w-3 h-3 inline mr-0.5" />{b.click_count || 0}</span>
                     </div>
                   </div>
                 ))}
@@ -185,7 +185,7 @@ function StatCard({ icon: Icon, label, value, accent }: { icon: any; label: stri
   return (
     <div className="rounded-xl p-4 border border-border bg-card">
       <Icon className="w-4 h-4 mb-1 text-muted-foreground" />
-      <div className={`text-xl font-bold ${accent ? '' : 'text-foreground'}`} style={accent ? { color: '#00FF85' } : undefined}>
+      <div className={`text-xl font-bold ${accent ? '' : 'text-foreground'}`} style={accent ? { color: '#3D7CFF' } : undefined}>
         {value}
       </div>
       <div className="text-[10px] text-muted-foreground">{label}</div>

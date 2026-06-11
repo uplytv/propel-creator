@@ -85,7 +85,7 @@ export default function SmartSendTime({ subscribers, onSelectHour }: SmartSendTi
             className="flex-1 rounded-t-sm transition-colors cursor-pointer hover:opacity-80"
             style={{
               height: `${Math.max(2, pct * 2.5)}%`,
-              background: hour === analysis.bestHour ? "#00FF85" : "hsl(var(--muted-foreground) / 0.2)",
+              background: hour === analysis.bestHour ? "#3D7CFF" : "hsl(var(--muted-foreground) / 0.2)",
             }}
             title={`${formatHour(hour)}: ${pct.toFixed(1)}%`}
             onClick={() => onSelectHour?.(hour)}

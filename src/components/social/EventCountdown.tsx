@@ -63,8 +63,8 @@ export default function EventCountdown({ startsAt, compact }: EventCountdownProp
         border: `1px solid ${isLive ? "rgba(255,59,48,0.2)" : "rgba(255,255,255,0.08)"}`,
       }}
     >
-      <Clock className="w-4 h-4" style={{ color: isLive ? "#FF3B30" : "#00FF85" }} />
-      <span className="text-sm font-bold" style={{ color: isLive ? "#FF3B30" : "#00FF85" }}>
+      <Clock className="w-4 h-4" style={{ color: isLive ? "#FF3B30" : "#3D7CFF" }} />
+      <span className="text-sm font-bold" style={{ color: isLive ? "#FF3B30" : "#3D7CFF" }}>
         {timeLeft}
       </span>
     </div>

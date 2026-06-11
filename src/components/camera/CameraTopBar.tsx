@@ -39,7 +39,7 @@ export default function CameraTopBar({
           onClick={onToggleFlash}
           className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-md"
         >
-          {flash === "off" ? <ZapOff className="h-5 w-5" /> : <Zap className="h-5 w-5" style={{ color: "#00FF85" }} />}
+          {flash === "off" ? <ZapOff className="h-5 w-5" /> : <Zap className="h-5 w-5" style={{ color: "#3D7CFF" }} />}
         </button>
         <button
           aria-label="Toggle resolution"

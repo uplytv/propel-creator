@@ -91,9 +91,9 @@ export default function GoingOutWeekCard() {
           let numColor = "rgba(255,255,255,0.6)";
 
           if (isGoing) {
-            bg = "rgba(0,255,133,0.08)";
-            borderColor = "rgba(0,255,133,0.4)";
-            numColor = "#00FF85";
+            bg = "rgba(61, 124, 255,0.08)";
+            borderColor = "rgba(61, 124, 255,0.4)";
+            numColor = "#3D7CFF";
           } else if (isMaybe) {
             bg = "rgba(255,200,0,0.06)";
             borderColor = "rgba(255,200,0,0.4)";

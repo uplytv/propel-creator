@@ -91,7 +91,7 @@ export default function StoryReactions({ storyId, storyOwnerId, onReply }: Story
               onClick={handleReply}
               disabled={sending}
               className="px-4 py-2 rounded-full text-sm font-bold transition-transform active:scale-95"
-              style={{ background: "#00FF85", color: "#0A0A0A" }}
+              style={{ background: "#3D7CFF", color: "#0A0A0A" }}
             >
               Send
             </button>

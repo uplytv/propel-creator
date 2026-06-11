@@ -29,7 +29,7 @@ export default function CaptureButton({
 }: Props) {
   const max = MODE_MAX_SECONDS[mode] || 60;
   const progress = max > 0 ? Math.min(1, recordingSeconds / max) : 0;
-  const ringColor = mode === "LIVE" ? "#FF3B30" : "#00FF85";
+  const ringColor = mode === "LIVE" ? "#FF3B30" : "#3D7CFF";
 
   // SVG ring progress
   const size = 72;

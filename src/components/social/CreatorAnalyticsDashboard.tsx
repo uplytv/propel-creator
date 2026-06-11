@@ -58,7 +58,7 @@ export default function CreatorAnalyticsDashboard() {
   }
 
   const cards = [
-    { icon: Ticket, label: "Tickets Sold", value: stats.ticketsSold, color: "#00FF85" },
+    { icon: Ticket, label: "Tickets Sold", value: stats.ticketsSold, color: "#3D7CFF" },
     { icon: TrendingUp, label: "Revenue", value: `$${stats.revenue.toFixed(0)}`, color: "#00E5FF" },
     { icon: Users, label: "Followers", value: stats.followers, color: "#FFD700" },
     { icon: Eye, label: "Story Views", value: stats.storyViews, color: "#FF6B35" },

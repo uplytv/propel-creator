@@ -24,7 +24,7 @@ export default function GroupBlendsPage() {
         />
         <button
           onClick={() => name.trim() && create.mutate(name.trim(), { onSuccess: () => setName("") })}
-          className="rounded-lg bg-[#00FF85] text-black font-bold px-4 flex items-center gap-2"
+          className="rounded-lg bg-[#3D7CFF] text-black font-bold px-4 flex items-center gap-2"
           style={{ minHeight: 44 }}
         >
           <Plus className="w-4 h-4" /> New
@@ -45,7 +45,7 @@ export default function GroupBlendsPage() {
                 className="flex items-center gap-3 rounded-xl bg-white/5 p-3"
                 style={{ minHeight: 60 }}
               >
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#00FF85] to-[#00E5FF] flex items-center justify-center">
+                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#3D7CFF] to-[#00E5FF] flex items-center justify-center">
                   <Users className="w-5 h-5 text-black" />
                 </div>
                 <div className="flex-1 min-w-0">

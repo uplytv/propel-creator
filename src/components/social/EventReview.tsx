@@ -103,7 +103,7 @@ export default function EventReview({ eventId }: EventReviewProps) {
               onClick={handleSubmit}
               disabled={rating === 0 || submitting}
               className="w-10 h-10 rounded-lg flex items-center justify-center transition-transform active:scale-90"
-              style={{ background: rating > 0 ? "#00FF85" : "rgba(255,255,255,0.1)" }}
+              style={{ background: rating > 0 ? "#3D7CFF" : "rgba(255,255,255,0.1)" }}
             >
               {submitting ? (
                 <Loader2 className="w-4 h-4 animate-spin" style={{ color: "#0A0A0A" }} />

@@ -66,7 +66,7 @@ function FlashSaleBanner({ flash, onBuy }: { flash: any; onBuy: () => void }) {
         </div>
         <div className="flex flex-col items-center gap-1">
           <span className="text-white font-mono text-sm font-bold">{m}:{s.toString().padStart(2, "0")}</span>
-          <button onClick={onBuy} className="px-3 py-1.5 rounded-lg text-xs font-bold" style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}>
+          <button onClick={onBuy} className="px-3 py-1.5 rounded-lg text-xs font-bold" style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A" }}>
             Buy Now
           </button>
         </div>
@@ -112,7 +112,7 @@ function ProductCard({ product, auction, onBuy, onBid }: { product: LiveProduct;
               </div>
             )}
           </div>
-          <span className="text-lg font-bold" style={{ color: "#00FF85" }}>
+          <span className="text-lg font-bold" style={{ color: "#3D7CFF" }}>
             ${isAuction ? (auction!.current_bid || auction!.starting_bid) : product.price}
           </span>
         </div>
@@ -137,7 +137,7 @@ function ProductCard({ product, auction, onBuy, onBid }: { product: LiveProduct;
           ) : product.is_sold_out ? (
             <span className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-center text-white/30 bg-white/5">Sold Out</span>
           ) : (
-            <button onClick={onBuy} className="flex-1 py-2.5 rounded-xl text-sm font-bold" style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}>
+            <button onClick={onBuy} className="flex-1 py-2.5 rounded-xl text-sm font-bold" style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A" }}>
               Buy Now · ${product.price}
             </button>
           )}
@@ -155,7 +155,7 @@ function GiveawayWidget({ giveaway, onEnter, entered }: { giveaway: any; onEnter
         <p className="text-white text-xs font-bold">GIVEAWAY</p>
         <p className="text-white/80 text-[11px] truncate">{giveaway.title}</p>
       </div>
-      <button onClick={onEnter} disabled={entered} className="px-4 py-1.5 rounded-lg text-xs font-bold" style={{ backgroundColor: entered ? "rgba(255,255,255,0.2)" : "#00FF85", color: entered ? "white" : "#0A0A0A" }}>
+      <button onClick={onEnter} disabled={entered} className="px-4 py-1.5 rounded-lg text-xs font-bold" style={{ backgroundColor: entered ? "rgba(255,255,255,0.2)" : "#3D7CFF", color: entered ? "white" : "#0A0A0A" }}>
         {entered ? "✓ Entered" : "Enter"}
       </button>
     </div>
@@ -240,7 +240,7 @@ export default function ViewerShopOverlay({ streamId, creatorUserId }: Props) {
             style={{ backgroundColor: "rgba(10,10,10,0.85)", backdropFilter: "blur(12px)" }}>
             <ShoppingBag className="w-5 h-5 text-white" />
             {activeProducts.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center" style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}>
+              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center" style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A" }}>
                 {activeProducts.length}
               </span>
             )}
@@ -301,7 +301,7 @@ export default function ViewerShopOverlay({ streamId, creatorUserId }: Props) {
                       p.type === "auction" && auc ? (
                         <button onClick={() => { setShopDrawerOpen(false); }} className="px-3 py-1.5 rounded-lg text-xs font-bold" style={{ backgroundColor: "hsl(var(--warning))", color: "#0A0A0A" }}>Bid</button>
                       ) : (
-                        <button onClick={() => { buyProduct(p.id); setShopDrawerOpen(false); }} className="px-3 py-1.5 rounded-lg text-xs font-bold" style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}>Buy</button>
+                        <button onClick={() => { buyProduct(p.id); setShopDrawerOpen(false); }} className="px-3 py-1.5 rounded-lg text-xs font-bold" style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A" }}>Buy</button>
                       )
                     ) : p.is_sold_out ? (
                       <span className="text-white/30 text-xs">Sold Out</span>

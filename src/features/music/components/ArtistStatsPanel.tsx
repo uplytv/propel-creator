@@ -16,7 +16,7 @@ export default function ArtistStatsPanel({ artistId }: Props) {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.04)" }}>
-          <Users className="w-4 h-4 mb-2" style={{ color: "#00FF85" }} />
+          <Users className="w-4 h-4 mb-2" style={{ color: "#3D7CFF" }} />
           <p className="text-white font-black text-2xl">{data.monthly_listeners.toLocaleString()}</p>
           <p className="text-white/40 text-[11px]">Monthly Listeners</p>
         </div>

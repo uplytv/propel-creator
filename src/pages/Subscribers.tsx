@@ -164,8 +164,8 @@ export default function Subscribers() {
 
         {/* Stats Row */}
         <div className="px-4 py-3 grid grid-cols-3 gap-3">
-          <div className="rounded-2xl p-4 border" style={{ background: "rgba(0,255,133,0.05)", borderColor: "rgba(0,255,133,0.15)" }}>
-            <div className="text-2xl font-bold" style={{ color: "#00FF85" }}>{stats?.active ?? "—"}</div>
+          <div className="rounded-2xl p-4 border" style={{ background: "rgba(61, 124, 255,0.05)", borderColor: "rgba(61, 124, 255,0.15)" }}>
+            <div className="text-2xl font-bold" style={{ color: "#3D7CFF" }}>{stats?.active ?? "—"}</div>
             <div className="text-xs text-muted-foreground">Active</div>
           </div>
           <div className="rounded-2xl p-4 border border-border bg-card">
@@ -238,7 +238,7 @@ export default function Subscribers() {
             size="sm"
             onClick={() => setSortBy(sortBy === "score" ? "date" : "score")}
             className="rounded-xl text-xs gap-1.5"
-            style={sortBy === "score" ? { background: "#00FF85", color: "#0A0A0A" } : undefined}
+            style={sortBy === "score" ? { background: "#3D7CFF", color: "#0A0A0A" } : undefined}
           >
             <Flame className="w-3.5 h-3.5" /> {sortBy === "score" ? "By Score" : "Sort by Score"}
           </Button>
@@ -298,7 +298,7 @@ export default function Subscribers() {
                     <div className="flex gap-3 pl-12 text-[10px] text-muted-foreground">
                       {(sub as any).total_opens > 0 && <span>📬 {(sub as any).total_opens} opens</span>}
                       {(sub as any).total_clicks > 0 && <span>🔗 {(sub as any).total_clicks} clicks</span>}
-                      {sub.total_purchases > 0 && <span style={{ color: "#00FF85" }}>💰 {sub.total_purchases} purchases</span>}
+                      {sub.total_purchases > 0 && <span style={{ color: "#3D7CFF" }}>💰 {sub.total_purchases} purchases</span>}
                     </div>
                   )}
 

@@ -86,7 +86,7 @@ export default function PeopleYouMayKnowSection() {
                 disabled={following}
                 className="mt-2 px-3 py-1 rounded-full text-[11px] font-bold inline-flex items-center gap-1 transition-transform active:scale-95"
                 style={{
-                  backgroundColor: following ? "rgba(255,255,255,0.08)" : "#00FF85",
+                  backgroundColor: following ? "rgba(255,255,255,0.08)" : "#3D7CFF",
                   color: following ? "rgba(255,255,255,0.7)" : "#0A0A0A",
                 }}
               >

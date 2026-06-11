@@ -52,7 +52,7 @@ export default function MusicLibrary() {
 
       <section>
         <div className="flex items-center gap-2 mb-3">
-          <DownloadCloud className="w-4 h-4" style={{ color: '#00FF85' }} />
+          <DownloadCloud className="w-4 h-4" style={{ color: '#3D7CFF' }} />
           <h2 className="text-lg font-bold text-white">Downloaded</h2>
           <span className="text-white/40 text-xs">{downloads?.length ?? 0}</span>
         </div>
@@ -68,7 +68,7 @@ export default function MusicLibrary() {
 
       <section>
         <div className="flex items-center gap-2 mb-3">
-          <Sparkles className="w-4 h-4" style={{ color: '#00FF85' }} />
+          <Sparkles className="w-4 h-4" style={{ color: '#3D7CFF' }} />
           <h2 className="text-lg font-bold text-white">Smart playlists</h2>
         </div>
         <SmartPlaylistsPanel />

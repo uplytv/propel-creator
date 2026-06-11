@@ -42,7 +42,7 @@ export default function AdminTicketmasterSync() {
   return (
     <div
       className="mx-4 mt-3 rounded-xl p-3 flex items-center justify-between"
-      style={{ background: "rgba(0,255,133,0.04)", border: "1px solid rgba(0,255,133,0.15)" }}
+      style={{ background: "rgba(61, 124, 255,0.04)", border: "1px solid rgba(61, 124, 255,0.15)" }}
     >
       <div className="min-w-0">
         <p className="text-xs font-bold text-white">⚙️ Admin: Event Sources</p>
@@ -58,7 +58,7 @@ export default function AdminTicketmasterSync() {
         onClick={sync}
         disabled={syncing}
         className="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-transform active:scale-95"
-        style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}
+        style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A" }}
       >
         {syncing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
         {syncing ? "Syncing…" : "Sync Now"}

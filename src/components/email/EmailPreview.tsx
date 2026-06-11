@@ -60,7 +60,7 @@ export default function EmailPreview({ open, onOpenChange, subject, htmlBody, cr
           </div>
         </div>
         <div style="padding:16px 24px;border-top:1px solid #1E1E1E;text-align:center;">
-          <div style="color:#00FF85;font-weight:700;font-size:11px;letter-spacing:1px;">UPLY</div>
+          <div style="color:#3D7CFF;font-weight:700;font-size:11px;letter-spacing:1px;">UPLY</div>
           <div style="color:#444;font-size:10px;margin-top:4px;">Unsubscribe</div>
         </div>
       </div>

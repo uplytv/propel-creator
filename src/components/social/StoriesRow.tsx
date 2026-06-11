@@ -65,7 +65,7 @@ export default function StoriesRow({ filterLocal, filterFriends }: StoriesRowPro
         >
           <div className="relative w-16 h-16">
             {myStories ? (
-              <div className="w-full h-full rounded-full" style={{ boxShadow: "0 0 0 2.5px #00FF85" }}>
+              <div className="w-full h-full rounded-full" style={{ boxShadow: "0 0 0 2.5px #3D7CFF" }}>
                 <Avatar className="w-full h-full border-2 border-[#0A0A0A]">
                   <AvatarImage src={myProfile?.avatar_url || undefined} />
                   <AvatarFallback className="bg-white/10 text-white text-xs">You</AvatarFallback>
@@ -79,7 +79,7 @@ export default function StoriesRow({ filterLocal, filterFriends }: StoriesRowPro
                   border: "2px dashed rgba(255,255,255,0.15)",
                 }}
               >
-                <Plus className="w-6 h-6" style={{ color: "#00FF85" }} />
+                <Plus className="w-6 h-6" style={{ color: "#3D7CFF" }} />
               </div>
             )}
           </div>
@@ -110,7 +110,7 @@ export default function StoriesRow({ filterLocal, filterFriends }: StoriesRowPro
                 className="w-16 h-16 rounded-full"
                 style={{
                   padding: 2.5,
-                  background: "linear-gradient(135deg, #00FF85, #00E5FF)",
+                  background: "linear-gradient(135deg, #3D7CFF, #00E5FF)",
                 }}
               >
                 <Avatar className="w-full h-full border-2 border-[#0A0A0A]">

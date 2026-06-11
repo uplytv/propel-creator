@@ -108,7 +108,7 @@ export function CreatorVideoOverlay({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -20, opacity: 0 }}
             className="pointer-events-none mx-auto mt-2 w-fit rounded-xl px-4 py-2 text-xs font-bold text-center"
-            style={{ backgroundColor: "rgba(0,255,133,0.15)", color: "hsl(var(--primary))", backdropFilter: "blur(12px)" }}
+            style={{ backgroundColor: "rgba(61, 124, 255,0.15)", color: "hsl(var(--primary))", backdropFilter: "blur(12px)" }}
           >
             {coachingNudge}
           </motion.div>
@@ -225,7 +225,7 @@ export function CreatorDashboardPanel({
             {/* Pinned */}
             {chatMessages.filter((m) => m.is_pinned).map((pm) => (
               <div key={pm.id} className="mx-3 mt-2 rounded-lg px-3 py-2 text-xs"
-                style={{ border: "1px solid #00FF85", backgroundColor: "rgba(0,255,133,0.05)" }}>
+                style={{ border: "1px solid #3D7CFF", backgroundColor: "rgba(61, 124, 255,0.05)" }}>
                 <span className="font-bold" style={{ color: "hsl(var(--primary))" }}>📌 {pm.username}:</span>{" "}
                 <span className="text-white/80">{pm.message}</span>
               </div>

@@ -107,7 +107,7 @@ export default function FriendRequestsSection() {
               onClick={() => accept.mutate(r.otherId)}
               disabled={accept.isPending}
               className="w-9 h-9 rounded-full flex items-center justify-center transition-transform active:scale-95"
-              style={{ backgroundColor: "#00FF85", color: "#0A0A0A" }}
+              style={{ backgroundColor: "#3D7CFF", color: "#0A0A0A" }}
               aria-label="Accept"
             >
               <Check className="w-4 h-4" />

@@ -115,9 +115,9 @@ export default function SocialProfileSection() {
                 onClick={() => toggleInterest(option)}
                 className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
                 style={{
-                  backgroundColor: isSelected ? "rgba(0,255,133,0.15)" : "rgba(255,255,255,0.06)",
-                  color: isSelected ? "#00FF85" : "rgba(255,255,255,0.6)",
-                  border: `1px solid ${isSelected ? "rgba(0,255,133,0.3)" : "rgba(255,255,255,0.1)"}`,
+                  backgroundColor: isSelected ? "rgba(61, 124, 255,0.15)" : "rgba(255,255,255,0.06)",
+                  color: isSelected ? "#3D7CFF" : "rgba(255,255,255,0.6)",
+                  border: `1px solid ${isSelected ? "rgba(61, 124, 255,0.3)" : "rgba(255,255,255,0.1)"}`,
                 }}
               >
                 {option}
