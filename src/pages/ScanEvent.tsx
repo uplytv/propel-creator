@@ -59,7 +59,7 @@ export default function ScanEvent() {
   useEffect(() => {
     if (!eventId) return;
     (async () => {
-      const { data: events } = await supabase.rpc("my_scannable_events");
+      const { data: events } = await (supabase as any).rpc("my_scannable_events");
       const match = (events ?? []).find((e: any) => e.event_id === eventId);
       if (!match) { setAuthorized(false); return; }
       setAuthorized(true);
@@ -72,7 +72,7 @@ export default function ScanEvent() {
 
   const refreshOccupancy = useCallback(async () => {
     if (!eventId) return;
-    const { data } = await supabase
+    const { data } = await (supabase as any)
       .from("event_occupancy")
       .select("current_occupancy")
       .eq("event_id", eventId)
@@ -100,7 +100,7 @@ export default function ScanEvent() {
     const remaining: any[] = [];
     for (const item of q) {
       try {
-        await supabase.rpc("record_scan", {
+        await (supabase as any).rpc("record_scan", {
           p_qr_secret: item.qr,
           p_event_id: eventId,
           p_direction: item.direction,
@@ -131,7 +131,7 @@ export default function ScanEvent() {
       return;
     }
     try {
-      const { data, error } = await supabase.rpc("record_scan", {
+      const { data, error } = await (supabase as any).rpc("record_scan", {
         p_qr_secret: qr,
         p_event_id: eventId,
         p_direction: direction,
