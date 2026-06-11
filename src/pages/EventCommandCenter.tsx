@@ -2,8 +2,9 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Users, LogIn, LogOut, ShieldAlert, DollarSign, Download, Activity, Loader2 } from "lucide-react";
+import { ArrowLeft, Users, LogIn, LogOut, ShieldAlert, DollarSign, Download, Activity, Loader2, Sparkles } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
+import { toast } from "sonner";
 
 interface ScanRow {
   id: string;
@@ -31,6 +32,23 @@ export default function EventCommandCenter() {
   const [scansPerMin, setScansPerMin] = useState(0);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const [aria, setAria] = useState<{ fn: string; text: string } | null>(null);
+  const [ariaLoading, setAriaLoading] = useState<string | null>(null);
+
+  const runAria = async (fn: string, label: string) => {
+    setAriaLoading(fn);
+    setAria(null);
+    try {
+      const { data, error } = await supabase.functions.invoke(fn, { body: { event_id: eventId } });
+      if (error) throw error;
+      const r = (data as any)?.report ?? (data as any)?.analysis ?? data;
+      setAria({ fn: label, text: typeof r === "string" ? r : JSON.stringify(r, null, 2) });
+    } catch (e) {
+      toast.error(`${label} failed`, { description: (e as Error).message });
+    } finally {
+      setAriaLoading(null);
+    }
+  };
 
   const loadOccupancy = useCallback(async () => {
     if (!eventId) return;
@@ -130,6 +148,30 @@ export default function EventCommandCenter() {
           <Stat icon={ShieldAlert} label="Rejected" value={occ.rejected} accent={occ.rejected > 0 ? "text-destructive" : undefined} />
           <Stat icon={DollarSign} label="Gross sales" value={`$${gross.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} accent="text-emerald-500" />
           <Stat icon={Activity} label="Scans / min" value={scansPerMin} />
+        </div>
+
+        {/* ARIA insights */}
+        <div className="mb-6 rounded-xl border border-border bg-card p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="w-4 h-4 text-primary" />
+            <h2 className="text-sm font-semibold text-foreground">ARIA insights</h2>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { fn: "aria-pricing-intelligence", label: "Pricing" },
+              { fn: "aria-fraud-sentinel", label: "Fraud check" },
+              { fn: "aria-post-event-report", label: "Post-event report" },
+            ].map((a) => (
+              <Button key={a.fn} variant="outline" size="sm" className="gap-1.5" disabled={!!ariaLoading} onClick={() => runAria(a.fn, a.label)}>
+                {ariaLoading === a.fn ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-primary" />} {a.label}
+              </Button>
+            ))}
+          </div>
+          {aria && (
+            <pre className="mt-3 text-xs text-muted-foreground whitespace-pre-wrap bg-muted/30 rounded-lg p-3 max-h-72 overflow-auto">
+              <span className="font-semibold text-foreground">{aria.fn}</span>{"\n"}{aria.text}
+            </pre>
+          )}
         </div>
 
         <h2 className="text-sm font-semibold text-foreground mb-2">Live scan feed</h2>

@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Monitor, MapPin, Globe, Upload, Image, CalendarDays, DollarSign,
-  Loader2, ArrowLeft, Save, Ticket, UserCheck, Armchair
+  Loader2, ArrowLeft, Save, Ticket, UserCheck, Armchair, Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,6 +53,28 @@ export default function CreateEvent() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [ariaDrafting, setAriaDrafting] = useState(false);
+
+  const draftWithAria = async () => {
+    const idea = `${title} ${description}`.trim();
+    if (idea.length < 8) { toast.error("Add a few words about your event first"); return; }
+    setAriaDrafting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("aria-event-copilot", {
+        body: { description: idea, event_type: "event" },
+      });
+      if (error) throw error;
+      const d = (data as any)?.draft;
+      if (d?.title) setTitle(d.title);
+      if (d?.description) setDescription(d.description);
+      if (Array.isArray(d?.tiers) && d.tiers[0]?.price) setTicketPrice(String(d.tiers[0].price));
+      toast.success("ARIA drafted your event ✨", { description: "Review and tweak below." });
+    } catch (e) {
+      toast.error("ARIA couldn't draft this", { description: (e as Error).message });
+    } finally {
+      setAriaDrafting(false);
+    }
+  };
   const [eventType, setEventType] = useState("virtual");
   const [locationName, setLocationName] = useState("");
   const [locationAddress, setLocationAddress] = useState("");
@@ -213,8 +235,14 @@ export default function CreateEvent() {
 
           {/* Description */}
           <div>
-            <Label className="mb-2 block">Description</Label>
-            <Textarea value={description} onChange={e => setDescription(e.target.value)} rows={4} placeholder="Tell people about your event..." />
+            <div className="flex items-center justify-between mb-2">
+              <Label className="block">Description</Label>
+              <Button type="button" variant="outline" size="sm" className="gap-1.5 text-xs" onClick={draftWithAria} disabled={ariaDrafting}>
+                {ariaDrafting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-primary" />}
+                Draft with ARIA
+              </Button>
+            </div>
+            <Textarea value={description} onChange={e => setDescription(e.target.value)} rows={4} placeholder="Tell people about your event... or jot an idea and let ARIA draft it." />
           </div>
 
           {/* Event Type */}
