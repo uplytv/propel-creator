@@ -25,8 +25,8 @@ serve(async (req) => {
     const cutoff = new Date(Date.now() - 35 * 60 * 1000).toISOString();
     const { data: stale } = await supabase
       .from("orders")
-      .select("id, line_items, stripe_checkout_session_id")
-      .eq("order_type", "primary_ticket")
+      .select("id, line_items, stripe_checkout_session_id, order_type")
+      .in("order_type", ["primary_ticket", "resale_ticket"])
       .eq("status", "pending")
       .lt("created_at", cutoff)
       .limit(200);

@@ -26,7 +26,9 @@ serve(async (req) => {
 
     const { data: order } = await supabase.from("orders").select("*").eq("id", order_id).maybeSingle();
     if (!order) return err("Order not found", 404);
-    if (order.order_type !== "primary_ticket") return err("Not a ticket order");
+    if (order.order_type !== "primary_ticket" && order.order_type !== "resale_ticket") {
+      return err("Not a ticket order");
+    }
 
     // Already done? Return existing tickets.
     if (order.status === "completed") {
@@ -51,6 +53,82 @@ serve(async (req) => {
       const { data: existing } = await supabase
         .from("tickets").select("id, qr_code_token").eq("order_id", order_id);
       return json({ ok: true, tickets: existing ?? [] });
+    }
+
+    // ── Resale: transfer the existing ticket to the buyer + pay the seller ──
+    if (order.order_type === "resale_ticket") {
+      const li = (Array.isArray(order.line_items) ? order.line_items[0] : null) as any;
+      const ticketId = li?.ticket_id;
+      const listingId = li?.listing_id;
+      if (!ticketId) {
+        await supabase.from("orders").update({ status: "pending" }).eq("id", order.id);
+        return err("Resale order missing ticket");
+      }
+
+      // Rotate the QR so the seller's old code (and any screenshot) is void.
+      const newSecret = Array.from(crypto.getRandomValues(new Uint8Array(32)))
+        .map((b) => b.toString(16).padStart(2, "0")).join("");
+      const { data: prev } = await supabase
+        .from("tickets").select("owner_id, original_purchaser_id, transfer_count").eq("id", ticketId).maybeSingle();
+
+      await supabase.from("tickets").update({
+        owner_id: order.buyer_id,
+        buyer_id: order.buyer_id,
+        original_purchaser_id: prev?.original_purchaser_id ?? prev?.owner_id ?? null,
+        status: "active",
+        qr_code_secret: newSecret,
+        transfer_count: (prev?.transfer_count ?? 0) + 1,
+        current_price_cents: order.subtotal_cents ?? null,
+        order_id: order.id,
+      }).eq("id", ticketId);
+
+      if (listingId) {
+        await supabase.from("ticket_listings")
+          .update({ status: "sold", sold_at: new Date().toISOString() }).eq("id", listingId);
+      }
+
+      // Credit the seller's wallet with the sale price (platform keeps the buyer fee).
+      const sellerId = (order.metadata as any)?.seller_id;
+      const proceeds = (order.subtotal_cents ?? 0) / 100;
+      if (sellerId && proceeds > 0) {
+        const { data: wallet } = await supabase
+          .from("wallets").select("id, available_balance").eq("user_id", sellerId).maybeSingle();
+        let walletId = wallet?.id as string | undefined;
+        if (!walletId) {
+          const { data: w } = await supabase
+            .from("wallets").insert({ user_id: sellerId, available_balance: proceeds }).select("id").single();
+          walletId = w?.id;
+        } else {
+          await supabase.from("wallets")
+            .update({ available_balance: Number(wallet!.available_balance ?? 0) + proceeds }).eq("id", walletId);
+        }
+        if (walletId) {
+          await supabase.from("transactions").insert({
+            wallet_id: walletId, amount: proceeds, status: "completed",
+            reference_id: order.id, net_amount: proceeds,
+          });
+        }
+        await supabase.from("notifications").insert({
+          user_id: sellerId, type: "resale_sold", title: "💸 Your ticket sold",
+          message: `Your resale ticket sold for $${proceeds.toFixed(2)} — added to your wallet.`,
+          reference_id: order.event_id,
+        });
+      }
+
+      await supabase.from("orders")
+        .update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", order.id);
+
+      try { await supabase.functions.invoke("send-ticket-email", { body: { ticket_id: ticketId } }); } catch (_e) { /* non-fatal */ }
+      const { data: tkRow } = await supabase
+        .from("tickets").select("qr_code_token").eq("id", ticketId).maybeSingle();
+      await supabase.from("notifications").insert({
+        user_id: order.buyer_id, type: "ticket", title: "🎟️ Resale ticket confirmed",
+        message: "Your ticket is ready — any old QR codes for it are now void.",
+        link: tkRow?.qr_code_token ? `/tickets/${tkRow.qr_code_token}` : "/tickets",
+        reference_id: order.event_id,
+      });
+
+      return json({ ok: true, resale: true, tickets: [{ id: ticketId, qr_code_token: tkRow?.qr_code_token }] });
     }
 
     const { data: event } = await supabase
