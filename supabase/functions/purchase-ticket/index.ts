@@ -53,8 +53,13 @@ serve(async (req) => {
     });
     if (!reserved) return err("Sold out", 409);
 
+    // Per-event configurable platform fee (falls back to the 5% default).
+    const feePct =
+      typeof event.platform_fee_pct === "number" && event.platform_fee_pct >= 0
+        ? event.platform_fee_pct
+        : PLATFORM_FEE_PCT;
     const subtotal = tier.price_cents * quantity;
-    const fees = Math.round(subtotal * PLATFORM_FEE_PCT);
+    const fees = Math.round(subtotal * feePct);
     const total = subtotal + fees;
 
     // Create order
@@ -98,7 +103,7 @@ serve(async (req) => {
                 description: tier.description ?? undefined,
                 images: event.cover_image_url ? [event.cover_image_url] : undefined,
               },
-              unit_amount: tier.price_cents + Math.round(tier.price_cents * PLATFORM_FEE_PCT),
+              unit_amount: tier.price_cents + Math.round(tier.price_cents * feePct),
             },
             quantity,
           },

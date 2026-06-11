@@ -72,6 +72,7 @@ export default function CreateEvent() {
   const [ticketPrice, setTicketPrice] = useState("10");
   const [ticketQuantity, setTicketQuantity] = useState("");
   const [refundPolicy, setRefundPolicy] = useState("no_refunds");
+  const [platformFeePct, setPlatformFeePct] = useState("5");
   const [resaleAllowed, setResaleAllowed] = useState(true);
   const [resaleCapPct, setResaleCapPct] = useState("120");
   const [seatRows, setSeatRows] = useState("8");
@@ -139,6 +140,7 @@ export default function CreateEvent() {
               ? parseInt(ticketQuantity)
               : null,
         refund_policy: refundPolicy,
+        platform_fee_pct: Math.min(0.3, Math.max(0, (parseFloat(platformFeePct) || 0) / 100)),
         ticketing_mode: ticketingMode,
         resale_allowed: ticketingMode === "ticketed" || ticketingMode === "seated" ? resaleAllowed : false,
         resale_price_cap_pct: parseInt(resaleCapPct) || 120,
@@ -347,6 +349,13 @@ export default function CreateEvent() {
                       <Label className="text-xs text-muted-foreground mb-1 block">Max resale price (% of original)</Label>
                       <Input type="number" min="100" max="500" value={resaleCapPct} onChange={e => setResaleCapPct(e.target.value)} />
                       <p className="text-[11px] text-muted-foreground mt-1">Cap protects fans from price gouging. 120 = up to 1.2× face value.</p>
+                    </div>
+                  )}
+                  {!isFree && (
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1 block">Platform fee (%)</Label>
+                      <Input type="number" min="0" max="30" step="0.5" value={platformFeePct} onChange={e => setPlatformFeePct(e.target.value)} />
+                      <p className="text-[11px] text-muted-foreground mt-1">Added on top of ticket price at checkout. Default 5%. You keep the rest.</p>
                     </div>
                   )}
                 </div>
