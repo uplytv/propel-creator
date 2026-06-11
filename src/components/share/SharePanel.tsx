@@ -123,7 +123,9 @@ export default function SharePanel({
   const baseUrl = getSiteUrl();
   const contentUrl = propUrl ? propUrl
     : contentType === "stream"
-      ? `${baseUrl}/stream/${contentId}`
+      ? (username && propSlug && propSlug !== contentId
+          ? `${baseUrl}/${encodeURIComponent(username)}/live/${propSlug}`
+          : `${baseUrl}/stream/${contentId}`)
       : contentType === "recording"
         ? `${baseUrl}/stream/${contentId}?type=recording`
         : `${baseUrl}/${encodeURIComponent(username)}/clips/${resolvedSlug}`;
