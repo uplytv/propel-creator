@@ -828,18 +828,11 @@ export default function Stream() {
             }
           }
 
-          // Also try finding any recording by this creator with matching title
-          const { data: recByCreator } = await supabase
-            .from('stream_recordings')
-            .select('id')
-            .eq('creator_id', dbStream.user_id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          if (recByCreator) {
-            navigate(`/stream/${recByCreator.id}?type=recording`, { replace: true });
-            return;
-          }
+          // Note: previously had an unsafe fallback that redirected to the most
+          // recent recording by this creator regardless of which stream the viewer
+          // came from. Removed — viewers landing on an ended stream without a
+          // linked recording should see StreamEndedState instead of being silently
+          // redirected to an unrelated VOD.
         };
         tryResolveRecording();
       }
