@@ -42,8 +42,16 @@ serve(async (req) => {
             order.stripe_checkout_session_id,
           );
           if (session.status === "complete" || session.payment_status === "paid") {
+            // Paid but still pending => the buyer never returned to the success
+            // page to finalize. Finalize it now (idempotent) so they get their
+            // ticket + email instead of releasing paid inventory.
             skippedPaid++;
-            continue; // paid — leave it for the webhook
+            try {
+              await supabase.functions.invoke("finalize-ticket-order", {
+                body: { order_id: order.id },
+              });
+            } catch (_e) { /* next run will retry */ }
+            continue;
           }
         } catch (_e) {
           // If the session can't be retrieved, fall through and release.

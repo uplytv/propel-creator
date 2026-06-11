@@ -65,7 +65,7 @@ export default function EventTierPicker({ eventId }: { eventId: string; eventTit
         body: {
           tier_id: tier.id,
           quantity,
-          success_url: `${window.location.origin}/tickets/success?event=${eventId}`,
+          success_url: `${window.location.origin}/tickets/success`,
           cancel_url: window.location.href,
         },
       });

@@ -13,6 +13,7 @@ export default function TicketSuccess() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const eventId = searchParams.get("event");
+  const orderId = searchParams.get("order");
   const streamId = searchParams.get("stream");
 
   const [event, setEvent] = useState<any>(null);
@@ -20,47 +21,80 @@ export default function TicketSuccess() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!eventId) { setLoading(false); return; }
-
+    let cancelled = false;
+    const loadEvent = async (id: string) => {
       const { data: evt } = await supabase
         .from("events")
         .select("id, title, location_name, location_city, starts_at")
-        .eq("id", eventId)
-        .single();
-      if (evt) setEvent(evt);
+        .eq("id", id)
+        .maybeSingle();
+      if (evt && !cancelled) setEvent(evt);
+    };
 
-      if (user) {
-        // Poll for ticket (webhook may take a moment)
+    const fetchData = async () => {
+      if (!user) { setLoading(false); return; }
+
+      // Tier flow (order_type='primary_ticket'): the Stripe webhook does not
+      // finalize tier orders, so trigger finalization here, then load the ticket.
+      if (orderId) {
+        try {
+          await supabase.functions.invoke("finalize-ticket-order", { body: { order_id: orderId } });
+        } catch { /* the reconciliation cron will retry */ }
         let attempts = 0;
         const poll = async () => {
+          if (cancelled) return;
           const { data: tkt } = await supabase
             .from("tickets")
-            .select("id, qr_code_token, qr_code_secret, ticket_number")
-            .eq("event_id", eventId)
-            .eq("buyer_id", user.id)
-            .eq("status", "active")
+            .select("id, qr_code_token, qr_code_secret, ticket_number, event_id")
+            .eq("order_id", orderId)
             .order("created_at", { ascending: false })
             .limit(1)
             .maybeSingle();
-
           if (tkt) {
             setTicket(tkt);
+            if (tkt.event_id) loadEvent(tkt.event_id);
             setLoading(false);
-          } else if (attempts < 10) {
+          } else if (attempts < 8) {
             attempts++;
-            setTimeout(poll, 2000);
+            setTimeout(poll, 1500);
           } else {
             setLoading(false);
           }
         };
         poll();
-      } else {
-        setLoading(false);
+        return;
       }
+
+      // Legacy event flow: poll for the ticket the webhook creates.
+      if (!eventId) { setLoading(false); return; }
+      loadEvent(eventId);
+      let attempts = 0;
+      const poll = async () => {
+        if (cancelled) return;
+        const { data: tkt } = await supabase
+          .from("tickets")
+          .select("id, qr_code_token, qr_code_secret, ticket_number")
+          .eq("event_id", eventId)
+          .eq("buyer_id", user.id)
+          .eq("status", "active")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (tkt) {
+          setTicket(tkt);
+          setLoading(false);
+        } else if (attempts < 10) {
+          attempts++;
+          setTimeout(poll, 2000);
+        } else {
+          setLoading(false);
+        }
+      };
+      poll();
     };
     fetchData();
-  }, [eventId, user]);
+    return () => { cancelled = true; };
+  }, [eventId, orderId, user]);
 
   const handleDirections = () => {
     if (!event) return;

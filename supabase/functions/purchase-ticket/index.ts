@@ -111,9 +111,10 @@ serve(async (req) => {
             quantity,
           },
         ],
-        success_url:
-          success_url ??
-          `${req.headers.get("origin") ?? "https://uply.tv"}/events/${event.slug ?? event.id}/ticket?order=${order.id}`,
+        success_url: (() => {
+          const base = success_url ?? `${req.headers.get("origin") ?? "https://uply.tv"}/tickets/success`;
+          return `${base}${base.includes("?") ? "&" : "?"}order=${order.id}`;
+        })(),
         cancel_url:
           cancel_url ?? `${req.headers.get("origin") ?? "https://uply.tv"}/events/${event.slug ?? event.id}`,
         client_reference_id: order.id,
