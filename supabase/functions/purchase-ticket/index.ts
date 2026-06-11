@@ -94,6 +94,9 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create(
       {
         mode: "payment",
+        // Hold expires after 30 min (Stripe minimum); release-expired-ticket-holds
+        // releases the reserved inventory for abandoned checkouts.
+        expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
         line_items: [
           {
             price_data: {

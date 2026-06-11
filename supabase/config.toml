@@ -107,6 +107,8 @@ project_id = "dbjlhmbgskvhuzqvqfrl"
     verify_jwt = false
   [functions.smartlink-release-cron]
     verify_jwt = false
+  [functions.release-expired-ticket-holds]
+    verify_jwt = false
   [functions.smartlink-meta-capi]
     verify_jwt = false
   [functions.smartlink-track-click]
