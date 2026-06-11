@@ -77,6 +77,15 @@ export default function CreateEvent() {
   const [resaleCapPct, setResaleCapPct] = useState("120");
   const [seatRows, setSeatRows] = useState("8");
   const [seatCols, setSeatCols] = useState("12");
+  const [blockedSeats, setBlockedSeats] = useState<Set<string>>(new Set());
+  const SEAT_ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const seatLabelFor = (r: number, c: number) => `${r < 26 ? SEAT_ALPHA[r] : `R${r + 1}`}${c + 1}`;
+  const toggleBlocked = (label: string) =>
+    setBlockedSeats((prev) => {
+      const next = new Set(prev);
+      next.has(label) ? next.delete(label) : next.add(label);
+      return next;
+    });
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -135,7 +144,7 @@ export default function CreateEvent() {
         ticket_price: isFree ? 0 : parseFloat(ticketPrice) || 0,
         ticket_quantity:
           ticketingMode === "seated"
-            ? parseInt(seatRows) * parseInt(seatCols)
+            ? Math.max(0, parseInt(seatRows) * parseInt(seatCols) - blockedSeats.size)
             : ticketQuantity
               ? parseInt(ticketQuantity)
               : null,
@@ -146,7 +155,7 @@ export default function CreateEvent() {
         resale_price_cap_pct: parseInt(resaleCapPct) || 120,
         seat_map:
           ticketingMode === "seated"
-            ? { rows: parseInt(seatRows) || 1, cols: parseInt(seatCols) || 1 }
+            ? { rows: parseInt(seatRows) || 1, cols: parseInt(seatCols) || 1, blocked: Array.from(blockedSeats) }
             : null,
         status: publish ? "published" : "draft",
       };
@@ -377,15 +386,33 @@ export default function CreateEvent() {
                   </div>
                 </div>
                 <div className="rounded-lg bg-muted/30 p-3 overflow-auto">
-                  <div className="text-[10px] text-center text-muted-foreground mb-2">STAGE</div>
-                  <div className="grid gap-1 mx-auto" style={{ gridTemplateColumns: `repeat(${Math.min(parseInt(seatCols) || 1, 20)}, minmax(12px, 1fr))`, maxWidth: 360 }}>
-                    {Array.from({ length: Math.min((parseInt(seatRows) || 1) * (parseInt(seatCols) || 1), 200) }).map((_, i) => (
-                      <div key={i} className="aspect-square rounded-sm bg-primary/30" />
-                    ))}
-                  </div>
+                  <div className="text-[10px] text-center text-muted-foreground mb-2 py-1 bg-foreground/10 rounded">STAGE</div>
+                  {(() => {
+                    const r = Math.min(parseInt(seatRows) || 1, 50);
+                    const c = Math.min(parseInt(seatCols) || 1, 20);
+                    return (
+                      <div className="grid gap-1 mx-auto" style={{ gridTemplateColumns: `repeat(${c}, minmax(12px, 1fr))`, maxWidth: 360 }}>
+                        {Array.from({ length: Math.min(r * c, 1000) }).map((_, i) => {
+                          const label = seatLabelFor(Math.floor(i / c), i % c);
+                          const isBlocked = blockedSeats.has(label);
+                          return (
+                            <button
+                              key={i}
+                              type="button"
+                              aria-label={`${isBlocked ? "Unblock" : "Block"} seat ${label}`}
+                              onClick={() => toggleBlocked(label)}
+                              title={label}
+                              className={`aspect-square rounded-sm transition-colors ${isBlocked ? "bg-muted-foreground/30" : "bg-primary/40 hover:bg-primary/70"}`}
+                            />
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                   <p className="text-[11px] text-muted-foreground text-center mt-2">
-                    {(parseInt(seatRows) || 0) * (parseInt(seatCols) || 0)} seats · ${ticketPrice} each
+                    {Math.max(0, (parseInt(seatRows) || 0) * (parseInt(seatCols) || 0) - blockedSeats.size)} sellable seats · ${ticketPrice} each
                   </p>
+                  <p className="text-[10px] text-muted-foreground text-center mt-1">Tap a seat to block it (aisle, stage, or removed).</p>
                 </div>
               </div>
             )}

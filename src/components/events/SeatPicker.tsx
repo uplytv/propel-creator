@@ -13,6 +13,7 @@ interface SeatPickerProps {
   cols: number;
   pricePerSeat: number;
   maxSeats?: number;
+  blocked?: string[];
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (selectedSeats: string[]) => void;
@@ -24,8 +25,9 @@ const seatLabel = (r: number, c: number) =>
 
 export default function SeatPicker({
   eventId, rows, cols, pricePerSeat,
-  maxSeats = 10, isOpen, onClose, onConfirm,
+  maxSeats = 10, blocked, isOpen, onClose, onConfirm,
 }: SeatPickerProps) {
+  const blockedSet = useMemo(() => new Set(blocked ?? []), [blocked]);
   const [taken, setTaken] = useState<Set<string>>(new Set());
   const [selected, setSelected] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -102,7 +104,7 @@ export default function SeatPicker({
   );
 
   const toggle = (label: string) => {
-    if (taken.has(label)) return;
+    if (taken.has(label) || blockedSet.has(label)) return;
     setSelected(prev =>
       prev.includes(label)
         ? prev.filter(s => s !== label)
@@ -112,7 +114,7 @@ export default function SeatPicker({
 
   const subtotal = selected.length * pricePerSeat;
 
-  const availableCount = totalSeats - taken.size;
+  const availableCount = totalSeats - taken.size - blockedSet.size;
 
   const rowLetters = useMemo(
     () => Array.from({ length: Math.min(rows, 26) }, (_, i) => ALPHA[i]),
@@ -345,7 +347,7 @@ export default function SeatPicker({
                 aria-label="Seat map"
               >
                 {allSeats.map((label) => {
-                  const isTaken = taken.has(label);
+                  const isTaken = taken.has(label) || blockedSet.has(label);
                   const isPicked = selected.includes(label);
                   const isMatch = matchesQuery(label);
                   const isHighlight = highlight === label;

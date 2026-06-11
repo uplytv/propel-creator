@@ -74,7 +74,7 @@ export default function EventPage() {
     return isIOS || isSafari;
   }, []);
   const isSeated = (event as any)?.ticketing_mode === "seated";
-  const seatMap = (event as any)?.seat_map as { rows?: number; cols?: number } | null;
+  const seatMap = (event as any)?.seat_map as { rows?: number; cols?: number; blocked?: string[] } | null;
 
   // Get creator profile
   const { data: creatorProfile } = useQuery({
@@ -659,6 +659,7 @@ END:VCALENDAR`;
             eventId={event.id}
             rows={seatMap.rows}
             cols={seatMap.cols}
+            blocked={seatMap.blocked}
             pricePerSeat={event.ticket_price}
             maxSeats={10}
             onConfirm={(seats) => {
