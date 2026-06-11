@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Plus, CalendarDays, MapPin, Monitor, Globe, Loader2, Users, Ticket, BarChart3, Download, ScanLine, ShieldCheck } from "lucide-react";
+import { Plus, CalendarDays, MapPin, Monitor, Globe, Loader2, Users, Ticket, BarChart3, Download, ScanLine, ShieldCheck, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -210,6 +210,11 @@ function EventCard({ event, username }: { event: EventRow; username?: string }) 
           {event.status === "published" && !isPast && (
             <Button variant="outline" size="sm" className="text-xs gap-1" onClick={() => navigate(`/scan/${event.id}`)}>
               <ScanLine className="w-3 h-3" /> Scan
+            </Button>
+          )}
+          {event.status === "published" && (
+            <Button variant="outline" size="sm" className="text-xs gap-1" onClick={() => navigate(`/events/${event.id}/live`)}>
+              <Activity className="w-3 h-3" /> Live
             </Button>
           )}
           {!isPast && (
