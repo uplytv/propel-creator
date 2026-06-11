@@ -24,6 +24,7 @@ const KNOWN_PATTERNS: string[] = [
   "/reset-password",
   "/privacy",
   "/terms",
+  "/scan",
   "/email-unsubscribe",
   "/unsubscribe",
 

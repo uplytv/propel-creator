@@ -30,6 +30,8 @@ const Auth = lazy(() => import("./pages/Auth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Terms = lazy(() => import("./pages/Terms"));
+const Scan = lazy(() => import("./pages/Scan"));
+const ScanEvent = lazy(() => import("./pages/ScanEvent"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Apply = lazy(() => import("./pages/Apply"));
 const WaitlistPage = lazy(() => import("./pages/WaitlistPage"));
@@ -484,6 +486,8 @@ const App = () => (
                     <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
                     <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
                     <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
+                    <Route path="/scan" element={<ProtectedRoute><Scan /></ProtectedRoute>} />
+                    <Route path="/scan/:eventId" element={<ProtectedRoute><ScanEvent /></ProtectedRoute>} />
                     <Route path="/events/create" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
                     <Route path="/create-event" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
                     <Route path="/events/global/:eventId" element={<GlobalEventDetail />} />

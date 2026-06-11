@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Plus, CalendarDays, MapPin, Monitor, Globe, Loader2, Users, Ticket, BarChart3, Download } from "lucide-react";
+import { Plus, CalendarDays, MapPin, Monitor, Globe, Loader2, Users, Ticket, BarChart3, Download, ScanLine, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,6 +12,7 @@ import { useCreatorEvents, useEventTickets, EventRow } from "@/hooks/useEvents";
 import { Skeleton } from "@/components/ui/skeleton";
 import EmptyState from "@/components/ui/EmptyState";
 import EventCheckIn from "@/components/events/EventCheckIn";
+import EventStaffManager from "@/components/events/EventStaffManager";
 import { useProfile } from "@/hooks/useProfile";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -156,6 +157,7 @@ function EventCard({ event, username }: { event: EventRow; username?: string }) 
   const navigate = useNavigate();
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showCheckIn, setShowCheckIn] = useState(false);
+  const [showStaff, setShowStaff] = useState(false);
   const isPast = isBefore(new Date(event.ends_at), new Date());
   const isInPerson = event.event_type === "in_person" || event.event_type === "hybrid";
 
@@ -206,6 +208,16 @@ function EventCard({ event, username }: { event: EventRow; username?: string }) 
             </Button>
           )}
           {event.status === "published" && !isPast && (
+            <Button variant="outline" size="sm" className="text-xs gap-1" onClick={() => navigate(`/scan/${event.id}`)}>
+              <ScanLine className="w-3 h-3" /> Scan
+            </Button>
+          )}
+          {!isPast && (
+            <Button variant="outline" size="sm" className="text-xs gap-1" onClick={() => setShowStaff((s) => !s)}>
+              <ShieldCheck className="w-3 h-3" /> Staff
+            </Button>
+          )}
+          {event.status === "published" && !isPast && (
             <Button
               variant="outline"
               size="sm"
@@ -222,6 +234,11 @@ function EventCard({ event, username }: { event: EventRow; username?: string }) 
         </div>
 
         {showAnalytics && <EventAnalyticsPanel event={event} />}
+        {showStaff && (
+          <div className="px-4 pb-4 pt-1 border-t border-border">
+            <EventStaffManager eventId={event.id} />
+          </div>
+        )}
       </motion.div>
 
       {showCheckIn && <EventCheckIn event={event} onClose={() => setShowCheckIn(false)} />}
