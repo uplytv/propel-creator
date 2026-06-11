@@ -233,9 +233,12 @@ export default function Stream() {
   const contentType = searchParams.get('type');
   const isFromCreatorRoute = !!routeUsername;
   const isFromSlugRoute = !!routeSlug;
-  // Treat as VOD if: explicit type, creator route, recording flag, OR stream ended/idle with playback available
-  const isStreamEnded = dbStream && dbStream.status !== 'active' && !dbStream._isRecording && dbStream.mux_playback_id;
-  const isVod = contentType === 'vod' || contentType === 'recording' || (isFromCreatorRoute && !isFromSlugRoute) || dbStream?._isRecording || !!isStreamEnded;
+  // Treat as VOD only when content is explicitly a recording/VOD.
+  // An ended live row still holds the LIVE mux_playback_id (not a VOD asset),
+  // so treating it as VOD here would render a broken on-demand player instead of
+  // falling through to StreamEndedState (which polls for and redirects to the recording).
+  const isStreamEnded = !!(dbStream && dbStream.status !== 'active' && !dbStream._isRecording);
+  const isVod = contentType === 'vod' || contentType === 'recording' || (isFromCreatorRoute && !isFromSlugRoute) || !!dbStream?._isRecording;
 
   // Viewer features
   const viewerRewards = useViewerRewards(!!dbStream && dbStream.status === 'active' && !isVod);
@@ -825,18 +828,11 @@ export default function Stream() {
             }
           }
 
-          // Also try finding any recording by this creator with matching title
-          const { data: recByCreator } = await supabase
-            .from('stream_recordings')
-            .select('id')
-            .eq('creator_id', dbStream.user_id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          if (recByCreator) {
-            navigate(`/stream/${recByCreator.id}?type=recording`, { replace: true });
-            return;
-          }
+          // Note: previously had an unsafe fallback that redirected to the most
+          // recent recording by this creator regardless of which stream the viewer
+          // came from. Removed — viewers landing on an ended stream without a
+          // linked recording should see StreamEndedState instead of being silently
+          // redirected to an unrelated VOD.
         };
         tryResolveRecording();
       }
