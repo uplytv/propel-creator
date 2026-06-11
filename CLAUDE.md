@@ -84,14 +84,17 @@ Launch-critical path is desktop launch with first 10 beta creators; stability > 
 Post-launch roadmap includes Clips & Shorts (Mux Clipping API + Claude transcript analysis + /shorts feed) — do not pre-build unless asked.
 
 
-8. Repo-specific details — [FILL: run the audit prompt below]
+8. Repo-specific details
 
+See AUDIT.md (platform audit) and TICKETS_AUDIT.md / TICKETS_README.md (ticketing) for the full picture.
 
-Routes in App.tsx: [FILL]
-Edge Functions list + purpose of each: [FILL]
-Key DB tables + RLS summary: [FILL]
-Stripe webhook events handled: [FILL]
-Mux webhook events handled: [FILL]
-Env/secrets expected by each Edge Function: [FILL]
-Scripts: dev / build / preview commands: [FILL]
-Known fragile areas or TODOs found in code: [FILL]
+Scripts: `npm run dev` (Vite :8080) · `npm run build` · `npm run preview` · `npm test`.
+Env note: Node lives at `C:\Program Files\nodejs` (not on PATH on the dev box); installs need `--legacy-peer-deps` (@zxing peer conflict). Frontend reads `VITE_SUPABASE_*` from `.env` (now gitignored).
+Webhooks (DO NOT EDIT): Stripe handles checkout.session.completed, customer.subscription.deleted, invoice.payment_failed, charge.refunded, plus the legacy `event_ticket` path. Mux handles live_stream.active/idle/disconnected, asset.ready/errored/deleted. Known gaps (handle out-of-band, never in the webhook): no charge.dispute handler; webhook does NOT finalize tier/resale ticket orders (that's `finalize-ticket-order`).
+Known fragile areas: RLS `USING(true)` on community/classroom tables was a revenue leak — fixed by migration `20260611160000` (deploy it). Brand tokens were green — fixed to blue→purple. Two parallel ticket systems (legacy event-level vs newer tier-based); the tier system is canonical going forward.
+
+Ticketing additions (Phase 3) — routes: `/privacy`, `/terms`, `/scan`, `/scan/:eventId`, `/events/:eventId/live`.
+New tables/views: `event_staff`, `scans` (append-only), `event_occupancy` (view); new columns `events.platform_fee_pct`, `tickets.wristband_code`, `ticket_tiers.is_wristband|day_validity`.
+New functions: `has_creator_access`, `can_scan_event`, `can_manage_event`, `my_scannable_events`, `record_scan`, `link_wristband` (DB fns); edge fns `finalize-ticket-order`, `release-expired-ticket-holds`, `aria-event-copilot`, `aria-pricing-intelligence`, `aria-fraud-sentinel`, `aria-attendee-concierge`, `aria-post-event-report`.
+Secrets used by edge fns: `STRIPE_SECRET_KEY`, `RESEND_API_KEY`, `ANTHROPIC_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `MUX_*`.
+After deploying migrations, regenerate `src/integrations/supabase/types.ts` and remove the temporary `(supabase as any)` casts in the new ticketing UI.
