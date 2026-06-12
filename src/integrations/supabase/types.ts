@@ -21908,6 +21908,10 @@ export type Database = {
       send_creator_lifecycle_emails_batch: { Args: never; Returns: undefined }
       send_member_lifecycle_emails_batch: { Args: never; Returns: undefined }
       send_weekly_discovery_digest: { Args: never; Returns: undefined }
+      set_event_fee_change_reason: {
+        Args: { reason: string }
+        Returns: undefined
+      }
       short_comment_creator_id: {
         Args: { _short_id: string; _source: string }
         Returns: string
