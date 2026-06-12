@@ -35,7 +35,7 @@ export default function Scan() {
             <ScanLine className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-foreground">Scan Tickets</h1>
+            <h1 className="text-2xl font-extrabold tracking-tight text-gradient">Scan Tickets</h1>
             <p className="text-sm text-muted-foreground">Events you can check people into</p>
           </div>
         </div>
