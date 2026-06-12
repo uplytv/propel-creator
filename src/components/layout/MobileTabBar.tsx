@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Search, Users, DollarSign, Sparkles, Plus, X, Bot, Rocket, TrendingUp, QrCode } from "lucide-react";
+import { Search, Users, DollarSign, Sparkles, Plus, X, Bot, Rocket, TrendingUp, QrCode, Ticket } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { useLiveCount } from "@/context/NetworkContext";
@@ -52,7 +52,7 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
     return false;
   };
 
-  const isAriaActive = ["/dashboard/ai-team", "/grow", "/launchpad", "/dashboard/content-studio", "/analytics", "/growth-reports", "/scan"].some(
+  const isAriaActive = ["/dashboard/ai-team", "/grow", "/launchpad", "/dashboard/content-studio", "/analytics", "/growth-reports", "/scan", "/tickets"].some(
     p => location.pathname === p || location.pathname.startsWith(p + "/")
   );
 
@@ -60,6 +60,7 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
 
   const ariaActions = [
     { label: "Scan tickets", icon: QrCode, path: "/scan", desc: "Check in attendees at events" },
+    { label: "Resell tickets", icon: Ticket, path: "/tickets", desc: "Sell or resell your tickets" },
     { label: "AI Team", icon: Bot, path: "/dashboard/ai-team", desc: "Your 5 AI agents" },
     { label: "Grow", icon: TrendingUp, path: "/grow", desc: "Growth protocol tasks" },
     { label: "Content Studio", icon: Sparkles, path: "/dashboard/content-studio", desc: "AI-generated content" },
