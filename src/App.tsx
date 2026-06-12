@@ -252,7 +252,10 @@ function NativeShell({ children }: { children: React.ReactNode }) {
   useNativeInit();
   useKeyboardState();
 
-  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  // Never blank the app on first render based on navigator.onLine — that flag
+  // misreports inside service-worker/webview contexts and would show a dark
+  // full-screen takeover. Start as online and only react to a real transition.
+  const [isOffline, setIsOffline] = useState(false);
 
   useEffect(() => {
     const goOffline = () => setIsOffline(true);
