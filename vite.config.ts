@@ -1,8 +1,21 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import { execSync } from "child_process";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
+
+// Build metadata injected at build time and surfaced by the /health page so we
+// can confirm a deploy is actually live.
+function gitCommit() {
+  try {
+    return execSync("git rev-parse --short HEAD").toString().trim();
+  } catch {
+    return process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || "unknown";
+  }
+}
+const BUILD_COMMIT = gitCommit();
+const BUILD_TIME = new Date().toISOString();
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -61,6 +74,11 @@ export default defineConfig(({ mode }) => ({
       manifest: false, // Use existing public/manifest.json
     }),
   ].filter(Boolean),
+  define: {
+    "import.meta.env.VITE_BUILD_COMMIT": JSON.stringify(BUILD_COMMIT),
+    "import.meta.env.VITE_BUILD_TIME": JSON.stringify(BUILD_TIME),
+    "import.meta.env.VITE_APP_VERSION": JSON.stringify(process.env.npm_package_version || "0.0.0"),
+  },
   build: {
     rollupOptions: {
       external: [

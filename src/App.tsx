@@ -194,6 +194,7 @@ const PostEditor = lazy(() => import("./pages/create/PostEditor"));
 const StoryEditor = lazy(() => import("./pages/create/StoryEditor"));
 const ShortEditor = lazy(() => import("./pages/create/ShortEditor"));
 const VideoEditorPage = lazy(() => import("./pages/create/VideoEditor"));
+const Health = lazy(() => import("./pages/Health"));
 
 // Social pages
 const SocialHome = lazy(() => import("./pages/social/SocialHome"));
@@ -325,6 +326,7 @@ const App = () => (
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/privacy" element={<Privacy />} />
                     <Route path="/terms" element={<Terms />} />
+                    <Route path="/health" element={<Health />} />
                     <Route path="/p/:slug" element={<JointProduct isPublic />} />
                     <Route path="/live" element={<Live />} />
                     <Route path="/stream/:id" element={<Stream />} />
