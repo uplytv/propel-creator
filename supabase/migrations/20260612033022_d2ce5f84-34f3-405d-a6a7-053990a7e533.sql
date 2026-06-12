@@ -1,0 +1,1 @@
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS platform_fee_pct numeric NOT NULL DEFAULT 5;
