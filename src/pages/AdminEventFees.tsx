@@ -314,8 +314,16 @@ function EditFeeDialog({
               max={100}
               step="0.01"
               value={value}
-              onChange={(e) => setValue(e.target.value)}
+              onChange={(e) => {
+                setValue(e.target.value);
+                if (errors.fee) setErrors((p) => ({ ...p, fee: undefined }));
+              }}
+              aria-invalid={!!errors.fee}
+              className={errors.fee ? "border-destructive" : ""}
             />
+            {errors.fee && (
+              <p className="text-xs text-destructive">{errors.fee}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="reason">Reason</Label>
@@ -323,8 +331,16 @@ function EditFeeDialog({
               id="reason"
               placeholder="e.g. Negotiated rate for partner creator"
               value={reason}
-              onChange={(e) => setReason(e.target.value)}
+              onChange={(e) => {
+                setReason(e.target.value);
+                if (errors.reason) setErrors((p) => ({ ...p, reason: undefined }));
+              }}
+              aria-invalid={!!errors.reason}
+              className={errors.reason ? "border-destructive" : ""}
             />
+            {errors.reason && (
+              <p className="text-xs text-destructive">{errors.reason}</p>
+            )}
           </div>
         </div>
         <DialogFooter>
