@@ -271,15 +271,6 @@ function EditFeeDialog({
       setSaving(false);
     }
   };
-        description: `Event fee set to ${num}%. Change logged.`,
-      });
-      onSaved();
-    } catch (err: any) {
-      toast.error("Update failed", { description: err.message });
-    } finally {
-      setSaving(false);
-    }
-  };
 
   return (
     <Dialog open={!!event} onOpenChange={(o) => !o && onClose()}>
