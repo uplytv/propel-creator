@@ -205,6 +205,10 @@ export default function AdminEventFees() {
             </table>
           </div>
         )}
+
+        <div className="mt-8">
+          <FeeChangeHistoryPanel events={events} />
+        </div>
       </div>
 
       <EditFeeDialog
@@ -212,6 +216,7 @@ export default function AdminEventFees() {
         onClose={() => setEditing(null)}
         onSaved={() => {
           queryClient.invalidateQueries({ queryKey: ["admin-event-fees"] });
+          queryClient.invalidateQueries({ queryKey: ["admin-fee-change-history"] });
           setEditing(null);
         }}
       />
