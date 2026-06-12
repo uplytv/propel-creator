@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { AlertTriangle, CheckCircle2, History, Pencil, Search } from "lucide-react";
+import { AlertTriangle, ArrowRight, CheckCircle2, History, Pencil, Search } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
