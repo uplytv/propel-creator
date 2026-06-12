@@ -11,7 +11,8 @@ import {
   Zap, Crown, Sparkles, BarChart3, Radio, Menu, X, Wallet, LayoutGrid, ChevronDown,
   GraduationCap, DollarSign, Bot, Briefcase, Handshake, Share2, Film,
   Trophy, Plug, MessageSquare, Bell as BellIcon, UserCheck, Search, Rocket,
-  Video, CreditCard, UserPlus, User, Globe, Mail, Mic, Gift, Rss, Tv, Code, Music, Calendar
+  Video, CreditCard, UserPlus, User, Globe, Mail, Mic, Gift, Rss, Tv, Code, Music, Calendar,
+  Ticket, QrCode
 } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import { useApp, tierNames } from "@/context/AppContext";
@@ -41,8 +42,17 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
       { label: "Content Library", icon: Film, path: "/content-library", desc: "Videos & uploads", featureKey: "content_library" },
       { label: "Podcast", icon: Mic, path: "/podcast", desc: "Host your podcast", featureKey: "podcast" },
       { label: "Podcast RSS", icon: Rss, path: "/podcast-rss", desc: "Submit to Apple Podcasts & Spotify", featureKey: "content" },
-      { label: "Events", icon: Calendar, path: "/events", desc: "Schedule virtual or IRL events" },
       { label: "Go Live", icon: Radio, path: "/go-live", desc: "Start a live stream" },
+    ],
+  },
+  {
+    core: "events",
+    label: "EVENTS & TICKETS",
+    icon: Ticket,
+    items: [
+      { label: "My Events", icon: Calendar, path: "/events", desc: "Host & manage events" },
+      { label: "My Tickets", icon: Ticket, path: "/tickets", desc: "Your tickets, passes & resale" },
+      { label: "Scan Tickets", icon: QrCode, path: "/scan", desc: "Check in attendees at the door" },
     ],
   },
   {

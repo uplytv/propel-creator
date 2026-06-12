@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Search, Users, DollarSign, Sparkles, Plus, X, Bot, Rocket, TrendingUp, QrCode, Ticket } from "lucide-react";
+import { Search, Users, DollarSign, Sparkles, Plus, X, Bot, Rocket, TrendingUp, QrCode, Ticket, Calendar } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { useLiveCount } from "@/context/NetworkContext";
@@ -58,14 +58,26 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
 
   // Create actions are now rendered by <CreateSheet />.
 
-  const ariaActions = [
-    { label: "Scan tickets", icon: QrCode, path: "/scan", desc: "Check in attendees at events" },
-    { label: "Resell tickets", icon: Ticket, path: "/tickets", desc: "Sell or resell your tickets" },
-    { label: "AI Team", icon: Bot, path: "/dashboard/ai-team", desc: "Your 5 AI agents" },
-    { label: "Grow", icon: TrendingUp, path: "/grow", desc: "Growth protocol tasks" },
-    { label: "Content Studio", icon: Sparkles, path: "/dashboard/content-studio", desc: "AI-generated content" },
-    { label: "Launchpad", icon: Rocket, path: "/launchpad", desc: "Launch something new" },
+  const actionGroups = [
+    {
+      title: "Events & Tickets",
+      items: [
+        { label: "My Tickets", icon: Ticket, path: "/tickets", desc: "Tickets, passes & resale" },
+        { label: "My Events", icon: Calendar, path: "/events", desc: "Host & manage events" },
+        { label: "Scan Tickets", icon: QrCode, path: "/scan", desc: "Check in attendees at the door" },
+      ],
+    },
+    {
+      title: "AI & Growth",
+      items: [
+        { label: "AI Team", icon: Bot, path: "/dashboard/ai-team", desc: "Your 5 AI agents" },
+        { label: "Content Studio", icon: Sparkles, path: "/dashboard/content-studio", desc: "AI-generated content" },
+        { label: "Grow", icon: TrendingUp, path: "/grow", desc: "Growth protocol tasks" },
+        { label: "Launchpad", icon: Rocket, path: "/launchpad", desc: "Launch something new" },
+      ],
+    },
   ];
+  const ariaActions = actionGroups.flatMap((g) => g.items);
 
   return (
     <>
@@ -95,35 +107,43 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
             className="fixed bottom-16 left-0 right-0 z-[61] md:hidden bg-card border-t border-border rounded-t-2xl safe-area-bottom"
           >
-            <div className="p-4 space-y-1">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-bold text-primary uppercase tracking-widest">ARIA</p>
+            <div className="p-4 pb-2 space-y-4 max-h-[70vh] overflow-y-auto">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  <p className="text-xs font-bold text-foreground uppercase tracking-widest">Quick Actions</p>
+                </div>
                 <button onClick={() => setAriaOpen(false)} className="p-1 rounded-lg text-muted-foreground hover:text-foreground">
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              {ariaActions.map((action) => {
-                const isCurrentPage = location.pathname === action.path;
-                return (
-                  <button
-                    key={action.label}
-                    onClick={() => { setAriaOpen(false); navigate(safeNavPath(action.path)); }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-                      isCurrentPage ? "bg-primary/10 text-primary" : "text-foreground hover:bg-secondary/60"
-                    }`}
-                  >
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      isCurrentPage ? "bg-primary/20" : "bg-primary/10"
-                    }`}>
-                      <action.icon className="w-5 h-5 text-primary" />
-                    </div>
-                    <div className="text-left">
-                      <p>{action.label}</p>
-                      <p className="text-[10px] text-muted-foreground">{action.desc}</p>
-                    </div>
-                  </button>
-                );
-              })}
+              {actionGroups.map((group) => (
+                <div key={group.title} className="space-y-1">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-1 mb-1">{group.title}</p>
+                  {group.items.map((action) => {
+                    const isCurrentPage = location.pathname === action.path;
+                    return (
+                      <button
+                        key={action.label}
+                        onClick={() => { setAriaOpen(false); navigate(safeNavPath(action.path)); }}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                          isCurrentPage ? "bg-primary/10 text-primary" : "text-foreground hover:bg-secondary/60"
+                        }`}
+                      >
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                          isCurrentPage ? "bg-primary/20" : "bg-primary/10"
+                        }`}>
+                          <action.icon className="w-5 h-5 text-primary" />
+                        </div>
+                        <div className="text-left">
+                          <p>{action.label}</p>
+                          <p className="text-[10px] text-muted-foreground">{action.desc}</p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
           </motion.div>
         )}
