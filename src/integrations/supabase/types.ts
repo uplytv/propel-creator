@@ -21121,6 +21121,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_update_event_fee: {
+        Args: { _event_id: string; _new_fee_pct: number; _reason: string }
+        Returns: undefined
+      }
       aria_command_count_last_hour: {
         Args: { _creator: string }
         Returns: number
