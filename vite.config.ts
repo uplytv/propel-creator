@@ -35,6 +35,12 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.png", "logo.png"],
       workbox: {
+        // Activate the new service worker immediately and purge stale precaches
+        // so a deploy never leaves a tab serving an old index.html that points
+        // at chunk files which no longer exist (the "black screen on deploy").
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
         navigateFallbackDenylist: [/^\/~oauth/, /^\/api/],
         runtimeCaching: [
