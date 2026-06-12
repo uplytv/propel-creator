@@ -31,6 +31,14 @@ export default function Auth() {
     return getAffiliateCookie("uply_waitlist_ref") || getAffiliateCookie("uply_invite_code") ? "signup" : "signin";
   })();
 
+  // Post-auth redirect target (e.g. /tickets from the Resell tickets entry).
+  // Only allow same-origin paths to prevent open-redirect abuse.
+  const redirectParam = (() => {
+    const raw = new URLSearchParams(location.search).get("redirect");
+    if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return null;
+    return raw;
+  })();
+
   useEffect(() => {
     if (signUpSuccess) return;
     const checkAndRedirect = async (session: any) => {
@@ -45,7 +53,7 @@ export default function Auth() {
       if (!p?.onboarding_complete) {
         navigate("/onboarding", { replace: true });
       } else if (p?.is_approved) {
-        navigate("/discover", { replace: true });
+        navigate(redirectParam || "/discover", { replace: true });
       } else {
         navigate("/waitlist", { replace: true });
       }
@@ -57,7 +65,7 @@ export default function Auth() {
       if (session && !signUpSuccess) checkAndRedirect(session);
     });
     return () => subscription.unsubscribe();
-  }, [navigate, signUpSuccess]);
+  }, [navigate, signUpSuccess, redirectParam]);
 
   const validatePassword = (pw: string): string | null => {
     if (pw.length < 8) return "Password must be at least 8 characters.";
