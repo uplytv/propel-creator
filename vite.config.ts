@@ -84,18 +84,12 @@ export default defineConfig(({ mode }) => ({
       external: [
         "@capacitor/status-bar",
       ],
-      output: {
-        // Split large, stable vendor libs out of the main entry chunk so the
-        // initial bundle is smaller and vendor code caches across deploys.
-        manualChunks(id) {
-          if (!id.includes("node_modules")) return;
-          if (/[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/.test(id)) return "react-vendor";
-          if (id.includes("@supabase")) return "supabase";
-          if (id.includes("@tanstack")) return "query";
-          if (id.includes("@radix-ui")) return "radix";
-          if (id.includes("framer-motion")) return "motion";
-        },
-      },
+      // NOTE: Do NOT add `manualChunks` here. A previous attempt split
+      // `@radix-ui` and `react` into separate vendor chunks, which caused
+      // Radix to evaluate before React was bound in some load orders and
+      // crashed the app with `Cannot read properties of undefined (reading
+      // 'forwardRef')` — a full black screen on production. Let Rollup pick
+      // chunks automatically.
     },
   },
   resolve: {
