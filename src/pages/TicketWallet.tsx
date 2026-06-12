@@ -96,7 +96,7 @@ export default function TicketWallet() {
         <div className="max-w-md mx-auto px-4 py-16 text-center">
           <Ticket className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
           <h1 className="text-xl font-semibold text-foreground mb-2">Sign in to view your tickets</h1>
-          <Button onClick={() => navigate("/auth")}>Sign in</Button>
+          <Button onClick={() => navigate("/auth?redirect=/tickets")}>Sign in</Button>
         </div>
       </AppLayout>
     );
