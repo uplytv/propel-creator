@@ -152,7 +152,7 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
       {/* Tab bar */}
       <nav
         aria-label="Mobile navigation"
-        className="mobile-tab-bar md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-xl safe-area-bottom transition-transform duration-200"
+        className="mobile-tab-bar md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border glass-panel safe-area-bottom transition-transform duration-200"
       >
         <div className="flex items-center justify-around h-16 px-1" role="tablist">
           {tabs.map((tab) => {
@@ -168,13 +168,12 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
                   className="relative flex items-center justify-center -mt-4"
                 >
                   <motion.div
-                    className="w-14 h-14 rounded-full bg-primary flex items-center justify-center shadow-lg"
-                    style={{ boxShadow: "0 4px 20px hsl(var(--primary) / 0.3)" }}
+                    className="w-14 h-14 rounded-2xl bg-brand-gradient brand-glow flex items-center justify-center"
                     whileTap={{ scale: 0.92 }}
                     animate={{ rotate: createOpen ? 45 : 0 }}
                     transition={{ type: "spring", damping: 20, stiffness: 300 }}
                   >
-                    <Plus className="w-6 h-6 text-primary-foreground" />
+                    <Plus className="w-7 h-7 text-white" />
                   </motion.div>
                 </button>
               );
