@@ -4770,6 +4770,44 @@ export type Database = {
           },
         ]
       }
+      event_fee_change_log: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          event_id: string
+          id: string
+          new_fee_pct: number
+          old_fee_pct: number | null
+          reason: string | null
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          event_id: string
+          id?: string
+          new_fee_pct: number
+          old_fee_pct?: number | null
+          reason?: string | null
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          new_fee_pct?: number
+          old_fee_pct?: number | null
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_fee_change_log_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_referrals: {
         Row: {
           buyer_id: string
