@@ -4962,6 +4962,7 @@ export type Database = {
           location_name: string | null
           location_state: string | null
           mux_stream_id: string | null
+          platform_fee_pct: number
           refund_policy: string
           resale_allowed: boolean
           resale_price_cap_pct: number | null
@@ -5019,6 +5020,7 @@ export type Database = {
           location_name?: string | null
           location_state?: string | null
           mux_stream_id?: string | null
+          platform_fee_pct?: number
           refund_policy?: string
           resale_allowed?: boolean
           resale_price_cap_pct?: number | null
@@ -5076,6 +5078,7 @@ export type Database = {
           location_name?: string | null
           location_state?: string | null
           mux_stream_id?: string | null
+          platform_fee_pct?: number
           refund_policy?: string
           resale_allowed?: boolean
           resale_price_cap_pct?: number | null
