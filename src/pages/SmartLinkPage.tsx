@@ -109,7 +109,7 @@ export default function SmartLinkPage() {
       if ((data as any).is_presave) {
         supabase
           .from("smart_link_presaves")
-          .select("*", { head: true, count: "exact" })
+          .select("id", { head: true, count: "exact" })
           .eq("link_id", (data as any).id)
           .then(({ count }) => {
             if (!cancelled) setPresaveCount(count || 0);

@@ -94,7 +94,7 @@ export default function SmartLinkAnalyticsPage() {
 
       const { count } = await supabase
         .from("smart_link_presaves")
-        .select("*", { head: true, count: "exact" })
+        .select("id", { head: true, count: "exact" })
         .eq("link_id", id);
       setPresaveCount(count || 0);
 
