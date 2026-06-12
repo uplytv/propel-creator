@@ -52,13 +52,14 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
     return false;
   };
 
-  const isAriaActive = ["/dashboard/ai-team", "/grow", "/launchpad", "/dashboard/content-studio", "/analytics", "/growth-reports"].some(
+  const isAriaActive = ["/dashboard/ai-team", "/grow", "/launchpad", "/dashboard/content-studio", "/analytics", "/growth-reports", "/scan"].some(
     p => location.pathname === p || location.pathname.startsWith(p + "/")
   );
 
   // Create actions are now rendered by <CreateSheet />.
 
   const ariaActions = [
+    { label: "Scan tickets", icon: QrCode, path: "/scan", desc: "Check in attendees at events" },
     { label: "AI Team", icon: Bot, path: "/dashboard/ai-team", desc: "Your 5 AI agents" },
     { label: "Grow", icon: TrendingUp, path: "/grow", desc: "Growth protocol tasks" },
     { label: "Content Studio", icon: Sparkles, path: "/dashboard/content-studio", desc: "AI-generated content" },
