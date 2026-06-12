@@ -71,6 +71,7 @@ const PlaylistDetail = lazy(() => import("./pages/PlaylistDetail"));
 const BoostSuccess = lazy(() => import("./pages/BoostSuccess"));
 const BoostCancel = lazy(() => import("./pages/BoostCancel"));
 const AdminPayouts = lazy(() => import("./pages/AdminPayouts"));
+const AdminEventFees = lazy(() => import("./pages/AdminEventFees"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminUsers = lazy(() => import("./pages/AdminUsers"));
 const AdminSettings = lazy(() => import("./pages/AdminSettings"));
@@ -523,6 +524,7 @@ const App = () => (
                     <Route path="/admin/affiliates" element={<AdminRoute><AdminAffiliates /></AdminRoute>} />
                     <Route path="/admin/referrals" element={<AdminRoute><AdminReferrals /></AdminRoute>} />
                     <Route path="/admin/tv-audit" element={<AdminRoute><AdminTVAudit /></AdminRoute>} />
+                    <Route path="/admin/event-fees" element={<AdminRoute><AdminEventFees /></AdminRoute>} />
 
                     {/* In-app camera & post-capture editors */}
                     <Route path="/camera" element={<ProtectedRoute><Camera /></ProtectedRoute>} />
