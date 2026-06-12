@@ -514,7 +514,7 @@ END:VCALENDAR`;
             {isPast && <Badge variant="outline" className="bg-muted text-muted-foreground">Ended</Badge>}
           </div>
 
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">{event.title}</h1>
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground">{event.title}</h1>
 
           {/* Date */}
           <p className="text-primary font-medium flex items-center gap-2">

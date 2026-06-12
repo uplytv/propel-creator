@@ -146,7 +146,11 @@ export default function EventTierPicker({ eventId }: { eventId: string; eventTit
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
-                <Button onClick={() => buy(tier)} disabled={disabled} className="gap-2 flex-1 max-w-[200px]">
+                <Button
+                  onClick={() => buy(tier)}
+                  disabled={disabled}
+                  className={`gap-2 flex-1 max-w-[200px] ${soldOut || !saleOpen ? "" : "bg-brand-gradient brand-glow text-white border-0 hover:opacity-90"}`}
+                >
                   {buying === tier.id ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : soldOut ? (
