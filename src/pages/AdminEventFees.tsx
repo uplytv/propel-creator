@@ -232,26 +232,48 @@ function EditFeeDialog({
   const [value, setValue] = useState("");
   const [reason, setReason] = useState("");
   const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<{ fee?: string; reason?: string }>({});
 
   // reset fields when the event being edited changes
   useMemo(() => {
     if (event) {
       setValue(String(event.platform_fee_pct ?? ""));
       setReason("");
+      setErrors({});
     }
   }, [event?.id]);
 
-  const handleSave = async () => {
-    if (!event) return;
-    const num = Number(value);
-    if (!Number.isFinite(num) || num < 0 || num > 100) {
-      toast.error("Fee must be a number between 0 and 100");
-      return;
+  const validate = (): boolean => {
+    const next: { fee?: string; reason?: string } = {};
+    const raw = value.trim();
+    if (raw === "") {
+      next.fee = "Fee is required";
+    } else if (!/^-?\d+(\.\d+)?$/.test(raw)) {
+      next.fee = "Fee must be a valid number";
+    } else {
+      const num = Number(raw);
+      if (!Number.isFinite(num)) {
+        next.fee = "Fee must be a finite number";
+      } else if (num < 0) {
+        next.fee = "Fee cannot be negative";
+      } else if (num > 100) {
+        next.fee = "Fee cannot exceed 100%";
+      } else if (raw.includes(".") && raw.split(".")[1].length > 2) {
+        next.fee = "Fee supports up to 2 decimal places";
+      }
     }
     if (!reason.trim()) {
-      toast.error("Please add a reason for the change");
-      return;
+      next.reason = "Reason is required";
+    } else if (reason.trim().length < 5) {
+      next.reason = "Reason must be at least 5 characters";
     }
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const handleSave = async () => {
+    if (!event || !validate()) return;
+    const num = Number(value.trim());
     setSaving(true);
     try {
       const { error } = await supabase.rpc("admin_update_event_fee" as any, {
@@ -292,8 +314,16 @@ function EditFeeDialog({
               max={100}
               step="0.01"
               value={value}
-              onChange={(e) => setValue(e.target.value)}
+              onChange={(e) => {
+                setValue(e.target.value);
+                if (errors.fee) setErrors((p) => ({ ...p, fee: undefined }));
+              }}
+              aria-invalid={!!errors.fee}
+              className={errors.fee ? "border-destructive" : ""}
             />
+            {errors.fee && (
+              <p className="text-xs text-destructive">{errors.fee}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="reason">Reason</Label>
@@ -301,8 +331,16 @@ function EditFeeDialog({
               id="reason"
               placeholder="e.g. Negotiated rate for partner creator"
               value={reason}
-              onChange={(e) => setReason(e.target.value)}
+              onChange={(e) => {
+                setReason(e.target.value);
+                if (errors.reason) setErrors((p) => ({ ...p, reason: undefined }));
+              }}
+              aria-invalid={!!errors.reason}
+              className={errors.reason ? "border-destructive" : ""}
             />
+            {errors.reason && (
+              <p className="text-xs text-destructive">{errors.reason}</p>
+            )}
           </div>
         </div>
         <DialogFooter>
