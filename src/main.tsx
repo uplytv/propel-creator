@@ -4,10 +4,14 @@ import App from "./App.tsx";
 import "./index.css";
 import { initSentry } from "./lib/sentry";
 import { initPostHog } from "./lib/posthog";
+import { initVersionCheck } from "./lib/versionCheck";
 
 // Initialize monitoring
 initSentry();
 initPostHog();
+
+// Auto-reload when a new build is deployed
+initVersionCheck();
 
 // Register service worker for push notifications and offline (production only)
 if ('serviceWorker' in navigator) {
