@@ -4770,6 +4770,44 @@ export type Database = {
           },
         ]
       }
+      event_fee_change_log: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          event_id: string
+          id: string
+          new_fee_pct: number
+          old_fee_pct: number | null
+          reason: string | null
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          event_id: string
+          id?: string
+          new_fee_pct: number
+          old_fee_pct?: number | null
+          reason?: string | null
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          new_fee_pct?: number
+          old_fee_pct?: number | null
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_fee_change_log_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_referrals: {
         Row: {
           buyer_id: string
@@ -21083,6 +21121,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_update_event_fee: {
+        Args: { _event_id: string; _new_fee_pct: number; _reason: string }
+        Returns: undefined
+      }
       aria_command_count_last_hour: {
         Args: { _creator: string }
         Returns: number
@@ -21870,6 +21912,10 @@ export type Database = {
       send_creator_lifecycle_emails_batch: { Args: never; Returns: undefined }
       send_member_lifecycle_emails_batch: { Args: never; Returns: undefined }
       send_weekly_discovery_digest: { Args: never; Returns: undefined }
+      set_event_fee_change_reason: {
+        Args: { reason: string }
+        Returns: undefined
+      }
       short_comment_creator_id: {
         Args: { _short_id: string; _source: string }
         Returns: string

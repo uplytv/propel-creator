@@ -1,17 +1,41 @@
 import { useMemo, useState } from "react";
-import { AlertTriangle, CheckCircle2, Search } from "lucide-react";
+import { AlertTriangle, CheckCircle2, History, Pencil, Search } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { format } from "date-fns";
 
 const EXPECTED_FEE_PCT = 5;
 
+type EventRow = {
+  id: string;
+  title: string | null;
+  status: string | null;
+  platform_fee_pct: number;
+  created_at: string;
+  creator_id: string | null;
+};
+
 export default function AdminEventFees() {
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [onlyMismatches, setOnlyMismatches] = useState(false);
+  const [editing, setEditing] = useState<EventRow | null>(null);
+  const [historyFor, setHistoryFor] = useState<EventRow | null>(null);
 
   const { data: events = [], isLoading } = useQuery({
     queryKey: ["admin-event-fees"],
@@ -22,20 +46,21 @@ export default function AdminEventFees() {
         .order("created_at", { ascending: false })
         .limit(500);
       if (error) throw error;
-      return data || [];
+      return (data || []) as EventRow[];
     },
   });
 
   const { filtered, mismatchCount } = useMemo(() => {
     const q = search.trim().toLowerCase();
     const mismatches = events.filter(
-      (e: any) => Number(e.platform_fee_pct) !== EXPECTED_FEE_PCT,
+      (e) => Number(e.platform_fee_pct) !== EXPECTED_FEE_PCT,
     );
     const base = onlyMismatches ? mismatches : events;
     const filtered = q
-      ? base.filter((e: any) =>
-          (e.title || "").toLowerCase().includes(q) ||
-          (e.id || "").toLowerCase().includes(q),
+      ? base.filter(
+          (e) =>
+            (e.title || "").toLowerCase().includes(q) ||
+            (e.id || "").toLowerCase().includes(q),
         )
       : base;
     return { filtered, mismatchCount: mismatches.length };
@@ -47,8 +72,9 @@ export default function AdminEventFees() {
         <div className="mb-6">
           <h1 className="text-2xl font-bold tracking-tight">Event Platform Fees</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Expected default: <span className="text-primary font-medium">{EXPECTED_FEE_PCT}%</span>.
-            Any event with a different value is flagged.
+            Expected default:{" "}
+            <span className="text-primary font-medium">{EXPECTED_FEE_PCT}%</span>. Any
+            event with a different value is flagged.
           </p>
         </div>
 
@@ -58,14 +84,18 @@ export default function AdminEventFees() {
             <div className="text-2xl font-bold mt-1">{events.length}</div>
           </div>
           <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4">
-            <div className="text-xs text-muted-foreground">At default ({EXPECTED_FEE_PCT}%)</div>
+            <div className="text-xs text-muted-foreground">
+              At default ({EXPECTED_FEE_PCT}%)
+            </div>
             <div className="text-2xl font-bold mt-1 text-primary">
               {events.length - mismatchCount}
             </div>
           </div>
           <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4">
             <div className="text-xs text-muted-foreground">Mismatches</div>
-            <div className="text-2xl font-bold mt-1 text-destructive">{mismatchCount}</div>
+            <div className="text-2xl font-bold mt-1 text-destructive">
+              {mismatchCount}
+            </div>
           </div>
         </div>
 
@@ -107,13 +137,16 @@ export default function AdminEventFees() {
               <thead className="bg-white/[0.03] text-xs uppercase text-muted-foreground">
                 <tr>
                   <th className="text-left px-4 py-3 font-medium">Event</th>
-                  <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">Status</th>
+                  <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">
+                    Status
+                  </th>
                   <th className="text-right px-4 py-3 font-medium">Fee %</th>
                   <th className="text-right px-4 py-3 font-medium">Check</th>
+                  <th className="text-right px-4 py-3 font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((e: any) => {
+                {filtered.map((e) => {
                   const fee = Number(e.platform_fee_pct);
                   const ok = fee === EXPECTED_FEE_PCT;
                   return (
@@ -145,6 +178,26 @@ export default function AdminEventFees() {
                           </span>
                         )}
                       </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 px-2"
+                            onClick={() => setHistoryFor(e)}
+                          >
+                            <History className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 px-2"
+                            onClick={() => setEditing(e)}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </td>
                     </tr>
                   );
                 })}
@@ -153,6 +206,182 @@ export default function AdminEventFees() {
           </div>
         )}
       </div>
+
+      <EditFeeDialog
+        event={editing}
+        onClose={() => setEditing(null)}
+        onSaved={() => {
+          queryClient.invalidateQueries({ queryKey: ["admin-event-fees"] });
+          setEditing(null);
+        }}
+      />
+      <HistoryDialog event={historyFor} onClose={() => setHistoryFor(null)} />
     </AppLayout>
+  );
+}
+
+function EditFeeDialog({
+  event,
+  onClose,
+  onSaved,
+}: {
+  event: EventRow | null;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [value, setValue] = useState("");
+  const [reason, setReason] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  // reset fields when the event being edited changes
+  useMemo(() => {
+    if (event) {
+      setValue(String(event.platform_fee_pct ?? ""));
+      setReason("");
+    }
+  }, [event?.id]);
+
+  const handleSave = async () => {
+    if (!event) return;
+    const num = Number(value);
+    if (!Number.isFinite(num) || num < 0 || num > 100) {
+      toast.error("Fee must be a number between 0 and 100");
+      return;
+    }
+    if (!reason.trim()) {
+      toast.error("Please add a reason for the change");
+      return;
+    }
+    setSaving(true);
+    try {
+      const { error } = await supabase.rpc("admin_update_event_fee" as any, {
+        _event_id: event.id,
+        _new_fee_pct: num,
+        _reason: reason.trim(),
+      });
+      if (error) throw error;
+
+      toast.success("Fee updated", {
+        description: `Event fee set to ${num}%. Change logged.`,
+      });
+      onSaved();
+    } catch (err: any) {
+      toast.error("Update failed", { description: err.message });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open={!!event} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Update platform fee</DialogTitle>
+          <DialogDescription>
+            {event?.title || "Event"} — current fee:{" "}
+            <span className="font-mono">{event?.platform_fee_pct}%</span>
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          <div className="space-y-2">
+            <Label htmlFor="fee">New fee %</Label>
+            <Input
+              id="fee"
+              type="number"
+              min={0}
+              max={100}
+              step="0.01"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="reason">Reason</Label>
+            <Input
+              id="reason"
+              placeholder="e.g. Negotiated rate for partner creator"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={onClose} disabled={saving}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={saving}>
+            {saving ? "Saving…" : "Save change"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function HistoryDialog({
+  event,
+  onClose,
+}: {
+  event: EventRow | null;
+  onClose: () => void;
+}) {
+  const { data: history = [], isLoading } = useQuery({
+    queryKey: ["event-fee-history", event?.id],
+    enabled: !!event,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("event_fee_change_log" as any)
+        .select("*")
+        .eq("event_id", event!.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data || []) as any[];
+    },
+  });
+
+  return (
+    <Dialog open={!!event} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Fee change history</DialogTitle>
+          <DialogDescription>
+            {event?.title || "Event"} — all logged changes
+          </DialogDescription>
+        </DialogHeader>
+        <div className="max-h-[420px] overflow-y-auto space-y-2 py-2">
+          {isLoading ? (
+            <Skeleton className="h-20 w-full" />
+          ) : history.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">
+              No changes recorded for this event.
+            </p>
+          ) : (
+            history.map((h) => (
+              <div
+                key={h.id}
+                className="rounded-lg border border-white/5 bg-white/[0.03] p-3 text-sm"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="font-mono">
+                    {h.old_fee_pct ?? "—"}% → {h.new_fee_pct}%
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {format(new Date(h.created_at), "PP p")}
+                  </div>
+                </div>
+                {h.reason && (
+                  <div className="text-xs text-muted-foreground mt-1">{h.reason}</div>
+                )}
+                {h.changed_by && (
+                  <div className="text-[10px] text-muted-foreground/70 font-mono mt-1">
+                    by {h.changed_by}
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
