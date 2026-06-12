@@ -28,6 +28,32 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Black-screen watchdog: if the app hasn't mounted after 12s, the likely
+      // cause is a stale service worker / broken cached chunk after a deploy.
+      // Clear them and reload ONCE per session to self-recover.
+      (function () {
+        var KEY = "uply_sw_recovered_at";
+        setTimeout(function () {
+          var root = document.getElementById("root");
+          if (root && root.children.length > 0) return; // app mounted fine
+          var last = Number(sessionStorage.getItem(KEY) || 0);
+          if (Date.now() - last < 60000) return; // already recovered recently
+          sessionStorage.setItem(KEY, String(Date.now()));
+          try {
+            if ("serviceWorker" in navigator) {
+              navigator.serviceWorker.getRegistrations().then(function (rs) {
+                rs.forEach(function (r) { r.unregister(); });
+              });
+            }
+            if (window.caches && caches.keys) {
+              caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); });
+            }
+          } catch (e) {}
+          setTimeout(function () { location.reload(); }, 400);
+        }, 12000);
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
