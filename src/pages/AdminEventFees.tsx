@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { AlertTriangle, CheckCircle2, History, Pencil, Search } from "lucide-react";
+import { AlertTriangle, ArrowRight, CheckCircle2, History, Pencil, Search } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -205,6 +205,10 @@ export default function AdminEventFees() {
             </table>
           </div>
         )}
+
+        <div className="mt-8">
+          <FeeChangeHistoryPanel events={events} />
+        </div>
       </div>
 
       <EditFeeDialog
@@ -212,6 +216,7 @@ export default function AdminEventFees() {
         onClose={() => setEditing(null)}
         onSaved={() => {
           queryClient.invalidateQueries({ queryKey: ["admin-event-fees"] });
+          queryClient.invalidateQueries({ queryKey: ["admin-fee-change-history"] });
           setEditing(null);
         }}
       />
@@ -421,5 +426,95 @@ function HistoryDialog({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function FeeChangeHistoryPanel({ events }: { events: EventRow[] }) {
+  const eventMap = useMemo(() => {
+    const map = new Map<string, string>();
+    events.forEach((e) => map.set(e.id, e.title || "Untitled"));
+    return map;
+  }, [events]);
+
+  const { data: history = [], isLoading } = useQuery({
+    queryKey: ["admin-fee-change-history"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("event_fee_change_log" as any)
+        .select("id, event_id, old_fee_pct, new_fee_pct, changed_by, reason, created_at")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return (data || []) as any[];
+    },
+  });
+
+  return (
+    <div className="rounded-xl border border-white/5 overflow-hidden">
+      <div className="bg-white/[0.03] px-4 py-3 flex items-center gap-2">
+        <History className="h-4 w-4 text-muted-foreground" />
+        <h2 className="text-sm font-semibold">Recent fee changes</h2>
+        <span className="text-xs text-muted-foreground ml-auto">{history.length} entries</span>
+      </div>
+      <div className="max-h-[480px] overflow-y-auto">
+        {isLoading ? (
+          <div className="space-y-2 p-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-16 w-full rounded-lg" />
+            ))}
+          </div>
+        ) : history.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-10 text-center">
+            No fee changes recorded yet.
+          </p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead className="bg-white/[0.02] text-xs uppercase text-muted-foreground sticky top-0">
+              <tr>
+                <th className="text-left px-4 py-2 font-medium">Event</th>
+                <th className="text-left px-4 py-2 font-medium hidden sm:table-cell">Admin</th>
+                <th className="text-right px-4 py-2 font-medium">Change</th>
+                <th className="text-left px-4 py-2 font-medium hidden md:table-cell">Reason</th>
+                <th className="text-right px-4 py-2 font-medium">Timestamp</th>
+              </tr>
+            </thead>
+            <tbody>
+              {history.map((h) => (
+                <tr key={h.id} className="border-t border-white/5">
+                  <td className="px-4 py-3">
+                    <div className="font-medium truncate max-w-[200px]">
+                      {eventMap.get(h.event_id) || "Untitled"}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground font-mono truncate max-w-[200px]">
+                      {h.event_id}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 hidden sm:table-cell">
+                    <span className="text-xs text-muted-foreground font-mono">
+                      {h.changed_by ? h.changed_by.slice(0, 8) + "…" : "—"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <span className="inline-flex items-center gap-1 font-mono text-xs">
+                      <span className="text-muted-foreground">{h.old_fee_pct ?? "—"}%</span>
+                      <ArrowRight className="h-3 w-3 text-muted-foreground/50" />
+                      <span className="text-primary">{h.new_fee_pct}%</span>
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 hidden md:table-cell">
+                    <span className="text-xs text-muted-foreground truncate max-w-[200px] block">
+                      {h.reason || "—"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-right text-xs text-muted-foreground whitespace-nowrap">
+                    {format(new Date(h.created_at), "PP p")}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
   );
 }
