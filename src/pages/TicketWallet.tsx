@@ -108,10 +108,12 @@ export default function TicketWallet() {
       <div className="max-w-2xl mx-auto px-4 py-6 pb-24 space-y-5">
         <header className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">My Tickets</h1>
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-gradient">My Tickets</h1>
             <p className="text-sm text-muted-foreground mt-0.5">All your passes in one wallet</p>
           </div>
-          <Ticket className="w-7 h-7 text-primary" />
+          <div className="w-11 h-11 rounded-2xl bg-brand-gradient brand-glow flex items-center justify-center">
+            <Ticket className="w-5 h-5 text-white" />
+          </div>
         </header>
 
         {/* Bucket tabs */}
@@ -634,8 +636,10 @@ function RotatingQR({ token, ticketId }: { token: string; ticketId: string }) {
   const circumference = 2 * Math.PI * 18;
 
   return (
-    <div className="relative bg-white p-5 rounded-2xl shadow-2xl">
-      <QRCodeSVG value={payload} size={272} level="H" includeMargin={false} />
+    <div className="relative bg-brand-gradient p-[3px] rounded-[20px] brand-glow">
+      <div className="bg-white p-5 rounded-2xl">
+        <QRCodeSVG value={payload} size={272} level="H" includeMargin={false} />
+      </div>
       <div className="absolute -top-2 -right-2 w-12 h-12 rounded-full bg-background border border-border flex items-center justify-center shadow-lg">
         <svg className="absolute inset-0 w-12 h-12 -rotate-90" viewBox="0 0 44 44">
           <circle cx="22" cy="22" r="18" className="fill-none stroke-muted" strokeWidth="3" />
