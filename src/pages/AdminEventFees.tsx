@@ -254,22 +254,23 @@ function EditFeeDialog({
     }
     setSaving(true);
     try {
-      // Set a session-local setting the audit trigger reads as the change reason
-      const { error: cfgErr } = await supabase.rpc("set_config" as any, {
-        setting_name: "app.fee_change_reason",
-        new_value: reason.trim(),
-        is_local: true,
+      const { error } = await supabase.rpc("admin_update_event_fee" as any, {
+        _event_id: event.id,
+        _new_fee_pct: num,
+        _reason: reason.trim(),
       });
-      // If the helper RPC isn't available, fall back silently — change is still logged without reason
-      if (cfgErr) console.warn("set_config rpc failed", cfgErr);
-
-      const { error } = await supabase
-        .from("events")
-        .update({ platform_fee_pct: num })
-        .eq("id", event.id);
       if (error) throw error;
 
       toast.success("Fee updated", {
+        description: `Event fee set to ${num}%. Change logged.`,
+      });
+      onSaved();
+    } catch (err: any) {
+      toast.error("Update failed", { description: err.message });
+    } finally {
+      setSaving(false);
+    }
+  };
         description: `Event fee set to ${num}%. Change logged.`,
       });
       onSaved();
