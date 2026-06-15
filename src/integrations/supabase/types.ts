@@ -4929,6 +4929,41 @@ export type Database = {
           },
         ]
       }
+      event_staff: {
+        Row: {
+          created_at: string
+          event_id: string
+          gate: string | null
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          gate?: string | null
+          id?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          gate?: string | null
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_staff_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_waitlist: {
         Row: {
           created_at: string
@@ -17073,6 +17108,63 @@ export type Database = {
         }
         Relationships: []
       }
+      scans: {
+        Row: {
+          device_id: string | null
+          direction: string
+          event_id: string
+          gate: string | null
+          id: string
+          lat: number | null
+          lng: number | null
+          result: string
+          scanned_at: string
+          scanned_by: string
+          ticket_id: string | null
+        }
+        Insert: {
+          device_id?: string | null
+          direction?: string
+          event_id: string
+          gate?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          result: string
+          scanned_at?: string
+          scanned_by: string
+          ticket_id?: string | null
+        }
+        Update: {
+          device_id?: string | null
+          direction?: string
+          event_id?: string
+          gate?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          result?: string
+          scanned_at?: string
+          scanned_by?: string
+          ticket_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scans_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scans_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scheduled_streams: {
         Row: {
           category: string | null
@@ -18759,10 +18851,12 @@ export type Database = {
         Row: {
           created_at: string
           currency: string
+          day_validity: Json | null
           description: string | null
           event_id: string
           id: string
           is_hidden: boolean
+          is_wristband: boolean
           max_price_cents: number | null
           member_only_until: string | null
           min_price_cents: number | null
@@ -18782,10 +18876,12 @@ export type Database = {
         Insert: {
           created_at?: string
           currency?: string
+          day_validity?: Json | null
           description?: string | null
           event_id: string
           id?: string
           is_hidden?: boolean
+          is_wristband?: boolean
           max_price_cents?: number | null
           member_only_until?: string | null
           min_price_cents?: number | null
@@ -18805,10 +18901,12 @@ export type Database = {
         Update: {
           created_at?: string
           currency?: string
+          day_validity?: Json | null
           description?: string | null
           event_id?: string
           id?: string
           is_hidden?: boolean
+          is_wristband?: boolean
           max_price_cents?: number | null
           member_only_until?: string | null
           min_price_cents?: number | null
@@ -18866,6 +18964,7 @@ export type Database = {
           tier_id: string | null
           transfer_count: number
           transferred_from: string | null
+          wristband_code: string | null
         }
         Insert: {
           amount_paid?: number
@@ -18897,6 +18996,7 @@ export type Database = {
           tier_id?: string | null
           transfer_count?: number
           transferred_from?: string | null
+          wristband_code?: string | null
         }
         Update: {
           amount_paid?: number
@@ -18928,6 +19028,7 @@ export type Database = {
           tier_id?: string | null
           transfer_count?: number
           transferred_from?: string | null
+          wristband_code?: string | null
         }
         Relationships: [
           {
@@ -20882,6 +20983,25 @@ export type Database = {
         }
         Relationships: []
       }
+      event_occupancy: {
+        Row: {
+          current_occupancy: number | null
+          event_id: string | null
+          last_scan_at: string | null
+          total_in: number | null
+          total_out: number | null
+          total_rejected: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scans_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_show_tip_leaderboard: {
         Row: {
           fan_id: string | null
@@ -21135,6 +21255,8 @@ export type Database = {
         Returns: undefined
       }
       calculate_waitlist_leaderboard_rank: { Args: never; Returns: undefined }
+      can_manage_event: { Args: { _event_id: string }; Returns: boolean }
+      can_scan_event: { Args: { _event_id: string }; Returns: boolean }
       cast_challenge_vote: {
         Args: { _entry_id: string; _weight?: number }
         Returns: {
@@ -21350,6 +21472,7 @@ export type Database = {
           unique_listeners: number
         }[]
       }
+      has_creator_access: { Args: { _creator_id: string }; Returns: boolean }
       has_fan_club_access: {
         Args: { _artist_id: string; _tier_id: string }
         Returns: boolean
@@ -21411,6 +21534,14 @@ export type Database = {
         Args: { _min_role?: string; _playlist_id: string; _user_id: string }
         Returns: boolean
       }
+      link_wristband: {
+        Args: {
+          p_event_id: string
+          p_qr_secret: string
+          p_wristband_code: string
+        }
+        Returns: Json
+      }
       lookup_referrer_by_code: { Args: { ref_code: string }; Returns: Json }
       move_to_dlq: {
         Args: {
@@ -21462,6 +21593,16 @@ export type Database = {
           title: string
           track_id: string
           unique_listeners: number
+        }[]
+      }
+      my_scannable_events: {
+        Args: never
+        Returns: {
+          event_id: string
+          gate: string
+          role: string
+          starts_at: string
+          title: string
         }[]
       }
       nearby_radiates: {
@@ -21574,6 +21715,16 @@ export type Database = {
         }
       }
       record_music_search: { Args: { _query: string }; Returns: undefined }
+      record_scan: {
+        Args: {
+          p_device_id?: string
+          p_direction?: string
+          p_event_id: string
+          p_gate?: string
+          p_qr_secret: string
+        }
+        Returns: Json
+      }
       recs_because_you_listened: {
         Args: { p_limit?: number; p_seed: string }
         Returns: {
