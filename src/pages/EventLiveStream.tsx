@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2, Radio, Lock, Ticket, Clock } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
 import { toast } from "sonner";
+import { format, formatDistanceToNow, isFuture } from "date-fns";
 
 export default function EventLiveStream() {
   const { eventId } = useParams<{ eventId: string }>();
@@ -106,16 +107,27 @@ export default function EventLiveStream() {
             <div className="rounded-xl border border-white/10 bg-white/5 p-10 text-center">
               <Clock className="w-10 h-10 mx-auto mb-3 text-white/50" />
               <p className="font-semibold">You're in. The stream hasn't started yet.</p>
-              <p className="text-sm text-white/60 mt-1">Keep this page open — it'll go live automatically.</p>
+              {event?.starts_at && isFuture(new Date(event.starts_at)) ? (
+                <p className="text-sm text-white/60 mt-1">
+                  Starts {formatDistanceToNow(new Date(event.starts_at), { addSuffix: true })} · {format(new Date(event.starts_at), "EEE, MMM d 'at' h:mm a")}
+                </p>
+              ) : (
+                <p className="text-sm text-white/60 mt-1">Keep this page open — it'll go live automatically.</p>
+              )}
             </div>
           )
         ) : (
           <div className="rounded-xl border border-white/10 bg-white/5 p-8 text-center">
             <Lock className="w-10 h-10 mx-auto mb-3 text-white/50" />
             <h2 className="text-lg font-bold">Watch from anywhere</h2>
-            <p className="text-sm text-white/60 mt-1 mb-5 max-w-sm mx-auto">
+            <p className="text-sm text-white/60 mt-1 max-w-sm mx-auto">
               Can't make it in person? Grab a Live Stream pass and watch {event?.title} live in HD.
             </p>
+            {event?.starts_at && (
+              <p className="text-xs text-white/40 mt-2 mb-5">
+                {format(new Date(event.starts_at), "EEE, MMM d 'at' h:mm a")}
+              </p>
+            )}
             {ppvTiers.length > 0 ? (
               <div className="space-y-2 max-w-xs mx-auto">
                 {ppvTiers.map((t) => (
