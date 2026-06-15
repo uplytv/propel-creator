@@ -121,6 +121,8 @@ project_id = "dbjlhmbgskvhuzqvqfrl"
     verify_jwt = false
   [functions.aria-post-event-report]
     verify_jwt = false
+  [functions.aria-content-repurpose]
+    verify_jwt = false
   [functions.smartlink-meta-capi]
     verify_jwt = false
   [functions.smartlink-track-click]

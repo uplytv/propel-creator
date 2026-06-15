@@ -34,6 +34,7 @@ const Scan = lazy(() => import("./pages/Scan"));
 const ScanEvent = lazy(() => import("./pages/ScanEvent"));
 const EventCommandCenter = lazy(() => import("./pages/EventCommandCenter"));
 const EventLiveStream = lazy(() => import("./pages/EventLiveStream"));
+const Repurpose = lazy(() => import("./pages/Repurpose"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Apply = lazy(() => import("./pages/Apply"));
 const WaitlistPage = lazy(() => import("./pages/WaitlistPage"));
@@ -498,6 +499,7 @@ const App = () => (
                     <Route path="/scan/:eventId" element={<ProtectedRoute><ScanEvent /></ProtectedRoute>} />
                     <Route path="/events/:eventId/live" element={<ProtectedRoute><EventCommandCenter /></ProtectedRoute>} />
                     <Route path="/events/:eventId/watch" element={<ProtectedRoute><EventLiveStream /></ProtectedRoute>} />
+                    <Route path="/repurpose" element={<ProtectedRoute><Repurpose /></ProtectedRoute>} />
                     <Route path="/events/create" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
                     <Route path="/create-event" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
                     <Route path="/events/global/:eventId" element={<GlobalEventDetail />} />

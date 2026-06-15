@@ -72,6 +72,7 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
       items: [
         { label: "AI Team", icon: Bot, path: "/dashboard/ai-team", desc: "Your 5 AI agents" },
         { label: "Content Studio", icon: Sparkles, path: "/dashboard/content-studio", desc: "AI-generated content" },
+        { label: "Repurpose", icon: Sparkles, path: "/repurpose", desc: "1 video → a week of content" },
         { label: "Grow", icon: TrendingUp, path: "/grow", desc: "Growth protocol tasks" },
         { label: "Launchpad", icon: Rocket, path: "/launchpad", desc: "Launch something new" },
       ],
