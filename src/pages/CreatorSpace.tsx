@@ -22,7 +22,7 @@ import { PricingTab } from "@/components/space/PricingTab";
 import { useSubscriptionTiers } from "@/hooks/useStripeAccount";
 import TierSelectionModal from "@/components/TierSelectionModal";
 import { Button } from "@/components/ui/button";
-import { Users, Loader2, Sparkles, Lock } from "lucide-react";
+import { Users, Loader2, Sparkles, Lock, Check } from "lucide-react";
 import { toast } from "sonner";
 import { usePaymentReturn, useMemberSubscriptionStatus } from "@/hooks/usePaymentReturn";
 import PaymentProcessingOverlay from "@/components/PaymentProcessingOverlay";
@@ -101,6 +101,9 @@ export default function CreatorSpace() {
   const ensureSpace = useEnsureSpace();
   const { data: affiliateProgram } = useCreatorAffiliateProgram(creatorId);
   const { data: tiers = [] } = useSubscriptionTiers(creatorId);
+  const { data: memberSub } = useMemberSubscriptionStatus(creatorId);
+  const isPaidSubscriber = memberSub?.status === "active";
+  const subTierName = (memberSub as any)?.subscription_tiers?.name as string | undefined;
 
   const { data: isMember } = useQuery({
     queryKey: ["is-member", creatorId, user?.id],
@@ -230,8 +233,21 @@ export default function CreatorSpace() {
             </Button>
           );
         })()}
-        {/* Upgrade button for existing members when paid tiers exist */}
-        {!isOwner && isMember && hasPaidTiers && (
+        {/* Membership status — always clear whether you're free or paid */}
+        {!isOwner && isMember && (
+          <span
+            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+              isPaidSubscriber
+                ? "bg-primary/10 text-primary"
+                : "bg-muted text-muted-foreground"
+            }`}
+          >
+            <Check className="w-3 h-3" />
+            {isPaidSubscriber ? (subTierName || "Member") : "Free member"}
+          </span>
+        )}
+        {/* Upgrade button for free members of a space that has paid tiers */}
+        {!isOwner && isMember && hasPaidTiers && !isPaidSubscriber && (
           <Button
             size="sm"
             variant="outline"
