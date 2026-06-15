@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { UPLYMuxPlayer } from "@/components/MuxPlayer";
+import StreamChat from "@/components/live/StreamChat";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2, Radio, Lock, Ticket, Clock } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
@@ -24,7 +25,7 @@ export default function EventLiveStream() {
     (async () => {
       const { data: ev } = await (supabase as any)
         .from("events")
-        .select("id, title, slug, is_live, live_stream_id, cover_image_url, starts_at")
+        .select("id, title, slug, is_live, live_stream_id, creator_id, cover_image_url, starts_at")
         .eq("id", eventId)
         .maybeSingle();
       setEvent(ev);
@@ -93,8 +94,13 @@ export default function EventLiveStream() {
       <div className="max-w-4xl mx-auto px-4">
         {hasAccess ? (
           event?.is_live && playbackId ? (
-            <div className="rounded-xl overflow-hidden border border-white/10 bg-black">
-              <UPLYMuxPlayer playbackId={playbackId} title={event.title} streamType="live" autoPlay muted={false} />
+            <div className="grid lg:grid-cols-[1fr_340px] gap-4 pb-6">
+              <div className="rounded-xl overflow-hidden border border-white/10 bg-black h-fit">
+                <UPLYMuxPlayer playbackId={playbackId} title={event.title} streamType="live" autoPlay muted={false} />
+              </div>
+              <div className="rounded-xl overflow-hidden border border-white/10 bg-white/5 h-[420px] lg:h-[600px]">
+                <StreamChat streamId={event.live_stream_id} creatorUserId={event.creator_id} isLoggedIn={!!user} />
+              </div>
             </div>
           ) : (
             <div className="rounded-xl border border-white/10 bg-white/5 p-10 text-center">
