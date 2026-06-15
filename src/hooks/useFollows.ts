@@ -27,15 +27,18 @@ export function useFollows() {
 
   const follow = useCallback(async (targetUserId: string) => {
     if (!user) return;
-    await supabase.from('follows').insert({ follower_id: user.id, following_id: targetUserId });
-    setFollowingIds(prev => [...prev, targetUserId]);
-  }, [user]);
+    // Optimistic: update the UI instantly, reconcile with the server on failure.
+    setFollowingIds(prev => (prev.includes(targetUserId) ? prev : [...prev, targetUserId]));
+    const { error } = await supabase.from('follows').insert({ follower_id: user.id, following_id: targetUserId });
+    if (error) fetchFollowing();
+  }, [user, fetchFollowing]);
 
   const unfollow = useCallback(async (targetUserId: string) => {
     if (!user) return;
-    await supabase.from('follows').delete().eq('follower_id', user.id).eq('following_id', targetUserId);
     setFollowingIds(prev => prev.filter(id => id !== targetUserId));
-  }, [user]);
+    const { error } = await supabase.from('follows').delete().eq('follower_id', user.id).eq('following_id', targetUserId);
+    if (error) fetchFollowing();
+  }, [user, fetchFollowing]);
 
   const isFollowing = useCallback((targetUserId: string) => {
     return followingIds.includes(targetUserId);
