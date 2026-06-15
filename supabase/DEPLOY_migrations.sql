@@ -224,8 +224,16 @@ CREATE POLICY "Managers can read scan log"
   USING (auth.uid() = scanned_by OR public.can_manage_event(event_id));
 -- (No UPDATE or DELETE policy => append-only audit trail.)
 
--- Live dashboards subscribe to new scans via Supabase Realtime.
-ALTER PUBLICATION supabase_realtime ADD TABLE public.scans;
+-- Live dashboards subscribe to new scans via Supabase Realtime (idempotent).
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'scans'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.scans;
+  END IF;
+END $$;
 
 -- ─────────────────────────────────────────────────────────────────────────
 -- New columns for wristbands + multi-day passes (additive, safe defaults).
