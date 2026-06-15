@@ -619,8 +619,8 @@ function TestScanModal({ open, onClose, canvasRef, renderQR, report, expectedUrl
           }
           let value: string | null = null;
           let location: any = null;
-          let frameW = video.videoWidth;
-          let frameH = video.videoHeight;
+          const frameW = video.videoWidth;
+          const frameH = video.videoHeight;
           try {
             if (detectorRef.current) {
               const codes = await detectorRef.current.detect(video);

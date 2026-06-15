@@ -221,7 +221,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     ].filter((i) => i.path && !i.path.startsWith("__"));
     validateNavPaths(allItems as { label: string; path: string }[], "AppLayout");
     if (import.meta.env.DEV && !isKnownRoute(publicProfilePath)) {
-      // eslint-disable-next-line no-console
+       
       console.error("[AppLayout] publicProfilePath unresolved:", publicProfilePath);
     }
   }, [publicProfilePath, yourPagePath]);

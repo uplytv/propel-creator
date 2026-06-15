@@ -1039,7 +1039,7 @@ function EditLessonDialog({ open, onClose, lesson }: { open: boolean; onClose: (
     if (!title.trim()) return;
     setUploading(true);
     try {
-      let updateData: any = { id: lesson.id, title, description };
+      const updateData: any = { id: lesson.id, title, description };
       if (videoFile) {
         const uploadId = await uploadToMux(videoFile);
         if (uploadId) { updateData.mux_asset_id = "pending"; updateData.video_url = `upload:${uploadId}`; }

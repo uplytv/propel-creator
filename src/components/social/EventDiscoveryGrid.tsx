@@ -71,7 +71,7 @@ export default function EventDiscoveryGrid({
       const [uplyRes, globalRes] = await Promise.all([uplyQ, globalQ]);
 
       const uply = (uplyRes.data || []).map((e: any) => ({ ...e, _source: "uply" as const }));
-      let global = (globalRes.data || []).map((e: any) => ({
+      const global = (globalRes.data || []).map((e: any) => ({
         ...e,
         _source: "global" as const,
         starts_at: e.date,

@@ -220,7 +220,7 @@ export function validateNavPaths(
     (e) => e.path && !isKnownRoute(e.path),
   );
   if (broken.length === 0) return;
-  // eslint-disable-next-line no-console
+   
   console.error(
     `[routeRegistry] ${source} has nav entries pointing at unknown routes:`,
     broken.map((b) => `${b.label} → ${b.path}`),

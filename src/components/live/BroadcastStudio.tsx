@@ -672,7 +672,7 @@ export default function BroadcastStudio({
       if (audioContextRef.current?.state !== "closed") audioContextRef.current?.close();
       supabase.from('mux_live_streams').update({ status: 'idle', ended_at: new Date().toISOString() }).eq('id', sid).then(() => {});
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [streamData.streamId]);
 
   const isLive = streamStatus === "active";

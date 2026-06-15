@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
     await supabase.from("creator_newsletters").update({ status: "sending" }).eq("id", newsletter_id);
 
     // Get members based on recipient_type
-    let membersQuery = supabase.from("community_members").select("user_id").eq("creator_id", profile.user_id).eq("email_opt_in", true);
+    const membersQuery = supabase.from("community_members").select("user_id").eq("creator_id", profile.user_id).eq("email_opt_in", true);
     const { data: members } = await membersQuery;
     if (!members?.length) {
       await supabase.from("creator_newsletters").update({ status: "sent", sent_at: new Date().toISOString(), recipient_count: 0 }).eq("id", newsletter_id);

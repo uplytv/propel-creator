@@ -164,7 +164,7 @@ export const UPLYMuxPlayer = ({
 
   return (
     <div ref={containerRef} className={`relative w-full aspect-video bg-black ${className || ''}`}>
-      {/* eslint-disable-next-line */}
+      { }
       <video
         ref={(el) => { (videoRef as any).current = el; onVideoRef?.(el); }}
         autoPlay={autoPlay}

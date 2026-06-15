@@ -227,7 +227,7 @@ function wrapText(
 ) {
   const words = text.split(' ');
   let line = '';
-  let lines: string[] = [];
+  const lines: string[] = [];
   for (const word of words) {
     const test = line ? line + ' ' + word : word;
     if (ctx.measureText(test).width > maxWidth && line) {

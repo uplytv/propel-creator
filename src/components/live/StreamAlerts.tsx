@@ -15,7 +15,7 @@ interface StreamAlertsProps {
 }
 
 // Singleton alert queue
-let alertQueue: StreamAlert[] = [];
+const alertQueue: StreamAlert[] = [];
 let alertListener: (() => void) | null = null;
 
 export function pushStreamAlert(alert: Omit<StreamAlert, 'id'>) {

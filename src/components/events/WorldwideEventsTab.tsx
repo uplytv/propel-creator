@@ -68,7 +68,7 @@ export function WorldwideEventsTab() {
     setLoading(false);
   }, [page, tab, filter, country, city, search, events]);
 
-  useEffect(() => { loadEvents(true); /* eslint-disable-next-line */ }, [tab, filter, country, city, search]);
+  useEffect(() => { loadEvents(true);   }, [tab, filter, country, city, search]);
 
   return (
     <div className="space-y-4">

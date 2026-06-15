@@ -63,7 +63,7 @@ export default function AdminTVAudit() {
         .in("id", streamIds);
       if (error) throw error;
       const userIds = Array.from(new Set((data || []).map((s: any) => s.user_id).filter(Boolean)));
-      let profileMap = new Map<string, { display_name: string | null; username: string | null }>();
+      const profileMap = new Map<string, { display_name: string | null; username: string | null }>();
       if (userIds.length > 0) {
         const { data: profs } = await supabase
           .from("profiles")

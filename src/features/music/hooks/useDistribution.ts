@@ -195,7 +195,7 @@ export function useSubmitToDSPs() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ releaseId, platforms }: { releaseId: string; platforms: string[] }) => {
-      // eslint-disable-next-line no-console
+       
       console.warn(
         "[useSubmitToDSPs] deprecated — use useUpdateReleaseStatus. UPLY does not deliver to DSPs."
       );

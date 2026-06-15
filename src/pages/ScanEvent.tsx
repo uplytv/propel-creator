@@ -211,7 +211,7 @@ export default function ScanEvent() {
       }
     })();
     return () => { cancelled = true; try { controlsRef.current?.stop(); } catch { /* noop */ } controlsRef.current = null; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [scannerOn, doScan]);
 
   if (authorized === false) {

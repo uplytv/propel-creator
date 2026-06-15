@@ -102,7 +102,7 @@ export default function GoLive() {
       if (idx >= 0) { const copy = [...prev]; copy[idx] = next; return copy; }
       return [...prev, next];
     });
-    // eslint-disable-next-line no-console
+     
     console.log(`[go-live] ${status === "ok" ? "✓" : status === "error" ? "✗" : "…"} ${step}`, detail ?? "");
   };
   const [featuredProductId, setFeaturedProductId] = useState<string | null>(null);

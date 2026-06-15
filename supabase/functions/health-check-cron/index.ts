@@ -24,7 +24,7 @@ serve(async (req) => {
         results.push({ service: svc.name, status: "down", error_message: "key missing" });
         continue;
       }
-      let headers: Record<string, string> = {};
+      const headers: Record<string, string> = {};
       if (svc.auth === "bearer") headers["Authorization"] = `Bearer ${key}`;
       if (svc.auth === "basic") {
         const sec = Deno.env.get("MUX_TOKEN_SECRET") ?? "";

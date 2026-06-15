@@ -157,7 +157,7 @@ export default function LiveShoppingGrid() {
 
   const categories = Array.from(new Set(allItems.map((i) => i.category).filter(Boolean))) as string[];
 
-  let items = allItems.filter((i) => {
+  const items = allItems.filter((i) => {
     if (featuredOnly && !(i as any).has_featured) return false;
     if (categoryFilter !== "all" && i.category !== categoryFilter) return false;
     return true;

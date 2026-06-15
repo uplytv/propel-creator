@@ -83,7 +83,7 @@ export default function HoverPreviewCard({ item, hoverDelay = 600 }: Props) {
   // Cleanup on unmount
   useEffect(() => {
     return () => cancelAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   // Stop preview if user scrolls (mouseleave isn't always fired during scroll)

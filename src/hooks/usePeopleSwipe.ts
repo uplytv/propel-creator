@@ -91,7 +91,7 @@ export function usePeopleSwipe() {
 
       // Fetch attendance for each filtered profile in one batch to compute shared events
       const profileIds = filtered.map((p: any) => p.user_id);
-      let attendanceByUser = new Map<string, any[]>();
+      const attendanceByUser = new Map<string, any[]>();
       if (profileIds.length > 0) {
         const { data: theirAttendance } = await (supabase as any)
           .from("attendance")
