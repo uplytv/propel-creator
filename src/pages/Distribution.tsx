@@ -153,14 +153,17 @@ export default function Distribution() {
   const openSetup = async (p: Platform) => {
     setSetupPlatform(p);
     if (!streamKey && user) {
-      const { data } = await supabase
+      const { data: latest } = await supabase
         .from("mux_live_streams")
-        .select("stream_key")
+        .select("id")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
-      if (data?.stream_key) setStreamKey(data.stream_key);
+      if (latest?.id) {
+        const { data: key } = await supabase.rpc("get_my_stream_key", { p_stream_id: latest.id });
+        if (key) setStreamKey(key as unknown as string);
+      }
     }
   };
 
