@@ -18,6 +18,7 @@ import CreatorProfileEditDrawer from "@/components/creator-profile/CreatorProfil
 import CreatorMilestones from "@/components/creator-profile/CreatorMilestones";
 import CreatorTestimonials from "@/components/creator-profile/CreatorTestimonials";
 import SEOHead, { buildPersonSchema } from "@/components/SEOHead";
+import PaymentProcessingOverlay from "@/components/PaymentProcessingOverlay";
 import { toast } from "sonner";
 import { CalendarDays } from "lucide-react";
 import { useInviteCodes } from "@/hooks/useInviteCodes";
@@ -382,7 +383,7 @@ export default function CreatorProfile() {
   const { data: memberSubStatus } = useMemberSubscriptionStatus(profile?.user_id);
 
   // Handle mobile return from Stripe
-  usePaymentReturn(profile?.user_id);
+  const { checking: paymentChecking } = usePaymentReturn(profile?.user_id);
 
   useEffect(() => {
     const handleScroll = () => setShowStickyBar(window.scrollY > 500);
@@ -465,6 +466,7 @@ export default function CreatorProfile() {
 
   return (
     <div className="min-h-screen bg-background">
+      <PaymentProcessingOverlay show={paymentChecking} />
       {showEmailGate && (
         <LinkEmailGate
           creatorId={profile.user_id}

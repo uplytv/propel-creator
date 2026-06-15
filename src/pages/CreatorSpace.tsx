@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Users, Loader2, Sparkles, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { usePaymentReturn, useMemberSubscriptionStatus } from "@/hooks/usePaymentReturn";
+import PaymentProcessingOverlay from "@/components/PaymentProcessingOverlay";
 
 const VALID_TABS = ["community", "classroom", "calendar", "events", "members", "leaderboard", "pricing", "earn", "blasts", "about"] as const;
 type TabSlug = typeof VALID_TABS[number];
@@ -67,7 +68,7 @@ export default function CreatorSpace() {
   const [freeJoining, setFreeJoining] = useState(false);
 
   // Handle mobile return from Stripe checkout
-  usePaymentReturn(creatorId);
+  const { checking: paymentChecking } = usePaymentReturn(creatorId);
 
   useEffect(() => {
     if (tabParam) return;
@@ -189,6 +190,7 @@ export default function CreatorSpace() {
 
   return (
     <div className="min-h-screen bg-surface">
+      <PaymentProcessingOverlay show={paymentChecking} />
       <BackNav />
       {/* Top Header */}
       <div className="px-4 pb-2 flex items-center gap-3">
