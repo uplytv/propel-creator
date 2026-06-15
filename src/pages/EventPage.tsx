@@ -586,11 +586,11 @@ END:VCALENDAR`;
         {/* Live-stream PPV — watch from anywhere */}
         <Button
           onClick={() => navigate(`/events/${event.id}/watch`)}
-          variant={event.is_live ? "default" : "outline"}
+          variant={(event as any).is_live ? "default" : "outline"}
           className="mt-6 w-full gap-2"
         >
           <Monitor className="w-4 h-4" />
-          {event.is_live ? "Watch Live Now" : "Watch via Live Stream"}
+          {(event as any).is_live ? "Watch Live Now" : "Watch via Live Stream"}
         </Button>
 
         <EventConcierge eventId={event.id} />
