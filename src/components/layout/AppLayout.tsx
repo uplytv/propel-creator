@@ -647,7 +647,18 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         )}
 
         <UploadProgressBar />
-        <main id="main-content" role="main" aria-label="Page content" className="pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-0" tabIndex={-1}>{children}</main>
+        <main id="main-content" role="main" aria-label="Page content" className="pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-0" tabIndex={-1}>
+          {/* App-wide page transition — opacity only so it never breaks
+              position:sticky/fixed children (transforms would). */}
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+          >
+            {children}
+          </motion.div>
+        </main>
       </div>
 
       {/* Mobile Tab Bar */}
