@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useFollows } from "@/hooks/useFollows";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
 import DiscoverShowcase from "@/components/discover/DiscoverShowcase";
 
 type Tab = "foryou" | "live" | "trending" | "shop" | "following";
@@ -205,7 +205,7 @@ export default function NetworkFeed() {
             <div className="flex-1 min-w-0">
               {loading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {[...Array(6)].map((_, i) => <Skeleton key={i} className="aspect-video rounded-xl" />)}
+                  {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
                 </div>
               ) : tab === "shop" ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
