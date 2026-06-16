@@ -615,8 +615,8 @@ END:VCALENDAR`;
         {/* Event tabs: Chat / People / Gallery / Buy-Sell */}
         <EventTabs eventId={event.id} eventTitle={event.title} />
 
-        {/* Bottom sticky ticket card */}
-        {!isPast && (
+        {/* Bottom sticky ticket card — suppressed for tiered events (EventTierPicker is canonical) unless the viewer is the host or already holds a ticket */}
+        {!isPast && (!hasTiers || isHost || !!myTicket) && (
           <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 z-40 md:relative md:border-t-0 md:mt-6">
             <div className="max-w-3xl mx-auto flex items-center justify-between gap-3 flex-wrap">
               <div>
