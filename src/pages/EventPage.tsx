@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { QRCodeSVG } from "qrcode.react";
-import SEOHead from "@/components/SEOHead";
+import SEOHead, { buildEventSchema } from "@/components/SEOHead";
 import BackNav from "@/components/BackNav";
 import AppLayout from "@/components/layout/AppLayout";
 import EventTabs from "@/components/social/EventTabs";
@@ -496,6 +496,23 @@ END:VCALENDAR`;
         title={`${event.title} by ${creatorProfile?.display_name || "Creator"} | UPLY`}
         description={event.description?.slice(0, 160) || `Join ${event.title} on UPLY`}
         image={event.cover_image_url || undefined}
+        canonical={`https://uply.tv/events/${event.slug || event.id}`}
+        jsonLd={buildEventSchema({
+          name: event.title,
+          startDate: event.starts_at,
+          endDate: event.ends_at,
+          url: `https://uply.tv/events/${event.slug || event.id}`,
+          image: event.cover_image_url || undefined,
+          description: event.description?.slice(0, 300) || undefined,
+          status: (event as any).status,
+          attendanceMode: event.event_type as "virtual" | "in_person" | "hybrid",
+          venueName: (event as any).venue_name || (event as any).location_name,
+          venueAddress: (event as any).location_address,
+          organizerName: creatorProfile?.display_name || undefined,
+          price: isFree ? 0 : event.ticket_price,
+          currency: "USD",
+          soldOut: !!event.is_sold_out,
+        })}
       />
       <div className="max-w-3xl mx-auto pb-32">
         {/* Cover */}

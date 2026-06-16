@@ -169,3 +169,52 @@ export function buildPersonSchema(opts: {
     ...(opts.sameAs?.length ? { sameAs: opts.sameAs } : {}),
   };
 }
+
+/** Helper: schema.org/Event for ticketed event pages (Google rich results). */
+export function buildEventSchema(opts: {
+  name: string;
+  startDate: string;
+  endDate?: string;
+  url: string;
+  image?: string;
+  description?: string;
+  status?: string; // event.status
+  attendanceMode?: "virtual" | "in_person" | "hybrid";
+  venueName?: string;
+  venueAddress?: string;
+  virtualUrl?: string;
+  organizerName?: string;
+  price?: number;
+  currency?: string;
+  soldOut?: boolean;
+}) {
+  const mode =
+    opts.attendanceMode === "in_person" ? "https://schema.org/OfflineEventAttendanceMode"
+    : opts.attendanceMode === "hybrid" ? "https://schema.org/MixedEventAttendanceMode"
+    : "https://schema.org/OnlineEventAttendanceMode";
+  const location =
+    opts.attendanceMode === "in_person" || opts.attendanceMode === "hybrid"
+      ? { "@type": "Place", name: opts.venueName || "Venue", ...(opts.venueAddress ? { address: opts.venueAddress } : {}) }
+      : { "@type": "VirtualLocation", url: opts.virtualUrl || opts.url };
+  return {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    name: opts.name,
+    startDate: opts.startDate,
+    ...(opts.endDate ? { endDate: opts.endDate } : {}),
+    eventStatus: opts.status === "cancelled" ? "https://schema.org/EventCancelled" : "https://schema.org/EventScheduled",
+    eventAttendanceMode: mode,
+    location,
+    url: opts.url,
+    ...(opts.image ? { image: [opts.image] } : {}),
+    ...(opts.description ? { description: opts.description } : {}),
+    ...(opts.organizerName ? { organizer: { "@type": "Person", name: opts.organizerName } } : {}),
+    offers: {
+      "@type": "Offer",
+      price: opts.price != null ? opts.price : 0,
+      priceCurrency: opts.currency || "USD",
+      availability: opts.soldOut ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
+      url: opts.url,
+    },
+  };
+}

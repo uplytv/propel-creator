@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Ticket, Play, MapPin, ArrowRight } from "lucide-react";
+import { Ticket, Play, MapPin, ArrowRight, Mail, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -163,6 +163,30 @@ export default function TicketSuccess() {
           className="text-sm text-muted-foreground mb-6 animate-pulse"
         >
           Generating your ticket...
+        </motion.div>
+      )}
+
+      {/* Fallback: payment confirmed but the ticket hasn't materialized yet.
+          Never leave a paying buyer on a dead-end spinner. */}
+      {!loading && !ticket && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-xs text-center mb-6 rounded-xl border border-border bg-card p-4"
+        >
+          <Mail className="w-7 h-7 text-primary mx-auto mb-2" />
+          <p className="text-sm font-semibold text-foreground">Payment received ✓</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Your ticket is being prepared — this can take up to a minute. We'll email your QR code, and it'll appear in My Tickets.
+          </p>
+          <div className="flex gap-2 mt-3">
+            <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={() => window.location.reload()}>
+              <RefreshCw className="w-3.5 h-3.5" /> Refresh
+            </Button>
+            <Button variant="outline" size="sm" className="flex-1" onClick={() => navigate("/tickets")}>
+              My Tickets
+            </Button>
+          </div>
         </motion.div>
       )}
 
