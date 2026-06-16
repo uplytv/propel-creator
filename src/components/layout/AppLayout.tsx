@@ -667,6 +667,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       {/* Mobile Tab Bar */}
       <MobileTabBar onUploadVideo={() => setUploadSheetOpen(true)} />
 
+      {/* Global ARIA AI launcher — available on every authenticated page */}
+      <GlobalAriaLauncher />
+
       {/* Video Upload Sheet */}
       <VideoUploadSheet open={uploadSheetOpen} onClose={() => setUploadSheetOpen(false)} />
 
