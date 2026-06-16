@@ -97,6 +97,23 @@ export default function EventPage() {
     },
   });
 
+  // Check whether this event uses multi-tier ticketing — if so, the EventTierPicker
+  // is the canonical purchase surface and the sticky bottom card must not show a
+  // competing purchase CTA.
+  const { data: tierCount } = useQuery({
+    queryKey: ["event-tier-count", event?.id],
+    enabled: !!event?.id,
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("ticket_tiers")
+        .select("id", { count: "exact", head: true })
+        .eq("event_id", event!.id)
+        .eq("is_hidden", false);
+      return count ?? 0;
+    },
+  });
+  const hasTiers = (tierCount ?? 0) > 0;
+
   const badge = event ? typeBadge[event.event_type] || typeBadge.virtual : null;
   const isPast = event ? isBefore(new Date(event.ends_at), new Date()) : false;
   const virtualRevealed = event?.virtual_link_unlocked_at || (event && differenceInMinutes(new Date(event.starts_at), new Date()) <= 30);
@@ -598,8 +615,8 @@ END:VCALENDAR`;
         {/* Event tabs: Chat / People / Gallery / Buy-Sell */}
         <EventTabs eventId={event.id} eventTitle={event.title} />
 
-        {/* Bottom sticky ticket card */}
-        {!isPast && (
+        {/* Bottom sticky ticket card — suppressed for tiered events (EventTierPicker is canonical) unless the viewer is the host or already holds a ticket */}
+        {!isPast && (!hasTiers || isHost || !!myTicket) && (
           <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 z-40 md:relative md:border-t-0 md:mt-6">
             <div className="max-w-3xl mx-auto flex items-center justify-between gap-3 flex-wrap">
               <div>
