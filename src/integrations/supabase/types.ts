@@ -18856,6 +18856,7 @@ export type Database = {
           event_id: string
           id: string
           is_hidden: boolean
+          is_livestream: boolean
           is_wristband: boolean
           max_price_cents: number | null
           member_only_until: string | null
@@ -18881,6 +18882,7 @@ export type Database = {
           event_id: string
           id?: string
           is_hidden?: boolean
+          is_livestream?: boolean
           is_wristband?: boolean
           max_price_cents?: number | null
           member_only_until?: string | null
@@ -18906,6 +18908,7 @@ export type Database = {
           event_id?: string
           id?: string
           is_hidden?: boolean
+          is_livestream?: boolean
           is_wristband?: boolean
           max_price_cents?: number | null
           member_only_until?: string | null
@@ -21473,6 +21476,10 @@ export type Database = {
         }[]
       }
       has_creator_access: { Args: { _creator_id: string }; Returns: boolean }
+      has_event_livestream_access: {
+        Args: { _event_id: string }
+        Returns: boolean
+      }
       has_fan_club_access: {
         Args: { _artist_id: string; _tier_id: string }
         Returns: boolean
