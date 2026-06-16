@@ -19,7 +19,7 @@ export default function Scan() {
   const { data: events, isLoading } = useQuery({
     queryKey: ["my-scannable-events"],
     queryFn: async () => {
-      const { data } = await (supabase as any).rpc("my_scannable_events");
+      const { data } = await supabase.rpc("my_scannable_events");
       return ((data ?? []) as ScannableEvent[]).sort(
         (a, b) => new Date(b.starts_at ?? 0).getTime() - new Date(a.starts_at ?? 0).getTime(),
       );

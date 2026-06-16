@@ -52,7 +52,7 @@ export default function EventCommandCenter() {
 
   const loadOccupancy = useCallback(async () => {
     if (!eventId) return;
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from("event_occupancy").select("*").eq("event_id", eventId).maybeSingle();
     if (data) setOcc({ inside: data.current_occupancy ?? 0, in: data.total_in ?? 0, out: data.total_out ?? 0, rejected: data.total_rejected ?? 0 });
   }, [eventId]);
@@ -68,7 +68,7 @@ export default function EventCommandCenter() {
         .from("orders").select("total_cents").eq("event_id", eventId).eq("status", "completed");
       setGross(((orders ?? []) as any[]).reduce((s, o) => s + (o.total_cents ?? 0), 0) / 100);
 
-      const { data: scans } = await (supabase as any)
+      const { data: scans } = await supabase
         .from("scans").select("*").eq("event_id", eventId).order("scanned_at", { ascending: false }).limit(60);
       setRecent((scans ?? []) as ScanRow[]);
       await loadOccupancy();
@@ -98,7 +98,7 @@ export default function EventCommandCenter() {
     if (!eventId) return;
     setExporting(true);
     try {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("scans").select("scanned_at, direction, result, gate, ticket_id, scanned_by")
         .eq("event_id", eventId).order("scanned_at", { ascending: true });
       const rows = (data ?? []) as any[];

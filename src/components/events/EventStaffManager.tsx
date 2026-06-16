@@ -27,7 +27,7 @@ export default function EventStaffManager({ eventId }: { eventId: string }) {
   const { data: staff, isLoading } = useQuery({
     queryKey: ["event-staff", eventId],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from("event_staff")
         .select("id, user_id, role, gate")
         .eq("event_id", eventId);
@@ -61,7 +61,7 @@ export default function EventStaffManager({ eventId }: { eventId: string }) {
         toast.error("No user found", { description: `@${handle}` });
         return;
       }
-      const { error } = await (supabase as any).from("event_staff").insert({
+      const { error } = await supabase.from("event_staff").insert({
         event_id: eventId,
         user_id: prof.user_id,
         role,
@@ -83,7 +83,7 @@ export default function EventStaffManager({ eventId }: { eventId: string }) {
   };
 
   const remove = async (id: string) => {
-    await (supabase as any).from("event_staff").delete().eq("id", id);
+    await supabase.from("event_staff").delete().eq("id", id);
     qc.invalidateQueries({ queryKey: ["event-staff", eventId] });
   };
 
