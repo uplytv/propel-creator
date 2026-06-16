@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import MobileTabBar from "./MobileTabBar";
 import SocialTopNav from "@/components/social/SocialTopNav";
 import VideoUploadSheet from "@/components/videos/VideoUploadSheet";
+import GlobalAriaLauncher from "@/components/aria/GlobalAriaLauncher";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Package, Lock,
