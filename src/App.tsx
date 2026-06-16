@@ -168,6 +168,7 @@ const EmbedTrackPage = lazy(() => import("./features/music/pages/EmbedTrackPage"
 const ContentStudio = lazy(() => import("./pages/ContentStudio"));
 const AITeamDashboard = lazy(() => import("./pages/AITeamDashboard"));
 const AriaCommandPage = lazy(() => import("./features/aria-command/pages/AriaCommandPage"));
+const GrowthAssistant = lazy(() => import("./pages/GrowthAssistant"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const Newsletter = lazy(() => import("./pages/Newsletter"));
 const MyPage = lazy(() => import("./pages/MyPage"));
