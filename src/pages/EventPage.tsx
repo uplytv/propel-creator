@@ -496,7 +496,7 @@ END:VCALENDAR`;
         title={`${event.title} by ${creatorProfile?.display_name || "Creator"} | UPLY`}
         description={event.description?.slice(0, 160) || `Join ${event.title} on UPLY`}
         image={event.cover_image_url || undefined}
-        canonical={`https://uply.tv/events/${event.slug || event.id}`}
+        canonicalUrl={`https://uply.tv/events/${event.slug || event.id}`}
         jsonLd={buildEventSchema({
           name: event.title,
           startDate: event.starts_at,
