@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Search, Users, DollarSign, Sparkles, Plus, X, Bot, Rocket, TrendingUp, QrCode, Ticket, Calendar } from "lucide-react";
+import { Search, Users, DollarSign, Sparkles, Plus, X, Bot, Rocket, TrendingUp, QrCode, Ticket, Calendar, Radio } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { useLiveCount } from "@/context/NetworkContext";
@@ -25,8 +25,8 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
     { label: "Discover", icon: Search, path: "/discover" },
     { label: "Community", icon: Users, path: communityPath },
     { label: "create", icon: Plus, path: "" },
+    { label: "Events", icon: Ticket, path: "" },
     { label: "Earn", icon: DollarSign, path: "/wallet" },
-    { label: "ARIA", icon: Sparkles, path: "" },
   ];
 
   useEffect(() => {
@@ -52,7 +52,7 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
     return false;
   };
 
-  const isAriaActive = ["/dashboard/ai-team", "/grow", "/launchpad", "/dashboard/content-studio", "/analytics", "/growth-reports", "/scan", "/tickets"].some(
+  const isAriaActive = ["/dashboard/ai-team", "/grow", "/launchpad", "/dashboard/content-studio", "/analytics", "/growth-reports", "/scan", "/tickets", "/events"].some(
     p => location.pathname === p || location.pathname.startsWith(p + "/")
   );
 
@@ -62,9 +62,10 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
     {
       title: "Events & Tickets",
       items: [
-        { label: "My Tickets", icon: Ticket, path: "/tickets", desc: "Tickets, passes & resale" },
         { label: "My Events", icon: Calendar, path: "/events", desc: "Host & manage events" },
+        { label: "My Tickets", icon: Ticket, path: "/tickets", desc: "Tickets, passes & resale" },
         { label: "Scan Tickets", icon: QrCode, path: "/scan", desc: "Check in attendees at the door" },
+        { label: "Go Live", icon: Radio, path: "/go-live", desc: "Start a live stream" },
       ],
     },
     {
@@ -180,13 +181,13 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
               );
             }
 
-            // ARIA tab opens submenu
-            if (tab.label === "ARIA") {
+            // Events tab opens submenu (was ARIA; rebranded for the event-producer wedge)
+            if (tab.label === "Events") {
               return (
                 <button
-                  key="ARIA"
+                  key="Events"
                   onClick={() => { setCreateOpen(false); setAriaOpen(!ariaOpen); }}
-                  aria-label="ARIA"
+                  aria-label="Events"
                   role="tab"
                   aria-selected={isAriaActive}
                   className="relative flex flex-col items-center justify-center flex-1 py-1.5 tab-press group touch-target"
@@ -201,7 +202,7 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
                     )}
                     <Icon className="w-6 h-6 text-primary" />
                   </div>
-                  <span className="text-[10px] mt-0.5 text-primary font-semibold">ARIA</span>
+                  <span className="text-[10px] mt-0.5 text-primary font-semibold">Events</span>
                 </button>
               );
             }
