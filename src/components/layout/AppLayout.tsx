@@ -32,56 +32,29 @@ import { usePublicProfileInfo } from "@/hooks/usePublicProfilePath";
 
 type NavItem = { label: string; icon: React.ElementType; path: string; desc: string; requiresTier?: number; badgeKey?: string; featureKey?: string };
 
-// Sections in display order. MUSIC is open by default; all others collapsed.
+// Sections in display order. EVENTS leads — UPLY's wedge is live ticketed events + PPV.
+// Every item is feature-gated so admins can tune per-category in /admin/feature-toggles.
+// EVENTS core is expanded by default; others collapsed.
 const coreNav: { core: string; label: string; icon: React.ElementType; items: NavItem[] }[] = [
+  {
+    core: "events",
+    label: "EVENTS & TICKETS",
+    icon: Ticket,
+    items: [
+      { label: "My Events", icon: Calendar, path: "/events", desc: "Host & manage events", featureKey: "events_hub" },
+      { label: "My Tickets", icon: Ticket, path: "/tickets", desc: "Your tickets, passes & resale", featureKey: "tickets_wallet" },
+      { label: "Scan Tickets", icon: QrCode, path: "/scan", desc: "Check in attendees at the door", featureKey: "tickets_scanner" },
+    ],
+  },
   {
     core: "live",
     label: "CONTENT",
     icon: Film,
     items: [
       { label: "Content Library", icon: Film, path: "/content-library", desc: "Videos & uploads", featureKey: "content_library" },
-      { label: "Podcast", icon: Mic, path: "/podcast", desc: "Host your podcast", featureKey: "podcast" },
-      { label: "Podcast RSS", icon: Rss, path: "/podcast-rss", desc: "Submit to Apple Podcasts & Spotify", featureKey: "content" },
       { label: "Go Live", icon: Radio, path: "/go-live", desc: "Start a live stream" },
-    ],
-  },
-  {
-    core: "events",
-    label: "EVENTS & TICKETS",
-    icon: Ticket,
-    items: [
-      { label: "My Events", icon: Calendar, path: "/events", desc: "Host & manage events" },
-      { label: "My Tickets", icon: Ticket, path: "/tickets", desc: "Your tickets, passes & resale" },
-      { label: "Scan Tickets", icon: QrCode, path: "/scan", desc: "Check in attendees at the door" },
-    ],
-  },
-  {
-    core: "music",
-    label: "MUSIC",
-    icon: Music,
-    items: [
-      { label: "Music Home", icon: Music, path: "/music", desc: "Stream what creators drop" },
-      { label: "Feed", icon: Tv, path: "/music/feed", desc: "Activity from artists you follow" },
-      { label: "Search", icon: Search, path: "/music/search", desc: "Find tracks, albums, artists" },
-      { label: "Library", icon: Package, path: "/music/library", desc: "Your saved music" },
-      { label: "Charts", icon: TrendingUp, path: "/music/charts", desc: "What's trending now" },
-      { label: "Upload", icon: Video, path: "/music/upload", desc: "Drop a track or album" },
-      { label: "Release Tracker", icon: Globe, path: "/music/distribution", desc: "Log DSP submissions across Spotify, Apple Music & more" },
-      { label: "DSP Connections", icon: Plug, path: "/music/connections", desc: "Connect Spotify & Apple" },
-      // archived: Music Labs (music-labs)
-    ],
-  },
-  {
-    core: "grow",
-    label: "GROW",
-    icon: TrendingUp,
-    items: [
-      { label: "SmartLinks", icon: Share2, path: "/smart-links", desc: "Music smart links & pre-saves" },
-      { label: "Radiate", icon: Radio, path: "/radiate", desc: "Broadcast to nearby fans" },
-      { label: "Ad Campaigns", icon: Plug, path: "/ad-integrations", desc: "Boost streams", featureKey: "stream_boost" },
-      { label: "Affiliates", icon: Handshake, path: "/affiliates", desc: "Referral program", featureKey: "affiliates" },
-      { label: "Content Syndication", icon: Globe, path: "/distribution", desc: "Publish everywhere at once" },
-      { label: "Brand Deals", icon: Briefcase, path: "/marketplace", desc: "Sponsored opportunities" },
+      { label: "Podcast", icon: Mic, path: "/podcast", desc: "Host your podcast", featureKey: "podcast" },
+      { label: "Podcast RSS", icon: Rss, path: "/podcast-rss", desc: "Submit to Apple Podcasts & Spotify", featureKey: "podcast" },
     ],
   },
   {
@@ -92,18 +65,6 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
       { label: "My Community", icon: LayoutGrid, path: "__space__", desc: "Your community hub" },
       { label: "Network Feed", icon: Tv, path: "/network", desc: "Live · Trending · Shop" },
       { label: "Leaderboard", icon: Trophy, path: "/leaderboard", desc: "Top members", featureKey: "leaderboard" },
-    ],
-  },
-  {
-    core: "audience",
-    label: "AUDIENCE",
-    icon: Mail,
-    items: [
-      { label: "Newsletter", icon: Mail, path: "/newsletter", desc: "Email your members", featureKey: "newsletter" },
-      { label: "Subscribers", icon: UserPlus, path: "/dashboard/subscribers", desc: "Email capture & leads" },
-      { label: "Broadcast", icon: Radio, path: "/dashboard/broadcast", desc: "Email your list" },
-      { label: "Drip Sequences", icon: Zap, path: "/dashboard/drip-sequences", desc: "Automated emails" },
-      { label: "Email Analytics", icon: BarChart3, path: "/dashboard/email-analytics", desc: "Open & click rates" },
     ],
   },
   {
@@ -119,21 +80,61 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
     ],
   },
   {
+    core: "music",
+    label: "MUSIC",
+    icon: Music,
+    items: [
+      { label: "Music Home", icon: Music, path: "/music", desc: "Stream what creators drop", featureKey: "music_suite" },
+      { label: "Feed", icon: Tv, path: "/music/feed", desc: "Activity from artists you follow", featureKey: "music_suite" },
+      { label: "Search", icon: Search, path: "/music/search", desc: "Find tracks, albums, artists", featureKey: "music_suite" },
+      { label: "Library", icon: Package, path: "/music/library", desc: "Your saved music", featureKey: "music_suite" },
+      { label: "Charts", icon: TrendingUp, path: "/music/charts", desc: "What's trending now", featureKey: "music_suite" },
+      { label: "Upload", icon: Video, path: "/music/upload", desc: "Drop a track or album", featureKey: "music_suite" },
+      { label: "Release Tracker", icon: Globe, path: "/music/distribution", desc: "Log DSP submissions across Spotify, Apple Music & more", featureKey: "music_distribution" },
+      { label: "DSP Connections", icon: Plug, path: "/music/connections", desc: "Connect Spotify & Apple", featureKey: "music_distribution" },
+    ],
+  },
+  {
+    core: "grow",
+    label: "GROW",
+    icon: TrendingUp,
+    items: [
+      { label: "SmartLinks", icon: Share2, path: "/smart-links", desc: "Music smart links & pre-saves", featureKey: "smart_links" },
+      { label: "Radiate", icon: Radio, path: "/radiate", desc: "Broadcast to nearby fans", featureKey: "radiate" },
+      { label: "Ad Campaigns", icon: Plug, path: "/ad-integrations", desc: "Boost streams", featureKey: "stream_boost" },
+      { label: "Affiliates", icon: Handshake, path: "/affiliates", desc: "Referral program", featureKey: "affiliates" },
+      { label: "Content Syndication", icon: Globe, path: "/distribution", desc: "Publish everywhere at once", featureKey: "content_syndication" },
+      { label: "Brand Deals", icon: Briefcase, path: "/marketplace", desc: "Sponsored opportunities", featureKey: "brand_deals" },
+    ],
+  },
+  {
+    core: "audience",
+    label: "AUDIENCE",
+    icon: Mail,
+    items: [
+      { label: "Newsletter", icon: Mail, path: "/newsletter", desc: "Email your members", featureKey: "newsletter" },
+      { label: "Subscribers", icon: UserPlus, path: "/dashboard/subscribers", desc: "Email capture & leads", featureKey: "email_subscribers" },
+      { label: "Broadcast", icon: Radio, path: "/dashboard/broadcast", desc: "Email your list", featureKey: "email_broadcast" },
+      { label: "Drip Sequences", icon: Zap, path: "/dashboard/drip-sequences", desc: "Automated emails", featureKey: "drip_sequences" },
+      { label: "Email Analytics", icon: BarChart3, path: "/dashboard/email-analytics", desc: "Open & click rates", featureKey: "email_analytics" },
+    ],
+  },
+  {
     core: "aria",
     label: "ARIA",
     icon: Bot,
     items: [
-      { label: "AI Team", icon: Bot, path: "/dashboard/ai-team", desc: "Your 5 AI agents" },
-      { label: "Repurpose", icon: Sparkles, path: "/repurpose", desc: "1 video → a week of content" },
+      { label: "AI Team", icon: Bot, path: "/dashboard/ai-team", desc: "Your 5 AI agents", featureKey: "ai_team_dashboard" },
+      { label: "Repurpose", icon: Sparkles, path: "/repurpose", desc: "1 video → a week of content", featureKey: "repurpose" },
       { label: "Growth Agent", icon: Sparkles, path: "/grow", desc: "Growth tasks", featureKey: "growth_tasks" },
-      { label: "Launchpad", icon: Rocket, path: "/launchpad", desc: "Launch something new" },
+      { label: "Launchpad", icon: Rocket, path: "/launchpad", desc: "Launch something new", featureKey: "launchpad" },
     ],
   },
 ];
 
 const utilityNav: NavItem[] = [
   { label: "Settings", icon: Settings, path: "/settings", desc: "Preferences" },
-  { label: "Developer API", icon: Code, path: "/developer", desc: "API keys & webhooks" },
+  { label: "Developer API", icon: Code, path: "/developer", desc: "API keys & webhooks", featureKey: "developer_api" },
   { label: "Messages", icon: MessageSquare, path: "/job-messages", desc: "Conversations", badgeKey: "job-messages" },
   { label: "Notifications", icon: BellIcon, path: "/notifications", desc: "Alerts", badgeKey: "notifications" },
   { label: "My Rep", icon: UserCheck, path: "/my-rep", desc: "Growth partner", requiresTier: 3 },
@@ -175,7 +176,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [expandedCores, setExpandedCores] = useState<string[]>(["music"]);
+  const [expandedCores, setExpandedCores] = useState<string[]>(["events"]);
   const [uploadSheetOpen, setUploadSheetOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
