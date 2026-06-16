@@ -125,7 +125,8 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
     label: "ARIA",
     icon: Bot,
     items: [
-      { label: "Growth Agent", icon: Sparkles, path: "/grow", desc: "Growth tasks", featureKey: "growth_tasks" },
+      { label: "Growth Assistant", icon: Sparkles, path: "/aria/growth-assistant", desc: "Actionable next steps" },
+      { label: "Growth Agent", icon: Target, path: "/grow", desc: "Growth tasks", featureKey: "growth_tasks" },
       { label: "Launchpad", icon: Rocket, path: "/launchpad", desc: "Launch something new", featureKey: "launchpad" },
     ],
   },
