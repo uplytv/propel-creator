@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import MobileTabBar from "./MobileTabBar";
 import SocialTopNav from "@/components/social/SocialTopNav";
 import VideoUploadSheet from "@/components/videos/VideoUploadSheet";
+import GlobalAriaLauncher from "@/components/aria/GlobalAriaLauncher";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Package, Lock,
@@ -665,6 +666,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
       {/* Mobile Tab Bar */}
       <MobileTabBar onUploadVideo={() => setUploadSheetOpen(true)} />
+
+      {/* Global ARIA AI launcher — available on every authenticated page */}
+      <GlobalAriaLauncher />
 
       {/* Video Upload Sheet */}
       <VideoUploadSheet open={uploadSheetOpen} onClose={() => setUploadSheetOpen(false)} />
