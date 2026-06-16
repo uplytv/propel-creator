@@ -13,7 +13,7 @@ import {
   GraduationCap, DollarSign, Bot, Briefcase, Handshake, Share2, Film,
   Trophy, Plug, MessageSquare, Bell as BellIcon, UserCheck, Search, Rocket,
   Video, CreditCard, UserPlus, User, Globe, Mail, Mic, Gift, Rss, Tv, Code, Music, Calendar,
-  Ticket, QrCode
+  Ticket, QrCode, Target
 } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import { useApp, tierNames } from "@/context/AppContext";
