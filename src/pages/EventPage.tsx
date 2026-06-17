@@ -114,6 +114,24 @@ export default function EventPage() {
   });
   const hasTiers = (tierCount ?? 0) > 0;
 
+  // Cheapest live-stream (PPV) tier — powers the "can't make it? watch live" card.
+  const { data: ppvTier } = useQuery({
+    queryKey: ["event-ppv-tier", event?.id],
+    enabled: !!event?.id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("ticket_tiers")
+        .select("id, name, price_cents")
+        .eq("event_id", event!.id)
+        .eq("is_livestream", true)
+        .eq("is_hidden", false)
+        .order("price_cents", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+  });
+
   const badge = event ? typeBadge[event.event_type] || typeBadge.virtual : null;
   const isPast = event ? isBefore(new Date(event.ends_at), new Date()) : false;
   const virtualRevealed = event?.virtual_link_unlocked_at || (event && differenceInMinutes(new Date(event.starts_at), new Date()) <= 30);
@@ -616,16 +634,37 @@ END:VCALENDAR`;
         {/* Multi-tier ticket picker (self-hides when the event has no tiers) */}
         {!isPast && !myTicket && <EventTierPicker eventId={event.id} eventTitle={event.title} />}
 
-        {/* Buyer-facing ARIA concierge */}
-        {/* Live-stream PPV — watch from anywhere */}
-        <Button
-          onClick={() => navigate(`/events/${event.id}/watch`)}
-          variant={(event as any).is_live ? "default" : "outline"}
-          className="mt-6 w-full gap-2"
-        >
-          <Monitor className="w-4 h-4" />
-          {(event as any).is_live ? "Watch Live Now" : "Watch via Live Stream"}
-        </Button>
+        {/* Live-stream PPV — "can't make it? watch live" wedge. Only shown when
+            the event is live or actually has a PPV tier (no dead button). */}
+        {((event as any).is_live || ppvTier) && (
+          <button
+            onClick={() => navigate(`/events/${event.id}/watch`)}
+            className="mt-6 w-full text-left rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 to-[hsl(280_85%_60%)]/10 p-4 hover:border-primary/50 transition-colors"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+                  <Monitor className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">
+                    {(event as any).is_live ? "🔴 Live now — watch the stream" : "Can't make it in person?"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {(event as any).is_live
+                      ? "Tap to join the live stream"
+                      : ppvTier
+                        ? `Watch the live stream from anywhere${ppvTier.price_cents ? ` for $${(ppvTier.price_cents / 100).toFixed(0)}` : ""}`
+                        : "Watch via live stream"}
+                  </p>
+                </div>
+              </div>
+              <span className="text-sm font-bold text-primary shrink-0">
+                {(event as any).is_live ? "Watch →" : ppvTier?.price_cents ? `$${(ppvTier.price_cents / 100).toFixed(0)}` : "→"}
+              </span>
+            </div>
+          </button>
+        )}
 
         <EventConcierge eventId={event.id} />
 
