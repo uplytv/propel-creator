@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Monitor, MapPin, Globe, Upload, Image, CalendarDays, DollarSign,
-  Loader2, ArrowLeft, Save, Ticket, UserCheck, Armchair, Sparkles
+  Loader2, ArrowLeft, Save, Ticket, UserCheck, Armchair, Sparkles, Plus, Trash2, Music2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -87,6 +87,7 @@ export default function CreateEvent() {
       next.has(label) ? next.delete(label) : next.add(label);
       return next;
     });
+  const [lineup, setLineup] = useState<{ name: string; role: string; image: string }[]>([]);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -165,6 +166,16 @@ export default function CreateEvent() {
         title,
         description,
         event_type: eventType,
+        lineup: (() => {
+          const clean = lineup
+            .map((p) => ({
+              name: p.name.trim(),
+              ...(p.role.trim() ? { role: p.role.trim() } : {}),
+              ...(p.image.trim() ? { image: p.image.trim() } : {}),
+            }))
+            .filter((p) => p.name);
+          return clean.length ? clean : null;
+        })(),
         location_name: showLocation ? locationName : null,
         location_address: showLocation ? locationAddress : null,
         location_city: showLocation ? locationCity : null,
@@ -256,6 +267,62 @@ export default function CreateEvent() {
               </Button>
             </div>
             <Textarea value={description} onChange={e => setDescription(e.target.value)} rows={4} placeholder="Tell people about your event... or jot an idea and let ARIA draft it." />
+          </div>
+
+          {/* Lineup */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <Label className="flex items-center gap-1.5">
+                <Music2 className="w-4 h-4 text-primary" /> Lineup <span className="text-xs text-muted-foreground font-normal">(optional)</span>
+              </Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-1.5 text-xs"
+                onClick={() => setLineup(l => [...l, { name: "", role: "", image: "" }])}
+              >
+                <Plus className="w-3.5 h-3.5" /> Add performer
+              </Button>
+            </div>
+            {lineup.length === 0 ? (
+              <p className="text-xs text-muted-foreground">Add artists, speakers, or performers — they appear in the event's Lineup section.</p>
+            ) : (
+              <div className="space-y-2">
+                {lineup.map((p, i) => (
+                  <div key={i} className="flex flex-col sm:flex-row gap-2 p-3 rounded-xl border border-border bg-card">
+                    <Input
+                      value={p.name}
+                      onChange={e => setLineup(l => l.map((x, j) => j === i ? { ...x, name: e.target.value } : x))}
+                      placeholder="Name *"
+                      className="sm:flex-1"
+                    />
+                    <Input
+                      value={p.role}
+                      onChange={e => setLineup(l => l.map((x, j) => j === i ? { ...x, role: e.target.value } : x))}
+                      placeholder="Role (e.g. Headliner)"
+                      className="sm:flex-1"
+                    />
+                    <Input
+                      value={p.image}
+                      onChange={e => setLineup(l => l.map((x, j) => j === i ? { ...x, image: e.target.value } : x))}
+                      placeholder="Photo URL (optional)"
+                      className="sm:flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0 text-muted-foreground hover:text-destructive"
+                      aria-label="Remove performer"
+                      onClick={() => setLineup(l => l.filter((_, j) => j !== i))}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Event Type */}
