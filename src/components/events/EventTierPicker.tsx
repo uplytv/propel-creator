@@ -164,7 +164,7 @@ export default function EventTierPicker({ eventId }: { eventId: string; eventTit
           );
         })}
       </div>
-      <p className="text-[11px] text-muted-foreground mt-2">Platform fee shown at checkout. Secure payment via Stripe.</p>
+      <p className="text-[11px] text-muted-foreground mt-2">✓ No hidden fees — your total is shown before you pay. Secure checkout via Stripe.</p>
     </div>
   );
 }
