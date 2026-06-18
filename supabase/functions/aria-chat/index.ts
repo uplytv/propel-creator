@@ -86,8 +86,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
-    if (!apiKey) {
+    const lovableKey = Deno.env.get('LOVABLE_API_KEY');
+    if (!lovableKey) {
       return new Response(
         JSON.stringify({ error: 'ARIA is unavailable right now. Try again in a moment.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
