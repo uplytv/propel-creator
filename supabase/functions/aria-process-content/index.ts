@@ -197,7 +197,7 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-opus-4-8",
         max_tokens: 4096,
         system: `You are ARIA, the AI content strategist built into UPLY. You analyze creator content and identify the highest-value moments and content opportunities. You understand virality, engagement, and what makes content perform on TikTok, Instagram, YouTube Shorts, LinkedIn, and Twitter/X. Return ONLY valid JSON with no preamble or markdown. Follow the exact schema provided.`,
         messages: [{
@@ -287,7 +287,7 @@ Generate between 5-15 clip suggestions based on the content length and quality. 
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
+          model: "claude-opus-4-8",
           max_tokens: 2048,
           system,
           messages: [{ role: "user", content: prompt }],
