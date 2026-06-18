@@ -1,17 +1,22 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { Sparkles, BookOpen, CalendarDays, GraduationCap } from "lucide-react";
+import CourseEnrollSheet from "@/components/payments/CourseEnrollSheet";
 
 interface Course {
   id: string;
   name: string;
+  description: string | null;
   price: number;
   image_url: string | null;
   user_id: string;
   creator_name?: string;
+  creator_username?: string;
+  creator_avatar?: string;
 }
 
 /** AI Discover — featured classrooms & courses. Replaces the old "going out /
@@ -19,28 +24,34 @@ interface Course {
 export default function FeaturedLearning() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [enrollCourse, setEnrollCourse] = useState<Course | null>(null);
 
   const { data: courses = [], isLoading } = useQuery({
     queryKey: ["featured-learning"],
     queryFn: async () => {
       const { data } = await supabase
         .from("products")
-        .select("id, name, price, image_url, user_id")
+        .select("id, name, description, price, image_url, user_id")
         .eq("type", "course")
         .eq("status", "active")
         .order("created_at", { ascending: false })
         .limit(12);
       const rows = (data ?? []) as Course[];
       const ids = [...new Set(rows.map((r) => r.user_id))];
-      let profs: Record<string, { display_name?: string }> = {};
+      let profs: Record<string, { display_name?: string; username?: string; avatar_url?: string }> = {};
       if (ids.length) {
         const { data: p } = await supabase
           .from("profiles_public")
-          .select("user_id, display_name")
+          .select("user_id, display_name, username, avatar_url")
           .in("user_id", ids);
         profs = Object.fromEntries((p ?? []).map((x: any) => [x.user_id, x]));
       }
-      return rows.map((r) => ({ ...r, creator_name: profs[r.user_id]?.display_name || "Creator" }));
+      return rows.map((r) => ({
+        ...r,
+        creator_name: profs[r.user_id]?.display_name || "Creator",
+        creator_username: profs[r.user_id]?.username,
+        creator_avatar: profs[r.user_id]?.avatar_url,
+      }));
     },
   });
 
@@ -88,7 +99,7 @@ export default function FeaturedLearning() {
             {courses.map((c) => (
               <button
                 key={c.id}
-                onClick={() => navigate(`/community/${c.user_id}/classroom`)}
+                onClick={() => setEnrollCourse(c)}
                 className="w-44 shrink-0 text-left rounded-xl overflow-hidden border border-border bg-card hover:border-primary/40 transition-colors"
               >
                 <div className="aspect-video bg-muted relative">
@@ -111,6 +122,25 @@ export default function FeaturedLearning() {
           </div>
         )}
       </div>
+
+      {/* Proper enroll/buy flow — opens course details + checkout */}
+      {enrollCourse && (
+        <CourseEnrollSheet
+          open={!!enrollCourse}
+          onClose={() => setEnrollCourse(null)}
+          product={{
+            id: enrollCourse.id,
+            name: enrollCourse.name,
+            description: enrollCourse.description ?? undefined,
+            price: enrollCourse.price,
+            image_url: enrollCourse.image_url ?? undefined,
+            user_id: enrollCourse.user_id,
+          }}
+          creatorName={enrollCourse.creator_name}
+          creatorAvatar={enrollCourse.creator_avatar}
+          creatorUsername={enrollCourse.creator_username}
+        />
+      )}
     </div>
   );
 }
