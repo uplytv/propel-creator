@@ -20941,6 +20941,54 @@ export type Database = {
         }
         Relationships: []
       }
+      whitelabel_config: {
+        Row: {
+          accent_hsl: string | null
+          brand_name: string | null
+          created_at: string
+          creator_id: string
+          enabled: boolean
+          logo_url: string | null
+          primary_hsl: string | null
+          stripe_subscription_id: string | null
+          subdomain: string | null
+          subscription_status: string | null
+          support_email: string | null
+          updated_at: string
+          whitelabel_active: boolean
+        }
+        Insert: {
+          accent_hsl?: string | null
+          brand_name?: string | null
+          created_at?: string
+          creator_id: string
+          enabled?: boolean
+          logo_url?: string | null
+          primary_hsl?: string | null
+          stripe_subscription_id?: string | null
+          subdomain?: string | null
+          subscription_status?: string | null
+          support_email?: string | null
+          updated_at?: string
+          whitelabel_active?: boolean
+        }
+        Update: {
+          accent_hsl?: string | null
+          brand_name?: string | null
+          created_at?: string
+          creator_id?: string
+          enabled?: boolean
+          logo_url?: string | null
+          primary_hsl?: string | null
+          stripe_subscription_id?: string | null
+          subdomain?: string | null
+          subscription_status?: string | null
+          support_email?: string | null
+          updated_at?: string
+          whitelabel_active?: boolean
+        }
+        Relationships: []
+      }
       youtube_imports: {
         Row: {
           created_at: string

@@ -7,6 +7,12 @@ import type { TemplateEntry } from './registry.ts'
 
 const SITE_NAME = "UPLY"
 
+interface Brand {
+  brandName?: string | null
+  logoUrl?: string | null
+  supportEmail?: string | null
+}
+
 interface TicketConfirmationProps {
   name?: string
   eventTitle: string
@@ -15,6 +21,7 @@ interface TicketConfirmationProps {
   ticketCode?: string
   qrToken: string
   ticketUrl: string
+  brand?: Brand
 }
 
 const TicketConfirmationEmail = ({
@@ -25,8 +32,10 @@ const TicketConfirmationEmail = ({
   ticketCode,
   qrToken,
   ticketUrl,
+  brand,
 }: TicketConfirmationProps) => {
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=${encodeURIComponent(qrToken)}`
+  const displayName = brand?.brandName || SITE_NAME
   return (
     <Html lang="en" dir="ltr">
       <Head />
@@ -34,7 +43,11 @@ const TicketConfirmationEmail = ({
       <Body style={main}>
         <Container style={container}>
           <Section style={logoSection}>
-            <Text style={logoText}>⚡ UPLY</Text>
+            {brand?.logoUrl ? (
+              <Img src={brand.logoUrl} alt={displayName} height="32" style={{ display: 'inline-block' }} />
+            ) : (
+              <Text style={logoText}>⚡ {displayName}</Text>
+            )}
           </Section>
           <Heading style={h1}>
             🎟️ {name ? `${name}, you're going!` : `You're going!`}
@@ -61,9 +74,15 @@ const TicketConfirmationEmail = ({
 
           <Hr style={hr} />
           <Text style={footer}>
-            Save this email or open your ticket on UPLY before the event. Entry requires a valid QR code.
+            Save this email or open your ticket before the event. Entry requires a valid QR code.
           </Text>
-          <Text style={footer}>— The {SITE_NAME} Team</Text>
+          <Text style={footer}>
+            — The {displayName} Team
+            {brand?.brandName ? ` · powered by ${SITE_NAME}` : ''}
+          </Text>
+          {brand?.supportEmail && (
+            <Text style={footer}>Questions? Reply to this email or contact {brand.supportEmail}.</Text>
+          )}
         </Container>
       </Body>
     </Html>
@@ -72,7 +91,7 @@ const TicketConfirmationEmail = ({
 
 export const template = {
   component: TicketConfirmationEmail,
-  subject: (data: Record<string, any>) => `🎟️ Your ticket: ${data?.eventTitle ?? 'UPLY event'}`,
+  subject: (data: Record<string, any>) => `🎟️ Your ticket: ${data?.eventTitle ?? 'event'}`,
   displayName: 'Ticket confirmation',
   previewData: {
     name: 'Alex',

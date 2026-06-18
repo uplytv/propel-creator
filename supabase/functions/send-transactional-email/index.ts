@@ -60,6 +60,13 @@ Deno.serve(async (req) => {
   let idempotencyKey: string
   let messageId: string
   let templateData: Record<string, any> = {}
+  let brand: {
+    brandName?: string | null
+    logoUrl?: string | null
+    supportEmail?: string | null
+    primaryHsl?: string | null
+    accentHsl?: string | null
+  } | null = null
   try {
     const body = await req.json()
     templateName = body.templateName || body.template_name
@@ -68,6 +75,9 @@ Deno.serve(async (req) => {
     idempotencyKey = body.idempotencyKey || body.idempotency_key || messageId
     if (body.templateData && typeof body.templateData === 'object') {
       templateData = body.templateData
+    }
+    if (body.brand && typeof body.brand === 'object') {
+      brand = body.brand
     }
   } catch {
     return new Response(
@@ -282,12 +292,15 @@ Deno.serve(async (req) => {
     )
   }
 
+  // Merge brand into templateData so templates can render brand wordmark/footer
+  const renderData = brand ? { ...templateData, brand } : templateData
+
   // 4. Render React Email template to HTML and plain text
   const html = await renderAsync(
-    React.createElement(template.component, templateData)
+    React.createElement(template.component, renderData)
   )
   const plainText = await renderAsync(
-    React.createElement(template.component, templateData),
+    React.createElement(template.component, renderData),
     { plainText: true }
   )
 
@@ -308,12 +321,19 @@ Deno.serve(async (req) => {
     status: 'pending',
   })
 
+  // Build From and Reply-To. When a brand is supplied, the visible sender becomes
+  // "{BrandName} via UPLY" and replies route to the creator's support email.
+  const fromName = brand?.brandName ? `${brand.brandName} via ${SITE_NAME}` : SITE_NAME
+  const fromHeader = `${fromName} <noreply@${FROM_DOMAIN}>`
+  const replyTo = brand?.supportEmail || undefined
+
   const { error: enqueueError } = await supabase.rpc('enqueue_email', {
     queue_name: 'transactional_emails',
     payload: {
       message_id: messageId,
       to: effectiveRecipient,
-      from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
+      from: fromHeader,
+      reply_to: replyTo,
       sender_domain: SENDER_DOMAIN,
       subject: resolvedSubject,
       html,

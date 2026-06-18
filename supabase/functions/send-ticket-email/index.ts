@@ -41,8 +41,26 @@ serve(async (req) => {
 
     const { data: ev } = await supabase
       .from("events")
-      .select("id, slug, title, starts_at, location_name, location_city")
+      .select("id, slug, title, starts_at, location_name, location_city, creator_id, organizer_id, host_id")
       .eq("id", ticket.event_id).maybeSingle();
+
+    // Resolve the event creator to check for a live white-label brand.
+    const creatorId = (ev as any)?.creator_id || (ev as any)?.organizer_id || (ev as any)?.host_id || null;
+    let brand: { brandName?: string | null; logoUrl?: string | null; supportEmail?: string | null } | null = null;
+    if (creatorId) {
+      const { data: wl } = await supabase
+        .from("whitelabel_config")
+        .select("brand_name, logo_url, support_email, enabled, whitelabel_active")
+        .eq("creator_id", creatorId)
+        .maybeSingle();
+      if (wl && (wl as any).enabled && (wl as any).whitelabel_active) {
+        brand = {
+          brandName: (wl as any).brand_name,
+          logoUrl: (wl as any).logo_url,
+          supportEmail: (wl as any).support_email,
+        };
+      }
+    }
 
     const qrToken = ticket.qr_code_secret || ticket.qr_code_token || ticket.id;
     const ticketUrl = `https://uply.tv/tickets/${ticket.qr_code_token || ticket.id}`;
@@ -58,6 +76,7 @@ serve(async (req) => {
         templateName: "ticket-confirmation",
         recipientEmail,
         idempotencyKey,
+        brand,
         templateData: {
           name,
           eventTitle: ev?.title ?? "Your event",
@@ -71,7 +90,7 @@ serve(async (req) => {
     });
     if (invokeErr) throw invokeErr;
 
-    return new Response(JSON.stringify({ ok: true }), {
+    return new Response(JSON.stringify({ ok: true, branded: !!brand }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

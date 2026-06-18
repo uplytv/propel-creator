@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Crown, Loader2, Palette, ExternalLink } from "lucide-react";
+import { Crown, Loader2, Palette, ExternalLink, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -62,6 +62,8 @@ export default function BrandingSettings() {
   const [saving, setSaving] = useState(false);
 
   const [enabled, setEnabled] = useState(false);
+  const [whitelabelActive, setWhitelabelActive] = useState(false);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
   const [brandName, setBrandName] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const [primaryHsl, setPrimaryHsl] = useState("219 100% 62%");
@@ -78,6 +80,8 @@ export default function BrandingSettings() {
         .maybeSingle();
       if (data) {
         setEnabled(!!data.enabled);
+        setWhitelabelActive(!!data.whitelabel_active);
+        setSubscriptionStatus(data.subscription_status ?? null);
         setBrandName(data.brand_name ?? "");
         setLogoUrl(data.logo_url ?? "");
         setPrimaryHsl(data.primary_hsl ?? "219 100% 62%");
@@ -90,12 +94,14 @@ export default function BrandingSettings() {
 
   const handleSave = async () => {
     if (!user) return;
+    // Defense in depth — DB trigger also forces this.
+    const effectiveEnabled = whitelabelActive ? enabled : false;
     setSaving(true);
     try {
       const { error } = await (supabase as any).from("whitelabel_config").upsert(
         {
           creator_id: user.id,
-          enabled,
+          enabled: effectiveEnabled,
           brand_name: brandName.trim() || null,
           logo_url: logoUrl.trim() || null,
           primary_hsl: primaryHsl,
@@ -106,7 +112,11 @@ export default function BrandingSettings() {
         { onConflict: "creator_id" }
       );
       if (error) throw error;
-      toast.success(enabled ? "Branding saved & live on your surfaces" : "Branding saved");
+      if (!whitelabelActive && enabled) {
+        toast.message("Branding saved — activate the White-Label plan to go live");
+      } else {
+        toast.success(effectiveEnabled ? "Branding saved & live on your surfaces" : "Branding saved");
+      }
     } catch (err: any) {
       toast.error(err?.message || "Couldn't save branding");
     } finally {
@@ -131,23 +141,44 @@ export default function BrandingSettings() {
         </div>
       </div>
 
-      {/* Plan note */}
-      <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 flex items-center justify-between gap-3">
-        <p className="text-xs text-foreground flex items-center gap-2">
+      {/* Plan status */}
+      {whitelabelActive ? (
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 flex items-center gap-2">
           <Crown className="w-4 h-4 text-primary shrink-0" />
-          Branding goes live on the <span className="font-semibold">White-Label plan</span> ($497/mo). Configure it now — it activates when you toggle it on.
-        </p>
-        <Button size="sm" variant="outline" className="shrink-0 gap-1" onClick={() => navigate("/upgrade")}>
-          Upgrade <ExternalLink className="w-3.5 h-3.5" />
-        </Button>
-      </div>
-
-      <div className="flex items-center justify-between rounded-xl border border-border p-3">
-        <div>
-          <p className="text-sm font-medium text-foreground">Enable white-label branding</p>
-          <p className="text-xs text-muted-foreground">When on, your brand replaces UPLY on your member-facing surfaces.</p>
+          <p className="text-xs text-foreground">
+            White-Label plan is <span className="font-semibold">active</span>
+            {subscriptionStatus && subscriptionStatus !== "active" ? ` (${subscriptionStatus})` : ""}. Flip the switch below to go live.
+          </p>
         </div>
-        <Switch checked={enabled} onCheckedChange={setEnabled} />
+      ) : (
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 flex items-center justify-between gap-3">
+          <p className="text-xs text-foreground flex items-center gap-2">
+            <Lock className="w-4 h-4 text-primary shrink-0" />
+            Configure your brand now — it goes live the moment you activate the <span className="font-semibold">White-Label plan</span> ($497/mo).
+          </p>
+          <Button size="sm" variant="outline" className="shrink-0 gap-1" onClick={() => navigate("/upgrade")}>
+            Activate <ExternalLink className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+      )}
+
+      <div className={`flex items-center justify-between rounded-xl border border-border p-3 ${!whitelabelActive ? "opacity-60" : ""}`}>
+        <div>
+          <p className="text-sm font-medium text-foreground flex items-center gap-2">
+            Enable white-label branding
+            {!whitelabelActive && <Lock className="w-3.5 h-3.5 text-muted-foreground" />}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {whitelabelActive
+              ? "When on, your brand replaces UPLY on your member-facing surfaces."
+              : "Activate the White-Label plan to flip this on."}
+          </p>
+        </div>
+        <Switch
+          checked={enabled && whitelabelActive}
+          onCheckedChange={setEnabled}
+          disabled={!whitelabelActive}
+        />
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
@@ -158,6 +189,7 @@ export default function BrandingSettings() {
         <div className="space-y-1.5">
           <Label>Support email</Label>
           <Input value={supportEmail} onChange={(e) => setSupportEmail(e.target.value)} placeholder="support@yourbrand.com" type="email" />
+          <p className="text-[11px] text-muted-foreground">Used as the reply-to on emails sent to your members.</p>
         </div>
         <div className="space-y-1.5 sm:col-span-2">
           <Label>Logo URL</Label>
