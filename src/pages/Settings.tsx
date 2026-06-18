@@ -20,6 +20,7 @@ import { SubscriptionsTab } from "@/components/settings/SubscriptionsTab";
 import YouTubeImport from "@/components/classroom/YouTubeImport";
 import { useMyTickets } from "@/hooks/useEvents";
 import SocialProfileSection from "@/components/settings/SocialProfileSection";
+import BrandingSettings from "@/components/settings/BrandingSettings";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAutoRetryPreference } from "@/hooks/useAutoRetryPreference";
@@ -667,6 +668,11 @@ export default function Settings() {
                 </div>
                 <span className="text-sm text-muted-foreground font-medium">Payments coming soon</span>
               </div>
+            </div>
+
+            {/* Branding / White-Label */}
+            <div className="rounded-2xl border border-border bg-card/40 p-6">
+              <BrandingSettings />
             </div>
 
             <Separator />

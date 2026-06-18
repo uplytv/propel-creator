@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useMemo } from "react";
 import LinkEmailGate from "@/components/shared/LinkEmailGate";
+import { useApplyBrandTheme } from "@/components/branding/BrandScope";
 import { usePaymentReturn, useProductPurchaseCheck, useMemberSubscriptionStatus } from "@/hooks/usePaymentReturn";
 import CourseEnrollSheet from "@/components/payments/CourseEnrollSheet";
 import { PurchaseOverlay } from "@/components/payments/PurchaseOverlay";
@@ -77,6 +78,8 @@ function useCreatorProfileData(username: string | undefined) {
   });
 
   const userId = profileQuery.data?.user_id;
+  // White-label: apply this creator's brand theme to their public profile (Phase 1)
+  useApplyBrandTheme(userId);
 
   const socialLinksQuery = useQuery({
     queryKey: ["creator-social-links", userId],

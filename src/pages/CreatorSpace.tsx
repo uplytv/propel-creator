@@ -3,6 +3,7 @@ import BackNav from "@/components/BackNav";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useCreatorSpace, useEnsureSpace } from "@/hooks/useCreatorSpace";
+import { useApplyBrandTheme } from "@/components/branding/BrandScope";
 import { useMemberCount } from "@/hooks/useCommunityMembers";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -59,6 +60,8 @@ export default function CreatorSpace() {
   const location = useLocation();
   const queryClient = useQueryClient();
   const creatorId = rawCreatorId === "me" ? user?.id : rawCreatorId;
+  // White-label: apply this creator's brand theme to their space (Phase 1)
+  useApplyBrandTheme(creatorId);
 
   const searchParams = new URLSearchParams(location.search);
   const refCode = searchParams.get("ref");
