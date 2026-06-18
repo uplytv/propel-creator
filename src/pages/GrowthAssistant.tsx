@@ -43,7 +43,7 @@ const tracks = [
     actions: [
       { title: "Schedule a livestream in your peak window", to: "/dashboard/broadcast", cta: "Go Live" },
       { title: "Clip your last stream into a Short", to: "/content-library", cta: "Open library" },
-      { title: "Post to your community feed", to: "/create/post", cta: "New post" },
+      { title: "Post to your community feed", to: "/create/post/editor", cta: "New post" },
     ],
   },
   {
@@ -60,9 +60,9 @@ const tracks = [
 ] as const;
 
 const chipBy = (v: string) =>
-  v === "high" ? "bg-primary/15 text-primary"
-  : v === "medium" ? "bg-warning/10 text-warning"
-  : "bg-secondary text-muted-foreground";
+  v === "high" ? "bg-primary/15 text-primary ring-1 ring-primary/20"
+  : v === "medium" ? "bg-warning/10 text-warning ring-1 ring-warning/20"
+  : "bg-secondary text-muted-foreground ring-1 ring-border";
 
 export default function GrowthAssistant() {
   const { profile } = useApp();
@@ -105,62 +105,107 @@ export default function GrowthAssistant() {
   useEffect(() => { loadCoach(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [plan?.id]);
 
   return (
-    <div className="mobile-safe-content max-w-5xl mx-auto px-4 md:px-8 py-6 md:py-10 space-y-8">
-      <header className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <div className="flex items-center gap-2 text-primary mb-1">
-            <Sparkles className="w-4 h-4" />
-            <span className="text-xs font-semibold uppercase tracking-wider">ARIA · Growth Assistant</span>
+    <div className="mobile-safe-content max-w-5xl mx-auto px-4 md:px-8 py-6 md:py-10 space-y-8 md:space-y-10">
+      {/* Hero header */}
+      <motion.header
+        initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+        className="relative overflow-hidden rounded-3xl border border-border bg-card px-5 py-6 md:px-8 md:py-8"
+      >
+        <div className="pointer-events-none absolute -top-24 -right-16 h-64 w-64 rounded-full bg-[radial-gradient(circle,hsl(280_85%_60%/0.22),transparent_70%)]" />
+        <div className="pointer-events-none absolute -bottom-28 -left-10 h-64 w-64 rounded-full bg-[radial-gradient(circle,hsl(var(--primary)/0.18),transparent_70%)]" />
+        <div className="relative flex items-start justify-between gap-4 flex-wrap">
+          <div className="min-w-0">
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-primary ring-1 ring-primary/20">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span className="text-[11px] font-semibold uppercase tracking-wider">ARIA · Growth Assistant</span>
+            </div>
+            <h1 className="mt-3 text-2xl md:text-4xl font-bold tracking-tight">
+              <span className="bg-gradient-to-r from-primary to-[hsl(280_85%_60%)] bg-clip-text text-transparent">
+                Your next steps, prioritized
+              </span>
+            </h1>
+            <p className="mt-2 max-w-xl text-sm md:text-[15px] text-muted-foreground">
+              Actionable moves across plan, outreach, content, and monetization — tailored to where you are right now.
+            </p>
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Your next steps, prioritized</h1>
-          <p className="text-sm text-muted-foreground mt-1 max-w-xl">
-            Actionable moves across plan, outreach, content, and monetization — tailored to where you are right now.
-          </p>
+          <motion.button
+            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+            onClick={loadCoach}
+            disabled={loading}
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-[hsl(280_85%_60%)] px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-opacity hover:opacity-95 disabled:opacity-60"
+          >
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+            Regenerate
+          </motion.button>
         </div>
-        <button
-          onClick={loadCoach}
-          disabled={loading}
-          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-60"
-        >
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-          Regenerate
-        </button>
-      </header>
+      </motion.header>
 
       {/* This week from ARIA */}
       <motion.section
-        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl bg-card border border-border p-5 md:p-6 relative overflow-hidden"
+        initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, delay: 0.05 }}
+        className="relative overflow-hidden rounded-3xl border border-border bg-card p-5 md:p-7"
       >
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_top_right,hsl(var(--primary)),transparent_60%)]" />
+        <div className="pointer-events-none absolute inset-0 opacity-[0.07] bg-[radial-gradient(circle_at_top_right,hsl(var(--primary)),transparent_55%)]" />
         <div className="relative">
-          <div className="flex items-center gap-2 mb-3">
-            <Zap className="w-4 h-4 text-primary" />
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">This week's focus</h2>
+          <div className="mb-4 flex items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/20">
+              <Zap className="w-4 h-4" />
+            </div>
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">This week's focus</h2>
           </div>
+
           {loading && actions.length === 0 ? (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground py-6">
-              <Loader2 className="w-4 h-4 animate-spin" /> ARIA is reviewing your KPIs…
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="w-4 h-4 animate-spin text-primary" /> ARIA is reviewing your KPIs…
+              </div>
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="flex gap-3 rounded-2xl border border-border bg-secondary/30 p-3.5">
+                  <div className="h-6 w-6 shrink-0 animate-pulse rounded-full bg-secondary" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3.5 w-2/3 animate-pulse rounded bg-secondary" />
+                    <div className="h-3 w-full animate-pulse rounded bg-secondary/70" />
+                    <div className="flex gap-2">
+                      <div className="h-4 w-20 animate-pulse rounded bg-secondary/70" />
+                      <div className="h-4 w-20 animate-pulse rounded bg-secondary/70" />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <>
-              {headline && <p className="text-lg font-semibold mb-4">{headline}</p>}
+              {headline && (
+                <p className="mb-4 text-lg md:text-xl font-semibold leading-snug text-foreground">{headline}</p>
+              )}
               <ol className="space-y-3">
                 {actions.map((a, i) => (
-                  <li key={i} className="flex gap-3 items-start p-3 rounded-xl bg-secondary/40 border border-border">
-                    <div className="w-6 h-6 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium">{a.title}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{a.why}</p>
-                      <div className="flex gap-2 mt-2">
-                        <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${chipBy(a.impact)}`}>impact: {a.impact}</span>
-                        <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${chipBy(a.effort)}`}>effort: {a.effort}</span>
+                  <motion.li
+                    key={i}
+                    initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.06 }}
+                    className="group flex items-start gap-3 rounded-2xl border border-border bg-secondary/40 p-3.5 transition-colors hover:border-primary/40 hover:bg-secondary/60"
+                  >
+                    <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-[hsl(280_85%_60%)] text-xs font-bold text-primary-foreground shadow-sm shadow-primary/20">
+                      {i + 1}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-foreground">{a.title}</p>
+                      <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{a.why}</p>
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        <span className={`rounded-md px-2 py-0.5 text-[10px] font-mono ${chipBy(a.impact)}`}>impact: {a.impact}</span>
+                        <span className={`rounded-md px-2 py-0.5 text-[10px] font-mono ${chipBy(a.effort)}`}>effort: {a.effort}</span>
                       </div>
                     </div>
-                  </li>
+                  </motion.li>
                 ))}
                 {actions.length === 0 && !loading && (
-                  <li className="text-sm text-muted-foreground">No suggestions yet — try Regenerate.</li>
+                  <li className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border py-10 text-center">
+                    <Sparkles className="h-6 w-6 text-muted-foreground/60" />
+                    <p className="text-sm text-muted-foreground">No suggestions yet — try Regenerate.</p>
+                  </li>
                 )}
               </ol>
             </>
@@ -171,42 +216,48 @@ export default function GrowthAssistant() {
       {/* Tracks */}
       <section className="space-y-4">
         <div className="flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-muted-foreground" />
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Action tracks</h2>
+          <TrendingUp className="w-4 h-4 text-primary" />
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Action tracks</h2>
         </div>
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
           {tracks.map((t, i) => {
             const Icon = t.icon;
             return (
               <motion.div
                 key={t.id}
-                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="rounded-2xl border border-border bg-card p-5 hover:border-primary/40 transition-colors"
+                initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.06 }}
+                whileHover={{ y: -3 }}
+                className="group relative overflow-hidden rounded-3xl border border-border bg-card p-5 md:p-6 transition-colors hover:border-primary/40"
               >
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                    <Icon className="w-4 h-4" />
+                <div className="pointer-events-none absolute -top-16 -right-16 h-40 w-40 rounded-full bg-[radial-gradient(circle,hsl(var(--primary)/0.12),transparent_70%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                <div className="relative">
+                  <div className="mb-3 flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary/15 to-[hsl(280_85%_60%)]/10 text-primary ring-1 ring-primary/15">
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <h3 className="text-base md:text-lg font-semibold">{t.label}</h3>
                   </div>
-                  <h3 className="text-base font-semibold">{t.label}</h3>
+                  <p className="mb-4 text-sm text-muted-foreground">{t.blurb}</p>
+                  <ul className="space-y-1.5">
+                    {t.actions.map((a) => (
+                      <li key={a.title}>
+                        <Link
+                          to={a.to}
+                          className="flex items-center justify-between gap-3 rounded-xl p-2.5 transition-colors hover:bg-secondary/60"
+                        >
+                          <span className="flex min-w-0 items-start gap-2">
+                            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/60 transition-colors group-hover:text-primary/70" />
+                            <span className="text-sm text-foreground">{a.title}</span>
+                          </span>
+                          <span className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-primary/5 px-2 py-1 text-xs font-semibold text-primary transition-colors group-hover:bg-primary/10">
+                            {a.cta} <ArrowUpRight className="h-3 w-3" />
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <p className="text-sm text-muted-foreground mb-4">{t.blurb}</p>
-                <ul className="space-y-2">
-                  {t.actions.map((a) => (
-                    <li key={a.title} className="flex items-start justify-between gap-3 p-2.5 rounded-lg hover:bg-secondary/60 transition-colors">
-                      <div className="flex items-start gap-2 min-w-0">
-                        <CheckCircle2 className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
-                        <span className="text-sm">{a.title}</span>
-                      </div>
-                      <Link
-                        to={a.to}
-                        className="shrink-0 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-                      >
-                        {a.cta} <ArrowUpRight className="w-3 h-3" />
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
               </motion.div>
             );
           })}
@@ -214,19 +265,24 @@ export default function GrowthAssistant() {
       </section>
 
       {/* Quick stats footer */}
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {[
           { label: "Members", value: profile.members ?? 0, icon: Users },
           { label: "MRR", value: `$${profile.mrr ?? 0}`, icon: DollarSign },
           { label: "Tier", value: profile.tier ?? 1, icon: TrendingUp },
           { label: "Focus", value: profile.challenge ?? "—", icon: Target },
-        ].map(({ label, value, icon: Icon }) => (
-          <div key={label} className="rounded-xl border border-border bg-card p-3">
+        ].map(({ label, value, icon: Icon }, i) => (
+          <motion.div
+            key={label}
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 + i * 0.05 }}
+            className="rounded-2xl border border-border bg-card p-3.5 transition-colors hover:border-primary/30"
+          >
             <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
-              <Icon className="w-3 h-3" /> {label}
+              <Icon className="h-3 w-3 text-primary/70" /> {label}
             </div>
-            <div className="text-base font-bold mt-1 truncate">{String(value)}</div>
-          </div>
+            <div className="mt-1.5 truncate text-lg font-bold">{String(value)}</div>
+          </motion.div>
         ))}
       </section>
     </div>

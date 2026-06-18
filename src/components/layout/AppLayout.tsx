@@ -133,6 +133,7 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
 ];
 
 const utilityNav: NavItem[] = [
+  { label: "Upgrade", icon: Crown, path: "/upgrade", desc: "White-label & premium plans" },
   { label: "Settings", icon: Settings, path: "/settings", desc: "Preferences" },
   { label: "Developer API", icon: Code, path: "/developer", desc: "API keys & webhooks", featureKey: "developer_api" },
   { label: "Messages", icon: MessageSquare, path: "/job-messages", desc: "Conversations", badgeKey: "job-messages" },

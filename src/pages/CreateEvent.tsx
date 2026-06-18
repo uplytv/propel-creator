@@ -54,27 +54,6 @@ export default function CreateEvent() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [ariaDrafting, setAriaDrafting] = useState(false);
-
-  const draftWithAria = async () => {
-    const idea = `${title} ${description}`.trim();
-    if (idea.length < 8) { toast.error("Add a few words about your event first"); return; }
-    setAriaDrafting(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("aria-event-copilot", {
-        body: { description: idea, event_type: "event" },
-      });
-      if (error) throw error;
-      const d = (data as any)?.draft;
-      if (d?.title) setTitle(d.title);
-      if (d?.description) setDescription(d.description);
-      if (Array.isArray(d?.tiers) && d.tiers[0]?.price) setTicketPrice(String(d.tiers[0].price));
-      toast.success("ARIA drafted your event ✨", { description: "Review and tweak below." });
-    } catch (e) {
-      toast.error("ARIA couldn't draft this", { description: (e as Error).message });
-    } finally {
-      setAriaDrafting(false);
-    }
-  };
   const [eventType, setEventType] = useState("virtual");
   const [locationName, setLocationName] = useState("");
   const [locationAddress, setLocationAddress] = useState("");
@@ -111,6 +90,40 @@ export default function CreateEvent() {
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const draftWithAria = async () => {
+    const idea = `${title}\n${description}`.trim();
+    if (idea.length < 8) { toast.error("Add a few words about your event first"); return; }
+    setAriaDrafting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("aria-event-copilot", {
+        body: {
+          description: idea,
+          event_type: eventType,
+          ...(ticketQuantity ? { capacity: Number(ticketQuantity) } : {}),
+          ...(locationCity ? { city: locationCity } : {}),
+        },
+      });
+      if (error) throw error;
+      const d = (data as { draft?: {
+        title?: string;
+        description?: string;
+        tiers?: Array<{ name?: string; price?: number }>;
+      } } | null)?.draft;
+      if (!d || (!d.title && !d.description)) {
+        throw new Error("ARIA returned an empty draft");
+      }
+      if (d.title) setTitle(d.title);
+      if (d.description) setDescription(d.description);
+      const firstPrice = Array.isArray(d.tiers) ? d.tiers.find((t) => typeof t?.price === "number")?.price : undefined;
+      if (typeof firstPrice === "number" && firstPrice > 0) setTicketPrice(String(firstPrice));
+      toast.success("ARIA drafted your event ✨", { description: "Review and tweak below." });
+    } catch (e) {
+      toast.error("ARIA couldn't draft this", { description: (e as Error).message });
+    } finally {
+      setAriaDrafting(false);
+    }
+  };
 
   useEffect(() => {
     if (ticketingMode === "free_rsvp") setIsFree(true);
