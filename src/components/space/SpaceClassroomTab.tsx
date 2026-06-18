@@ -1,4 +1,5 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import Hls from "hls.js";
 import { ChevronDown, ChevronRight, CheckCircle, Lock, Play, Plus, ArrowLeft, ArrowRight, GripVertical, Trash2, Pencil, Loader2, AlertCircle, BookOpen, Clock, Layers, ImagePlus, Menu } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -70,20 +71,56 @@ function SortableLesson({ lesson, children, isOwner }: { lesson: any; children: 
   );
 }
 
+/* ── HLS fallback (for .m3u8 that isn't a Mux playback id) ── */
+function HlsVideo({ src, title }: { src: string; title?: string }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const video = ref.current;
+    if (!video) return;
+    // Safari plays HLS natively.
+    if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      video.src = src;
+      return;
+    }
+    if (Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(src);
+      hls.attachMedia(video);
+      return () => hls.destroy();
+    }
+    video.src = src; // last resort
+  }, [src]);
+  return (
+    <div className="w-full aspect-video bg-black">
+      <video ref={ref} controls autoPlay playsInline title={title} className="w-full h-full object-contain" />
+    </div>
+  );
+}
+
 /* ── Lesson Video Player ── */
 function LessonPlayer({ lesson }: { lesson: any }) {
-  const { data: playbackId } = useQuery({
+  // Resolve a Mux playback id from either table — uploads live in mux_assets,
+  // live-stream recordings live in stream_recordings.
+  const { data: lookupPlayback } = useQuery({
     queryKey: ["lesson-playback", lesson.mux_asset_id],
     enabled: !!lesson.mux_asset_id,
     queryFn: async () => {
-      const { data } = await supabase
-        .from("mux_assets")
-        .select("mux_playback_id")
-        .eq("mux_asset_id", lesson.mux_asset_id)
-        .maybeSingle();
-      return data?.mux_playback_id || null;
+      const { data: asset } = await supabase
+        .from("mux_assets").select("mux_playback_id").eq("mux_asset_id", lesson.mux_asset_id).maybeSingle();
+      if (asset?.mux_playback_id) return asset.mux_playback_id;
+      const { data: rec } = await supabase
+        .from("stream_recordings").select("playback_id").eq("mux_asset_id", lesson.mux_asset_id).maybeSingle();
+      return rec?.playback_id || null;
     },
   });
+
+  // Recordings sometimes store the HLS URL in video_url — pull the Mux id out.
+  const muxFromUrl = useMemo(() => {
+    const m = (lesson.video_url || "").match(/stream\.mux\.com\/([A-Za-z0-9]+)/);
+    return m?.[1] || null;
+  }, [lesson.video_url]);
+
+  const playbackId = lookupPlayback || muxFromUrl;
 
   // YouTube embed
   if (lesson.video_type === "youtube" && lesson.youtube_video_id) {
@@ -100,14 +137,16 @@ function LessonPlayer({ lesson }: { lesson: any }) {
     );
   }
 
+  // Mux (handles HLS) — covers uploads + live-stream recordings.
   if (playbackId) return <UPLYMuxPlayer playbackId={playbackId} title={lesson.title} autoPlay />;
+
   if (lesson.video_url) {
-    return (
-      <div className="w-full aspect-video bg-black">
-        <video src={lesson.video_url} controls autoPlay playsInline className="w-full h-full object-contain" />
-      </div>
-    );
+    const isHls = lesson.video_url.includes(".m3u8") || lesson.video_url.includes("stream.mux.com");
+    return isHls
+      ? <HlsVideo src={lesson.video_url} title={lesson.title} />
+      : <div className="w-full aspect-video bg-black"><video src={lesson.video_url} controls autoPlay playsInline className="w-full h-full object-contain" /></div>;
   }
+
   return (
     <div className="w-full aspect-video flex items-center justify-center bg-card">
       <Play className="w-12 h-12 text-muted-foreground" />
