@@ -22,7 +22,7 @@ export default function HomepageNav() {
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 h-14 sm:h-16">
         <Link to="/" className="flex items-center" aria-label="UPLY home">
-          <img src={logo} alt="UPLY" className="h-8 w-8 rounded-md" />
+          <img src={logo} alt="UPLY" className="h-10 w-10 rounded-md" />
         </Link>
         <div className="flex items-center gap-2 sm:gap-3">
           <Link to="/auth">
