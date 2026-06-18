@@ -86,8 +86,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
-    if (!apiKey) {
+    const lovableKey = Deno.env.get('LOVABLE_API_KEY');
+    if (!lovableKey) {
       return new Response(
         JSON.stringify({ error: 'ARIA is unavailable right now. Try again in a moment.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -120,6 +120,7 @@ Rules:
 - If their numbers are low, be honest and tell them why and what to do — do not sugarcoat`;
 
     const messages = [
+      { role: 'system', content: systemPrompt },
       ...conversation_history.map((m: { role: string; content: string }) => ({
         role: m.role,
         content: m.content,
@@ -127,24 +128,22 @@ Rules:
       { role: 'user', content: message },
     ];
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
+        'Authorization': `Bearer ${lovableKey}`,
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1024,
-        system: systemPrompt,
+        model: 'google/gemini-2.5-flash',
         messages,
+        max_tokens: 1024,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Anthropic API error:', response.status, errorText);
+      console.error('Lovable AI Gateway error:', response.status, errorText);
       return new Response(
         JSON.stringify({ error: 'ARIA is unavailable right now. Try again in a moment.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -152,10 +151,10 @@ Rules:
     }
 
     const data = await response.json();
-    const ariaResponse = data.content?.[0]?.text || 'ARIA is unavailable right now. Try again in a moment.';
+    const ariaResponse = data.choices?.[0]?.message?.content || 'ARIA is unavailable right now. Try again in a moment.';
 
     return new Response(
-      JSON.stringify({ response: ariaResponse }),
+      JSON.stringify({ response: ariaResponse, reply: ariaResponse }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
