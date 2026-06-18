@@ -17,9 +17,7 @@ import NetworkBanner from "@/components/network/NetworkBanner";
 import PrimetimeSection from "@/components/network/PrimetimeSection";
 import TonightOnUPLY from "@/components/network/TonightOnUPLY";
 import UPLYChannels from "@/components/network/UPLYChannels";
-import StoriesRow from "@/components/social/StoriesRow";
-import GoingOutWeekCard from "@/components/social/GoingOutWeekCard";
-import MyPlansCard from "@/components/social/MyPlansCard";
+import FeaturedLearning from "@/components/discovery/FeaturedLearning";
 
 const PAGE_SIZE = 24;
 
@@ -178,14 +176,9 @@ export default function Discover() {
         description="Explore top creators, communities, courses, and live streams on Uply."
       />
 
-      {/* Social layer — stories + going out */}
-      {user && (
-        <>
-          <StoriesRow />
-          <GoingOutWeekCard />
-          <MyPlansCard />
-        </>
-      )}
+      {/* AI Discover — featured classrooms & courses (replaces the old
+          stories / going-out social strip) */}
+      <FeaturedLearning />
 
 
       {/* Followed creator live banner */}
