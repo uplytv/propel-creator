@@ -3,7 +3,8 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   CalendarDays, MapPin, Monitor, Globe, Users, Ticket, Bell,
-  Download, Check, Clock, Loader2, Share2, ExternalLink, Plus, Minus, RefreshCw, Printer
+  Download, Check, Clock, Loader2, Share2, ExternalLink, Plus, Minus, RefreshCw, Printer,
+  Navigation, Music2, ArrowRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import EventLiveNowBanner from "@/components/live/EventLiveNowBanner";
@@ -43,6 +44,33 @@ function Countdown({ date }: { date: string }) {
   const target = new Date(date);
   if (isBefore(target, now)) return <span className="text-primary">Starting now!</span>;
   return <span>{formatDistanceToNow(target, { addSuffix: true })}</span>;
+}
+
+type LineupItem = { name: string; role?: string; image?: string };
+
+// Defensive normalizer: `event.lineup` may be null, an array of name strings,
+// or an array of objects with varying key names. Always returns a clean list.
+function normalizeLineup(raw: unknown): LineupItem[] {
+  if (!Array.isArray(raw)) return [];
+  const out: LineupItem[] = [];
+  for (const entry of raw) {
+    if (typeof entry === "string") {
+      const name = entry.trim();
+      if (name) out.push({ name });
+    } else if (entry && typeof entry === "object") {
+      const o = entry as Record<string, unknown>;
+      const name = String(o.name ?? o.artist ?? o.title ?? "").trim();
+      if (!name) continue;
+      const role = o.role ?? o.subtitle ?? o.description;
+      const image = o.image ?? o.avatar_url ?? o.image_url ?? o.photo ?? o.avatar;
+      out.push({
+        name,
+        role: role ? String(role) : undefined,
+        image: image ? String(image) : undefined,
+      });
+    }
+  }
+  return out;
 }
 
 export default function EventPage() {
@@ -137,6 +165,22 @@ export default function EventPage() {
   const virtualRevealed = event?.virtual_link_unlocked_at || (event && differenceInMinutes(new Date(event.starts_at), new Date()) <= 30);
   const isHost = !!(event && user && event.creator_id === user.id);
   const isFree = !!event && (event.is_free || Number(event.ticket_price || 0) === 0);
+
+  // Lineup (Shotgun-style performer grid). Defensively normalized — self-hides when empty.
+  const lineup = useMemo(() => normalizeLineup((event as any)?.lineup), [event]);
+
+  // Map target: prefer coordinates, fall back to a human-readable address string.
+  const mapLat = (event as any)?.location_lat;
+  const mapLng = (event as any)?.location_lng;
+  const mapAddress =
+    (event as any)?.location_address ||
+    (event as any)?.location_name ||
+    (event as any)?.location_city ||
+    "";
+  const hasCoords =
+    mapLat !== null && mapLat !== undefined && mapLng !== null && mapLng !== undefined;
+  const mapQuery = hasCoords ? `${mapLat},${mapLng}` : mapAddress;
+  const showMap = !!event && event.event_type !== "virtual" && !!mapQuery;
 
   async function handleGetTicket() {
     if (!user) {
@@ -595,6 +639,43 @@ END:VCALENDAR`;
             </div>
           )}
 
+          {/* Lineup — performers / artists (self-hides when empty) */}
+          {lineup.length > 0 && (
+            <motion.section
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.4 }}
+              className="pt-2"
+            >
+              <h2 className="text-lg font-bold text-foreground flex items-center gap-2 mb-3">
+                <Music2 className="w-5 h-5 text-primary" /> Lineup
+              </h2>
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                {lineup.map((p, i) => (
+                  <div key={`${p.name}-${i}`} className="flex flex-col items-center text-center gap-2">
+                    {p.image ? (
+                      <img
+                        src={p.image}
+                        alt={p.name}
+                        loading="lazy"
+                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-primary/40"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center text-lg font-bold text-white bg-gradient-to-br from-[hsl(220_100%_62%)] to-[hsl(280_85%_60%)]">
+                        {p.name.slice(0, 1).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate w-full">{p.name}</p>
+                      {p.role && <p className="text-xs text-muted-foreground truncate w-full">{p.role}</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.section>
+          )}
+
           {/* Attendees */}
           {event.tickets_sold > 0 && (
             <p className="text-sm text-muted-foreground flex items-center gap-2">
@@ -666,10 +747,122 @@ END:VCALENDAR`;
           </button>
         )}
 
+        {/* Organized By — dedicated organizer card */}
+        {creatorProfile && (
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.4 }}
+            className="mt-6 mx-4"
+          >
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+              Organized by
+            </h2>
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-4">
+              <div className="flex items-center gap-3 min-w-0">
+                {creatorProfile.avatar_url ? (
+                  <img
+                    src={creatorProfile.avatar_url}
+                    alt={creatorProfile.display_name || ""}
+                    loading="lazy"
+                    className="w-12 h-12 rounded-full object-cover border-2 border-primary/40 shrink-0"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-base font-bold text-white bg-gradient-to-br from-[hsl(220_100%_62%)] to-[hsl(280_85%_60%)] shrink-0">
+                    {(creatorProfile.display_name || creatorProfile.username || "U").slice(0, 1).toUpperCase()}
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="font-semibold text-foreground truncate">
+                    {creatorProfile.display_name || creatorProfile.username}
+                  </p>
+                  {creatorProfile.username && (
+                    <p className="text-xs text-muted-foreground truncate">@{creatorProfile.username}</p>
+                  )}
+                </div>
+              </div>
+              {creatorProfile.username && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 gap-1"
+                  onClick={() => navigate(`/${creatorProfile.username}`)}
+                >
+                  View profile
+                </Button>
+              )}
+            </div>
+          </motion.section>
+        )}
+
+        {/* Location — Google Maps for in-person / hybrid events */}
+        {showMap && (
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.4 }}
+            className="mt-6 mx-4"
+          >
+            <h2 className="text-lg font-bold text-foreground flex items-center gap-2 mb-3">
+              <MapPin className="w-5 h-5 text-primary" /> Location
+            </h2>
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="min-w-0">
+                {(event as any).venue_name && (
+                  <p className="font-semibold text-foreground truncate">{(event as any).venue_name}</p>
+                )}
+                {mapAddress && <p className="text-sm text-muted-foreground">{mapAddress}</p>}
+              </div>
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="shrink-0"
+              >
+                <Button variant="outline" size="sm" className="gap-1">
+                  <Navigation className="w-4 h-4" /> Get directions
+                </Button>
+              </a>
+            </div>
+            <div className="rounded-xl overflow-hidden border border-border">
+              <iframe
+                title="Event location map"
+                src={`https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&z=15&output=embed`}
+                loading="lazy"
+                className="w-full h-64 border-0"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+          </motion.section>
+        )}
+
         <EventConcierge eventId={event.id} />
 
         {/* Event tabs: Chat / People / Gallery / Buy-Sell */}
         <EventTabs eventId={event.id} eventTitle={event.title} />
+
+        {/* List your event — footer CTA */}
+        <motion.section
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.4 }}
+          className="mt-8 mx-4"
+        >
+          <div className="rounded-2xl p-[1.5px] bg-gradient-to-r from-[hsl(220_100%_62%)] to-[hsl(280_85%_60%)]">
+            <div className="rounded-2xl bg-card p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <p className="font-bold text-foreground text-lg">Hosting something?</p>
+                <p className="text-sm text-muted-foreground">List your event on UPLY and keep 95% of every ticket.</p>
+              </div>
+              <Button onClick={() => navigate("/events/create")} className="shrink-0 gap-2">
+                List your event <ArrowRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </motion.section>
 
         {/* Bottom sticky ticket card — suppressed for tiered events (EventTierPicker is canonical) unless the viewer is the host or already holds a ticket */}
         {!isPast && (!hasTiers || isHost || !!myTicket) && (
