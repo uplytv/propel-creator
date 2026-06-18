@@ -375,6 +375,7 @@ export default function CreatorProfile() {
   useCreatorSEO(profile);
 
   const isOwner = user && profile && user.id === profile.user_id;
+  const brand = useApplyBrandTheme(profile?.user_id);
   const isLive = !!liveStream;
   const creatorName = profile?.display_name || "Creator";
 
@@ -495,7 +496,13 @@ export default function CreatorProfile() {
       />
       {/* NAVBAR */}
       <nav className="sticky top-0 z-50 flex items-center justify-between px-4 h-14 backdrop-blur-xl bg-background/85 border-b border-border">
-        <Link to="/" className="font-bold text-lg text-foreground tracking-tight">UPLY</Link>
+        <Link to="/" className="font-bold text-lg text-foreground tracking-tight flex items-center gap-2">
+          {brand.logoUrl ? (
+            <img src={brand.logoUrl} alt={brand.brandName || "Brand"} className="h-6 w-auto object-contain" />
+          ) : (
+            <span>{brand.brandName || "UPLY"}</span>
+          )}
+        </Link>
         <div className="flex items-center gap-2">
           {isOwner ? (
             <div className="flex items-center gap-2">
