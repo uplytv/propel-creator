@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { claudeChat } from "../_shared/claudeChat.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,7 +28,6 @@ serve(async (req) => {
     }
 
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, SERVICE_KEY);
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     // Budget check
     const currentMonth = new Date().toISOString().slice(0, 7) + "-01";
@@ -91,41 +91,44 @@ serve(async (req) => {
       // Generate upsell ideas
       const { data: products } = await supabase.from("products").select("id, name, price, description").eq("creator_id", creator_id).limit(5);
 
-      const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash-lite",
-          messages: [
-            { role: "system", content: "You are ARIA Sales AI. Create personalized upsell sequences that feel helpful, not pushy. Never fabricate testimonials or social proof." },
-            { role: "user", content: `Create upsell ideas for ${profile?.display_name}'s products: ${JSON.stringify(products || [])}` },
-          ],
-          tools: [{
-            type: "function",
-            function: {
-              name: "create_upsells",
-              description: "Create upsell suggestions",
-              parameters: {
-                type: "object",
-                properties: {
-                  upsells: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: { product_name: { type: "string" }, message: { type: "string" }, timing: { type: "string" } },
-                      required: ["product_name", "message", "timing"],
-                    },
-                  },
+      const messages = [
+        { role: "system", content: "You are ARIA Sales AI. Create personalized upsell sequences that feel helpful, not pushy. Never fabricate testimonials or social proof." },
+        { role: "user", content: `Create upsell ideas for ${profile?.display_name}'s products: ${JSON.stringify(products || [])}` },
+      ];
+      const tools = [{
+        type: "function",
+        function: {
+          name: "create_upsells",
+          description: "Create upsell suggestions",
+          parameters: {
+            type: "object",
+            properties: {
+              upsells: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: { product_name: { type: "string" }, message: { type: "string" }, timing: { type: "string" } },
+                  required: ["product_name", "message", "timing"],
                 },
-                required: ["upsells"],
               },
             },
-          }],
-          tool_choice: { type: "function", function: { name: "create_upsells" } },
-        }),
-      });
-      if (!aiResp.ok) throw new Error(`AI error: ${aiResp.status}`);
-      const aiData = await aiResp.json();
+            required: ["upsells"],
+          },
+        },
+      }];
+      const tool_choice = { type: "function", function: { name: "create_upsells" } };
+      let aiData: any;
+      try {
+        aiData = await claudeChat({
+          model: "claude-sonnet-4-6",
+          messages,
+          tools,
+          tool_choice,
+        });
+      } catch (err) {
+        console.error("Claude error:", (err as Error).message);
+        throw new Error(`AI error: ${(err as Error).message}`);
+      }
       const tc = aiData.choices?.[0]?.message?.tool_calls?.[0];
       output = tc ? JSON.parse(tc.function.arguments) : {};
     }

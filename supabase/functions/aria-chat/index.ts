@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { claudeChat } from "../_shared/claudeChat.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -86,8 +87,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const lovableKey = Deno.env.get('LOVABLE_API_KEY');
-    if (!lovableKey) {
+    if (!Deno.env.get('ANTHROPIC_API_KEY')) {
       return new Response(
         JSON.stringify({ error: 'ARIA is unavailable right now. Try again in a moment.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -128,29 +128,20 @@ Rules:
       { role: 'user', content: message },
     ];
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${lovableKey}`,
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+    let data: any;
+    try {
+      data = await claudeChat({
+        model: 'claude-sonnet-4-6',
         messages,
         max_tokens: 1024,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Lovable AI Gateway error:', response.status, errorText);
+      });
+    } catch (err) {
+      console.error('Claude error:', (err as Error).message);
       return new Response(
         JSON.stringify({ error: 'ARIA is unavailable right now. Try again in a moment.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    const data = await response.json();
     const ariaResponse = data.choices?.[0]?.message?.content || 'ARIA is unavailable right now. Try again in a moment.';
 
     return new Response(

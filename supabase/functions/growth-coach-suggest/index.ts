@@ -1,4 +1,6 @@
 // Weekly AI Coach: returns 3 prioritized actions based on plan + KPIs
+import { claudeChat } from "../_shared/claudeChat.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -9,8 +11,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+    if (!Deno.env.get("ANTHROPIC_API_KEY")) throw new Error("ANTHROPIC_API_KEY not configured");
 
     const { context } = await req.json();
     const ctx = context ?? {};
@@ -33,14 +34,10 @@ Current weekly habits: ${(ctx.weeklyTasks ?? []).slice(0, 6).join(" | ") || "non
 Upcoming milestones: ${(ctx.milestones ?? []).slice(0, 5).join(" | ") || "none"}
 Recently completed: ${(ctx.completed ?? []).slice(0, 5).join(" | ") || "none"}`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+    let data: any;
+    try {
+      data = await claudeChat({
+        model: "claude-opus-4-8",
         messages: [
           { role: "system", content: system },
           { role: "user", content: user },
@@ -77,23 +74,12 @@ Recently completed: ${(ctx.completed ?? []).slice(0, 5).join(" | ") || "none"}`;
           },
         }],
         tool_choice: { type: "function", function: { name: "weekly_actions" } },
-      }),
-    });
-
-    if (response.status === 429)
-      return new Response(JSON.stringify({ error: "Slow down — try again in a few seconds." }),
-        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    if (response.status === 402)
-      return new Response(JSON.stringify({ error: "AI credits exhausted. Add credits in workspace settings." }),
-        { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    if (!response.ok) {
-      const t = await response.text();
-      console.error("AI gateway error", response.status, t);
+      });
+    } catch (err) {
+      console.error("Claude error:", (err as Error).message);
       return new Response(JSON.stringify({ error: "AI gateway error" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-
-    const data = await response.json();
     const call = data.choices?.[0]?.message?.tool_calls?.[0];
     const args = call?.function?.arguments ? JSON.parse(call.function.arguments) : { actions: [], headline: "" };
 

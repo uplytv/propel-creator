@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { claudeChat } from "../_shared/claudeChat.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,8 +13,8 @@ serve(async (req) => {
   try {
     const { job_description, skill_category, talent_profiles } = await req.json();
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
+    if (!ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY is not configured");
 
     if (!talent_profiles || talent_profiles.length === 0) {
       return new Response(JSON.stringify({ suggestions: [] }), {
@@ -21,78 +22,61 @@ serve(async (req) => {
       });
     }
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
+    const messages = [
+      {
+        role: "system",
+        content:
+          "You are ARIA, a talent matching AI for a creator economy marketplace. Given a job description and a list of talent profiles, return the top 3 best matches. You must use the suggest_matches tool to return results.",
       },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are ARIA, a talent matching AI for a creator economy marketplace. Given a job description and a list of talent profiles, return the top 3 best matches. You must use the suggest_matches tool to return results.",
-          },
-          {
-            role: "user",
-            content: `Job Description: ${job_description}\nSkill Category: ${skill_category}\n\nAvailable Talent:\n${JSON.stringify(talent_profiles, null, 2)}`,
-          },
-        ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "suggest_matches",
-              description: "Return the top 3 best-matched talent profiles for this job",
-              parameters: {
-                type: "object",
-                properties: {
-                  suggestions: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        display_name: { type: "string", description: "Name of the talent" },
-                        skills: { type: "array", items: { type: "string" } },
-                        score: { type: "number", description: "Their creator economy score" },
-                        reason: { type: "string", description: "Why they are a good match (1 sentence)" },
-                      },
-                      required: ["display_name", "skills", "score", "reason"],
-                      additionalProperties: false,
-                    },
+      {
+        role: "user",
+        content: `Job Description: ${job_description}\nSkill Category: ${skill_category}\n\nAvailable Talent:\n${JSON.stringify(talent_profiles, null, 2)}`,
+      },
+    ];
+    const tools = [
+      {
+        type: "function",
+        function: {
+          name: "suggest_matches",
+          description: "Return the top 3 best-matched talent profiles for this job",
+          parameters: {
+            type: "object",
+            properties: {
+              suggestions: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    display_name: { type: "string", description: "Name of the talent" },
+                    skills: { type: "array", items: { type: "string" } },
+                    score: { type: "number", description: "Their creator economy score" },
+                    reason: { type: "string", description: "Why they are a good match (1 sentence)" },
                   },
+                  required: ["display_name", "skills", "score", "reason"],
+                  additionalProperties: false,
                 },
-                required: ["suggestions"],
-                additionalProperties: false,
               },
             },
+            required: ["suggestions"],
+            additionalProperties: false,
           },
-        ],
-        tool_choice: { type: "function", function: { name: "suggest_matches" } },
-      }),
-    });
+        },
+      },
+    ];
+    const tool_choice = { type: "function", function: { name: "suggest_matches" } };
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limited, please try again later." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
+    let result: any;
+    try {
+      result = await claudeChat({
+        model: "claude-haiku-4-5",
+        messages,
+        tools,
+        tool_choice,
+      });
+    } catch (err) {
+      console.error("Claude error:", (err as Error).message);
       throw new Error("AI gateway error");
     }
-
-    const result = await response.json();
     const toolCall = result.choices?.[0]?.message?.tool_calls?.[0];
     const suggestions = toolCall ? JSON.parse(toolCall.function.arguments).suggestions : [];
 

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { claudeChat } from "../_shared/claudeChat.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -88,8 +89,6 @@ serve(async (req) => {
     const boundaryContext = boundaryMemories.length > 0
       ? `\n\nNEVER do these (creator rejected them before): ${boundaryMemories.map(m => `${m.key}: ${JSON.stringify(m.value)}`).join("; ")}`
       : "";
-
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     // Create task record
     const { data: task } = await supabase.from("aria_agent_tasks").insert({
@@ -208,14 +207,10 @@ Return a JSON object with this structure:
   "key_hashtags": ["#tag1", "#tag2"]
 }`;
 
-      const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
+      let aiData: any;
+      try {
+        aiData = await claudeChat({
+          model: "claude-sonnet-4-6",
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt },
@@ -254,14 +249,12 @@ Return a JSON object with this structure:
             },
           }],
           tool_choice: { type: "function", function: { name: "create_content_calendar" } },
-        }),
-      });
-
-      if (!aiResponse.ok) {
-        throw new Error(`AI gateway error: ${aiResponse.status}`);
+        });
+      } catch (err) {
+        console.error("Claude error:", (err as Error).message);
+        throw new Error(`AI gateway error: ${(err as Error).message}`);
       }
 
-      const aiData = await aiResponse.json();
       const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
       output = toolCall ? JSON.parse(toolCall.function.arguments) : {};
 
@@ -293,14 +286,10 @@ Suggest 3 specific repurposing ideas. Return JSON:
   ]
 }`;
 
-      const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
+      let aiData: any;
+      try {
+        aiData = await claudeChat({
+          model: "claude-sonnet-4-6",
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt },
@@ -334,11 +323,11 @@ Suggest 3 specific repurposing ideas. Return JSON:
             },
           }],
           tool_choice: { type: "function", function: { name: "suggest_repurposing" } },
-        }),
-      });
-
-      if (!aiResponse.ok) throw new Error(`AI gateway error: ${aiResponse.status}`);
-      const aiData = await aiResponse.json();
+        });
+      } catch (err) {
+        console.error("Claude error:", (err as Error).message);
+        throw new Error(`AI gateway error: ${(err as Error).message}`);
+      }
       const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
       output = toolCall ? JSON.parse(toolCall.function.arguments) : {};
     }

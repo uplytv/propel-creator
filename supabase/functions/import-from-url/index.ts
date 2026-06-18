@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { claudeChat } from "../_shared/claudeChat.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,8 +13,8 @@ serve(async (req) => {
   }
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
+    if (!ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY is not configured");
 
     const { url } = await req.json();
     if (!url) {
@@ -45,67 +46,50 @@ serve(async (req) => {
     }
 
     // Use AI to extract product info from the page content
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
+    const messages = [
+      {
+        role: "system",
+        content: "You are an expert at analyzing landing pages and extracting product information. Based on the page content, determine the product name, a compelling description, the product type (one of: course, community, coaching, digital), and the price. If you can't find a price, suggest a reasonable one based on the product type.",
       },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          {
-            role: "system",
-            content: "You are an expert at analyzing landing pages and extracting product information. Based on the page content, determine the product name, a compelling description, the product type (one of: course, community, coaching, digital), and the price. If you can't find a price, suggest a reasonable one based on the product type.",
-          },
-          {
-            role: "user",
-            content: `Extract product details from this page (${url}):\n\n${pageContent}`,
-          },
-        ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "extract_product",
-              description: "Extract product details from a landing page",
-              parameters: {
-                type: "object",
-                properties: {
-                  name: { type: "string", description: "Product name, max 60 chars" },
-                  description: { type: "string", description: "Product description, 1-2 sentences, max 200 chars" },
-                  type: { type: "string", enum: ["course", "community", "coaching", "digital"], description: "Product type" },
-                  price: { type: "number", description: "Price in USD" },
-                },
-                required: ["name", "description", "type", "price"],
-                additionalProperties: false,
-              },
+      {
+        role: "user",
+        content: `Extract product details from this page (${url}):\n\n${pageContent}`,
+      },
+    ];
+    const tools = [
+      {
+        type: "function",
+        function: {
+          name: "extract_product",
+          description: "Extract product details from a landing page",
+          parameters: {
+            type: "object",
+            properties: {
+              name: { type: "string", description: "Product name, max 60 chars" },
+              description: { type: "string", description: "Product description, 1-2 sentences, max 200 chars" },
+              type: { type: "string", enum: ["course", "community", "coaching", "digital"], description: "Product type" },
+              price: { type: "number", description: "Price in USD" },
             },
+            required: ["name", "description", "type", "price"],
+            additionalProperties: false,
           },
-        ],
-        tool_choice: { type: "function", function: { name: "extract_product" } },
-      }),
-    });
+        },
+      },
+    ];
+    const tool_choice = { type: "function", function: { name: "extract_product" } };
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Please add funds." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const text = await response.text();
-      console.error("AI gateway error:", response.status, text);
+    let data: any;
+    try {
+      data = await claudeChat({
+        model: "claude-haiku-4-5",
+        messages,
+        tools,
+        tool_choice,
+      });
+    } catch (err) {
+      console.error("Claude error:", (err as Error).message);
       throw new Error("AI gateway error");
     }
-
-    const data = await response.json();
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
     if (toolCall?.function?.arguments) {
       const result = JSON.parse(toolCall.function.arguments);

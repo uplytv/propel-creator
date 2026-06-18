@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { claudeChat } from "../_shared/claudeChat.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,7 +28,6 @@ serve(async (req) => {
     }
 
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, SERVICE_KEY);
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     const currentMonth = new Date().toISOString().slice(0, 7) + "-01";
     const { data: usage } = await supabase.from("aria_usage_tracking").select("*").eq("creator_id", creator_id).eq("month", currentMonth).maybeSingle();
@@ -59,19 +59,20 @@ serve(async (req) => {
 
       const completedTasks = tasks7d?.filter(t => t.status === "completed").length || 0;
 
-      const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages: [
-            { role: "system", content: "You are ARIA Operations AI writing a CEO-level weekly report. Be concise, data-driven, and actionable." },
-            { role: "user", content: `Weekly report for ${profile?.display_name}:\n- New members: ${newMembers || 0}\n- Community posts: ${newPosts || 0}\n- AI tasks completed: ${completedTasks}\n- Hours saved (est): ${(completedTasks * 0.5).toFixed(1)}\n\nWrite a 400-word report with: Executive Summary, What's Working, What Needs Attention, Top 3 Opportunities, One Action for Today.` },
-          ],
-        }),
-      });
-      if (!aiResp.ok) throw new Error(`AI error: ${aiResp.status}`);
-      const aiData = await aiResp.json();
+      const messages = [
+        { role: "system", content: "You are ARIA Operations AI writing a CEO-level weekly report. Be concise, data-driven, and actionable." },
+        { role: "user", content: `Weekly report for ${profile?.display_name}:\n- New members: ${newMembers || 0}\n- Community posts: ${newPosts || 0}\n- AI tasks completed: ${completedTasks}\n- Hours saved (est): ${(completedTasks * 0.5).toFixed(1)}\n\nWrite a 400-word report with: Executive Summary, What's Working, What Needs Attention, Top 3 Opportunities, One Action for Today.` },
+      ];
+      let aiData: any;
+      try {
+        aiData = await claudeChat({
+          model: "claude-sonnet-4-6",
+          messages,
+        });
+      } catch (err) {
+        console.error("Claude error:", (err as Error).message);
+        throw new Error(`AI error: ${(err as Error).message}`);
+      }
 
       const narrative = aiData.choices?.[0]?.message?.content || "Report unavailable.";
       const reportDate = new Date().toISOString().slice(0, 10);

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { claudeChat } from "../_shared/claudeChat.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,7 +28,6 @@ serve(async (req) => {
     }
 
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, SERVICE_KEY);
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     // Budget check
     const currentMonth = new Date().toISOString().slice(0, 7) + "-01";
@@ -55,48 +55,51 @@ serve(async (req) => {
     if (task_type === "funnel_builder") {
       const { data: products } = await supabase.from("products").select("*").eq("creator_id", creator_id).limit(5);
 
-      const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages: [
-            { role: "system", content: `You are ARIA Growth AI for UPLY creators. Build high-converting sales funnels.${boundaryCtx ? `\nAvoid: ${boundaryCtx}` : ""}` },
-            { role: "user", content: `Build a sales funnel for ${profile?.display_name}. Products: ${JSON.stringify(products?.slice(0, 3) || [])}. Creator type: ${profile?.creator_type || "general"}.` },
-          ],
-          tools: [{
-            type: "function",
-            function: {
-              name: "build_funnel",
-              description: "Build a sales funnel",
-              parameters: {
-                type: "object",
-                properties: {
-                  funnel_name: { type: "string" },
-                  headline: { type: "string" },
-                  subheadline: { type: "string" },
-                  hero_paragraph: { type: "string" },
-                  benefits: { type: "array", items: { type: "string" } },
-                  cta_text: { type: "string" },
-                  urgency_line: { type: "string" },
-                  email_sequence: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: { subject: { type: "string" }, body: { type: "string" }, send_day: { type: "number" } },
-                      required: ["subject", "body", "send_day"],
-                    },
-                  },
+      const messages = [
+        { role: "system", content: `You are ARIA Growth AI for UPLY creators. Build high-converting sales funnels.${boundaryCtx ? `\nAvoid: ${boundaryCtx}` : ""}` },
+        { role: "user", content: `Build a sales funnel for ${profile?.display_name}. Products: ${JSON.stringify(products?.slice(0, 3) || [])}. Creator type: ${profile?.creator_type || "general"}.` },
+      ];
+      const tools = [{
+        type: "function",
+        function: {
+          name: "build_funnel",
+          description: "Build a sales funnel",
+          parameters: {
+            type: "object",
+            properties: {
+              funnel_name: { type: "string" },
+              headline: { type: "string" },
+              subheadline: { type: "string" },
+              hero_paragraph: { type: "string" },
+              benefits: { type: "array", items: { type: "string" } },
+              cta_text: { type: "string" },
+              urgency_line: { type: "string" },
+              email_sequence: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: { subject: { type: "string" }, body: { type: "string" }, send_day: { type: "number" } },
+                  required: ["subject", "body", "send_day"],
                 },
-                required: ["funnel_name", "headline", "subheadline", "benefits", "cta_text"],
               },
             },
-          }],
-          tool_choice: { type: "function", function: { name: "build_funnel" } },
-        }),
-      });
-      if (!aiResp.ok) throw new Error(`AI error: ${aiResp.status}`);
-      const aiData = await aiResp.json();
+            required: ["funnel_name", "headline", "subheadline", "benefits", "cta_text"],
+          },
+        },
+      }];
+      const tool_choice = { type: "function", function: { name: "build_funnel" } };
+      let aiData: any;
+      try {
+        aiData = await claudeChat({
+          model: "claude-sonnet-4-6",
+          messages,
+          tools,
+          tool_choice,
+        });
+      } catch (err) {
+        console.error("Claude error:", (err as Error).message);
+        throw new Error(`AI error: ${(err as Error).message}`);
+      }
       const tc = aiData.choices?.[0]?.message?.tool_calls?.[0];
       output = tc ? JSON.parse(tc.function.arguments) : {};
 
@@ -111,41 +114,44 @@ serve(async (req) => {
     } else if (task_type === "conversion_optimizer") {
       const { data: products } = await supabase.from("products").select("id, name, price, sales").eq("creator_id", creator_id);
 
-      const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages: [
-            { role: "system", content: "You are ARIA Growth AI. Analyze conversion data and suggest optimizations." },
-            { role: "user", content: `Analyze products for ${profile?.display_name}: ${JSON.stringify(products || [])}. Suggest 3 A/B tests.` },
-          ],
-          tools: [{
-            type: "function",
-            function: {
-              name: "suggest_optimizations",
-              description: "Suggest conversion optimizations",
-              parameters: {
-                type: "object",
-                properties: {
-                  suggestions: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: { title: { type: "string" }, description: { type: "string" }, expected_impact: { type: "string" }, priority: { type: "string" } },
-                      required: ["title", "description"],
-                    },
-                  },
+      const messages = [
+        { role: "system", content: "You are ARIA Growth AI. Analyze conversion data and suggest optimizations." },
+        { role: "user", content: `Analyze products for ${profile?.display_name}: ${JSON.stringify(products || [])}. Suggest 3 A/B tests.` },
+      ];
+      const tools = [{
+        type: "function",
+        function: {
+          name: "suggest_optimizations",
+          description: "Suggest conversion optimizations",
+          parameters: {
+            type: "object",
+            properties: {
+              suggestions: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: { title: { type: "string" }, description: { type: "string" }, expected_impact: { type: "string" }, priority: { type: "string" } },
+                  required: ["title", "description"],
                 },
-                required: ["suggestions"],
               },
             },
-          }],
-          tool_choice: { type: "function", function: { name: "suggest_optimizations" } },
-        }),
-      });
-      if (!aiResp.ok) throw new Error(`AI error: ${aiResp.status}`);
-      const aiData = await aiResp.json();
+            required: ["suggestions"],
+          },
+        },
+      }];
+      const tool_choice = { type: "function", function: { name: "suggest_optimizations" } };
+      let aiData: any;
+      try {
+        aiData = await claudeChat({
+          model: "claude-sonnet-4-6",
+          messages,
+          tools,
+          tool_choice,
+        });
+      } catch (err) {
+        console.error("Claude error:", (err as Error).message);
+        throw new Error(`AI error: ${(err as Error).message}`);
+      }
       const tc = aiData.choices?.[0]?.message?.tool_calls?.[0];
       output = tc ? JSON.parse(tc.function.arguments) : {};
 

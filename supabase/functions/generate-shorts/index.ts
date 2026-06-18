@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { claudeChat } from '../_shared/claudeChat.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -59,7 +60,7 @@ serve(async (req) => {
 
     const MUX_TOKEN_ID = Deno.env.get('MUX_TOKEN_ID')
     const MUX_TOKEN_SECRET = Deno.env.get('MUX_TOKEN_SECRET')
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
+    const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY')
 
     if (!MUX_TOKEN_ID || !MUX_TOKEN_SECRET) {
       return new Response(JSON.stringify({ error: 'Mux credentials not configured' }), {
@@ -105,36 +106,27 @@ serve(async (req) => {
     // We'll use the stream duration and generate smart clip points
     let highlightMoments: Array<{ start: number; end: number; caption: string }> = []
 
-    if (LOVABLE_API_KEY) {
+    if (ANTHROPIC_API_KEY) {
       try {
-        const aiResponse = await fetch('https://api.lovable.dev/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'google/gemini-2.5-flash',
-            messages: [{
-              role: 'user',
-              content: `You are analyzing a live stream recording that is ${Math.round(vodDuration)} seconds long. 
-Identify 3 potential highlight moments spread throughout the stream that would make great short clips. 
+        const aiData = await claudeChat({
+          model: 'claude-sonnet-4-6',
+          messages: [{
+            role: 'user',
+            content: `You are analyzing a live stream recording that is ${Math.round(vodDuration)} seconds long.
+Identify 3 potential highlight moments spread throughout the stream that would make great short clips.
 Each clip should be 30-45 seconds long.
 
 Return ONLY a JSON array with exactly 3 objects, each having:
 - "start": start time in seconds (integer)
-- "end": end time in seconds (integer) 
+- "end": end time in seconds (integer)
 - "caption": a catchy caption for the clip (max 100 chars)
 
 Make sure clips don't overlap and are spread across the stream duration.
 Return only the JSON array, no other text.`,
-            }],
-            temperature: 0.7,
-          }),
+          }],
         })
 
-        if (aiResponse.ok) {
-          const aiData = await aiResponse.json()
+        {
           const content = aiData.choices?.[0]?.message?.content || ''
           // Extract JSON from response
           const jsonMatch = content.match(/\[[\s\S]*\]/)

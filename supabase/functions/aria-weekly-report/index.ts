@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { claudeChat } from "../_shared/claudeChat.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,9 +14,8 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
 
-    if (!lovableApiKey) {
+    if (!Deno.env.get('ANTHROPIC_API_KEY')) {
       return new Response(JSON.stringify({ error: 'AI gateway not configured' }), {
         status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -100,15 +100,11 @@ Deno.serve(async (req) => {
           products: (productsRes.data || []).map((p: any) => ({ name: p.name, sales: p.sales, revenue: p.revenue })),
         };
 
-        // Generate report using Lovable AI
-        const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${lovableApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'google/gemini-2.5-flash',
+        // Generate report using Claude
+        let aiData: any;
+        try {
+          aiData = await claudeChat({
+            model: 'claude-opus-4-8',
             messages: [
               {
                 role: 'system',
@@ -161,15 +157,12 @@ Rules:
               },
             ],
             tool_choice: { type: 'function', function: { name: 'weekly_report' } },
-          }),
-        });
-
-        if (!aiResponse.ok) {
-          console.error(`AI gateway error for user ${userId}:`, aiResponse.status);
+          });
+        } catch (err) {
+          console.error(`AI gateway error for user ${userId}:`, (err as Error).message);
           continue;
         }
 
-        const aiData = await aiResponse.json();
         const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
         if (!toolCall) {
           console.error(`No tool call in AI response for user ${userId}`);

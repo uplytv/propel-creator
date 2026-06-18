@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { claudeChat } from "../_shared/claudeChat.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -30,7 +31,6 @@ serve(async (req) => {
     }
 
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, SERVICE_KEY);
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     // Budget check
     const currentMonth = new Date().toISOString().slice(0, 7) + "-01";
@@ -59,19 +59,19 @@ serve(async (req) => {
       const { count: newPosts } = await supabase.from("community_posts").select("id", { count: "exact", head: true }).eq("creator_id", creator_id).gte("created_at", yesterday);
       const { count: newMembers } = await supabase.from("community_members").select("id", { count: "exact", head: true }).eq("creator_id", creator_id).gte("joined_at", yesterday);
 
-      const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash-lite",
+      let aiData: any;
+      try {
+        aiData = await claudeChat({
+          model: "claude-sonnet-4-6",
           messages: [
             { role: "system", content: "You are ARIA Community AI. Write brief, actionable daily community summaries for creators." },
             { role: "user", content: `Daily digest for ${profile?.display_name}'s community:\n- ${newPosts || 0} new posts\n- ${newMembers || 0} new members\n\nWrite a 60-second creator summary (under 100 words) highlighting what happened and one suggested action.` },
           ],
-        }),
-      });
-      if (!aiResp.ok) throw new Error(`AI error: ${aiResp.status}`);
-      const aiData = await aiResp.json();
+        });
+      } catch (err) {
+        console.error("Claude error:", (err as Error).message);
+        throw new Error(`AI error: ${(err as Error).message}`);
+      }
       output = {
         summary: aiData.choices?.[0]?.message?.content || "",
         stats: { new_posts: newPosts || 0, new_members: newMembers || 0 },
