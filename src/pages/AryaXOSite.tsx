@@ -306,15 +306,31 @@ export default function AryaXOSite() {
 
             <div className="mt-7 flex flex-col sm:flex-row gap-3">
               <a
-                href="https://open.spotify.com/search/150%20Bands%20Hugel"
+                href="https://open.spotify.com/search/150%20Bands%20Hugel%20Arya%20XO"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="arya-btn arya-btn--primary arya-btn--lg"
               >
-                <Play className="h-4 w-4 fill-current" /> Stream 150 BANDS
+                <Play className="h-4 w-4 fill-current" /> Spotify
+              </a>
+              <a
+                href="https://music.apple.com/us/search?term=150%20Bands%20Hugel"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="arya-btn arya-btn--ghost arya-btn--lg"
+              >
+                <Play className="h-4 w-4 fill-current" /> Apple Music
+              </a>
+              <a
+                href="https://www.youtube.com/results?search_query=Hugel+150+Bands+Arya+XO+NBA+YoungBoy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="arya-btn arya-btn--ghost arya-btn--lg"
+              >
+                <Play className="h-4 w-4 fill-current" /> YouTube
               </a>
               <a href="#booking" className="arya-btn arya-btn--ghost arya-btn--lg">
-                <Mail className="h-4 w-4" /> Book Arya XO
+                <Mail className="h-4 w-4" /> Book
               </a>
             </div>
 
