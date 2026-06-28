@@ -1,0 +1,34 @@
+name: Verify OG image
+
+# Hits the live `og-render` Edge Function URL used by index.html and
+# Landing.tsx and asserts it returns a 1200x630 image/png. Catches:
+#   - Edge Function deploy regressions (5xx / wrong content-type)
+#   - Renderer output drift (wrong dimensions)
+#   - Accidental changes to LANDING_OG that break the canonical URL
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Daily smoke test so we catch upstream breakage even without commits.
+    - cron: "0 12 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: verify-og-image-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Fetch + validate dynamic OG PNG
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Verify OG image
+        run: node scripts/verify-og-image.mjs
