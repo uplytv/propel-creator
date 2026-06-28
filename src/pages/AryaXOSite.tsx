@@ -697,17 +697,17 @@ export default function AryaXOSite() {
   );
 }
 
-const inputCx =
-  "w-full rounded-lg bg-white/[0.04] border border-white/10 px-3 py-2.5 text-[15px] text-white placeholder:text-white/30 focus:outline-none focus:border-[#00FF85]/50 focus:bg-white/[0.06] transition";
+const inputCx = "arya-input";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="block text-[11px] uppercase tracking-wider text-white/50 mb-1.5">{label}</span>
+      <span className="arya-label">{label}</span>
       {children}
     </label>
   );
 }
+
 
 // ── Tour requests (anonymous voting) ─────────────────────
 interface TourRequest {
