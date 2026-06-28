@@ -80,7 +80,10 @@ export default function SEOHead({
     setMeta("name", "twitter:title", fullTitle);
     setMeta("name", "twitter:description", desc);
     setMeta("name", "twitter:image", img);
+    setMeta("name", "twitter:image:alt", fullTitle);
     setMeta("name", "twitter:card", twitterCard);
+    setMeta("name", "twitter:site", "@uplytv");
+    setMeta("name", "twitter:creator", "@uplytv");
 
     // Robots
     setMeta("name", "robots", noindex ? "noindex, nofollow" : "index, follow");
