@@ -914,14 +914,15 @@ function TourRequestsSection() {
                       <button
                         onClick={() => vote(t.id)}
                         disabled={voted.has(t.id)}
-                        className={`text-[11px] rounded-full px-3 py-1.5 min-h-[32px] border transition ${
+                        className={
                           voted.has(t.id)
-                            ? "bg-white/5 border-white/10 text-white/40"
-                            : "bg-[#00FF85] text-black border-[#00FF85] hover:brightness-110 font-bold"
-                        }`}
+                            ? "arya-btn arya-btn--ghost arya-btn--sm opacity-60"
+                            : "arya-btn arya-btn--primary arya-btn--sm"
+                        }
                       >
                         {voted.has(t.id) ? "Voted" : "Vote"}
                       </button>
+
                     </li>
                   ))}
                 </ul>
