@@ -16912,6 +16912,68 @@ export type Database = {
         }
         Relationships: []
       }
+      public_tour_request_votes: {
+        Row: {
+          created_at: string
+          id: string
+          request_id: string
+          voter_fp: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          request_id: string
+          voter_fp: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          request_id?: string
+          voter_fp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_tour_request_votes_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "public_tour_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      public_tour_requests: {
+        Row: {
+          artist_slug: string
+          city: string
+          country: string
+          created_at: string
+          id: string
+          status: string
+          updated_at: string
+          vote_count: number
+        }
+        Insert: {
+          artist_slug: string
+          city: string
+          country?: string
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          vote_count?: number
+        }
+        Update: {
+          artist_slug?: string
+          city?: string
+          country?: string
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          vote_count?: number
+        }
+        Relationships: []
+      }
       push_subscriptions: {
         Row: {
           auth_key: string
@@ -21426,6 +21488,15 @@ export type Database = {
         Args: { p_quantity: number; p_tier_id: string }
         Returns: undefined
       }
+      create_public_tour_request: {
+        Args: {
+          _artist_slug: string
+          _city: string
+          _country: string
+          _voter_fp: string
+        }
+        Returns: string
+      }
       creator_content_count: { Args: { p_creator_id: string }; Returns: number }
       decrement_merch_variant_stock: {
         Args: { _qty?: number; _variant_id: string }
@@ -22183,6 +22254,10 @@ export type Database = {
       }
       validate_invite_code: { Args: { p_code: string }; Returns: Json }
       validate_vanity_slug: { Args: { p_slug: string }; Returns: boolean }
+      vote_public_tour_request: {
+        Args: { _request_id: string; _voter_fp: string }
+        Returns: number
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
