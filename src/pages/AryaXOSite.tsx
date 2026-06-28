@@ -473,49 +473,50 @@ export default function AryaXOSite() {
         id="booking"
         className="mx-auto max-w-6xl px-5 py-16 sm:py-20 border-t border-white/5"
       >
-        <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-[#00FF85]/15 via-white/[0.04] to-white/[0.02] p-6 sm:p-10">
+        <div className="arya-card arya-card--feature rounded-3xl p-6 sm:p-10">
           <div className="grid lg:grid-cols-[1fr_1.2fr] gap-8 lg:gap-12">
             {/* Left: pitch */}
             <div>
-              <p className="text-[11px] uppercase tracking-[0.2em] text-[#00FF85]">Direct booking</p>
+              <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--arya-cta)]">Direct booking</p>
               <h2 className="mt-2 font-heading text-3xl sm:text-4xl font-bold leading-tight">
                 Book Arya XO in 60 seconds.
               </h2>
-              <p className="mt-3 text-white/75 max-w-md">
+              <p className="mt-3 text-[var(--arya-text-dim)] max-w-md">
                 Fill four fields, hit send. No agents, no back-and-forth — your inquiry
                 lands directly in his team&apos;s inbox on UPLY and gets a same-week reply.
               </p>
 
               <div className="mt-6 grid grid-cols-2 gap-3">
-                <div className="rounded-xl border border-white/10 bg-black/30 p-4">
-                  <MapPin className="h-4 w-4 text-[#00FF85]" />
+                <div className="arya-card p-4">
+                  <MapPin className="h-4 w-4 text-[var(--arya-cta)]" />
                   <div className="mt-2 font-semibold text-sm">Touring from</div>
-                  <div className="text-white/60 text-xs">Las Vegas, NV — worldwide</div>
+                  <div className="text-[var(--arya-text-mute)] text-xs">Las Vegas, NV — worldwide</div>
                 </div>
-                <div className="rounded-xl border border-white/10 bg-black/30 p-4">
-                  <Calendar className="h-4 w-4 text-[#00FF85]" />
+                <div className="arya-card p-4">
+                  <Calendar className="h-4 w-4 text-[var(--arya-cta)]" />
                   <div className="mt-2 font-semibold text-sm">Availability</div>
-                  <div className="text-white/60 text-xs">Now booking 2026</div>
+                  <div className="text-[var(--arya-text-mute)] text-xs">Now booking 2026</div>
                 </div>
-                <div className="rounded-xl border border-white/10 bg-black/30 p-4">
-                  <DollarSign className="h-4 w-4 text-[#00FF85]" />
+                <div className="arya-card p-4">
+                  <DollarSign className="h-4 w-4 text-[var(--arya-cta)]" />
                   <div className="mt-2 font-semibold text-sm">Fee range</div>
-                  <div className="text-white/60 text-xs">Tiered — share your budget</div>
+                  <div className="text-[var(--arya-text-mute)] text-xs">Tiered — share your budget</div>
                 </div>
-                <div className="rounded-xl border border-white/10 bg-black/30 p-4">
-                  <Users className="h-4 w-4 text-[#00FF85]" />
+                <div className="arya-card p-4">
+                  <Users className="h-4 w-4 text-[var(--arya-cta)]" />
                   <div className="mt-2 font-semibold text-sm">Lineups welcome</div>
-                  <div className="text-white/60 text-xs">Festivals, clubs, brand events</div>
+                  <div className="text-[var(--arya-text-mute)] text-xs">Festivals, clubs, brand events</div>
                 </div>
               </div>
 
-              <div className="mt-6 text-[11px] text-white/40">
-                Prefer email? <a className="underline hover:text-white/70" href="mailto:booking@aryaxo.com">booking@aryaxo.com</a>
+              <div className="mt-6 text-[11px] text-[var(--arya-text-faint)]">
+                Prefer email? <a className="arya-link underline" href="mailto:booking@aryaxo.com">booking@aryaxo.com</a>
               </div>
             </div>
 
             {/* Right: form */}
-            <div className="rounded-2xl border border-white/10 bg-black/40 backdrop-blur p-5 sm:p-6">
+            <div className="arya-card p-5 sm:p-6">
+
               {submitted ? (
                 <div className="min-h-[420px] flex flex-col items-center justify-center text-center">
                   <div className="h-14 w-14 rounded-full bg-[#00FF85] flex items-center justify-center mb-4">
