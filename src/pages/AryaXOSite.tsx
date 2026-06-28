@@ -238,18 +238,15 @@ export default function AryaXOSite() {
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <p className="text-xs text-white/60 mb-2">Public link</p>
-            <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] p-2">
+            <p className="text-xs text-[var(--arya-text-mute)] mb-2">Public link</p>
+            <div className="flex items-center gap-2 arya-card p-2">
               <input
                 readOnly
                 value={SHARE_URL}
                 onFocus={(e) => e.currentTarget.select()}
                 className="flex-1 bg-transparent text-sm px-2 py-2 outline-none truncate"
               />
-              <button
-                onClick={handleCopy}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-[#00FF85] text-black px-3 py-2 text-xs font-bold hover:brightness-110 min-h-[40px]"
-              >
+              <button onClick={handleCopy} className="arya-btn arya-btn--primary arya-btn--sm">
                 {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                 {copied ? "Copied" : "Copy"}
               </button>
@@ -259,7 +256,7 @@ export default function AryaXOSite() {
                 href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SHARE_URL)}&text=${encodeURIComponent("Arya XO — 150 BANDS out now")}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-lg border border-white/10 bg-white/[0.04] py-2 text-center hover:bg-white/10"
+                className="arya-btn arya-btn--ghost arya-btn--sm"
               >
                 X / Twitter
               </a>
@@ -267,17 +264,18 @@ export default function AryaXOSite() {
                 href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SHARE_URL)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-lg border border-white/10 bg-white/[0.04] py-2 text-center hover:bg-white/10"
+                className="arya-btn arya-btn--ghost arya-btn--sm"
               >
                 Facebook
               </a>
               <a
                 href={`sms:?&body=${encodeURIComponent(`Arya XO — ${SHARE_URL}`)}`}
-                className="rounded-lg border border-white/10 bg-white/[0.04] py-2 text-center hover:bg-white/10"
+                className="arya-btn arya-btn--ghost arya-btn--sm"
               >
                 Text
               </a>
             </div>
+
           </div>
         </div>
       )}
