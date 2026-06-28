@@ -291,15 +291,15 @@ export default function AryaXOSite() {
 
         <div className="mx-auto max-w-6xl px-5 pt-16 pb-16 sm:pt-24 sm:pb-24 grid sm:grid-cols-[1.1fr_1fr] gap-10 items-center">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#00FF85]/30 bg-[#00FF85]/10 px-3 py-1.5 text-[11px] text-[#00FF85]">
+            <div className="arya-chip">
               <Sparkles className="h-3 w-3" /> 150 BANDS — track 2 on HUGEL&apos;s album &lsquo;21&rsquo;
             </div>
             <h1 className="mt-5 font-heading font-extrabold tracking-tight leading-[0.92] text-[52px] sm:text-[112px]">
-              ARYA <span className="text-[#00FF85]">XO</span>
+              ARYA <span className="text-[var(--arya-cta)]">XO</span>
             </h1>
-            <p className="mt-5 text-base sm:text-lg text-white/80 max-w-xl">
+            <p className="mt-5 text-base sm:text-lg text-[var(--arya-text-dim)] max-w-xl">
               22-year-old singer, rapper & songwriter from Las Vegas. Featured on{" "}
-              <span className="text-white font-semibold">HUGEL × NBA YoungBoy &mdash; &ldquo;150 BANDS&rdquo;</span>,
+              <span className="text-[var(--arya-text)] font-semibold">HUGEL × NBA YoungBoy &mdash; &ldquo;150 BANDS&rdquo;</span>,
               the second cut on HUGEL&apos;s new album <span className="italic">21</span>.
             </p>
 
@@ -308,17 +308,15 @@ export default function AryaXOSite() {
                 href="https://open.spotify.com/search/150%20Bands%20Hugel"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#00FF85] px-5 py-3.5 text-sm font-bold text-black hover:brightness-110 transition shadow-[0_10px_40px_-10px_rgba(0,255,133,0.7)] min-h-[48px]"
+                className="arya-btn arya-btn--primary arya-btn--lg"
               >
-                <Play className="h-4 w-4 fill-black" /> Stream 150 BANDS
+                <Play className="h-4 w-4 fill-current" /> Stream 150 BANDS
               </a>
-              <a
-                href="#booking"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-3.5 text-sm font-semibold hover:bg-white/10 transition min-h-[48px]"
-              >
+              <a href="#booking" className="arya-btn arya-btn--ghost arya-btn--lg">
                 <Mail className="h-4 w-4" /> Book Arya XO
               </a>
             </div>
+
 
           </div>
 
