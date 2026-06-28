@@ -433,9 +433,11 @@ export default function AryaXOSite() {
             </p>
             <p className="mt-3 text-[15px] leading-relaxed text-white/75">
               At 17 he was opening for Trippie Redd, Lil Yachty and Tory Lanez. At 22
-              he&apos;s on a global record with HUGEL and NBA YoungBoy —{" "}
-              <span className="text-[#00FF85] font-semibold">150 BANDS</span>.
+              he&apos;s featured on{" "}
+              <span className="text-[#00FF85] font-semibold">&ldquo;150 BANDS&rdquo;</span> with HUGEL &
+              NBA YoungBoy — track 2 on HUGEL&apos;s new album <span className="italic">21</span>.
             </p>
+
           </div>
 
           <ol className="relative border-l border-white/10 pl-6 space-y-6">
