@@ -53,6 +53,7 @@ const Collaborate = lazy(() => import("./pages/Collaborate"));
 const JointProduct = lazy(() => import("./pages/JointProduct"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AryaXO = lazy(() => import("./pages/AryaXO"));
+const AryaXOSite = lazy(() => import("./pages/AryaXOSite"));
 const Live = lazy(() => import("./pages/Live"));
 const Stream = lazy(() => import("./pages/Stream"));
 const GoLive = lazy(() => import("./pages/GoLive"));
@@ -453,6 +454,7 @@ const App = () => (
                     <Route path="/@:slug" element={<SocialCreatorPage />} />
                     {/* Dedicated artist showcase pages (must precede /:username catch-all) */}
                     <Route path="/arya-xo" element={<AryaXO />} />
+                    <Route path="/arya-xo-site" element={<AryaXOSite />} />
                     {/* Legacy /:username and /:username/page redirect to /@<slug> */}
                     <Route path="/:username" element={<UsernameRedirect />} />
                     <Route path="/:username/page" element={<UsernameRedirect />} />
