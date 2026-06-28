@@ -648,7 +648,7 @@ export default function AryaXOSite() {
                   <button
                     type="submit"
                     disabled={!canSubmit || submitting}
-                    className="w-full mt-1 inline-flex items-center justify-center gap-2 rounded-full bg-[#00FF85] px-5 py-3 text-sm font-bold text-black hover:brightness-110 transition disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px]"
+                    className="arya-btn arya-btn--primary arya-btn--lg w-full mt-1 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                     {submitting ? "Sending…" : "Send booking inquiry"}
