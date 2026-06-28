@@ -194,9 +194,9 @@ export default function AryaXO() {
           </div>
           <div className="mt-4 grid grid-cols-3 gap-2">
             {[
-              { label: "Spotify", href: "https://open.spotify.com/search/150%20Bands%20Hugel%20Arya%20XO", bg: "bg-[#1DB954] text-black" },
-              { label: "Apple Music", href: "https://music.apple.com/us/search?term=150%20Bands%20Hugel", bg: "bg-white text-black" },
-              { label: "YouTube", href: "https://www.youtube.com/results?search_query=Hugel+150+Bands+Arya+XO+NBA+YoungBoy", bg: "bg-[#FF0000] text-white" },
+              { label: "Spotify", href: "https://open.spotify.com/track/3QBkhZL0nUSrm6qcoSEZvt", bg: "bg-[#1DB954] text-black" },
+              { label: "Apple Music", href: "https://music.apple.com/us/song/150-bands/6778877438", bg: "bg-white text-black" },
+              { label: "YouTube", href: "https://www.youtube.com/watch?v=gqYburgfJ9s", bg: "bg-[#FF0000] text-white" },
             ].map((p) => (
               <a
                 key={p.label}
