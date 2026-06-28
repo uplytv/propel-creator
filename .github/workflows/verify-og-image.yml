@@ -31,4 +31,4 @@ jobs:
           node-version: 20
 
       - name: Verify OG image
-        run: node --experimental-strip-types scripts/verify-og-image.mjs
+        run: node scripts/verify-og-image.mjs
