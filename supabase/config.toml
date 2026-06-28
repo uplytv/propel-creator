@@ -142,3 +142,6 @@ project_id = "dbjlhmbgskvhuzqvqfrl"
     verify_jwt = false
   [functions.tv-checkout-resolve]
     verify_jwt = false
+
+  [functions.og-render]
+    verify_jwt = false
