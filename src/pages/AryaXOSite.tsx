@@ -295,45 +295,34 @@ export default function AryaXOSite() {
         <div className="mx-auto max-w-6xl px-5 pt-16 pb-16 sm:pt-24 sm:pb-24 grid sm:grid-cols-[1.1fr_1fr] gap-10 items-center">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-[#00FF85]/30 bg-[#00FF85]/10 px-3 py-1.5 text-[11px] text-[#00FF85]">
-              <Sparkles className="h-3 w-3" /> New single — 150 BANDS with HUGEL & NBA YoungBoy
+              <Sparkles className="h-3 w-3" /> 150 BANDS — track 2 on HUGEL&apos;s album &lsquo;21&rsquo;
             </div>
             <h1 className="mt-5 font-heading font-extrabold tracking-tight leading-[0.92] text-[52px] sm:text-[112px]">
               ARYA <span className="text-[#00FF85]">XO</span>
             </h1>
             <p className="mt-5 text-base sm:text-lg text-white/80 max-w-xl">
-              22-year-old singer, rapper & songwriter from Las Vegas. Melodic trap meets
-              global club records — built for the summer cycle.
+              22-year-old singer, rapper & songwriter from Las Vegas. Featured on{" "}
+              <span className="text-white font-semibold">HUGEL × NBA YoungBoy &mdash; &ldquo;150 BANDS&rdquo;</span>,
+              the second cut on HUGEL&apos;s new album <span className="italic">21</span>.
             </p>
 
-            <div className="mt-7 flex flex-wrap gap-3">
+            <div className="mt-7 flex flex-col sm:flex-row gap-3">
               <a
                 href="https://open.spotify.com/search/150%20Bands%20Hugel"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-[#00FF85] px-5 py-3 text-sm font-bold text-black hover:brightness-110 transition shadow-[0_10px_40px_-10px_rgba(0,255,133,0.7)]"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#00FF85] px-5 py-3.5 text-sm font-bold text-black hover:brightness-110 transition shadow-[0_10px_40px_-10px_rgba(0,255,133,0.7)] min-h-[48px]"
               >
                 <Play className="h-4 w-4 fill-black" /> Stream 150 BANDS
               </a>
               <a
                 href="#booking"
-                className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-3 text-sm font-semibold hover:bg-white/10 transition"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-3.5 text-sm font-semibold hover:bg-white/10 transition min-h-[48px]"
               >
                 <Mail className="h-4 w-4" /> Book Arya XO
               </a>
             </div>
 
-            {/* social proof strip */}
-            <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] uppercase tracking-[0.18em] text-white/45">
-              <span>HUGEL</span>
-              <span className="text-white/20">•</span>
-              <span>NBA YoungBoy</span>
-              <span className="text-white/20">•</span>
-              <span>Roy Woods</span>
-              <span className="text-white/20">•</span>
-              <span>Trippie Redd</span>
-              <span className="text-white/20">•</span>
-              <span>Lil Yachty</span>
-            </div>
           </div>
 
           <div className="relative mx-auto">
