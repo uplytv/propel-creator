@@ -40,9 +40,9 @@ const channelMock = vi.fn(() => ({
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
-    from: (t: string) => fromMock(t),
-    rpc: (n: string, p?: unknown) => rpcMock(n, p),
-    channel: (n: string) => channelMock(n),
+    from: (...args: unknown[]) => (fromMock as unknown as (...a: unknown[]) => unknown)(...args),
+    rpc: (...args: unknown[]) => (rpcMock as unknown as (...a: unknown[]) => unknown)(...args),
+    channel: (...args: unknown[]) => (channelMock as unknown as (...a: unknown[]) => unknown)(...args),
     removeChannel: vi.fn(),
   },
 }));
