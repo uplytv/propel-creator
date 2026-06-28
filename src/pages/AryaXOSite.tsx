@@ -198,6 +198,7 @@ export default function AryaXOSite() {
             <a href="#music" className="hover:text-white">Music</a>
             <a href="#videos" className="hover:text-white">Videos</a>
             <a href="#about" className="hover:text-white">About</a>
+            <a href="#tour" className="hover:text-white">Tour</a>
             <a href="#booking" className="hover:text-white">Booking</a>
           </div>
           <div className="flex items-center gap-2">
