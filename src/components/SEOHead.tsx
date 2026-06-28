@@ -72,7 +72,9 @@ export default function SEOHead({
     setMeta("property", "og:image", img);
     setMeta("property", "og:image:width", "1200");
     setMeta("property", "og:image:height", "1200");
-    setMeta("property", "og:site_name", "Uply");
+    setMeta("property", "og:image:alt", fullTitle);
+    setMeta("property", "og:site_name", "UPLY");
+    setMeta("property", "og:locale", "en_US");
 
     // Twitter
     setMeta("name", "twitter:title", fullTitle);
