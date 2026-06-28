@@ -188,37 +188,35 @@ export default function AryaXOSite() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-[#00FF85]/30">
+    <div className="arya-site min-h-screen selection:bg-[#00FF85]/30">
       {/* Sticky top bar */}
-      <nav className="sticky top-0 z-40 backdrop-blur-xl bg-black/60 border-b border-white/5">
+      <nav className="sticky top-0 z-40 backdrop-blur-xl bg-black/60 border-b border-[var(--arya-border)]">
         <div className="mx-auto max-w-6xl px-5 h-14 flex items-center justify-between gap-3">
           <a href="#top" className="flex items-center gap-2 font-heading font-extrabold tracking-tight text-sm">
-            ARYA <span className="text-[#00FF85]">XO</span>
+            ARYA <span className="text-[var(--arya-cta)]">XO</span>
           </a>
-          <div className="hidden sm:flex items-center gap-6 text-xs text-white/70">
-            <a href="#music" className="hover:text-white">Music</a>
-            <a href="#videos" className="hover:text-white">Videos</a>
-            <a href="#about" className="hover:text-white">About</a>
-            <a href="#tour" className="hover:text-white">Tour</a>
-            <a href="#booking" className="hover:text-white">Booking</a>
+          <div className="hidden sm:flex items-center gap-6 text-xs">
+            <a href="#music" className="arya-link">Music</a>
+            <a href="#videos" className="arya-link">Videos</a>
+            <a href="#about" className="arya-link">About</a>
+            <a href="#tour" className="arya-link">Tour</a>
+            <a href="#booking" className="arya-link">Booking</a>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handleShare}
-              className="inline-flex items-center gap-1.5 rounded-full bg-[#00FF85] text-black px-3 py-1.5 text-[11px] font-bold hover:brightness-110 min-h-[36px]"
+              className="arya-btn arya-btn--primary arya-btn--sm"
               aria-label="Share this page"
             >
               <Share2 className="h-3.5 w-3.5" /> Share
             </button>
-            <a
-              href="/arya-xo"
-              className="text-[11px] rounded-full bg-white/10 hover:bg-white/15 px-3 py-1.5"
-            >
+            <a href="/arya-xo" className="arya-btn arya-btn--ghost arya-btn--sm">
               Links
             </a>
           </div>
         </div>
       </nav>
+
 
       {/* Share modal */}
       {shareOpen && (
