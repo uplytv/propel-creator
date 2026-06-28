@@ -16861,6 +16861,57 @@ export type Database = {
         }
         Relationships: []
       }
+      public_booking_inquiries: {
+        Row: {
+          artist_slug: string
+          budget_usd: number | null
+          contact_email: string
+          contact_name: string
+          contact_org: string | null
+          created_at: string
+          event_city: string | null
+          event_date: string | null
+          event_type: string | null
+          id: string
+          lineup: string | null
+          message: string | null
+          source: string | null
+          status: string
+        }
+        Insert: {
+          artist_slug: string
+          budget_usd?: number | null
+          contact_email: string
+          contact_name: string
+          contact_org?: string | null
+          created_at?: string
+          event_city?: string | null
+          event_date?: string | null
+          event_type?: string | null
+          id?: string
+          lineup?: string | null
+          message?: string | null
+          source?: string | null
+          status?: string
+        }
+        Update: {
+          artist_slug?: string
+          budget_usd?: number | null
+          contact_email?: string
+          contact_name?: string
+          contact_org?: string | null
+          created_at?: string
+          event_city?: string | null
+          event_date?: string | null
+          event_type?: string | null
+          id?: string
+          lineup?: string | null
+          message?: string | null
+          source?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       push_subscriptions: {
         Row: {
           auth_key: string

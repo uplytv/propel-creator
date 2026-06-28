@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Music2,
   Instagram,
@@ -7,23 +7,28 @@ import {
   Play,
   Sparkles,
   ArrowRight,
-  Crown,
   MapPin,
   Calendar,
   Share2,
   Check,
   Copy,
   X,
+  Loader2,
+  DollarSign,
+  Users,
+  Send,
 } from "lucide-react";
 import portraitAsset from "@/assets/arya-xo-150bands.png.asset.json";
 import bgAsset from "@/assets/arya-xo-bg.png.asset.json";
+import { supabase } from "@/integrations/supabase/client";
 
 const SHARE_URL = "https://uply.tv/arya-xo-site";
+const ARTIST_SLUG = "arya-xo";
 
 /**
  * Arya XO — full artist website, embedded inside UPLY.
- * A richer alternative to the link-card page at /arya-xo and a modern
- * replacement for the legacy litreeezy.com layout. Route: /arya-xo-site
+ * Booking inquiries land directly in Uply's `public_booking_inquiries` table
+ * (acts as a lightweight CRM). Route: /arya-xo-site
  */
 
 const portrait = portraitAsset.url;
@@ -44,7 +49,6 @@ const RELEASES = [
     tag: "Featured",
     href: "https://open.spotify.com/search/Arya%20XO%20Get%20Down%20Roy%20Woods",
   },
-
 ];
 
 const VIDEOS = [
@@ -55,6 +59,14 @@ const MILESTONES = [
   { age: "17", text: "Opened for Trippie Redd, Lil Yachty & Tory Lanez" },
   { age: "21", text: "Linked with Roy Woods on a breakout collab" },
   { age: "22", text: "150 BANDS with HUGEL & NBA YoungBoy" },
+];
+
+const EVENT_TYPES = [
+  "Club / Live Show",
+  "Festival",
+  "Private / Corporate",
+  "Brand Activation",
+  "Feature / Studio Session",
 ];
 
 export default function AryaXOSite() {
@@ -72,7 +84,7 @@ export default function AryaXOSite() {
       el.setAttribute("content", content);
     };
     const desc =
-      "Arya XO — official artist site. Singer & rapper behind '150 BANDS' with HUGEL & NBA YoungBoy. Music, videos, press and booking — powered by UPLY.";
+      "Arya XO — official site. The 22-year-old artist behind '150 BANDS' with HUGEL & NBA YoungBoy. Music, videos, press and direct booking.";
     setMeta('meta[name="description"]', "name", "description", desc);
     setMeta('meta[property="og:title"]', "property", "og:title", "Arya XO — Official Site");
     setMeta('meta[property="og:description"]', "property", "og:description", desc);
@@ -108,24 +120,78 @@ export default function AryaXOSite() {
       try {
         await (navigator as any).share({
           title: "Arya XO — Official Site",
-          text: "Arya XO — 150 BANDS w/ HUGEL & NBA YoungBoy. Music, videos & booking.",
+          text: "Arya XO — 150 BANDS w/ HUGEL & NBA YoungBoy.",
           url: SHARE_URL,
         });
         return;
       } catch {
-        /* fall through to modal */
+        /* fall through */
       }
     }
     setShareOpen(true);
   };
 
+  // ── Booking form ──────────────────────────────────────
+  const [form, setForm] = useState({
+    contact_name: "",
+    contact_email: "",
+    contact_org: "",
+    event_type: EVENT_TYPES[0],
+    event_city: "",
+    event_date: "",
+    budget_usd: "",
+    lineup: "",
+    message: "",
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const update = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const canSubmit = useMemo(
+    () => form.contact_name.trim() && /\S+@\S+\.\S+/.test(form.contact_email) && form.event_city.trim(),
+    [form]
+  );
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSubmit) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const payload = {
+        artist_slug: ARTIST_SLUG,
+        contact_name: form.contact_name.trim(),
+        contact_email: form.contact_email.trim(),
+        contact_org: form.contact_org.trim() || null,
+        event_type: form.event_type,
+        event_city: form.event_city.trim(),
+        event_date: form.event_date || null,
+        budget_usd: form.budget_usd ? Math.max(0, Math.round(Number(form.budget_usd))) : null,
+        lineup: form.lineup.trim() || null,
+        message: form.message.trim() || null,
+        source: "arya-xo-site",
+      };
+      const { error: insertErr } = await (supabase as any)
+        .from("public_booking_inquiries")
+        .insert(payload);
+      if (insertErr) throw insertErr;
+      setSubmitted(true);
+    } catch (err: any) {
+      setError(err?.message || "Couldn't send. Try again or email booking@aryaxo.com.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#050505] text-white selection:bg-[#00FF85]/30">
       {/* Sticky top bar */}
-      <nav className="sticky top-0 z-40 backdrop-blur-xl bg-black/50 border-b border-white/5">
+      <nav className="sticky top-0 z-40 backdrop-blur-xl bg-black/60 border-b border-white/5">
         <div className="mx-auto max-w-6xl px-5 h-14 flex items-center justify-between gap-3">
-          <a href="#top" className="flex items-center gap-2 font-heading font-extrabold tracking-tight">
-            <Crown className="h-4 w-4 text-[#00FF85]" />
+          <a href="#top" className="flex items-center gap-2 font-heading font-extrabold tracking-tight text-sm">
             ARYA <span className="text-[#00FF85]">XO</span>
           </a>
           <div className="hidden sm:flex items-center gap-6 text-xs text-white/70">
@@ -216,34 +282,34 @@ export default function AryaXOSite() {
         </div>
       )}
 
-
       {/* HERO */}
       <header id="top" className="relative isolate overflow-hidden">
         <div
-          className="absolute inset-0 -z-10 bg-cover bg-center scale-110 blur-sm opacity-70"
+          className="absolute inset-0 -z-10 bg-cover bg-center scale-110 blur-md opacity-60"
           style={{ backgroundImage: `url(${bg})` }}
           aria-hidden
         />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/60 via-black/75 to-[#050505]" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/70 via-black/80 to-[#050505]" />
 
-        <div className="mx-auto max-w-6xl px-5 pt-16 pb-20 sm:pt-24 sm:pb-28 grid sm:grid-cols-[1.1fr_1fr] gap-10 items-center">
+        <div className="mx-auto max-w-6xl px-5 pt-16 pb-16 sm:pt-24 sm:pb-24 grid sm:grid-cols-[1.1fr_1fr] gap-10 items-center">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-[#00FF85]/30 bg-[#00FF85]/10 px-3 py-1.5 text-[11px] text-[#00FF85]">
-              <Sparkles className="h-3 w-3" /> Out now — 150 BANDS
+              <Sparkles className="h-3 w-3" /> New single — 150 BANDS with HUGEL & NBA YoungBoy
             </div>
-            <h1 className="mt-5 font-heading font-extrabold tracking-tight leading-[0.95] text-[44px] sm:text-[88px]">
+            <h1 className="mt-5 font-heading font-extrabold tracking-tight leading-[0.92] text-[52px] sm:text-[112px]">
               ARYA <span className="text-[#00FF85]">XO</span>
             </h1>
-            <p className="mt-4 text-base sm:text-lg text-white/75 max-w-xl">
-              Singer · Rapper · Songwriter. From opening stages at 17 to club records
-              with HUGEL and NBA YoungBoy at 22.
+            <p className="mt-5 text-base sm:text-lg text-white/80 max-w-xl">
+              22-year-old singer, rapper & songwriter from Las Vegas. Melodic trap meets
+              global club records — built for the summer cycle.
             </p>
+
             <div className="mt-7 flex flex-wrap gap-3">
               <a
                 href="https://open.spotify.com/search/150%20Bands%20Hugel"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-[#00FF85] px-5 py-3 text-sm font-bold text-black hover:brightness-110 transition"
+                className="inline-flex items-center gap-2 rounded-full bg-[#00FF85] px-5 py-3 text-sm font-bold text-black hover:brightness-110 transition shadow-[0_10px_40px_-10px_rgba(0,255,133,0.7)]"
               >
                 <Play className="h-4 w-4 fill-black" /> Stream 150 BANDS
               </a>
@@ -251,18 +317,48 @@ export default function AryaXOSite() {
                 href="#booking"
                 className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-3 text-sm font-semibold hover:bg-white/10 transition"
               >
-                <Mail className="h-4 w-4" /> Booking
+                <Mail className="h-4 w-4" /> Book Arya XO
               </a>
+            </div>
+
+            {/* social proof strip */}
+            <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] uppercase tracking-[0.18em] text-white/45">
+              <span>HUGEL</span>
+              <span className="text-white/20">•</span>
+              <span>NBA YoungBoy</span>
+              <span className="text-white/20">•</span>
+              <span>Roy Woods</span>
+              <span className="text-white/20">•</span>
+              <span>Trippie Redd</span>
+              <span className="text-white/20">•</span>
+              <span>Lil Yachty</span>
             </div>
           </div>
 
           <div className="relative mx-auto">
-            <div className="absolute -inset-6 -z-10 rounded-full bg-[#00FF85]/20 blur-3xl" />
-            <div className="h-64 w-64 sm:h-80 sm:w-80 rounded-3xl overflow-hidden ring-1 ring-white/15 shadow-[0_30px_80px_-20px_rgba(0,255,133,0.45)]">
+            <div className="absolute -inset-8 -z-10 rounded-full bg-[#00FF85]/25 blur-3xl" />
+            <div className="h-64 w-64 sm:h-[22rem] sm:w-[22rem] rounded-[2rem] overflow-hidden ring-1 ring-white/15 shadow-[0_40px_120px_-30px_rgba(0,255,133,0.55)]">
               <img src={portrait} alt="Arya XO" className="h-full w-full object-cover" />
             </div>
           </div>
         </div>
+
+        {/* Marquee */}
+        <div className="border-y border-white/5 bg-black/40">
+          <div className="overflow-hidden">
+            <div className="flex gap-10 whitespace-nowrap py-3 animate-[marquee_30s_linear_infinite] font-heading text-sm uppercase tracking-[0.25em] text-white/40">
+              {Array.from({ length: 2 }).flatMap((_, i) =>
+                ["150 BANDS — OUT NOW", "ARYA XO × HUGEL × NBA YOUNGBOY", "NOW BOOKING 2026", "LAS VEGAS → WORLDWIDE"].map((t, j) => (
+                  <span key={`${i}-${j}`} className="flex items-center gap-10">
+                    {t}
+                    <span className="text-[#00FF85]">✦</span>
+                  </span>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+        <style>{`@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }`}</style>
       </header>
 
       {/* MUSIC / RELEASES */}
@@ -272,17 +368,9 @@ export default function AryaXOSite() {
             <p className="text-[11px] uppercase tracking-[0.2em] text-[#00FF85]">Discography</p>
             <h2 className="mt-2 font-heading text-3xl sm:text-4xl font-bold">Latest releases</h2>
           </div>
-          <a
-            href="https://music.apple.com/us/artist/lit-reeezy/1597315016"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden sm:inline-flex items-center gap-1 text-sm text-white/70 hover:text-white"
-          >
-            Full catalog <ArrowRight className="h-4 w-4" />
-          </a>
         </div>
 
-        <div className="grid sm:grid-cols-3 gap-4">
+        <div className="grid sm:grid-cols-2 gap-4">
           {RELEASES.map((r) => (
             <a
               key={r.title}
@@ -292,10 +380,10 @@ export default function AryaXOSite() {
               className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-white/[0.02] p-5 hover:border-[#00FF85]/40 transition"
             >
               <div className="aspect-square rounded-xl overflow-hidden bg-black/40 ring-1 ring-white/10 mb-4 relative">
-                <img src={portrait} alt={r.title} className="h-full w-full object-cover opacity-80 group-hover:opacity-100 transition" />
+                <img src={portrait} alt={r.title} className="h-full w-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition duration-500" />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="h-12 w-12 rounded-full bg-[#00FF85] flex items-center justify-center shadow-lg">
-                    <Play className="h-5 w-5 fill-black text-black" />
+                  <span className="h-14 w-14 rounded-full bg-[#00FF85] flex items-center justify-center shadow-lg group-hover:scale-110 transition">
+                    <Play className="h-6 w-6 fill-black text-black" />
                   </span>
                 </div>
               </div>
@@ -349,16 +437,14 @@ export default function AryaXOSite() {
             <p className="text-[11px] uppercase tracking-[0.2em] text-[#00FF85]">About</p>
             <h2 className="mt-2 font-heading text-3xl sm:text-4xl font-bold">The story so far</h2>
             <p className="mt-4 text-[15px] leading-relaxed text-white/75">
-              Arya XO is a 22-year-old singer and rapper whose sound bridges melodic
-              trap, R&B and pop crossovers. Raised between Baltimore and Las Vegas,
-              he comes from a family of musicians and stepped on stage before most
-              kids step into middle school.
+              Arya XO grew up between Baltimore and Las Vegas in a family of musicians.
+              He was on stage before most kids hit middle school and built a sound that
+              bridges melodic trap, R&B and pop-leaning club records.
             </p>
             <p className="mt-3 text-[15px] leading-relaxed text-white/75">
-              At 17 he was opening for Trippie Redd, Lil Yachty and Tory Lanez. By
-              22 he&apos;s in the studio with Roy Woods and on a global record with
-              HUGEL and NBA YoungBoy — <span className="text-[#00FF85] font-semibold">150 BANDS</span>,
-              built for the summer cycle.
+              At 17 he was opening for Trippie Redd, Lil Yachty and Tory Lanez. At 22
+              he&apos;s on a global record with HUGEL and NBA YoungBoy —{" "}
+              <span className="text-[#00FF85] font-semibold">150 BANDS</span>.
             </p>
           </div>
 
@@ -388,63 +474,207 @@ export default function AryaXOSite() {
         </div>
       </section>
 
-      {/* BOOKING / CONTACT */}
+      {/* BOOKING / EMBEDDED FORM */}
       <section
         id="booking"
         className="mx-auto max-w-6xl px-5 py-16 sm:py-20 border-t border-white/5"
       >
-        <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-[#00FF85]/15 via-white/[0.04] to-white/[0.02] p-8 sm:p-12">
-          <div className="grid sm:grid-cols-[1.4fr_1fr] gap-8 items-center">
+        <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-[#00FF85]/15 via-white/[0.04] to-white/[0.02] p-6 sm:p-10">
+          <div className="grid lg:grid-cols-[1fr_1.2fr] gap-8 lg:gap-12">
+            {/* Left: pitch */}
             <div>
-              <p className="text-[11px] uppercase tracking-[0.2em] text-[#00FF85]">Booking & press</p>
-              <h2 className="mt-2 font-heading text-3xl sm:text-4xl font-bold">
-                Bring Arya XO to your stage.
+              <p className="text-[11px] uppercase tracking-[0.2em] text-[#00FF85]">Direct booking</p>
+              <h2 className="mt-2 font-heading text-3xl sm:text-4xl font-bold leading-tight">
+                Book Arya XO in 60 seconds.
               </h2>
-              <p className="mt-3 text-white/75 max-w-lg">
-                Shows, features, sync, press and brand partnerships — send a note
-                with the date, city and offer.
+              <p className="mt-3 text-white/75 max-w-md">
+                Fill four fields, hit send. No agents, no back-and-forth — your inquiry
+                lands directly in his team&apos;s inbox on UPLY and gets a same-week reply.
               </p>
 
-              <div className="mt-6 flex flex-wrap gap-3">
-                <a
-                  href="mailto:booking@aryaxo.com"
-                  className="inline-flex items-center gap-2 rounded-full bg-[#00FF85] px-5 py-3 text-sm font-bold text-black hover:brightness-110 transition"
-                >
-                  <Mail className="h-4 w-4" /> booking@aryaxo.com
-                </a>
-                <a
-                  href="https://litreeezy.tunego.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-3 text-sm font-semibold hover:bg-white/10 transition"
-                >
-                  Download EPK
-                </a>
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                <div className="rounded-xl border border-white/10 bg-black/30 p-4">
+                  <MapPin className="h-4 w-4 text-[#00FF85]" />
+                  <div className="mt-2 font-semibold text-sm">Touring from</div>
+                  <div className="text-white/60 text-xs">Las Vegas, NV — worldwide</div>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-black/30 p-4">
+                  <Calendar className="h-4 w-4 text-[#00FF85]" />
+                  <div className="mt-2 font-semibold text-sm">Availability</div>
+                  <div className="text-white/60 text-xs">Now booking 2026</div>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-black/30 p-4">
+                  <DollarSign className="h-4 w-4 text-[#00FF85]" />
+                  <div className="mt-2 font-semibold text-sm">Fee range</div>
+                  <div className="text-white/60 text-xs">Tiered — share your budget</div>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-black/30 p-4">
+                  <Users className="h-4 w-4 text-[#00FF85]" />
+                  <div className="mt-2 font-semibold text-sm">Lineups welcome</div>
+                  <div className="text-white/60 text-xs">Festivals, clubs, brand events</div>
+                </div>
+              </div>
+
+              <div className="mt-6 text-[11px] text-white/40">
+                Prefer email? <a className="underline hover:text-white/70" href="mailto:booking@aryaxo.com">booking@aryaxo.com</a>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="rounded-xl border border-white/10 bg-black/30 p-4">
-                <MapPin className="h-4 w-4 text-[#00FF85]" />
-                <div className="mt-2 font-semibold">Touring from</div>
-                <div className="text-white/60 text-xs">Las Vegas, NV — worldwide</div>
-              </div>
-              <div className="rounded-xl border border-white/10 bg-black/30 p-4">
-                <Calendar className="h-4 w-4 text-[#00FF85]" />
-                <div className="mt-2 font-semibold">Availability</div>
-                <div className="text-white/60 text-xs">Now booking 2026</div>
-              </div>
+            {/* Right: form */}
+            <div className="rounded-2xl border border-white/10 bg-black/40 backdrop-blur p-5 sm:p-6">
+              {submitted ? (
+                <div className="min-h-[420px] flex flex-col items-center justify-center text-center">
+                  <div className="h-14 w-14 rounded-full bg-[#00FF85] flex items-center justify-center mb-4">
+                    <Check className="h-7 w-7 text-black" strokeWidth={3} />
+                  </div>
+                  <h3 className="font-heading text-2xl font-bold">Inquiry sent.</h3>
+                  <p className="mt-2 text-sm text-white/70 max-w-sm">
+                    Your request is in front of Arya&apos;s team on UPLY. Expect a reply
+                    within 3 business days — sooner for time-sensitive dates.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setSubmitted(false);
+                      setForm({
+                        contact_name: "",
+                        contact_email: "",
+                        contact_org: "",
+                        event_type: EVENT_TYPES[0],
+                        event_city: "",
+                        event_date: "",
+                        budget_usd: "",
+                        lineup: "",
+                        message: "",
+                      });
+                    }}
+                    className="mt-6 text-xs text-white/60 hover:text-white underline"
+                  >
+                    Submit another
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Field label="Your name *">
+                      <input
+                        required
+                        value={form.contact_name}
+                        onChange={update("contact_name")}
+                        placeholder="Jane Doe"
+                        className={inputCx}
+                      />
+                    </Field>
+                    <Field label="Email *">
+                      <input
+                        required
+                        type="email"
+                        value={form.contact_email}
+                        onChange={update("contact_email")}
+                        placeholder="you@venue.com"
+                        className={inputCx}
+                      />
+                    </Field>
+                  </div>
+
+                  <Field label="Company / venue (optional)">
+                    <input
+                      value={form.contact_org}
+                      onChange={update("contact_org")}
+                      placeholder="Drai's Beach Club, Coachella, etc."
+                      className={inputCx}
+                    />
+                  </Field>
+
+                  <Field label="Event type">
+                    <select value={form.event_type} onChange={update("event_type")} className={inputCx}>
+                      {EVENT_TYPES.map((t) => (
+                        <option key={t} value={t} className="bg-[#0c0c0c]">{t}</option>
+                      ))}
+                    </select>
+                  </Field>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Field label="Location (city, country) *">
+                      <input
+                        required
+                        value={form.event_city}
+                        onChange={update("event_city")}
+                        placeholder="Las Vegas, USA"
+                        className={inputCx}
+                      />
+                    </Field>
+                    <Field label="Event date">
+                      <input
+                        type="date"
+                        value={form.event_date}
+                        onChange={update("event_date")}
+                        className={inputCx}
+                      />
+                    </Field>
+                  </div>
+
+                  <Field label="Budget (USD)">
+                    <input
+                      type="number"
+                      min={0}
+                      step={500}
+                      value={form.budget_usd}
+                      onChange={update("budget_usd")}
+                      placeholder="25000"
+                      className={inputCx}
+                    />
+                  </Field>
+
+                  <Field label="Lineup / other artists on the bill">
+                    <input
+                      value={form.lineup}
+                      onChange={update("lineup")}
+                      placeholder="HUGEL, Roy Woods, +others"
+                      className={inputCx}
+                    />
+                  </Field>
+
+                  <Field label="Anything else (set length, hospitality, etc.)">
+                    <textarea
+                      rows={3}
+                      value={form.message}
+                      onChange={update("message")}
+                      placeholder="60-min set, festival main stage, deposit terms…"
+                      className={`${inputCx} resize-none`}
+                    />
+                  </Field>
+
+                  {error && (
+                    <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg p-2">
+                      {error}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={!canSubmit || submitting}
+                    className="w-full mt-1 inline-flex items-center justify-center gap-2 rounded-full bg-[#00FF85] px-5 py-3 text-sm font-bold text-black hover:brightness-110 transition disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px]"
+                  >
+                    {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    {submitting ? "Sending…" : "Send booking inquiry"}
+                  </button>
+
+                  <p className="text-[10px] text-white/40 text-center pt-1">
+                    Inquiries land inside UPLY. We never share your info.
+                  </p>
+                </form>
+              )}
             </div>
           </div>
         </div>
 
         {/* Social row */}
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           {[
             { Icon: Instagram, label: "Instagram", href: "https://www.instagram.com/litreeezy/" },
             { Icon: Youtube, label: "YouTube", href: "https://www.youtube.com/@litreeezy653" },
             { Icon: Music2, label: "Apple Music", href: "https://music.apple.com/us/artist/lit-reeezy/1597315016" },
-            { Icon: Music2, label: "Spotify", href: "https://open.spotify.com/search/Lit%20Reeezy" },
+            { Icon: Music2, label: "Spotify", href: "https://open.spotify.com/search/Arya%20XO" },
           ].map(({ Icon, label, href }) => (
             <a
               key={label}
@@ -469,5 +699,17 @@ export default function AryaXOSite() {
         </div>
       </footer>
     </div>
+  );
+}
+
+const inputCx =
+  "w-full rounded-lg bg-white/[0.04] border border-white/10 px-3 py-2.5 text-[15px] text-white placeholder:text-white/30 focus:outline-none focus:border-[#00FF85]/50 focus:bg-white/[0.06] transition";
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="block text-[11px] uppercase tracking-wider text-white/50 mb-1.5">{label}</span>
+      {children}
+    </label>
   );
 }
