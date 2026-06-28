@@ -456,6 +456,7 @@ const App = () => (
                     {/* Dedicated artist showcase pages (must precede /:username catch-all) */}
                     <Route path="/arya-xo" element={<AryaXO />} />
                     <Route path="/arya-xo-site" element={<AryaXOSite />} />
+                    <Route path="/admin/booking-inquiries" element={<AdminBookingInquiries />} />
                     {/* Legacy /:username and /:username/page redirect to /@<slug> */}
                     <Route path="/:username" element={<UsernameRedirect />} />
                     <Route path="/:username/page" element={<UsernameRedirect />} />
