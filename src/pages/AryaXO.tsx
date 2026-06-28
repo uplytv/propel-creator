@@ -108,25 +108,33 @@ const LINKS: LinkCard[] = [
 export default function AryaXO() {
   useEffect(() => {
     document.documentElement.classList.add("dark");
+    const prevTitle = document.title;
+    document.title = "Arya XO — Singer, Rapper · 150 BANDS w/ HUGEL & NBA YoungBoy";
+    const setMeta = (selector: string, attr: string, name: string, content: string) => {
+      let el = document.head.querySelector<HTMLMetaElement>(selector);
+      if (!el) {
+        el = document.createElement("meta");
+        el.setAttribute(attr, name);
+        document.head.appendChild(el);
+      }
+      el.setAttribute("content", content);
+      return el;
+    };
+    const desc =
+      "Arya XO — 22-year-old singer & rapper. From opening for Trippie Redd, Lil Yachty and Tory Lanez at 17 to dropping '150 BANDS' with HUGEL and NBA YoungBoy. Listen, watch and follow on UPLY.";
+    setMeta('meta[name="description"]', "name", "description", desc);
+    setMeta('meta[property="og:title"]', "property", "og:title", "Arya XO — 150 BANDS out now");
+    setMeta('meta[property="og:description"]', "property", "og:description", desc);
+    setMeta('meta[property="og:image"]', "property", "og:image", portrait);
+    setMeta('meta[name="twitter:card"]', "name", "twitter:card", "summary_large_image");
+    return () => {
+      document.title = prevTitle;
+    };
   }, []);
 
   return (
     <div className="min-h-screen bg-[#070707] text-white selection:bg-[#00FF85]/30">
-      <Helmet>
-        <title>Arya XO — Singer, Rapper · 150 BANDS w/ HUGEL & NBA YoungBoy</title>
-        <meta
-          name="description"
-          content="Arya XO — 22-year-old singer & rapper. From opening for Trippie Redd, Lil Yachty and Tory Lanez at 17 to dropping the summer anthem '150 BANDS' with HUGEL and NBA YoungBoy. Listen, watch and follow on UPLY."
-        />
-        <meta property="og:title" content="Arya XO — 150 BANDS out now" />
-        <meta
-          property="og:description"
-          content="Singer & rapper. New track '150 BANDS' with HUGEL & NBA YoungBoy. Listen everywhere."
-        />
-        <meta property="og:image" content={portrait} />
-        <meta name="twitter:card" content="summary_large_image" />
-        <link rel="canonical" href="https://uply.tv/arya-xo" />
-      </Helmet>
+
 
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <header className="relative isolate overflow-hidden">
