@@ -474,6 +474,11 @@ export default function AryaXOSite() {
         </div>
       </section>
 
+      {/* TOUR REQUESTS — fans vote for their city */}
+      <TourRequestsSection />
+
+
+
       {/* BOOKING / EMBEDDED FORM */}
       <section
         id="booking"
