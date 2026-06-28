@@ -4,6 +4,7 @@ import { motion, useScroll, useSpring } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import SEOHead from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
+import { LANDING_OG_IMAGE_URL } from "@/lib/ogImage";
 
 import HomepageNav from "@/components/landing/v2/HomepageNav";
 import HomepageHero from "@/components/landing/v2/HomepageHero";
