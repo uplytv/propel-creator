@@ -676,7 +676,7 @@ export default function AryaXOSite() {
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs text-white/80 hover:bg-white/10 hover:text-white transition"
+              className="arya-btn arya-btn--ghost arya-btn--sm"
             >
               <Icon className="h-4 w-4" /> {label}
             </a>
