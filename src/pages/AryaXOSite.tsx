@@ -454,10 +454,11 @@ export default function AryaXOSite() {
             { k: "Co-signs", v: "HUGEL · NBA YB · Roy Woods" },
             { k: "Based in", v: "Las Vegas, NV" },
           ].map((s) => (
-            <div key={s.k} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-              <div className="text-[10px] uppercase tracking-wider text-white/50">{s.k}</div>
+            <div key={s.k} className="arya-card p-4">
+              <div className="text-[10px] uppercase tracking-wider text-[var(--arya-text-mute)]">{s.k}</div>
               <div className="mt-1 font-heading text-base font-bold">{s.v}</div>
             </div>
+
           ))}
         </div>
       </section>
