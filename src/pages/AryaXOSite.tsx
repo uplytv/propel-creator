@@ -188,37 +188,35 @@ export default function AryaXOSite() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-[#00FF85]/30">
+    <div className="arya-site min-h-screen selection:bg-[#00FF85]/30">
       {/* Sticky top bar */}
-      <nav className="sticky top-0 z-40 backdrop-blur-xl bg-black/60 border-b border-white/5">
+      <nav className="sticky top-0 z-40 backdrop-blur-xl bg-black/60 border-b border-[var(--arya-border)]">
         <div className="mx-auto max-w-6xl px-5 h-14 flex items-center justify-between gap-3">
           <a href="#top" className="flex items-center gap-2 font-heading font-extrabold tracking-tight text-sm">
-            ARYA <span className="text-[#00FF85]">XO</span>
+            ARYA <span className="text-[var(--arya-cta)]">XO</span>
           </a>
-          <div className="hidden sm:flex items-center gap-6 text-xs text-white/70">
-            <a href="#music" className="hover:text-white">Music</a>
-            <a href="#videos" className="hover:text-white">Videos</a>
-            <a href="#about" className="hover:text-white">About</a>
-            <a href="#tour" className="hover:text-white">Tour</a>
-            <a href="#booking" className="hover:text-white">Booking</a>
+          <div className="hidden sm:flex items-center gap-6 text-xs">
+            <a href="#music" className="arya-link">Music</a>
+            <a href="#videos" className="arya-link">Videos</a>
+            <a href="#about" className="arya-link">About</a>
+            <a href="#tour" className="arya-link">Tour</a>
+            <a href="#booking" className="arya-link">Booking</a>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handleShare}
-              className="inline-flex items-center gap-1.5 rounded-full bg-[#00FF85] text-black px-3 py-1.5 text-[11px] font-bold hover:brightness-110 min-h-[36px]"
+              className="arya-btn arya-btn--primary arya-btn--sm"
               aria-label="Share this page"
             >
               <Share2 className="h-3.5 w-3.5" /> Share
             </button>
-            <a
-              href="/arya-xo"
-              className="text-[11px] rounded-full bg-white/10 hover:bg-white/15 px-3 py-1.5"
-            >
+            <a href="/arya-xo" className="arya-btn arya-btn--ghost arya-btn--sm">
               Links
             </a>
           </div>
         </div>
       </nav>
+
 
       {/* Share modal */}
       {shareOpen && (
@@ -240,18 +238,15 @@ export default function AryaXOSite() {
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <p className="text-xs text-white/60 mb-2">Public link</p>
-            <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] p-2">
+            <p className="text-xs text-[var(--arya-text-mute)] mb-2">Public link</p>
+            <div className="flex items-center gap-2 arya-card p-2">
               <input
                 readOnly
                 value={SHARE_URL}
                 onFocus={(e) => e.currentTarget.select()}
                 className="flex-1 bg-transparent text-sm px-2 py-2 outline-none truncate"
               />
-              <button
-                onClick={handleCopy}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-[#00FF85] text-black px-3 py-2 text-xs font-bold hover:brightness-110 min-h-[40px]"
-              >
+              <button onClick={handleCopy} className="arya-btn arya-btn--primary arya-btn--sm">
                 {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                 {copied ? "Copied" : "Copy"}
               </button>
@@ -261,7 +256,7 @@ export default function AryaXOSite() {
                 href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SHARE_URL)}&text=${encodeURIComponent("Arya XO — 150 BANDS out now")}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-lg border border-white/10 bg-white/[0.04] py-2 text-center hover:bg-white/10"
+                className="arya-btn arya-btn--ghost arya-btn--sm"
               >
                 X / Twitter
               </a>
@@ -269,17 +264,18 @@ export default function AryaXOSite() {
                 href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SHARE_URL)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-lg border border-white/10 bg-white/[0.04] py-2 text-center hover:bg-white/10"
+                className="arya-btn arya-btn--ghost arya-btn--sm"
               >
                 Facebook
               </a>
               <a
                 href={`sms:?&body=${encodeURIComponent(`Arya XO — ${SHARE_URL}`)}`}
-                className="rounded-lg border border-white/10 bg-white/[0.04] py-2 text-center hover:bg-white/10"
+                className="arya-btn arya-btn--ghost arya-btn--sm"
               >
                 Text
               </a>
             </div>
+
           </div>
         </div>
       )}
@@ -295,15 +291,15 @@ export default function AryaXOSite() {
 
         <div className="mx-auto max-w-6xl px-5 pt-16 pb-16 sm:pt-24 sm:pb-24 grid sm:grid-cols-[1.1fr_1fr] gap-10 items-center">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#00FF85]/30 bg-[#00FF85]/10 px-3 py-1.5 text-[11px] text-[#00FF85]">
+            <div className="arya-chip">
               <Sparkles className="h-3 w-3" /> 150 BANDS — track 2 on HUGEL&apos;s album &lsquo;21&rsquo;
             </div>
             <h1 className="mt-5 font-heading font-extrabold tracking-tight leading-[0.92] text-[52px] sm:text-[112px]">
-              ARYA <span className="text-[#00FF85]">XO</span>
+              ARYA <span className="text-[var(--arya-cta)]">XO</span>
             </h1>
-            <p className="mt-5 text-base sm:text-lg text-white/80 max-w-xl">
+            <p className="mt-5 text-base sm:text-lg text-[var(--arya-text-dim)] max-w-xl">
               22-year-old singer, rapper & songwriter from Las Vegas. Featured on{" "}
-              <span className="text-white font-semibold">HUGEL × NBA YoungBoy &mdash; &ldquo;150 BANDS&rdquo;</span>,
+              <span className="text-[var(--arya-text)] font-semibold">HUGEL × NBA YoungBoy &mdash; &ldquo;150 BANDS&rdquo;</span>,
               the second cut on HUGEL&apos;s new album <span className="italic">21</span>.
             </p>
 
@@ -312,17 +308,15 @@ export default function AryaXOSite() {
                 href="https://open.spotify.com/search/150%20Bands%20Hugel"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#00FF85] px-5 py-3.5 text-sm font-bold text-black hover:brightness-110 transition shadow-[0_10px_40px_-10px_rgba(0,255,133,0.7)] min-h-[48px]"
+                className="arya-btn arya-btn--primary arya-btn--lg"
               >
-                <Play className="h-4 w-4 fill-black" /> Stream 150 BANDS
+                <Play className="h-4 w-4 fill-current" /> Stream 150 BANDS
               </a>
-              <a
-                href="#booking"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-3.5 text-sm font-semibold hover:bg-white/10 transition min-h-[48px]"
-              >
+              <a href="#booking" className="arya-btn arya-btn--ghost arya-btn--lg">
                 <Mail className="h-4 w-4" /> Book Arya XO
               </a>
             </div>
+
 
           </div>
 
@@ -368,22 +362,23 @@ export default function AryaXOSite() {
               href={r.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-white/[0.02] p-5 hover:border-[#00FF85]/40 transition"
+              className="arya-card arya-card--interactive group relative overflow-hidden p-5"
             >
-              <div className="aspect-square rounded-xl overflow-hidden bg-black/40 ring-1 ring-white/10 mb-4 relative">
+              <div className="aspect-square rounded-xl overflow-hidden bg-black/40 ring-1 ring-[var(--arya-border)] mb-4 relative">
                 <img src={portrait} alt={r.title} className="h-full w-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition duration-500" />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="h-14 w-14 rounded-full bg-[#00FF85] flex items-center justify-center shadow-lg group-hover:scale-110 transition">
-                    <Play className="h-6 w-6 fill-black text-black" />
+                  <span className="h-14 w-14 rounded-full bg-[var(--arya-cta)] text-[var(--arya-cta-fg)] flex items-center justify-center shadow-[var(--arya-glow)] group-hover:scale-110 transition">
+                    <Play className="h-6 w-6 fill-current" />
                   </span>
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-[#00FF85]">
+              <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-[var(--arya-cta)]">
                 <Sparkles className="h-3 w-3" /> {r.tag} · {r.year}
               </div>
               <div className="mt-1 font-heading text-xl font-bold">{r.title}</div>
-              <div className="text-xs text-white/60">{r.feat}</div>
+              <div className="text-xs text-[var(--arya-text-mute)]">{r.feat}</div>
             </a>
+
           ))}
         </div>
       </section>
@@ -459,10 +454,11 @@ export default function AryaXOSite() {
             { k: "Co-signs", v: "HUGEL · NBA YB · Roy Woods" },
             { k: "Based in", v: "Las Vegas, NV" },
           ].map((s) => (
-            <div key={s.k} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-              <div className="text-[10px] uppercase tracking-wider text-white/50">{s.k}</div>
+            <div key={s.k} className="arya-card p-4">
+              <div className="text-[10px] uppercase tracking-wider text-[var(--arya-text-mute)]">{s.k}</div>
               <div className="mt-1 font-heading text-base font-bold">{s.v}</div>
             </div>
+
           ))}
         </div>
       </section>
@@ -477,53 +473,54 @@ export default function AryaXOSite() {
         id="booking"
         className="mx-auto max-w-6xl px-5 py-16 sm:py-20 border-t border-white/5"
       >
-        <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-[#00FF85]/15 via-white/[0.04] to-white/[0.02] p-6 sm:p-10">
+        <div className="arya-card arya-card--feature rounded-3xl p-6 sm:p-10">
           <div className="grid lg:grid-cols-[1fr_1.2fr] gap-8 lg:gap-12">
             {/* Left: pitch */}
             <div>
-              <p className="text-[11px] uppercase tracking-[0.2em] text-[#00FF85]">Direct booking</p>
+              <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--arya-cta)]">Direct booking</p>
               <h2 className="mt-2 font-heading text-3xl sm:text-4xl font-bold leading-tight">
                 Book Arya XO in 60 seconds.
               </h2>
-              <p className="mt-3 text-white/75 max-w-md">
+              <p className="mt-3 text-[var(--arya-text-dim)] max-w-md">
                 Fill four fields, hit send. No agents, no back-and-forth — your inquiry
                 lands directly in his team&apos;s inbox on UPLY and gets a same-week reply.
               </p>
 
               <div className="mt-6 grid grid-cols-2 gap-3">
-                <div className="rounded-xl border border-white/10 bg-black/30 p-4">
-                  <MapPin className="h-4 w-4 text-[#00FF85]" />
+                <div className="arya-card p-4">
+                  <MapPin className="h-4 w-4 text-[var(--arya-cta)]" />
                   <div className="mt-2 font-semibold text-sm">Touring from</div>
-                  <div className="text-white/60 text-xs">Las Vegas, NV — worldwide</div>
+                  <div className="text-[var(--arya-text-mute)] text-xs">Las Vegas, NV — worldwide</div>
                 </div>
-                <div className="rounded-xl border border-white/10 bg-black/30 p-4">
-                  <Calendar className="h-4 w-4 text-[#00FF85]" />
+                <div className="arya-card p-4">
+                  <Calendar className="h-4 w-4 text-[var(--arya-cta)]" />
                   <div className="mt-2 font-semibold text-sm">Availability</div>
-                  <div className="text-white/60 text-xs">Now booking 2026</div>
+                  <div className="text-[var(--arya-text-mute)] text-xs">Now booking 2026</div>
                 </div>
-                <div className="rounded-xl border border-white/10 bg-black/30 p-4">
-                  <DollarSign className="h-4 w-4 text-[#00FF85]" />
+                <div className="arya-card p-4">
+                  <DollarSign className="h-4 w-4 text-[var(--arya-cta)]" />
                   <div className="mt-2 font-semibold text-sm">Fee range</div>
-                  <div className="text-white/60 text-xs">Tiered — share your budget</div>
+                  <div className="text-[var(--arya-text-mute)] text-xs">Tiered — share your budget</div>
                 </div>
-                <div className="rounded-xl border border-white/10 bg-black/30 p-4">
-                  <Users className="h-4 w-4 text-[#00FF85]" />
+                <div className="arya-card p-4">
+                  <Users className="h-4 w-4 text-[var(--arya-cta)]" />
                   <div className="mt-2 font-semibold text-sm">Lineups welcome</div>
-                  <div className="text-white/60 text-xs">Festivals, clubs, brand events</div>
+                  <div className="text-[var(--arya-text-mute)] text-xs">Festivals, clubs, brand events</div>
                 </div>
               </div>
 
-              <div className="mt-6 text-[11px] text-white/40">
-                Prefer email? <a className="underline hover:text-white/70" href="mailto:booking@aryaxo.com">booking@aryaxo.com</a>
+              <div className="mt-6 text-[11px] text-[var(--arya-text-faint)]">
+                Prefer email? <a className="arya-link underline" href="mailto:booking@aryaxo.com">booking@aryaxo.com</a>
               </div>
             </div>
 
             {/* Right: form */}
-            <div className="rounded-2xl border border-white/10 bg-black/40 backdrop-blur p-5 sm:p-6">
+            <div className="arya-card p-5 sm:p-6">
+
               {submitted ? (
                 <div className="min-h-[420px] flex flex-col items-center justify-center text-center">
-                  <div className="h-14 w-14 rounded-full bg-[#00FF85] flex items-center justify-center mb-4">
-                    <Check className="h-7 w-7 text-black" strokeWidth={3} />
+                  <div className="h-14 w-14 rounded-full bg-[var(--arya-cta)] text-[var(--arya-cta-fg)] flex items-center justify-center mb-4 shadow-[var(--arya-glow)]">
+                    <Check className="h-7 w-7" strokeWidth={3} />
                   </div>
                   <h3 className="font-heading text-2xl font-bold">Inquiry sent.</h3>
                   <p className="mt-2 text-sm text-white/70 max-w-sm">
@@ -651,7 +648,7 @@ export default function AryaXOSite() {
                   <button
                     type="submit"
                     disabled={!canSubmit || submitting}
-                    className="w-full mt-1 inline-flex items-center justify-center gap-2 rounded-full bg-[#00FF85] px-5 py-3 text-sm font-bold text-black hover:brightness-110 transition disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px]"
+                    className="arya-btn arya-btn--primary arya-btn--lg w-full mt-1 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                     {submitting ? "Sending…" : "Send booking inquiry"}
@@ -679,7 +676,7 @@ export default function AryaXOSite() {
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs text-white/80 hover:bg-white/10 hover:text-white transition"
+              className="arya-btn arya-btn--ghost arya-btn--sm"
             >
               <Icon className="h-4 w-4" /> {label}
             </a>
@@ -700,17 +697,17 @@ export default function AryaXOSite() {
   );
 }
 
-const inputCx =
-  "w-full rounded-lg bg-white/[0.04] border border-white/10 px-3 py-2.5 text-[15px] text-white placeholder:text-white/30 focus:outline-none focus:border-[#00FF85]/50 focus:bg-white/[0.06] transition";
+const inputCx = "arya-input";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="block text-[11px] uppercase tracking-wider text-white/50 mb-1.5">{label}</span>
+      <span className="arya-label">{label}</span>
       {children}
     </label>
   );
 }
+
 
 // ── Tour requests (anonymous voting) ─────────────────────
 interface TourRequest {
@@ -845,24 +842,25 @@ function TourRequestsSection() {
                 placeholder="City"
                 required
                 maxLength={80}
-                className="rounded-lg bg-white/[0.04] border border-white/10 px-3 py-2.5 text-[15px] placeholder:text-white/30 focus:outline-none focus:border-[#00FF85]/50"
+                className="arya-input"
               />
               <input
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
                 placeholder="Country"
                 maxLength={80}
-                className="rounded-lg bg-white/[0.04] border border-white/10 px-3 py-2.5 text-[15px] placeholder:text-white/30 focus:outline-none focus:border-[#00FF85]/50"
+                className="arya-input"
               />
             </div>
             <button
               type="submit"
               disabled={submitting || !city.trim()}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-[#00FF85] px-5 py-3 text-sm font-bold text-black hover:brightness-110 transition disabled:opacity-50 min-h-[44px]"
+              className="arya-btn arya-btn--primary w-full disabled:opacity-50"
             >
               {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
               Request my city
             </button>
+
             {error && (
               <div className="text-xs text-rose-300 bg-rose-500/10 border border-rose-500/30 rounded-lg p-2">
                 {error}
@@ -884,25 +882,22 @@ function TourRequestsSection() {
                     key={t.id}
                     onClick={() => vote(t.id)}
                     disabled={voted.has(t.id)}
-                    className={`group text-left rounded-2xl border p-4 transition ${
-                      idx === 0
-                        ? "bg-gradient-to-br from-[#00FF85]/20 to-white/[0.03] border-[#00FF85]/30"
-                        : "bg-white/[0.03] border-white/10 hover:border-white/20"
-                    }`}
+                    className={`arya-card ${idx === 0 ? "arya-card--feature" : "arya-card--interactive"} text-left p-4 disabled:opacity-70 disabled:cursor-default`}
                   >
                     <div className="flex items-start justify-between">
-                      <div className="text-[10px] uppercase tracking-wider text-white/50">#{idx + 1}</div>
-                      <div className={`text-[10px] uppercase tracking-wider font-bold ${idx === 0 ? "text-[#00FF85]" : "text-white/40"}`}>
+                      <div className="text-[10px] uppercase tracking-wider text-[var(--arya-text-mute)]">#{idx + 1}</div>
+                      <div className={`text-[10px] uppercase tracking-wider font-bold ${idx === 0 ? "text-[var(--arya-cta)]" : "text-[var(--arya-text-faint)]"}`}>
                         {t.vote_count} {t.vote_count === 1 ? "vote" : "votes"}
                       </div>
                     </div>
                     <div className="mt-2 font-heading text-lg font-bold leading-tight">{t.city}</div>
-                    {t.country && <div className="text-xs text-white/50">{t.country}</div>}
-                    <div className={`mt-3 text-[11px] font-semibold ${voted.has(t.id) ? "text-white/40" : "text-[#00FF85] group-hover:underline"}`}>
+                    {t.country && <div className="text-xs text-[var(--arya-text-mute)]">{t.country}</div>}
+                    <div className={`mt-3 text-[11px] font-semibold ${voted.has(t.id) ? "text-[var(--arya-text-faint)]" : "text-[var(--arya-cta)]"}`}>
                       {voted.has(t.id) ? "✓ Voted" : "+ Add vote"}
                     </div>
                   </button>
                 ))}
+
               </div>
 
               {rest.length > 0 && (
@@ -919,14 +914,15 @@ function TourRequestsSection() {
                       <button
                         onClick={() => vote(t.id)}
                         disabled={voted.has(t.id)}
-                        className={`text-[11px] rounded-full px-3 py-1.5 min-h-[32px] border transition ${
+                        className={
                           voted.has(t.id)
-                            ? "bg-white/5 border-white/10 text-white/40"
-                            : "bg-[#00FF85] text-black border-[#00FF85] hover:brightness-110 font-bold"
-                        }`}
+                            ? "arya-btn arya-btn--ghost arya-btn--sm opacity-60"
+                            : "arya-btn arya-btn--primary arya-btn--sm"
+                        }
                       >
                         {voted.has(t.id) ? "Voted" : "Vote"}
                       </button>
+
                     </li>
                   ))}
                 </ul>

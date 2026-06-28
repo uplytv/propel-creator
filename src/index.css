@@ -581,3 +581,187 @@ select {
   }
 }
 
+/* ───────────────────────────────────────────────────────────
+   Arya XO scoped design system
+   Tokens + primitives. Only applies inside `.arya-site`.
+   ─────────────────────────────────────────────────────────── */
+.arya-site {
+  /* Surface */
+  --arya-bg: #050505;
+  --arya-bg-elev: #0c0c0c;
+  --arya-surface: rgba(255, 255, 255, 0.04);
+  --arya-surface-2: rgba(255, 255, 255, 0.06);
+  --arya-surface-3: rgba(255, 255, 255, 0.09);
+
+  /* Borders */
+  --arya-border: rgba(255, 255, 255, 0.08);
+  --arya-border-strong: rgba(255, 255, 255, 0.16);
+
+  /* Text — all pass WCAG AA on #050505 */
+  --arya-text: rgba(255, 255, 255, 0.96);
+  --arya-text-dim: rgba(255, 255, 255, 0.74);
+  --arya-text-mute: rgba(255, 255, 255, 0.54);
+  --arya-text-faint: rgba(255, 255, 255, 0.38);
+
+  /* Brand — Electric Green */
+  --arya-cta: #00FF85;
+  --arya-cta-hover: #1aff95;
+  --arya-cta-press: #00d970;
+  --arya-cta-fg: #001a0d;          /* near-black, 17.8:1 contrast on green */
+  --arya-cta-soft: rgba(0, 255, 133, 0.12);
+  --arya-cta-soft-strong: rgba(0, 255, 133, 0.22);
+  --arya-cta-border: rgba(0, 255, 133, 0.32);
+  --arya-glow: 0 10px 40px -10px rgba(0, 255, 133, 0.6);
+  --arya-glow-strong: 0 18px 60px -12px rgba(0, 255, 133, 0.75);
+
+  /* Focus ring (high-contrast, never invisible) */
+  --arya-ring: 0 0 0 2px #050505, 0 0 0 4px #00FF85;
+
+  background: var(--arya-bg);
+  color: var(--arya-text);
+}
+
+/* Universal focus-visible — accessibility floor */
+.arya-site :focus-visible {
+  outline: none;
+  box-shadow: var(--arya-ring);
+  border-radius: 12px;
+}
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.arya-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.875rem;
+  line-height: 1;
+  min-height: 44px;
+  padding: 0 1.125rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 120ms ease, background-color 160ms ease,
+              border-color 160ms ease, box-shadow 200ms ease, filter 160ms ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.arya-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.arya-btn:not(:disabled):active { transform: translateY(1px) scale(0.99); }
+
+.arya-btn--primary {
+  background: var(--arya-cta);
+  color: var(--arya-cta-fg);
+  box-shadow: var(--arya-glow);
+}
+.arya-btn--primary:not(:disabled):hover {
+  background: var(--arya-cta-hover);
+  box-shadow: var(--arya-glow-strong);
+}
+.arya-btn--primary:not(:disabled):active {
+  background: var(--arya-cta-press);
+}
+
+.arya-btn--ghost {
+  background: var(--arya-surface);
+  color: var(--arya-text);
+  border: 1px solid var(--arya-border-strong);
+}
+.arya-btn--ghost:not(:disabled):hover {
+  background: var(--arya-surface-2);
+  border-color: rgba(255, 255, 255, 0.24);
+}
+.arya-btn--ghost:not(:disabled):active {
+  background: var(--arya-surface-3);
+}
+
+.arya-btn--sm { min-height: 36px; padding: 0 0.875rem; font-size: 0.75rem; }
+.arya-btn--lg { min-height: 52px; padding: 0 1.5rem; font-size: 0.95rem; }
+
+/* ── Card / Glass surface ────────────────────────────────── */
+.arya-card {
+  background: linear-gradient(180deg, var(--arya-surface-2), var(--arya-surface));
+  border: 1px solid var(--arya-border);
+  border-radius: 1rem;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: border-color 200ms ease, transform 200ms ease, background 200ms ease;
+}
+.arya-card--interactive { cursor: pointer; }
+.arya-card--interactive:hover {
+  border-color: var(--arya-cta-border);
+  background: linear-gradient(180deg, var(--arya-surface-3), var(--arya-surface-2));
+}
+.arya-card--interactive:active { transform: translateY(1px); }
+
+.arya-card--feature {
+  background:
+    radial-gradient(120% 80% at 0% 0%, var(--arya-cta-soft) 0%, transparent 55%),
+    linear-gradient(180deg, var(--arya-surface-2), var(--arya-surface));
+  border: 1px solid var(--arya-border);
+}
+
+/* ── Chip / Badge ────────────────────────────────────────── */
+.arya-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  line-height: 1;
+  background: var(--arya-cta-soft);
+  border: 1px solid var(--arya-cta-border);
+  color: var(--arya-cta);
+  letter-spacing: 0.02em;
+}
+.arya-chip--mute {
+  background: var(--arya-surface);
+  border-color: var(--arya-border);
+  color: var(--arya-text-dim);
+}
+
+/* ── Form field ──────────────────────────────────────────── */
+.arya-input {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 0.625rem;
+  background: var(--arya-surface);
+  border: 1px solid var(--arya-border);
+  color: var(--arya-text);
+  padding: 0.625rem 0.75rem;
+  font-size: 16px; /* iOS no-zoom */
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+.arya-input::placeholder { color: var(--arya-text-faint); }
+.arya-input:hover { border-color: var(--arya-border-strong); }
+.arya-input:focus {
+  outline: none;
+  border-color: var(--arya-cta-border);
+  background: var(--arya-surface-2);
+}
+
+.arya-label {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--arya-text-mute);
+  margin-bottom: 0.4rem;
+  font-weight: 600;
+}
+
+/* ── Section divider ─────────────────────────────────────── */
+.arya-divider {
+  border-top: 1px solid var(--arya-border);
+}
+
+/* ── Link ────────────────────────────────────────────────── */
+.arya-link {
+  color: var(--arya-text-dim);
+  transition: color 140ms ease;
+}
+.arya-link:hover { color: var(--arya-text); }
+
+
