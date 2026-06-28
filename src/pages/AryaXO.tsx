@@ -122,7 +122,7 @@ export default function AryaXO() {
       return el;
     };
     const desc =
-      "Arya XO — 22-year-old singer & rapper. From opening for Trippie Redd, Lil Yachty and Tory Lanez at 17 to dropping '150 BANDS' with HUGEL and NBA YoungBoy. Listen, watch and follow on UPLY.";
+      "Arya XO — 22-year-old Iranian American rapper, singer & actor. From opening for Trippie Redd, Lil Yachty and Tory Lanez at 17 to dropping the summer's track '150 BANDS' with HUGEL and NBA YoungBoy. Listen, watch and follow on UPLY.";
     setMeta('meta[name="description"]', "name", "description", desc);
     setMeta('meta[property="og:title"]', "property", "og:title", "Arya XO — 150 BANDS out now");
     setMeta('meta[property="og:description"]', "property", "og:description", desc);
