@@ -842,24 +842,25 @@ function TourRequestsSection() {
                 placeholder="City"
                 required
                 maxLength={80}
-                className="rounded-lg bg-white/[0.04] border border-white/10 px-3 py-2.5 text-[15px] placeholder:text-white/30 focus:outline-none focus:border-[#00FF85]/50"
+                className="arya-input"
               />
               <input
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
                 placeholder="Country"
                 maxLength={80}
-                className="rounded-lg bg-white/[0.04] border border-white/10 px-3 py-2.5 text-[15px] placeholder:text-white/30 focus:outline-none focus:border-[#00FF85]/50"
+                className="arya-input"
               />
             </div>
             <button
               type="submit"
               disabled={submitting || !city.trim()}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-[#00FF85] px-5 py-3 text-sm font-bold text-black hover:brightness-110 transition disabled:opacity-50 min-h-[44px]"
+              className="arya-btn arya-btn--primary w-full disabled:opacity-50"
             >
               {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
               Request my city
             </button>
+
             {error && (
               <div className="text-xs text-rose-300 bg-rose-500/10 border border-rose-500/30 rounded-lg p-2">
                 {error}
