@@ -114,17 +114,21 @@ describe("AryaXOSite — buttons route correctly", () => {
 
   it("social row routes to the right external profiles", () => {
     render(<AryaXOSite />);
-    expect(screen.getByRole("link", { name: /Instagram/i })).toHaveAttribute(
-      "href",
-      "https://www.instagram.com/litreeezy/"
-    );
-    expect(screen.getByRole("link", { name: /YouTube/i }).getAttribute("href"))
-      .toMatch(/youtube\.com\/@litreeezy/);
+    const ig = screen.getByRole("link", { name: /Instagram/i });
+    expect(ig).toHaveAttribute("href", "https://www.instagram.com/litreeezy/");
+
+    // YouTube appears twice (video link + social pill) — find the social pill
+    const yt = screen
+      .getAllByRole("link", { name: /YouTube/i })
+      .find((el) => el.getAttribute("href")?.includes("@litreeezy"));
+    expect(yt?.getAttribute("href")).toMatch(/youtube\.com\/@litreeezy/);
+
     expect(screen.getByRole("link", { name: /Apple Music/i }).getAttribute("href"))
       .toMatch(/music\.apple\.com/);
     expect(screen.getByRole("link", { name: /Spotify/i }).getAttribute("href"))
       .toMatch(/open\.spotify\.com\/search\/Arya/);
   });
+
 
   it("footer 'Powered by UPLY' links to home", () => {
     render(<AryaXOSite />);
