@@ -882,25 +882,22 @@ function TourRequestsSection() {
                     key={t.id}
                     onClick={() => vote(t.id)}
                     disabled={voted.has(t.id)}
-                    className={`group text-left rounded-2xl border p-4 transition ${
-                      idx === 0
-                        ? "bg-gradient-to-br from-[#00FF85]/20 to-white/[0.03] border-[#00FF85]/30"
-                        : "bg-white/[0.03] border-white/10 hover:border-white/20"
-                    }`}
+                    className={`arya-card ${idx === 0 ? "arya-card--feature" : "arya-card--interactive"} text-left p-4 disabled:opacity-70 disabled:cursor-default`}
                   >
                     <div className="flex items-start justify-between">
-                      <div className="text-[10px] uppercase tracking-wider text-white/50">#{idx + 1}</div>
-                      <div className={`text-[10px] uppercase tracking-wider font-bold ${idx === 0 ? "text-[#00FF85]" : "text-white/40"}`}>
+                      <div className="text-[10px] uppercase tracking-wider text-[var(--arya-text-mute)]">#{idx + 1}</div>
+                      <div className={`text-[10px] uppercase tracking-wider font-bold ${idx === 0 ? "text-[var(--arya-cta)]" : "text-[var(--arya-text-faint)]"}`}>
                         {t.vote_count} {t.vote_count === 1 ? "vote" : "votes"}
                       </div>
                     </div>
                     <div className="mt-2 font-heading text-lg font-bold leading-tight">{t.city}</div>
-                    {t.country && <div className="text-xs text-white/50">{t.country}</div>}
-                    <div className={`mt-3 text-[11px] font-semibold ${voted.has(t.id) ? "text-white/40" : "text-[#00FF85] group-hover:underline"}`}>
+                    {t.country && <div className="text-xs text-[var(--arya-text-mute)]">{t.country}</div>}
+                    <div className={`mt-3 text-[11px] font-semibold ${voted.has(t.id) ? "text-[var(--arya-text-faint)]" : "text-[var(--arya-cta)]"}`}>
                       {voted.has(t.id) ? "✓ Voted" : "+ Add vote"}
                     </div>
                   </button>
                 ))}
+
               </div>
 
               {rest.length > 0 && (
