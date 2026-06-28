@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Music2,
   Instagram,
@@ -10,9 +10,15 @@ import {
   Crown,
   MapPin,
   Calendar,
+  Share2,
+  Check,
+  Copy,
+  X,
 } from "lucide-react";
 import portraitAsset from "@/assets/arya-xo-150bands.png.asset.json";
 import bgAsset from "@/assets/arya-xo-bg.png.asset.json";
+
+const SHARE_URL = "https://uply.tv/arya-xo-site";
 
 /**
  * Arya XO — full artist website, embedded inside UPLY.
@@ -83,11 +89,47 @@ export default function AryaXOSite() {
     };
   }, []);
 
+  const [shareOpen, setShareOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(SHARE_URL);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = SHARE_URL;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    }
+  };
+
+  const handleShare = async () => {
+    if (typeof navigator !== "undefined" && (navigator as any).share) {
+      try {
+        await (navigator as any).share({
+          title: "Arya XO — Official Site",
+          text: "Arya XO — 150 BANDS w/ HUGEL & NBA YoungBoy. Music, videos & booking.",
+          url: SHARE_URL,
+        });
+        return;
+      } catch {
+        /* fall through to modal */
+      }
+    }
+    setShareOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-[#050505] text-white selection:bg-[#00FF85]/30">
       {/* Sticky top bar */}
       <nav className="sticky top-0 z-40 backdrop-blur-xl bg-black/50 border-b border-white/5">
-        <div className="mx-auto max-w-6xl px-5 h-14 flex items-center justify-between">
+        <div className="mx-auto max-w-6xl px-5 h-14 flex items-center justify-between gap-3">
           <a href="#top" className="flex items-center gap-2 font-heading font-extrabold tracking-tight">
             <Crown className="h-4 w-4 text-[#00FF85]" />
             ARYA <span className="text-[#00FF85]">XO</span>
@@ -98,14 +140,88 @@ export default function AryaXOSite() {
             <a href="#about" className="hover:text-white">About</a>
             <a href="#booking" className="hover:text-white">Booking</a>
           </div>
-          <a
-            href="/arya-xo"
-            className="text-[11px] rounded-full bg-white/10 hover:bg-white/15 px-3 py-1.5"
-          >
-            Links
-          </a>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleShare}
+              className="inline-flex items-center gap-1.5 rounded-full bg-[#00FF85] text-black px-3 py-1.5 text-[11px] font-bold hover:brightness-110 min-h-[36px]"
+              aria-label="Share this page"
+            >
+              <Share2 className="h-3.5 w-3.5" /> Share
+            </button>
+            <a
+              href="/arya-xo"
+              className="text-[11px] rounded-full bg-white/10 hover:bg-white/15 px-3 py-1.5"
+            >
+              Links
+            </a>
+          </div>
         </div>
       </nav>
+
+      {/* Share modal */}
+      {shareOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          onClick={() => setShareOpen(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl border border-white/10 bg-[#0c0c0c] p-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-heading text-lg font-bold">Share Arya XO</h3>
+              <button
+                onClick={() => setShareOpen(false)}
+                className="h-9 w-9 rounded-full flex items-center justify-center hover:bg-white/10"
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <p className="text-xs text-white/60 mb-2">Public link</p>
+            <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] p-2">
+              <input
+                readOnly
+                value={SHARE_URL}
+                onFocus={(e) => e.currentTarget.select()}
+                className="flex-1 bg-transparent text-sm px-2 py-2 outline-none truncate"
+              />
+              <button
+                onClick={handleCopy}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#00FF85] text-black px-3 py-2 text-xs font-bold hover:brightness-110 min-h-[40px]"
+              >
+                {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                {copied ? "Copied" : "Copy"}
+              </button>
+            </div>
+            <div className="mt-4 grid grid-cols-3 gap-2 text-xs">
+              <a
+                href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SHARE_URL)}&text=${encodeURIComponent("Arya XO — 150 BANDS out now")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg border border-white/10 bg-white/[0.04] py-2 text-center hover:bg-white/10"
+              >
+                X / Twitter
+              </a>
+              <a
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SHARE_URL)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg border border-white/10 bg-white/[0.04] py-2 text-center hover:bg-white/10"
+              >
+                Facebook
+              </a>
+              <a
+                href={`sms:?&body=${encodeURIComponent(`Arya XO — ${SHARE_URL}`)}`}
+                className="rounded-lg border border-white/10 bg-white/[0.04] py-2 text-center hover:bg-white/10"
+              >
+                Text
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* HERO */}
       <header id="top" className="relative isolate overflow-hidden">
