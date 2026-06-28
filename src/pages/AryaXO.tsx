@@ -122,7 +122,7 @@ export default function AryaXO() {
       return el;
     };
     const desc =
-      "Arya XO — 22-year-old singer & rapper. From opening for Trippie Redd, Lil Yachty and Tory Lanez at 17 to dropping '150 BANDS' with HUGEL and NBA YoungBoy. Listen, watch and follow on UPLY.";
+      "Arya XO — 22-year-old Iranian American rapper, singer & actor. From opening for Trippie Redd, Lil Yachty and Tory Lanez at 17 to dropping the summer's track '150 BANDS' with HUGEL and NBA YoungBoy. Listen, watch and follow on UPLY.";
     setMeta('meta[name="description"]', "name", "description", desc);
     setMeta('meta[property="og:title"]', "property", "og:title", "Arya XO — 150 BANDS out now");
     setMeta('meta[property="og:description"]', "property", "og:description", desc);
@@ -242,8 +242,9 @@ export default function AryaXO() {
         <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 sm:p-8">
           <h2 className="font-heading text-2xl sm:text-3xl font-bold">The story</h2>
           <p className="mt-4 text-[15px] leading-relaxed text-white/80">
-            Arya XO is a 22-year-old singer and rapper whose sound moves between
-            melodic trap, R&B and pop crossovers. He started early — opening at{" "}
+            Arya XO is a 22-year-old <span className="text-white font-semibold">Iranian American</span>{" "}
+            rapper, singer and actor whose sound moves between melodic R&B and
+            pop-leaning crossovers. He started early — opening at{" "}
             <span className="text-white font-semibold">17</span> for{" "}
             <span className="text-white font-semibold">Trippie Redd</span>,{" "}
             <span className="text-white font-semibold">Lil Yachty</span> and{" "}
@@ -252,11 +253,10 @@ export default function AryaXO() {
           </p>
           <p className="mt-3 text-[15px] leading-relaxed text-white/80">
             In 2025 he linked with <span className="text-white font-semibold">Roy Woods</span>{" "}
-            on a release that pushed his catalog into a new lane, and capped the
-            summer with <span className="text-[#00FF85] font-semibold">"150 BANDS"</span>{" "}
+            on a release that pushed his catalog into a new lane, then dropped
+            the track of the summer — <span className="text-[#00FF85] font-semibold">"150 BANDS"</span>{" "}
             alongside <span className="text-white font-semibold">HUGEL</span> and{" "}
-            <span className="text-white font-semibold">NBA YoungBoy</span> — a
-            club-ready record built for the summer cycle.
+            <span className="text-white font-semibold">NBA YoungBoy</span>.
           </p>
 
           <dl className="mt-6 grid grid-cols-3 gap-3 text-center">

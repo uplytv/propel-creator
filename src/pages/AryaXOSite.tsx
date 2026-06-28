@@ -298,7 +298,8 @@ export default function AryaXOSite() {
               ARYA <span className="text-[var(--arya-cta)]">XO</span>
             </h1>
             <p className="mt-5 text-base sm:text-lg text-[var(--arya-text-dim)] max-w-xl">
-              22-year-old singer, rapper & songwriter from Las Vegas. Featured on{" "}
+              22-year-old Iranian American rapper, singer & actor from Las Vegas.
+              Dropped the track of the summer —{" "}
               <span className="text-[var(--arya-text)] font-semibold">HUGEL × NBA YoungBoy &mdash; &ldquo;150 BANDS&rdquo;</span>,
               the second cut on HUGEL&apos;s new album <span className="italic">21</span>.
             </p>
@@ -423,13 +424,14 @@ export default function AryaXOSite() {
             <p className="text-[11px] uppercase tracking-[0.2em] text-[#00FF85]">About</p>
             <h2 className="mt-2 font-heading text-3xl sm:text-4xl font-bold">The story so far</h2>
             <p className="mt-4 text-[15px] leading-relaxed text-white/75">
-              Arya XO grew up between Baltimore and Las Vegas in a family of musicians.
-              He was on stage before most kids hit middle school and built a sound that
-              bridges melodic trap, R&B and pop-leaning club records.
+              Arya XO is a 22-year-old Iranian American rapper, singer and actor,
+              raised between Baltimore and Las Vegas in a family of musicians.
+              He was on stage before most kids hit middle school and built a sound
+              that bridges melodic R&B and pop-leaning club records.
             </p>
             <p className="mt-3 text-[15px] leading-relaxed text-white/75">
               At 17 he was opening for Trippie Redd, Lil Yachty and Tory Lanez. At 22
-              he&apos;s featured on{" "}
+              he dropped the track of the summer —{" "}
               <span className="text-[#00FF85] font-semibold">&ldquo;150 BANDS&rdquo;</span> with HUGEL &
               NBA YoungBoy — track 2 on HUGEL&apos;s new album <span className="italic">21</span>.
             </p>
