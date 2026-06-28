@@ -8,8 +8,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 
 // ── Supabase mock ─────────────────────────────────────────
-const insertMock = vi.fn().mockResolvedValue({ error: null });
-const rpcMock = vi.fn().mockResolvedValue({ data: null, error: null });
+const insertMock = vi.fn<(payload: unknown) => Promise<{ error: unknown }>>()
+  .mockResolvedValue({ error: null });
+const rpcMock = vi.fn<(name: string, params?: unknown) => Promise<{ data: unknown; error: unknown }>>()
+  .mockResolvedValue({ data: null, error: null });
 const tourSelectChain = {
   select: vi.fn().mockReturnThis(),
   eq: vi.fn().mockReturnThis(),
@@ -20,10 +22,11 @@ const fromMock = vi.fn((table: string) => {
   if (table === "public_booking_inquiries") return { insert: insertMock };
   return tourSelectChain;
 });
-const channelMock = vi.fn(() => ({
+const channelMock = vi.fn((_name: string) => ({
   on: vi.fn().mockReturnThis(),
   subscribe: vi.fn().mockReturnThis(),
 }));
+
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
