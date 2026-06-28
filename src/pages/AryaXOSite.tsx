@@ -519,7 +519,7 @@ export default function AryaXOSite() {
 
               {submitted ? (
                 <div className="min-h-[420px] flex flex-col items-center justify-center text-center">
-                  <div className="h-14 w-14 rounded-full bg-[#00FF85] flex items-center justify-center mb-4">
+                  <div className="h-14 w-14 rounded-full bg-[var(--arya-cta)] text-[var(--arya-cta-fg)] flex items-center justify-center mb-4 shadow-[var(--arya-glow)]">
                     <Check className="h-7 w-7 text-black" strokeWidth={3} />
                   </div>
                   <h3 className="font-heading text-2xl font-bold">Inquiry sent.</h3>
