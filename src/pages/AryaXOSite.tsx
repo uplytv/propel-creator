@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Music2,
   Instagram,
@@ -10,9 +10,15 @@ import {
   Crown,
   MapPin,
   Calendar,
+  Share2,
+  Check,
+  Copy,
+  X,
 } from "lucide-react";
 import portraitAsset from "@/assets/arya-xo-150bands.png.asset.json";
 import bgAsset from "@/assets/arya-xo-bg.png.asset.json";
+
+const SHARE_URL = "https://uply.tv/arya-xo-site";
 
 /**
  * Arya XO — full artist website, embedded inside UPLY.
