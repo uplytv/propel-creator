@@ -718,3 +718,231 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     </label>
   );
 }
+
+// ── Tour requests (anonymous voting) ─────────────────────
+interface TourRequest {
+  id: string;
+  city: string;
+  country: string;
+  vote_count: number;
+}
+
+function getVoterFp(): string {
+  try {
+    const k = "uply_voter_fp";
+    let v = localStorage.getItem(k);
+    if (!v) {
+      v = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+      localStorage.setItem(k, v);
+    }
+    return v;
+  } catch {
+    return `anon-${Math.random().toString(36).slice(2)}`;
+  }
+}
+
+function getVotedSet(): Set<string> {
+  try {
+    return new Set(JSON.parse(localStorage.getItem("uply_voted_tour_arya-xo") || "[]"));
+  } catch {
+    return new Set();
+  }
+}
+function markVoted(id: string) {
+  try {
+    const s = getVotedSet();
+    s.add(id);
+    localStorage.setItem("uply_voted_tour_arya-xo", JSON.stringify(Array.from(s)));
+  } catch {/* ignore */}
+}
+
+function TourRequestsSection() {
+  const [items, setItems] = useState<TourRequest[]>([]);
+  const [voted, setVoted] = useState<Set<string>>(() => getVotedSet());
+  const [city, setCity] = useState("");
+  const [country, setCountry] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = async () => {
+    const { data } = await (supabase as any)
+      .from("public_tour_requests")
+      .select("id, city, country, vote_count")
+      .eq("artist_slug", ARTIST_SLUG)
+      .order("vote_count", { ascending: false })
+      .limit(50);
+    setItems((data || []) as TourRequest[]);
+  };
+
+  useEffect(() => {
+    load();
+    const ch = supabase
+      .channel("arya-tour-requests")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "public_tour_requests" },
+        () => load()
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, []);
+
+  const vote = async (id: string) => {
+    if (voted.has(id)) return;
+    // Optimistic
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, vote_count: i.vote_count + 1 } : i)));
+    setVoted((prev) => new Set(prev).add(id));
+    markVoted(id);
+    const { error } = await (supabase as any).rpc("vote_public_tour_request", {
+      _request_id: id,
+      _voter_fp: getVoterFp(),
+    });
+    if (error) {
+      setError(error.message);
+      load();
+    }
+  };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!city.trim()) return;
+    setSubmitting(true);
+    setError(null);
+    const { data, error } = await (supabase as any).rpc("create_public_tour_request", {
+      _artist_slug: ARTIST_SLUG,
+      _city: city.trim(),
+      _country: country.trim(),
+      _voter_fp: getVoterFp(),
+    });
+    setSubmitting(false);
+    if (error) {
+      setError(error.message);
+      return;
+    }
+    if (data) {
+      markVoted(data as string);
+      setVoted((prev) => new Set(prev).add(data as string));
+    }
+    setCity("");
+    setCountry("");
+    load();
+  };
+
+  const top = items.slice(0, 3);
+  const rest = items.slice(3);
+
+  return (
+    <section id="tour" className="mx-auto max-w-6xl px-5 py-16 sm:py-20 border-t border-white/5">
+      <div className="grid lg:grid-cols-[1.1fr_1.4fr] gap-10 items-start">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.2em] text-[#00FF85]">Tour demand</p>
+          <h2 className="mt-2 font-heading text-3xl sm:text-4xl font-bold leading-tight">
+            Pull up to your city.
+          </h2>
+          <p className="mt-3 text-white/75 max-w-md">
+            Vote your city up the list. Promoters see real demand — and Arya routes
+            tours to the cities with the loudest fans.
+          </p>
+
+          <form onSubmit={submit} className="mt-6 space-y-2">
+            <div className="grid grid-cols-[1.4fr_1fr] gap-2">
+              <input
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="City"
+                required
+                maxLength={80}
+                className="rounded-lg bg-white/[0.04] border border-white/10 px-3 py-2.5 text-[15px] placeholder:text-white/30 focus:outline-none focus:border-[#00FF85]/50"
+              />
+              <input
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                placeholder="Country"
+                maxLength={80}
+                className="rounded-lg bg-white/[0.04] border border-white/10 px-3 py-2.5 text-[15px] placeholder:text-white/30 focus:outline-none focus:border-[#00FF85]/50"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={submitting || !city.trim()}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-[#00FF85] px-5 py-3 text-sm font-bold text-black hover:brightness-110 transition disabled:opacity-50 min-h-[44px]"
+            >
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
+              Request my city
+            </button>
+            {error && (
+              <div className="text-xs text-rose-300 bg-rose-500/10 border border-rose-500/30 rounded-lg p-2">
+                {error}
+              </div>
+            )}
+          </form>
+        </div>
+
+        <div>
+          {items.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-8 text-center text-sm text-white/50">
+              Be the first to put your city on the map.
+            </div>
+          ) : (
+            <>
+              <div className="grid sm:grid-cols-3 gap-3 mb-4">
+                {top.map((t, idx) => (
+                  <button
+                    key={t.id}
+                    onClick={() => vote(t.id)}
+                    disabled={voted.has(t.id)}
+                    className={`group text-left rounded-2xl border p-4 transition ${
+                      idx === 0
+                        ? "bg-gradient-to-br from-[#00FF85]/20 to-white/[0.03] border-[#00FF85]/30"
+                        : "bg-white/[0.03] border-white/10 hover:border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="text-[10px] uppercase tracking-wider text-white/50">#{idx + 1}</div>
+                      <div className={`text-[10px] uppercase tracking-wider font-bold ${idx === 0 ? "text-[#00FF85]" : "text-white/40"}`}>
+                        {t.vote_count} {t.vote_count === 1 ? "vote" : "votes"}
+                      </div>
+                    </div>
+                    <div className="mt-2 font-heading text-lg font-bold leading-tight">{t.city}</div>
+                    {t.country && <div className="text-xs text-white/50">{t.country}</div>}
+                    <div className={`mt-3 text-[11px] font-semibold ${voted.has(t.id) ? "text-white/40" : "text-[#00FF85] group-hover:underline"}`}>
+                      {voted.has(t.id) ? "✓ Voted" : "+ Add vote"}
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {rest.length > 0 && (
+                <ul className="rounded-2xl border border-white/10 bg-white/[0.02] divide-y divide-white/5">
+                  {rest.map((t, idx) => (
+                    <li key={t.id} className="flex items-center gap-3 px-4 py-3">
+                      <span className="w-7 text-[11px] text-white/40">#{idx + 4}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-semibold truncate">
+                          {t.city}{t.country ? `, ${t.country}` : ""}
+                        </div>
+                      </div>
+                      <span className="text-[11px] text-white/50 tabular-nums">{t.vote_count}</span>
+                      <button
+                        onClick={() => vote(t.id)}
+                        disabled={voted.has(t.id)}
+                        className={`text-[11px] rounded-full px-3 py-1.5 min-h-[32px] border transition ${
+                          voted.has(t.id)
+                            ? "bg-white/5 border-white/10 text-white/40"
+                            : "bg-[#00FF85] text-black border-[#00FF85] hover:brightness-110 font-bold"
+                        }`}
+                      >
+                        {voted.has(t.id) ? "Voted" : "Vote"}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
