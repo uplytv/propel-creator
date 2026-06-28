@@ -72,13 +72,18 @@ export default function SEOHead({
     setMeta("property", "og:image", img);
     setMeta("property", "og:image:width", "1200");
     setMeta("property", "og:image:height", "1200");
-    setMeta("property", "og:site_name", "Uply");
+    setMeta("property", "og:image:alt", fullTitle);
+    setMeta("property", "og:site_name", "UPLY");
+    setMeta("property", "og:locale", "en_US");
 
     // Twitter
     setMeta("name", "twitter:title", fullTitle);
     setMeta("name", "twitter:description", desc);
     setMeta("name", "twitter:image", img);
+    setMeta("name", "twitter:image:alt", fullTitle);
     setMeta("name", "twitter:card", twitterCard);
+    setMeta("name", "twitter:site", "@uplytv");
+    setMeta("name", "twitter:creator", "@uplytv");
 
     // Robots
     setMeta("name", "robots", noindex ? "noindex, nofollow" : "index, follow");
