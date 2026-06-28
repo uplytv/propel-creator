@@ -27,3 +27,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# CI test artifacts (DOM snapshots, JUnit reports)
+test-artifacts/

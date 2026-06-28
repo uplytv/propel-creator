@@ -5,8 +5,33 @@
  *  - realtime postgres_changes payload triggers a refetch and the featured cards
  *    re-rank when the underlying data changes
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor, within, act } from "@testing-library/react";
+import { writeFileSync, mkdirSync } from "node:fs";
+import { join } from "node:path";
+
+// On any failed Tour-widget test, dump the rendered DOM to test-artifacts/ so
+// CI can upload it as a "screenshot" surrogate (jsdom has no pixel buffer).
+afterEach((ctx) => {
+  if (ctx.task.result?.state !== "fail") return;
+  try {
+    const dir = join(process.cwd(), "test-artifacts", "tour");
+    mkdirSync(dir, { recursive: true });
+    const safe = ctx.task.name.replace(/[^a-z0-9]+/gi, "_").slice(0, 80);
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${ctx.task.name}</title></head><body>${document.body.innerHTML}</body></html>`;
+    writeFileSync(join(dir, `${safe}.html`), html, "utf8");
+    const err = ctx.task.result?.errors?.[0];
+    if (err) {
+      writeFileSync(
+        join(dir, `${safe}.error.txt`),
+        `${err.message}\n\n${err.stack ?? ""}`,
+        "utf8",
+      );
+    }
+  } catch {
+    // best-effort; never let the snapshot writer mask the real failure
+  }
+});
 
 type Row = { id: string; city: string; country: string; vote_count: number };
 
