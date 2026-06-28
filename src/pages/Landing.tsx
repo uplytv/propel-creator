@@ -4,6 +4,7 @@ import { motion, useScroll, useSpring } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import SEOHead from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
+import { LANDING_OG_IMAGE_URL } from "@/lib/ogImage";
 
 import HomepageNav from "@/components/landing/v2/HomepageNav";
 import HomepageHero from "@/components/landing/v2/HomepageHero";
@@ -84,7 +85,7 @@ export default function Landing() {
         title="UPLY — The Creator Operating System"
         description="Stream, teach, sell, and build community. Keep 95% of everything. The first creator platform on Roku TV."
         canonicalUrl="https://uply.tv/"
-        image="https://storage.googleapis.com/gpt-engineer-file-uploads/cikFlxVx8jfBrfytYvhbk5DVvYT2/social-images/social-1773093383614-084CEBC0-15D0-4F96-A3BD-D7F3F8441A0D.webp"
+        image={LANDING_OG_IMAGE_URL}
         type="website"
         twitterCard="summary_large_image"
         jsonLd={JSON_LD}
