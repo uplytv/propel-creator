@@ -298,7 +298,8 @@ export default function AryaXOSite() {
               ARYA <span className="text-[var(--arya-cta)]">XO</span>
             </h1>
             <p className="mt-5 text-base sm:text-lg text-[var(--arya-text-dim)] max-w-xl">
-              22-year-old singer, rapper & songwriter from Las Vegas. Featured on{" "}
+              22-year-old Iranian American rapper, singer & actor from Las Vegas.
+              Dropped the track of the summer —{" "}
               <span className="text-[var(--arya-text)] font-semibold">HUGEL × NBA YoungBoy &mdash; &ldquo;150 BANDS&rdquo;</span>,
               the second cut on HUGEL&apos;s new album <span className="italic">21</span>.
             </p>
