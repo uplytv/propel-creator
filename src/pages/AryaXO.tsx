@@ -42,22 +42,22 @@ type LinkCard = {
 const LINKS: LinkCard[] = [
   {
     label: "Spotify",
-    sub: "Arya XO — Artist Profile",
-    href: "https://open.spotify.com/search/Arya%20XO",
+    sub: "Listen on Spotify",
+    href: "https://open.spotify.com/search/Lit%20Reeezy",
     icon: Music2,
     accent: "bg-[#1DB954]",
   },
   {
     label: "Apple Music",
-    sub: "Listen on Apple Music",
-    href: "https://music.apple.com/us/search?term=Arya%20XO",
+    sub: "Lit Reeezy — verified artist",
+    href: "https://music.apple.com/us/artist/lit-reeezy/1597315016",
     icon: Music2,
     accent: "bg-gradient-to-br from-[#FA243C] to-[#FB5C74]",
   },
   {
     label: "SoundCloud",
     sub: "Latest drops & loosies",
-    href: "https://soundcloud.com/search?q=Arya%20XO",
+    href: "https://soundcloud.com/search?q=Lit%20Reeezy",
     icon: Music2,
     accent: "bg-[#FF5500]",
   },
@@ -71,39 +71,40 @@ const LINKS: LinkCard[] = [
   {
     label: "Instagram",
     sub: "@litreeezy · 263K followers",
-    href: "https://instagram.com/litreeezy",
+    href: "https://www.instagram.com/litreeezy/",
     icon: Instagram,
     accent: "bg-gradient-to-br from-[#FEDA75] via-[#FA7E1E] to-[#D62976]",
   },
   {
     label: "Facebook",
     sub: "Arya Shahbazy",
-    href: "https://facebook.com/",
+    href: "https://www.facebook.com/search/top?q=Arya%20Shahbazy",
     icon: Facebook,
     accent: "bg-[#1877F2]",
   },
   {
     label: "EPK",
-    sub: "Press kit — bio, photos, stats",
-    href: "#epk",
+    sub: "Press kit — bio, photos, collectibles",
+    href: "https://litreeezy.tunego.com/",
     icon: FileText,
     accent: "bg-white/10",
   },
   {
     label: "Website",
-    sub: "aryaxo.com",
-    href: "#",
+    sub: "litreeezy.com",
+    href: "https://litreeezy.com/",
     icon: Globe,
     accent: "bg-white/10",
   },
   {
     label: "Booking & Press",
-    sub: "Inquiries → team",
-    href: "mailto:booking@aryaxo.com",
+    sub: "Inquiries via official site",
+    href: "https://litreeezy.com/#contact",
     icon: Mail,
     accent: "bg-white/10",
   },
 ];
+
 
 export default function AryaXO() {
   useEffect(() => {
