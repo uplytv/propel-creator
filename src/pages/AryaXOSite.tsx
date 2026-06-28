@@ -306,7 +306,7 @@ export default function AryaXOSite() {
 
             <div className="mt-7 flex flex-col sm:flex-row gap-3">
               <a
-                href="https://open.spotify.com/search/150%20Bands%20Hugel%20Arya%20XO"
+                href="https://open.spotify.com/track/3QBkhZL0nUSrm6qcoSEZvt"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="arya-btn arya-btn--primary arya-btn--lg"
@@ -314,7 +314,7 @@ export default function AryaXOSite() {
                 <Play className="h-4 w-4 fill-current" /> Spotify
               </a>
               <a
-                href="https://music.apple.com/us/search?term=150%20Bands%20Hugel"
+                href="https://music.apple.com/us/song/150-bands/6778877438"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="arya-btn arya-btn--ghost arya-btn--lg"
@@ -322,7 +322,7 @@ export default function AryaXOSite() {
                 <Play className="h-4 w-4 fill-current" /> Apple Music
               </a>
               <a
-                href="https://www.youtube.com/results?search_query=Hugel+150+Bands+Arya+XO+NBA+YoungBoy"
+                href="https://www.youtube.com/watch?v=gqYburgfJ9s"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="arya-btn arya-btn--ghost arya-btn--lg"
