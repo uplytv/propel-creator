@@ -362,22 +362,23 @@ export default function AryaXOSite() {
               href={r.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-white/[0.02] p-5 hover:border-[#00FF85]/40 transition"
+              className="arya-card arya-card--interactive group relative overflow-hidden p-5"
             >
-              <div className="aspect-square rounded-xl overflow-hidden bg-black/40 ring-1 ring-white/10 mb-4 relative">
+              <div className="aspect-square rounded-xl overflow-hidden bg-black/40 ring-1 ring-[var(--arya-border)] mb-4 relative">
                 <img src={portrait} alt={r.title} className="h-full w-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition duration-500" />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="h-14 w-14 rounded-full bg-[#00FF85] flex items-center justify-center shadow-lg group-hover:scale-110 transition">
-                    <Play className="h-6 w-6 fill-black text-black" />
+                  <span className="h-14 w-14 rounded-full bg-[var(--arya-cta)] text-[var(--arya-cta-fg)] flex items-center justify-center shadow-[var(--arya-glow)] group-hover:scale-110 transition">
+                    <Play className="h-6 w-6 fill-current" />
                   </span>
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-[#00FF85]">
+              <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-[var(--arya-cta)]">
                 <Sparkles className="h-3 w-3" /> {r.tag} · {r.year}
               </div>
               <div className="mt-1 font-heading text-xl font-bold">{r.title}</div>
-              <div className="text-xs text-white/60">{r.feat}</div>
+              <div className="text-xs text-[var(--arya-text-mute)]">{r.feat}</div>
             </a>
+
           ))}
         </div>
       </section>
