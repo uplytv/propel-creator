@@ -175,12 +175,7 @@ export default function AryaXO() {
 
       {/* ── Featured track ───────────────────────────────────────────── */}
       <section className="mx-auto max-w-[680px] px-5 -mt-2">
-        <a
-          href="https://open.spotify.com/search/150%20Bands%20Hugel%20Arya%20XO"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="group block rounded-2xl border border-white/10 bg-gradient-to-br from-[#00FF85]/20 via-white/5 to-white/[0.02] p-5 hover:border-[#00FF85]/40 transition"
-        >
+        <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-[#00FF85]/20 via-white/5 to-white/[0.02] p-5">
           <div className="flex items-center gap-4">
             <div className="h-16 w-16 sm:h-20 sm:w-20 shrink-0 rounded-xl bg-black/50 ring-1 ring-white/15 flex items-center justify-center">
               <Play className="h-7 w-7 text-[#00FF85] fill-[#00FF85]" />
@@ -196,9 +191,25 @@ export default function AryaXO() {
                 HUGEL · Arya XO · NBA YoungBoy
               </div>
             </div>
-            <ExternalLink className="h-4 w-4 text-white/50 group-hover:text-white" />
           </div>
-        </a>
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            {[
+              { label: "Spotify", href: "https://open.spotify.com/search/150%20Bands%20Hugel%20Arya%20XO", bg: "bg-[#1DB954] text-black" },
+              { label: "Apple Music", href: "https://music.apple.com/us/search?term=150%20Bands%20Hugel", bg: "bg-white text-black" },
+              { label: "YouTube", href: "https://www.youtube.com/results?search_query=Hugel+150+Bands+Arya+XO+NBA+YoungBoy", bg: "bg-[#FF0000] text-white" },
+            ].map((p) => (
+              <a
+                key={p.label}
+                href={p.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`inline-flex items-center justify-center gap-1.5 rounded-xl min-h-[44px] px-3 text-xs sm:text-sm font-semibold ${p.bg} hover:opacity-90 transition`}
+              >
+                <Play className="h-3.5 w-3.5 fill-current" /> {p.label}
+              </a>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* ── Links ────────────────────────────────────────────────────── */}
