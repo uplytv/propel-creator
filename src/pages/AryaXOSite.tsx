@@ -37,11 +37,12 @@ const bg = bgAsset.url;
 const RELEASES = [
   {
     title: "150 BANDS",
-    feat: "HUGEL · NBA YoungBoy",
+    feat: "HUGEL · NBA YoungBoy — from the album '21'",
     year: "2026",
     tag: "New single",
     href: "https://open.spotify.com/search/150%20Bands%20Hugel",
   },
+
   {
     title: "Get Down",
     feat: "Arya XO ft. Roy Woods",
