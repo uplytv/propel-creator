@@ -38,19 +38,13 @@ const RELEASES = [
     href: "https://open.spotify.com/search/150%20Bands%20Hugel",
   },
   {
-    title: "Roy Woods collab",
-    feat: "Arya XO × Roy Woods",
+    title: "Get Down",
+    feat: "Arya XO ft. Roy Woods",
     year: "2025",
     tag: "Featured",
-    href: "https://open.spotify.com/search/Arya%20XO%20Roy%20Woods",
+    href: "https://open.spotify.com/search/Arya%20XO%20Get%20Down%20Roy%20Woods",
   },
-  {
-    title: "TOO LIT",
-    feat: "Official music video",
-    year: "2024",
-    tag: "Video",
-    href: "https://www.youtube.com/watch?v=Datko9ejIHY",
-  },
+
 ];
 
 const VIDEOS = [
