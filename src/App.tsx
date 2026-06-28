@@ -52,6 +52,7 @@ const Leaderboard = lazy(() => import("./pages/Leaderboard"));
 const Collaborate = lazy(() => import("./pages/Collaborate"));
 const JointProduct = lazy(() => import("./pages/JointProduct"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const AryaXO = lazy(() => import("./pages/AryaXO"));
 const Live = lazy(() => import("./pages/Live"));
 const Stream = lazy(() => import("./pages/Stream"));
 const GoLive = lazy(() => import("./pages/GoLive"));
