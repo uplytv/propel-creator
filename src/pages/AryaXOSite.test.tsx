@@ -27,12 +27,13 @@ const channelMock = vi.fn(() => ({
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
-    from: (...args: unknown[]) => fromMock(...(args as [string])),
-    rpc: (...args: unknown[]) => rpcMock(...args),
-    channel: (...args: unknown[]) => channelMock(...(args as [string])),
+    from: (table: string) => fromMock(table),
+    rpc: (name: string, params?: unknown) => rpcMock(name, params),
+    channel: (name: string) => channelMock(name),
     removeChannel: vi.fn(),
   },
 }));
+
 
 // Asset JSON files
 vi.mock("@/assets/arya-xo-150bands.png.asset.json", () => ({
