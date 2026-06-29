@@ -1,28 +1,14 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
-    {
-      "source": "/:slug(arya|aryaxo|arya-xo|arya-xo-site|arya-xo-links)",
-      "has": [
-        {
-          "type": "header",
-          "key": "user-agent",
-          "value": ".*([Bb]ot|[Cc]rawler|[Ss]pider|[Pp]review|[Ff]acebookexternalhit|[Ff]acebot|[Tt]witterbot|[Ww]hats[Aa]pp|[Ll]inked[Ii]n|[Ss]lack|[Tt]elegram|[Dd]iscord|[Aa]pplebot|[Ii][Mm]essage|[Mm]essages|[Ee]mbedly|[Qq]uora|[Ss]howyou|[Oo]utbrain|[Pp]interest|[Vv][Kk][Ss]hare|[Rr]eddit|[Gg]oogle|[Bb]ing).*"
-        }
-      ],
-      "destination": "https://dbjlhmbgskvhuzqvqfrl.supabase.co/functions/v1/og-image?path=/:slug"
-    },
-    {
-      "source": "/:slug(arya|aryaxo|arya-xo)/links",
-      "has": [
-        {
-          "type": "header",
-          "key": "user-agent",
-          "value": ".*([Bb]ot|[Cc]rawler|[Ss]pider|[Pp]review|[Ff]acebookexternalhit|[Ff]acebot|[Tt]witterbot|[Ww]hats[Aa]pp|[Ll]inked[Ii]n|[Ss]lack|[Tt]elegram|[Dd]iscord|[Aa]pplebot|[Ii][Mm]essage|[Mm]essages|[Ee]mbedly|[Qq]uora|[Ss]howyou|[Oo]utbrain|[Pp]interest|[Vv][Kk][Ss]hare|[Rr]eddit|[Gg]oogle|[Bb]ing).*"
-        }
-      ],
-      "destination": "https://dbjlhmbgskvhuzqvqfrl.supabase.co/functions/v1/og-image?path=/:slug/links"
-    },
+    { "source": "/arya", "destination": "https://dbjlhmbgskvhuzqvqfrl.supabase.co/functions/v1/og-image?path=/arya" },
+    { "source": "/aryaxo", "destination": "https://dbjlhmbgskvhuzqvqfrl.supabase.co/functions/v1/og-image?path=/aryaxo" },
+    { "source": "/arya-xo", "destination": "https://dbjlhmbgskvhuzqvqfrl.supabase.co/functions/v1/og-image?path=/arya-xo" },
+    { "source": "/arya-xo-site", "destination": "https://dbjlhmbgskvhuzqvqfrl.supabase.co/functions/v1/og-image?path=/arya-xo-site" },
+    { "source": "/arya-xo-links", "destination": "https://dbjlhmbgskvhuzqvqfrl.supabase.co/functions/v1/og-image?path=/arya-xo-links" },
+    { "source": "/arya/links", "destination": "https://dbjlhmbgskvhuzqvqfrl.supabase.co/functions/v1/og-image?path=/arya/links" },
+    { "source": "/aryaxo/links", "destination": "https://dbjlhmbgskvhuzqvqfrl.supabase.co/functions/v1/og-image?path=/aryaxo/links" },
+    { "source": "/arya-xo/links", "destination": "https://dbjlhmbgskvhuzqvqfrl.supabase.co/functions/v1/og-image?path=/arya-xo/links" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [

@@ -3,8 +3,8 @@
 // append a fresh `?v=` param on every share, and propagate it into the
 // og:image URL so the messenger refetches the artwork too.
 
-export const ARYA_OG_BASE = "https://uply.tv/arya-xo-og-v2.png";
-export const ARYA_OG_BUILD_VERSION = "20260629a"; // bump on artwork changes
+export const ARYA_OG_BASE = "https://uply.tv/arya-xo-og-v3.png";
+export const ARYA_OG_BUILD_VERSION = "20260629b"; // bump on artwork changes
 
 /** Returns a fresh version token for a new share action. */
 export function freshShareVersion(): string {
