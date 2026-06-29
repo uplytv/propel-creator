@@ -170,11 +170,20 @@ function normalizePath(pathname: string) {
 }
 
 function getRouteMeta(path: string, canonicalUrl: string): Meta | null {
-  const aryaRoute = /^\/(arya|aryaxo|arya-xo)(\/links)?$|^\/(arya-xo-site|arya-xo-links)$/i.test(path);
-  if (aryaRoute) {
+  const isLinks = /^\/(arya-xo-links|(arya|aryaxo|arya-xo)\/links)$/i.test(path);
+  const isSite = /^\/(arya|aryaxo|arya-xo|arya-xo-site)$/i.test(path);
+  if (isLinks) {
     return {
-      title: "AriaXO",
-      description: ARYAXO_DESCRIPTION,
+      title: "Arya XO — Official Links",
+      description: "All of Arya XO's official links in one place.",
+      image: ARYAXO_IMAGE,
+      url: canonicalUrl,
+    };
+  }
+  if (isSite) {
+    return {
+      title: "Arya XO — Official Website | Inquiries & Bookings",
+      description: "Arya XO — official website. For inquiries and bookings.",
       image: ARYAXO_IMAGE,
       url: canonicalUrl,
     };
