@@ -1,6 +1,28 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
+    {
+      "source": "/arya-xo",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(facebookexternalhit|Facebot|Twitterbot|WhatsApp|LinkedInBot|Slackbot|TelegramBot|Discordbot|Applebot|iMessageBot|Embedly|Quora Link Preview|Showyoubot|outbrain|pinterest|vkShare|redditbot|Googlebot|bingbot).*"
+        }
+      ],
+      "destination": "https://dbjlhmbgskvhuzqvqfrl.supabase.co/functions/v1/og-image?path=/arya-xo"
+    },
+    {
+      "source": "/arya-xo-site",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(facebookexternalhit|Facebot|Twitterbot|WhatsApp|LinkedInBot|Slackbot|TelegramBot|Discordbot|Applebot|iMessageBot|Embedly|Quora Link Preview|Showyoubot|outbrain|pinterest|vkShare|redditbot|Googlebot|bingbot).*"
+        }
+      ],
+      "destination": "https://dbjlhmbgskvhuzqvqfrl.supabase.co/functions/v1/og-image?path=/arya-xo-site"
+    },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [

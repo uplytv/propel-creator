@@ -83,6 +83,32 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // Arya XO artist pages — custom OG so iMessage/social previews show his face.
+    if (path === "/arya-xo" || path === "/arya-xo-site") {
+      const isSite = path === "/arya-xo-site";
+      return new Response(
+        buildHtml({
+          title: isSite
+            ? "Arya XO — Official Site · 150 BANDS w/ HUGEL & NBA YoungBoy"
+            : "Arya XO — Singer, Rapper · 150 BANDS w/ HUGEL & NBA YoungBoy",
+          description:
+            "Arya XO — 22-year-old Iranian American rapper, singer & actor. '150 BANDS' with HUGEL & NBA YoungBoy out now. Listen, watch and book on UPLY.",
+          image: `${SITE_URL}/arya-xo-og.png`,
+          url: canonicalUrl,
+          type: "profile",
+          twitterCard: "summary_large_image",
+          siteName: "Uply",
+        }),
+        {
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "text/html; charset=utf-8",
+            "Cache-Control": "public, max-age=3600, s-maxage=86400",
+          },
+        }
+      );
+    }
+
     const streamRouteMatch = path.match(/^\/stream\/([^/]+)$/);
     if (streamRouteMatch) {
       const [, id] = streamRouteMatch;

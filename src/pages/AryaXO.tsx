@@ -127,7 +127,7 @@ export default function AryaXO() {
     setMeta('meta[name="description"]', "name", "description", desc);
     setMeta('meta[property="og:title"]', "property", "og:title", "Arya XO — 150 BANDS out now");
     setMeta('meta[property="og:description"]', "property", "og:description", desc);
-    setMeta('meta[property="og:image"]', "property", "og:image", portrait);
+    setMeta('meta[property="og:image"]', "property", "og:image", "https://uply.tv/arya-xo-og.png");
     setMeta('meta[name="twitter:card"]', "name", "twitter:card", "summary_large_image");
     return () => {
       document.title = prevTitle;
