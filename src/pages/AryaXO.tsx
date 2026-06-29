@@ -210,6 +210,51 @@ export default function AryaXO() {
         </div>
       </section>
 
+      {/* ── Featured blog teaser ─────────────────────────────────────── */}
+      <section
+        aria-labelledby="arya-featured-blog-heading"
+        className="mx-auto max-w-[680px] px-5 pt-2"
+      >
+        <Link
+          to="/arya-xo/blog"
+          aria-label="Read the feature: Twenty-two, and writing his own lane"
+          className="group relative block overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#00FF85]/15 via-white/[0.04] to-white/[0.02] hover:border-[#00FF85]/40 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00FF85]"
+        >
+          <div className="grid grid-cols-[110px_1fr] sm:grid-cols-[150px_1fr]">
+            <div className="relative aspect-square overflow-hidden">
+              <img
+                src={portrait}
+                alt="Arya XO portrait"
+                className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                loading="lazy"
+              />
+              <span className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-full bg-[#00FF85] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-black shadow">
+                New
+              </span>
+            </div>
+            <div className="flex flex-col justify-center gap-1.5 p-4 sm:p-5">
+              <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-[#00FF85]">
+                <Newspaper className="h-3 w-3" /> Featured · The Come-Up
+              </div>
+              <h2
+                id="arya-featured-blog-heading"
+                className="font-heading text-base sm:text-lg font-bold text-white leading-snug"
+              >
+                Twenty-two, and writing his own lane
+              </h2>
+              <p className="text-[11px] sm:text-xs text-white/60 line-clamp-2">
+                Inside 150 Bands with HUGEL & NBA YoungBoy — Afrohouse, Latin
+                house, hip-hop, and betting on yourself.
+              </p>
+              <div className="mt-1 inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-[#00FF85] group-hover:gap-2 transition-all">
+                Read the feature
+                <ExternalLink className="h-3 w-3" />
+              </div>
+            </div>
+          </div>
+        </Link>
+      </section>
+
       {/* ── Links ────────────────────────────────────────────────────── */}
       <section className="mx-auto max-w-[680px] px-5 py-6">
         <ul className="flex flex-col gap-2.5">
