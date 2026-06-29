@@ -19,7 +19,7 @@ import {
   Send,
   ThumbsUp,
 } from "lucide-react";
-import portraitAsset from "@/assets/arya-xo-150bands.png.asset.json";
+import portraitAsset from "@/assets/arya-xo-portrait-v3.jpg.asset.json";
 import bandsCoverAsset from "@/assets/150bands-cover.jpg.asset.json";
 import getDownCoverAsset from "@/assets/getdown-cover.jpg.asset.json";
 import bgAsset from "@/assets/arya-xo-bg.png.asset.json";
