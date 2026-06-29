@@ -316,6 +316,7 @@ const App = () => (
               <NativeShell>
               <Toaster />
               <Sonner />
+              <CuratedFollowAnnouncer />
               <TierCelebration />
               <CartDrawer />
               <InstallPrompt />
