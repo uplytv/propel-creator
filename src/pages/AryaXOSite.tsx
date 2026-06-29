@@ -21,6 +21,7 @@ import {
 import portraitAsset from "@/assets/arya-xo-150bands.png.asset.json";
 import bgAsset from "@/assets/arya-xo-bg.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
+import AryaBandsAutoplay from "@/components/AryaBandsAutoplay";
 
 const SHARE_URL = "https://uply.tv/arya-xo-site";
 const ARTIST_SLUG = "arya-xo";
@@ -189,6 +190,7 @@ export default function AryaXOSite() {
 
   return (
     <div className="arya-site min-h-screen selection:bg-[#00FF85]/30">
+      <AryaBandsAutoplay />
       {/* Sticky top bar */}
       <nav className="sticky top-0 z-40 backdrop-blur-xl bg-black/60 border-b border-[var(--arya-border)]">
         <div className="mx-auto max-w-6xl px-5 h-14 flex items-center justify-between gap-3">
