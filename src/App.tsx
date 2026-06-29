@@ -56,6 +56,8 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const AryaXO = lazy(() => import("./pages/AryaXO"));
 const AryaXOSite = lazy(() => import("./pages/AryaXOSite"));
 const AryaXOBlog = lazy(() => import("./pages/AryaXOBlog"));
+const UplyBlog = lazy(() => import("./pages/UplyBlog"));
+const UplyBlogPost = lazy(() => import("./pages/UplyBlogPost"));
 const AdminBookingInquiries = lazy(() => import("./pages/AdminBookingInquiries"));
 const Live = lazy(() => import("./pages/Live"));
 const Stream = lazy(() => import("./pages/Stream"));
@@ -466,6 +468,8 @@ const App = () => (
                     <Route path="/arya-xo/blog" element={<AryaXOBlog />} />
                     <Route path="/arya-xo-blog" element={<AryaXOBlog />} />
                     <Route path="/arya-xo/blog/150-bands" element={<AryaXOBlog />} />
+                    <Route path="/blog" element={<UplyBlog />} />
+                    <Route path="/blog/:slug" element={<UplyBlogPost />} />
                     <Route path="/admin/booking-inquiries" element={<AdminBookingInquiries />} />
                     {/* Onboarding & Waitlist (auth required but no approval needed) */}
                     <Route path="/onboarding" element={<Onboarding />} />
