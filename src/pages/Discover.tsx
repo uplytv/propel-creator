@@ -18,7 +18,7 @@ import PrimetimeSection from "@/components/network/PrimetimeSection";
 import TonightOnUPLY from "@/components/network/TonightOnUPLY";
 import UPLYChannels from "@/components/network/UPLYChannels";
 import FeaturedLearning from "@/components/discovery/FeaturedLearning";
-import FeaturedSpotlight from "@/components/FeaturedSpotlight";
+import FeaturedRails from "@/components/FeaturedRails";
 
 const PAGE_SIZE = 24;
 
@@ -178,7 +178,7 @@ export default function Discover() {
       />
 
       {/* Curated platform-wide feature (Arya XO blog this cycle) */}
-      <FeaturedSpotlight variant="feed" />
+      <FeaturedRails variant="feed" />
 
       {/* AI Discover — featured classrooms & courses (replaces the old
           stories / going-out social strip) */}
