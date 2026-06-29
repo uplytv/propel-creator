@@ -20,6 +20,8 @@ import {
   ThumbsUp,
 } from "lucide-react";
 import portraitAsset from "@/assets/arya-xo-150bands.png.asset.json";
+import bandsCoverAsset from "@/assets/150bands-cover.jpg.asset.json";
+import getDownCoverAsset from "@/assets/getdown-cover.jpg.asset.json";
 import bgAsset from "@/assets/arya-xo-bg.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
 import AryaBandsAutoplay from "@/components/AryaBandsAutoplay";
@@ -45,6 +47,7 @@ const RELEASES = [
     year: "2026",
     tag: "New single",
     href: "https://open.spotify.com/track/3QBkhZL0nUSrm6qcoSEZvt",
+    cover: bandsCoverAsset.url,
   },
 
   {
@@ -53,6 +56,7 @@ const RELEASES = [
     year: "2025",
     tag: "Featured",
     href: "https://open.spotify.com/search/Arya%20XO%20Get%20Down%20Roy%20Woods",
+    cover: getDownCoverAsset.url,
   },
 ];
 
@@ -362,7 +366,7 @@ export default function AryaXOSite() {
           <div className="relative mx-auto">
             <div className="absolute -inset-8 -z-10 rounded-full bg-[#00FF85]/25 blur-3xl" />
             <div className="h-64 w-64 sm:h-[22rem] sm:w-[22rem] rounded-[2rem] overflow-hidden ring-1 ring-white/15 shadow-[0_40px_120px_-30px_rgba(0,255,133,0.55)]">
-              <img src={portrait} alt="Arya XO" className="h-full w-full object-cover" />
+              <img src={portrait} alt="Arya XO" className="h-full w-full object-cover object-center" />
             </div>
           </div>
         </div>
@@ -404,7 +408,7 @@ export default function AryaXOSite() {
               className="arya-card arya-card--interactive group relative overflow-hidden p-5"
             >
               <div className="aspect-square rounded-xl overflow-hidden bg-black/40 ring-1 ring-[var(--arya-border)] mb-4 relative">
-                <img src={portrait} alt={r.title} className="h-full w-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition duration-500" />
+                <img src={r.cover} alt={r.title} className="h-full w-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition duration-500" />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <span className="h-14 w-14 rounded-full bg-[var(--arya-cta)] text-[var(--arya-cta-fg)] flex items-center justify-center shadow-[var(--arya-glow)] group-hover:scale-110 transition">
                     <Play className="h-6 w-6 fill-current" />
