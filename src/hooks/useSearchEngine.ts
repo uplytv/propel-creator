@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { getCuratedResults } from "@/lib/curatedSearch";
 
 export interface SearchEngineResult {
   id: string;
-  type: "video" | "clip" | "recording" | "creator";
+  type: "video" | "clip" | "recording" | "creator" | "artist" | "page" | "blog" | "track";
   title: string;
   subtitle?: string;
   thumbnail?: string | null;
