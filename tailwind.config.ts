@@ -14,8 +14,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', "system-ui", "sans-serif"],
-        display: ['"Space Grotesk"', '"Plus Jakarta Sans"', "system-ui", "sans-serif"],
+        sans: ['Inter', '"Plus Jakarta Sans"', "system-ui", "sans-serif"],
+        display: ['Fraunces', '"Space Grotesk"', "Georgia", "serif"],
+        serif: ['Fraunces', "Georgia", '"Times New Roman"', "serif"],
+        body: ['Inter', '"Plus Jakarta Sans"', "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -62,6 +64,10 @@ export default {
         "accent-green": {
           DEFAULT: "hsl(var(--accent-green))",
           foreground: "hsl(var(--accent-green-foreground))",
+        },
+        gold: {
+          DEFAULT: "hsl(var(--gold))",
+          foreground: "hsl(var(--gold-foreground))",
         },
         surface: {
           DEFAULT: "hsl(var(--surface))",

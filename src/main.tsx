@@ -2,6 +2,15 @@ import { createRoot } from "react-dom/client";
 import * as Sentry from "@sentry/react";
 import App from "./App.tsx";
 import "./index.css";
+// Editorial type system: Fraunces (display serif) + Inter (UI/body).
+import "@fontsource/fraunces/400.css";
+import "@fontsource/fraunces/600.css";
+import "@fontsource/fraunces/700.css";
+import "@fontsource/fraunces/400-italic.css";
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
+import "@fontsource/inter/700.css";
 import { initSentry } from "./lib/sentry";
 import { initPostHog } from "./lib/posthog";
 import { initVersionCheck } from "./lib/versionCheck";

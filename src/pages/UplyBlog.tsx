@@ -20,16 +20,17 @@ export default function UplyBlog() {
 
       <header className="border-b border-border">
         <div className="mx-auto max-w-6xl px-5 py-10 sm:py-14">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-card/60 text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-            <Sparkles className="h-3 w-3 text-primary" /> The UPLY Desk
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gold-hairline bg-card/60 text-[10px] uppercase tracking-[0.25em] text-gold">
+            <Sparkles className="h-3 w-3 text-gold" /> The UPLY Desk
           </div>
           <h1
-            className="mt-4 font-extrabold tracking-tight leading-[1.05] text-4xl sm:text-5xl"
-            style={{ fontFamily: "Space Grotesk, sans-serif" }}
+            className="mt-4 font-semibold tracking-tight leading-[1.02] text-5xl sm:text-7xl"
+            style={{ fontFamily: "Fraunces, Georgia, serif" }}
           >
-            The Creator OS, explained.
+            The Creator OS,{" "}
+            <span className="italic text-gold">explained.</span>
           </h1>
-          <p className="mt-3 text-base sm:text-lg text-muted-foreground max-w-2xl">
+          <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-2xl">
             How working artists, filmmakers, teachers, and influencers actually use UPLY — and why
             keeping ninety-five percent of your money changes the math.
           </p>
@@ -41,7 +42,7 @@ export default function UplyBlog() {
         {hero && (
           <Link
             to={`/blog/${hero.slug}`}
-            className="group relative block overflow-hidden rounded-2xl border border-border bg-card/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="border-editorial group relative block overflow-hidden rounded-2xl bg-card/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <div className="grid md:grid-cols-2">
               <div className="relative aspect-[16/10] md:aspect-auto md:min-h-[320px]">
@@ -54,12 +55,12 @@ export default function UplyBlog() {
                 <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/30 to-transparent md:bg-gradient-to-r" />
               </div>
               <div className="p-6 sm:p-8 flex flex-col justify-center gap-3">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-primary font-semibold">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-gold font-semibold">
                   {hero.category}
                 </p>
                 <h2
-                  className="text-2xl sm:text-3xl font-bold leading-tight"
-                  style={{ fontFamily: "Space Grotesk, sans-serif" }}
+                  className="text-3xl sm:text-4xl font-semibold leading-[1.05]"
+                  style={{ fontFamily: "Fraunces, Georgia, serif" }}
                 >
                   {hero.title}
                 </h2>
@@ -98,14 +99,14 @@ export default function UplyBlog() {
                     className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/85 via-background/10 to-transparent" />
-                  <span className="absolute top-3 left-3 inline-flex items-center rounded-md bg-background/80 backdrop-blur px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
+                  <span className="absolute top-3 left-3 inline-flex items-center rounded-md bg-background/85 backdrop-blur px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-gold border border-gold-hairline">
                     {post.category}
                   </span>
                 </div>
                 <div className="p-4 flex-1 flex flex-col gap-2">
                   <h3
-                    className="text-base font-bold leading-snug"
-                    style={{ fontFamily: "Space Grotesk, sans-serif" }}
+                    className="text-lg font-semibold leading-snug"
+                    style={{ fontFamily: "Fraunces, Georgia, serif" }}
                   >
                     {post.title}
                   </h3>
