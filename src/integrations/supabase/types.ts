@@ -1515,6 +1515,7 @@ export type Database = {
           id: string
           is_verified: boolean
           monthly_listeners_cache: number
+          og_image_url: string | null
           page_published: boolean
           page_theme: Json
           pinned_playlist_id: string | null
@@ -1543,6 +1544,7 @@ export type Database = {
           id?: string
           is_verified?: boolean
           monthly_listeners_cache?: number
+          og_image_url?: string | null
           page_published?: boolean
           page_theme?: Json
           pinned_playlist_id?: string | null
@@ -1571,6 +1573,7 @@ export type Database = {
           id?: string
           is_verified?: boolean
           monthly_listeners_cache?: number
+          og_image_url?: string | null
           page_published?: boolean
           page_theme?: Json
           pinned_playlist_id?: string | null
@@ -16695,6 +16698,7 @@ export type Database = {
           location_updated_at: string | null
           members: number
           mrr: number
+          og_image_url: string | null
           onboarding_complete: boolean
           origin_member: boolean
           paid_dm_price: number | null
@@ -16765,6 +16769,7 @@ export type Database = {
           location_updated_at?: string | null
           members?: number
           mrr?: number
+          og_image_url?: string | null
           onboarding_complete?: boolean
           origin_member?: boolean
           paid_dm_price?: number | null
@@ -16835,6 +16840,7 @@ export type Database = {
           location_updated_at?: string | null
           members?: number
           mrr?: number
+          og_image_url?: string | null
           onboarding_complete?: boolean
           origin_member?: boolean
           paid_dm_price?: number | null
@@ -21586,6 +21592,27 @@ export type Database = {
           station_id: string
           title: string
           track_position: number
+        }[]
+      }
+      get_public_creator_og_profile: {
+        Args: { _username: string }
+        Returns: {
+          artist_bio: string
+          artist_og_image_url: string
+          avatar_url: string
+          bio: string
+          channel_tagline: string
+          cover_image_url: string
+          display_name: string
+          header_image_url: string
+          hero_image_url: string
+          profile_og_image_url: string
+          seo_description: string
+          seo_og_image: string
+          tagline: string
+          user_id: string
+          username: string
+          vanity_slug: string
         }[]
       }
       get_public_profile_by_user_id: {

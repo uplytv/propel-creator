@@ -461,10 +461,6 @@ const App = () => (
                     <Route path="/arya-xo-links" element={<AryaXO />} />
                     <Route path="/arya-xo-site" element={<AryaXOSite />} />
                     <Route path="/admin/booking-inquiries" element={<AdminBookingInquiries />} />
-                    {/* Legacy /:username and /:username/page redirect to /@<slug> */}
-                    <Route path="/:username" element={<UsernameRedirect />} />
-                    <Route path="/:username/page" element={<UsernameRedirect />} />
-
                     {/* Onboarding & Waitlist (auth required but no approval needed) */}
                     <Route path="/onboarding" element={<Onboarding />} />
                     <Route path="/apply" element={<Apply />} />
@@ -556,6 +552,10 @@ const App = () => (
                     <Route path="/create/story/editor" element={<ProtectedRoute><StoryEditor /></ProtectedRoute>} />
                     <Route path="/create/short/editor" element={<ProtectedRoute><ShortEditor /></ProtectedRoute>} />
                     <Route path="/create/video/editor" element={<ProtectedRoute><VideoEditorPage /></ProtectedRoute>} />
+
+                    {/* Legacy /:username and /:username/page redirect to /@<slug>; keep last before 404. */}
+                    <Route path="/:username/page" element={<UsernameRedirect />} />
+                    <Route path="/:username" element={<UsernameRedirect />} />
 
                     <Route path="*" element={<NotFound />} />
                   </Routes>
