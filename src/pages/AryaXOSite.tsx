@@ -21,6 +21,7 @@ import {
 import portraitAsset from "@/assets/arya-xo-150bands.png.asset.json";
 import bgAsset from "@/assets/arya-xo-bg.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
+import AryaBandsAutoplay from "@/components/AryaBandsAutoplay";
 
 const SHARE_URL = "https://uply.tv/arya-xo-site";
 const ARTIST_SLUG = "arya-xo";
