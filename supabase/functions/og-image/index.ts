@@ -12,7 +12,8 @@ const DEFAULT_DESC =
   "The creator platform that invests more in you as you grow. Monetize your community, go live, sell courses, and scale with AI — all in one place.";
 const DEFAULT_IMAGE =
   "https://storage.googleapis.com/gpt-engineer-file-uploads/cikFlxVx8jfBrfytYvhbk5DVvYT2/social-images/social-1773093383614-084CEBC0-15D0-4F96-A3BD-D7F3F8441A0D.webp";
-const ARYA_OG_IMAGE = `${SITE_URL}/arya-xo-og-v2.png`;
+const ARYA_OG_IMAGE_BASE = `${SITE_URL}/arya-xo-og-v2.png`;
+const ARYA_OG_BUILD_VERSION = "20260629a";
 const ARYA_PATH_RE = /^\/(arya|aryaxo|arya-xo)(\/links)?\/?$|^\/(arya-xo-site|arya-xo-links)\/?$/i;
 
 function buildHtml(meta: {
