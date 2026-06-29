@@ -366,7 +366,7 @@ export default function AryaXOSite() {
           <div className="relative mx-auto">
             <div className="absolute -inset-8 -z-10 rounded-full bg-[#00FF85]/25 blur-3xl" />
             <div className="h-64 w-64 sm:h-[22rem] sm:w-[22rem] rounded-[2rem] overflow-hidden ring-1 ring-white/15 shadow-[0_40px_120px_-30px_rgba(0,255,133,0.55)]">
-              <img src={portrait} alt="Arya XO" className="h-full w-full object-cover" />
+              <img src={portrait} alt="Arya XO" className="h-full w-full object-cover object-center" />
             </div>
           </div>
         </div>
