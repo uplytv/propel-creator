@@ -61,7 +61,7 @@ function esc(s: string) {
 }
 
 const BOT_UA =
-  /facebookexternalhit|Facebot|Twitterbot|WhatsApp|LinkedInBot|Slackbot|TelegramBot|Discordbot|Applebot|iMessageBot|Googlebot|bingbot|Embedly|Quora Link Preview|Showyoubot|outbrain|pinterest|vkShare|redditbot/i;
+  /bot|crawler|spider|preview|facebookexternalhit|Facebot|Twitterbot|WhatsApp|LinkedIn|Slack|Telegram|Discord|Applebot|iMessage|Messages|Embedly|Quora|Showyou|outbrain|pinterest|vkShare|reddit|Google|bing/i;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
