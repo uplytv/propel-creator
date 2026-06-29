@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Search as SearchIcon, X, Users, Package, Radio, Film, Briefcase, Loader2, Music, Disc3, Mic2 } from "lucide-react";
+import { Search as SearchIcon, X, Users, Package, Radio, Film, Briefcase, Loader2, Music, Disc3, Mic2, FileText, Globe } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
