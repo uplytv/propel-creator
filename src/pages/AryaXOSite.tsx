@@ -26,6 +26,7 @@ import bgAsset from "@/assets/arya-xo-bg.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
 import AryaBandsAutoplay from "@/components/AryaBandsAutoplay";
 import { buildAryaShareUrl } from "@/lib/aryaShare";
+import { Link } from "react-router-dom";
 
 const SHARE_PATH = "/arya-xo-site";
 const ARTIST_SLUG = "arya-xo";
@@ -442,8 +443,8 @@ export default function AryaXOSite() {
         <p className="text-[11px] uppercase tracking-[0.2em] text-[#00FF85]">Featured</p>
         <h2 className="mt-2 font-heading text-3xl sm:text-4xl font-bold">The come-up</h2>
 
-        <a
-          href="/arya-xo/blog"
+        <Link
+          to="/arya-xo/blog"
           className="mt-8 group grid sm:grid-cols-[1.1fr_1.4fr] gap-0 overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] hover:border-[#00FF85]/40 transition"
         >
           <div className="aspect-[4/3] sm:aspect-auto overflow-hidden bg-black">
@@ -480,7 +481,7 @@ export default function AryaXOSite() {
               Read the feature <ArrowRight className="h-4 w-4" />
             </div>
           </div>
-        </a>
+        </Link>
       </section>
 
       {/* ABOUT / STORY */}
