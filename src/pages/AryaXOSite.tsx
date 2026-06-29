@@ -90,16 +90,17 @@ export default function AryaXOSite() {
     };
     const desc =
       "Arya XO — official site. The 22-year-old artist behind '150 BANDS' with HUGEL & NBA YoungBoy. Music, videos, press and direct booking.";
+    const ogImage = buildAryaOgImageUrl(currentOgVersion());
     setMeta('meta[name="description"]', "name", "description", desc);
     setMeta('meta[property="og:title"]', "property", "og:title", "Arya XO — Official Site");
     setMeta('meta[property="og:description"]', "property", "og:description", desc);
-    setMeta('meta[property="og:image"]', "property", "og:image", ARYA_OG_IMAGE);
-    setMeta('meta[property="og:image:secure_url"]', "property", "og:image:secure_url", ARYA_OG_IMAGE);
+    setMeta('meta[property="og:image"]', "property", "og:image", ogImage);
+    setMeta('meta[property="og:image:secure_url"]', "property", "og:image:secure_url", ogImage);
     setMeta('meta[property="og:image:width"]', "property", "og:image:width", "1200");
     setMeta('meta[property="og:image:height"]', "property", "og:image:height", "630");
     setMeta('meta[property="og:image:type"]', "property", "og:image:type", "image/png");
     setMeta('meta[name="twitter:card"]', "name", "twitter:card", "summary_large_image");
-    setMeta('meta[name="twitter:image"]', "name", "twitter:image", ARYA_OG_IMAGE);
+    setMeta('meta[name="twitter:image"]', "name", "twitter:image", ogImage);
     return () => {
       document.title = prev;
     };
@@ -108,14 +109,19 @@ export default function AryaXOSite() {
   const [shareOpen, setShareOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // Each share gets a fresh `?v=` so iMessage/WhatsApp/Slack can't serve a
+  // stale cached preview. The edge function propagates `v` into the og:image.
+  const makeFreshShareUrl = () => buildAryaShareUrl(SHARE_PATH);
+
   const handleCopy = async () => {
+    const url = makeFreshShareUrl();
     try {
-      await navigator.clipboard.writeText(SHARE_URL);
+      await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     } catch {
       const ta = document.createElement("textarea");
-      ta.value = SHARE_URL;
+      ta.value = url;
       document.body.appendChild(ta);
       ta.select();
       document.execCommand("copy");
@@ -126,12 +132,13 @@ export default function AryaXOSite() {
   };
 
   const handleShare = async () => {
+    const url = makeFreshShareUrl();
     if (typeof navigator !== "undefined" && (navigator as any).share) {
       try {
         await (navigator as any).share({
           title: "Arya XO — Official Site",
           text: "Arya XO — 150 BANDS w/ HUGEL & NBA YoungBoy.",
-          url: SHARE_URL,
+          url,
         });
         return;
       } catch {
