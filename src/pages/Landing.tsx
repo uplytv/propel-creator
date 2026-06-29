@@ -115,6 +115,8 @@ export default function Landing() {
         <main>
           <HomepageHero />
 
+          <FeaturedSpotlight />
+
           <SectionSeam />
           <HomepageMusicians />
           <HomepageStreamers />
