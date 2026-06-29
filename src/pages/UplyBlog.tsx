@@ -25,7 +25,7 @@ export default function UplyBlog() {
           </div>
           <h1
             className="mt-4 font-extrabold tracking-tight leading-[1.05] text-4xl sm:text-5xl"
-            style={{ fontFamily: "Fraunces, Georgia, serif", fontVariationSettings: "&quot;SOFT&quot; 50" }}
+            style={{ fontFamily: "Fraunces, Georgia, serif" }}
           >
             The Creator OS, explained.
           </h1>
@@ -59,7 +59,7 @@ export default function UplyBlog() {
                 </p>
                 <h2
                   className="text-2xl sm:text-3xl font-bold leading-tight"
-                  style={{ fontFamily: "Fraunces, Georgia, serif", fontVariationSettings: "&quot;SOFT&quot; 50" }}
+                  style={{ fontFamily: "Fraunces, Georgia, serif" }}
                 >
                   {hero.title}
                 </h2>
@@ -105,7 +105,7 @@ export default function UplyBlog() {
                 <div className="p-4 flex-1 flex flex-col gap-2">
                   <h3
                     className="text-base font-bold leading-snug"
-                    style={{ fontFamily: "Fraunces, Georgia, serif", fontVariationSettings: "&quot;SOFT&quot; 50" }}
+                    style={{ fontFamily: "Fraunces, Georgia, serif" }}
                   >
                     {post.title}
                   </h3>
