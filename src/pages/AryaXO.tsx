@@ -31,7 +31,8 @@ import { buildAryaOgImageUrl, currentOgVersion } from "@/lib/aryaShare";
 
 const portrait = portraitAsset.url;
 const bg = bgAsset.url;
-const ARYA_OG_IMAGE = "https://uply.tv/arya-xo-og-v2.png";
+// Resolved at runtime so iMessage/social previews refresh when the page URL
+// carries a `?v=` cache-buster (see src/lib/aryaShare.ts).
 
 type LinkCard = {
   label: string;
