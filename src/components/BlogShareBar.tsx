@@ -92,11 +92,11 @@ export default function BlogShareBar({ url, title, excerpt = "" }: Props) {
         onClick={handleCopy}
         aria-label={copied ? "Link copied" : "Copy link"}
         aria-live="polite"
-        className="inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-3.5 py-1.5 text-xs font-semibold text-foreground hover:border-primary/50 hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        className="hover-gold inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-3.5 py-1.5 text-xs font-semibold text-foreground"
       >
         {copied ? (
           <>
-            <Check className="h-3.5 w-3.5 text-primary" />
+            <Check className="h-3.5 w-3.5 text-gold" />
             Copied
           </>
         ) : (
@@ -111,7 +111,7 @@ export default function BlogShareBar({ url, title, excerpt = "" }: Props) {
         type="button"
         onClick={handleNativeShare}
         aria-label="Share via device"
-        className="inline-flex md:hidden items-center gap-2 rounded-full border border-border bg-card/60 px-3.5 py-1.5 text-xs font-semibold text-foreground hover:border-primary/50 hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        className="hover-gold inline-flex md:hidden items-center gap-2 rounded-full border border-border bg-card/60 px-3.5 py-1.5 text-xs font-semibold text-foreground"
       >
         <Share2 className="h-3.5 w-3.5" />
         Share
@@ -125,7 +125,7 @@ export default function BlogShareBar({ url, title, excerpt = "" }: Props) {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={label}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card/60 text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="hover-gold inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card/60 text-foreground/80"
           >
             <Icon className="h-4 w-4" aria-hidden />
           </a>
