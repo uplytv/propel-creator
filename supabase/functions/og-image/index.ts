@@ -84,8 +84,9 @@ Deno.serve(async (req) => {
     );
 
     // Arya XO artist pages — custom OG so iMessage/social previews show his face.
-    if (path === "/arya-xo" || path === "/arya-xo-site") {
-      const isSite = path === "/arya-xo-site";
+    if (/^\/(arya|aryaxo|arya-xo(\/links|-links|-site)?)$/i.test(path)) {
+      const isSite = /site/i.test(path);
+      const isLinks = /links/i.test(path) || path.toLowerCase() === "/arya-xo" || path.toLowerCase() === "/arya" || path.toLowerCase() === "/aryaxo";
       return new Response(
         buildHtml({
           title: isSite
