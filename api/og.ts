@@ -8,9 +8,9 @@ const SUPABASE_PUBLISHABLE_KEY =
 
 const DEFAULT_TITLE = "UPLY — The Creator Operating System";
 const DEFAULT_DESCRIPTION = "Stream, teach, sell, and build community. Keep 95% of everything you earn.";
-const DEFAULT_IMAGE = `${SITE_ORIGIN}/uply-og-default.png`;
 const ARYAXO_IMAGE = `${SITE_ORIGIN}/og/ariaxo.jpg`;
-const ARYAXO_DESCRIPTION = "Listen to 150 Bands by HUGEL, YoungBoy Never Broke Again, and AriaXO.";
+const DEFAULT_IMAGE = ARYAXO_IMAGE;
+const ARYAXO_DESCRIPTION = "150 Bands — out now.";
 
 const ARYAXO_PROFILE_ALIASES = new Set([
   "ariaxo",
