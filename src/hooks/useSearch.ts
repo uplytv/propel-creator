@@ -106,7 +106,20 @@ export function useSearch() {
       })),
     ];
 
-    setResults(mapped);
+    // Inject curated/hand-picked results (e.g. Arya XO) at the top, and
+    // de-duplicate any DB result that resolves to the same destination link.
+    const curated: SearchResult[] = getCuratedResults(q).map((c) => ({
+      id: c.id,
+      type: c.type,
+      title: c.title,
+      subtitle: c.subtitle,
+      image: c.image ?? null,
+      link: c.link,
+    }));
+    const curatedLinks = new Set(curated.map((c) => c.link));
+    const deduped = mapped.filter((r) => !curatedLinks.has(r.link));
+
+    setResults([...curated, ...deduped]);
     setLoading(false);
   }, []);
 
