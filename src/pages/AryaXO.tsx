@@ -46,6 +46,14 @@ type LinkCard = {
 
 const LINKS: LinkCard[] = [
   {
+    label: "Read: Twenty-two, and writing his own lane",
+    sub: "Feature — 150 Bands with HUGEL & NBA YoungBoy",
+    href: "/arya-xo/blog",
+    icon: Newspaper,
+    accent: "bg-gradient-to-br from-[#00FF85] to-[#00B85F]",
+    featured: true,
+  },
+  {
     label: "Spotify",
     sub: "Listen on Spotify",
     href: "https://open.spotify.com/search/Lit%20Reeezy",
