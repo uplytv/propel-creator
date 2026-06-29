@@ -18,6 +18,7 @@ import PrimetimeSection from "@/components/network/PrimetimeSection";
 import TonightOnUPLY from "@/components/network/TonightOnUPLY";
 import UPLYChannels from "@/components/network/UPLYChannels";
 import FeaturedLearning from "@/components/discovery/FeaturedLearning";
+import FeaturedSpotlight from "@/components/FeaturedSpotlight";
 
 const PAGE_SIZE = 24;
 
