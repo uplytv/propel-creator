@@ -481,7 +481,7 @@ export default function AryaXOSite() {
               Read the feature <ArrowRight className="h-4 w-4" />
             </div>
           </div>
-        </a>
+        </Link>
       </section>
 
       {/* ABOUT / STORY */}
