@@ -215,31 +215,40 @@ export default function AryaXO() {
         <ul className="flex flex-col gap-2.5">
           {LINKS.map((l) => {
             const Icon = l.icon;
+            const isExternal = l.href.startsWith("http");
+            const content = (
+              <>
+                <span
+                  className={`h-11 w-11 rounded-xl ${l.accent} flex items-center justify-center shrink-0`}
+                >
+                  <Icon className="h-5 w-5 text-white" />
+                </span>
+                <span className="flex-1 min-w-0">
+                  <span className="block text-sm sm:text-base font-semibold text-white truncate">
+                    {l.label}
+                  </span>
+                  {l.sub && (
+                    <span className="block text-[11px] sm:text-xs text-white/55 truncate">
+                      {l.sub}
+                    </span>
+                  )}
+                </span>
+                <ExternalLink className="h-4 w-4 text-white/40 shrink-0" />
+              </>
+            );
+            const cls =
+              "flex items-center gap-3 min-h-[64px] rounded-2xl border border-white/10 bg-white/[0.04] px-3 hover:bg-white/[0.07] hover:border-white/20 transition";
             return (
               <li key={l.label}>
-                <a
-                  href={l.href}
-                  target={l.href.startsWith("http") ? "_blank" : undefined}
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 min-h-[64px] rounded-2xl border border-white/10 bg-white/[0.04] px-3 hover:bg-white/[0.07] hover:border-white/20 transition"
-                >
-                  <span
-                    className={`h-11 w-11 rounded-xl ${l.accent} flex items-center justify-center shrink-0`}
-                  >
-                    <Icon className="h-5 w-5 text-white" />
-                  </span>
-                  <span className="flex-1 min-w-0">
-                    <span className="block text-sm sm:text-base font-semibold text-white truncate">
-                      {l.label}
-                    </span>
-                    {l.sub && (
-                      <span className="block text-[11px] sm:text-xs text-white/55 truncate">
-                        {l.sub}
-                      </span>
-                    )}
-                  </span>
-                  <ExternalLink className="h-4 w-4 text-white/40 shrink-0" />
-                </a>
+                {isExternal ? (
+                  <a href={l.href} target="_blank" rel="noopener noreferrer" className={cls}>
+                    {content}
+                  </a>
+                ) : (
+                  <Link to={l.href} className={cls}>
+                    {content}
+                  </Link>
+                )}
               </li>
             );
           })}
