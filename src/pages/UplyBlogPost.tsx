@@ -50,11 +50,11 @@ export default function UplyBlogPost() {
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background/80 via-background/90 to-background" />
 
         <div className="mx-auto max-w-3xl px-5 pt-12 pb-10 sm:pt-16 sm:pb-14 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-card/60 text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-            <Sparkles className="h-3 w-3 text-primary" /> {post.category}
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gold-hairline bg-card/60 text-[10px] uppercase tracking-[0.25em] text-gold">
+            <Sparkles className="h-3 w-3 text-gold" /> {post.category}
           </div>
           <h1
-            className="mt-5 font-extrabold tracking-tight leading-[1.02] text-3xl sm:text-5xl"
+            className="mt-5 font-semibold tracking-tight leading-[1.02] text-4xl sm:text-6xl"
             style={{ fontFamily: "Fraunces, Georgia, serif" }}
           >
             {post.title}
@@ -78,7 +78,7 @@ export default function UplyBlogPost() {
             />
           </div>
 
-          <div className="mt-8 mx-auto aspect-[16/9] w-full max-w-2xl rounded-2xl overflow-hidden ring-1 ring-border">
+          <div className="border-editorial mt-8 mx-auto aspect-[16/9] w-full max-w-2xl rounded-2xl overflow-hidden">
             <img
               src={post.cover}
               alt=""
