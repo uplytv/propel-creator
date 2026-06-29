@@ -20,6 +20,8 @@ import {
   ThumbsUp,
 } from "lucide-react";
 import portraitAsset from "@/assets/arya-xo-150bands.png.asset.json";
+import bandsCoverAsset from "@/assets/150bands-cover.jpg.asset.json";
+import getDownCoverAsset from "@/assets/getdown-cover.jpg.asset.json";
 import bgAsset from "@/assets/arya-xo-bg.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
 import AryaBandsAutoplay from "@/components/AryaBandsAutoplay";
