@@ -197,21 +197,15 @@ export default function SearchPage() {
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-foreground truncate inline-flex items-center gap-1">
                           <span className="truncate">{item.title}</span>
-                          {item.verified && (
-                            <BadgeCheck
-                              className="w-4 h-4 text-primary shrink-0 fill-primary/20"
-                              aria-label="Verified artist"
-                            />
-                          )}
+                          <VerifiedTitleBadge verified={item.verified} />
                         </p>
                         {item.subtitle && <p className="text-xs text-muted-foreground truncate">{item.subtitle}</p>}
                       </div>
-                      {item.followKey && (
-                        <CuratedFollowButton
-                          followKey={item.followKey}
-                          displayName={item.title}
-                        />
-                      )}
+                      <CuratedSearchMeta
+                        title={item.title}
+                        verified={item.verified}
+                        followKey={item.followKey}
+                      />
                     </div>
                   ))}
                 </div>
