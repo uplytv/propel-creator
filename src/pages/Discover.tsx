@@ -178,7 +178,7 @@ export default function Discover() {
       />
 
       {/* Curated platform-wide feature (Arya XO blog this cycle) */}
-      <FeaturedSpotlight variant="feed" />
+      <FeaturedRails variant="feed" />
 
       {/* AI Discover — featured classrooms & courses (replaces the old
           stories / going-out social strip) */}
