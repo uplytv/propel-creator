@@ -913,8 +913,9 @@ function TourRequestsSection() {
                     </div>
                     <div className="mt-2 font-heading text-lg font-bold leading-tight">{t.city}</div>
                     {t.country && <div className="text-xs text-[var(--arya-text-mute)]">{t.country}</div>}
-                    <div className={`mt-3 text-[11px] font-semibold ${voted.has(t.id) ? "text-[var(--arya-text-faint)]" : "text-[var(--arya-cta)]"}`}>
-                      {voted.has(t.id) ? "✓ Voted" : "+ Add vote"}
+                    <div className={`mt-3 inline-flex items-center gap-1.5 text-[11px] font-semibold ${voted.has(t.id) ? "text-[var(--arya-text-faint)]" : "text-[var(--arya-cta)]"}`}>
+                      <ThumbsUp className="h-3.5 w-3.5" />
+                      {voted.has(t.id) ? "Voted" : "Thumbs up"}
                     </div>
                   </button>
                 ))}
