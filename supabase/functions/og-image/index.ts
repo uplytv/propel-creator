@@ -12,6 +12,8 @@ const DEFAULT_DESC =
   "The creator platform that invests more in you as you grow. Monetize your community, go live, sell courses, and scale with AI — all in one place.";
 const DEFAULT_IMAGE =
   "https://storage.googleapis.com/gpt-engineer-file-uploads/cikFlxVx8jfBrfytYvhbk5DVvYT2/social-images/social-1773093383614-084CEBC0-15D0-4F96-A3BD-D7F3F8441A0D.webp";
+const ARYA_OG_IMAGE = `${SITE_URL}/arya-xo-og-v2.png`;
+const ARYA_PATH_RE = /^\/(arya|aryaxo|arya-xo)(\/links)?\/?$|^\/(arya-xo-site|arya-xo-links)\/?$/i;
 
 function buildHtml(meta: {
   title: string;
@@ -31,6 +33,10 @@ function buildHtml(meta: {
 <meta property="og:title" content="${esc(meta.title)}"/>
 <meta property="og:description" content="${esc(meta.description)}"/>
 <meta property="og:image" content="${esc(meta.image)}"/>
+<meta property="og:image:secure_url" content="${esc(meta.image)}"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:image:type" content="image/png"/>
 <meta property="og:url" content="${esc(meta.url)}"/>
 <meta property="og:type" content="${esc(meta.type)}"/>
 <meta property="og:site_name" content="${esc(meta.siteName)}"/>
@@ -84,9 +90,8 @@ Deno.serve(async (req) => {
     );
 
     // Arya XO artist pages — custom OG so iMessage/social previews show his face.
-    if (/^\/(arya|aryaxo|arya-xo(\/links|-links|-site)?)$/i.test(path)) {
+    if (ARYA_PATH_RE.test(path)) {
       const isSite = /site/i.test(path);
-      const isLinks = /links/i.test(path) || path.toLowerCase() === "/arya-xo" || path.toLowerCase() === "/arya" || path.toLowerCase() === "/aryaxo";
       return new Response(
         buildHtml({
           title: isSite
@@ -94,7 +99,7 @@ Deno.serve(async (req) => {
             : "Arya XO — Singer, Rapper · 150 BANDS w/ HUGEL & NBA YoungBoy",
           description:
             "Arya XO — 22-year-old Iranian American rapper, singer & actor. '150 BANDS' with HUGEL & NBA YoungBoy out now. Listen, watch and book on UPLY.",
-          image: `${SITE_URL}/arya-xo-og.png`,
+          image: ARYA_OG_IMAGE,
           url: canonicalUrl,
           type: "profile",
           twitterCard: "summary_large_image",

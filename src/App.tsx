@@ -454,7 +454,11 @@ const App = () => (
                     {/* Public social creator page (Instagram-style + portfolio fused) */}
                     <Route path="/@:slug" element={<SocialCreatorPage />} />
                     {/* Dedicated artist showcase pages (must precede /:username catch-all) */}
+                    <Route path="/arya" element={<AryaXO />} />
+                    <Route path="/aryaxo" element={<AryaXO />} />
                     <Route path="/arya-xo" element={<AryaXO />} />
+                    <Route path="/arya-xo/links" element={<AryaXO />} />
+                    <Route path="/arya-xo-links" element={<AryaXO />} />
                     <Route path="/arya-xo-site" element={<AryaXOSite />} />
                     <Route path="/admin/booking-inquiries" element={<AdminBookingInquiries />} />
                     {/* Legacy /:username and /:username/page redirect to /@<slug> */}

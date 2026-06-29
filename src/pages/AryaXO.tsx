@@ -30,6 +30,7 @@ import AryaBandsAutoplay from "@/components/AryaBandsAutoplay";
 
 const portrait = portraitAsset.url;
 const bg = bgAsset.url;
+const ARYA_OG_IMAGE = "https://uply.tv/arya-xo-og-v2.png";
 
 type LinkCard = {
   label: string;
@@ -127,8 +128,13 @@ export default function AryaXO() {
     setMeta('meta[name="description"]', "name", "description", desc);
     setMeta('meta[property="og:title"]', "property", "og:title", "Arya XO — 150 BANDS out now");
     setMeta('meta[property="og:description"]', "property", "og:description", desc);
-    setMeta('meta[property="og:image"]', "property", "og:image", "https://uply.tv/arya-xo-og.png");
+    setMeta('meta[property="og:image"]', "property", "og:image", ARYA_OG_IMAGE);
+    setMeta('meta[property="og:image:secure_url"]', "property", "og:image:secure_url", ARYA_OG_IMAGE);
+    setMeta('meta[property="og:image:width"]', "property", "og:image:width", "1200");
+    setMeta('meta[property="og:image:height"]', "property", "og:image:height", "630");
+    setMeta('meta[property="og:image:type"]', "property", "og:image:type", "image/png");
     setMeta('meta[name="twitter:card"]', "name", "twitter:card", "summary_large_image");
+    setMeta('meta[name="twitter:image"]', "name", "twitter:image", ARYA_OG_IMAGE);
     return () => {
       document.title = prevTitle;
     };
