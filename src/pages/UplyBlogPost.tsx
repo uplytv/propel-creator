@@ -1,6 +1,7 @@
 import { Link, useParams, Navigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Clock, Sparkles } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
+import BlogShareBar from "@/components/BlogShareBar";
 import { UPLY_BLOG_POSTS, getUplyBlogPost } from "@/data/uplyBlogPosts";
 
 /**
@@ -69,6 +70,14 @@ export default function UplyBlogPost() {
             </span>
           </p>
 
+          <div className="mt-6 flex justify-center">
+            <BlogShareBar
+              url={`https://uply.tv/blog/${post.slug}`}
+              title={post.title}
+              excerpt={post.excerpt}
+            />
+          </div>
+
           <div className="mt-8 mx-auto aspect-[16/9] w-full max-w-2xl rounded-2xl overflow-hidden ring-1 ring-border">
             <img
               src={post.cover}
@@ -128,6 +137,17 @@ export default function UplyBlogPost() {
             ))}
           </div>
         )}
+
+        <div className="pt-6 border-t border-border space-y-3">
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+            Share this article
+          </p>
+          <BlogShareBar
+            url={`https://uply.tv/blog/${post.slug}`}
+            title={post.title}
+            excerpt={post.excerpt}
+          />
+        </div>
       </article>
 
       {/* Related */}
