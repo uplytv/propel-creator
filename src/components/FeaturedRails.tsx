@@ -62,6 +62,8 @@ const RAILS: Rail[] = [
     title: "Featured on UPLY",
     icon: BadgeCheck,
     aspect: "wide",
+    seeAllHref: "/discover",
+    seeAllLabel: "See all featured",
     items: [
       {
         id: "arya-feature",
@@ -94,6 +96,8 @@ const RAILS: Rail[] = [
     title: "Artists",
     icon: Music2,
     aspect: "poster",
+    seeAllHref: "/music",
+    seeAllLabel: "See all artists",
     items: [
       {
         id: "arya-artist",
@@ -117,6 +121,8 @@ const RAILS: Rail[] = [
     title: "Courses",
     icon: GraduationCap,
     aspect: "wide",
+    seeAllHref: "/discover?cat=courses",
+    seeAllLabel: "See all courses",
     items: [
       {
         id: "discover-courses",
@@ -139,6 +145,8 @@ const RAILS: Rail[] = [
     title: "Videos",
     icon: Film,
     aspect: "wide",
+    seeAllHref: "/discover?cat=videos",
+    seeAllLabel: "See all videos",
     items: [
       {
         id: "discover-videos",
@@ -168,6 +176,8 @@ const RAILS: Rail[] = [
     title: "Blogs & Stories",
     icon: Newspaper,
     aspect: "wide",
+    seeAllHref: "/arya-xo/blog",
+    seeAllLabel: "See all stories",
     items: [
       {
         id: "arya-blog",
@@ -190,6 +200,8 @@ const RAILS: Rail[] = [
     title: "Live Right Now",
     icon: Radio,
     aspect: "wide",
+    seeAllHref: "/discover?cat=live",
+    seeAllLabel: "See all live",
     items: [
       {
         id: "live-feed",
@@ -205,6 +217,8 @@ const RAILS: Rail[] = [
     title: "Events",
     icon: CalendarDays,
     aspect: "wide",
+    seeAllHref: "/discover?cat=events",
+    seeAllLabel: "See all events",
     items: [
       {
         id: "events-feed",
@@ -220,6 +234,8 @@ const RAILS: Rail[] = [
     title: "Communities",
     icon: Users,
     aspect: "poster",
+    seeAllHref: "/discover?cat=communities",
+    seeAllLabel: "See all communities",
     items: [
       {
         id: "communities-feed",
