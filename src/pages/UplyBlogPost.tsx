@@ -30,7 +30,7 @@ export default function UplyBlogPost() {
         <div className="mx-auto max-w-3xl px-5 py-3 flex items-center justify-between">
           <Link
             to="/blog"
-            className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground"
+            className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-muted-foreground hover:text-gold focus-visible:text-gold focus:outline-none transition-colors"
           >
             <ArrowLeft className="h-3.5 w-3.5" /> UPLY Blog
           </Link>
