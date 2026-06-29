@@ -136,6 +136,8 @@ export default function AryaXO() {
 
   return (
     <div className="min-h-screen bg-[#070707] text-white selection:bg-[#00FF85]/30">
+      <AryaBandsAutoplay />
+
 
 
       {/* ── Hero ─────────────────────────────────────────────────────── */}
