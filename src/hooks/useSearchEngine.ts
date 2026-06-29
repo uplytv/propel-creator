@@ -10,6 +10,8 @@ export interface SearchEngineResult {
   thumbnail?: string | null;
   link: string;
   combined_score: number;
+  verified?: boolean;
+  followKey?: string;
 }
 
 export function useSearchEngine(term: string) {
