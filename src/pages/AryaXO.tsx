@@ -14,7 +14,6 @@ import {
 import portraitAsset from "@/assets/arya-xo-portrait-v3.jpg.asset.json";
 import bgAsset from "@/assets/arya-xo-bg.png.asset.json";
 import AryaBandsAutoplay from "@/components/AryaBandsAutoplay";
-import { buildAryaOgImageUrl, currentOgVersion } from "@/lib/aryaShare";
 
 /**
  * Arya XO — public artist showcase, embedded inside UPLY.
@@ -115,29 +114,6 @@ export default function AryaXO() {
     document.documentElement.classList.add("dark");
     const prevTitle = document.title;
     document.title = "Arya XO — Singer, Rapper · 150 BANDS w/ HUGEL & NBA YoungBoy";
-    const setMeta = (selector: string, attr: string, name: string, content: string) => {
-      let el = document.head.querySelector<HTMLMetaElement>(selector);
-      if (!el) {
-        el = document.createElement("meta");
-        el.setAttribute(attr, name);
-        document.head.appendChild(el);
-      }
-      el.setAttribute("content", content);
-      return el;
-    };
-    const desc =
-      "Arya XO — 22-year-old Iranian American rapper, singer & actor. From opening for Trippie Redd, Lil Yachty and Tory Lanez at 17 to dropping the summer's track '150 BANDS' with HUGEL and NBA YoungBoy. Listen, watch and follow on UPLY.";
-    const ogImage = buildAryaOgImageUrl(currentOgVersion());
-    setMeta('meta[name="description"]', "name", "description", desc);
-    setMeta('meta[property="og:title"]', "property", "og:title", "Arya XO — 150 BANDS out now");
-    setMeta('meta[property="og:description"]', "property", "og:description", desc);
-    setMeta('meta[property="og:image"]', "property", "og:image", ogImage);
-    setMeta('meta[property="og:image:secure_url"]', "property", "og:image:secure_url", ogImage);
-    setMeta('meta[property="og:image:width"]', "property", "og:image:width", "1200");
-    setMeta('meta[property="og:image:height"]', "property", "og:image:height", "630");
-    setMeta('meta[property="og:image:type"]', "property", "og:image:type", "image/png");
-    setMeta('meta[name="twitter:card"]', "name", "twitter:card", "summary_large_image");
-    setMeta('meta[name="twitter:image"]', "name", "twitter:image", ogImage);
     return () => {
       document.title = prevTitle;
     };

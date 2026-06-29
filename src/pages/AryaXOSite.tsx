@@ -25,7 +25,7 @@ import getDownCoverAsset from "@/assets/getdown-cover.jpg.asset.json";
 import bgAsset from "@/assets/arya-xo-bg.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
 import AryaBandsAutoplay from "@/components/AryaBandsAutoplay";
-import { buildAryaOgImageUrl, buildAryaShareUrl, currentOgVersion } from "@/lib/aryaShare";
+import { buildAryaShareUrl } from "@/lib/aryaShare";
 
 const SHARE_PATH = "/arya-xo-site";
 const ARTIST_SLUG = "arya-xo";
@@ -83,28 +83,6 @@ export default function AryaXOSite() {
     document.documentElement.classList.add("dark");
     const prev = document.title;
     document.title = "Arya XO — Official Site · 150 BANDS w/ HUGEL & NBA YoungBoy";
-    const setMeta = (sel: string, attr: string, name: string, content: string) => {
-      let el = document.head.querySelector<HTMLMetaElement>(sel);
-      if (!el) {
-        el = document.createElement("meta");
-        el.setAttribute(attr, name);
-        document.head.appendChild(el);
-      }
-      el.setAttribute("content", content);
-    };
-    const desc =
-      "Arya XO — official site. The 22-year-old artist behind '150 BANDS' with HUGEL & NBA YoungBoy. Music, videos, press and direct booking.";
-    const ogImage = buildAryaOgImageUrl(currentOgVersion());
-    setMeta('meta[name="description"]', "name", "description", desc);
-    setMeta('meta[property="og:title"]', "property", "og:title", "Arya XO — Official Site");
-    setMeta('meta[property="og:description"]', "property", "og:description", desc);
-    setMeta('meta[property="og:image"]', "property", "og:image", ogImage);
-    setMeta('meta[property="og:image:secure_url"]', "property", "og:image:secure_url", ogImage);
-    setMeta('meta[property="og:image:width"]', "property", "og:image:width", "1200");
-    setMeta('meta[property="og:image:height"]', "property", "og:image:height", "630");
-    setMeta('meta[property="og:image:type"]', "property", "og:image:type", "image/png");
-    setMeta('meta[name="twitter:card"]', "name", "twitter:card", "summary_large_image");
-    setMeta('meta[name="twitter:image"]', "name", "twitter:image", ogImage);
     return () => {
       document.title = prev;
     };
