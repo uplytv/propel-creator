@@ -55,7 +55,7 @@ export default function UplyBlogPost() {
           </div>
           <h1
             className="mt-5 font-extrabold tracking-tight leading-[1.02] text-3xl sm:text-5xl"
-            style={{ fontFamily: "Space Grotesk, sans-serif" }}
+            style={{ fontFamily: "Fraunces, Georgia, serif", fontVariationSettings: "&quot;SOFT&quot; 50" }}
           >
             {post.title}
           </h1>
@@ -95,7 +95,7 @@ export default function UplyBlogPost() {
             {section.heading && (
               <h2
                 className="text-xl sm:text-2xl font-bold tracking-tight"
-                style={{ fontFamily: "Space Grotesk, sans-serif" }}
+                style={{ fontFamily: "Fraunces, Georgia, serif", fontVariationSettings: "&quot;SOFT&quot; 50" }}
               >
                 {section.heading}
               </h2>
@@ -158,7 +158,7 @@ export default function UplyBlogPost() {
         >
           <h2
             className="text-sm uppercase tracking-[0.2em] text-muted-foreground mb-4"
-            style={{ fontFamily: "Space Grotesk, sans-serif" }}
+            style={{ fontFamily: "Fraunces, Georgia, serif", fontVariationSettings: "&quot;SOFT&quot; 50" }}
           >
             Keep reading
           </h2>

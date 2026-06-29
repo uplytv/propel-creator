@@ -300,7 +300,7 @@ function RailRow({ rail }: { rail: Rail }) {
           <h2
             id={`rail-${rail.id}`}
             className="text-sm sm:text-base font-bold text-foreground tracking-tight"
-            style={{ fontFamily: "Space Grotesk, sans-serif" }}
+            style={{ fontFamily: "Fraunces, Georgia, serif", fontVariationSettings: "&quot;SOFT&quot; 50" }}
           >
             {rail.title}
           </h2>
