@@ -18,6 +18,7 @@ import PrimetimeSection from "@/components/network/PrimetimeSection";
 import TonightOnUPLY from "@/components/network/TonightOnUPLY";
 import UPLYChannels from "@/components/network/UPLYChannels";
 import FeaturedLearning from "@/components/discovery/FeaturedLearning";
+import FeaturedSpotlight from "@/components/FeaturedSpotlight";
 
 const PAGE_SIZE = 24;
 
@@ -175,6 +176,9 @@ export default function Discover() {
         title="Discover Creators"
         description="Explore top creators, communities, courses, and live streams on Uply."
       />
+
+      {/* Curated platform-wide feature (Arya XO blog this cycle) */}
+      <FeaturedSpotlight variant="feed" />
 
       {/* AI Discover — featured classrooms & courses (replaces the old
           stories / going-out social strip) */}
