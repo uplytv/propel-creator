@@ -17,6 +17,7 @@ import {
   DollarSign,
   Users,
   Send,
+  ThumbsUp,
 } from "lucide-react";
 import portraitAsset from "@/assets/arya-xo-150bands.png.asset.json";
 import bgAsset from "@/assets/arya-xo-bg.png.asset.json";
@@ -912,8 +913,9 @@ function TourRequestsSection() {
                     </div>
                     <div className="mt-2 font-heading text-lg font-bold leading-tight">{t.city}</div>
                     {t.country && <div className="text-xs text-[var(--arya-text-mute)]">{t.country}</div>}
-                    <div className={`mt-3 text-[11px] font-semibold ${voted.has(t.id) ? "text-[var(--arya-text-faint)]" : "text-[var(--arya-cta)]"}`}>
-                      {voted.has(t.id) ? "✓ Voted" : "+ Add vote"}
+                    <div className={`mt-3 inline-flex items-center gap-1.5 text-[11px] font-semibold ${voted.has(t.id) ? "text-[var(--arya-text-faint)]" : "text-[var(--arya-cta)]"}`}>
+                      <ThumbsUp className="h-3.5 w-3.5" />
+                      {voted.has(t.id) ? "Voted" : "Thumbs up"}
                     </div>
                   </button>
                 ))}
@@ -934,12 +936,14 @@ function TourRequestsSection() {
                       <button
                         onClick={() => vote(t.id)}
                         disabled={voted.has(t.id)}
+                        aria-label={voted.has(t.id) ? "Voted" : "Thumbs up"}
                         className={
                           voted.has(t.id)
-                            ? "arya-btn arya-btn--ghost arya-btn--sm opacity-60"
-                            : "arya-btn arya-btn--primary arya-btn--sm"
+                            ? "arya-btn arya-btn--ghost arya-btn--sm opacity-60 inline-flex items-center gap-1.5"
+                            : "arya-btn arya-btn--primary arya-btn--sm inline-flex items-center gap-1.5"
                         }
                       >
+                        <ThumbsUp className="h-3.5 w-3.5" />
                         {voted.has(t.id) ? "Voted" : "Vote"}
                       </button>
 
