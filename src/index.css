@@ -148,6 +148,44 @@
     background-color: hsl(var(--gold));
     color: hsl(var(--gold-foreground));
   }
+  /* Interactive gold accent pop — preserves contrast on dark surfaces.
+     Use on icon buttons/share chips that should glow gold on hover/focus. */
+  .hover-gold {
+    transition: color 180ms ease, border-color 180ms ease,
+                background-color 180ms ease, box-shadow 180ms ease;
+  }
+  .hover-gold:hover {
+    color: hsl(var(--gold));
+    border-color: hsl(var(--gold) / 0.6);
+    background-color: hsl(var(--gold) / 0.08);
+    box-shadow: 0 6px 18px -8px hsl(var(--gold) / 0.45);
+  }
+  .hover-gold:focus-visible {
+    outline: none;
+    color: hsl(var(--gold));
+    border-color: hsl(var(--gold) / 0.7);
+    box-shadow: 0 0 0 2px hsl(var(--background)),
+                0 0 0 4px hsl(var(--gold) / 0.6);
+  }
+  /* Inline editorial link — readable body color with gold underline that lights up. */
+  .link-gold {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: hsl(var(--gold) / 0.45);
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+    transition: color 180ms ease, text-decoration-color 180ms ease;
+    border-radius: 2px;
+  }
+  .link-gold:hover,
+  .link-gold:focus-visible {
+    color: hsl(var(--gold));
+    text-decoration-color: hsl(var(--gold));
+    outline: none;
+  }
+  .link-gold:focus-visible {
+    box-shadow: 0 0 0 2px hsl(var(--gold) / 0.45);
+  }
   /* Subtle purple → gold gradient frame for hero cards. */
   .border-editorial {
     position: relative;
