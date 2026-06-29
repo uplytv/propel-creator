@@ -76,7 +76,8 @@ export default function CuratedFollowButton({
       onClick={handleClick}
       aria-label={following ? `Unfollow ${displayName}` : `Follow ${displayName}`}
       aria-pressed={following}
-      className={`inline-flex items-center font-semibold rounded-lg transition-all duration-200 shrink-0 ${sizeClasses} ${
+      data-following={following ? "true" : "false"}
+      className={`inline-flex items-center font-semibold rounded-lg transition-all duration-200 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${sizeClasses} ${
         following
           ? "bg-secondary text-foreground hover:bg-destructive/20 hover:text-destructive border border-border"
           : "bg-accent-green text-background hover:brightness-110"
