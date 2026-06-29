@@ -99,13 +99,13 @@ export default function UplyBlog() {
                     className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/85 via-background/10 to-transparent" />
-                  <span className="absolute top-3 left-3 inline-flex items-center rounded-md bg-background/80 backdrop-blur px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
+                  <span className="absolute top-3 left-3 inline-flex items-center rounded-md bg-background/85 backdrop-blur px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-gold border border-gold-hairline">
                     {post.category}
                   </span>
                 </div>
                 <div className="p-4 flex-1 flex flex-col gap-2">
                   <h3
-                    className="text-base font-bold leading-snug"
+                    className="text-lg font-semibold leading-snug"
                     style={{ fontFamily: "Fraunces, Georgia, serif" }}
                   >
                     {post.title}
