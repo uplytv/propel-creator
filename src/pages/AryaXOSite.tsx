@@ -36,7 +36,7 @@ const ARTIST_SLUG = "arya-xo";
 
 const portrait = portraitAsset.url;
 const bg = bgAsset.url;
-const ARYA_OG_IMAGE = "https://uply.tv/arya-xo-og-v2.png";
+// OG image is resolved at runtime via buildAryaOgImageUrl(currentOgVersion()).
 
 const RELEASES = [
   {
