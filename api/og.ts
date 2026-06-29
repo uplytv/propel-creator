@@ -207,7 +207,7 @@ function getCreatorSlug(path: string) {
     if (!RESERVED_SINGLE_SEGMENTS.has(slug.toLowerCase())) return slug;
   }
 
-  if (segments.length === 2 && segments[1] === "page") {
+  if (segments.length === 2 && (segments[1] === "page" || segments[1] === "links")) {
     const slug = normalizeProfileSlugInput(segments[0]);
     if (!RESERVED_SINGLE_SEGMENTS.has(slug.toLowerCase())) return slug;
   }
