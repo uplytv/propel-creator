@@ -150,7 +150,7 @@ export default function AryaXOSite() {
         /* fall through */
       }
     }
-    setShareOpen(true);
+    setActiveShareUrl(url); setShareOpen(true);
   };
 
   // ── Booking form ──────────────────────────────────────
@@ -264,7 +264,7 @@ export default function AryaXOSite() {
             <div className="flex items-center gap-2 arya-card p-2">
               <input
                 readOnly
-                value={SHARE_URL}
+                value={activeShareUrl}
                 onFocus={(e) => e.currentTarget.select()}
                 className="flex-1 bg-transparent text-sm px-2 py-2 outline-none truncate"
               />
@@ -275,7 +275,7 @@ export default function AryaXOSite() {
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2 text-xs">
               <a
-                href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(SHARE_URL)}&text=${encodeURIComponent("Arya XO — 150 BANDS out now")}`}
+                href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(activeShareUrl)}&text=${encodeURIComponent("Arya XO — 150 BANDS out now")}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="arya-btn arya-btn--ghost arya-btn--sm"
@@ -283,7 +283,7 @@ export default function AryaXOSite() {
                 X / Twitter
               </a>
               <a
-                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SHARE_URL)}`}
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(activeShareUrl)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="arya-btn arya-btn--ghost arya-btn--sm"
@@ -291,7 +291,7 @@ export default function AryaXOSite() {
                 Facebook
               </a>
               <a
-                href={`sms:?&body=${encodeURIComponent(`Arya XO — ${SHARE_URL}`)}`}
+                href={`sms:?&body=${encodeURIComponent(`Arya XO — ${activeShareUrl}`)}`}
                 className="arya-btn arya-btn--ghost arya-btn--sm"
               >
                 Text
