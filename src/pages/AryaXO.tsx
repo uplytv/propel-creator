@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import portraitAsset from "@/assets/arya-xo-150bands.png.asset.json";
 import bgAsset from "@/assets/arya-xo-bg.png.asset.json";
+import AryaBandsAutoplay from "@/components/AryaBandsAutoplay";
 
 /**
  * Arya XO — public artist showcase, embedded inside UPLY.
