@@ -38,13 +38,14 @@ describe("CuratedFollowButton accessibility", () => {
     btn.focus();
     expect(document.activeElement).toBe(btn);
 
-    // Native <button> fires click on Enter/Space; simulate the resulting click.
+    // Native <button> activates on Enter/Space — simulate the resulting click
+    // through React's event system (jsdom's btn.click bypasses React).
     fireEvent.keyDown(btn, { key: "Enter", code: "Enter" });
-    btn.click();
+    fireEvent.click(btn);
     expect(btn).toHaveAttribute("aria-pressed", "true");
 
     fireEvent.keyDown(btn, { key: " ", code: "Space" });
-    btn.click();
+    fireEvent.click(btn);
     expect(btn).toHaveAttribute("aria-pressed", "false");
   });
 
