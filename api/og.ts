@@ -4,7 +4,7 @@ const SITE_ORIGIN = "https://www.uply.tv";
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || "https://dbjlhmbgskvhuzqvqfrl.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY =
   process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXAiOiJkYmpsaG1iZ3Nrdmh1enF2cWZybCIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzcyNTkzNTc1LCJleHAiOjIwODgxNjk1NzV9.hmFhgwZNpA3a8-ewpuupIChPbY1ykvx8XOvD7qyr66Q";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6ImRiamxobWJnc2t2aHV6cXZxZnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1OTM1NzUsImV4cCI6MjA4ODE2OTU3NX0.hmFhgwZNpA3a8-ewpuupIChPbY1ykvx8XOvD7qyr66Q";
 
 const DEFAULT_TITLE = "UPLY — The Creator Operating System";
 const DEFAULT_DESCRIPTION = "Stream, teach, sell, and build community. Keep 95% of everything.";
