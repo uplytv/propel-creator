@@ -83,8 +83,21 @@ export function useSearchEngine(term: string) {
         })),
       ];
 
-      out.sort((a, b) => b.combined_score - a.combined_score);
-      return out;
+      // Inject curated/hand-picked results (Arya XO, etc.) at the top with
+      // a very high score so they're impossible to miss, de-duped by link.
+      const curated: SearchEngineResult[] = getCuratedResults(term).map((c, i) => ({
+        id: c.id,
+        type: c.type as SearchEngineResult["type"],
+        title: c.title,
+        subtitle: c.subtitle,
+        thumbnail: c.image ?? null,
+        link: c.link,
+        combined_score: 10_000 + c.weight - i,
+      }));
+      const curatedLinks = new Set(curated.map((c) => c.link));
+      const merged = [...curated, ...out.filter((r) => !curatedLinks.has(r.link))];
+      merged.sort((a, b) => b.combined_score - a.combined_score);
+      return merged;
     },
   });
 }
