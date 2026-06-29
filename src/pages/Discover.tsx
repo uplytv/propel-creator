@@ -177,6 +177,9 @@ export default function Discover() {
         description="Explore top creators, communities, courses, and live streams on Uply."
       />
 
+      {/* Curated platform-wide feature (Arya XO blog this cycle) */}
+      <FeaturedSpotlight variant="feed" />
+
       {/* AI Discover — featured classrooms & courses (replaces the old
           stories / going-out social strip) */}
       <FeaturedLearning />
