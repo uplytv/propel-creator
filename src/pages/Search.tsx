@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Search as SearchIcon, X, Users, Package, Radio, Film, Briefcase, Loader2, Music, Disc3, Mic2, FileText, Globe } from "lucide-react";
+import { Search as SearchIcon, X, Users, Package, Radio, Film, Briefcase, Loader2, Music, Disc3, Mic2, FileText, Globe, BadgeCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import BackNav from "@/components/BackNav";
 import { Skeleton } from "@/components/ui/skeleton";
 import FestivalsSection from "@/components/social/FestivalsSection";
+import CuratedFollowButton from "@/components/CuratedFollowButton";
 
 const typeIcon: Record<string, typeof Users> = {
   creator: Users,
@@ -173,10 +174,18 @@ export default function SearchPage() {
                 </div>
                 <div className="space-y-1">
                   {items.map((item) => (
-                    <button
+                    <div
                       key={item.id}
+                      role="button"
+                      tabIndex={0}
                       onClick={() => handleSelect(item)}
-                      className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-accent/50 transition-colors text-left"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          handleSelect(item);
+                        }
+                      }}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-accent/50 transition-colors text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       {item.image ? (
                         <img src={item.image} alt="" className="w-10 h-10 rounded-lg object-cover bg-muted" loading="lazy" />
@@ -186,10 +195,24 @@ export default function SearchPage() {
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground truncate">{item.title}</p>
+                        <p className="font-medium text-foreground truncate inline-flex items-center gap-1">
+                          <span className="truncate">{item.title}</span>
+                          {item.verified && (
+                            <BadgeCheck
+                              className="w-4 h-4 text-primary shrink-0 fill-primary/20"
+                              aria-label="Verified artist"
+                            />
+                          )}
+                        </p>
                         {item.subtitle && <p className="text-xs text-muted-foreground truncate">{item.subtitle}</p>}
                       </div>
-                    </button>
+                      {item.followKey && (
+                        <CuratedFollowButton
+                          followKey={item.followKey}
+                          displayName={item.title}
+                        />
+                      )}
+                    </div>
                   ))}
                 </div>
               </motion.div>
