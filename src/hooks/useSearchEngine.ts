@@ -10,6 +10,8 @@ export interface SearchEngineResult {
   thumbnail?: string | null;
   link: string;
   combined_score: number;
+  verified?: boolean;
+  followKey?: string;
 }
 
 export function useSearchEngine(term: string) {
@@ -93,6 +95,8 @@ export function useSearchEngine(term: string) {
         thumbnail: c.image ?? null,
         link: c.link,
         combined_score: 10_000 + c.weight - i,
+        verified: c.verified,
+        followKey: c.followKey,
       }));
       const curatedLinks = new Set(curated.map((c) => c.link));
       const merged = [...curated, ...out.filter((r) => !curatedLinks.has(r.link))];
