@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Search as SearchIcon, X, Users, Package, Radio, Film, Briefcase, Loader2, Music, Disc3, Mic2, FileText, Globe, BadgeCheck } from "lucide-react";
+import { Search as SearchIcon, X, Users, Package, Radio, Film, Briefcase, Loader2, Music, Disc3, Mic2, FileText, Globe } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import BackNav from "@/components/BackNav";
 import { Skeleton } from "@/components/ui/skeleton";
 import FestivalsSection from "@/components/social/FestivalsSection";
-import CuratedFollowButton from "@/components/CuratedFollowButton";
+import CuratedSearchMeta, { VerifiedTitleBadge } from "@/components/CuratedSearchMeta";
 
 const typeIcon: Record<string, typeof Users> = {
   creator: Users,
