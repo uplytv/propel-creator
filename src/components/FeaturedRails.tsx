@@ -283,23 +283,33 @@ function RailRow({ rail }: { rail: Rail }) {
             {rail.title}
           </h2>
         </div>
-        <div className="hidden md:flex items-center gap-1">
-          <button
-            type="button"
-            aria-label={`Scroll ${rail.title} left`}
-            onClick={() => scrollBy(-1)}
-            className="p-1.5 rounded-full bg-card/60 hover:bg-card border border-border opacity-0 group-hover/rail:opacity-100 transition-opacity focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        <div className="flex items-center gap-1">
+          <Link
+            to={rail.seeAllHref}
+            aria-label={rail.seeAllLabel ?? `See all ${rail.title}`}
+            className="inline-flex items-center gap-0.5 text-[11px] sm:text-xs font-semibold text-muted-foreground hover:text-foreground px-2 py-1 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            aria-label={`Scroll ${rail.title} right`}
-            onClick={() => scrollBy(1)}
-            className="p-1.5 rounded-full bg-card/60 hover:bg-card border border-border opacity-0 group-hover/rail:opacity-100 transition-opacity focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
+            See all
+            <ChevronRight className="w-3.5 h-3.5" />
+          </Link>
+          <div className="hidden md:flex items-center gap-1">
+            <button
+              type="button"
+              aria-label={`Scroll ${rail.title} left`}
+              onClick={() => scrollBy(-1)}
+              className="p-1.5 rounded-full bg-card/60 hover:bg-card border border-border opacity-0 group-hover/rail:opacity-100 transition-opacity focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              aria-label={`Scroll ${rail.title} right`}
+              onClick={() => scrollBy(1)}
+              className="p-1.5 rounded-full bg-card/60 hover:bg-card border border-border opacity-0 group-hover/rail:opacity-100 transition-opacity focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 
