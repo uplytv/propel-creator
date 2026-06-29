@@ -223,6 +223,12 @@ export default function AryaXOBlog() {
             >
               Book Arya XO
             </Link>
+            <Link
+              to="/arya-xo"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/15 bg-white/5 text-white font-bold text-sm hover:bg-white/10"
+            >
+              All links
+            </Link>
           </div>
         </div>
       </article>
