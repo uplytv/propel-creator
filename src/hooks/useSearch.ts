@@ -1,10 +1,11 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { getCuratedResults } from "@/lib/curatedSearch";
 
 export interface SearchResult {
   id: string;
-  type: "creator" | "product" | "stream" | "recording" | "job" | "track" | "album" | "artist";
+  type: "creator" | "product" | "stream" | "recording" | "job" | "track" | "album" | "artist" | "page" | "blog";
   title: string;
   subtitle?: string;
   image?: string | null;
@@ -105,7 +106,20 @@ export function useSearch() {
       })),
     ];
 
-    setResults(mapped);
+    // Inject curated/hand-picked results (e.g. Arya XO) at the top, and
+    // de-duplicate any DB result that resolves to the same destination link.
+    const curated: SearchResult[] = getCuratedResults(q).map((c) => ({
+      id: c.id,
+      type: c.type,
+      title: c.title,
+      subtitle: c.subtitle,
+      image: c.image ?? null,
+      link: c.link,
+    }));
+    const curatedLinks = new Set(curated.map((c) => c.link));
+    const deduped = mapped.filter((r) => !curatedLinks.has(r.link));
+
+    setResults([...curated, ...deduped]);
     setLoading(false);
   }, []);
 
