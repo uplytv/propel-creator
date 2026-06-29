@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Pause, Play, Volume2 } from "lucide-react";
 
 const YT_ID = "gqYburgfJ9s"; // 150 BANDS — HUGEL, Arya XO, NBA YoungBoy
+const PREF_KEY = "arya:150bands:playback"; // "playing" | "paused"
 
 /**
  * Hidden YouTube IFrame player that auto-starts "150 BANDS" when the page
