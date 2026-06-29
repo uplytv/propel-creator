@@ -408,7 +408,7 @@ export default function AryaXOSite() {
               className="arya-card arya-card--interactive group relative overflow-hidden p-5"
             >
               <div className="aspect-square rounded-xl overflow-hidden bg-black/40 ring-1 ring-[var(--arya-border)] mb-4 relative">
-                <img src={portrait} alt={r.title} className="h-full w-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition duration-500" />
+                <img src={r.cover} alt={r.title} className="h-full w-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition duration-500" />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <span className="h-14 w-14 rounded-full bg-[var(--arya-cta)] text-[var(--arya-cta-fg)] flex items-center justify-center shadow-[var(--arya-glow)] group-hover:scale-110 transition">
                     <Play className="h-6 w-6 fill-current" />
