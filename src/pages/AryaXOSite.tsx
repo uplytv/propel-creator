@@ -936,12 +936,14 @@ function TourRequestsSection() {
                       <button
                         onClick={() => vote(t.id)}
                         disabled={voted.has(t.id)}
+                        aria-label={voted.has(t.id) ? "Voted" : "Thumbs up"}
                         className={
                           voted.has(t.id)
-                            ? "arya-btn arya-btn--ghost arya-btn--sm opacity-60"
-                            : "arya-btn arya-btn--primary arya-btn--sm"
+                            ? "arya-btn arya-btn--ghost arya-btn--sm opacity-60 inline-flex items-center gap-1.5"
+                            : "arya-btn arya-btn--primary arya-btn--sm inline-flex items-center gap-1.5"
                         }
                       >
+                        <ThumbsUp className="h-3.5 w-3.5" />
                         {voted.has(t.id) ? "Voted" : "Vote"}
                       </button>
 
