@@ -65,7 +65,7 @@ export default function CuratedFollowButton({
     e.stopPropagation();
     const next = !following;
     setFollowing(next);
-    writeState(followKey, next);
+    writeState(followKey, next, displayName);
     toast.success(next ? `Following ${displayName}` : `Unfollowed ${displayName}`);
   };
 
