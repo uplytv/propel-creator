@@ -174,10 +174,18 @@ export default function SearchPage() {
                 </div>
                 <div className="space-y-1">
                   {items.map((item) => (
-                    <button
+                    <div
                       key={item.id}
+                      role="button"
+                      tabIndex={0}
                       onClick={() => handleSelect(item)}
-                      className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-accent/50 transition-colors text-left"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          handleSelect(item);
+                        }
+                      }}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-accent/50 transition-colors text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       {item.image ? (
                         <img src={item.image} alt="" className="w-10 h-10 rounded-lg object-cover bg-muted" loading="lazy" />
@@ -204,7 +212,7 @@ export default function SearchPage() {
                           displayName={item.title}
                         />
                       )}
-                    </button>
+                    </div>
                   ))}
                 </div>
               </motion.div>
