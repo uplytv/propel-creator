@@ -437,6 +437,52 @@ export default function AryaXOSite() {
         </div>
       </section>
 
+      {/* FEATURED BLOG */}
+      <section id="press" className="mx-auto max-w-6xl px-5 py-16 sm:py-20 border-t border-white/5">
+        <p className="text-[11px] uppercase tracking-[0.2em] text-[#00FF85]">Featured</p>
+        <h2 className="mt-2 font-heading text-3xl sm:text-4xl font-bold">The come-up</h2>
+
+        <a
+          href="/arya-xo/blog"
+          className="mt-8 group grid sm:grid-cols-[1.1fr_1.4fr] gap-0 overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] hover:border-[#00FF85]/40 transition"
+        >
+          <div className="aspect-[4/3] sm:aspect-auto overflow-hidden bg-black">
+            <img
+              src={portrait}
+              alt="Arya XO — The Come-Up feature"
+              className="h-full w-full object-cover object-center group-hover:scale-105 transition duration-700"
+            />
+          </div>
+          <div className="p-6 sm:p-10 flex flex-col justify-center">
+            <div className="text-[11px] uppercase tracking-[0.25em] text-white/50">
+              Feature · Summer 2026 · 8 min read
+            </div>
+            <h3 className="mt-3 font-heading text-2xl sm:text-4xl font-extrabold leading-[1.05]">
+              Twenty-two, and writing his own lane.
+            </h3>
+            <p className="mt-4 text-white/70 text-[15px] leading-relaxed">
+              The full story behind &ldquo;150 Bands&rdquo; — the Afro House,
+              Latin House and Hip-Hop crossover with HUGEL and NBA YoungBoy
+              that put Arya XO on the front of dance music&apos;s biggest
+              album of the year.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {["Afro House", "Latin House", "Hip-Hop"].map((t) => (
+                <span
+                  key={t}
+                  className="px-3 py-1 rounded-full border border-white/15 bg-white/5 text-[11px] uppercase tracking-wider text-white/80"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+            <div className="mt-6 inline-flex items-center gap-2 text-[#00FF85] font-semibold text-sm">
+              Read the feature <ArrowRight className="h-4 w-4" />
+            </div>
+          </div>
+        </a>
+      </section>
+
       {/* ABOUT / STORY */}
       <section id="about" className="mx-auto max-w-6xl px-5 py-16 sm:py-20 border-t border-white/5">
         <div className="grid sm:grid-cols-[1fr_1.2fr] gap-10 items-start">
