@@ -10,6 +10,8 @@ export interface SearchResult {
   subtitle?: string;
   image?: string | null;
   link: string;
+  verified?: boolean;
+  followKey?: string;
 }
 
 export function useSearch() {
@@ -115,6 +117,8 @@ export function useSearch() {
       subtitle: c.subtitle,
       image: c.image ?? null,
       link: c.link,
+      verified: c.verified,
+      followKey: c.followKey,
     }));
     const curatedLinks = new Set(curated.map((c) => c.link));
     const deduped = mapped.filter((r) => !curatedLinks.has(r.link));

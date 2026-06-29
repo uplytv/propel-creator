@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Search as SearchIcon, X, Users, Package, Radio, Film, Briefcase, Loader2, Music, Disc3, Mic2, FileText, Globe } from "lucide-react";
+import { Search as SearchIcon, X, Users, Package, Radio, Film, Briefcase, Loader2, Music, Disc3, Mic2, FileText, Globe, BadgeCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import BackNav from "@/components/BackNav";
 import { Skeleton } from "@/components/ui/skeleton";
 import FestivalsSection from "@/components/social/FestivalsSection";
+import CuratedFollowButton from "@/components/CuratedFollowButton";
 
 const typeIcon: Record<string, typeof Users> = {
   creator: Users,
@@ -186,9 +187,23 @@ export default function SearchPage() {
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground truncate">{item.title}</p>
+                        <p className="font-medium text-foreground truncate inline-flex items-center gap-1">
+                          <span className="truncate">{item.title}</span>
+                          {item.verified && (
+                            <BadgeCheck
+                              className="w-4 h-4 text-primary shrink-0 fill-primary/20"
+                              aria-label="Verified artist"
+                            />
+                          )}
+                        </p>
                         {item.subtitle && <p className="text-xs text-muted-foreground truncate">{item.subtitle}</p>}
                       </div>
+                      {item.followKey && (
+                        <CuratedFollowButton
+                          followKey={item.followKey}
+                          displayName={item.title}
+                        />
+                      )}
                     </button>
                   ))}
                 </div>
