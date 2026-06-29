@@ -2,15 +2,26 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
-      "source": "/:slug(arya|aryaxo|arya-xo|arya-xo-site|arya-xo-links|arya-xo/links)",
+      "source": "/:slug(arya|aryaxo|arya-xo|arya-xo-site|arya-xo-links)",
       "has": [
         {
           "type": "header",
           "key": "user-agent",
-          "value": "(?i).*(bot|facebookexternalhit|Facebot|Twitterbot|WhatsApp|LinkedIn|Slack|Telegram|Discord|Applebot|iMessage|Embedly|Quora|Showyou|outbrain|pinterest|vkShare|reddit|Google|bing).*"
+          "value": ".*([Bb]ot|[Cc]rawler|[Ss]pider|[Pp]review|[Ff]acebookexternalhit|[Ff]acebot|[Tt]witterbot|[Ww]hats[Aa]pp|[Ll]inked[Ii]n|[Ss]lack|[Tt]elegram|[Dd]iscord|[Aa]pplebot|[Ii][Mm]essage|[Mm]essages|[Ee]mbedly|[Qq]uora|[Ss]howyou|[Oo]utbrain|[Pp]interest|[Vv][Kk][Ss]hare|[Rr]eddit|[Gg]oogle|[Bb]ing).*"
         }
       ],
       "destination": "https://dbjlhmbgskvhuzqvqfrl.supabase.co/functions/v1/og-image?path=/:slug"
+    },
+    {
+      "source": "/:slug(arya|aryaxo|arya-xo)/links",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*([Bb]ot|[Cc]rawler|[Ss]pider|[Pp]review|[Ff]acebookexternalhit|[Ff]acebot|[Tt]witterbot|[Ww]hats[Aa]pp|[Ll]inked[Ii]n|[Ss]lack|[Tt]elegram|[Dd]iscord|[Aa]pplebot|[Ii][Mm]essage|[Mm]essages|[Ee]mbedly|[Qq]uora|[Ss]howyou|[Oo]utbrain|[Pp]interest|[Vv][Kk][Ss]hare|[Rr]eddit|[Gg]oogle|[Bb]ing).*"
+        }
+      ],
+      "destination": "https://dbjlhmbgskvhuzqvqfrl.supabase.co/functions/v1/og-image?path=/:slug/links"
     },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
