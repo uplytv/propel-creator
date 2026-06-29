@@ -44,6 +44,10 @@ interface Rail {
   title: string;
   icon: React.ElementType;
   aspect: Aspect;
+  /** Destination of the "See all" link in the rail header. */
+  seeAllHref: string;
+  /** Optional override label, defaults to "See all". */
+  seeAllLabel?: string;
   items: RailItem[];
 }
 
