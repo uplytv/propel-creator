@@ -47,6 +47,7 @@ const RELEASES = [
     year: "2026",
     tag: "New single",
     href: "https://open.spotify.com/track/3QBkhZL0nUSrm6qcoSEZvt",
+    cover: bandsCoverAsset.url,
   },
 
   {
@@ -55,6 +56,7 @@ const RELEASES = [
     year: "2025",
     tag: "Featured",
     href: "https://open.spotify.com/search/Arya%20XO%20Get%20Down%20Roy%20Woods",
+    cover: getDownCoverAsset.url,
   },
 ];
 
