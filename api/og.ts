@@ -217,6 +217,10 @@ function getCreatorSlug(path: string) {
   if (atProfileChild?.[1]) return normalizeProfileSlugInput(atProfileChild[1]);
 
   const segments = path.split("/").filter(Boolean);
+  if (segments.length === 2 && segments[0] === "creator") {
+    return normalizeProfileSlugInput(segments[1]);
+  }
+
   if (segments.length === 1) {
     const slug = normalizeProfileSlugInput(segments[0]);
     if (!RESERVED_SINGLE_SEGMENTS.has(slug.toLowerCase())) return slug;
