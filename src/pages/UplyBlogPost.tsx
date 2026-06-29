@@ -170,7 +170,7 @@ export default function UplyBlogPost() {
               <Link
                 key={r.slug}
                 to={`/blog/${r.slug}`}
-                className="group block overflow-hidden rounded-xl border border-border bg-card/40 hover:border-primary/50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="group block overflow-hidden rounded-xl border border-border bg-card/40 hover:border-gold-hairline hover:shadow-[0_10px_30px_-12px_hsl(var(--gold)/0.45)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-[hsl(var(--gold)/0.7)]"
               >
                 <div className="relative aspect-[16/10] overflow-hidden">
                   <img
@@ -181,12 +181,14 @@ export default function UplyBlogPost() {
                   />
                 </div>
                 <div className="p-3">
-                  <p className="text-[10px] uppercase tracking-[0.18em] text-primary font-semibold mb-1">
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-primary group-hover:text-gold transition-colors font-semibold mb-1">
                     {r.category}
                   </p>
-                  <h3 className="text-sm font-bold leading-snug line-clamp-2">{r.title}</h3>
-                  <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
-                    Read <ArrowRight className="w-3 h-3" />
+                  <h3 className="text-sm font-bold leading-snug line-clamp-2 group-hover:text-gold transition-colors">
+                    {r.title}
+                  </h3>
+                  <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-primary group-hover:text-gold transition-colors">
+                    Read <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
                   </span>
                 </div>
               </Link>
