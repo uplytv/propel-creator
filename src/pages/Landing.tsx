@@ -20,6 +20,7 @@ import HomepagePricing from "@/components/landing/v2/HomepagePricing";
 import HomepageFinalCTA from "@/components/landing/v2/HomepageFinalCTA";
 import HomepageFooter from "@/components/landing/v2/HomepageFooter";
 import FoundersStickyCTA from "@/components/founders/FoundersStickyCTA";
+import FeaturedSpotlight from "@/components/FeaturedSpotlight";
 
 const JSON_LD = {
   "@context": "https://schema.org",
