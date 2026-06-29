@@ -1,10 +1,11 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { getCuratedResults } from "@/lib/curatedSearch";
 
 export interface SearchResult {
   id: string;
-  type: "creator" | "product" | "stream" | "recording" | "job" | "track" | "album" | "artist";
+  type: "creator" | "product" | "stream" | "recording" | "job" | "track" | "album" | "artist" | "page" | "blog";
   title: string;
   subtitle?: string;
   image?: string | null;
