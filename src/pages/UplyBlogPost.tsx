@@ -118,7 +118,10 @@ export default function UplyBlogPost() {
               </ul>
             )}
             {section.pullquote && (
-              <blockquote className="border-l-2 border-primary pl-4 py-1 italic text-lg sm:text-xl text-foreground/95">
+              <blockquote
+                className="border-l-2 border-gold-hairline pl-5 py-2 italic text-xl sm:text-2xl text-foreground/95"
+                style={{ fontFamily: "Fraunces, Georgia, serif" }}
+              >
                 {section.pullquote}
               </blockquote>
             )}
