@@ -108,10 +108,15 @@ export default function AryaXOSite() {
 
   const [shareOpen, setShareOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [activeShareUrl, setActiveShareUrl] = useState<string>(() => buildAryaShareUrl(SHARE_PATH));
 
   // Each share gets a fresh `?v=` so iMessage/WhatsApp/Slack can't serve a
   // stale cached preview. The edge function propagates `v` into the og:image.
-  const makeFreshShareUrl = () => buildAryaShareUrl(SHARE_PATH);
+  const makeFreshShareUrl = () => {
+    const url = buildAryaShareUrl(SHARE_PATH);
+    setActiveShareUrl(url);
+    return url;
+  };
 
   const handleCopy = async () => {
     const url = makeFreshShareUrl();
