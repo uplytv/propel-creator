@@ -21,13 +21,15 @@ function readState(key: string): boolean {
   }
 }
 
-function writeState(key: string, val: boolean) {
+function writeState(key: string, val: boolean, displayName?: string) {
   try {
     if (val) window.localStorage.setItem(STORAGE_PREFIX + key, "1");
     else window.localStorage.removeItem(STORAGE_PREFIX + key);
-    // Notify other CuratedFollowButton instances in this tab
+    // Notify other CuratedFollowButton instances + the global announcer.
     window.dispatchEvent(
-      new CustomEvent("curated-follow-change", { detail: { key, value: val } }),
+      new CustomEvent("curated-follow-change", {
+        detail: { key, value: val, displayName },
+      }),
     );
   } catch {
     /* ignore */
@@ -63,7 +65,7 @@ export default function CuratedFollowButton({
     e.stopPropagation();
     const next = !following;
     setFollowing(next);
-    writeState(followKey, next);
+    writeState(followKey, next, displayName);
     toast.success(next ? `Following ${displayName}` : `Unfollowed ${displayName}`);
   };
 
