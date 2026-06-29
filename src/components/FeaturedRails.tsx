@@ -44,6 +44,10 @@ interface Rail {
   title: string;
   icon: React.ElementType;
   aspect: Aspect;
+  /** Destination of the "See all" link in the rail header. */
+  seeAllHref: string;
+  /** Optional override label, defaults to "See all". */
+  seeAllLabel?: string;
   items: RailItem[];
 }
 
@@ -58,6 +62,8 @@ const RAILS: Rail[] = [
     title: "Featured on UPLY",
     icon: BadgeCheck,
     aspect: "wide",
+    seeAllHref: "/discover",
+    seeAllLabel: "See all featured",
     items: [
       {
         id: "arya-feature",
@@ -90,6 +96,8 @@ const RAILS: Rail[] = [
     title: "Artists",
     icon: Music2,
     aspect: "poster",
+    seeAllHref: "/music",
+    seeAllLabel: "See all artists",
     items: [
       {
         id: "arya-artist",
@@ -113,6 +121,8 @@ const RAILS: Rail[] = [
     title: "Courses",
     icon: GraduationCap,
     aspect: "wide",
+    seeAllHref: "/discover?cat=courses",
+    seeAllLabel: "See all courses",
     items: [
       {
         id: "discover-courses",
@@ -135,6 +145,8 @@ const RAILS: Rail[] = [
     title: "Videos",
     icon: Film,
     aspect: "wide",
+    seeAllHref: "/discover?cat=videos",
+    seeAllLabel: "See all videos",
     items: [
       {
         id: "discover-videos",
@@ -164,6 +176,8 @@ const RAILS: Rail[] = [
     title: "Blogs & Stories",
     icon: Newspaper,
     aspect: "wide",
+    seeAllHref: "/arya-xo/blog",
+    seeAllLabel: "See all stories",
     items: [
       {
         id: "arya-blog",
@@ -186,6 +200,8 @@ const RAILS: Rail[] = [
     title: "Live Right Now",
     icon: Radio,
     aspect: "wide",
+    seeAllHref: "/discover?cat=live",
+    seeAllLabel: "See all live",
     items: [
       {
         id: "live-feed",
@@ -201,6 +217,8 @@ const RAILS: Rail[] = [
     title: "Events",
     icon: CalendarDays,
     aspect: "wide",
+    seeAllHref: "/discover?cat=events",
+    seeAllLabel: "See all events",
     items: [
       {
         id: "events-feed",
@@ -216,6 +234,8 @@ const RAILS: Rail[] = [
     title: "Communities",
     icon: Users,
     aspect: "poster",
+    seeAllHref: "/discover?cat=communities",
+    seeAllLabel: "See all communities",
     items: [
       {
         id: "communities-feed",
@@ -263,23 +283,33 @@ function RailRow({ rail }: { rail: Rail }) {
             {rail.title}
           </h2>
         </div>
-        <div className="hidden md:flex items-center gap-1">
-          <button
-            type="button"
-            aria-label={`Scroll ${rail.title} left`}
-            onClick={() => scrollBy(-1)}
-            className="p-1.5 rounded-full bg-card/60 hover:bg-card border border-border opacity-0 group-hover/rail:opacity-100 transition-opacity focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        <div className="flex items-center gap-1">
+          <Link
+            to={rail.seeAllHref}
+            aria-label={rail.seeAllLabel ?? `See all ${rail.title}`}
+            className="inline-flex items-center gap-0.5 text-[11px] sm:text-xs font-semibold text-muted-foreground hover:text-foreground px-2 py-1 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            aria-label={`Scroll ${rail.title} right`}
-            onClick={() => scrollBy(1)}
-            className="p-1.5 rounded-full bg-card/60 hover:bg-card border border-border opacity-0 group-hover/rail:opacity-100 transition-opacity focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
+            See all
+            <ChevronRight className="w-3.5 h-3.5" />
+          </Link>
+          <div className="hidden md:flex items-center gap-1">
+            <button
+              type="button"
+              aria-label={`Scroll ${rail.title} left`}
+              onClick={() => scrollBy(-1)}
+              className="p-1.5 rounded-full bg-card/60 hover:bg-card border border-border opacity-0 group-hover/rail:opacity-100 transition-opacity focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              aria-label={`Scroll ${rail.title} right`}
+              onClick={() => scrollBy(1)}
+              className="p-1.5 rounded-full bg-card/60 hover:bg-card border border-border opacity-0 group-hover/rail:opacity-100 transition-opacity focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 
