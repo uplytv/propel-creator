@@ -27,6 +27,10 @@ export interface CuratedResult {
   weight: number;
   /** Tokens that should match the user's search term */
   keywords: string[];
+  /** Show a verified-artist checkmark next to the title */
+  verified?: boolean;
+  /** Stable key enabling the local follow/unfollow button on the card */
+  followKey?: string;
 }
 
 const ARYA_KEYWORDS = [
@@ -75,6 +79,8 @@ export const CURATED_RESULTS: CuratedResult[] = [
     link: "/arya-xo-site",
     weight: 100,
     keywords: ARYA_KEYWORDS,
+    verified: true,
+    followKey: "aryaxo",
   },
   {
     id: "arya-xo-creator",
@@ -85,6 +91,8 @@ export const CURATED_RESULTS: CuratedResult[] = [
     link: "/arya-xo",
     weight: 95,
     keywords: ARYA_KEYWORDS,
+    verified: true,
+    followKey: "aryaxo",
   },
   {
     id: "arya-xo-blog",
