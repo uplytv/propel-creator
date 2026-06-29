@@ -12,7 +12,8 @@ const DEFAULT_DESC =
   "The creator platform that invests more in you as you grow. Monetize your community, go live, sell courses, and scale with AI — all in one place.";
 const DEFAULT_IMAGE =
   "https://storage.googleapis.com/gpt-engineer-file-uploads/cikFlxVx8jfBrfytYvhbk5DVvYT2/social-images/social-1773093383614-084CEBC0-15D0-4F96-A3BD-D7F3F8441A0D.webp";
-const ARYA_OG_IMAGE = `${SITE_URL}/arya-xo-og-v2.png`;
+const ARYA_OG_IMAGE_BASE = `${SITE_URL}/arya-xo-og-v2.png`;
+const ARYA_OG_BUILD_VERSION = "20260629a";
 const ARYA_PATH_RE = /^\/(arya|aryaxo|arya-xo)(\/links)?\/?$|^\/(arya-xo-site|arya-xo-links)\/?$/i;
 
 function buildHtml(meta: {
@@ -92,6 +93,13 @@ Deno.serve(async (req) => {
     // Arya XO artist pages — custom OG so iMessage/social previews show his face.
     if (ARYA_PATH_RE.test(path)) {
       const isSite = /site/i.test(path);
+      // Propagate any `?v=` cache-buster from the shared page URL into the
+      // og:image URL so iMessage/WhatsApp/Slack refetch the artwork too.
+      const incomingV = requestedUrl.searchParams.get("v");
+      const safeV = incomingV && /^[A-Za-z0-9._~-]{1,64}$/.test(incomingV)
+        ? incomingV
+        : ARYA_OG_BUILD_VERSION;
+      const image = `${ARYA_OG_IMAGE_BASE}?v=${encodeURIComponent(safeV)}`;
       return new Response(
         buildHtml({
           title: isSite
@@ -99,7 +107,7 @@ Deno.serve(async (req) => {
             : "Arya XO — Singer, Rapper · 150 BANDS w/ HUGEL & NBA YoungBoy",
           description:
             "Arya XO — 22-year-old Iranian American rapper, singer & actor. '150 BANDS' with HUGEL & NBA YoungBoy out now. Listen, watch and book on UPLY.",
-          image: ARYA_OG_IMAGE,
+          image,
           url: canonicalUrl,
           type: "profile",
           twitterCard: "summary_large_image",
@@ -109,6 +117,7 @@ Deno.serve(async (req) => {
           headers: {
             ...corsHeaders,
             "Content-Type": "text/html; charset=utf-8",
+            // Per-version cache: unique `v` ⇒ unique cache entry ⇒ fresh preview.
             "Cache-Control": "public, max-age=3600, s-maxage=86400",
           },
         }
