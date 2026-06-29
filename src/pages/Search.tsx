@@ -19,6 +19,8 @@ const typeIcon: Record<string, typeof Users> = {
   track: Music,
   album: Disc3,
   artist: Mic2,
+  page: Globe,
+  blog: FileText,
 };
 
 const typeLabel: Record<string, string> = {
@@ -30,14 +32,18 @@ const typeLabel: Record<string, string> = {
   track: "Track",
   album: "Album",
   artist: "Artist",
+  page: "Page",
+  blog: "Article",
 };
 
 const filterOptions = [
   { value: "all", label: "All" },
+  { value: "artist", label: "Artists" },
   { value: "creator", label: "Creators" },
+  { value: "blog", label: "Articles" },
+  { value: "page", label: "Pages" },
   { value: "track", label: "Tracks" },
   { value: "album", label: "Albums" },
-  { value: "artist", label: "Artists" },
   { value: "product", label: "Products" },
   { value: "stream", label: "Streams" },
   { value: "recording", label: "Recordings" },
