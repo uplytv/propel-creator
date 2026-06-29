@@ -17,6 +17,7 @@ import {
   DollarSign,
   Users,
   Send,
+  ThumbsUp,
 } from "lucide-react";
 import portraitAsset from "@/assets/arya-xo-150bands.png.asset.json";
 import bgAsset from "@/assets/arya-xo-bg.png.asset.json";
