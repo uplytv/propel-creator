@@ -60,6 +60,15 @@ export default function AryaBandsAutoplay() {
         events: {
           onReady: (e: any) => {
             setReady(true);
+            // Respect previously saved preference ("paused" = user opted out)
+            const pref =
+              typeof window !== "undefined"
+                ? window.localStorage.getItem(PREF_KEY)
+                : null;
+            if (pref === "paused") {
+              try { e.target.pauseVideo(); } catch {}
+              return;
+            }
             try {
               e.target.mute();
               e.target.playVideo();
@@ -88,6 +97,12 @@ export default function AryaBandsAutoplay() {
     const onGesture = () => {
       const p = playerRef.current;
       if (!p) return;
+      // Don't override an explicit "paused" preference
+      const pref =
+        typeof window !== "undefined"
+          ? window.localStorage.getItem(PREF_KEY)
+          : null;
+      if (pref === "paused") return;
       try {
         p.unMute();
         p.setVolume(80);
@@ -116,14 +131,17 @@ export default function AryaBandsAutoplay() {
     try {
       if (playing) {
         p.pauseVideo();
+        try { window.localStorage.setItem(PREF_KEY, "paused"); } catch {}
       } else {
         p.unMute();
         p.setVolume(80);
         p.playVideo();
+        try { window.localStorage.setItem(PREF_KEY, "playing"); } catch {}
       }
       setNeedsTap(false);
     } catch {}
   };
+
 
   return (
     <>
