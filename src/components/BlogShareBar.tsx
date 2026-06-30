@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link as LinkIcon, Check, Twitter, Facebook, Linkedin, Mail, MessageCircle, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import MobileShareSheet from "@/components/MobileShareSheet";
@@ -51,11 +51,61 @@ export default function BlogShareBar({ url, title, excerpt = "" }: Props) {
   const resolveUrl = () =>
     url ?? (typeof window !== "undefined" ? window.location.href : "");
 
+  // Funnel tracking for the desktop share bar. Mirrors the mobile sheet schema:
+  // "opened" fires the first time the bar scrolls into view, "closed" fires on
+  // unmount with the time-in-view duration and whether the user converted.
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const openedAtRef = useRef<number | null>(null);
+  const convertedRef = useRef(false);
+  const linkRef = useRef<string>("");
+  linkRef.current = resolveUrl();
+
+  useEffect(() => {
+    const node = rootRef.current;
+    if (!node || typeof IntersectionObserver === "undefined") return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && openedAtRef.current == null) {
+            openedAtRef.current = Date.now();
+            trackEvent("blog_share_sheet_opened", {
+              surface: "blog_share_bar",
+              url: linkRef.current,
+              title,
+            });
+            observer.disconnect();
+          }
+        }
+      },
+      { threshold: 0.5 },
+    );
+    observer.observe(node);
+
+    return () => {
+      observer.disconnect();
+      if (openedAtRef.current != null) {
+        const durationMs = Date.now() - openedAtRef.current;
+        trackEvent("blog_share_sheet_closed", {
+          surface: "blog_share_bar",
+          url: linkRef.current,
+          title,
+          duration_ms: durationMs,
+          converted: convertedRef.current,
+          dismissed: !convertedRef.current,
+        });
+        openedAtRef.current = null;
+      }
+    };
+  }, [title]);
+
+
   const handleCopy = async () => {
     const link = resolveUrl();
     try {
       await navigator.clipboard.writeText(link);
       setCopied(true);
+      convertedRef.current = true;
       trackBlogShare("copy_link", { url: link, title, surface: "blog_share_bar" });
       toast({ title: "Link copied", description: "Share it anywhere." });
       setTimeout(() => setCopied(false), 2000);
@@ -107,6 +157,7 @@ export default function BlogShareBar({ url, title, excerpt = "" }: Props) {
 
   return (
     <div
+      ref={rootRef}
       role="group"
       aria-label="Share this post"
       className="flex flex-wrap items-center gap-2"
@@ -134,6 +185,7 @@ export default function BlogShareBar({ url, title, excerpt = "" }: Props) {
       <button
         type="button"
         onClick={() => {
+          convertedRef.current = true;
           trackBlogShare("native_share", { url: link, title, surface: "blog_share_bar" });
           openShareSheet();
         }}
@@ -154,7 +206,10 @@ export default function BlogShareBar({ url, title, excerpt = "" }: Props) {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={label}
-            onClick={() => trackBlogShare(channel, { url: link, title, surface: "blog_share_bar" })}
+            onClick={() => {
+              convertedRef.current = true;
+              trackBlogShare(channel, { url: link, title, surface: "blog_share_bar" });
+            }}
             className="hover-gold inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card/60 text-foreground/80"
           >
             <Icon className="h-4 w-4" aria-hidden />
