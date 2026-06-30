@@ -859,7 +859,14 @@ function EntryCard({
           </span>
         )}
       </div>
-      <AlertDialog open={!!retryConfirm} onOpenChange={(o) => !o && setRetryConfirm(null)}>
+      <AlertDialog
+        open={!!retryConfirm}
+        onOpenChange={(o) => {
+          if (o) return;
+          if (retryConfirm && retryState[retryConfirm.id] === "sending") return;
+          setRetryConfirm(null);
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Retry this failed email?</AlertDialogTitle>
@@ -872,14 +879,29 @@ function EntryCard({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel
+              disabled={!!retryConfirm && retryState[retryConfirm.id] === "sending"}
+            >
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
-                if (retryConfirm) retryFailedLog(retryConfirm);
+              disabled={!!retryConfirm && retryState[retryConfirm.id] === "sending"}
+              onClick={async (e) => {
+                e.preventDefault();
+                if (!retryConfirm) return;
+                const log = retryConfirm;
+                await retryFailedLog(log);
                 setRetryConfirm(null);
               }}
             >
-              Retry send
+              {retryConfirm && retryState[retryConfirm.id] === "sending" ? (
+                <>
+                  <Loader2 className="h-3 w-3 animate-spin mr-1.5" />
+                  Sending…
+                </>
+              ) : (
+                "Retry send"
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
