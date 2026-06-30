@@ -726,7 +726,7 @@ function EntryCard({
                       <div className="basis-full mt-1 flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => retryFailedLog(l)}
+                          onClick={() => setRetryConfirm(l)}
                           disabled={retryState[l.id] === "sending"}
                           className="inline-flex items-center gap-1 rounded-md border border-rose-400/40 bg-rose-500/10 px-2 py-1 text-[11px] font-semibold text-rose-200 hover:bg-rose-500/20 disabled:opacity-50"
                         >
