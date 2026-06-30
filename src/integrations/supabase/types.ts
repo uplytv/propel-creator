@@ -5580,6 +5580,57 @@ export type Database = {
         }
         Relationships: []
       }
+      founder_offer_purchases: {
+        Row: {
+          amount_cents: number
+          buyer_email: string
+          buyer_name: string | null
+          contact_phone: string | null
+          created_at: string
+          currency: string
+          id: string
+          notes: string | null
+          offer_key: string
+          status: string
+          stripe_payment_intent: string | null
+          stripe_session_id: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount_cents: number
+          buyer_email: string
+          buyer_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          offer_key: string
+          status?: string
+          stripe_payment_intent?: string | null
+          stripe_session_id: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          buyer_email?: string
+          buyer_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          offer_key?: string
+          status?: string
+          stripe_payment_intent?: string | null
+          stripe_session_id?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       friend_connections: {
         Row: {
           accepted_at: string | null
