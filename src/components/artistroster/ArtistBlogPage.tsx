@@ -100,6 +100,11 @@ export default function ArtistBlogPage() {
           <Link to={`/${artist.slug}/blog`} className="text-[12px] uppercase tracking-[0.2em] opacity-60 hover:opacity-100">
             ← All posts
           </Link>
+          {post.coverUrl && (
+            <div className="mt-8 overflow-hidden rounded-3xl border border-white/10 bg-white/5">
+              <img src={post.coverUrl} alt={post.title} className="h-full w-full object-cover" loading="lazy" />
+            </div>
+          )}
           {post.tag && (
             <p className="mt-8 text-[11px] uppercase tracking-[0.28em]" style={{ color: artist.accent }}>
               {post.tag}
