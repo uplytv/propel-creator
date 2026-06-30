@@ -70,6 +70,7 @@ const RosterHubRoute = lazy(() => import("./pages/RosterHubRoute"));
 const UplyBlog = lazy(() => import("./pages/UplyBlog"));
 const UplyBlogPost = lazy(() => import("./pages/UplyBlogPost"));
 const AdminBookingInquiries = lazy(() => import("./pages/AdminBookingInquiries"));
+const AdminCompetitionEntries = lazy(() => import("./pages/AdminCompetitionEntries"));
 const Live = lazy(() => import("./pages/Live"));
 const Stream = lazy(() => import("./pages/Stream"));
 const GoLive = lazy(() => import("./pages/GoLive"));
