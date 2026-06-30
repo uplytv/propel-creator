@@ -142,6 +142,8 @@ export interface ArtistRosterEntry {
   community?: ArtistCommunity;
   /** Courses offered at /:slug/courses */
   courses?: ArtistCourse[];
+  /** Slug of an active UPLY competition surfaced at /:slug/competition */
+  competitionSlug?: string;
   /** Override the section chips shown on the /roster hub card (defaults derive from posts/community/courses). */
   sectionsOverride?: string[];
 }
