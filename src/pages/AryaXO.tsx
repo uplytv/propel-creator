@@ -105,19 +105,21 @@ const LINKS: LinkCard[] = [
     accent: "bg-white/10",
   },
   {
-    label: "Website",
-    sub: "litreeezy.com",
-    href: "https://litreeezy.com/",
+    label: "Official Site",
+    sub: "uply.tv/arya-xo-site — music, videos & booking",
+    href: "/arya-xo-site",
     icon: Globe,
-    accent: "bg-white/10",
+    accent: "bg-gradient-to-br from-[#00FF85] to-[#00B85F] text-black",
+    featured: true,
   },
   {
     label: "Booking & Press",
-    sub: "Inquiries via official site",
-    href: "https://litreeezy.com/#contact",
+    sub: "Direct inquiries — management & live dates",
+    href: "/arya-xo-site#booking",
     icon: Mail,
     accent: "bg-white/10",
   },
+
 ];
 
 
