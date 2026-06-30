@@ -197,6 +197,7 @@ const RadiateNewPage = lazy(() => import("./pages/radiate/RadiateNewPage"));
 const RadiateManagePage = lazy(() => import("./pages/radiate/RadiateManagePage"));
 const UsernameRedirect = lazy(() => import("./pages/UsernameRedirect"));
 const SocialCreatorPage = lazy(() => import("./components/creatorprofile/social/SocialCreatorPage"));
+const SocialHandleRouter = lazy(() => import("./components/creatorprofile/social/SocialHandleRouter"));
 const PodcastRSS = lazy(() => import("./pages/PodcastRSS"));
 const NetworkFeed = lazy(() => import("./pages/NetworkFeed"));
 const Distribution = lazy(() => import("./pages/Distribution"));
@@ -465,7 +466,7 @@ const App = () => (
                     </Route>
 
                     {/* Public social creator page (Instagram-style + portfolio fused) */}
-                    <Route path="/@:slug" element={<SocialCreatorPage />} />
+                    <Route path="/@:slug" element={<SocialHandleRouter />} />
                     {/* Dedicated artist showcase pages (must precede /:username catch-all) */}
                     <Route path="/arya" element={<AryaXO />} />
                     <Route path="/aryaxo" element={<AryaXO />} />
