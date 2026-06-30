@@ -10,6 +10,9 @@ import BackNav from "@/components/BackNav";
 import { Skeleton } from "@/components/ui/skeleton";
 import FestivalsSection from "@/components/social/FestivalsSection";
 import CuratedSearchMeta, { VerifiedTitleBadge } from "@/components/CuratedSearchMeta";
+import { Link } from "react-router-dom";
+import { ARTIST_ROSTER } from "@/data/artistRoster";
+import { BadgeCheck } from "lucide-react";
 
 const typeIcon: Record<string, typeof Users> = {
   creator: Users,
