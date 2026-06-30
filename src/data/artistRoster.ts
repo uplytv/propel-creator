@@ -116,6 +116,8 @@ export interface ArtistRosterEntry {
   socials: ArtistSocial[];
   videos?: ArtistVideo[];
   spotifyArtistEmbedId?: string;
+  /** Optional list of Spotify track IDs to render as compact preview players. */
+  spotifyTrackEmbeds?: { id: string; title: string }[];
   searchKeywords: string[];
   verified?: boolean;
   bookingEmail?: string;
@@ -277,6 +279,12 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     accent: "#E94A8C",
     portraitUrl: "/__l5e/assets-v1/391ad103-77fd-4435-a1d4-5330429ed4b2/morvarid-portrait.jpg",
     spotifyArtistEmbedId: "5QFbUVTpgjwACp2852n50U",
+    spotifyTrackEmbeds: [
+      { id: "6AUq0zMYPN85UmixhzAWkE", title: "Ghalbe Man" },
+      { id: "6miZr1kBewKXLqrdduprf6", title: "Morvaridam" },
+      { id: "4tgF1IVRRFfGyvjQpaPOE5", title: "Vaghti Azam Doori" },
+      { id: "2qhD0L4ckt00vu06WR8RiI", title: "Mahboub" },
+    ],
     socials: [
       { kind: "instagram", label: "Instagram", sub: "@morvaridshahbazi · 59K followers", href: "https://www.instagram.com/morvaridshahbazi", handle: "morvaridshahbazi" },
       { kind: "spotify", label: "Spotify", sub: "Listen on Spotify", href: "https://open.spotify.com/artist/5QFbUVTpgjwACp2852n50U" },
