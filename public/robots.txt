@@ -19,4 +19,7 @@ Disallow: /admin
 Disallow: /onboarding
 Disallow: /auth
 
+# Static sitemap (hand-maintained core routes + roster-backed /@handle pages)
 Sitemap: https://uply.tv/sitemap.xml
+# Dynamic sitemap (Edge Function — includes roster handles + DB-backed creators, videos, clips, posts)
+Sitemap: https://uply.tv/functions/v1/sitemap
