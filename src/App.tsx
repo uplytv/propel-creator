@@ -70,6 +70,7 @@ const RosterHubRoute = lazy(() => import("./pages/RosterHubRoute"));
 const UplyBlog = lazy(() => import("./pages/UplyBlog"));
 const UplyBlogPost = lazy(() => import("./pages/UplyBlogPost"));
 const AdminBookingInquiries = lazy(() => import("./pages/AdminBookingInquiries"));
+const AdminCompetitionEntries = lazy(() => import("./pages/AdminCompetitionEntries"));
 const Live = lazy(() => import("./pages/Live"));
 const Stream = lazy(() => import("./pages/Stream"));
 const GoLive = lazy(() => import("./pages/GoLive"));
@@ -587,6 +588,7 @@ const App = () => (
                     <Route path="/admin/referrals" element={<AdminRoute><AdminReferrals /></AdminRoute>} />
                     <Route path="/admin/tv-audit" element={<AdminRoute><AdminTVAudit /></AdminRoute>} />
                     <Route path="/admin/event-fees" element={<AdminRoute><AdminEventFees /></AdminRoute>} />
+                    <Route path="/admin/competition-entries" element={<AdminRoute><AdminCompetitionEntries /></AdminRoute>} />
 
                     {/* In-app camera & post-capture editors */}
                     <Route path="/camera" element={<ProtectedRoute><Camera /></ProtectedRoute>} />
