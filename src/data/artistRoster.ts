@@ -386,6 +386,7 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
       "Booking and press inquiries handled through UPLY.",
     gradient: { from: "#0a1f3a", to: "#0a0a0a" },
     accent: "#3D7CFF",
+    portraitUrl: "/__l5e/assets-v1/c64e7b0a-6bc3-4486-b916-54fb63b38c8e/andy-portrait.jpg",
     socials: [
       { kind: "instagram", label: "Instagram", sub: "@andymusic1 · Official", href: "https://www.instagram.com/andymusic1", handle: "andymusic1" },
       { kind: "youtube", label: "YouTube", sub: "Official channel", href: "https://www.youtube.com/results?search_query=andy+music+persian" },
