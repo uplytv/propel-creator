@@ -43,44 +43,64 @@ export default function ArtistCoursesPage() {
               />
             </div>
           )}
-          <p className="mt-6 text-[11px] uppercase tracking-[0.28em]" style={{ color: artist.accent }}>
-            {course.level} · {course.lessons} lessons · {course.duration}
-          </p>
-          <h1 className="mt-3 font-bold" style={{ fontFamily: "Fraunces, Georgia, serif", fontSize: "clamp(36px, 6vw, 56px)" }}>
-            {course.title}
-          </h1>
-          <p className="mt-4 text-[17px] opacity-85">{course.summary}</p>
+          {(() => {
+            const isNonProfit = course.priceUsd === 0;
+            return (
+              <>
+                <p className="mt-6 text-[11px] uppercase tracking-[0.28em]" style={{ color: artist.accent }}>
+                  {isNonProfit
+                    ? `${course.level} · Non-profit · ${course.duration}`
+                    : `${course.level} · ${course.lessons} lessons · ${course.duration}`}
+                </p>
+                <h1 className="mt-3 font-bold" style={{ fontFamily: "Fraunces, Georgia, serif", fontSize: "clamp(36px, 6vw, 56px)" }}>
+                  {course.title}
+                </h1>
+                <p className="mt-4 text-[17px] opacity-85">{course.summary}</p>
 
-          <div className="mt-8 rounded-2xl p-6 bg-white/5 border border-white/10">
-            <h2 className="text-sm uppercase tracking-[0.2em] mb-4 opacity-80">What you'll learn</h2>
-            <ol className="space-y-2">
-              {course.outline.map((item, i) => (
-                <li key={i} className="flex items-start gap-3 text-[15px]">
-                  <span
-                    className="w-7 h-7 rounded-full flex items-center justify-center text-[12px] font-semibold shrink-0"
-                    style={{ background: `${artist.accent}22`, color: artist.accent }}
+                <div className="mt-8 rounded-2xl p-6 bg-white/5 border border-white/10">
+                  <h2 className="text-sm uppercase tracking-[0.2em] mb-4 opacity-80">
+                    {isNonProfit ? "Our mission" : "What you'll learn"}
+                  </h2>
+                  <ol className="space-y-2">
+                    {course.outline.map((item, i) => (
+                      <li key={i} className="flex items-start gap-3 text-[15px]">
+                        <span
+                          className="w-7 h-7 rounded-full flex items-center justify-center text-[12px] font-semibold shrink-0"
+                          style={{ background: `${artist.accent}22`, color: artist.accent }}
+                        >
+                          {i + 1}
+                        </span>
+                        <span className="opacity-90 pt-1">{item}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+
+                <div className="mt-8 flex items-center justify-between flex-wrap gap-4">
+                  <div>
+                    {isNonProfit ? (
+                      <>
+                        <div className="text-3xl font-bold" style={{ color: artist.accent }}>Donate</div>
+                        <div className="text-[12px] opacity-60">100% supports the foundation</div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-3xl font-bold" style={{ color: artist.accent }}>${course.priceUsd}</div>
+                        <div className="text-[12px] opacity-60">one-time · lifetime access</div>
+                      </>
+                    )}
+                  </div>
+                  <Link
+                    to="/auth"
+                    className="px-6 py-3.5 rounded-full font-semibold inline-flex items-center gap-2"
+                    style={{ background: artist.accent, color: "#0a0a0a" }}
                   >
-                    {i + 1}
-                  </span>
-                  <span className="opacity-90 pt-1">{item}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
-
-          <div className="mt-8 flex items-center justify-between flex-wrap gap-4">
-            <div>
-              <div className="text-3xl font-bold" style={{ color: artist.accent }}>${course.priceUsd}</div>
-              <div className="text-[12px] opacity-60">one-time · lifetime access</div>
-            </div>
-            <Link
-              to="/auth"
-              className="px-6 py-3.5 rounded-full font-semibold inline-flex items-center gap-2"
-              style={{ background: artist.accent, color: "#0a0a0a" }}
-            >
-              <PlayCircle className="w-4 h-4" /> Enroll now
-            </Link>
-          </div>
+                    <PlayCircle className="w-4 h-4" /> {isNonProfit ? "Support the foundation" : "Enroll now"}
+                  </Link>
+                </div>
+              </>
+            );
+          })()}
         </article>
       </main>
     );
@@ -130,8 +150,8 @@ export default function ArtistCoursesPage() {
               <h2 className="text-lg font-semibold" style={{ fontFamily: "Fraunces, Georgia, serif" }}>{c.title}</h2>
               <p className="mt-2 text-[14px] opacity-75 flex-1">{c.summary}</p>
               <div className="mt-4 flex items-center justify-between">
-                <div className="text-[12px] opacity-60">{c.lessons} lessons</div>
-                <div className="font-bold" style={{ color: artist.accent }}>${c.priceUsd}</div>
+                <div className="text-[12px] opacity-60">{c.priceUsd === 0 ? "Non-profit" : `${c.lessons} lessons`}</div>
+                <div className="font-bold" style={{ color: artist.accent }}>{c.priceUsd === 0 ? "Donate" : `$${c.priceUsd}`}</div>
               </div>
             </div>
           </Link>
