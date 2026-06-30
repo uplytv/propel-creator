@@ -596,28 +596,50 @@ function EntryCard({
         )}
       </div>
 
-      {showEmails && (
+      {showEmails && (() => {
+        const FAIL_STATUSES = new Set(["dlq", "failed", "bounced", "complained", "error"]);
+        const visibleLogs = failedOnly
+          ? emailLogs.filter((l) => FAIL_STATUSES.has((l.status || "").toLowerCase()))
+          : emailLogs;
+        const failedCount = emailLogs.filter((l) =>
+          FAIL_STATUSES.has((l.status || "").toLowerCase())
+        ).length;
+        return (
         <div className="mb-3 rounded-lg border border-white/10 bg-black/30 p-3">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
             <div className="text-[11px] uppercase tracking-wider text-white/40">
               Status email delivery to {entry.contact_email}
             </div>
-            <button
-              onClick={loadEmailLogs}
-              className="text-[11px] text-white/50 hover:text-white"
-            >
-              Refresh
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setFailedOnly((v) => !v)}
+                className={`text-[11px] rounded-full px-2 py-0.5 border transition ${
+                  failedOnly
+                    ? "bg-rose-500/20 text-rose-200 border-rose-400/40"
+                    : "text-white/50 hover:text-white border-white/15"
+                }`}
+              >
+                {failedOnly ? "Showing failed only" : `Failed only${failedCount ? ` (${failedCount})` : ""}`}
+              </button>
+              <button
+                onClick={loadEmailLogs}
+                className="text-[11px] text-white/50 hover:text-white"
+              >
+                Refresh
+              </button>
+            </div>
           </div>
           {emailLogsLoading ? (
             <div className="flex justify-center py-3">
               <Loader2 className="h-4 w-4 animate-spin text-white/50" />
             </div>
-          ) : emailLogs.length === 0 ? (
-            <div className="text-xs text-white/40">No send attempts recorded yet.</div>
+          ) : visibleLogs.length === 0 ? (
+            <div className="text-xs text-white/40">
+              {failedOnly ? "No failed send attempts." : "No send attempts recorded yet."}
+            </div>
           ) : (
             <ol className="space-y-2">
-              {emailLogs.map((l) => {
+              {visibleLogs.map((l) => {
                 const s = (l.status || "").toLowerCase();
                 const cls =
                   s === "sent"
