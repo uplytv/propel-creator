@@ -531,6 +531,26 @@ export default function ArtistSitePage({ slug }: { slug?: string }) {
             allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
             loading="lazy"
           />
+
+          {artist.spotifyTrackEmbeds && artist.spotifyTrackEmbeds.length > 0 && (
+            <div className="mt-8">
+              <p className="text-[11px] uppercase tracking-[0.2em] mb-3 text-white/60">Latest tracks</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {artist.spotifyTrackEmbeds.map((t) => (
+                  <iframe
+                    key={t.id}
+                    className="rounded-xl w-full"
+                    title={`${t.title} — Spotify preview`}
+                    src={`https://open.spotify.com/embed/track/${t.id}?theme=0`}
+                    width="100%"
+                    height="152"
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </section>
       )}
 
