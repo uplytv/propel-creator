@@ -649,7 +649,7 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
       "If you want to follow the build, the course, and the daily ops — this is the front door.",
     gradient: { from: "#0a0f2e", to: "#000000" },
     accent: "#FF6B35",
-    portraitUrl: "/__l5e/assets-v1/f4c8ca21-6139-4a67-bd67-f0adfc5558cb/bobby-portrait.jpg",
+    // portraitUrl: upload the real @business_with_bob photo and paste the CDN URL here.
     socials: [
       { kind: "instagram", label: "Instagram", sub: "@business_with_bob · daily AI + business plays", href: "https://www.instagram.com/business_with_bob", handle: "business_with_bob" },
       { kind: "tiktok", label: "TikTok", sub: "@businesswithbob · 60-sec breakdowns", href: "https://www.tiktok.com/@businesswithbob", handle: "businesswithbob" },
@@ -804,37 +804,38 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     slug: "sonuha",
     aliases: ["samuel-onuha", "samuelonuha", "icon", "icon-brand", "samuel"],
     displayName: "Samuel Onuha",
-    eyebrow: "Founder of ICON · 8-figure operator",
-    tagline: "From the Netherlands to Dubai to the US — now doing $40M+ a year with ICON, and teaching the next wave how to do the same.",
+    eyebrow: "Founder of ICON & Millionaire · 1M followers",
+    tagline: "$40,000,000 a year selling products online. Now teaching 90-day ELITE mentorship students how to do the same.",
     bio:
-      "Samuel Onuha is the founder of ICON — a brand he's scaled to over $40M in annual revenue across three continents. He started in the Netherlands, grew through Dubai, and now operates out of the US, building one of the most-watched direct-to-consumer brands of the decade.\n\n" +
-      "After years of being asked the same questions in DMs — how he found his offer, how he scaled paid traffic, how he built a team in three time zones — Samuel finally put the entire playbook into a single program.\n\n" +
-      "This is the front door: course, community, and direct access. Everything else is noise.",
+      "Samuel Onuha is the founder of ICON and Millionaire — and one of the most-watched e-commerce operators on Instagram, with over 1M followers tracking his daily build.\n\n" +
+      "He does $40,000,000 a year selling products online. Born and raised between the Netherlands and Dubai, now operating out of the US, Samuel has built a global brand machine across three continents.\n\n" +
+      "After years of DMs asking how he did it, he opened up his 90-day ELITE mentorship — the unfiltered version of the playbook his own team runs on. This is the front door: course, community, and direct access.",
     gradient: { from: "#1a1208", to: "#000000" },
     accent: "#D4A857",
-    portraitUrl: "/__l5e/assets-v1/0328262e-32a7-46ad-a339-d3a1305671db/sonuha-portrait.jpg",
+    // portraitUrl: upload the real @sonuha photo and paste the CDN URL here.
     socials: [
-      { kind: "instagram", label: "Instagram", sub: "@sonuha · daily plays from the operator's desk", href: "https://www.instagram.com/sonuha", handle: "sonuha" },
+      { kind: "instagram", label: "Instagram", sub: "@sonuha · 1M followers · verified", href: "https://www.instagram.com/sonuha", handle: "sonuha" },
+      { kind: "instagram", label: "@icon", sub: "Follow the ICON brand", href: "https://www.instagram.com/icon", handle: "icon" },
+      { kind: "instagram", label: "@millionaire", sub: "Follow Millionaire", href: "https://www.instagram.com/millionaire", handle: "millionaire" },
+      { kind: "threads", label: "Threads", sub: "@sonuha", href: "https://www.threads.net/@sonuha", handle: "sonuha" },
       { kind: "tiktok", label: "TikTok", sub: "@sonuha · 60-sec breakdowns", href: "https://www.tiktok.com/@sonuha", handle: "sonuha" },
-      { kind: "youtube", label: "YouTube", sub: "Long-form: scaling ICON across three continents", href: "https://www.youtube.com/results?search_query=samuel+onuha+icon" },
-      { kind: "website", label: "ICON", sub: "The flagship brand", href: "https://www.instagram.com/sonuha" },
-      { kind: "website", label: "X / Twitter", sub: "@sonuha", href: "https://x.com/sonuha" },
-      { kind: "email", label: "Work with Samuel", sub: "hello@uply.tv", href: "mailto:hello@uply.tv" },
+      { kind: "website", label: "Case Study", sub: "to.millionaire-commerce.com/case-study", href: "https://to.millionaire-commerce.com/case-study" },
+      { kind: "email", label: "ELITE Mentorship", sub: "DM \"ELITE\" on Instagram to apply", href: "https://www.instagram.com/sonuha" },
     ],
     videos: [
       { title: "Latest from @sonuha", instagramUrl: "https://www.instagram.com/sonuha/" },
     ],
-    searchKeywords: ["samuel onuha", "sonuha", "icon brand", "icon", "8 figure ecom", "netherlands entrepreneur", "dubai entrepreneur", "us ecommerce", "40 million revenue", "scaling dtc"],
+    searchKeywords: ["samuel onuha", "sonuha", "icon brand", "icon", "millionaire", "millionaire commerce", "8 figure ecom", "netherlands entrepreneur", "dubai entrepreneur", "us ecommerce", "40 million revenue", "scaling dtc", "elite mentorship"],
     verified: true,
     bookingEmail: "hello@uply.tv",
-    location: "Amsterdam · Dubai · United States",
-    heroChip: "ICON Operator Program — applications open",
-    bookingTagline: "Speaking, mentorship, and brand partnerships. Same-week reply on every serious inquiry.",
-    marquee: ["SAMUEL ONUHA", "FOUNDER OF ICON", "$40M+ A YEAR", "NETHERLANDS · DUBAI · US", "BUILT ON UPLY"],
+    location: "Netherlands · Dubai · United States",
+    heroChip: "ELITE 90-Day Mentorship — applications open",
+    bookingTagline: "DM \"ELITE\" on @sonuha to apply for the 90-day mentorship. Speaking, partnerships & press handled here.",
+    marquee: ["SAMUEL ONUHA", "FOUNDER OF ICON & MILLIONAIRE", "$40,000,000 / YEAR", "1M FOLLOWERS", "NETHERLANDS · DUBAI · US"],
     releases: [
-      { title: "ICON Operator Program", feat: "Flagship cohort", year: 2026, tag: "Course", href: "/sonuha/courses/icon-operator-program" },
+      { title: "ELITE 90-Day Mentorship", feat: "Flagship program", year: 2026, tag: "Mentorship", href: "/sonuha/courses/icon-operator-program" },
+      { title: "Free Case Study", feat: "to.millionaire-commerce.com", year: 2026, tag: "Free", href: "https://to.millionaire-commerce.com/case-study" },
       { title: "From the Netherlands to $40M", feat: "Origin story", year: 2026, tag: "Article", href: "/sonuha/blog/netherlands-to-dubai-to-us" },
-      { title: "The ICON playbook", feat: "Long read", year: 2026, tag: "Article", href: "/sonuha/blog/icon-playbook" },
     ],
     milestones: [
       { year: "2016", text: "Started his first DTC offer from a bedroom in the Netherlands." },
