@@ -31,6 +31,18 @@ export default function ArtistCoursesPage() {
           <Link to={`/${artist.slug}/courses`} className="text-[12px] uppercase tracking-[0.2em] opacity-60 hover:opacity-100">
             ← All courses
           </Link>
+          {course.coverUrl && (
+            <div className="mt-6 rounded-2xl overflow-hidden border border-white/10">
+              <img
+                src={course.coverUrl}
+                alt={`${course.title} cover`}
+                width={1280}
+                height={800}
+                loading="lazy"
+                className="w-full h-auto object-cover"
+              />
+            </div>
+          )}
           <p className="mt-6 text-[11px] uppercase tracking-[0.28em]" style={{ color: artist.accent }}>
             {course.level} · {course.lessons} lessons · {course.duration}
           </p>
@@ -97,18 +109,30 @@ export default function ArtistCoursesPage() {
           <Link
             key={c.slug}
             to={`/${artist.slug}/courses/${c.slug}`}
-            className="rounded-2xl p-6 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors flex flex-col"
+            className="rounded-2xl overflow-hidden bg-white/5 border border-white/10 hover:bg-white/10 transition-colors flex flex-col"
           >
-            <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] opacity-70 mb-3">
-              <GraduationCap className="w-3.5 h-3.5" /> {c.level}
-              <span>·</span>
-              <Clock className="w-3.5 h-3.5" /> {c.duration}
-            </div>
-            <h2 className="text-lg font-semibold" style={{ fontFamily: "Fraunces, Georgia, serif" }}>{c.title}</h2>
-            <p className="mt-2 text-[14px] opacity-75 flex-1">{c.summary}</p>
-            <div className="mt-4 flex items-center justify-between">
-              <div className="text-[12px] opacity-60">{c.lessons} lessons</div>
-              <div className="font-bold" style={{ color: artist.accent }}>${c.priceUsd}</div>
+            {c.coverUrl && (
+              <img
+                src={c.coverUrl}
+                alt=""
+                width={1280}
+                height={800}
+                loading="lazy"
+                className="w-full aspect-[16/10] object-cover"
+              />
+            )}
+            <div className="p-6 flex flex-col flex-1">
+              <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] opacity-70 mb-3">
+                <GraduationCap className="w-3.5 h-3.5" /> {c.level}
+                <span>·</span>
+                <Clock className="w-3.5 h-3.5" /> {c.duration}
+              </div>
+              <h2 className="text-lg font-semibold" style={{ fontFamily: "Fraunces, Georgia, serif" }}>{c.title}</h2>
+              <p className="mt-2 text-[14px] opacity-75 flex-1">{c.summary}</p>
+              <div className="mt-4 flex items-center justify-between">
+                <div className="text-[12px] opacity-60">{c.lessons} lessons</div>
+                <div className="font-bold" style={{ color: artist.accent }}>${c.priceUsd}</div>
+              </div>
             </div>
           </Link>
         ))}

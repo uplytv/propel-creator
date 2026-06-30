@@ -70,6 +70,8 @@ export interface ArtistCourse {
   priceUsd: number;
   summary: string;
   outline: string[];
+  /** Optional editorial cover image (CDN url from .asset.json) */
+  coverUrl?: string;
 }
 
 export interface ArtistRosterEntry {
@@ -337,7 +339,27 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
       ],
       priceUsd: 12,
     },
-    courses: [],
+    courses: [
+      {
+        slug: "persian-pop-performance",
+        title: "Persian Pop Performance: Stage, Voice & Story",
+        level: "All Levels",
+        lessons: 6,
+        duration: "2h 15m",
+        priceUsd: 89,
+        coverUrl: "/__l5e/assets-v1/df60404d-be68-4a61-acef-aa5eaf0d42f9/andy-course-cover.jpg",
+        summary:
+          "ANDY shares four decades of stagecraft — how to find your voice, command a room, and turn a Persian pop song into a moment audiences carry home.",
+        outline: [
+          "Lesson 1 — Finding your voice: tone, range, and the songs that suit you",
+          "Lesson 2 — Phrasing Farsi lyrics with feeling, not just accuracy",
+          "Lesson 3 — Stage presence: posture, eye contact, and owning the silence",
+          "Lesson 4 — Building a setlist that takes an audience on a journey",
+          "Lesson 5 — Working with a live band vs. tracks — rehearsal essentials",
+          "Lesson 6 — Connecting across generations: honoring tradition while staying current",
+        ],
+      },
+    ],
   },
 ];
 
