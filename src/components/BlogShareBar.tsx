@@ -133,7 +133,10 @@ export default function BlogShareBar({ url, title, excerpt = "" }: Props) {
 
       <button
         type="button"
-        onClick={openShareSheet}
+        onClick={() => {
+          trackBlogShare("native_share", { url: link, title, surface: "blog_share_bar" });
+          openShareSheet();
+        }}
         aria-label="Open share sheet"
         aria-haspopup="dialog"
         aria-expanded={sheetOpen}
@@ -144,13 +147,14 @@ export default function BlogShareBar({ url, title, excerpt = "" }: Props) {
       </button>
 
       <div className="hidden md:flex items-center gap-1.5">
-        {intents.map(({ label, Icon, href }) => (
+        {intents.map(({ label, channel, Icon, href }) => (
           <a
             key={label}
             href={href}
             target="_blank"
             rel="noopener noreferrer"
             aria-label={label}
+            onClick={() => trackBlogShare(channel, { url: link, title, surface: "blog_share_bar" })}
             className="hover-gold inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card/60 text-foreground/80"
           >
             <Icon className="h-4 w-4" aria-hidden />
