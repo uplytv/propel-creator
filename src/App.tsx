@@ -466,7 +466,7 @@ const App = () => (
                     </Route>
 
                     {/* Public social creator page (Instagram-style + portfolio fused) */}
-                    <Route path="/@:slug" element={<SocialCreatorPage />} />
+                    <Route path="/@:slug" element={<SocialHandleRouter />} />
                     {/* Dedicated artist showcase pages (must precede /:username catch-all) */}
                     <Route path="/arya" element={<AryaXO />} />
                     <Route path="/aryaxo" element={<AryaXO />} />
