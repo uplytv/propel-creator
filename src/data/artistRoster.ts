@@ -116,6 +116,8 @@ export interface ArtistRosterEntry {
   socials: ArtistSocial[];
   videos?: ArtistVideo[];
   spotifyArtistEmbedId?: string;
+  /** Optional list of Spotify track IDs to render as compact preview players. */
+  spotifyTrackEmbeds?: { id: string; title: string }[];
   searchKeywords: string[];
   verified?: boolean;
   bookingEmail?: string;
