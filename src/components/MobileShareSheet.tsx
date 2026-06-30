@@ -41,8 +41,35 @@ export default function MobileShareSheet({
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
+  // Funnel tracking: capture how long the sheet stays open and whether
+  // the user converted (ran any share action) before dismissing.
+  const openedAtRef = useRef<number | null>(null);
+  const convertedRef = useRef(false);
+
   useEffect(() => {
-    if (!open) setCopied(false);
+    if (open) {
+      openedAtRef.current = Date.now();
+      convertedRef.current = false;
+      trackEvent("blog_share_sheet_opened", {
+        surface: "mobile_share_sheet",
+        url,
+        title,
+      });
+    } else if (openedAtRef.current != null) {
+      const durationMs = Date.now() - openedAtRef.current;
+      trackEvent("blog_share_sheet_closed", {
+        surface: "mobile_share_sheet",
+        url,
+        title,
+        duration_ms: durationMs,
+        converted: convertedRef.current,
+        dismissed: !convertedRef.current,
+      });
+      openedAtRef.current = null;
+      setCopied(false);
+    }
+    // We intentionally depend only on `open` so we don't double-fire on prop churn.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const handleCopy = async () => {
