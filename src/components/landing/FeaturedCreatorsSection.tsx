@@ -89,6 +89,13 @@ export default function FeaturedCreatorsSection() {
         <div className="mt-10 text-center">
           <Link
             to="/roster"
+            onClick={() =>
+              trackEvent("landing_featured_creators_view_all_clicked", {
+                surface: "landing_featured_creators",
+                destination: "/roster",
+                roster_size: ARTIST_ROSTER.length,
+              })
+            }
             className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
           >
             View the full UPLY roster →
