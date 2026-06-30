@@ -465,6 +465,7 @@ function EntryCard({
       if (error) throw error;
       setResendState("sent");
       setResendMsg(`Email sent to ${entry.contact_email}`);
+      if (showEmails) setTimeout(loadEmailLogs, 1500);
       setTimeout(() => setResendState("idle"), 4000);
     } catch (err: any) {
       setResendState("error");
