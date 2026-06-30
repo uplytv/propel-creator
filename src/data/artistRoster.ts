@@ -812,7 +812,8 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
       "After years of DMs asking how he did it, he opened up his 90-day ELITE mentorship — the unfiltered version of the playbook his own team runs on. This is the front door: course, community, and direct access.",
     gradient: { from: "#1a1208", to: "#000000" },
     accent: "#D4A857",
-    // portraitUrl: upload the real @sonuha photo and paste the CDN URL here.
+    portraitUrl: "/__l5e/assets-v1/2ffb7196-baa4-4f33-85c5-67ebe4b07a79/sonuha-portrait.jpg",
+    heroImageUrl: "/__l5e/assets-v1/be09eafa-8f72-4742-a196-aef4cc067ee4/sonuha-hero.jpg",
     socials: [
       { kind: "instagram", label: "Instagram", sub: "@sonuha · 1M followers · verified", href: "https://www.instagram.com/sonuha", handle: "sonuha" },
       { kind: "instagram", label: "@icon", sub: "Follow the ICON brand", href: "https://www.instagram.com/icon", handle: "icon" },
