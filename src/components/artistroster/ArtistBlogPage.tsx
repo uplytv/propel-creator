@@ -27,6 +27,7 @@ function mergedPosts(staticPosts: ArtistBlogPost[], dbPosts: DbPost[]): ArtistBl
     tag: p.tag ?? undefined,
     readTime: p.read_time,
     publishedAt: p.published_at,
+    coverUrl: staticPosts.find((sp) => sp.slug === p.slug)?.coverUrl,
   }));
   // DB wins over static on slug collision
   const dbSlugs = new Set(dbAsStatic.map((p) => p.slug));
