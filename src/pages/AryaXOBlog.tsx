@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Sparkles } from "lucide-react";
 import portraitAsset from "@/assets/arya-xo-portrait-v3.jpg.asset.json";
 import bandsCoverAsset from "@/assets/150bands-cover.jpg.asset.json";
+import BackButton from "@/components/common/BackButton";
 
 /**
  * Arya XO — feature blog post.
@@ -11,6 +12,8 @@ import bandsCoverAsset from "@/assets/150bands-cover.jpg.asset.json";
 export default function AryaXOBlog() {
   return (
     <div className="min-h-screen bg-[#050505] text-white font-body">
+      <BackButton fallback="/arya-xo-site" />
+
       {/* Top bar */}
       <div className="sticky top-0 z-30 backdrop-blur-md bg-black/60 border-b border-white/5">
         <div className="mx-auto max-w-3xl px-5 py-3 flex items-center justify-between">
