@@ -2,6 +2,33 @@ import { useState } from "react";
 import { Link as LinkIcon, Check, Twitter, Facebook, Linkedin, Mail, MessageCircle, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import MobileShareSheet from "@/components/MobileShareSheet";
+import { trackEvent } from "@/lib/posthog";
+
+type ShareChannel =
+  | "copy_link"
+  | "native_share"
+  | "twitter"
+  | "facebook"
+  | "linkedin"
+  | "whatsapp"
+  | "email";
+
+/**
+ * Single source of truth for share analytics. Every share surface
+ * (top bar, bottom bar, mobile sheet) emits `blog_post_shared`
+ * with the same shape so funnels stay clean.
+ */
+export function trackBlogShare(
+  channel: ShareChannel,
+  meta: { url: string; title: string; surface: "blog_share_bar" | "mobile_share_sheet" },
+) {
+  trackEvent("blog_post_shared", {
+    channel,
+    surface: meta.surface,
+    url: meta.url,
+    title: meta.title,
+  });
+}
 
 interface Props {
   /** Absolute URL of the post. Falls back to current location at click time. */
