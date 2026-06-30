@@ -164,6 +164,7 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
       "Booking, sync, and press inquiries are handled directly through UPLY.",
     gradient: { from: "#1a0b2e", to: "#0a0a0a" },
     accent: "#C9A84C",
+    portraitUrl: "/__l5e/assets-v1/8f28c5fe-38f5-41e3-b5b4-20b38e64c0d8/omid-portrait.jpg",
     socials: [
       { kind: "instagram", label: "Instagram", sub: "@omid_music · 1.4M followers", href: "https://www.instagram.com/omid_music", handle: "omid_music" },
       { kind: "youtube", label: "YouTube", sub: "Official channel · music videos & tours", href: "https://www.youtube.com/results?search_query=omid+music+official" },
