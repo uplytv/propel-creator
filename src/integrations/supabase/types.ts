@@ -8427,11 +8427,16 @@ export type Database = {
         Row: {
           artwork_url: string | null
           challenge_id: string
+          contact_email: string | null
+          country: string | null
           created_at: string
           description: string | null
+          external_url: string | null
           id: string
           is_disqualified: boolean
-          media_url: string
+          media_url: string | null
+          moderation_notes: string | null
+          moderation_status: string
           score: number
           title: string
           updated_at: string
@@ -8441,11 +8446,16 @@ export type Database = {
         Insert: {
           artwork_url?: string | null
           challenge_id: string
+          contact_email?: string | null
+          country?: string | null
           created_at?: string
           description?: string | null
+          external_url?: string | null
           id?: string
           is_disqualified?: boolean
-          media_url: string
+          media_url?: string | null
+          moderation_notes?: string | null
+          moderation_status?: string
           score?: number
           title: string
           updated_at?: string
@@ -8455,11 +8465,16 @@ export type Database = {
         Update: {
           artwork_url?: string | null
           challenge_id?: string
+          contact_email?: string | null
+          country?: string | null
           created_at?: string
           description?: string | null
+          external_url?: string | null
           id?: string
           is_disqualified?: boolean
-          media_url?: string
+          media_url?: string | null
+          moderation_notes?: string | null
+          moderation_status?: string
           score?: number
           title?: string
           updated_at?: string
@@ -8480,24 +8495,30 @@ export type Database = {
         Row: {
           challenge_id: string
           created_at: string
+          credits_spent: number
           entry_id: string
           id: string
+          is_super: boolean
           user_id: string
           weight: number
         }
         Insert: {
           challenge_id: string
           created_at?: string
+          credits_spent?: number
           entry_id: string
           id?: string
+          is_super?: boolean
           user_id: string
           weight?: number
         }
         Update: {
           challenge_id?: string
           created_at?: string
+          credits_spent?: number
           entry_id?: string
           id?: string
+          is_super?: boolean
           user_id?: string
           weight?: number
         }
@@ -8522,14 +8543,18 @@ export type Database = {
         Row: {
           artwork_url: string | null
           challenge_type: string
+          cover_url: string | null
           created_at: string
           description: string | null
           entry_count: number
-          host_id: string
+          host_display_name: string | null
+          host_id: string | null
           id: string
           prize_cents: number
           prize_description: string | null
           prompt: string | null
+          rules: string | null
+          slug: string | null
           starts_at: string
           status: string
           stems_url: string | null
@@ -8542,14 +8567,18 @@ export type Database = {
         Insert: {
           artwork_url?: string | null
           challenge_type?: string
+          cover_url?: string | null
           created_at?: string
           description?: string | null
           entry_count?: number
-          host_id: string
+          host_display_name?: string | null
+          host_id?: string | null
           id?: string
           prize_cents?: number
           prize_description?: string | null
           prompt?: string | null
+          rules?: string | null
+          slug?: string | null
           starts_at?: string
           status?: string
           stems_url?: string | null
@@ -8562,14 +8591,18 @@ export type Database = {
         Update: {
           artwork_url?: string | null
           challenge_type?: string
+          cover_url?: string | null
           created_at?: string
           description?: string | null
           entry_count?: number
-          host_id?: string
+          host_display_name?: string | null
+          host_id?: string | null
           id?: string
           prize_cents?: number
           prize_description?: string | null
           prompt?: string | null
+          rules?: string | null
+          slug?: string | null
           starts_at?: string
           status?: string
           stems_url?: string | null
@@ -21480,8 +21513,10 @@ export type Database = {
         Returns: {
           challenge_id: string
           created_at: string
+          credits_spent: number
           entry_id: string
           id: string
+          is_super: boolean
           user_id: string
           weight: number
         }
@@ -21496,7 +21531,10 @@ export type Database = {
         Args: { _challenge_id: string; _limit?: number }
         Returns: {
           artwork_url: string
+          country: string
           entry_id: string
+          external_url: string
+          media_url: string
           rank: number
           score: number
           title: string
@@ -22322,6 +22360,25 @@ export type Database = {
       short_comment_creator_id: {
         Args: { _short_id: string; _source: string }
         Returns: string
+      }
+      super_vote_challenge_entry: {
+        Args: { _credits: number; _entry_id: string }
+        Returns: {
+          challenge_id: string
+          created_at: string
+          credits_spent: number
+          entry_id: string
+          id: string
+          is_super: boolean
+          user_id: string
+          weight: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "music_challenge_votes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       update_subscriber_send_hour: {
         Args: { p_email: string; p_hour: number }

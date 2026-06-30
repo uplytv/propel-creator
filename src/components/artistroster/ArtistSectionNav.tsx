@@ -17,6 +17,7 @@ export default function ArtistSectionNav({ artist }: { artist: ArtistRosterEntry
     ...(artist.posts?.length ? [{ label: "Blog", href: `${base}/blog`, match: (p: string) => p.startsWith(`${base}/blog`) }] : []),
     ...(artist.community ? [{ label: "Community", href: `${base}/community`, match: (p: string) => p.startsWith(`${base}/community`) }] : []),
     ...(artist.courses?.length ? [{ label: "Courses", href: `${base}/courses`, match: (p: string) => p.startsWith(`${base}/courses`) }] : []),
+    ...(artist.competitionSlug ? [{ label: "Competition", href: `${base}/competition`, match: (p: string) => p.startsWith(`${base}/competition`) }] : []),
     { label: "Account", href: `${base}/account`, match: (p: string) => p === `${base}/account` || p === `${base}/signin` },
   ];
 
