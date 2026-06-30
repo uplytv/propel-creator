@@ -722,34 +722,45 @@ function EntryCard({
                         {l.error_message}
                       </div>
                     )}
-                    {FAIL_STATUSES.has(s) && canResend && (
-                      <div className="basis-full mt-1 flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setRetryConfirm(l)}
-                          disabled={retryState[l.id] === "sending"}
-                          className="inline-flex items-center gap-1 rounded-md border border-rose-400/40 bg-rose-500/10 px-2 py-1 text-[11px] font-semibold text-rose-200 hover:bg-rose-500/20 disabled:opacity-50"
-                        >
-                          {retryState[l.id] === "sending" ? (
-                            <Loader2 className="h-3 w-3 animate-spin" />
-                          ) : (
-                            <Send className="h-3 w-3" />
-                          )}
-                          {retryState[l.id] === "sent" ? "Retried ✓" : "Retry send"}
-                        </button>
-                        {retryMsg[l.id] && (
-                          <span
-                            className={
-                              retryState[l.id] === "error"
-                                ? "text-rose-300 text-[11px]"
-                                : "text-white/50 text-[11px]"
-                            }
+                    {FAIL_STATUSES.has(s) && canResend && (() => {
+                      const rs = retryState[l.id];
+                      const isSending = rs === "sending" || retryConfirm?.id === l.id;
+                      const label =
+                        rs === "sending"
+                          ? "Sending…"
+                          : rs === "sent"
+                          ? "Retried ✓"
+                          : "Retry send";
+                      return (
+                        <div className="basis-full mt-1 flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setRetryConfirm(l)}
+                            disabled={isSending}
+                            aria-busy={rs === "sending"}
+                            className="inline-flex items-center gap-1 rounded-md border border-rose-400/40 bg-rose-500/10 px-2 py-1 text-[11px] font-semibold text-rose-200 hover:bg-rose-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            {retryMsg[l.id]}
-                          </span>
-                        )}
-                      </div>
-                    )}
+                            {rs === "sending" ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <Send className="h-3 w-3" />
+                            )}
+                            {label}
+                          </button>
+                          {retryMsg[l.id] && (
+                            <span
+                              className={
+                                rs === "error"
+                                  ? "text-rose-300 text-[11px]"
+                                  : "text-white/50 text-[11px]"
+                              }
+                            >
+                              {retryMsg[l.id]}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </li>
                 );
               })}
