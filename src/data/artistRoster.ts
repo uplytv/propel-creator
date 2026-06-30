@@ -240,7 +240,7 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
       {
         slug: "omid-foundation",
         title: "The Omid Foundation",
-        level: "Non-Profit",
+        level: "All Levels",
         lessons: 0,
         duration: "Ongoing",
         priceUsd: 0,
