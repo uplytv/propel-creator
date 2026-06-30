@@ -208,7 +208,7 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     videos: [
       { title: "Latest reels", instagramUrl: "https://www.instagram.com/morvaridshahbazi/" },
     ],
-    searchKeywords: ["morvarid", "morvarid shahbazi", "morvaridshahbazi", "pearl of persia", "persian dancer", "persian singer", "morvarid production"],
+    searchKeywords: ["morvarid", "morvaird", "morvard", "morwarid", "morvarid shahbazi", "morvaridshahbazi", "pearl of persia", "persian dancer", "persian singer", "morvarid production"],
     verified: false,
     location: "Los Angeles",
     posts: [
