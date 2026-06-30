@@ -21,6 +21,7 @@ import HomepageFinalCTA from "@/components/landing/v2/HomepageFinalCTA";
 import HomepageFooter from "@/components/landing/v2/HomepageFooter";
 import FoundersStickyCTA from "@/components/founders/FoundersStickyCTA";
 import FeaturedRails from "@/components/FeaturedRails";
+import RosterArtistsRail from "@/components/discover/RosterArtistsRail";
 
 const JSON_LD = {
   "@context": "https://schema.org",
@@ -116,6 +117,10 @@ export default function Landing() {
           <HomepageHero />
 
           <FeaturedRails />
+
+          <section className="py-10 md:py-14">
+            <RosterArtistsRail />
+          </section>
 
           <SectionSeam />
           <HomepageMusicians />
