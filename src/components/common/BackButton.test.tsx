@@ -23,13 +23,12 @@ function renderBtn(props: Partial<React.ComponentProps<typeof BackButton>> = {})
 describe("BackButton", () => {
   beforeEach(() => {
     navigateMock.mockReset();
-    // Reset history.state to a plain object before each test.
-    window.history.replaceState({}, "", "/");
+    window.sessionStorage.clear();
   });
 
   afterEach(() => cleanup());
 
-  it("renders with an accessible label and visible focus styles", () => {
+  it("renders with an accessible label, focus ring, and 44px tap target", () => {
     renderBtn({ label: "Go back" });
     const btn = screen.getByRole("button", { name: "Go back" });
     expect(btn).toBeInTheDocument();
@@ -38,37 +37,10 @@ describe("BackButton", () => {
     expect(btn.className).toMatch(/h-11/);
   });
 
-  it("navigates to fallback on cold open (no __uplyEntry sentinel)", () => {
-    // history.state starts as {}, so the button treats this as the entry page.
+  it("navigates to fallback on cold open (no prior session flag)", () => {
     renderBtn();
     fireEvent.click(screen.getByRole("button"));
     expect(navigateMock).toHaveBeenCalledWith("/roster", { replace: true });
-  });
-
-  it("falls back safely when history.state access throws", () => {
-    const spy = vi
-      .spyOn(window.history, "replaceState")
-      .mockImplementation(() => {
-        throw new Error("blocked");
-      });
-    renderBtn({ fallback: "/home" });
-    fireEvent.click(screen.getByRole("button"));
-    expect(navigateMock).toHaveBeenCalledWith("/home", { replace: true });
-    spy.mockRestore();
-  });
-
-  it("pops history (-1) when arriving from a prior in-app navigation", () => {
-    // Simulate that a previous in-app page already tagged this entry.
-    window.history.replaceState({ __uplyEntry: true }, "", "/");
-    renderBtn();
-    // Now push a fresh entry (as if user navigated to the current page).
-    window.history.pushState({}, "", "/next");
-    // Re-render with fresh state untagged on the new entry.
-    cleanup();
-    renderBtn();
-    fireEvent.click(screen.getByRole("button"));
-    // First call from replaceState during mount, then click triggers navigate(-1).
-    expect(navigateMock).toHaveBeenCalledWith(-1);
   });
 
   it("uses the default '/' fallback when none provided", () => {
@@ -79,5 +51,46 @@ describe("BackButton", () => {
     );
     fireEvent.click(screen.getByRole("button"));
     expect(navigateMock).toHaveBeenCalledWith("/", { replace: true });
+  });
+
+  it("falls back safely when sessionStorage access throws", () => {
+    const getSpy = vi
+      .spyOn(Storage.prototype, "getItem")
+      .mockImplementation(() => {
+        throw new Error("blocked");
+      });
+    renderBtn({ fallback: "/home" });
+    fireEvent.click(screen.getByRole("button"));
+    expect(navigateMock).toHaveBeenCalledWith("/home", { replace: true });
+    getSpy.mockRestore();
+  });
+
+  it("pops history (-1) when a prior in-app page already set the flag", () => {
+    // Simulate that a previous page already mounted a BackButton.
+    window.sessionStorage.setItem("uply:back-button:visited", "1");
+    renderBtn();
+    fireEvent.click(screen.getByRole("button"));
+    expect(navigateMock).toHaveBeenCalledWith(-1);
+  });
+
+  it("the first instance marks entry; later instances pop back", () => {
+    // First mount = entry page.
+    const first = render(
+      <MemoryRouter>
+        <BackButton fallback="/roster" />
+      </MemoryRouter>,
+    );
+    fireEvent.click(first.getByRole("button"));
+    expect(navigateMock).toHaveBeenLastCalledWith("/roster", { replace: true });
+    first.unmount();
+
+    // Second mount in same "session" = should pop history.
+    const second = render(
+      <MemoryRouter>
+        <BackButton fallback="/roster" />
+      </MemoryRouter>,
+    );
+    fireEvent.click(second.getByRole("button"));
+    expect(navigateMock).toHaveBeenLastCalledWith(-1);
   });
 });
