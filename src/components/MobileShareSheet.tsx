@@ -173,7 +173,10 @@ export default function MobileShareSheet({
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => trackBlogShare(channel, { url, title, surface: "mobile_share_sheet" })}
+              onClick={() => {
+                convertedRef.current = true;
+                trackBlogShare(channel, { url, title, surface: "mobile_share_sheet" });
+              }}
               className="group inline-flex h-12 w-full items-center justify-center gap-2.5 rounded-full border border-gold/40 bg-card/40 px-5 text-sm font-semibold text-foreground transition-colors active:scale-[0.99] active:bg-gold/10 hover:border-gold hover:text-gold"
             >
               <Icon className="h-4 w-4 text-gold/90 group-hover:text-gold" aria-hidden />
