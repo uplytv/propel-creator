@@ -61,6 +61,8 @@ const ArtistSiteRoute = lazy(() => import("./pages/ArtistSiteRoute"));
 const ArtistBlogRoute = lazy(() => import("./pages/ArtistBlogRoute"));
 const ArtistCommunityRoute = lazy(() => import("./pages/ArtistCommunityRoute"));
 const ArtistCoursesRoute = lazy(() => import("./pages/ArtistCoursesRoute"));
+const ArtistSignInRoute = lazy(() => import("./pages/ArtistSignInRoute"));
+const ArtistAccountRoute = lazy(() => import("./pages/ArtistAccountRoute"));
 const RosterHubRoute = lazy(() => import("./pages/RosterHubRoute"));
 const UplyBlog = lazy(() => import("./pages/UplyBlog"));
 const UplyBlogPost = lazy(() => import("./pages/UplyBlogPost"));
