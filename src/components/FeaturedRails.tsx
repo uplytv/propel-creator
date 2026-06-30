@@ -35,11 +35,19 @@ interface RailItem {
   id: string;
   title: string;
   subtitle?: string;
-  image: string;
+  /** Cover image URL. Optional — when missing, a gradient + initial is rendered. */
+  image?: string;
   href: string;
   badge?: string;
   verified?: boolean;
+  /** Gradient fallback when `image` is missing. */
+  gradient?: { from: string; to: string };
+  /** Accent color for the fallback initial. */
+  accent?: string;
+  /** Single character/letter rendered in the gradient fallback. */
+  initial?: string;
 }
+
 
 interface Rail {
   id: string;
