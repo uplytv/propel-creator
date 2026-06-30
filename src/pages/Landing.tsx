@@ -123,6 +123,8 @@ export default function Landing() {
             <RosterArtistsRail />
           </section>
 
+          <FeaturedCreatorsSection />
+
           <SectionSeam />
           <HomepageMusicians />
           <HomepageStreamers />
