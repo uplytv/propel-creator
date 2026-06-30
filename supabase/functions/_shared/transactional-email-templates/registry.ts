@@ -16,6 +16,8 @@ import { template as ticketConfirmation } from './ticket-confirmation.tsx'
 import { template as applicationConfirmation } from './application-confirmation.tsx'
 import { template as bookingInquiry } from './booking-inquiry.tsx'
 import { template as competitionEntryStatusUpdate } from './competition-entry-status-update.tsx'
+import { template as founderOfferBuyerConfirmation } from './founder-offer-buyer-confirmation.tsx'
+import { template as founderOfferTeamNotification } from './founder-offer-team-notification.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'welcome-email': welcomeEmail,
@@ -25,4 +27,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'application-confirmation': applicationConfirmation,
   'booking-inquiry': bookingInquiry,
   'competition-entry-status-update': competitionEntryStatusUpdate,
+  'founder-offer-buyer-confirmation': founderOfferBuyerConfirmation,
+  'founder-offer-team-notification': founderOfferTeamNotification,
 }
