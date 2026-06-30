@@ -105,6 +105,7 @@ export default function BlogShareBar({ url, title, excerpt = "" }: Props) {
     try {
       await navigator.clipboard.writeText(link);
       setCopied(true);
+      convertedRef.current = true;
       trackBlogShare("copy_link", { url: link, title, surface: "blog_share_bar" });
       toast({ title: "Link copied", description: "Share it anywhere." });
       setTimeout(() => setCopied(false), 2000);
