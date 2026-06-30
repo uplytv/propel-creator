@@ -276,6 +276,7 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     gradient: { from: "#2b0a1e", to: "#0a0a0a" },
     accent: "#E94A8C",
     portraitUrl: "/__l5e/assets-v1/391ad103-77fd-4435-a1d4-5330429ed4b2/morvarid-portrait.jpg",
+    spotifyArtistEmbedId: "5QFbUVTpgjwACp2852n50U",
     socials: [
       { kind: "instagram", label: "Instagram", sub: "@morvaridshahbazi · 59K followers", href: "https://www.instagram.com/morvaridshahbazi", handle: "morvaridshahbazi" },
       { kind: "spotify", label: "Spotify", sub: "Listen on Spotify", href: "https://open.spotify.com/artist/5QFbUVTpgjwACp2852n50U" },
