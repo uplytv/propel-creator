@@ -257,6 +257,7 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
         ],
       },
     ],
+    competitionSlug: "omid-global-talent-search",
   },
 
   // ============================================================
