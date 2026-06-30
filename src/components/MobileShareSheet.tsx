@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Link as LinkIcon,
   Check,
@@ -13,6 +13,7 @@ import {
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { useToast } from "@/hooks/use-toast";
 import { trackBlogShare } from "@/components/BlogShareBar";
+import { trackEvent } from "@/lib/posthog";
 
 interface MobileShareSheetProps {
   open: boolean;
@@ -40,14 +41,42 @@ export default function MobileShareSheet({
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
+  // Funnel tracking: capture how long the sheet stays open and whether
+  // the user converted (ran any share action) before dismissing.
+  const openedAtRef = useRef<number | null>(null);
+  const convertedRef = useRef(false);
+
   useEffect(() => {
-    if (!open) setCopied(false);
+    if (open) {
+      openedAtRef.current = Date.now();
+      convertedRef.current = false;
+      trackEvent("blog_share_sheet_opened", {
+        surface: "mobile_share_sheet",
+        url,
+        title,
+      });
+    } else if (openedAtRef.current != null) {
+      const durationMs = Date.now() - openedAtRef.current;
+      trackEvent("blog_share_sheet_closed", {
+        surface: "mobile_share_sheet",
+        url,
+        title,
+        duration_ms: durationMs,
+        converted: convertedRef.current,
+        dismissed: !convertedRef.current,
+      });
+      openedAtRef.current = null;
+      setCopied(false);
+    }
+    // We intentionally depend only on `open` so we don't double-fire on prop churn.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
+      convertedRef.current = true;
       trackBlogShare("copy_link", { url, title, surface: "mobile_share_sheet" });
       toast({ title: "Link copied", description: "Share it anywhere." });
       setTimeout(() => setCopied(false), 1800);
@@ -64,6 +93,7 @@ export default function MobileShareSheet({
     if (typeof navigator !== "undefined" && (navigator as any).share) {
       try {
         await (navigator as any).share({ title, text: excerpt, url });
+        convertedRef.current = true;
         trackBlogShare("native_share", { url, title, surface: "mobile_share_sheet" });
         onOpenChange(false);
       } catch {
@@ -143,7 +173,10 @@ export default function MobileShareSheet({
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => trackBlogShare(channel, { url, title, surface: "mobile_share_sheet" })}
+              onClick={() => {
+                convertedRef.current = true;
+                trackBlogShare(channel, { url, title, surface: "mobile_share_sheet" });
+              }}
               className="group inline-flex h-12 w-full items-center justify-center gap-2.5 rounded-full border border-gold/40 bg-card/40 px-5 text-sm font-semibold text-foreground transition-colors active:scale-[0.99] active:bg-gold/10 hover:border-gold hover:text-gold"
             >
               <Icon className="h-4 w-4 text-gold/90 group-hover:text-gold" aria-hidden />
