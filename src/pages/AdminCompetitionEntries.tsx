@@ -681,7 +681,8 @@ function EntryCard({
             </ol>
           )}
         </div>
-      )}
+        );
+      })()}
 
       {showHistory && (
         <div className="mb-3 rounded-lg border border-white/10 bg-black/30 p-3">
