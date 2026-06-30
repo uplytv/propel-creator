@@ -606,3 +606,58 @@ export default function ArtistSitePage({ slug }: { slug?: string }) {
     </main>
   );
 }
+
+interface SpotifyTrackPreviewProps {
+  trackId: string;
+  title: string;
+  artistSlug: string;
+  position: number;
+}
+
+/**
+ * Renders a compact Spotify track embed and best-effort logs a click event
+ * when the user interacts with the iframe (Spotify's embed runs cross-origin
+ * so we can't observe inner play/pause directly — we use the standard
+ * iframe-focus heuristic). Each track only logs once per page load.
+ */
+function SpotifyTrackPreview({ trackId, title, artistSlug, position }: SpotifyTrackPreviewProps) {
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const firedRef = useRef(false);
+
+  const fire = (source: string) => {
+    if (firedRef.current) return;
+    firedRef.current = true;
+    trackEvent("spotify_track_preview_click", {
+      artist_slug: artistSlug,
+      spotify_track_id: trackId,
+      track_title: title,
+      position,
+      source,
+      location: "artist_site_spotify_section",
+    });
+  };
+
+  useEffect(() => {
+    const onBlur = () => {
+      if (document.activeElement === iframeRef.current) fire("iframe_focus");
+    };
+    window.addEventListener("blur", onBlur);
+    return () => window.removeEventListener("blur", onBlur);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <div onPointerDown={() => fire("pointerdown")}>
+      <iframe
+        ref={iframeRef}
+        className="rounded-xl w-full block"
+        title={`${title} — Spotify preview`}
+        src={`https://open.spotify.com/embed/track/${trackId}?theme=0`}
+        width="100%"
+        height="152"
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        loading="lazy"
+      />
+    </div>
+  );
+}
