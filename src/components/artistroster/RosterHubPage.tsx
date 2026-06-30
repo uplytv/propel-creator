@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import { ARTIST_ROSTER } from "@/data/artistRoster";
 import { BadgeCheck, ArrowRight } from "lucide-react";
+import BackButton from "@/components/common/BackButton";
 
 /**
  * Public discovery hub listing every artist on UPLY's managed roster.
@@ -15,7 +16,9 @@ export default function RosterHubPage() {
 
   return (
     <main className="min-h-screen bg-[#0A0A0A] text-white">
+      <BackButton fallback="/" />
       <section className="px-6 pt-20 pb-12 text-center max-w-3xl mx-auto">
+
         <p className="text-[11px] uppercase tracking-[0.3em] text-[#00FF85]">UPLY Roster</p>
         <h1
           className="mt-3 font-bold"

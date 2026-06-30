@@ -27,6 +27,8 @@ import { supabase } from "@/integrations/supabase/client";
 import AryaBandsAutoplay from "@/components/AryaBandsAutoplay";
 import { buildAryaShareUrl } from "@/lib/aryaShare";
 import { Link } from "react-router-dom";
+import BackButton from "@/components/common/BackButton";
+
 
 const SHARE_PATH = "/arya-xo-site";
 const ARTIST_SLUG = "arya-xo";
@@ -193,7 +195,9 @@ export default function AryaXOSite() {
 
   return (
     <div className="arya-site min-h-screen selection:bg-[#00FF85]/30">
+      <BackButton fallback="/" />
       <AryaBandsAutoplay />
+
       {/* Sticky top bar */}
       <nav className="sticky top-0 z-40 backdrop-blur-xl bg-black/60 border-b border-[var(--arya-border)]">
         <div className="mx-auto max-w-6xl px-5 h-14 flex items-center justify-between gap-3">
