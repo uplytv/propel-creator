@@ -2,18 +2,20 @@ import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 
+const SESSION_FLAG = "uply:back-button:visited";
+
 /**
  * Floating top-left back button used across artist surfaces.
  *
  * Behavior:
- *  - If the user navigated here from another in-app page, go back one step.
- *  - Otherwise (cold open, deep link, share-link, opened in a new tab),
- *    navigate to `fallback` instead of leaving the site.
+ *  - On cold open / deep link / new tab: clicking goes to `fallback`.
+ *  - After any in-app navigation (the user has visited at least one page
+ *    in this tab): clicking goes back one history entry.
  *
- * Reliability is established at mount time using a sentinel stored on
- * `window.history.state` (`__uplyEntry`). `history.length` is unreliable —
- * iOS Safari and PWAs report inflated values even on a cold open, so we
- * can't trust it alone.
+ * Detection: we set a sessionStorage flag the first time any BackButton
+ * mounts in this tab. If the flag was already set when this instance
+ * mounts, we know the user navigated here from another in-app page.
+ * `history.length` is unreliable on iOS/PWAs, so we don't use it.
  *
  * Accessibility:
  *  - Real <button> with `aria-label` (icon-only on small screens).
@@ -30,26 +32,19 @@ export default function BackButton({
   className?: string;
 }) {
   const navigate = useNavigate();
-  // True when this BackButton mounted as the very first page of the session,
-  // meaning there's no meaningful history to pop back to.
+  // True when this BackButton mounted on the very first page of the session,
+  // meaning there's no meaningful in-app history to pop back to.
   const isEntryPage = useRef(false);
 
   useEffect(() => {
     try {
-      const state = (window.history.state ?? {}) as { __uplyEntry?: boolean };
-      if (!state.__uplyEntry) {
-        // Tag this history entry as the session entry point. Any later
-        // in-app navigations will push fresh entries on top, so a sentinel
-        // present on the current entry means we're still on the first page.
-        window.history.replaceState(
-          { ...state, __uplyEntry: true },
-          "",
-          window.location.href,
-        );
+      const seen = window.sessionStorage.getItem(SESSION_FLAG) === "1";
+      if (!seen) {
+        window.sessionStorage.setItem(SESSION_FLAG, "1");
         isEntryPage.current = true;
       }
     } catch {
-      // history.state access can throw in sandboxed contexts — fall back to
+      // sessionStorage can throw in sandboxed contexts — fall back to
       // treating it as a deep link so we always use `fallback`.
       isEntryPage.current = true;
     }
@@ -60,8 +55,6 @@ export default function BackButton({
       navigate(fallback, { replace: true });
       return;
     }
-    // Defensive: if popping back fails (rare), the popstate listener below
-    // would have updated isEntryPage; navigating to fallback is the safe net.
     try {
       navigate(-1);
     } catch {
