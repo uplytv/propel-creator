@@ -1,12 +1,13 @@
 import { ARTIST_ROSTER, type ArtistRosterEntry, type SocialKind } from "@/data/artistRoster";
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Instagram, Youtube, Music2, Mail, Globe, Facebook, Send, Play,
   Sparkles, ArrowRight, MapPin, Calendar, DollarSign, Users,
   Check, Share2, Copy, X,
 } from "lucide-react";
 import ArtistSectionNav from "./ArtistSectionNav";
+import { trackEvent } from "@/lib/posthog";
 
 const ICONS: Record<SocialKind, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
   instagram: Instagram, youtube: Youtube, spotify: Music2, apple_music: Music2,
