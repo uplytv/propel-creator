@@ -11,6 +11,7 @@ import {
   X,
   Mail,
   Globe,
+  History,
 } from "lucide-react";
 
 type ModStatus = "pending" | "approved" | "rejected";
@@ -316,6 +317,15 @@ function FilterChip({
   );
 }
 
+interface LogRow {
+  id: string;
+  moderator_id: string | null;
+  previous_status: string | null;
+  new_status: string;
+  notes: string | null;
+  created_at: string;
+}
+
 function EntryCard({
   entry,
   challenge,
@@ -327,7 +337,39 @@ function EntryCard({
 }) {
   const meta = STATUS_META[entry.moderation_status];
   const [notes, setNotes] = useState(entry.moderation_notes || "");
+  const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory] = useState<LogRow[]>([]);
+  const [moderatorNames, setModeratorNames] = useState<Record<string, string>>({});
+  const [historyLoading, setHistoryLoading] = useState(false);
   const created = new Date(entry.created_at);
+
+  const loadHistory = async () => {
+    setHistoryLoading(true);
+    const { data } = await (supabase as any)
+      .from("competition_entry_moderation_log")
+      .select("id,moderator_id,previous_status,new_status,notes,created_at")
+      .eq("entry_id", entry.id)
+      .order("created_at", { ascending: false });
+    const rows = (data || []) as LogRow[];
+    setHistory(rows);
+    const ids = Array.from(new Set(rows.map((r) => r.moderator_id).filter(Boolean))) as string[];
+    if (ids.length) {
+      const { data: profs } = await supabase
+        .from("profiles_public")
+        .select("user_id,display_name")
+        .in("user_id", ids);
+      const map: Record<string, string> = {};
+      (profs || []).forEach((p: any) => (map[p.user_id] = p.display_name || p.user_id.slice(0, 8)));
+      setModeratorNames(map);
+    }
+    setHistoryLoading(false);
+  };
+
+  const toggleHistory = () => {
+    const next = !showHistory;
+    setShowHistory(next);
+    if (next && history.length === 0) loadHistory();
+  };
 
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5 hover:border-white/20 transition">
@@ -406,7 +448,49 @@ function EntryCard({
             View leaderboard
           </Link>
         )}
+        <button
+          onClick={toggleHistory}
+          className="inline-flex items-center gap-1.5 text-xs rounded-full bg-white/[0.06] border border-white/10 px-3 py-1.5 hover:bg-white/[0.1]"
+        >
+          <History className="h-3 w-3" /> {showHistory ? "Hide" : "Audit log"}
+        </button>
       </div>
+
+      {showHistory && (
+        <div className="mb-3 rounded-lg border border-white/10 bg-black/30 p-3">
+          {historyLoading ? (
+            <div className="flex justify-center py-3">
+              <Loader2 className="h-4 w-4 animate-spin text-white/50" />
+            </div>
+          ) : history.length === 0 ? (
+            <div className="text-xs text-white/40">No moderation actions recorded yet.</div>
+          ) : (
+            <ol className="space-y-2">
+              {history.map((h) => {
+                const prev = (h.previous_status as ModStatus | null);
+                const next = h.new_status as ModStatus;
+                const nm = STATUS_META[next];
+                return (
+                  <li key={h.id} className="text-xs flex flex-wrap items-start gap-2 border-b border-white/5 pb-2 last:border-0 last:pb-0">
+                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${nm.bg} ${nm.fg}`}>
+                      {prev ? `${prev} → ${nm.label}` : nm.label}
+                    </span>
+                    <span className="text-white/70">
+                      {h.moderator_id ? (moderatorNames[h.moderator_id] || h.moderator_id.slice(0, 8)) : "System"}
+                    </span>
+                    <span className="text-white/40">
+                      · {new Date(h.created_at).toLocaleString()}
+                    </span>
+                    {h.notes && (
+                      <div className="basis-full text-white/70 italic mt-0.5">“{h.notes}”</div>
+                    )}
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+        </div>
+      )}
 
       <textarea
         value={notes}
@@ -419,14 +503,14 @@ function EntryCard({
 
       <div className="flex flex-wrap gap-2 pt-3 mt-3 border-t border-white/5">
         <button
-          onClick={() => onStatus("approved", notes || null)}
+          onClick={() => { onStatus("approved", notes || null); if (showHistory) setTimeout(loadHistory, 400); }}
           disabled={entry.moderation_status === "approved"}
           className="inline-flex items-center gap-1.5 rounded-full bg-[#00FF85] text-black px-3 py-1.5 text-xs font-bold disabled:opacity-40 min-h-[36px]"
         >
           <Check className="h-3 w-3" /> Approve
         </button>
         <button
-          onClick={() => onStatus("rejected", notes || null)}
+          onClick={() => { onStatus("rejected", notes || null); if (showHistory) setTimeout(loadHistory, 400); }}
           disabled={entry.moderation_status === "rejected"}
           className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/20 text-rose-200 border border-rose-500/30 px-3 py-1.5 text-xs font-bold disabled:opacity-40 min-h-[36px]"
         >
@@ -434,7 +518,7 @@ function EntryCard({
         </button>
         {entry.moderation_status !== "pending" && (
           <button
-            onClick={() => onStatus("pending", notes || null)}
+            onClick={() => { onStatus("pending", notes || null); if (showHistory) setTimeout(loadHistory, 400); }}
             className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.06] border border-white/10 px-3 py-1.5 text-xs font-semibold text-white/80 min-h-[36px]"
           >
             Move to pending
