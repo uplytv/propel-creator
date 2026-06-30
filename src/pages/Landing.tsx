@@ -23,6 +23,7 @@ import FoundersStickyCTA from "@/components/founders/FoundersStickyCTA";
 import FeaturedRails from "@/components/FeaturedRails";
 import RosterArtistsRail from "@/components/discover/RosterArtistsRail";
 import FeaturedCreatorsSection from "@/components/landing/FeaturedCreatorsSection";
+import FounderOffersPricing from "@/components/founderoffers/FounderOffersPricing";
 
 const JSON_LD = {
   "@context": "https://schema.org",
@@ -139,6 +140,12 @@ export default function Landing() {
 
           <SectionSeam />
           <HomepagePricing />
+
+          <SectionSeam />
+          <section className="py-16 md:py-24 px-5">
+            <FounderOffersPricing variant="full" source="landing_page" />
+          </section>
+
           <HomepageFinalCTA />
         </main>
 

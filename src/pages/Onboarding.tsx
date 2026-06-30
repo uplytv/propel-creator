@@ -13,6 +13,7 @@ import { getAffiliateCookie, clearAffiliateCookie, getReferralData, clearReferra
 import { trackEvent } from "@/lib/posthog";
 import logoImg from "@/assets/logo.png";
 import MilestoneProgressPill from "@/components/onboarding/MilestoneProgressPill";
+import FounderOffersPricing from "@/components/founderoffers/FounderOffersPricing";
 import { useAutoRetryPreference } from "@/hooks/useAutoRetryPreference";
 import {
   SETTINGS_NAV_COOLDOWN_MS,
@@ -1097,6 +1098,12 @@ export default function Onboarding() {
                 )}
               </div>
             </div>
+
+            <div className="mb-5">
+              <FounderOffersPricing variant="compact" source="onboarding_final_step" />
+            </div>
+
+
 
             {submitError && (
               <div

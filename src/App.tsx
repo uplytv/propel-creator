@@ -231,6 +231,9 @@ import { CartProvider } from "@/context/CartContext";
 import CartDrawer from "@/components/shop/CartDrawer";
 const Shop = lazy(() => import("./pages/Shop"));
 const Inbox = lazy(() => import("./pages/Inbox"));
+const FounderServices = lazy(() => import("./pages/FounderServices"));
+const FounderOfferSuccess = lazy(() => import("./pages/FounderOfferSuccess"));
+const FounderOfferCanceled = lazy(() => import("./pages/FounderOfferCanceled"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -596,6 +599,11 @@ const App = () => (
                     <Route path="/create/story/editor" element={<ProtectedRoute><StoryEditor /></ProtectedRoute>} />
                     <Route path="/create/short/editor" element={<ProtectedRoute><ShortEditor /></ProtectedRoute>} />
                     <Route path="/create/video/editor" element={<ProtectedRoute><VideoEditorPage /></ProtectedRoute>} />
+
+                    {/* Founder Services — MUST be before /:username catch-all */}
+                    <Route path="/founder-services" element={<FounderServices />} />
+                    <Route path="/founder-offers/success" element={<FounderOfferSuccess />} />
+                    <Route path="/founder-offers/canceled" element={<FounderOfferCanceled />} />
 
                     {/* Legacy /:username and /:username/page redirect to /@<slug>; keep last before 404. */}
                     <Route path="/:username/page" element={<UsernameRedirect />} />
