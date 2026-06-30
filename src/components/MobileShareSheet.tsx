@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { useToast } from "@/hooks/use-toast";
+import { trackBlogShare } from "@/components/BlogShareBar";
 
 interface MobileShareSheetProps {
   open: boolean;
