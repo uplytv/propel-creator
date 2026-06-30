@@ -31,6 +31,18 @@ export default function ArtistCoursesPage() {
           <Link to={`/${artist.slug}/courses`} className="text-[12px] uppercase tracking-[0.2em] opacity-60 hover:opacity-100">
             ← All courses
           </Link>
+          {course.coverUrl && (
+            <div className="mt-6 rounded-2xl overflow-hidden border border-white/10">
+              <img
+                src={course.coverUrl}
+                alt={`${course.title} cover`}
+                width={1280}
+                height={800}
+                loading="lazy"
+                className="w-full h-auto object-cover"
+              />
+            </div>
+          )}
           <p className="mt-6 text-[11px] uppercase tracking-[0.28em]" style={{ color: artist.accent }}>
             {course.level} · {course.lessons} lessons · {course.duration}
           </p>
