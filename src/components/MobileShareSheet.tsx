@@ -76,6 +76,7 @@ export default function MobileShareSheet({
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
+      convertedRef.current = true;
       trackBlogShare("copy_link", { url, title, surface: "mobile_share_sheet" });
       toast({ title: "Link copied", description: "Share it anywhere." });
       setTimeout(() => setCopied(false), 1800);
