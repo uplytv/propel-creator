@@ -31,6 +31,7 @@ import FirstDollarWizard from "@/components/dashboard/FirstDollarWizard";
 import DiscoveryInsights from "@/components/dashboard/DiscoveryInsights";
 import MusicDiscoveryBanner from "@/components/dashboard/MusicDiscoveryBanner";
 import GrowthPlanCard from "@/components/dashboard/GrowthPlanCard";
+import FounderOffersPricing from "@/components/founderoffers/FounderOffersPricing";
 import AICoachWidget from "@/components/dashboard/AICoachWidget";
 import { useMilestoneTracker } from "@/hooks/useMilestoneTracker";
 import MilestoneProgressPill from "@/components/onboarding/MilestoneProgressPill";
