@@ -167,6 +167,27 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     verified: true,
     bookingEmail: "bookings@uply.tv",
     location: "Los Angeles · Stockholm · Tehran",
+    heroChip: "Now booking 2026 — Nowruz & summer dates",
+    bookingTagline: "Four decades of stage-tested Persian pop. Fill four fields and OMID's team replies the same week.",
+    marquee: ["NOWRUZ 2026 — TICKETS LIVE", "OMID · MANAGED BY UPLY", "LA · STOCKHOLM · TEHRAN", "BOOK DIRECT — NO AGENTS"],
+    releases: [
+      { title: "Bezar Beram", feat: "Single", year: 2024, tag: "Single", href: "https://open.spotify.com/search/Omid%20Bezar%20Beram" },
+      { title: "Khaterat", feat: "Album", year: 2022, tag: "Album", href: "https://open.spotify.com/search/Omid%20Khaterat" },
+    ],
+    milestones: [
+      { year: "1986", text: "First studio session in Tehran." },
+      { year: "1994", text: "Breakout LA residency — Persian diaspora goes global." },
+      { year: "2009", text: "Sold-out European arena run." },
+      { year: "2026", text: "Nowruz World Tour announced via UPLY." },
+    ],
+    stats: [
+      { k: "Followers", v: "1.4M" },
+      { k: "Catalogue", v: "40+ years" },
+      { k: "Based in", v: "LA · Stockholm · Tehran" },
+      { k: "Booking", v: "Direct via UPLY" },
+    ],
+    featuredPostSlug: "four-decades-on-stage",
+
     posts: [
       {
         slug: "four-decades-on-stage",
