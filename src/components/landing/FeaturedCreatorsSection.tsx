@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ARTIST_ROSTER } from "@/data/artistRoster";
 import { BadgeCheck, ArrowUpRight } from "lucide-react";
+import { trackEvent } from "@/lib/posthog";
 
 /**
  * Marketing landing section showcasing featured creators on UPLY.
