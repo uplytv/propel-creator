@@ -22,6 +22,7 @@ import HomepageFooter from "@/components/landing/v2/HomepageFooter";
 import FoundersStickyCTA from "@/components/founders/FoundersStickyCTA";
 import FeaturedRails from "@/components/FeaturedRails";
 import RosterArtistsRail from "@/components/discover/RosterArtistsRail";
+import FeaturedCreatorsSection from "@/components/landing/FeaturedCreatorsSection";
 
 const JSON_LD = {
   "@context": "https://schema.org",
