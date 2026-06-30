@@ -35,24 +35,42 @@ export default function RosterSocialProfilePage({ artist }: { artist: ArtistRost
   const [isSharing, setIsSharing] = useState(false);
 
   const canonicalSlug = artist.slug;
-  const canonicalUrl = `${getSiteUrl()}/@${canonicalSlug}`;
-  const ogImage = artist.portraitUrl || null;
+  const siteUrl = getSiteUrl();
+  const canonicalUrl = `${siteUrl}/@${canonicalSlug}`;
+  // OG crawlers require absolute URLs. portraitUrl is a CDN-relative path.
+  const absoluteOgImage = artist.portraitUrl
+    ? (artist.portraitUrl.startsWith("http") ? artist.portraitUrl : `${siteUrl}${artist.portraitUrl}`)
+    : null;
+
+  // Title: "<Name> (@handle) — <eyebrow> | UPLY"  (kept under 60 chars when possible)
+  const baseTitle = `${artist.displayName} (@${canonicalSlug})`;
+  const seoTitle = `${baseTitle} · ${artist.eyebrow.split("·")[0].trim()} | UPLY`;
+  // Description: tagline + first sentence of bio, clamped to 160 chars.
+  const firstBioSentence = artist.bio.split("\n")[0].trim();
+  const rawDesc = artist.tagline
+    ? `${artist.tagline} ${firstBioSentence}`.trim()
+    : firstBioSentence;
+  const seoDescription = rawDesc.length > 160 ? `${rawDesc.slice(0, 157).trimEnd()}…` : rawDesc;
 
   usePageMeta({
-    title: `${artist.displayName} | UPLY`,
-    description: artist.tagline || artist.bio.slice(0, 160),
-    ogImage,
+    title: seoTitle,
+    description: seoDescription,
+    ogImage: absoluteOgImage,
+    ogType: "profile",
     url: canonicalUrl,
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "MusicGroup",
       name: artist.displayName,
+      alternateName: artist.aliases,
       url: canonicalUrl,
-      image: ogImage || undefined,
-      description: artist.tagline,
-      sameAs: artist.socials.map((s) => s.href),
+      image: absoluteOgImage || undefined,
+      description: seoDescription,
+      sameAs: artist.socials.map((s) => s.href).filter(Boolean),
+      address: artist.location ? { "@type": "PostalAddress", addressLocality: artist.location } : undefined,
     },
   });
+
 
   const handleShare = async () => {
     if (isSharing) return;
