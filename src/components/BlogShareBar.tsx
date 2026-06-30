@@ -56,6 +56,7 @@ export default function BlogShareBar({ url, title, excerpt = "" }: Props) {
     try {
       await navigator.clipboard.writeText(link);
       setCopied(true);
+      trackBlogShare("copy_link", { url: link, title, surface: "blog_share_bar" });
       toast({ title: "Link copied", description: "Share it anywhere." });
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -71,29 +72,34 @@ export default function BlogShareBar({ url, title, excerpt = "" }: Props) {
 
   const link = resolveUrl();
   const enc = encodeURIComponent;
-  const intents = [
+  const intents: { label: string; channel: ShareChannel; Icon: typeof Twitter; href: string }[] = [
     {
       label: "Share on X",
+      channel: "twitter",
       Icon: Twitter,
       href: `https://twitter.com/intent/tweet?url=${enc(link)}&text=${enc(title)}`,
     },
     {
       label: "Share on Facebook",
+      channel: "facebook",
       Icon: Facebook,
       href: `https://www.facebook.com/sharer/sharer.php?u=${enc(link)}`,
     },
     {
       label: "Share on LinkedIn",
+      channel: "linkedin",
       Icon: Linkedin,
       href: `https://www.linkedin.com/sharing/share-offsite/?url=${enc(link)}`,
     },
     {
       label: "Share on WhatsApp",
+      channel: "whatsapp",
       Icon: MessageCircle,
       href: `https://api.whatsapp.com/send?text=${enc(`${title} ${link}`)}`,
     },
     {
       label: "Share by email",
+      channel: "email",
       Icon: Mail,
       href: `mailto:?subject=${enc(title)}&body=${enc(`${excerpt}\n\n${link}`)}`,
     },
