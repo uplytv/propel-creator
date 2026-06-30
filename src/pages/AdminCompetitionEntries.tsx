@@ -380,6 +380,46 @@ function EntryCard({
   const [moderatorNames, setModeratorNames] = useState<Record<string, string>>({});
   const [historyLoading, setHistoryLoading] = useState(false);
   const created = new Date(entry.created_at);
+  const [resendState, setResendState] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [resendMsg, setResendMsg] = useState<string | null>(null);
+
+  const canResend =
+    (entry.moderation_status === "approved" || entry.moderation_status === "rejected") &&
+    !!entry.contact_email;
+
+  const resendEmail = async () => {
+    if (!canResend) return;
+    setResendState("sending");
+    setResendMsg(null);
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://uply.tv";
+    const leaderboardUrl = challenge?.slug ? `${origin}/omid/competition` : undefined;
+    const submitUrl = `${origin}/omid/competition/submit`;
+    try {
+      const { error } = await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "competition-entry-status-update",
+          recipientEmail: entry.contact_email,
+          idempotencyKey: `comp-status-${entry.id}-${entry.moderation_status}-resend-${Date.now()}`,
+          templateData: {
+            entryTitle: entry.title,
+            challengeTitle: challenge?.title,
+            status: entry.moderation_status,
+            notes: notes || entry.moderation_notes || null,
+            leaderboardUrl,
+            submitUrl,
+          },
+        },
+      });
+      if (error) throw error;
+      setResendState("sent");
+      setResendMsg(`Email sent to ${entry.contact_email}`);
+      setTimeout(() => setResendState("idle"), 4000);
+    } catch (err: any) {
+      setResendState("error");
+      setResendMsg(err?.message || "Failed to send email");
+    }
+  };
+
 
   const loadHistory = async () => {
     setHistoryLoading(true);
