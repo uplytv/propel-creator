@@ -848,6 +848,32 @@ function EntryCard({
           </span>
         )}
       </div>
+      <AlertDialog open={!!retryConfirm} onOpenChange={(o) => !o && setRetryConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Retry this failed email?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will re-send the {entry.moderation_status} notification to{" "}
+              <span className="font-semibold">{entry.contact_email}</span> using the
+              current moderation notes. The previous failed attempt
+              {retryConfirm?.error_message ? ` ("${retryConfirm.error_message}")` : ""} will
+              remain in the log.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (retryConfirm) retryFailedLog(retryConfirm);
+                setRetryConfirm(null);
+              }}
+            >
+              Retry send
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
+
 }
