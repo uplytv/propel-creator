@@ -100,15 +100,17 @@ export default function BlogShareBar({ url, title, excerpt = "" }: Props) {
 
       <button
         type="button"
-        onClick={handleNativeShare}
-        aria-label="Share via device"
-        className="hover-gold inline-flex md:hidden items-center gap-2 rounded-full border border-border bg-card/60 px-3.5 py-1.5 text-xs font-semibold text-foreground"
+        onClick={openShareSheet}
+        aria-label="Open share sheet"
+        aria-haspopup="dialog"
+        aria-expanded={sheetOpen}
+        className="inline-flex md:hidden items-center gap-2 rounded-full bg-gold px-3.5 py-1.5 text-xs font-bold text-[#0A0A0A] shadow-[0_4px_16px_-8px_rgba(212,175,55,0.7)] active:scale-[0.98]"
       >
         <Share2 className="h-3.5 w-3.5" />
         Share
       </button>
 
-      <div className="flex items-center gap-1.5">
+      <div className="hidden md:flex items-center gap-1.5">
         {intents.map(({ label, Icon, href }) => (
           <a
             key={label}
@@ -122,6 +124,14 @@ export default function BlogShareBar({ url, title, excerpt = "" }: Props) {
           </a>
         ))}
       </div>
+
+      <MobileShareSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        url={link}
+        title={title}
+        excerpt={excerpt}
+      />
     </div>
   );
 }
