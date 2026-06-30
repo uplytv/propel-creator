@@ -93,6 +93,7 @@ export default function MobileShareSheet({
     if (typeof navigator !== "undefined" && (navigator as any).share) {
       try {
         await (navigator as any).share({ title, text: excerpt, url });
+        convertedRef.current = true;
         trackBlogShare("native_share", { url, title, surface: "mobile_share_sheet" });
         onOpenChange(false);
       } catch {
