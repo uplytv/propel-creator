@@ -89,8 +89,9 @@ export default function SocialTopNav() {
                   width: "60%",
                   maxWidth: 40,
                   height: 3,
-                  backgroundColor: "#3D7CFF",
+                  backgroundColor: "hsl(42 78% 60%)",
                   borderRadius: "2px 2px 0 0",
+                  boxShadow: "0 0 12px hsl(42 78% 60% / 0.55)",
                 }}
               />
             )}

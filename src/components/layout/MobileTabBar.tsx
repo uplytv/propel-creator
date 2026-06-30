@@ -196,13 +196,16 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
                     {isAriaActive && (
                       <motion.div
                         layoutId="mobile-tab-indicator"
-                        className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"
+                        className="absolute -top-3 left-1/2 -translate-x-1/2 w-5 h-[3px] rounded-b-sm"
+                        style={{ backgroundColor: "hsl(var(--gold))" }}
                         transition={{ type: "spring", stiffness: 400, damping: 30 }}
                       />
                     )}
-                    <Icon className="w-6 h-6 text-primary" />
+                    <Icon className={`w-6 h-6 ${isAriaActive ? "text-gold" : "text-primary"}`} />
                   </div>
-                  <span className="text-[10px] mt-0.5 text-primary font-semibold">Events</span>
+                  <span className={`text-[10px] mt-0.5 font-semibold ${isAriaActive ? "text-gold" : "text-primary"}`}>
+                    Events
+                  </span>
                 </button>
               );
             }
@@ -222,7 +225,8 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
                   {active && (
                     <motion.div
                       layoutId="mobile-tab-indicator"
-                      className="absolute -top-3 left-1/2 -translate-x-1/2 w-5 h-[3px] rounded-b-sm bg-primary"
+                      className="absolute -top-3 left-1/2 -translate-x-1/2 w-5 h-[3px] rounded-b-sm"
+                      style={{ backgroundColor: "hsl(var(--gold))" }}
                       transition={{ type: "spring", stiffness: 400, damping: 30 }}
                     />
                   )}
@@ -232,7 +236,7 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
                   <Icon
                     className={`w-5 h-5 transition-colors ${
                       active
-                        ? "text-primary"
+                        ? "text-gold"
                         : "text-muted-foreground group-hover:text-foreground"
                     }`}
                   />
@@ -240,7 +244,7 @@ export default function MobileTabBar({ onUploadVideo }: MobileTabBarProps) {
                 <span
                   className={`text-[10px] mt-0.5 transition-colors font-semibold ${
                     active
-                      ? "text-primary"
+                      ? "text-gold"
                       : "text-muted-foreground"
                   }`}
                 >

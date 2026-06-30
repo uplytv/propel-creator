@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import logo from "@/assets/logo.png";
+
+const NAV_LINKS = [
+  { label: "Creators", href: "#streamers" },
+  { label: "Pricing", href: "#pricing" },
+  { label: "Blog", href: "/blog", internal: true },
+];
 
 export default function HomepageNav() {
   const [scrolled, setScrolled] = useState(false);
@@ -16,24 +20,50 @@ export default function HomepageNav() {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-background/85 backdrop-blur-xl border-b border-border/40"
+          ? "bg-background/85 backdrop-blur-xl border-b border-gold-hairline"
           : "bg-transparent"
       }`}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 h-14 sm:h-16">
-        <Link to="/" className="flex items-center" aria-label="UPLY home">
-          <img src={logo} alt="UPLY" className="h-10 w-10 rounded-md" />
+        <Link to="/" className="wordmark-uply text-2xl sm:text-[26px]" aria-label="UPLY home">
+          <span>UPL</span>
+          <span className="accent">Y</span>
         </Link>
+
+        <nav className="hidden md:flex items-center gap-7" aria-label="Primary">
+          {NAV_LINKS.map((l) =>
+            l.internal ? (
+              <Link
+                key={l.label}
+                to={l.href}
+                className="text-[13px] font-semibold tracking-wide text-foreground/70 hover:text-gold transition-colors"
+              >
+                {l.label}
+              </Link>
+            ) : (
+              <a
+                key={l.label}
+                href={l.href}
+                className="text-[13px] font-semibold tracking-wide text-foreground/70 hover:text-gold transition-colors"
+              >
+                {l.label}
+              </a>
+            ),
+          )}
+        </nav>
+
         <div className="flex items-center gap-2 sm:gap-3">
-          <Link to="/auth">
-            <Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground">
-              Sign In
-            </Button>
+          <Link
+            to="/auth"
+            className="hidden sm:inline-flex items-center text-[13px] font-semibold text-foreground/80 hover:text-gold transition-colors px-3 py-2 rounded-md"
+          >
+            Sign In
           </Link>
-          <Link to="/auth">
-            <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
-              Get Started
-            </Button>
+          <Link
+            to="/auth"
+            className="btn-primary-glow inline-flex items-center rounded-full px-4 sm:px-5 h-9 sm:h-10 text-[13px] font-bold tracking-wide"
+          >
+            Get Started
           </Link>
         </div>
       </div>

@@ -296,7 +296,7 @@ function RailRow({ rail }: { rail: Rail }) {
     <section aria-labelledby={`rail-${rail.id}`} className="group/rail relative">
       <div className="flex items-center justify-between px-4 sm:px-6 mb-2">
         <div className="flex items-center gap-2">
-          <Icon className="w-4 h-4 text-primary" aria-hidden />
+          <Icon className="w-4 h-4 text-gold" aria-hidden />
           <h2
             id={`rail-${rail.id}`}
             className="text-sm sm:text-base font-bold text-foreground tracking-tight"
@@ -309,7 +309,7 @@ function RailRow({ rail }: { rail: Rail }) {
           <Link
             to={rail.seeAllHref}
             aria-label={rail.seeAllLabel ?? `See all ${rail.title}`}
-            className="inline-flex items-center gap-0.5 text-[11px] sm:text-xs font-semibold text-muted-foreground hover:text-foreground px-2 py-1 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="link-gold inline-flex items-center gap-0.5 text-[11px] sm:text-xs font-semibold px-2 py-1 rounded-md"
           >
             See all
             <ChevronRight className="w-3.5 h-3.5" />
@@ -319,7 +319,7 @@ function RailRow({ rail }: { rail: Rail }) {
               type="button"
               aria-label={`Scroll ${rail.title} left`}
               onClick={() => scrollBy(-1)}
-              className="p-1.5 rounded-full bg-card/60 hover:bg-card border border-border opacity-0 group-hover/rail:opacity-100 transition-opacity focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="hover-gold p-1.5 rounded-full bg-card/60 border border-border opacity-0 group-hover/rail:opacity-100 transition-opacity"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -327,7 +327,7 @@ function RailRow({ rail }: { rail: Rail }) {
               type="button"
               aria-label={`Scroll ${rail.title} right`}
               onClick={() => scrollBy(1)}
-              className="p-1.5 rounded-full bg-card/60 hover:bg-card border border-border opacity-0 group-hover/rail:opacity-100 transition-opacity focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="hover-gold p-1.5 rounded-full bg-card/60 border border-border opacity-0 group-hover/rail:opacity-100 transition-opacity"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -337,30 +337,30 @@ function RailRow({ rail }: { rail: Rail }) {
 
       <div
         ref={scrollerRef}
-        className="flex gap-3 overflow-x-auto scroll-smooth snap-x snap-mandatory px-4 sm:px-6 pb-3 scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="rail-edge-fade flex gap-3 overflow-x-auto scroll-smooth snap-x snap-mandatory px-4 sm:px-6 pb-3 scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {rail.items.map((item) => (
           <Link
             key={item.id}
             to={item.href}
             aria-label={item.title}
-            className="group/card snap-start shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg"
+            className="group/card snap-start shrink-0 focus:outline-none rounded-xl"
           >
             <div
-              className={`relative ${aspectClasses(rail.aspect)} overflow-hidden rounded-lg border border-border bg-card/40 transition-transform duration-200 group-hover/card:scale-[1.03]`}
+              className={`card-editorial relative ${aspectClasses(rail.aspect)} rounded-xl`}
             >
               <img
                 src={item.image}
                 alt=""
                 loading="lazy"
-                className="absolute inset-0 size-full object-cover"
+                className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover/card:scale-[1.05]"
               />
               <div
                 aria-hidden
-                className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/10 to-transparent"
+                className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/15 to-transparent"
               />
               {item.badge && (
-                <span className="absolute top-2 left-2 inline-flex items-center rounded-md bg-primary px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-foreground">
+                <span className="absolute top-2 left-2 inline-flex items-center rounded-md bg-gold px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--gold-foreground))] shadow-[0_4px_14px_-4px_hsl(var(--gold)/0.7)]">
                   {item.badge}
                 </span>
               )}
@@ -368,7 +368,7 @@ function RailRow({ rail }: { rail: Rail }) {
                 <p className="text-[12px] sm:text-[13px] font-semibold text-foreground leading-tight line-clamp-2">
                   {item.title}
                   {item.verified && (
-                    <BadgeCheck className="inline-block w-3 h-3 ml-1 text-primary align-text-bottom" />
+                    <BadgeCheck className="inline-block w-3 h-3 ml-1 text-gold align-text-bottom" />
                   )}
                 </p>
                 {item.subtitle && (
