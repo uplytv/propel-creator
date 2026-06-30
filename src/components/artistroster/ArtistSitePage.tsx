@@ -1,12 +1,13 @@
 import { ARTIST_ROSTER, type ArtistRosterEntry, type SocialKind } from "@/data/artistRoster";
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Instagram, Youtube, Music2, Mail, Globe, Facebook, Send, Play,
   Sparkles, ArrowRight, MapPin, Calendar, DollarSign, Users,
   Check, Share2, Copy, X,
 } from "lucide-react";
 import ArtistSectionNav from "./ArtistSectionNav";
+import { trackEvent } from "@/lib/posthog";
 
 const ICONS: Record<SocialKind, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
   instagram: Instagram, youtube: Youtube, spotify: Music2, apple_music: Music2,
@@ -536,16 +537,13 @@ export default function ArtistSitePage({ slug }: { slug?: string }) {
             <div className="mt-8">
               <p className="text-[11px] uppercase tracking-[0.2em] mb-3 text-white/60">Latest tracks</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {artist.spotifyTrackEmbeds.map((t) => (
-                  <iframe
+                {artist.spotifyTrackEmbeds.map((t, idx) => (
+                  <SpotifyTrackPreview
                     key={t.id}
-                    className="rounded-xl w-full"
-                    title={`${t.title} — Spotify preview`}
-                    src={`https://open.spotify.com/embed/track/${t.id}?theme=0`}
-                    width="100%"
-                    height="152"
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
+                    trackId={t.id}
+                    title={t.title}
+                    artistSlug={artist.slug}
+                    position={idx}
                   />
                 ))}
               </div>
@@ -553,6 +551,14 @@ export default function ArtistSitePage({ slug }: { slug?: string }) {
                 href={`https://open.spotify.com/artist/${artist.spotifyArtistEmbedId}`}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() =>
+                  trackEvent("spotify_view_all_tracks_click", {
+                    artist_slug: artist.slug,
+                    artist_name: artist.displayName,
+                    spotify_artist_id: artist.spotifyArtistEmbedId,
+                    location: "artist_site_spotify_section",
+                  })
+                }
                 className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-white/80 hover:text-white transition-colors"
               >
                 View all tracks on Spotify
@@ -598,5 +604,60 @@ export default function ArtistSitePage({ slug }: { slug?: string }) {
         </div>
       </footer>
     </main>
+  );
+}
+
+interface SpotifyTrackPreviewProps {
+  trackId: string;
+  title: string;
+  artistSlug: string;
+  position: number;
+}
+
+/**
+ * Renders a compact Spotify track embed and best-effort logs a click event
+ * when the user interacts with the iframe (Spotify's embed runs cross-origin
+ * so we can't observe inner play/pause directly — we use the standard
+ * iframe-focus heuristic). Each track only logs once per page load.
+ */
+function SpotifyTrackPreview({ trackId, title, artistSlug, position }: SpotifyTrackPreviewProps) {
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const firedRef = useRef(false);
+
+  const fire = (source: string) => {
+    if (firedRef.current) return;
+    firedRef.current = true;
+    trackEvent("spotify_track_preview_click", {
+      artist_slug: artistSlug,
+      spotify_track_id: trackId,
+      track_title: title,
+      position,
+      source,
+      location: "artist_site_spotify_section",
+    });
+  };
+
+  useEffect(() => {
+    const onBlur = () => {
+      if (document.activeElement === iframeRef.current) fire("iframe_focus");
+    };
+    window.addEventListener("blur", onBlur);
+    return () => window.removeEventListener("blur", onBlur);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <div onPointerDown={() => fire("pointerdown")}>
+      <iframe
+        ref={iframeRef}
+        className="rounded-xl w-full block"
+        title={`${title} — Spotify preview`}
+        src={`https://open.spotify.com/embed/track/${trackId}?theme=0`}
+        width="100%"
+        height="152"
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        loading="lazy"
+      />
+    </div>
   );
 }
