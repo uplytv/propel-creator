@@ -74,6 +74,27 @@ export interface ArtistCourse {
   coverUrl?: string;
 }
 
+export interface ArtistRelease {
+  title: string;
+  feat?: string;
+  year: string | number;
+  tag?: string;
+  /** Square cover art URL (CDN or absolute). */
+  coverUrl?: string;
+  href?: string;
+}
+
+export interface ArtistMilestone {
+  age?: string | number;
+  year?: string | number;
+  text: string;
+}
+
+export interface ArtistStat {
+  k: string;
+  v: string;
+}
+
 export interface ArtistRosterEntry {
   slug: string;
   aliases?: string[];
@@ -91,8 +112,22 @@ export interface ArtistRosterEntry {
   verified?: boolean;
   bookingEmail?: string;
   location?: string;
+  /** Optional pitch line shown in the booking section. */
+  bookingTagline?: string;
+  /** Optional hero chip text (e.g. "New release — out now"). */
+  heroChip?: string;
+  /** Optional rotating marquee lines under the hero. */
+  marquee?: string[];
+  /** Optional discography for the editorial site. */
+  releases?: ArtistRelease[];
+  /** Optional milestones for the about timeline. */
+  milestones?: ArtistMilestone[];
+  /** Optional key/value stat cards. */
+  stats?: ArtistStat[];
   /** Blog posts surfaced at /:slug/blog */
   posts?: ArtistBlogPost[];
+  /** Slug of a blog post to feature on the editorial site. */
+  featuredPostSlug?: string;
   /** Community offering surfaced at /:slug/community */
   community?: ArtistCommunity;
   /** Courses offered at /:slug/courses */
@@ -100,6 +135,7 @@ export interface ArtistRosterEntry {
   /** Override the section chips shown on the /roster hub card (defaults derive from posts/community/courses). */
   sectionsOverride?: string[];
 }
+
 
 
 export const ARTIST_ROSTER: ArtistRosterEntry[] = [
@@ -131,6 +167,27 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     verified: true,
     bookingEmail: "bookings@uply.tv",
     location: "Los Angeles · Stockholm · Tehran",
+    heroChip: "Now booking 2026 — Nowruz & summer dates",
+    bookingTagline: "Four decades of stage-tested Persian pop. Fill four fields and OMID's team replies the same week.",
+    marquee: ["NOWRUZ 2026 — TICKETS LIVE", "OMID · MANAGED BY UPLY", "LA · STOCKHOLM · TEHRAN", "BOOK DIRECT — NO AGENTS"],
+    releases: [
+      { title: "Bezar Beram", feat: "Single", year: 2024, tag: "Single", href: "https://open.spotify.com/search/Omid%20Bezar%20Beram" },
+      { title: "Khaterat", feat: "Album", year: 2022, tag: "Album", href: "https://open.spotify.com/search/Omid%20Khaterat" },
+    ],
+    milestones: [
+      { year: "1986", text: "First studio session in Tehran." },
+      { year: "1994", text: "Breakout LA residency — Persian diaspora goes global." },
+      { year: "2009", text: "Sold-out European arena run." },
+      { year: "2026", text: "Nowruz World Tour announced via UPLY." },
+    ],
+    stats: [
+      { k: "Followers", v: "1.4M" },
+      { k: "Catalogue", v: "40+ years" },
+      { k: "Based in", v: "LA · Stockholm · Tehran" },
+      { k: "Booking", v: "Direct via UPLY" },
+    ],
+    featuredPostSlug: "four-decades-on-stage",
+
     posts: [
       {
         slug: "four-decades-on-stage",
@@ -216,6 +273,27 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     searchKeywords: ["morvarid", "morvaird", "morvard", "morwarid", "morvarid shahbazi", "morvaridshahbazi", "pearl of persia", "persian dancer", "persian singer", "morvarid production"],
     verified: false,
     location: "Los Angeles",
+    heroChip: "Now booking weddings, concerts & private events",
+    bookingTagline: "Live vocals, choreography, and stagecraft from a performer who's been on stage since age five.",
+    marquee: ["PEARL OF PERSIA", "SINGER · DANCER · INSTRUCTOR", "BOOK PRIVATE LESSONS", "MANAGED BY UPLY"],
+    releases: [
+      { title: "Pearl", feat: "Single", year: 2025, tag: "New", href: "https://open.spotify.com/artist/5QFbUVTpgjwACp" },
+      { title: "Live with Aref", feat: "Concert highlight", year: 2024, tag: "Live", href: "https://www.youtube.com/results?search_query=morvarid+shahbazi+aref" },
+    ],
+    milestones: [
+      { age: 5, text: "First public performance." },
+      { age: 14, text: "Booked first paid concert in LA." },
+      { age: 20, text: "Shared the stage with Aref." },
+      { age: 25, text: "Launched private vocal & dance studio." },
+    ],
+    stats: [
+      { k: "Followers", v: "59K" },
+      { k: "Disciplines", v: "Vocal · Dance · Teaching" },
+      { k: "Based in", v: "Los Angeles" },
+      { k: "Lessons", v: "Private & group" },
+    ],
+    featuredPostSlug: "pearl-of-persia",
+
     posts: [
       {
         slug: "pearl-of-persia",
@@ -305,6 +383,27 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     verified: true,
     bookingEmail: "bookings@uply.tv",
     location: "Los Angeles",
+    heroChip: "Booking 2026 — international dates open",
+    bookingTagline: "Three decades of arena-tested Persian pop. Direct booking through ANDY's UPLY team — no middlemen.",
+    marquee: ["ANDY · IRANIAN-AMERICAN POP ICON", "BOOK 2026 DATES", "STAND BY ME — WITH BON JOVI", "MANAGED BY UPLY"],
+    releases: [
+      { title: "Stand By Me", feat: "with Jon Bon Jovi", year: 2009, tag: "Historic", href: "https://www.youtube.com/results?search_query=andy+bon+jovi+stand+by+me" },
+      { title: "Best of ANDY", feat: "Compilation", year: 2023, tag: "Catalogue", href: "https://open.spotify.com/search/Andy%20Madadian" },
+    ],
+    milestones: [
+      { year: "1989", text: "Debut as half of Andy & Kouros." },
+      { year: "1995", text: "First platinum-selling solo album." },
+      { year: "2009", text: "Grammy-recognized 'Stand By Me' with Bon Jovi." },
+      { year: "2026", text: "International tour announced via UPLY." },
+    ],
+    stats: [
+      { k: "Followers", v: "Millions" },
+      { k: "Catalogue", v: "30+ years" },
+      { k: "Based in", v: "Los Angeles" },
+      { k: "Booking", v: "Direct via UPLY" },
+    ],
+    featuredPostSlug: "stand-by-me",
+
     posts: [
       {
         slug: "stand-by-me",
