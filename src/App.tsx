@@ -490,6 +490,8 @@ const App = () => (
                     <Route path="/:slug/community" element={<ArtistCommunityRoute />} />
                     <Route path="/:slug/courses" element={<ArtistCoursesRoute />} />
                     <Route path="/:slug/courses/:courseSlug" element={<ArtistCoursesRoute />} />
+                    <Route path="/:slug/signin" element={<ArtistSignInRoute />} />
+                    <Route path="/:slug/account" element={<ArtistAccountRoute />} />
                     <Route path="/blog" element={<UplyBlog />} />
                     <Route path="/blog/:slug" element={<UplyBlogPost />} />
                     <Route path="/admin/booking-inquiries" element={<AdminBookingInquiries />} />
