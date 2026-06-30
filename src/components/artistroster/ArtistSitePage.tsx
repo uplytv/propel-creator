@@ -8,11 +8,12 @@ import {
 } from "lucide-react";
 import ArtistSectionNav from "./ArtistSectionNav";
 
-const ICONS: Record<SocialKind, React.ComponentType<{ className?: string }>> = {
+const ICONS: Record<SocialKind, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
   instagram: Instagram, youtube: Youtube, spotify: Music2, apple_music: Music2,
   soundcloud: Music2, tiktok: Music2, facebook: Facebook, threads: Send,
   website: Globe, email: Mail,
 };
+
 
 /**
  * Editorial artist site, rendered for any artist in ARTIST_ROSTER.
