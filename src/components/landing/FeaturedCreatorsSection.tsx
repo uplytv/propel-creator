@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ARTIST_ROSTER } from "@/data/artistRoster";
 import { BadgeCheck, ArrowUpRight } from "lucide-react";
+import { trackEvent } from "@/lib/posthog";
 
 /**
  * Marketing landing section showcasing featured creators on UPLY.
@@ -26,11 +27,21 @@ export default function FeaturedCreatorsSection() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
-          {ARTIST_ROSTER.map((a) => (
+          {ARTIST_ROSTER.map((a, index) => (
             <Link
               key={a.slug}
               to={`/@${a.slug}`}
               aria-label={`Visit ${a.displayName} on UPLY`}
+              onClick={() =>
+                trackEvent("landing_featured_creator_clicked", {
+                  surface: "landing_featured_creators",
+                  slug: a.slug,
+                  handle: `@${a.slug}`,
+                  display_name: a.displayName,
+                  position: index + 1,
+                  destination: `/@${a.slug}`,
+                })
+              }
               className="group relative rounded-2xl overflow-hidden border border-white/10 hover:border-white/30 transition-all hover:-translate-y-1 bg-white/5"
               style={{
                 background: `linear-gradient(160deg, ${a.gradient.from}, ${a.gradient.to})`,
@@ -78,6 +89,13 @@ export default function FeaturedCreatorsSection() {
         <div className="mt-10 text-center">
           <Link
             to="/roster"
+            onClick={() =>
+              trackEvent("landing_featured_creators_view_all_clicked", {
+                surface: "landing_featured_creators",
+                destination: "/roster",
+                roster_size: ARTIST_ROSTER.length,
+              })
+            }
             className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
           >
             View the full UPLY roster →
