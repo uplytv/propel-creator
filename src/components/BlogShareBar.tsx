@@ -157,6 +157,7 @@ export default function BlogShareBar({ url, title, excerpt = "" }: Props) {
 
   return (
     <div
+      ref={rootRef}
       role="group"
       aria-label="Share this post"
       className="flex flex-wrap items-center gap-2"
