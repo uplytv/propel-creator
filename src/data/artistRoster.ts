@@ -649,7 +649,7 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
       "If you want to follow the build, the course, and the daily ops — this is the front door.",
     gradient: { from: "#0a0f2e", to: "#000000" },
     accent: "#FF6B35",
-    // portraitUrl: upload the real @business_with_bob photo and paste the CDN URL here.
+    portraitUrl: "/__l5e/assets-v1/0c67f107-d46a-4123-a29c-9894e3658991/bobby-portrait.jpg",
     socials: [
       { kind: "instagram", label: "Instagram", sub: "@business_with_bob · daily AI + business plays", href: "https://www.instagram.com/business_with_bob", handle: "business_with_bob" },
       { kind: "tiktok", label: "TikTok", sub: "@businesswithbob · 60-sec breakdowns", href: "https://www.tiktok.com/@businesswithbob", handle: "businesswithbob" },
