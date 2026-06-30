@@ -1,102 +1,102 @@
-# ARIA Command Center — Additive Build Plan
 
-Purely additive. No edits to existing ARIA chat, schemas, or flows.
+## What we're building
 
-## 1. Database (new only)
+A new "Founder Services" pricing block with **3 tiers**:
 
-New table `aria_actions`:
-- `id uuid pk`
-- `creator_id uuid not null` (RLS-scoped)
-- `intent text not null` (e.g. `members.list`, `revenue.summary`, `tier.create`, `email.draft`, `dm.draft`)
-- `parsed_params jsonb not null default '{}'`
-- `status text not null default 'pending'` — `pending | approved | executed | failed | cancelled`
-- `result jsonb`
-- `error text`
-- `created_at timestamptz default now()`
-- `executed_at timestamptz`
+| Tier | Price | What's included |
+|---|---|---|
+| DIY | $0 / included | Use UPLY's course builder yourself — current platform experience |
+| Assisted Setup | **$149** (one-off) | 1:1 strategy call + course outline + setup checklist (no build) |
+| Done-for-you Course Build | **$495** (one-off) | A UPLY rep builds your entire course from scratch — outline, modules, lessons, media uploads, pricing setup |
 
-RLS: creator can select/insert/update only `where creator_id = auth.uid()`. No deletes from client.
+The middle "Assisted" tier price is a placeholder — easy to change or remove in one file (`src/data/founderOffers.ts`). I'll flag this in code with a comment.
 
-Index on `(creator_id, created_at desc)`.
+Only the $495 tier creates a paid Stripe checkout right now. DIY is a free CTA into the existing course builder. Assisted starts with the same checkout flow but with its own price ID so you can toggle it on when ready.
 
-Rate limit helper: SQL function `aria_command_count_last_hour(_creator uuid) returns int` used by executor.
+## Payments approach
 
-## 2. Edge Functions (new)
+- **Direct platform charge to UPLY** — no Stripe Connect transfer, no 95/5 split. This is a UPLY service, not a creator sale.
+- **New, isolated Edge Function** `create-founder-offer-checkout` — does not touch `stripe-webhook` or any existing money-path code (per CLAUDE.md hard rule).
+- Stripe Checkout in `mode: "payment"`, hosted by Stripe, opens in a new tab.
+- Uses the existing `STRIPE_SECRET_KEY` already in the project's edge env.
 
-### `aria-intent-parser`
-- Auth: verify JWT, derive `creator_id`.
-- Input: `{ message: string }`.
-- Calls Lovable AI Gateway (`google/gemini-3-flash-preview` — note: spec says claude-sonnet-4; we use Lovable AI Gateway since LOVABLE_API_KEY is auto-provisioned and avoids requiring an Anthropic key. Will note in delivery.) with a system prompt + JSON schema of supported intents.
-- Returns `{ intent, params, confidence, summary, requires_approval }`.
-- Inserts row into `aria_actions` with `status='pending'`.
+## Post-purchase flow
 
-Supported intent schemas:
-- `members.list` — `{ sort?: 'ltv'|'joined'|'name', limit?: number, since?: ISODate, tier_id?: uuid }`
-- `revenue.summary` — `{ window: 'mtd'|'last_30d'|'last_month', compare?: boolean }`
-- `content.performance` — `{ window?: '7d'|'30d', limit?: number }`
-- `tier.create` — `{ name, price_monthly, description? }`
-- `email.draft` — `{ segment: 'all'|'active'|'churned'|'tier', tier_id?: uuid, subject, body }`
-- `dm.draft` / `announcement.draft` — `{ body, audience: 'followers'|'members' }`
+1. Buyer completes Stripe Checkout → redirected to `/founder-offers/success?session_id={CHECKOUT_SESSION_ID}`.
+2. New `FounderOfferSuccess` page calls a second Edge Function `finalize-founder-offer` once on mount.
+3. `finalize-founder-offer`:
+   - Retrieves the Checkout Session from Stripe, verifies `payment_status === "paid"` and `metadata.offer === "done-for-you-course"`.
+   - Inserts a row into a new `founder_offer_purchases` table (id, offer_key, buyer_email, buyer_name, amount_cents, stripe_session_id, stripe_payment_intent, status, created_at). RLS: insert/select restricted to service role; authenticated users can read their own.
+   - Sends buyer confirmation email via existing Resend send-from `notify.uply.tv`.
+   - Sends internal team notification email to a `FOUNDER_OFFER_NOTIFY_EMAIL` secret (you'll add this with `add_secret`).
+4. Success page shows confirmation + "A rep will contact you within 1 business day."
 
-### `aria-intent-executor`
-- Auth: verify JWT, derive `creator_id`.
-- Input: `{ action_id: uuid }` (must belong to caller, status `pending` or `approved`).
-- Reads action; for READ intents executes immediately. For WRITE intents requires `status='approved'` (UI sets it via update).
-- Rate limit check: reject if >30 pending+executed in last hour.
-- Read implementations: typed Supabase queries against existing tables (community members, subscriptions, posts/videos analytics).
-- Write implementations:
-  - `tier.create` → invokes existing `stripe-create-tier` function internally (server-to-server with service role + caller JWT) OR replicates its core (use existing function via fetch with original auth header).
-  - `email.draft` → resolves segment to recipient list, sends via Resend connector (only when status=approved+sent flag).
-  - `dm.draft` / `announcement.draft` → inserts into existing `direct_messages` / `posts` table after approval.
-- Updates `aria_actions.status='executed'` + `result`.
+## Where the pricing block appears
 
-## 3. UI
+One reusable React component `<FounderOffersPricing variant="full" | "compact" />`.
 
-New route `/aria-command` registered in `App.tsx` (added as second-to-last route, before catch-all `/[username]`).
+- **Public landing** (`src/pages/Landing.tsx`) — `variant="full"`, new section near the existing pricing/value sections.
+- **Onboarding** — `variant="compact"` card placed as an optional step at the end of the existing onboarding flow (skippable, never blocking).
+- **Creator dashboard / Growth hub** — `variant="compact"` card in the upgrade/grow surface (Growth hub area).
+- **Courses page** (creator-facing classroom management) — `variant="compact"` "Want us to build this for you?" card above the empty/manage state.
 
-Components (new dir `src/features/aria-command/`):
-- `pages/AriaCommandPage.tsx` — page shell with `BackNav`, ARIA branding (gradient + U-smiley reused), command input, history list.
-- `components/CommandInput.tsx` — textarea + Send.
-- `components/CommandToggle.tsx` — slim toggle inside existing ARIA panel; renders link to `/aria-command`. Added by *adding* a new optional prop-controlled section, not editing existing logic. (Implemented as a tiny additive component imported and conditionally rendered where the existing ARIA panel mounts — done via a non-destructive insertion next to the existing trigger.)
-- `components/ParsedIntentCard.tsx` — shows intent name, params, Approve / Cancel for WRITE.
-- `components/ResultCard.tsx` — renders read tables / write confirmations.
-- `hooks/useAriaCommand.ts` — wraps `supabase.functions.invoke('aria-intent-parser')` and `aria-intent-executor`, plus realtime subscription on `aria_actions`.
+Compact variant = single highlighted "$495 Done-for-you" card with "Compare tiers →" link to a dedicated `/founder-services` page that shows all three tiers. This keeps the four embed points small and safe; the full pricing table lives in one place.
 
-Styling reuses existing tokens (`font-jakarta`, gradient `from-blue-500 to-purple-600`, `.mobile-safe-content`).
+## New routes
 
-## 4. Guardrails
-
-- Every WRITE requires explicit Approve click → updates `aria_actions.status='approved'` then calls executor.
-- RLS enforced on `aria_actions`; executor double-checks `creator_id = auth.uid()` on every external table touched.
-- Rate limit 30/hour via SQL helper checked in executor.
-- All parses + executions logged to `aria_actions`.
-
-## 5. Non-Goals (skipped)
-
-YT/TikTok/IG, MCP exposure, multi-step chains, voice, persistent memory.
-
-## 6. Demo Script (30s)
-
-1. Creator opens `/aria-command`.
-2. Types: *"Show my top 10 members by lifetime value."* → ARIA parses `members.list {sort:'ltv', limit:10}` → result table appears.
-3. Types: *"Create a $19/mo Inner Circle tier with private streams access."* → ParsedIntentCard shows `tier.create {name:'Inner Circle', price_monthly:19, description:'private streams access'}` → Creator clicks **Approve** → Stripe product/price + DB tier created → ResultCard confirms with tier id.
+Added BEFORE the `/:username` catch-all in `App.tsx` (verified per CLAUDE.md hard rule):
+- `/founder-services` — full pricing page
+- `/founder-offers/success` — post-Stripe success page
+- `/founder-offers/canceled` — cancellation page
 
 ## Files
 
-New:
-- `supabase/migrations/<ts>_aria_actions.sql`
-- `supabase/functions/aria-intent-parser/index.ts`
-- `supabase/functions/aria-intent-executor/index.ts`
-- `src/features/aria-command/pages/AriaCommandPage.tsx`
-- `src/features/aria-command/components/{CommandInput,ParsedIntentCard,ResultCard,CommandToggle}.tsx`
-- `src/features/aria-command/hooks/useAriaCommand.ts`
-- `src/features/aria-command/lib/intentSchemas.ts`
+**New:**
+- `src/data/founderOffers.ts` — tier definitions + price IDs
+- `src/components/founderoffers/FounderOffersPricing.tsx` — reusable component (compact + full)
+- `src/components/founderoffers/FounderOfferCard.tsx` — single tier card
+- `src/pages/FounderServices.tsx` — `/founder-services` route
+- `src/pages/FounderOfferSuccess.tsx` — `/founder-offers/success` route
+- `src/pages/FounderOfferCanceled.tsx` — `/founder-offers/canceled` route
+- `supabase/functions/create-founder-offer-checkout/index.ts`
+- `supabase/functions/finalize-founder-offer/index.ts`
+- `supabase/functions/_shared/transactional-email-templates/founder-offer-buyer-confirmation.tsx`
+- `supabase/functions/_shared/transactional-email-templates/founder-offer-team-notification.tsx`
+- SQL migration: `founder_offer_purchases` table with RLS + GRANTs
 
-Edited (additive only):
-- `src/App.tsx` — add `/aria-command` route immediately above the bare `/[username]` catch-all.
+**Edited (minimal, additive only):**
+- `src/App.tsx` — 3 new route entries above the catch-all
+- `src/pages/Landing.tsx` — one new section
+- Onboarding flow page — one new card on the final step
+- Growth hub / dashboard page — one new card
+- Courses manage page — one new card
+- `_shared/transactional-email-templates/registry.ts` — register 2 new templates
 
-## Notes / Decisions
+**Untouched:** `stripe-webhook`, `mux-webhook`, `auth-email-hook`, any existing Stripe Connect / payout / fee code.
 
-- **AI provider**: spec mentions Anthropic claude-sonnet-4. Lovable AI Gateway provides Gemini/GPT models with auto-provisioned `LOVABLE_API_KEY` (no user secret needed). Default to `google/gemini-3-flash-preview` for fast intent parsing. If you want strict Anthropic, I'll request an `ANTHROPIC_API_KEY` secret instead — confirm in chat.
-- **Stripe tier creation**: reuses existing `stripe-create-tier` function by server-side fetch with the caller's JWT — no logic duplication.
-- **Resend**: assumes existing Resend connector linked. If not, executor returns a friendly error and logs it.
+## Stripe setup steps I'll run
+
+1. Create Stripe Product "Done-for-you Course Build" + Price `$495 USD one-time` via `stripe--create_stripe_product_and_price`, hardcode the returned `price_id` in `founderOffers.ts`.
+2. (Optional later) Create Price for Assisted tier when you confirm the price.
+
+## Secrets I'll need from you
+
+- `FOUNDER_OFFER_NOTIFY_EMAIL` — the email address where internal team notifications go (e.g. you@uply.tv). I'll request it via `add_secret` after the rest is built.
+
+`STRIPE_SECRET_KEY` and `RESEND_API_KEY` are already in your project's edge env per CLAUDE.md, so no extra setup there.
+
+## Risk callouts
+
+- Money path: new isolated checkout function, zero changes to existing webhooks or Connect logic. Direct platform charge — no transfers, no application fees, no split.
+- `/:username` catch-all order verified after route additions.
+- No changes to `src/integrations/supabase/types.ts` — I'll cast through `supabaseTyped` for the new table reads.
+- Email templates use existing Resend infra and follow the dark email design tokens already in `mem://style/email-design-system`.
+
+## What I'm NOT doing in this pass
+
+- No fulfillment workflow / project management board for the rep (just the email notification).
+- No automated scheduling (Calendly etc.).
+- No revenue reporting integration into your existing creator analytics (this revenue is platform-owned, separate from creator earnings).
+- No Assisted-tier checkout enabled by default — it ships disabled with a "Contact us" CTA until you set its price.
+
+Approve and I'll ship it.
