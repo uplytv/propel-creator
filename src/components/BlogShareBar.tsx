@@ -18,6 +18,7 @@ interface Props {
  */
 export default function BlogShareBar({ url, title, excerpt = "" }: Props) {
   const [copied, setCopied] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const { toast } = useToast();
 
   const resolveUrl = () =>
