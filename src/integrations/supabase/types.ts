@@ -1315,6 +1315,54 @@ export type Database = {
         }
         Relationships: []
       }
+      artist_blog_posts: {
+        Row: {
+          artist_slug: string
+          body: string
+          created_at: string
+          created_by: string | null
+          excerpt: string
+          id: string
+          published: boolean
+          published_at: string
+          read_time: string
+          slug: string
+          tag: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist_slug: string
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          excerpt?: string
+          id?: string
+          published?: boolean
+          published_at?: string
+          read_time?: string
+          slug: string
+          tag?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist_slug?: string
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          excerpt?: string
+          id?: string
+          published?: boolean
+          published_at?: string
+          read_time?: string
+          slug?: string
+          tag?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       artist_merch: {
         Row: {
           artist_id: string
