@@ -15,6 +15,16 @@ import {
   Send,
   MailCheck,
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type ModStatus = "pending" | "approved" | "rejected";
 
@@ -400,6 +410,7 @@ function EntryCard({
   const [failedOnly, setFailedOnly] = useState(false);
   const [retryState, setRetryState] = useState<Record<string, "sending" | "sent" | "error">>({});
   const [retryMsg, setRetryMsg] = useState<Record<string, string>>({});
+  const [retryConfirm, setRetryConfirm] = useState<EmailLogRow | null>(null);
 
   const retryFailedLog = async (log: EmailLogRow) => {
     if (!entry.contact_email) return;
@@ -715,7 +726,7 @@ function EntryCard({
                       <div className="basis-full mt-1 flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => retryFailedLog(l)}
+                          onClick={() => setRetryConfirm(l)}
                           disabled={retryState[l.id] === "sending"}
                           className="inline-flex items-center gap-1 rounded-md border border-rose-400/40 bg-rose-500/10 px-2 py-1 text-[11px] font-semibold text-rose-200 hover:bg-rose-500/20 disabled:opacity-50"
                         >
@@ -837,6 +848,32 @@ function EntryCard({
           </span>
         )}
       </div>
+      <AlertDialog open={!!retryConfirm} onOpenChange={(o) => !o && setRetryConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Retry this failed email?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will re-send the {entry.moderation_status} notification to{" "}
+              <span className="font-semibold">{entry.contact_email}</span> using the
+              current moderation notes. The previous failed attempt
+              {retryConfirm?.error_message ? ` ("${retryConfirm.error_message}")` : ""} will
+              remain in the log.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (retryConfirm) retryFailedLog(retryConfirm);
+                setRetryConfirm(null);
+              }}
+            >
+              Retry send
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
+
 }
