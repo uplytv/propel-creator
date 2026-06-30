@@ -24,7 +24,7 @@ serve(async (req) => {
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ["customer_details", "payment_intent"],
+      expand: ["customer_details", "payment_intent", "payment_intent.latest_charge"],
     });
 
     if (session.payment_status !== "paid") {
