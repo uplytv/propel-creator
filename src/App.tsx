@@ -59,6 +59,7 @@ const AryaXOBlog = lazy(() => import("./pages/AryaXOBlog"));
 const ArtistLinkRoute = lazy(() => import("./pages/ArtistLinkRoute"));
 const ArtistSiteRoute = lazy(() => import("./pages/ArtistSiteRoute"));
 const ArtistBlogRoute = lazy(() => import("./pages/ArtistBlogRoute"));
+const ArtistBlogManageRoute = lazy(() => import("./pages/ArtistBlogManageRoute"));
 const ArtistCommunityRoute = lazy(() => import("./pages/ArtistCommunityRoute"));
 const ArtistCoursesRoute = lazy(() => import("./pages/ArtistCoursesRoute"));
 const ArtistSignInRoute = lazy(() => import("./pages/ArtistSignInRoute"));
@@ -487,6 +488,7 @@ const App = () => (
                     {/* Per-artist blog, community, courses (driven by ARTIST_ROSTER) */}
                     <Route path="/roster" element={<RosterHubRoute />} />
                     <Route path="/:slug/blog" element={<ArtistBlogRoute />} />
+                    <Route path="/:slug/blog/manage" element={<ArtistBlogManageRoute />} />
                     <Route path="/:slug/blog/:postSlug" element={<ArtistBlogRoute />} />
                     <Route path="/:slug/community" element={<ArtistCommunityRoute />} />
                     <Route path="/:slug/courses" element={<ArtistCoursesRoute />} />
