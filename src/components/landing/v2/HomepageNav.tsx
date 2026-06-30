@@ -4,6 +4,7 @@ import logo from "@/assets/logo.png";
 
 const NAV_LINKS = [
   { label: "Creators", href: "#streamers" },
+  { label: "Roster", href: "/roster", internal: true },
   { label: "Pricing", href: "#pricing" },
   { label: "Blog", href: "/blog", internal: true },
 ];
