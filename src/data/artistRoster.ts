@@ -491,6 +491,149 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     sectionsOverride: ["Links", "Site", "Blog"],
   },
 
+  // ============================================================
+  // BAZI — DJ / producer (Ari Shahbazi)
+  // ============================================================
+  {
+    slug: "bazi",
+    aliases: ["dj-bazi", "djbazi", "arishahbazi", "ari-shahbazi", "arianshahbazi"],
+    displayName: "BAZI",
+    eyebrow: "DJ · Producer · Open-Format",
+    tagline: "Open-format sets that move every room — house, hip-hop, Persian, and everything in between.",
+    bio:
+      "BAZI is the DJ alias of Ari Shahbazi — an open-format selector building a reputation for high-energy sets that bridge house, hip-hop, Afro, and Persian dance music in a single seamless arc.\n\n" +
+      "From private events to packed club nights, BAZI reads the room first and the genre second. The result is a set that doesn't sit in one lane — it just keeps the floor moving.\n\n" +
+      "Bookings, collabs, and press are handled directly here on UPLY.",
+    gradient: { from: "#001a3a", to: "#000814" },
+    accent: "#1FA8FF",
+    portraitUrl: "/__l5e/assets-v1/a78ddb7f-94f5-42a8-967f-fb902218775f/bazi-portrait.jpg",
+    socials: [
+      { kind: "instagram", label: "Instagram", sub: "@arishahbazi · behind the decks", href: "https://www.instagram.com/arishahbazi", handle: "arishahbazi" },
+      { kind: "tiktok", label: "TikTok", sub: "@arianshahbazi · live sets & edits", href: "https://www.tiktok.com/@arianshahbazi", handle: "arianshahbazi" },
+      { kind: "youtube", label: "YouTube", sub: "@arishah · full sets & mixes", href: "https://www.youtube.com/@arishah" },
+      { kind: "soundcloud", label: "SoundCloud", sub: "Stream the latest mixes", href: "https://soundcloud.com/search?q=bazi%20dj" },
+      { kind: "spotify", label: "Spotify", sub: "Curated open-format playlists", href: "https://open.spotify.com/search/Bazi%20DJ" },
+      { kind: "website", label: "X / Twitter", sub: "@arishahbazi", href: "https://x.com/arishahbazi" },
+      { kind: "email", label: "Bookings", sub: "bookings@uply.tv", href: "mailto:bookings@uply.tv" },
+    ],
+    videos: [
+      { title: "Latest behind the decks", instagramUrl: "https://www.instagram.com/arishahbazi/" },
+    ],
+    searchKeywords: ["bazi", "dj bazi", "djbazi", "ari shahbazi", "arishahbazi", "arian shahbazi", "open format dj", "persian dj", "house dj", "hip hop dj"],
+    verified: true,
+    bookingEmail: "bookings@uply.tv",
+    location: "Los Angeles · Worldwide",
+    heroChip: "Now booking 2026 — clubs, weddings & private events",
+    bookingTagline: "Open-format sets engineered for the room you actually have. Reply within 24 hours, every inquiry.",
+    marquee: ["BAZI · OPEN-FORMAT DJ", "BOOK 2026 NOW", "HOUSE · HIP-HOP · PERSIAN", "MANAGED ON UPLY"],
+    releases: [
+      { title: "Night One — Live Mix", feat: "60 min open-format", year: 2026, tag: "Mix", href: "https://soundcloud.com/search?q=bazi" },
+      { title: "Persian House Edits Vol. 1", feat: "Edit pack", year: 2025, tag: "Edits", href: "https://soundcloud.com/search?q=bazi%20persian%20house" },
+      { title: "After Hours", feat: "Single", year: 2025, tag: "Original", href: "https://open.spotify.com/search/Bazi%20After%20Hours" },
+    ],
+    milestones: [
+      { year: "2019", text: "First residency — Friday nights, Los Angeles." },
+      { year: "2022", text: "Opened for headline international acts on the West Coast circuit." },
+      { year: "2024", text: "Launched BAZI as a dedicated open-format brand." },
+      { year: "2026", text: "Global booking calendar live on UPLY." },
+    ],
+    stats: [
+      { k: "Sets / yr", v: "120+" },
+      { k: "Format", v: "Open · seamless" },
+      { k: "Based in", v: "Los Angeles" },
+      { k: "Booking", v: "Direct via UPLY" },
+    ],
+    featuredPostSlug: "open-format-philosophy",
+    posts: [
+      {
+        slug: "open-format-philosophy",
+        title: "Open-format isn't a genre — it's a job description",
+        excerpt: "Why BAZI refuses to pick a lane, and how reading the room beats sticking to a playlist every single night.",
+        readTime: "5 min read",
+        publishedAt: "2026-06-18",
+        tag: "Craft",
+        body:
+          "Every DJ gets asked the same question early in their career: what's your sound? It's a fair question. It's also, for an open-format selector, the wrong one.\n\n" +
+          "My job is not to play the music I like for an hour. My job is to take a room of strangers and turn them into a single moving thing for as long as I'm behind the decks. Some nights that means house from minute one. Some nights it means starting with hip-hop, pulling into Afro by midnight, and finishing on Persian dance records because the room demanded it.\n\n" +
+          "The skill isn't in knowing one genre cold. It's in knowing twenty of them well enough to bridge between any two without losing the floor. That's the discipline. That's the brand.",
+      },
+      {
+        slug: "how-i-build-a-set",
+        title: "How I build a set from the door count up",
+        excerpt: "The 90-minute prep ritual — door count, demographic guess, opener's last record — before I ever touch a USB.",
+        readTime: "4 min read",
+        publishedAt: "2026-05-22",
+        tag: "Behind the decks",
+        body:
+          "Before I plug in a USB, I want to know three things: how many people are in the room, who they are, and what the opener just played.\n\n" +
+          "Door count tells me energy ceiling. Demographic tells me language and tempo. Opener's last record tells me where to land my first one — never more than ±4 BPM, never a hard left into a new genre.\n\n" +
+          "From there it's all instinct. But the first ten minutes are math, and the math is what stops a good booking from going sideways.",
+      },
+      {
+        slug: "persian-records-on-a-mainstream-floor",
+        title: "Dropping Persian records on a mainstream floor — when and why",
+        excerpt: "There's a right and wrong moment to drop a Persian record in front of a non-Persian crowd. Here's the read.",
+        readTime: "6 min read",
+        publishedAt: "2026-04-04",
+        tag: "Culture",
+        body:
+          "Persian dance records have something most pop music doesn't — a tempo and percussion that translates instantly even to a crowd that has never heard a word of Farsi.\n\n" +
+          "The trick is the entry. I never lead with a Persian record cold. I bridge in through Afro-house or a percussion-led edit, let the rhythm carry the unfamiliarity, and then let the vocal land once the floor is committed.\n\n" +
+          "Done right, a mixed crowd doesn't notice the language change — they notice the energy change. That's the goal.",
+      },
+    ],
+    community: {
+      name: "BAZI Inner Circle",
+      description: "Monthly exclusive mixes, edit packs, gear notes, and presale access to every show — direct from BAZI.",
+      membersLabel: "Just launched",
+      perks: [
+        "Monthly members-only 60-min mix",
+        "Edit packs & cue notes from real sets",
+        "Presale access to every booking",
+        "Quarterly live Q&A on tech, gear & touring",
+      ],
+      priceUsd: 9,
+    },
+    courses: [
+      {
+        slug: "open-format-foundations",
+        title: "Open-Format DJing: Foundations",
+        level: "Beginner",
+        lessons: 8,
+        duration: "2h 30m",
+        priceUsd: 49,
+        summary: "The exact mental model BAZI uses to bridge genres without losing the floor — from BPM math to crowd reading.",
+        outline: [
+          "What open-format actually means",
+          "BPM ranges and safe transition windows",
+          "Building a 4-genre bridge in under 8 bars",
+          "Reading the room in the first 10 minutes",
+          "The 3 records every open-format DJ needs ready",
+          "Recovering from a dropped floor",
+          "Set arcs for clubs vs. weddings vs. private events",
+          "Recording and reviewing your own sets",
+        ],
+      },
+      {
+        slug: "persian-edits-masterclass",
+        title: "Persian Edits Masterclass",
+        level: "Intermediate",
+        lessons: 6,
+        duration: "1h 50m",
+        priceUsd: 69,
+        summary: "How to build club-ready edits of Persian dance records that work on mainstream floors — from stem prep to drop placement.",
+        outline: [
+          "Stem isolation on legacy Persian recordings",
+          "Re-quantizing live percussion to a club grid",
+          "Choosing the right vocal hook",
+          "Building a 32-bar intro DJs will actually mix into",
+          "Mastering edits for club playback",
+          "Distribution & rights basics",
+        ],
+      },
+    ],
+  },
+
 ];
 
 
