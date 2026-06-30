@@ -16,6 +16,8 @@ import { Link } from "react-router-dom";
 import portraitAsset from "@/assets/arya-xo-portrait-v3.jpg.asset.json";
 import bgAsset from "@/assets/arya-xo-bg.png.asset.json";
 import AryaBandsAutoplay from "@/components/AryaBandsAutoplay";
+import BackButton from "@/components/common/BackButton";
+
 
 /**
  * Arya XO — public artist showcase, embedded inside UPLY.
