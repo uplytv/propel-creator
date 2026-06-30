@@ -58,6 +58,10 @@ const AryaXOSite = lazy(() => import("./pages/AryaXOSite"));
 const AryaXOBlog = lazy(() => import("./pages/AryaXOBlog"));
 const ArtistLinkRoute = lazy(() => import("./pages/ArtistLinkRoute"));
 const ArtistSiteRoute = lazy(() => import("./pages/ArtistSiteRoute"));
+const ArtistBlogRoute = lazy(() => import("./pages/ArtistBlogRoute"));
+const ArtistCommunityRoute = lazy(() => import("./pages/ArtistCommunityRoute"));
+const ArtistCoursesRoute = lazy(() => import("./pages/ArtistCoursesRoute"));
+const RosterHubRoute = lazy(() => import("./pages/RosterHubRoute"));
 const UplyBlog = lazy(() => import("./pages/UplyBlog"));
 const UplyBlogPost = lazy(() => import("./pages/UplyBlogPost"));
 const AdminBookingInquiries = lazy(() => import("./pages/AdminBookingInquiries"));
@@ -477,6 +481,13 @@ const App = () => (
                     {(["omid", "morvarid", "andy"]).map((s) => (
                       <Route key={`${s}-site`} path={`/${s}-site`} element={<ArtistSiteRoute />} />
                     ))}
+                    {/* Per-artist blog, community, courses (driven by ARTIST_ROSTER) */}
+                    <Route path="/roster" element={<RosterHubRoute />} />
+                    <Route path="/:slug/blog" element={<ArtistBlogRoute />} />
+                    <Route path="/:slug/blog/:postSlug" element={<ArtistBlogRoute />} />
+                    <Route path="/:slug/community" element={<ArtistCommunityRoute />} />
+                    <Route path="/:slug/courses" element={<ArtistCoursesRoute />} />
+                    <Route path="/:slug/courses/:courseSlug" element={<ArtistCoursesRoute />} />
                     <Route path="/blog" element={<UplyBlog />} />
                     <Route path="/blog/:slug" element={<UplyBlogPost />} />
                     <Route path="/admin/booking-inquiries" element={<AdminBookingInquiries />} />
