@@ -389,7 +389,9 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     verified: true,
     bookingEmail: "bookings@uply.tv",
     location: "Bay Area, CA",
+    sectionsOverride: ["Links", "Site", "Blog"],
   },
+
 ];
 
 
