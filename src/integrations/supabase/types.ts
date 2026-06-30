@@ -3169,6 +3169,47 @@ export type Database = {
         }
         Relationships: []
       }
+      competition_entry_moderation_log: {
+        Row: {
+          challenge_id: string | null
+          created_at: string
+          entry_id: string
+          id: string
+          moderator_id: string | null
+          new_status: string
+          notes: string | null
+          previous_status: string | null
+        }
+        Insert: {
+          challenge_id?: string | null
+          created_at?: string
+          entry_id: string
+          id?: string
+          moderator_id?: string | null
+          new_status: string
+          notes?: string | null
+          previous_status?: string | null
+        }
+        Update: {
+          challenge_id?: string | null
+          created_at?: string
+          entry_id?: string
+          id?: string
+          moderator_id?: string | null
+          new_status?: string
+          notes?: string | null
+          previous_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competition_entry_moderation_log_entry_id_fkey"
+            columns: ["entry_id"]
+            isOneToOne: false
+            referencedRelation: "music_challenge_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_sync: {
         Row: {
           created_at: string
