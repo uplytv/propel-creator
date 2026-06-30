@@ -273,6 +273,27 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     searchKeywords: ["morvarid", "morvaird", "morvard", "morwarid", "morvarid shahbazi", "morvaridshahbazi", "pearl of persia", "persian dancer", "persian singer", "morvarid production"],
     verified: false,
     location: "Los Angeles",
+    heroChip: "Now booking weddings, concerts & private events",
+    bookingTagline: "Live vocals, choreography, and stagecraft from a performer who's been on stage since age five.",
+    marquee: ["PEARL OF PERSIA", "SINGER · DANCER · INSTRUCTOR", "BOOK PRIVATE LESSONS", "MANAGED BY UPLY"],
+    releases: [
+      { title: "Pearl", feat: "Single", year: 2025, tag: "New", href: "https://open.spotify.com/artist/5QFbUVTpgjwACp" },
+      { title: "Live with Aref", feat: "Concert highlight", year: 2024, tag: "Live", href: "https://www.youtube.com/results?search_query=morvarid+shahbazi+aref" },
+    ],
+    milestones: [
+      { age: 5, text: "First public performance." },
+      { age: 14, text: "Booked first paid concert in LA." },
+      { age: 20, text: "Shared the stage with Aref." },
+      { age: 25, text: "Launched private vocal & dance studio." },
+    ],
+    stats: [
+      { k: "Followers", v: "59K" },
+      { k: "Disciplines", v: "Vocal · Dance · Teaching" },
+      { k: "Based in", v: "Los Angeles" },
+      { k: "Lessons", v: "Private & group" },
+    ],
+    featuredPostSlug: "pearl-of-persia",
+
     posts: [
       {
         slug: "pearl-of-persia",
