@@ -97,7 +97,10 @@ export interface ArtistRosterEntry {
   community?: ArtistCommunity;
   /** Courses offered at /:slug/courses */
   courses?: ArtistCourse[];
+  /** Override the section chips shown on the /roster hub card (defaults derive from posts/community/courses). */
+  sectionsOverride?: string[];
 }
+
 
 export const ARTIST_ROSTER: ArtistRosterEntry[] = [
   // ============================================================
