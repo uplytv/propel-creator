@@ -588,6 +588,7 @@ const App = () => (
                     <Route path="/admin/referrals" element={<AdminRoute><AdminReferrals /></AdminRoute>} />
                     <Route path="/admin/tv-audit" element={<AdminRoute><AdminTVAudit /></AdminRoute>} />
                     <Route path="/admin/event-fees" element={<AdminRoute><AdminEventFees /></AdminRoute>} />
+                    <Route path="/admin/competition-entries" element={<AdminRoute><AdminCompetitionEntries /></AdminRoute>} />
 
                     {/* In-app camera & post-capture editors */}
                     <Route path="/camera" element={<ProtectedRoute><Camera /></ProtectedRoute>} />
