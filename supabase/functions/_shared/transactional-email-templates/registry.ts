@@ -14,6 +14,7 @@ import { template as digitalProductReceipt } from './digital-product-receipt.tsx
 import { template as betaAccessGranted } from './beta-access-granted.tsx'
 import { template as ticketConfirmation } from './ticket-confirmation.tsx'
 import { template as applicationConfirmation } from './application-confirmation.tsx'
+import { template as bookingInquiry } from './booking-inquiry.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'welcome-email': welcomeEmail,
@@ -21,4 +22,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'beta-access-granted': betaAccessGranted,
   'ticket-confirmation': ticketConfirmation,
   'application-confirmation': applicationConfirmation,
+  'booking-inquiry': bookingInquiry,
 }
