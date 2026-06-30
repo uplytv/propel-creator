@@ -16,6 +16,8 @@ import portraitAsset from "@/assets/arya-xo-portrait-v3.jpg.asset.json";
 import bandsCoverAsset from "@/assets/150bands-cover.jpg.asset.json";
 import getdownAsset from "@/assets/getdown-cover.jpg.asset.json";
 import aryaBgAsset from "@/assets/arya-xo-bg.png.asset.json";
+import { ARTIST_ROSTER } from "@/data/artistRoster";
+
 
 /**
  * Netflix / Hulu-style horizontal category rails. Compact poster-shaped
