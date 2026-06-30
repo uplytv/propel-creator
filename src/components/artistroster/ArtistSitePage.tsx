@@ -537,16 +537,13 @@ export default function ArtistSitePage({ slug }: { slug?: string }) {
             <div className="mt-8">
               <p className="text-[11px] uppercase tracking-[0.2em] mb-3 text-white/60">Latest tracks</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {artist.spotifyTrackEmbeds.map((t) => (
-                  <iframe
+                {artist.spotifyTrackEmbeds.map((t, idx) => (
+                  <SpotifyTrackPreview
                     key={t.id}
-                    className="rounded-xl w-full"
-                    title={`${t.title} — Spotify preview`}
-                    src={`https://open.spotify.com/embed/track/${t.id}?theme=0`}
-                    width="100%"
-                    height="152"
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
+                    trackId={t.id}
+                    title={t.title}
+                    artistSlug={artist.slug}
+                    position={idx}
                   />
                 ))}
               </div>
@@ -554,6 +551,14 @@ export default function ArtistSitePage({ slug }: { slug?: string }) {
                 href={`https://open.spotify.com/artist/${artist.spotifyArtistEmbedId}`}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() =>
+                  trackEvent("spotify_view_all_tracks_click", {
+                    artist_slug: artist.slug,
+                    artist_name: artist.displayName,
+                    spotify_artist_id: artist.spotifyArtistEmbedId,
+                    location: "artist_site_spotify_section",
+                  })
+                }
                 className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-white/80 hover:text-white transition-colors"
               >
                 View all tracks on Spotify
