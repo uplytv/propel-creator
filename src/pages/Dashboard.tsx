@@ -140,6 +140,9 @@ export default function Dashboard() {
           <GrowthPlanCard />
         </div>
         <AICoachWidget />
+        <div className="px-4 md:px-8 pt-4">
+          <FounderOffersPricing variant="compact" source="dashboard" />
+        </div>
         {/* Welcome + Mode Toggle */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="px-4 md:px-8 pt-4 md:pt-8 pb-2">
           <div className="flex items-center justify-between gap-3 mb-2">

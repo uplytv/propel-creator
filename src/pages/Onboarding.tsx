@@ -1098,6 +1098,12 @@ export default function Onboarding() {
               </div>
             </div>
 
+            <div className="mb-5">
+              <FounderOffersPricing variant="compact" source="onboarding_final_step" />
+            </div>
+
+
+
             {submitError && (
               <div
                 role="alert"
