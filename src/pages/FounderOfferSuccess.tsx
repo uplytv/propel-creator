@@ -9,6 +9,7 @@ interface FinalizeResult {
   offerName: string | null;
   amountFormatted: string | null;
   orderId: string | null;
+  receiptUrl: string | null;
 }
 
 export default function FounderOfferSuccess() {
@@ -22,6 +23,7 @@ export default function FounderOfferSuccess() {
     offerName: null,
     amountFormatted: null,
     orderId: null,
+    receiptUrl: null,
   });
 
   useEffect(() => {
@@ -45,6 +47,7 @@ export default function FounderOfferSuccess() {
           offerName: data?.offerName ?? null,
           amountFormatted: data?.amountFormatted ?? null,
           orderId: data?.orderId ?? sessionId,
+          receiptUrl: data?.receiptUrl ?? null,
         });
         setState("ok");
       } catch (err: any) {
@@ -123,6 +126,21 @@ export default function FounderOfferSuccess() {
                     <dt className="text-white/60">Receipt sent to</dt>
                     <dd className="text-white/80 text-right break-all">
                       {result.email}
+                    </dd>
+                  </div>
+                )}
+                {result.receiptUrl && (
+                  <div className="flex justify-between gap-4 pt-2 border-t border-white/10">
+                    <dt className="text-white/60">Stripe receipt</dt>
+                    <dd className="text-right">
+                      <a
+                        href={result.receiptUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#00FF85] font-medium hover:underline"
+                      >
+                        View receipt ↗
+                      </a>
                     </dd>
                   </div>
                 )}

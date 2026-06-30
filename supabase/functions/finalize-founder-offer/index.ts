@@ -24,7 +24,7 @@ serve(async (req) => {
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ["customer_details", "payment_intent"],
+      expand: ["customer_details", "payment_intent", "payment_intent.latest_charge"],
     });
 
     if (session.payment_status !== "paid") {
@@ -49,6 +49,14 @@ serve(async (req) => {
       typeof session.payment_intent === "string"
         ? session.payment_intent
         : session.payment_intent?.id ?? null;
+    const latestCharge =
+      typeof session.payment_intent === "object" && session.payment_intent
+        ? (session.payment_intent as any).latest_charge
+        : null;
+    const receiptUrl: string | null =
+      latestCharge && typeof latestCharge === "object"
+        ? (latestCharge.receipt_url as string | null) ?? null
+        : null;
 
     // Record the purchase (service role bypasses RLS).
     const supabaseAdmin = createClient(
@@ -136,6 +144,7 @@ serve(async (req) => {
         amountCents,
         currency,
         orderId: sessionId,
+        receiptUrl,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
     );
