@@ -10,6 +10,9 @@ import BackNav from "@/components/BackNav";
 import { Skeleton } from "@/components/ui/skeleton";
 import FestivalsSection from "@/components/social/FestivalsSection";
 import CuratedSearchMeta, { VerifiedTitleBadge } from "@/components/CuratedSearchMeta";
+import { Link } from "react-router-dom";
+import { ARTIST_ROSTER } from "@/data/artistRoster";
+import { BadgeCheck } from "lucide-react";
 
 const typeIcon: Record<string, typeof Users> = {
   creator: Users,
@@ -216,6 +219,38 @@ export default function SearchPage() {
 
         {query.length < 2 && (
           <>
+            <section className="mt-6">
+              <div className="flex items-center justify-between mb-3 px-1">
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Featured Artists</h2>
+                <Link to="/roster" className="text-xs font-semibold text-primary hover:underline">See all</Link>
+              </div>
+              <div className="grid grid-cols-1 gap-2">
+                {ARTIST_ROSTER.map((a) => (
+                  <Link
+                    key={a.slug}
+                    to={`/${a.slug}`}
+                    className="flex items-center gap-3 p-3 rounded-xl bg-card/60 border border-border hover:bg-accent/50 transition-colors"
+                  >
+                    {a.portraitUrl ? (
+                      <img src={a.portraitUrl} alt={a.displayName} className="w-12 h-12 rounded-lg object-cover" loading="lazy" />
+                    ) : (
+                      <div
+                        className="w-12 h-12 rounded-lg"
+                        style={{ background: `linear-gradient(135deg, ${a.gradient.from}, ${a.gradient.to})` }}
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-foreground inline-flex items-center gap-1">
+                        {a.displayName}
+                        {a.verified && <BadgeCheck className="w-3.5 h-3.5" style={{ color: a.accent }} />}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">{a.eyebrow} · {a.location}</p>
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Open</span>
+                  </Link>
+                ))}
+              </div>
+            </section>
             <FestivalsSection />
             <div className="text-center py-10 text-muted-foreground">
               <SearchIcon className="w-10 h-10 mx-auto mb-2 opacity-20" />
