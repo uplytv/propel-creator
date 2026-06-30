@@ -26,7 +26,13 @@ const STATIC_PATHS = [
   { loc: "/c/education", priority: 0.7, changefreq: "daily" },
   { loc: "/c/lifestyle", priority: 0.7, changefreq: "daily" },
   { loc: "/c/irl", priority: 0.7, changefreq: "daily" },
+  // Roster-backed artist profiles (mirrors slugs in src/data/artistRoster.ts)
+  { loc: "/@omid", priority: 0.9, changefreq: "weekly" },
+  { loc: "/@morvarid", priority: 0.9, changefreq: "weekly" },
+  { loc: "/@andy", priority: 0.9, changefreq: "weekly" },
+  { loc: "/@arya-xo", priority: 0.9, changefreq: "weekly" },
 ];
+
 
 function urlEntry(loc: string, lastmod?: string, priority = 0.5, changefreq = "weekly") {
   return `  <url>
