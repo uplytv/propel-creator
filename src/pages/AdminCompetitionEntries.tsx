@@ -101,6 +101,8 @@ export default function AdminCompetitionEntries() {
     moderation_status: ModStatus,
     moderation_notes?: string | null
   ) => {
+    const target = entries.find((e) => e.id === id);
+    const prevStatus = target?.moderation_status;
     const patch: any = { moderation_status };
     if (moderation_notes !== undefined) patch.moderation_notes = moderation_notes;
     setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, ...patch } : e)));
@@ -111,6 +113,41 @@ export default function AdminCompetitionEntries() {
     if (error) {
       setError(error.message);
       load();
+      return;
+    }
+
+    // Notify submitter when status transitions to approved or rejected
+    if (
+      target &&
+      (moderation_status === "approved" || moderation_status === "rejected") &&
+      moderation_status !== prevStatus &&
+      target.contact_email
+    ) {
+      const challenge = challenges.find((c) => c.id === target.challenge_id);
+      const origin = typeof window !== "undefined" ? window.location.origin : "https://uply.tv";
+      const leaderboardUrl = challenge?.slug
+        ? `${origin}/omid/competition`
+        : undefined;
+      const submitUrl = `${origin}/omid/competition/submit`;
+      try {
+        await supabase.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "competition-entry-status-update",
+            recipientEmail: target.contact_email,
+            idempotencyKey: `comp-status-${id}-${moderation_status}-${Date.now()}`,
+            templateData: {
+              entryTitle: target.title,
+              challengeTitle: challenge?.title,
+              status: moderation_status,
+              notes: moderation_notes || null,
+              leaderboardUrl,
+              submitUrl,
+            },
+          },
+        });
+      } catch (err) {
+        console.error("Failed to send status email", err);
+      }
     }
   };
 
