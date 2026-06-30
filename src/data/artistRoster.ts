@@ -74,6 +74,27 @@ export interface ArtistCourse {
   coverUrl?: string;
 }
 
+export interface ArtistRelease {
+  title: string;
+  feat?: string;
+  year: string | number;
+  tag?: string;
+  /** Square cover art URL (CDN or absolute). */
+  coverUrl?: string;
+  href?: string;
+}
+
+export interface ArtistMilestone {
+  age?: string | number;
+  year?: string | number;
+  text: string;
+}
+
+export interface ArtistStat {
+  k: string;
+  v: string;
+}
+
 export interface ArtistRosterEntry {
   slug: string;
   aliases?: string[];
@@ -91,8 +112,22 @@ export interface ArtistRosterEntry {
   verified?: boolean;
   bookingEmail?: string;
   location?: string;
+  /** Optional pitch line shown in the booking section. */
+  bookingTagline?: string;
+  /** Optional hero chip text (e.g. "New release — out now"). */
+  heroChip?: string;
+  /** Optional rotating marquee lines under the hero. */
+  marquee?: string[];
+  /** Optional discography for the editorial site. */
+  releases?: ArtistRelease[];
+  /** Optional milestones for the about timeline. */
+  milestones?: ArtistMilestone[];
+  /** Optional key/value stat cards. */
+  stats?: ArtistStat[];
   /** Blog posts surfaced at /:slug/blog */
   posts?: ArtistBlogPost[];
+  /** Slug of a blog post to feature on the editorial site. */
+  featuredPostSlug?: string;
   /** Community offering surfaced at /:slug/community */
   community?: ArtistCommunity;
   /** Courses offered at /:slug/courses */
@@ -100,6 +135,7 @@ export interface ArtistRosterEntry {
   /** Override the section chips shown on the /roster hub card (defaults derive from posts/community/courses). */
   sectionsOverride?: string[];
 }
+
 
 
 export const ARTIST_ROSTER: ArtistRosterEntry[] = [
