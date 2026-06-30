@@ -13,6 +13,7 @@ import {
   Globe,
   History,
   Send,
+  MailCheck,
 } from "lucide-react";
 
 type ModStatus = "pending" | "approved" | "rejected";
@@ -364,6 +365,17 @@ interface LogRow {
   created_at: string;
 }
 
+interface EmailLogRow {
+  id: string;
+  message_id: string | null;
+  template_name: string | null;
+  recipient_email: string | null;
+  status: string;
+  error_message: string | null;
+  metadata: any;
+  created_at: string;
+}
+
 function EntryCard({
   entry,
   challenge,
@@ -382,6 +394,46 @@ function EntryCard({
   const created = new Date(entry.created_at);
   const [resendState, setResendState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [resendMsg, setResendMsg] = useState<string | null>(null);
+  const [showEmails, setShowEmails] = useState(false);
+  const [emailLogs, setEmailLogs] = useState<EmailLogRow[]>([]);
+  const [emailLogsLoading, setEmailLogsLoading] = useState(false);
+
+  const loadEmailLogs = async () => {
+    if (!entry.contact_email) {
+      setEmailLogs([]);
+      return;
+    }
+    setEmailLogsLoading(true);
+    const { data } = await (supabase as any)
+      .from("email_send_log")
+      .select("id,message_id,template_name,recipient_email,status,error_message,metadata,created_at")
+      .eq("template_name", "competition-entry-status-update")
+      .eq("recipient_email", entry.contact_email)
+      .order("created_at", { ascending: false })
+      .limit(200);
+    const rows = (data || []) as EmailLogRow[];
+    // Dedupe by message_id, keep latest (rows already DESC by created_at)
+    const seen = new Set<string>();
+    const latestByMsg: EmailLogRow[] = [];
+    for (const r of rows) {
+      const key = r.message_id || r.id;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      // Only include entries tied to this specific entry id (idempotencyKey pattern: comp-status-{entryId}-...)
+      if (!r.message_id || r.message_id.includes(entry.id)) {
+        latestByMsg.push(r);
+      }
+    }
+    setEmailLogs(latestByMsg);
+    setEmailLogsLoading(false);
+  };
+
+  const toggleEmails = () => {
+    const next = !showEmails;
+    setShowEmails(next);
+    if (next) loadEmailLogs();
+  };
+
 
   const canResend =
     (entry.moderation_status === "approved" || entry.moderation_status === "rejected") &&
@@ -413,6 +465,7 @@ function EntryCard({
       if (error) throw error;
       setResendState("sent");
       setResendMsg(`Email sent to ${entry.contact_email}`);
+      if (showEmails) setTimeout(loadEmailLogs, 1500);
       setTimeout(() => setResendState("idle"), 4000);
     } catch (err: any) {
       setResendState("error");
@@ -532,7 +585,80 @@ function EntryCard({
         >
           <History className="h-3 w-3" /> {showHistory ? "Hide" : "Audit log"}
         </button>
+        {entry.contact_email && (
+          <button
+            onClick={toggleEmails}
+            className="inline-flex items-center gap-1.5 text-xs rounded-full bg-white/[0.06] border border-white/10 px-3 py-1.5 hover:bg-white/[0.1]"
+          >
+            <MailCheck className="h-3 w-3" /> {showEmails ? "Hide email log" : "Email log"}
+          </button>
+        )}
       </div>
+
+      {showEmails && (
+        <div className="mb-3 rounded-lg border border-white/10 bg-black/30 p-3">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-[11px] uppercase tracking-wider text-white/40">
+              Status email delivery to {entry.contact_email}
+            </div>
+            <button
+              onClick={loadEmailLogs}
+              className="text-[11px] text-white/50 hover:text-white"
+            >
+              Refresh
+            </button>
+          </div>
+          {emailLogsLoading ? (
+            <div className="flex justify-center py-3">
+              <Loader2 className="h-4 w-4 animate-spin text-white/50" />
+            </div>
+          ) : emailLogs.length === 0 ? (
+            <div className="text-xs text-white/40">No send attempts recorded yet.</div>
+          ) : (
+            <ol className="space-y-2">
+              {emailLogs.map((l) => {
+                const s = (l.status || "").toLowerCase();
+                const cls =
+                  s === "sent"
+                    ? "bg-[#00FF85]/15 text-[#00FF85]"
+                    : s === "pending"
+                    ? "bg-amber-400/15 text-amber-300"
+                    : s === "suppressed"
+                    ? "bg-yellow-500/15 text-yellow-300"
+                    : "bg-rose-500/15 text-rose-300";
+                return (
+                  <li
+                    key={l.id}
+                    className="text-xs flex flex-wrap items-start gap-2 border-b border-white/5 pb-2 last:border-0 last:pb-0"
+                  >
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${cls}`}
+                    >
+                      {s || "unknown"}
+                    </span>
+                    <span className="text-white/40">
+                      {new Date(l.created_at).toLocaleString()}
+                    </span>
+                    {l.message_id && (
+                      <span
+                        className="text-white/40 truncate max-w-[260px]"
+                        title={l.message_id}
+                      >
+                        · {l.message_id}
+                      </span>
+                    )}
+                    {l.error_message && (
+                      <div className="basis-full text-rose-300 mt-0.5">
+                        {l.error_message}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+        </div>
+      )}
 
       {showHistory && (
         <div className="mb-3 rounded-lg border border-white/10 bg-black/30 p-3">
