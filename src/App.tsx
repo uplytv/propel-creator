@@ -197,6 +197,7 @@ const RadiateNewPage = lazy(() => import("./pages/radiate/RadiateNewPage"));
 const RadiateManagePage = lazy(() => import("./pages/radiate/RadiateManagePage"));
 const UsernameRedirect = lazy(() => import("./pages/UsernameRedirect"));
 const SocialCreatorPage = lazy(() => import("./components/creatorprofile/social/SocialCreatorPage"));
+const SocialHandleRouter = lazy(() => import("./components/creatorprofile/social/SocialHandleRouter"));
 const PodcastRSS = lazy(() => import("./pages/PodcastRSS"));
 const NetworkFeed = lazy(() => import("./pages/NetworkFeed"));
 const Distribution = lazy(() => import("./pages/Distribution"));
