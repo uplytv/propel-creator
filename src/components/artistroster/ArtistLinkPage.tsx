@@ -3,7 +3,9 @@ import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import {
   Instagram, Youtube, Music2, Mail, Globe, Facebook, ExternalLink, Sparkles, Send,
+  BookOpen, Users, GraduationCap,
 } from "lucide-react";
+import ArtistSectionNav from "./ArtistSectionNav";
 
 const ICONS: Record<SocialKind, React.ComponentType<{ className?: string }>> = {
   instagram: Instagram,
