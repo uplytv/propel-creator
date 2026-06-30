@@ -1,5 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import type { ArtistRosterEntry } from "@/data/artistRoster";
+import BackButton from "@/components/common/BackButton";
+
 
 /**
  * Shared sticky sub-nav for every artist surface (hub, site, blog,
