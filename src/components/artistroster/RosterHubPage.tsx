@@ -30,10 +30,16 @@ export default function RosterHubPage() {
 
       <div className="max-w-6xl mx-auto px-6 pb-20 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {ARTIST_ROSTER.map((a) => {
-          const sections: string[] = ["Links", "Site"];
-          if (a.posts?.length) sections.push("Blog");
-          if (a.community) sections.push("Community");
-          if (a.courses?.length) sections.push("Courses");
+          let sections: string[];
+          if (a.sectionsOverride?.length) {
+            sections = a.sectionsOverride;
+          } else {
+            sections = ["Links", "Site"];
+            if (a.posts?.length) sections.push("Blog");
+            if (a.community) sections.push("Community");
+            if (a.courses?.length) sections.push("Courses");
+          }
+
 
           return (
             <Link
