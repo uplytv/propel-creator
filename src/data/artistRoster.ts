@@ -383,6 +383,27 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     verified: true,
     bookingEmail: "bookings@uply.tv",
     location: "Los Angeles",
+    heroChip: "Booking 2026 — international dates open",
+    bookingTagline: "Three decades of arena-tested Persian pop. Direct booking through ANDY's UPLY team — no middlemen.",
+    marquee: ["ANDY · IRANIAN-AMERICAN POP ICON", "BOOK 2026 DATES", "STAND BY ME — WITH BON JOVI", "MANAGED BY UPLY"],
+    releases: [
+      { title: "Stand By Me", feat: "with Jon Bon Jovi", year: 2009, tag: "Historic", href: "https://www.youtube.com/results?search_query=andy+bon+jovi+stand+by+me" },
+      { title: "Best of ANDY", feat: "Compilation", year: 2023, tag: "Catalogue", href: "https://open.spotify.com/search/Andy%20Madadian" },
+    ],
+    milestones: [
+      { year: "1989", text: "Debut as half of Andy & Kouros." },
+      { year: "1995", text: "First platinum-selling solo album." },
+      { year: "2009", text: "Grammy-recognized 'Stand By Me' with Bon Jovi." },
+      { year: "2026", text: "International tour announced via UPLY." },
+    ],
+    stats: [
+      { k: "Followers", v: "Millions" },
+      { k: "Catalogue", v: "30+ years" },
+      { k: "Based in", v: "Los Angeles" },
+      { k: "Booking", v: "Direct via UPLY" },
+    ],
+    featuredPostSlug: "stand-by-me",
+
     posts: [
       {
         slug: "stand-by-me",
