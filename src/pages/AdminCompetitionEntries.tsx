@@ -398,6 +398,42 @@ function EntryCard({
   const [emailLogs, setEmailLogs] = useState<EmailLogRow[]>([]);
   const [emailLogsLoading, setEmailLogsLoading] = useState(false);
   const [failedOnly, setFailedOnly] = useState(false);
+  const [retryState, setRetryState] = useState<Record<string, "sending" | "sent" | "error">>({});
+  const [retryMsg, setRetryMsg] = useState<Record<string, string>>({});
+
+  const retryFailedLog = async (log: EmailLogRow) => {
+    if (!entry.contact_email) return;
+    if (entry.moderation_status !== "approved" && entry.moderation_status !== "rejected") return;
+    setRetryState((s) => ({ ...s, [log.id]: "sending" }));
+    setRetryMsg((m) => ({ ...m, [log.id]: "" }));
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://uply.tv";
+    const leaderboardUrl = challenge?.slug ? `${origin}/omid/competition` : undefined;
+    const submitUrl = `${origin}/omid/competition/submit`;
+    try {
+      const { error } = await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "competition-entry-status-update",
+          recipientEmail: entry.contact_email,
+          idempotencyKey: `comp-status-${entry.id}-${entry.moderation_status}-retry-${log.id}-${Date.now()}`,
+          templateData: {
+            entryTitle: entry.title,
+            challengeTitle: challenge?.title,
+            status: entry.moderation_status,
+            notes: notes || entry.moderation_notes || null,
+            leaderboardUrl,
+            submitUrl,
+          },
+        },
+      });
+      if (error) throw error;
+      setRetryState((s) => ({ ...s, [log.id]: "sent" }));
+      setRetryMsg((m) => ({ ...m, [log.id]: `Retried — sent to ${entry.contact_email}` }));
+      setTimeout(loadEmailLogs, 1500);
+    } catch (err: any) {
+      setRetryState((s) => ({ ...s, [log.id]: "error" }));
+      setRetryMsg((m) => ({ ...m, [log.id]: err?.message || "Retry failed" }));
+    }
+  };
 
   const loadEmailLogs = async () => {
     if (!entry.contact_email) {
@@ -673,6 +709,34 @@ function EntryCard({
                     {l.error_message && (
                       <div className="basis-full text-rose-300 mt-0.5">
                         {l.error_message}
+                      </div>
+                    )}
+                    {FAIL_STATUSES.has(s) && canResend && (
+                      <div className="basis-full mt-1 flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => retryFailedLog(l)}
+                          disabled={retryState[l.id] === "sending"}
+                          className="inline-flex items-center gap-1 rounded-md border border-rose-400/40 bg-rose-500/10 px-2 py-1 text-[11px] font-semibold text-rose-200 hover:bg-rose-500/20 disabled:opacity-50"
+                        >
+                          {retryState[l.id] === "sending" ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <Send className="h-3 w-3" />
+                          )}
+                          {retryState[l.id] === "sent" ? "Retried ✓" : "Retry send"}
+                        </button>
+                        {retryMsg[l.id] && (
+                          <span
+                            className={
+                              retryState[l.id] === "error"
+                                ? "text-rose-300 text-[11px]"
+                                : "text-white/50 text-[11px]"
+                            }
+                          >
+                            {retryMsg[l.id]}
+                          </span>
+                        )}
                       </div>
                     )}
                   </li>
