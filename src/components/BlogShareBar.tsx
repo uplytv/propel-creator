@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link as LinkIcon, Check, Twitter, Facebook, Linkedin, Mail, MessageCircle, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import MobileShareSheet from "@/components/MobileShareSheet";
+import { trackEvent } from "@/lib/posthog";
 import { trackEvent } from "@/lib/posthog";
 
 type ShareChannel =
