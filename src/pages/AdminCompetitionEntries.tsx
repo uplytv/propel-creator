@@ -383,6 +383,46 @@ function EntryCard({
   const created = new Date(entry.created_at);
   const [resendState, setResendState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [resendMsg, setResendMsg] = useState<string | null>(null);
+  const [showEmails, setShowEmails] = useState(false);
+  const [emailLogs, setEmailLogs] = useState<EmailLogRow[]>([]);
+  const [emailLogsLoading, setEmailLogsLoading] = useState(false);
+
+  const loadEmailLogs = async () => {
+    if (!entry.contact_email) {
+      setEmailLogs([]);
+      return;
+    }
+    setEmailLogsLoading(true);
+    const { data } = await (supabase as any)
+      .from("email_send_log")
+      .select("id,message_id,template_name,recipient_email,status,error_message,metadata,created_at")
+      .eq("template_name", "competition-entry-status-update")
+      .eq("recipient_email", entry.contact_email)
+      .order("created_at", { ascending: false })
+      .limit(200);
+    const rows = (data || []) as EmailLogRow[];
+    // Dedupe by message_id, keep latest (rows already DESC by created_at)
+    const seen = new Set<string>();
+    const latestByMsg: EmailLogRow[] = [];
+    for (const r of rows) {
+      const key = r.message_id || r.id;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      // Only include entries tied to this specific entry id (idempotencyKey pattern: comp-status-{entryId}-...)
+      if (!r.message_id || r.message_id.includes(entry.id)) {
+        latestByMsg.push(r);
+      }
+    }
+    setEmailLogs(latestByMsg);
+    setEmailLogsLoading(false);
+  };
+
+  const toggleEmails = () => {
+    const next = !showEmails;
+    setShowEmails(next);
+    if (next) loadEmailLogs();
+  };
+
 
   const canResend =
     (entry.moderation_status === "approved" || entry.moderation_status === "rejected") &&
