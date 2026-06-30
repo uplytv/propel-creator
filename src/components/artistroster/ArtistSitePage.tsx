@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import {
   Instagram, Youtube, Music2, Mail, Globe, Facebook, ExternalLink, Send, Play,
 } from "lucide-react";
+import ArtistSectionNav from "./ArtistSectionNav";
 
 const ICONS: Record<SocialKind, React.ComponentType<{ className?: string }>> = {
   instagram: Instagram, youtube: Youtube, spotify: Music2, apple_music: Music2,
@@ -42,6 +43,7 @@ export default function ArtistSitePage({ slug }: { slug?: string }) {
 
   return (
     <main className="min-h-screen bg-[#0A0A0A] text-white">
+      <ArtistSectionNav artist={artist} />
       {/* HERO */}
       <section
         className="relative isolate overflow-hidden"
