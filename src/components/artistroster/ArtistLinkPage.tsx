@@ -117,6 +117,30 @@ export default function ArtistLinkPage({ slug }: { slug?: string }) {
           </div>
         </Link>
 
+        {/* Section tiles: Blog / Community / Courses */}
+        {(artist.posts?.length || artist.community || artist.courses?.length) && (
+          <div className="grid grid-cols-3 gap-2 mb-5">
+            {artist.posts?.length ? (
+              <Link to={`/${artist.slug}/blog`} className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                <BookOpen className="w-5 h-5" style={{ color: artist.accent }} />
+                <span className="text-[11px] font-semibold uppercase tracking-wider">Blog</span>
+              </Link>
+            ) : null}
+            {artist.community ? (
+              <Link to={`/${artist.slug}/community`} className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                <Users className="w-5 h-5" style={{ color: artist.accent }} />
+                <span className="text-[11px] font-semibold uppercase tracking-wider">Community</span>
+              </Link>
+            ) : null}
+            {artist.courses?.length ? (
+              <Link to={`/${artist.slug}/courses`} className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                <GraduationCap className="w-5 h-5" style={{ color: artist.accent }} />
+                <span className="text-[11px] font-semibold uppercase tracking-wider">Courses</span>
+              </Link>
+            ) : null}
+          </div>
+        )}
+
         {/* Social links */}
         <div className="space-y-3">
           {artist.socials.map((s) => {
