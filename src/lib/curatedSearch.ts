@@ -8,6 +8,7 @@
 
 import portraitAsset from "@/assets/arya-xo-portrait-v3.jpg.asset.json";
 import bandsCoverAsset from "@/assets/150bands-cover.jpg.asset.json";
+import { ARTIST_ROSTER } from "@/data/artistRoster";
 
 export type CuratedResultType =
   | "artist"
@@ -134,6 +135,43 @@ export const CURATED_RESULTS: CuratedResult[] = [
     weight: 85,
     keywords: ARYA_RECORD_KEYWORDS,
   },
+  // ===== Roster artists (auto-generated below from ARTIST_ROSTER) =====
+  ...ARTIST_ROSTER.flatMap<CuratedResult>((a) => [
+    {
+      id: `${a.slug}-artist`,
+      type: "artist",
+      title: a.displayName,
+      subtitle: a.eyebrow,
+      image: a.portraitUrl ?? null,
+      link: `/${a.slug}-site`,
+      weight: 90,
+      keywords: a.searchKeywords,
+      verified: a.verified,
+      followKey: a.slug,
+    },
+    {
+      id: `${a.slug}-creator`,
+      type: "creator",
+      title: `@${a.slug}`,
+      subtitle: `Official ${a.displayName} profile on UPLY`,
+      image: a.portraitUrl ?? null,
+      link: `/${a.slug}`,
+      weight: 86,
+      keywords: a.searchKeywords,
+      verified: a.verified,
+      followKey: a.slug,
+    },
+    {
+      id: `${a.slug}-links-page`,
+      type: "page",
+      title: `${a.displayName} — Official Links`,
+      subtitle: "All links in one place",
+      image: a.portraitUrl ?? null,
+      link: `/${a.slug}`,
+      weight: 82,
+      keywords: [...a.searchKeywords, "links", "linktree", "social"],
+    },
+  ]),
 ];
 
 function matches(term: string, keywords: string[]) {
