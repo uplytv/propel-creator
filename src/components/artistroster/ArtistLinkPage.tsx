@@ -6,6 +6,7 @@ import {
   BookOpen, Users, GraduationCap,
 } from "lucide-react";
 import ArtistSectionNav from "./ArtistSectionNav";
+import BookingInquiryForm from "./BookingInquiryForm";
 
 const ICONS: Record<SocialKind, React.ComponentType<{ className?: string }>> = {
   instagram: Instagram,
@@ -167,20 +168,34 @@ export default function ArtistLinkPage({ slug }: { slug?: string }) {
 
           {artist.bookingEmail && (
             <a
-              href={`mailto:${artist.bookingEmail}?subject=Booking inquiry for ${artist.displayName}`}
-              className="flex items-center gap-3 p-3.5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors active:scale-[0.99]"
+              href="#booking"
+              className="flex items-center gap-3 p-3.5 rounded-2xl border transition-colors active:scale-[0.99]"
+              style={{
+                background: `${artist.accent}15`,
+                borderColor: `${artist.accent}55`,
+              }}
             >
-              <div className="w-11 h-11 rounded-xl bg-[#6B7280] flex items-center justify-center shrink-0">
-                <Mail className="w-5 h-5 text-white" />
+              <div
+                className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+                style={{ background: artist.accent, color: "#000" }}
+              >
+                <Mail className="w-5 h-5" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-medium text-[15px] truncate">Bookings & Press</div>
-                <div className="text-[12px] opacity-65 truncate">{artist.bookingEmail}</div>
+                <div className="font-semibold text-[15px] truncate">Book {artist.displayName}</div>
+                <div className="text-[12px] opacity-70 truncate">Fill the form — reply within 24h</div>
               </div>
-              <ExternalLink className="w-4 h-4 opacity-40" />
+              <ExternalLink className="w-4 h-4 opacity-50" />
             </a>
           )}
         </div>
+
+        {/* Booking inquiry form */}
+        {artist.bookingEmail && (
+          <div className="mt-6">
+            <BookingInquiryForm artist={artist} />
+          </div>
+        )}
 
         {/* Footer */}
         <footer className="mt-10 text-center">
