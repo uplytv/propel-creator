@@ -132,6 +132,8 @@ export interface ArtistRosterEntry {
   milestones?: ArtistMilestone[];
   /** Optional key/value stat cards. */
   stats?: ArtistStat[];
+  /** Optional image gallery for the editorial site. */
+  gallery?: ArtistGalleryItem[];
   /** Blog posts surfaced at /:slug/blog */
   posts?: ArtistBlogPost[];
   /** Slug of a blog post to feature on the editorial site. */
