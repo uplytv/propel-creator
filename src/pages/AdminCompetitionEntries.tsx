@@ -398,6 +398,42 @@ function EntryCard({
   const [emailLogs, setEmailLogs] = useState<EmailLogRow[]>([]);
   const [emailLogsLoading, setEmailLogsLoading] = useState(false);
   const [failedOnly, setFailedOnly] = useState(false);
+  const [retryState, setRetryState] = useState<Record<string, "sending" | "sent" | "error">>({});
+  const [retryMsg, setRetryMsg] = useState<Record<string, string>>({});
+
+  const retryFailedLog = async (log: EmailLogRow) => {
+    if (!entry.contact_email) return;
+    if (entry.moderation_status !== "approved" && entry.moderation_status !== "rejected") return;
+    setRetryState((s) => ({ ...s, [log.id]: "sending" }));
+    setRetryMsg((m) => ({ ...m, [log.id]: "" }));
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://uply.tv";
+    const leaderboardUrl = challenge?.slug ? `${origin}/omid/competition` : undefined;
+    const submitUrl = `${origin}/omid/competition/submit`;
+    try {
+      const { error } = await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "competition-entry-status-update",
+          recipientEmail: entry.contact_email,
+          idempotencyKey: `comp-status-${entry.id}-${entry.moderation_status}-retry-${log.id}-${Date.now()}`,
+          templateData: {
+            entryTitle: entry.title,
+            challengeTitle: challenge?.title,
+            status: entry.moderation_status,
+            notes: notes || entry.moderation_notes || null,
+            leaderboardUrl,
+            submitUrl,
+          },
+        },
+      });
+      if (error) throw error;
+      setRetryState((s) => ({ ...s, [log.id]: "sent" }));
+      setRetryMsg((m) => ({ ...m, [log.id]: `Retried — sent to ${entry.contact_email}` }));
+      setTimeout(loadEmailLogs, 1500);
+    } catch (err: any) {
+      setRetryState((s) => ({ ...s, [log.id]: "error" }));
+      setRetryMsg((m) => ({ ...m, [log.id]: err?.message || "Retry failed" }));
+    }
+  };
 
   const loadEmailLogs = async () => {
     if (!entry.contact_email) {
