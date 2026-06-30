@@ -365,6 +365,17 @@ interface LogRow {
   created_at: string;
 }
 
+interface EmailLogRow {
+  id: string;
+  message_id: string | null;
+  template_name: string | null;
+  recipient_email: string | null;
+  status: string;
+  error_message: string | null;
+  metadata: any;
+  created_at: string;
+}
+
 function EntryCard({
   entry,
   challenge,
