@@ -66,7 +66,8 @@ export default function ArtistLinkPage({ slug }: { slug?: string }) {
         background: `radial-gradient(120% 80% at 50% 0%, ${artist.gradient.from}, ${artist.gradient.to} 70%)`,
       }}
     >
-      <div className="max-w-md mx-auto px-5 pt-12 pb-24">
+      <ArtistSectionNav artist={artist} />
+      <div className="max-w-md mx-auto px-5 pt-10 pb-24">
         {/* Header */}
         <header className="text-center mb-8">
           <p
