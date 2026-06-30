@@ -3,12 +3,26 @@ import { Link, useSearchParams } from "react-router-dom";
 import { CheckCircle2, Loader2, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
+interface FinalizeResult {
+  email: string | null;
+  offerKey: string | null;
+  offerName: string | null;
+  amountFormatted: string | null;
+  orderId: string | null;
+}
+
 export default function FounderOfferSuccess() {
   const [params] = useSearchParams();
   const sessionId = params.get("session_id");
   const [state, setState] = useState<"loading" | "ok" | "error">("loading");
   const [errMsg, setErrMsg] = useState<string | null>(null);
-  const [buyerEmail, setBuyerEmail] = useState<string | null>(null);
+  const [result, setResult] = useState<FinalizeResult>({
+    email: null,
+    offerKey: null,
+    offerName: null,
+    amountFormatted: null,
+    orderId: null,
+  });
 
   useEffect(() => {
     if (!sessionId) {
@@ -25,7 +39,13 @@ export default function FounderOfferSuccess() {
         );
         if (cancelled) return;
         if (error) throw error;
-        if (data?.email) setBuyerEmail(data.email);
+        setResult({
+          email: data?.email ?? null,
+          offerKey: data?.offerKey ?? null,
+          offerName: data?.offerName ?? null,
+          amountFormatted: data?.amountFormatted ?? null,
+          orderId: data?.orderId ?? sessionId,
+        });
         setState("ok");
       } catch (err: any) {
         if (cancelled) return;
@@ -39,8 +59,13 @@ export default function FounderOfferSuccess() {
     };
   }, [sessionId]);
 
+  const isAssisted = result.offerKey === "assisted-setup";
+  const nextStepCopy = isAssisted
+    ? "Check your email for the link to book your 60-min strategy call."
+    : "A UPLY rep will reach out within 1 business day to schedule your kickoff call.";
+
   return (
-    <main className="min-h-screen bg-[#0A0A0A] text-white flex items-center justify-center px-5">
+    <main className="min-h-screen bg-[#0A0A0A] text-white flex items-center justify-center px-5 py-10">
       <div className="max-w-lg w-full text-center">
         {state === "loading" && (
           <>
@@ -56,10 +81,54 @@ export default function FounderOfferSuccess() {
             </div>
             <h1 className="font-heading text-3xl font-bold mt-5">You're in.</h1>
             <p className="text-white/70 mt-3">
-              Thanks for booking your done-for-you course build. A UPLY rep will reach out{" "}
-              {buyerEmail ? <>at <span className="text-white">{buyerEmail}</span></> : "by email"}{" "}
-              within 1 business day to schedule your kickoff call.
+              Thanks for purchasing{" "}
+              <span className="text-white">{result.offerName ?? "your UPLY founder service"}</span>.{" "}
+              {nextStepCopy}
+              {result.email && (
+                <>
+                  {" "}A confirmation was sent to{" "}
+                  <span className="text-white">{result.email}</span>.
+                </>
+              )}
             </p>
+
+            <div className="mt-7 text-left rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+              <div className="text-xs uppercase tracking-wider text-white/50 mb-3">
+                Order summary
+              </div>
+              <dl className="space-y-2.5 text-sm">
+                <div className="flex justify-between gap-4">
+                  <dt className="text-white/60">Offer</dt>
+                  <dd className="text-white font-medium text-right">
+                    {result.offerName ?? "—"}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-white/60">Amount paid</dt>
+                  <dd className="text-[#00FF85] font-semibold text-right">
+                    {result.amountFormatted ?? "—"}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-white/60">Order ID</dt>
+                  <dd
+                    className="text-white/80 font-mono text-xs text-right break-all max-w-[60%]"
+                    title={result.orderId ?? undefined}
+                  >
+                    {result.orderId ?? "—"}
+                  </dd>
+                </div>
+                {result.email && (
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-white/60">Receipt sent to</dt>
+                    <dd className="text-white/80 text-right break-all">
+                      {result.email}
+                    </dd>
+                  </div>
+                )}
+              </dl>
+            </div>
+
             <div className="mt-7 flex flex-wrap gap-3 justify-center">
               <Link
                 to="/dashboard"
