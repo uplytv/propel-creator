@@ -549,6 +549,15 @@ export default function ArtistSitePage({ slug }: { slug?: string }) {
                   />
                 ))}
               </div>
+              <a
+                href={`https://open.spotify.com/artist/${artist.spotifyArtistEmbedId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-white/80 hover:text-white transition-colors"
+              >
+                View all tracks on Spotify
+                <span aria-hidden>→</span>
+              </a>
             </div>
           )}
         </section>
