@@ -51,6 +51,55 @@ export default function BlogShareBar({ url, title, excerpt = "" }: Props) {
   const resolveUrl = () =>
     url ?? (typeof window !== "undefined" ? window.location.href : "");
 
+  // Funnel tracking for the desktop share bar. Mirrors the mobile sheet schema:
+  // "opened" fires the first time the bar scrolls into view, "closed" fires on
+  // unmount with the time-in-view duration and whether the user converted.
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const openedAtRef = useRef<number | null>(null);
+  const convertedRef = useRef(false);
+  const linkRef = useRef<string>("");
+  linkRef.current = resolveUrl();
+
+  useEffect(() => {
+    const node = rootRef.current;
+    if (!node || typeof IntersectionObserver === "undefined") return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && openedAtRef.current == null) {
+            openedAtRef.current = Date.now();
+            trackEvent("blog_share_sheet_opened", {
+              surface: "blog_share_bar",
+              url: linkRef.current,
+              title,
+            });
+            observer.disconnect();
+          }
+        }
+      },
+      { threshold: 0.5 },
+    );
+    observer.observe(node);
+
+    return () => {
+      observer.disconnect();
+      if (openedAtRef.current != null) {
+        const durationMs = Date.now() - openedAtRef.current;
+        trackEvent("blog_share_sheet_closed", {
+          surface: "blog_share_bar",
+          url: linkRef.current,
+          title,
+          duration_ms: durationMs,
+          converted: convertedRef.current,
+          dismissed: !convertedRef.current,
+        });
+        openedAtRef.current = null;
+      }
+    };
+  }, [title]);
+
+
   const handleCopy = async () => {
     const link = resolveUrl();
     try {
