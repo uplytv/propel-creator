@@ -13,6 +13,7 @@ import {
   Globe,
   History,
   Send,
+  MailCheck,
 } from "lucide-react";
 
 type ModStatus = "pending" | "approved" | "rejected";
