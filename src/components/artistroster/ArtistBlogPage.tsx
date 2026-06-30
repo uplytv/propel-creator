@@ -27,6 +27,7 @@ function mergedPosts(staticPosts: ArtistBlogPost[], dbPosts: DbPost[]): ArtistBl
     tag: p.tag ?? undefined,
     readTime: p.read_time,
     publishedAt: p.published_at,
+    coverUrl: staticPosts.find((sp) => sp.slug === p.slug)?.coverUrl,
   }));
   // DB wins over static on slug collision
   const dbSlugs = new Set(dbAsStatic.map((p) => p.slug));
@@ -99,6 +100,11 @@ export default function ArtistBlogPage() {
           <Link to={`/${artist.slug}/blog`} className="text-[12px] uppercase tracking-[0.2em] opacity-60 hover:opacity-100">
             ← All posts
           </Link>
+          {post.coverUrl && (
+            <div className="mt-8 overflow-hidden rounded-3xl border border-white/10 bg-white/5">
+              <img src={post.coverUrl} alt={post.title} className="h-full w-full object-cover" loading="lazy" />
+            </div>
+          )}
           {post.tag && (
             <p className="mt-8 text-[11px] uppercase tracking-[0.28em]" style={{ color: artist.accent }}>
               {post.tag}
@@ -152,16 +158,23 @@ export default function ArtistBlogPage() {
           <Link
             key={p.slug}
             to={`/${artist.slug}/blog/${p.slug}`}
-            className="block rounded-2xl p-6 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+            className="block overflow-hidden rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
           >
-            {p.tag && (
-              <p className="text-[11px] uppercase tracking-[0.22em] mb-2" style={{ color: artist.accent }}>{p.tag}</p>
+            {p.coverUrl && (
+              <div className="aspect-[16/9] overflow-hidden bg-white/5">
+                <img src={p.coverUrl} alt={p.title} className="h-full w-full object-cover" loading="lazy" />
+              </div>
             )}
-            <h2 className="text-xl sm:text-2xl font-semibold" style={{ fontFamily: "Fraunces, Georgia, serif" }}>{p.title}</h2>
-            <p className="mt-2 text-[15px] opacity-75">{p.excerpt}</p>
-            <p className="mt-3 text-[12px] opacity-50">
-              {new Date(p.publishedAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })} · {p.readTime}
-            </p>
+            <div className="p-6">
+              {p.tag && (
+                <p className="text-[11px] uppercase tracking-[0.22em] mb-2" style={{ color: artist.accent }}>{p.tag}</p>
+              )}
+              <h2 className="text-xl sm:text-2xl font-semibold" style={{ fontFamily: "Fraunces, Georgia, serif" }}>{p.title}</h2>
+              <p className="mt-2 text-[15px] opacity-75">{p.excerpt}</p>
+              <p className="mt-3 text-[12px] opacity-50">
+                {new Date(p.publishedAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })} · {p.readTime}
+              </p>
+            </div>
           </Link>
         ))}
       </div>

@@ -50,6 +50,14 @@ export interface ArtistBlogPost {
   /** Plain-text body, \n\n separates paragraphs */
   body: string;
   tag?: string;
+  /** Optional editorial cover image shown on blog cards and article headers. */
+  coverUrl?: string;
+}
+
+export interface ArtistGalleryItem {
+  url: string;
+  alt: string;
+  caption?: string;
 }
 
 export interface ArtistCommunity {
@@ -124,6 +132,8 @@ export interface ArtistRosterEntry {
   milestones?: ArtistMilestone[];
   /** Optional key/value stat cards. */
   stats?: ArtistStat[];
+  /** Optional image gallery for the editorial site. */
+  gallery?: ArtistGalleryItem[];
   /** Blog posts surfaced at /:slug/blog */
   posts?: ArtistBlogPost[];
   /** Slug of a blog post to feature on the editorial site. */
@@ -953,6 +963,162 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
           "The environment test — are you in the right room?",
           "The team test — operators vs. specialists",
           "The audience test — who actually owns it?",
+        ],
+      },
+    ],
+  },
+
+  // ============================================================
+  // ARIAN SHAHBAZI — founder story / personal profile
+  // ============================================================
+  {
+    slug: "arian-shahbazi",
+    aliases: ["arian", "ari", "arishahbazi-personal", "founder"],
+    displayName: "Arian Shahbazi",
+    eyebrow: "Founder · Builder · Father of twins",
+    tagline: "From tech to fatherhood to building UPLY — documenting the work, the risk, and the life around it.",
+    bio:
+      "Arian Shahbazi is the founder building UPLY — a creator platform designed so talent can own their audience, their monetization, and their brand without stitching together five different tools. His background is in tech, product, and operator-led building; his present is equal parts founder mode and fatherhood.\n\n" +
+      "What changed the story wasn't just another startup idea. It was becoming a dad to twins and seeing time, leverage, and ownership differently. The mission got simpler: build something real, make it useful, and make it matter to people actually creating for a living.\n\n" +
+      "This page is the personal side of that story — the founder, the family, and the long road from tech ambition to building UPLY with more clarity than ever.",
+    gradient: { from: "#0d1b2a", to: "#0a0a0a" },
+    accent: "#D5B06A",
+    portraitUrl: "/__l5e/assets-v1/60bebf03-b657-43da-baad-95d795d53730/arian-shahbazi-portrait.jpg",
+    socials: [
+      { kind: "instagram", label: "Instagram", sub: "@arishahbazi · founder updates", href: "https://www.instagram.com/arishahbazi", handle: "arishahbazi" },
+      { kind: "website", label: "UPLY", sub: "The platform Arian is building", href: "https://uply.tv" },
+      { kind: "youtube", label: "YouTube", sub: "Founder story, interviews & build logs", href: "https://www.youtube.com/@arishah" },
+      { kind: "threads", label: "Threads", sub: "Thoughts on tech, creators & life", href: "https://www.threads.net/@arishahbazi", handle: "arishahbazi" },
+      { kind: "email", label: "Contact", sub: "Founder inquiries & press", href: "mailto:hello@uply.tv" },
+    ],
+    videos: [
+      { title: "Follow the founder journey", instagramUrl: "https://www.instagram.com/arishahbazi/" },
+    ],
+    searchKeywords: ["arian shahbazi", "ari shahbazi", "arishahbazi", "uply founder", "tech founder", "father of twins", "creator economy founder", "uply"],
+    verified: true,
+    bookingEmail: "hello@uply.tv",
+    location: "Los Angeles · Building globally",
+    heroChip: "Building UPLY in public",
+    bookingTagline: "Founder conversations, creator economy podcasts, partnerships, and press inquiries handled directly here.",
+    marquee: ["ARIAN SHAHBAZI", "TECH → FATHERHOOD → UPLY", "BUILDING FOR CREATORS", "LOS ANGELES · GLOBAL"],
+    releases: [
+      { title: "Building UPLY", feat: "Founder story", year: 2026, tag: "Feature", href: "/arian-shahbazi/blog/building-uply" },
+      { title: "Father of twins", feat: "Life chapter", year: 2026, tag: "Essay", href: "/arian-shahbazi/blog/father-of-twins" },
+      { title: "From tech to founder", feat: "Origin story", year: 2026, tag: "Essay", href: "/arian-shahbazi/blog/from-tech-to-uply" },
+    ],
+    milestones: [
+      { year: "Early career", text: "Started in tech, product, and operator-led problem solving." },
+      { year: "Fatherhood", text: "Became a father to twins — and rebuilt life around what actually matters." },
+      { year: "UPLY", text: "Started building a creator platform with ownership, direct audience, and better economics at the center." },
+      { year: "Now", text: "Balancing founder intensity with family life while building UPLY for the next generation of creators." },
+    ],
+    stats: [
+      { k: "Role", v: "Founder" },
+      { k: "Current chapter", v: "Dad × Builder" },
+      { k: "Mission", v: "Build for creators" },
+      { k: "Base", v: "Los Angeles" },
+    ],
+    gallery: [
+      {
+        url: "/__l5e/assets-v1/1da785e4-fb9f-4062-92eb-95b4600366f7/arian-shahbazi-twins-car.jpg",
+        alt: "Arian's twins sitting on a car during a sunny afternoon",
+        caption: "The pace changed when fatherhood entered the picture — everything got more real.",
+      },
+      {
+        url: "/__l5e/assets-v1/cdad2e16-1bf2-41c5-931e-eed4badebf71/arian-shahbazi-swim.jpg",
+        alt: "Arian's twins smiling by the pool in swim class",
+        caption: "The best reminder that building big means staying present for the small moments too.",
+      },
+      {
+        url: "/__l5e/assets-v1/ad96461d-3b4b-47cf-b4fc-1637c53a2e08/arian-shahbazi-school.jpg",
+        alt: "Arian with his twins before school",
+        caption: "Morning routines, backpacks, startup calls, and trying to be fully there for both worlds.",
+      },
+      {
+        url: "/__l5e/assets-v1/b4347773-ccae-4e77-98bc-dda71c7df92f/arian-shahbazi-atlantis.jpg",
+        alt: "Arian with his twins by the water at sunset",
+        caption: "Family time became the lens through which every business decision now gets judged.",
+      },
+      {
+        url: "/__l5e/assets-v1/20e3bcb2-eb81-44ed-a38a-d7bcf7342eda/arian-shahbazi-golf-cart.jpg",
+        alt: "Arian and his twins on a golf cart in a tropical setting",
+        caption: "The founder journey isn't just grind — it's what that grind is trying to protect.",
+      },
+      {
+        url: "/__l5e/assets-v1/33cd8a3f-760c-460d-9a19-d56c79fac7f6/arian-shahbazi-aref.jpg",
+        alt: "Arian Shahbazi standing with respected Persian music figures",
+        caption: "Culture, creators, and community are a core reason UPLY exists in the first place.",
+      },
+    ],
+    featuredPostSlug: "from-tech-to-uply",
+    posts: [
+      {
+        slug: "from-tech-to-uply",
+        title: "From tech to UPLY — why I had to build this",
+        excerpt: "I didn't set out to build just another platform. I set out to solve a problem I'd seen too many creators live through for too long.",
+        readTime: "6 min read",
+        publishedAt: "2026-06-30",
+        tag: "Origin",
+        coverUrl: "/__l5e/assets-v1/60bebf03-b657-43da-baad-95d795d53730/arian-shahbazi-portrait.jpg",
+        body:
+          "My path started in tech — product thinking, systems, leverage, and a constant obsession with how better tools change what people can actually do. That mindset shaped everything early for me. I was always looking for inefficiencies, broken workflows, and places where people were doing too much manual work just to stay afloat.\n\n" +
+          "The creator world had this problem everywhere. Great talent, weak infrastructure. People with massive cultural influence were still duct-taping their business together across scattered tools that took too much margin and gave them too little ownership. I kept seeing the same thing: creators could generate attention, but the stack underneath them was fragile.\n\n" +
+          "UPLY came out of that frustration. I didn't want to build another layer. I wanted to build the operating system — one place where a creator could own the audience, sell directly, publish content, build community, and actually keep the economics. That's the real origin story.",
+      },
+      {
+        slug: "father-of-twins",
+        title: "Becoming a father of twins changed how I build",
+        excerpt: "Fatherhood didn't make me less ambitious. It made me more honest about what ambition is actually for.",
+        readTime: "5 min read",
+        publishedAt: "2026-06-28",
+        tag: "Fatherhood",
+        coverUrl: "/__l5e/assets-v1/ad96461d-3b4b-47cf-b4fc-1637c53a2e08/arian-shahbazi-school.jpg",
+        body:
+          "Before kids, time felt abstract. You could always tell yourself you'd recover the weekend, make up the dinner, get it right next month. Then I became a father to twins and time stopped feeling theoretical. Every hour had weight.\n\n" +
+          "That changed the way I build companies. I care more about clarity now. More about conviction. Less about noise. If I'm going to miss time, take risk, and carry the pressure of building something from scratch, then it has to be for a mission I actually believe in.\n\n" +
+          "Fatherhood didn't soften the mission — it sharpened it. It made me want to build something my kids can one day understand: something real, something useful, and something made with integrity.",
+      },
+      {
+        slug: "building-uply",
+        title: "Building UPLY while raising twins",
+        excerpt: "The company and the family are not separate stories. They're the same story told under different pressure.",
+        readTime: "7 min read",
+        publishedAt: "2026-06-26",
+        tag: "Builder life",
+        coverUrl: "/__l5e/assets-v1/b4347773-ccae-4e77-98bc-dda71c7df92f/arian-shahbazi-atlantis.jpg",
+        body:
+          "There is no perfect balance. Anyone building a real company while raising young kids knows that. There are just tradeoffs, priorities, and the daily work of trying to be where you are.\n\n" +
+          "Some days I'm deep in product decisions, creator flows, growth mechanics, and platform economics. Other days start with school bags, swim goggles, or wiping down a car with two kids who think that counts as a major operation. Both matter.\n\n" +
+          "Building UPLY in this season of life gave the company a different soul. It's not abstract ambition anymore. It's rooted. The platform is about ownership, direct connection, and building something durable — the same values I care about at home.",
+      },
+    ],
+    community: {
+      name: "Founder Notes",
+      description: "Occasional founder essays, product thinking, behind-the-scenes reflections on UPLY, and honest notes on building while raising twins.",
+      membersLabel: "Private founder circle",
+      perks: [
+        "Monthly founder memo",
+        "Behind-the-scenes product notes from UPLY",
+        "Direct reflections on family, work, and building",
+        "Early access to selected founder sessions",
+      ],
+      priceUsd: 0,
+    },
+    courses: [
+      {
+        slug: "founder-operator-notes",
+        title: "Founder / Operator Notes",
+        level: "All Levels",
+        lessons: 5,
+        duration: "1h 20m",
+        priceUsd: 0,
+        summary: "A short founder series on product thinking, platform conviction, and building with real constraints.",
+        outline: [
+          "Why ownership matters in creator products",
+          "What most platforms get wrong",
+          "Building with constraints instead of waiting for perfect",
+          "Fatherhood, focus, and decision quality",
+          "How UPLY is being shaped in real time",
         ],
       },
     ],

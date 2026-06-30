@@ -445,6 +445,21 @@ export default function ArtistSitePage({ slug }: { slug?: string }) {
             ))}
           </div>
         )}
+
+        {artist.gallery && artist.gallery.length > 0 && (
+          <div className="mt-12">
+            <p className="text-[11px] uppercase tracking-[0.2em]" style={{ color: artist.accent }}>Gallery</p>
+            <h3 className="mt-2 font-heading text-2xl sm:text-3xl font-bold">Life behind the build</h3>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {artist.gallery.map((item) => (
+                <figure key={item.url} className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03]">
+                  <img src={item.url} alt={item.alt} className="aspect-[4/5] w-full object-cover" loading="lazy" />
+                  {item.caption && <figcaption className="p-4 text-sm text-white/65">{item.caption}</figcaption>}
+                </figure>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
       {/* BOOKING */}
