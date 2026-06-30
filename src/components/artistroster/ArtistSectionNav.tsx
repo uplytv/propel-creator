@@ -25,7 +25,9 @@ export default function ArtistSectionNav({ artist }: { artist: ArtistRosterEntry
       aria-label={`${artist.displayName} sections`}
       className="sticky top-0 z-40 backdrop-blur-xl bg-black/55 border-b border-white/10"
     >
-      <div className="max-w-5xl mx-auto px-4 flex items-center gap-1 overflow-x-auto no-scrollbar h-12">
+      <BackButton fallback="/roster" />
+      <div className="max-w-5xl mx-auto px-4 pl-16 sm:pl-20 flex items-center gap-1 overflow-x-auto no-scrollbar h-12">
+
         <Link
           to="/roster"
           className="text-[11px] uppercase tracking-[0.2em] opacity-60 hover:opacity-100 px-2 shrink-0"
