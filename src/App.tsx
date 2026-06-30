@@ -56,6 +56,8 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const AryaXO = lazy(() => import("./pages/AryaXO"));
 const AryaXOSite = lazy(() => import("./pages/AryaXOSite"));
 const AryaXOBlog = lazy(() => import("./pages/AryaXOBlog"));
+const ArtistLinkRoute = lazy(() => import("./pages/ArtistLinkRoute"));
+const ArtistSiteRoute = lazy(() => import("./pages/ArtistSiteRoute"));
 const UplyBlog = lazy(() => import("./pages/UplyBlog"));
 const UplyBlogPost = lazy(() => import("./pages/UplyBlogPost"));
 const AdminBookingInquiries = lazy(() => import("./pages/AdminBookingInquiries"));
@@ -468,6 +470,13 @@ const App = () => (
                     <Route path="/arya-xo/blog" element={<AryaXOBlog />} />
                     <Route path="/arya-xo-blog" element={<AryaXOBlog />} />
                     <Route path="/arya-xo/blog/150-bands" element={<AryaXOBlog />} />
+                    {/* Roster artists — driven by src/data/artistRoster.ts */}
+                    {(["omid", "omid-music", "omidmusic", "morvarid", "morvarid-shahbazi", "morvaridshahbazi", "andy", "andy-music", "andymusic1"]).map((s) => (
+                      <Route key={s} path={`/${s}`} element={<ArtistLinkRoute />} />
+                    ))}
+                    {(["omid", "morvarid", "andy"]).map((s) => (
+                      <Route key={`${s}-site`} path={`/${s}-site`} element={<ArtistSiteRoute />} />
+                    ))}
                     <Route path="/blog" element={<UplyBlog />} />
                     <Route path="/blog/:slug" element={<UplyBlogPost />} />
                     <Route path="/admin/booking-inquiries" element={<AdminBookingInquiries />} />
