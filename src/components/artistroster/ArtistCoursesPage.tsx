@@ -150,8 +150,8 @@ export default function ArtistCoursesPage() {
               <h2 className="text-lg font-semibold" style={{ fontFamily: "Fraunces, Georgia, serif" }}>{c.title}</h2>
               <p className="mt-2 text-[14px] opacity-75 flex-1">{c.summary}</p>
               <div className="mt-4 flex items-center justify-between">
-                <div className="text-[12px] opacity-60">{c.lessons} lessons</div>
-                <div className="font-bold" style={{ color: artist.accent }}>${c.priceUsd}</div>
+                <div className="text-[12px] opacity-60">{c.priceUsd === 0 ? "Non-profit" : `${c.lessons} lessons`}</div>
+                <div className="font-bold" style={{ color: artist.accent }}>{c.priceUsd === 0 ? "Donate" : `$${c.priceUsd}`}</div>
               </div>
             </div>
           </Link>
