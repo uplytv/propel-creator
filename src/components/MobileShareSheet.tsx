@@ -13,6 +13,7 @@ import {
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { useToast } from "@/hooks/use-toast";
 import { trackBlogShare } from "@/components/BlogShareBar";
+import { trackEvent } from "@/lib/posthog";
 
 interface MobileShareSheetProps {
   open: boolean;
