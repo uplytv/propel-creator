@@ -634,7 +634,171 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     ],
   },
 
+  // ============================================================
+  // BOBBY — Business with Bob (AI-first creator economy operator)
+  // ============================================================
+  {
+    slug: "bobby",
+    aliases: ["bob", "business-with-bob", "businesswithbob", "business_with_bob"],
+    displayName: "Bobby",
+    eyebrow: "Creator · AI Operator · Business with Bob",
+    tagline: "I went all-in on AI and rebuilt my entire creator business on UPLY. Here's the playbook.",
+    bio:
+      "Bobby is the founder of Business with Bob — a creator-led brand teaching operators, founders, and solo creators how to actually use AI to ship faster, sell more, and own their audience.\n\n" +
+      "After a year of testing every creator platform on the market — Whop, Skool, Kajabi, you name it — Bobby went all-in on UPLY. Why? Because the features other platforms charge separately for (community, courses, link-in-bio, live, payments, analytics) all live in one place, with a 95% creator payout.\n\n" +
+      "If you want to follow the build, the course, and the daily ops — this is the front door.",
+    gradient: { from: "#0a0f2e", to: "#000000" },
+    accent: "#FF6B35",
+    portraitUrl: "/__l5e/assets-v1/f4c8ca21-6139-4a67-bd67-f0adfc5558cb/bobby-portrait.jpg",
+    socials: [
+      { kind: "instagram", label: "Instagram", sub: "@business_with_bob · daily AI + business plays", href: "https://www.instagram.com/business_with_bob", handle: "business_with_bob" },
+      { kind: "tiktok", label: "TikTok", sub: "@businesswithbob · 60-sec breakdowns", href: "https://www.tiktok.com/@businesswithbob", handle: "businesswithbob" },
+      { kind: "youtube", label: "YouTube", sub: "Long-form: AI workflows & creator economics", href: "https://www.youtube.com/results?search_query=business+with+bob" },
+      { kind: "website", label: "X / Twitter", sub: "@businesswithbob", href: "https://x.com/businesswithbob" },
+      { kind: "email", label: "Work with Bobby", sub: "hello@uply.tv", href: "mailto:hello@uply.tv" },
+    ],
+    videos: [
+      { title: "Latest from @business_with_bob", instagramUrl: "https://www.instagram.com/business_with_bob/" },
+    ],
+    searchKeywords: ["bobby", "bob", "business with bob", "business_with_bob", "ai creator", "ai business", "creator economy", "whop alternative", "skool alternative", "uply creator"],
+    verified: true,
+    bookingEmail: "hello@uply.tv",
+    location: "Online · Worldwide",
+    heroChip: "AI Operator OS — course now live on UPLY",
+    bookingTagline: "Brand deals, podcast guesting, AI consulting — replies same week, every inquiry.",
+    marquee: ["BUSINESS WITH BOB", "ALL-IN ON AI", "BUILT ON UPLY", "95% CREATOR PAYOUT"],
+    releases: [
+      { title: "The AI Operator OS", feat: "Flagship course", year: 2026, tag: "Course", href: "/bobby/courses/ai-operator-os" },
+      { title: "Whop vs Skool vs UPLY — the teardown", feat: "Long read", year: 2026, tag: "Article", href: "/bobby/blog/whop-skool-vs-uply" },
+      { title: "Why I went all-in on AI", feat: "Manifesto", year: 2026, tag: "Article", href: "/bobby/blog/all-in-on-ai" },
+    ],
+    milestones: [
+      { year: "2022", text: "Quit the agency. Started Business with Bob as a one-person operation." },
+      { year: "2024", text: "Rebuilt every internal workflow around AI agents — 10x output, same headcount." },
+      { year: "2025", text: "Tested Whop, Skool, Kajabi, Circle — moved everything to UPLY." },
+      { year: "2026", text: "AI Operator OS launches on UPLY. Course + community + live in one place." },
+    ],
+    stats: [
+      { k: "Followers", v: "Growing fast" },
+      { k: "Stack", v: "AI-first" },
+      { k: "Platform", v: "UPLY" },
+      { k: "Payout", v: "95% to creator" },
+    ],
+    featuredPostSlug: "all-in-on-ai",
+    posts: [
+      {
+        slug: "all-in-on-ai",
+        title: "Why I went all-in on AI — and never looked back",
+        excerpt: "I cancelled five contractors, rebuilt every workflow around AI agents, and grew faster than I ever did with a team. Here's exactly what I did, what broke, and what to copy.",
+        readTime: "8 min read",
+        publishedAt: "2026-06-20",
+        tag: "Manifesto",
+        body:
+          "For most of 2023 I ran Business with Bob the way every other creator-founder ran their shop: a small stack of contractors, a project manager, three Slack channels, and a content calendar that lived or died on someone else's bandwidth.\n\n" +
+          "Then in early 2024 I did the math. Between editors, a VA, a designer, and an ads guy, I was paying about $8.4K a month before I shipped a single piece of content. My margin wasn't bad — but my speed was awful. Every idea had to travel through four humans before it hit a feed.\n\n" +
+          "So I ran an experiment. For 30 days I'd replace every workflow I could with an AI agent and see what survived.\n\n" +
+          "Editing? Replaced with an AI cut-down pipeline that pulls hooks, captions, and shorts from every long-form. Designer? Replaced with a templated Figma-to-Canva pipeline driven by Claude. Email and DM triage? Routed through an inbox agent that drafts replies in my voice. Research? An agent that reads my niche every morning and drops a brief in Notion before I'm awake.\n\n" +
+          "By day 23 I cancelled five of the seven contractors. By day 30 my output had tripled. By day 60 I'd shipped my first paid AI workflow course — entirely written, edited, and launched solo.\n\n" +
+          "Here's what I learned the hard way:\n\n" +
+          "1. AI is not a tool. It's an operator. Stop pasting prompts into a chat window and start building agents that own a job end-to-end.\n\n" +
+          "2. The bottleneck is never the model. It's the workflow design. If you can't draw your process on a napkin, no LLM is going to fix it for you.\n\n" +
+          "3. The 95% payout matters more than the followers. When your AI stack lets you ship twice as fast, the platform fees become the biggest line item. That's the entire reason I'm building on UPLY now — every other platform was quietly eating my margin.\n\n" +
+          "The takeaway: AI didn't replace my team. It replaced my excuse not to ship.",
+      },
+      {
+        slug: "whop-skool-vs-uply",
+        title: "I tested Whop and Skool for 90 days. UPLY won — and it wasn't close.",
+        excerpt: "Side-by-side: course hosting, community, payments, analytics, and creator payout. The numbers (and the product gaps) made the decision for me.",
+        readTime: "10 min read",
+        publishedAt: "2026-06-12",
+        tag: "Teardown",
+        body:
+          "I get the same DM almost every day: \"Bobby, where should I actually host my course and community?\" For 90 days I stopped guessing and ran a real test on the three platforms creators ask me about most — Whop, Skool, and UPLY.\n\n" +
+          "Same offer. Same audience. Same launch cadence. Different homes.\n\n" +
+          "Here's the short version: Whop is great if you only care about gated Discord communities and digital product checkouts. Skool is a clean community-and-course combo, but it stops at the door — no live, no link-in-bio, no native short-form, no real analytics, and the 'free' tier evaporates the second you scale.\n\n" +
+          "UPLY just kept showing up with the next feature I needed already built in.\n\n" +
+          "**What other platforms charged extra for (or didn't have at all):**\n\n" +
+          "• Native live streaming with chat — UPLY has it; Whop and Skool don't.\n" +
+          "• Link-in-bio + full editorial site — UPLY ships this with every creator profile.\n" +
+          "• Built-in short-form feed and clip discovery — UPLY only.\n" +
+          "• Real creator analytics (revenue, members, retention) — UPLY's dashboard is closer to a real CRM than a content tool.\n" +
+          "• Direct messaging that the creator actually owns — not bolted on through a third-party Discord.\n\n" +
+          "**The payout:** Whop and Skool take a meaningful cut once you stack their fees with Stripe. UPLY's 5% platform fee on top of Stripe is the lowest of the three by a wide margin. On a $50K month that single difference paid for a contractor.\n\n" +
+          "**The product gaps that broke me on the others:**\n\n" +
+          "Whop forced me to push community traffic into Discord — which meant I didn't own the relationship and couldn't message my members directly without their permissions stack. Skool's course UI is clean, but I couldn't go live, couldn't run a presale, couldn't run a tip jar, and couldn't see who my top spenders were without exporting CSVs.\n\n" +
+          "UPLY gave me one URL — /bobby — that does the job of a link-in-bio, a course platform, a community, a live channel, a newsletter, and a checkout. One login. One payout. One audience.\n\n" +
+          "If you're picking your first platform: don't pick the one with the best landing page. Pick the one you won't have to migrate off in 18 months. That was UPLY for me.",
+      },
+      {
+        slug: "ai-operator-os-launch",
+        title: "Launching the AI Operator OS on UPLY — and why I'm not putting it anywhere else",
+        excerpt: "My new course teaches the exact 11 AI workflows that replaced my team. It lives on UPLY, and here's why that decision matters more than the curriculum.",
+        readTime: "5 min read",
+        publishedAt: "2026-05-30",
+        tag: "Launch",
+        body:
+          "Today I'm launching the AI Operator OS — the full playbook I used to rebuild Business with Bob around AI agents and triple my output without adding headcount.\n\n" +
+          "The course is 11 modules: inbox, content, research, design, sales, ads, analytics, customer ops, hiring, finance, and the one most creators skip — your own daily operating rhythm.\n\n" +
+          "I could have put it on Whop. I could have put it on Skool. I chose UPLY because of one number: 95%. Every dollar a student spends, 95 cents lands in my account. That's not normal in this industry, and it's the reason I can keep the price reasonable and still fund the next thing.\n\n" +
+          "If you've been on the fence about going all-in on AI, this is the course. And if you're a fellow creator still picking a platform — come build on UPLY. The math is just better.",
+      },
+    ],
+    community: {
+      name: "Bob's Inner Circle",
+      description: "Weekly AI workflow drops, behind-the-scenes of every launch, and direct access to Bobby in a private members-only feed.",
+      membersLabel: "Just launched",
+      perks: [
+        "Weekly AI workflow + prompt drop",
+        "Private member feed with Bobby",
+        "Monthly live AMA on AI, ops & creator economics",
+        "First access to every new course and tool",
+      ],
+      priceUsd: 19,
+    },
+    courses: [
+      {
+        slug: "ai-operator-os",
+        title: "The AI Operator OS",
+        level: "All Levels",
+        lessons: 11,
+        duration: "4h 20m",
+        priceUsd: 149,
+        summary: "The exact 11 AI agent workflows Bobby uses to run Business with Bob solo — inbox, content, research, design, sales, ads, analytics, ops, hiring, finance, and your daily operating rhythm.",
+        outline: [
+          "Designing your AI operator stack from scratch",
+          "Inbox & DM triage agents that draft in your voice",
+          "Content factory: long-form → clips → posts in one pipeline",
+          "Research agents that brief you before you're awake",
+          "Design pipeline: Figma → Canva → ship in 10 minutes",
+          "Sales & objection-handling agents for your DMs",
+          "Ad creative generation and rapid iteration",
+          "Analytics agents that report to you, not the other way around",
+          "Customer ops without a support team",
+          "Hiring and onboarding (humans + agents)",
+          "Your daily AI-first operating rhythm",
+        ],
+      },
+      {
+        slug: "creator-platform-playbook",
+        title: "The Creator Platform Playbook",
+        level: "Beginner",
+        lessons: 5,
+        duration: "1h 30m",
+        priceUsd: 0,
+        summary: "Free companion to the Whop vs Skool vs UPLY teardown — pick the right platform the first time, set up your link-in-bio, course, and community in one weekend.",
+        outline: [
+          "How to actually evaluate a creator platform (the 9-point checklist)",
+          "Setting up your /handle the right way",
+          "Pricing your community + course without leaving money on the table",
+          "The 4 launch posts every creator should ship in week one",
+          "Migrating from Whop / Skool / Kajabi without losing members",
+        ],
+      },
+    ],
+  },
+
 ];
+
 
 
 export function findArtistBySlug(slug: string | undefined | null): ArtistRosterEntry | null {
