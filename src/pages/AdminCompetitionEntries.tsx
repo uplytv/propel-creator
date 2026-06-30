@@ -410,6 +410,7 @@ function EntryCard({
   const [failedOnly, setFailedOnly] = useState(false);
   const [retryState, setRetryState] = useState<Record<string, "sending" | "sent" | "error">>({});
   const [retryMsg, setRetryMsg] = useState<Record<string, string>>({});
+  const [retryConfirm, setRetryConfirm] = useState<EmailLogRow | null>(null);
 
   const retryFailedLog = async (log: EmailLogRow) => {
     if (!entry.contact_email) return;
