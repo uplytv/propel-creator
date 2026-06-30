@@ -144,6 +144,7 @@ serve(async (req) => {
         amountCents,
         currency,
         orderId: sessionId,
+        receiptUrl,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
     );
