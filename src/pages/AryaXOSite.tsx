@@ -27,6 +27,8 @@ import { supabase } from "@/integrations/supabase/client";
 import AryaBandsAutoplay from "@/components/AryaBandsAutoplay";
 import { buildAryaShareUrl } from "@/lib/aryaShare";
 import { Link } from "react-router-dom";
+import BackButton from "@/components/common/BackButton";
+
 
 const SHARE_PATH = "/arya-xo-site";
 const ARTIST_SLUG = "arya-xo";
