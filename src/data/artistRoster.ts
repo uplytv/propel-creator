@@ -50,6 +50,14 @@ export interface ArtistBlogPost {
   /** Plain-text body, \n\n separates paragraphs */
   body: string;
   tag?: string;
+  /** Optional editorial cover image shown on blog cards and article headers. */
+  coverUrl?: string;
+}
+
+export interface ArtistGalleryItem {
+  url: string;
+  alt: string;
+  caption?: string;
 }
 
 export interface ArtistCommunity {
