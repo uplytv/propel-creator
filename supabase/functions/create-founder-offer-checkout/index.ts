@@ -21,7 +21,10 @@ const OFFERS: Record<string, { stripePriceId: string; name: string }> = {
     stripePriceId: "price_1To7wJ4C2GQMnrEDtvSzzzyl",
     name: "Done-for-you Course Build",
   },
-  // "assisted-setup": { stripePriceId: "...", name: "Assisted Setup" },
+  "assisted-setup": {
+    stripePriceId: "price_1To87F4C2GQMnrED6ROg8XIl",
+    name: "Assisted Course Setup",
+  },
 };
 
 serve(async (req) => {

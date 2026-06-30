@@ -54,22 +54,20 @@ export const FOUNDER_OFFERS: FounderOffer[] = [
     enabled: true,
   },
   {
-    // ⚠️ PLACEHOLDER PRICING — set your real price + Stripe price ID
-    // before enabling checkout. Until `stripePriceId` is set the CTA
-    // falls back to "Contact us" via mailto.
     key: "assisted-setup",
     name: "Assisted setup",
     tagline: "1:1 strategy call + course outline + setup checklist.",
     priceCents: 14900,
     priceSuffix: "one-time",
+    stripePriceId: "price_1To87F4C2GQMnrED6ROg8XIl",
     features: [
       "60-min 1:1 strategy call",
       "Custom course outline drafted with you",
       "Pricing & launch checklist",
       "You record + upload the content",
     ],
-    ctaLabel: "Get started",
-    enabled: false, // toggle to true once Stripe price exists
+    ctaLabel: "Pay $149 and book my call",
+    enabled: true,
   },
   {
     key: "done-for-you-course",
