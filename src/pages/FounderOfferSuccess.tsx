@@ -47,6 +47,7 @@ export default function FounderOfferSuccess() {
           offerName: data?.offerName ?? null,
           amountFormatted: data?.amountFormatted ?? null,
           orderId: data?.orderId ?? sessionId,
+          receiptUrl: data?.receiptUrl ?? null,
         });
         setState("ok");
       } catch (err: any) {
