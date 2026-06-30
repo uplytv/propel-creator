@@ -185,6 +185,7 @@ export default function BlogShareBar({ url, title, excerpt = "" }: Props) {
       <button
         type="button"
         onClick={() => {
+          convertedRef.current = true;
           trackBlogShare("native_share", { url: link, title, surface: "blog_share_bar" });
           openShareSheet();
         }}
