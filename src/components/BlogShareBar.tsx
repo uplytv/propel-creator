@@ -40,18 +40,7 @@ export default function BlogShareBar({ url, title, excerpt = "" }: Props) {
     }
   };
 
-  const handleNativeShare = async () => {
-    const link = resolveUrl();
-    if (typeof navigator !== "undefined" && (navigator as any).share) {
-      try {
-        await (navigator as any).share({ title, text: excerpt, url: link });
-      } catch {
-        /* user dismissed */
-      }
-    } else {
-      handleCopy();
-    }
-  };
+  const openShareSheet = () => setSheetOpen(true);
 
   const link = resolveUrl();
   const enc = encodeURIComponent;
