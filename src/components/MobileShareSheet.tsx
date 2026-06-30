@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { useToast } from "@/hooks/use-toast";
+import { trackBlogShare } from "@/components/BlogShareBar";
 
 interface MobileShareSheetProps {
   open: boolean;
@@ -47,6 +48,7 @@ export default function MobileShareSheet({
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
+      trackBlogShare("copy_link", { url, title, surface: "mobile_share_sheet" });
       toast({ title: "Link copied", description: "Share it anywhere." });
       setTimeout(() => setCopied(false), 1800);
     } catch {
@@ -62,9 +64,10 @@ export default function MobileShareSheet({
     if (typeof navigator !== "undefined" && (navigator as any).share) {
       try {
         await (navigator as any).share({ title, text: excerpt, url });
+        trackBlogShare("native_share", { url, title, surface: "mobile_share_sheet" });
         onOpenChange(false);
       } catch {
-        /* dismissed */
+        /* dismissed — do not track */
       }
     } else {
       handleCopy();
@@ -72,29 +75,34 @@ export default function MobileShareSheet({
   };
 
   const enc = encodeURIComponent;
-  const intents = [
+  const intents: { label: string; channel: Parameters<typeof trackBlogShare>[0]; Icon: typeof Twitter; href: string }[] = [
     {
       label: "Share on X",
+      channel: "twitter",
       Icon: Twitter,
       href: `https://twitter.com/intent/tweet?url=${enc(url)}&text=${enc(title)}`,
     },
     {
       label: "Share on WhatsApp",
+      channel: "whatsapp",
       Icon: MessageCircle,
       href: `https://api.whatsapp.com/send?text=${enc(`${title} ${url}`)}`,
     },
     {
       label: "Share on Facebook",
+      channel: "facebook",
       Icon: Facebook,
       href: `https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`,
     },
     {
       label: "Share on LinkedIn",
+      channel: "linkedin",
       Icon: Linkedin,
       href: `https://www.linkedin.com/sharing/share-offsite/?url=${enc(url)}`,
     },
     {
       label: "Share by email",
+      channel: "email",
       Icon: Mail,
       href: `mailto:?subject=${enc(title)}&body=${enc(`${excerpt}\n\n${url}`)}`,
     },
@@ -129,12 +137,13 @@ export default function MobileShareSheet({
           style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 1.25rem)" }}
         >
           {/* Social intents — stacked, far from thumb so primary actions stay last */}
-          {intents.map(({ label, Icon, href }) => (
+          {intents.map(({ label, channel, Icon, href }) => (
             <a
               key={label}
               href={href}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackBlogShare(channel, { url, title, surface: "mobile_share_sheet" })}
               className="group inline-flex h-12 w-full items-center justify-center gap-2.5 rounded-full border border-gold/40 bg-card/40 px-5 text-sm font-semibold text-foreground transition-colors active:scale-[0.99] active:bg-gold/10 hover:border-gold hover:text-gold"
             >
               <Icon className="h-4 w-4 text-gold/90 group-hover:text-gold" aria-hidden />
