@@ -3,7 +3,9 @@ import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import {
   Instagram, Youtube, Music2, Mail, Globe, Facebook, ExternalLink, Sparkles, Send,
+  BookOpen, Users, GraduationCap,
 } from "lucide-react";
+import ArtistSectionNav from "./ArtistSectionNav";
 
 const ICONS: Record<SocialKind, React.ComponentType<{ className?: string }>> = {
   instagram: Instagram,
@@ -64,7 +66,8 @@ export default function ArtistLinkPage({ slug }: { slug?: string }) {
         background: `radial-gradient(120% 80% at 50% 0%, ${artist.gradient.from}, ${artist.gradient.to} 70%)`,
       }}
     >
-      <div className="max-w-md mx-auto px-5 pt-12 pb-24">
+      <ArtistSectionNav artist={artist} />
+      <div className="max-w-md mx-auto px-5 pt-10 pb-24">
         {/* Header */}
         <header className="text-center mb-8">
           <p
@@ -113,6 +116,30 @@ export default function ArtistLinkPage({ slug }: { slug?: string }) {
             <ExternalLink className="w-4 h-4 opacity-50" />
           </div>
         </Link>
+
+        {/* Section tiles: Blog / Community / Courses */}
+        {(artist.posts?.length || artist.community || artist.courses?.length) && (
+          <div className="grid grid-cols-3 gap-2 mb-5">
+            {artist.posts?.length ? (
+              <Link to={`/${artist.slug}/blog`} className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                <BookOpen className="w-5 h-5" style={{ color: artist.accent }} />
+                <span className="text-[11px] font-semibold uppercase tracking-wider">Blog</span>
+              </Link>
+            ) : null}
+            {artist.community ? (
+              <Link to={`/${artist.slug}/community`} className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                <Users className="w-5 h-5" style={{ color: artist.accent }} />
+                <span className="text-[11px] font-semibold uppercase tracking-wider">Community</span>
+              </Link>
+            ) : null}
+            {artist.courses?.length ? (
+              <Link to={`/${artist.slug}/courses`} className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                <GraduationCap className="w-5 h-5" style={{ color: artist.accent }} />
+                <span className="text-[11px] font-semibold uppercase tracking-wider">Courses</span>
+              </Link>
+            ) : null}
+          </div>
+        )}
 
         {/* Social links */}
         <div className="space-y-3">

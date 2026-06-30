@@ -2,15 +2,16 @@
  * Artist Roster — single source of truth for hand-curated artist pages
  * that don't (yet) live in the DB. Add an entry here and the artist
  * automatically gets:
- *   • A link-in-bio page at /:slug          (e.g. /omid)
- *   • A full editorial site at /:slug-site  (e.g. /omid-site)
+ *   • A link-in-bio hub at /:slug          (e.g. /omid)
+ *   • A full editorial site at /:slug-site (e.g. /omid-site)
+ *   • A blog feed at /:slug/blog (+ /:slug/blog/:postSlug)
+ *   • A community page at /:slug/community
+ *   • A courses page at /:slug/courses (+ /:slug/courses/:courseSlug)
  *   • Curated search results on UPLY
+ *   • A card on the public Roster hub at /roster
  *
  * Routes are registered in App.tsx via ARTIST_ROSTER (loop).
  * Curated search is wired in src/lib/curatedSearch.ts.
- *
- * Designed to be the seamless, automated path so new artists can be
- * onboarded in <60s by appending a single object below.
  */
 
 export type SocialKind =
@@ -34,42 +35,66 @@ export interface ArtistSocial {
 }
 
 export interface ArtistVideo {
-  /** YouTube video ID OR full embeddable url */
   youtubeId?: string;
-  /** Embeddable Instagram /reel/ or /tv/ URL */
   instagramUrl?: string;
   title: string;
   caption?: string;
 }
 
-export interface ArtistRosterEntry {
-  /** URL slug — page lives at /:slug and /:slug-site */
+export interface ArtistBlogPost {
   slug: string;
-  /** Additional URL aliases that should resolve to the same artist */
+  title: string;
+  excerpt: string;
+  readTime: string;
+  publishedAt: string; // ISO date
+  /** Plain-text body, \n\n separates paragraphs */
+  body: string;
+  tag?: string;
+}
+
+export interface ArtistCommunity {
+  name: string;
+  description: string;
+  membersLabel: string;
+  perks: string[];
+  /** Monthly USD; 0 = free */
+  priceUsd: number;
+}
+
+export interface ArtistCourse {
+  slug: string;
+  title: string;
+  level: "Beginner" | "Intermediate" | "Advanced" | "All Levels";
+  lessons: number;
+  duration: string;
+  priceUsd: number;
+  summary: string;
+  outline: string[];
+}
+
+export interface ArtistRosterEntry {
+  slug: string;
   aliases?: string[];
   displayName: string;
-  /** Short eyebrow shown above the name */
   eyebrow: string;
   tagline: string;
-  /** Multi-paragraph editorial bio (markdown-ish plain text, \n\n = paragraph) */
   bio: string;
-  /** Hero gradient — two HSL/hex colors */
   gradient: { from: string; to: string };
-  /** Accent color used for buttons / hairlines */
   accent: string;
-  /** Optional hero portrait (CDN url). If omitted we render a typographic hero. */
   portraitUrl?: string;
   socials: ArtistSocial[];
   videos?: ArtistVideo[];
   spotifyArtistEmbedId?: string;
-  /** Curated keywords for global search */
   searchKeywords: string[];
-  /** Show verified-artist badge */
   verified?: boolean;
-  /** Optional booking inquiry email */
   bookingEmail?: string;
-  /** Optional location string (e.g. "Los Angeles · Tehran") */
   location?: string;
+  /** Blog posts surfaced at /:slug/blog */
+  posts?: ArtistBlogPost[];
+  /** Community offering surfaced at /:slug/community */
+  community?: ArtistCommunity;
+  /** Courses offered at /:slug/courses */
+  courses?: ArtistCourse[];
 }
 
 export const ARTIST_ROSTER: ArtistRosterEntry[] = [
@@ -101,6 +126,61 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     verified: true,
     bookingEmail: "bookings@uply.tv",
     location: "Los Angeles · Stockholm · Tehran",
+    posts: [
+      {
+        slug: "four-decades-on-stage",
+        title: "Four decades on stage, one voice carrying a culture",
+        excerpt: "How OMID built a catalogue that became the soundtrack of the Persian diaspora.",
+        readTime: "6 min read",
+        publishedAt: "2026-05-12",
+        tag: "Feature",
+        body:
+          "There are voices in Persian pop that come and go. And then there is OMID — a vocalist whose four-decade run has bent with every shift in the diaspora's mood, from the soft-lit ballads of the 90s to the bigger, brighter production of the streaming era.\n\n" +
+          "Ask any Iranian wedding DJ from Los Angeles to Stockholm which artist is guaranteed to fill the dance floor twice in one night, and OMID's name comes up. Not because of nostalgia alone — because the songs still work. They were built to.\n\n" +
+          "On UPLY, OMID's catalogue, tours, and bookings now live under one roof. That's the point of this platform: a legacy artist with a working machine around him, not a museum.",
+      },
+      {
+        slug: "nowruz-tour-2026",
+        title: "Inside the 2026 Nowruz tour",
+        excerpt: "Behind the scenes of OMID's spring run across LA, Toronto, London, and Dubai.",
+        readTime: "4 min read",
+        publishedAt: "2026-03-20",
+        tag: "Tour",
+        body:
+          "Spring on the Persian calendar is OMID season. The 2026 Nowruz tour hit four cities in three weeks — Los Angeles, Toronto, London, Dubai — and sold through tier one on every stop.\n\n" +
+          "The band ran a stripped-back trio configuration for the first half of each show before opening up into the full 9-piece for the encore block. The result was an arc that felt like a Nowruz dinner: quiet conversation first, then the music gets louder, then everyone is dancing.",
+      },
+    ],
+    community: {
+      name: "OMID Inner Circle",
+      description: "Early-access tour announcements, presale codes, signed merch drops, and unreleased acoustic takes — direct from OMID and the team.",
+      membersLabel: "12,400 members",
+      perks: [
+        "48-hour presale window on every tour date",
+        "Members-only acoustic & studio takes",
+        "Signed-merch drops before public release",
+        "Quarterly live Q&A with OMID",
+      ],
+      priceUsd: 9,
+    },
+    courses: [
+      {
+        slug: "persian-vocal-foundations",
+        title: "Persian Vocal Foundations",
+        level: "Beginner",
+        lessons: 12,
+        duration: "3h 40m",
+        priceUsd: 79,
+        summary: "OMID walks through the breathing, phrasing, and ornamentation that define classical Persian pop vocals.",
+        outline: [
+          "Breath support & posture",
+          "Vowel placement in Farsi lyrics",
+          "Tahrir basics — when and when not",
+          "Phrasing romantic ballads",
+          "Recording vocals at home",
+        ],
+      },
+    ],
   },
 
   // ============================================================
@@ -131,6 +211,65 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     searchKeywords: ["morvarid", "morvarid shahbazi", "morvaridshahbazi", "pearl of persia", "persian dancer", "persian singer", "morvarid production"],
     verified: false,
     location: "Los Angeles",
+    posts: [
+      {
+        slug: "pearl-of-persia",
+        title: "Becoming the Pearl of Persia",
+        excerpt: "Morvarid on a lifetime in performance — from age-five recitals to LA stages with Aref.",
+        readTime: "5 min read",
+        publishedAt: "2026-06-01",
+        tag: "Feature",
+        body:
+          "Morvarid Shahbazi was five years old the first time she sang for an audience. The audience was her family. The reaction told her everything: this was the thing.\n\n" +
+          "Two decades later, the Pearl of Persia has built a career that refuses to sit in one lane. She sings. She dances. She teaches. And she has shared stages with Aref — a moment she still describes as 'a passing of the torch I didn't ask for, but I'll carry.'\n\n" +
+          "On UPLY, Morvarid runs her booking inquiries, lessons, and community directly. No intermediaries. Just the artist and the people who show up for her.",
+      },
+    ],
+    community: {
+      name: "Pearl Circle",
+      description: "Members-only dance & vocal drills, monthly live classes, and behind-the-scenes from rehearsals and shoots.",
+      membersLabel: "1,820 members",
+      perks: [
+        "Monthly live group class (vocal or dance)",
+        "Members-only choreography breakdowns",
+        "First access to private lesson slots",
+        "Backstage clips from every shoot",
+      ],
+      priceUsd: 19,
+    },
+    courses: [
+      {
+        slug: "persian-dance-foundations",
+        title: "Persian Dance Foundations",
+        level: "Beginner",
+        lessons: 10,
+        duration: "2h 50m",
+        priceUsd: 49,
+        summary: "The shoulder, hand, and footwork vocabulary that makes Persian dance unmistakable — taught at performance pace.",
+        outline: [
+          "Posture & frame",
+          "Hand articulation (the signature)",
+          "Shoulder isolation drills",
+          "Building a 16-count routine",
+          "Performing to live music vs. tracks",
+        ],
+      },
+      {
+        slug: "stagecraft-for-singers",
+        title: "Stagecraft for Singers",
+        level: "Intermediate",
+        lessons: 8,
+        duration: "2h 10m",
+        priceUsd: 59,
+        summary: "How to own the stage — eye contact, mic technique, transitions, and connecting with a Persian crowd.",
+        outline: [
+          "Reading the room",
+          "Mic technique close & far",
+          "Moving without losing breath",
+          "Transitioning between songs",
+        ],
+      },
+    ],
   },
 
   // ============================================================
@@ -161,6 +300,44 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     verified: true,
     bookingEmail: "bookings@uply.tv",
     location: "Los Angeles",
+    posts: [
+      {
+        slug: "stand-by-me",
+        title: "How 'Stand By Me' with Bon Jovi happened",
+        excerpt: "ANDY on the 2009 Nowruz address, the studio call, and what the moment meant.",
+        readTime: "7 min read",
+        publishedAt: "2026-04-08",
+        tag: "Story",
+        body:
+          "The phone call came from a producer ANDY had worked with twice. The pitch was short: would he be open to recording 'Stand By Me' with Jon Bon Jovi, in Farsi and English, for the President's Nowruz address.\n\n" +
+          "He said yes before he hung up.\n\n" +
+          "The session itself was fast — two days, one room, no theatrics. What lingered was the response: messages from Iranian families on three continents saying they had cried at the kitchen table watching it back. That, ANDY says, is the only metric that ever mattered.",
+      },
+      {
+        slug: "30-years-in-persian-pop",
+        title: "Thirty years in Persian pop — what changed, what didn't",
+        excerpt: "From Andy & Kouros cassettes in LA to streaming charts — a look back.",
+        readTime: "5 min read",
+        publishedAt: "2026-02-14",
+        tag: "Reflection",
+        body:
+          "When Andy & Kouros started, the distribution model was a cassette in a Westwood music shop. Today the same songs auto-play in a 17-year-old's car in Tehran via a streaming service.\n\n" +
+          "The medium changed. The songs, mostly, didn't. ANDY's take: 'A good melody doesn't care what year it is.'",
+      },
+    ],
+    community: {
+      name: "ANDY Official Club",
+      description: "The official home for ANDY's longtime fans — presales, exclusive video, and direct messages from the artist on every release.",
+      membersLabel: "24,600 members",
+      perks: [
+        "Presale access on every show",
+        "Members-only music videos & rehearsals",
+        "Birthday & Nowruz greetings from ANDY",
+        "Annual members-only livestream",
+      ],
+      priceUsd: 12,
+    },
+    courses: [],
   },
 ];
 
