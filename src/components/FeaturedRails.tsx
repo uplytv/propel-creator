@@ -16,6 +16,8 @@ import portraitAsset from "@/assets/arya-xo-portrait-v3.jpg.asset.json";
 import bandsCoverAsset from "@/assets/150bands-cover.jpg.asset.json";
 import getdownAsset from "@/assets/getdown-cover.jpg.asset.json";
 import aryaBgAsset from "@/assets/arya-xo-bg.png.asset.json";
+import { ARTIST_ROSTER } from "@/data/artistRoster";
+
 
 /**
  * Netflix / Hulu-style horizontal category rails. Compact poster-shaped
@@ -33,11 +35,19 @@ interface RailItem {
   id: string;
   title: string;
   subtitle?: string;
-  image: string;
+  /** Cover image URL. Optional — when missing, a gradient + initial is rendered. */
+  image?: string;
   href: string;
   badge?: string;
   verified?: boolean;
+  /** Gradient fallback when `image` is missing. */
+  gradient?: { from: string; to: string };
+  /** Accent color for the fallback initial. */
+  accent?: string;
+  /** Single character/letter rendered in the gradient fallback. */
+  initial?: string;
 }
+
 
 interface Rail {
   id: string;
@@ -96,26 +106,21 @@ const RAILS: Rail[] = [
     title: "Artists",
     icon: Music2,
     aspect: "poster",
-    seeAllHref: "/music",
+    seeAllHref: "/roster",
     seeAllLabel: "See all artists",
-    items: [
-      {
-        id: "arya-artist",
-        title: "Arya XO",
-        subtitle: "Las Vegas · Verified",
-        image: aryaImg,
-        href: "/arya-xo",
-        verified: true,
-      },
-      {
-        id: "arya-links",
-        title: "Arya XO — Links",
-        subtitle: "Every link in one place",
-        image: portraitAsset.url,
-        href: "/arya-xo",
-      },
-    ],
+    items: ARTIST_ROSTER.map((a) => ({
+      id: `roster-${a.slug}`,
+      title: a.displayName,
+      subtitle: a.location ?? a.eyebrow,
+      image: a.portraitUrl,
+      href: `/${a.slug}`,
+      verified: a.verified,
+      gradient: a.gradient,
+      accent: a.accent,
+      initial: a.displayName.trim().charAt(0).toUpperCase(),
+    })),
   },
+
   {
     id: "courses",
     title: "Courses",
@@ -347,18 +352,38 @@ function RailRow({ rail }: { rail: Rail }) {
             className="group/card snap-start shrink-0 focus:outline-none rounded-xl"
           >
             <div
-              className={`card-editorial relative ${aspectClasses(rail.aspect)} rounded-xl`}
+              className={`card-editorial relative ${aspectClasses(rail.aspect)} rounded-xl overflow-hidden`}
+              style={
+                !item.image && item.gradient
+                  ? { background: `linear-gradient(160deg, ${item.gradient.from}, ${item.gradient.to})` }
+                  : undefined
+              }
             >
-              <img
-                src={item.image}
-                alt=""
-                loading="lazy"
-                className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover/card:scale-[1.05]"
-              />
+              {item.image ? (
+                <img
+                  src={item.image}
+                  alt=""
+                  loading="lazy"
+                  className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover/card:scale-[1.05]"
+                />
+              ) : (
+                <div
+                  aria-hidden
+                  className="absolute inset-0 flex items-center justify-center font-bold"
+                  style={{
+                    color: item.accent ?? "#ffffffaa",
+                    fontFamily: "Fraunces, Georgia, serif",
+                    fontSize: "clamp(48px, 8vw, 84px)",
+                  }}
+                >
+                  {item.initial ?? item.title.charAt(0)}
+                </div>
+              )}
               <div
                 aria-hidden
                 className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/15 to-transparent"
               />
+
               {item.badge && (
                 <span className="absolute top-2 left-2 inline-flex items-center rounded-md bg-gold px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--gold-foreground))] shadow-[0_4px_14px_-4px_hsl(var(--gold)/0.7)]">
                   {item.badge}
