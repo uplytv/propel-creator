@@ -3,7 +3,6 @@ import { Link as LinkIcon, Check, Twitter, Facebook, Linkedin, Mail, MessageCirc
 import { useToast } from "@/hooks/use-toast";
 import MobileShareSheet from "@/components/MobileShareSheet";
 import { trackEvent } from "@/lib/posthog";
-import { trackEvent } from "@/lib/posthog";
 
 type ShareChannel =
   | "copy_link"
