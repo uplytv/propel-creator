@@ -49,6 +49,14 @@ serve(async (req) => {
       typeof session.payment_intent === "string"
         ? session.payment_intent
         : session.payment_intent?.id ?? null;
+    const latestCharge =
+      typeof session.payment_intent === "object" && session.payment_intent
+        ? (session.payment_intent as any).latest_charge
+        : null;
+    const receiptUrl: string | null =
+      latestCharge && typeof latestCharge === "object"
+        ? (latestCharge.receipt_url as string | null) ?? null
+        : null;
 
     // Record the purchase (service role bypasses RLS).
     const supabaseAdmin = createClient(
