@@ -12,6 +12,7 @@ import {
   Mail,
   Globe,
   History,
+  Send,
 } from "lucide-react";
 
 type ModStatus = "pending" | "approved" | "rejected";
@@ -379,6 +380,46 @@ function EntryCard({
   const [moderatorNames, setModeratorNames] = useState<Record<string, string>>({});
   const [historyLoading, setHistoryLoading] = useState(false);
   const created = new Date(entry.created_at);
+  const [resendState, setResendState] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [resendMsg, setResendMsg] = useState<string | null>(null);
+
+  const canResend =
+    (entry.moderation_status === "approved" || entry.moderation_status === "rejected") &&
+    !!entry.contact_email;
+
+  const resendEmail = async () => {
+    if (!canResend) return;
+    setResendState("sending");
+    setResendMsg(null);
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://uply.tv";
+    const leaderboardUrl = challenge?.slug ? `${origin}/omid/competition` : undefined;
+    const submitUrl = `${origin}/omid/competition/submit`;
+    try {
+      const { error } = await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "competition-entry-status-update",
+          recipientEmail: entry.contact_email,
+          idempotencyKey: `comp-status-${entry.id}-${entry.moderation_status}-resend-${Date.now()}`,
+          templateData: {
+            entryTitle: entry.title,
+            challengeTitle: challenge?.title,
+            status: entry.moderation_status,
+            notes: notes || entry.moderation_notes || null,
+            leaderboardUrl,
+            submitUrl,
+          },
+        },
+      });
+      if (error) throw error;
+      setResendState("sent");
+      setResendMsg(`Email sent to ${entry.contact_email}`);
+      setTimeout(() => setResendState("idle"), 4000);
+    } catch (err: any) {
+      setResendState("error");
+      setResendMsg(err?.message || "Failed to send email");
+    }
+  };
+
 
   const loadHistory = async () => {
     setHistoryLoading(true);
@@ -560,6 +601,26 @@ function EntryCard({
           >
             Move to pending
           </button>
+        )}
+        {canResend && (
+          <button
+            onClick={resendEmail}
+            disabled={resendState === "sending"}
+            title={`Resend ${entry.moderation_status} email to ${entry.contact_email}`}
+            className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.06] border border-white/10 px-3 py-1.5 text-xs font-semibold text-white/80 min-h-[36px] disabled:opacity-50"
+          >
+            {resendState === "sending" ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Send className="h-3 w-3" />
+            )}
+            {resendState === "sending" ? "Sending…" : resendState === "sent" ? "Sent ✓" : "Resend email"}
+          </button>
+        )}
+        {resendMsg && (
+          <span className={`basis-full text-[11px] mt-1 ${resendState === "error" ? "text-rose-300" : "text-white/50"}`}>
+            {resendMsg}
+          </span>
         )}
       </div>
     </div>
