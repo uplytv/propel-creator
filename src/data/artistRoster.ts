@@ -797,7 +797,166 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     ],
   },
 
+  // ============================================================
+  // SAMUEL ONUHA — Founder of ICON · $40M/yr operator
+  // ============================================================
+  {
+    slug: "sonuha",
+    aliases: ["samuel-onuha", "samuelonuha", "icon", "icon-brand", "samuel"],
+    displayName: "Samuel Onuha",
+    eyebrow: "Founder of ICON · 8-figure operator",
+    tagline: "From the Netherlands to Dubai to the US — now doing $40M+ a year with ICON, and teaching the next wave how to do the same.",
+    bio:
+      "Samuel Onuha is the founder of ICON — a brand he's scaled to over $40M in annual revenue across three continents. He started in the Netherlands, grew through Dubai, and now operates out of the US, building one of the most-watched direct-to-consumer brands of the decade.\n\n" +
+      "After years of being asked the same questions in DMs — how he found his offer, how he scaled paid traffic, how he built a team in three time zones — Samuel finally put the entire playbook into a single program.\n\n" +
+      "This is the front door: course, community, and direct access. Everything else is noise.",
+    gradient: { from: "#1a1208", to: "#000000" },
+    accent: "#D4A857",
+    portraitUrl: "/__l5e/assets-v1/0328262e-32a7-46ad-a339-d3a1305671db/sonuha-portrait.jpg",
+    socials: [
+      { kind: "instagram", label: "Instagram", sub: "@sonuha · daily plays from the operator's desk", href: "https://www.instagram.com/sonuha", handle: "sonuha" },
+      { kind: "tiktok", label: "TikTok", sub: "@sonuha · 60-sec breakdowns", href: "https://www.tiktok.com/@sonuha", handle: "sonuha" },
+      { kind: "youtube", label: "YouTube", sub: "Long-form: scaling ICON across three continents", href: "https://www.youtube.com/results?search_query=samuel+onuha+icon" },
+      { kind: "website", label: "ICON", sub: "The flagship brand", href: "https://www.instagram.com/sonuha" },
+      { kind: "website", label: "X / Twitter", sub: "@sonuha", href: "https://x.com/sonuha" },
+      { kind: "email", label: "Work with Samuel", sub: "hello@uply.tv", href: "mailto:hello@uply.tv" },
+    ],
+    videos: [
+      { title: "Latest from @sonuha", instagramUrl: "https://www.instagram.com/sonuha/" },
+    ],
+    searchKeywords: ["samuel onuha", "sonuha", "icon brand", "icon", "8 figure ecom", "netherlands entrepreneur", "dubai entrepreneur", "us ecommerce", "40 million revenue", "scaling dtc"],
+    verified: true,
+    bookingEmail: "hello@uply.tv",
+    location: "Amsterdam · Dubai · United States",
+    heroChip: "ICON Operator Program — applications open",
+    bookingTagline: "Speaking, mentorship, and brand partnerships. Same-week reply on every serious inquiry.",
+    marquee: ["SAMUEL ONUHA", "FOUNDER OF ICON", "$40M+ A YEAR", "NETHERLANDS · DUBAI · US", "BUILT ON UPLY"],
+    releases: [
+      { title: "ICON Operator Program", feat: "Flagship cohort", year: 2026, tag: "Course", href: "/sonuha/courses/icon-operator-program" },
+      { title: "From the Netherlands to $40M", feat: "Origin story", year: 2026, tag: "Article", href: "/sonuha/blog/netherlands-to-dubai-to-us" },
+      { title: "The ICON playbook", feat: "Long read", year: 2026, tag: "Article", href: "/sonuha/blog/icon-playbook" },
+    ],
+    milestones: [
+      { year: "2016", text: "Started his first DTC offer from a bedroom in the Netherlands." },
+      { year: "2019", text: "Relocated to Dubai. Cracked paid traffic at scale." },
+      { year: "2022", text: "Launched ICON — crossed $10M in year one." },
+      { year: "2024", text: "Moved US operations stateside. Crossed $40M in annual revenue." },
+      { year: "2026", text: "Opens the ICON Operator Program on UPLY to teach the playbook." },
+    ],
+    stats: [
+      { k: "Annual revenue", v: "$40M+" },
+      { k: "Markets", v: "NL · UAE · US" },
+      { k: "Brand", v: "ICON" },
+      { k: "Payout", v: "95% via UPLY" },
+    ],
+    featuredPostSlug: "netherlands-to-dubai-to-us",
+    posts: [
+      {
+        slug: "netherlands-to-dubai-to-us",
+        title: "From the Netherlands to Dubai to the US — how I built ICON to $40M a year",
+        excerpt: "Three continents, three operating models, one obsession. The honest version of how ICON went from a bedroom in Amsterdam to an 8-figure DTC machine.",
+        readTime: "9 min read",
+        publishedAt: "2026-06-22",
+        tag: "Origin",
+        body:
+          "When people see the ICON numbers now they assume it was always like this. It wasn't. The first 18 months looked exactly like every other failing brand on Instagram — wrong offer, wrong audience, ad account that hated me, and a bank account that hated me more.\n\n" +
+          "I want to walk through the three chapters honestly, because each one taught me something the next one couldn't have.\n\n" +
+          "**Chapter 1 — The Netherlands. The offer years.**\n\n" +
+          "I started in Amsterdam with a small product and a smaller budget. Everything I made for the first two years went straight back into testing offers. Not ads. Not creative. Offers. What I learned in the Netherlands is that the offer carries the brand — not the other way around. If the offer doesn't make sense on a napkin, no amount of paid traffic is going to save it.\n\n" +
+          "**Chapter 2 — Dubai. The paid traffic years.**\n\n" +
+          "I moved to Dubai once the offer was working. Different ecosystem, different operators, a network that actually thinks in 8 figures as a starting line. That's where I cracked paid traffic at scale — not by being smarter, but by being around people who'd already done it. ICON went from a profitable side bet to a real brand inside of 12 months because I finally had a peer group that pushed the numbers up.\n\n" +
+          "**Chapter 3 — The US. The operations years.**\n\n" +
+          "Moving operations to the US was the hardest of the three. Bigger market, harder logistics, real competitors with real budgets. What worked in Dubai didn't automatically work in the US — and that's the lesson most operators miss. Every new market is a new business. The brand stays. The playbook gets rewritten.\n\n" +
+          "Today ICON does over $40M a year. The honest answer to how is: I refused to skip a chapter. Most people try to start at chapter three. There is no chapter three without the first two.",
+      },
+      {
+        slug: "icon-playbook",
+        title: "The ICON playbook — the 6 things I'd tell my younger self",
+        excerpt: "The exact six decisions that separated ICON from every brand I tried before it. None of them are tactics — and that's the point.",
+        readTime: "7 min read",
+        publishedAt: "2026-06-10",
+        tag: "Playbook",
+        body:
+          "Everyone wants the tactic. The ad account screenshot. The funnel diagram. The hook formula. I've shipped all of them on Instagram and I'll keep shipping them, but if I could only tell my younger self six things, none of them would be a tactic.\n\n" +
+          "**1. Pick the offer like your life depends on it.** Because it does. The offer is the only variable you cannot fix later with budget.\n\n" +
+          "**2. Move to the room with bigger numbers.** Dubai changed me because the conversations were already at the level I was trying to reach. Your environment is your ceiling.\n\n" +
+          "**3. Hire operators, not specialists, in year one.** Specialists optimize. Operators ship. You need shipping more than optimization for the first $10M.\n\n" +
+          "**4. Pay yourself last, but pay yourself.** Founders who never take a salary burn out. Founders who pay themselves first kill the brand. Last — but always.\n\n" +
+          "**5. Own the audience.** Every dollar that lives inside someone else's platform is rented. Every dollar that lives inside your own list, your own creator profile, your own checkout — is yours. This is why I moved everything to UPLY: my links, my course, my community, my direct line to the audience. One URL.\n\n" +
+          "**6. The brand is the moat.** You can't be cheaper than your competitor forever. You can be the brand they can't copy. ICON works because it's a brand first, a product second.\n\n" +
+          "If you do these six in order, you'll skip about three years of pain. If you skip any of them, no playbook will help.",
+      },
+      {
+        slug: "why-i-teach-now",
+        title: "Why I'm finally teaching this — and why it lives on UPLY",
+        excerpt: "I spent eight years saying no to teaching. Here's what changed, and why the ICON Operator Program lives on UPLY and nowhere else.",
+        readTime: "5 min read",
+        publishedAt: "2026-05-28",
+        tag: "Announcement",
+        body:
+          "For eight years I said no every time someone asked me to teach. The answer was always the same — I'd rather build the brand than talk about building the brand.\n\n" +
+          "Two things changed. First, the questions in my DMs started repeating word-for-word. Every week, same five questions from operators who were one decision away from getting it right. Second, my team kept telling me the playbook was wasted if it only lived inside ICON.\n\n" +
+          "So I built the ICON Operator Program — the same internal training my own team gets when they join, opened up to outside operators who want the unfiltered version.\n\n" +
+          "Why UPLY? Because the platforms I'd normally use take a meaningful cut of every dollar a student pays. UPLY's 95% creator payout means I can keep the price honest and still fund the next thing. Course, community, live calls, direct messaging — all on one URL. /sonuha. That's the entire stack.\n\n" +
+          "If you've been waiting for the playbook, this is it.",
+      },
+    ],
+    community: {
+      name: "The ICON Inner Circle",
+      description: "Private members-only feed with Samuel: weekly operator notes, live teardowns, and direct DM access for serious operators.",
+      membersLabel: "Limited intake",
+      perks: [
+        "Weekly operator notes from Samuel",
+        "Monthly live brand teardown (paid ads, offer, funnel)",
+        "Private member feed + direct DM channel",
+        "First seat for every cohort, masterclass, and event",
+      ],
+      priceUsd: 49,
+    },
+    courses: [
+      {
+        slug: "icon-operator-program",
+        title: "The ICON Operator Program",
+        level: "Advanced",
+        lessons: 12,
+        duration: "8h 45m",
+        priceUsd: 997,
+        summary: "The exact internal training Samuel runs his ICON team through — opened up to outside operators. Offer, paid traffic, retention, ops, hiring, and the operating rhythm behind a $40M brand.",
+        outline: [
+          "How to pick an offer that survives paid traffic",
+          "The creative system that prints winning ads on demand",
+          "Scaling paid traffic past $1M / month without breaking margin",
+          "Retention, LTV, and the second-purchase obsession",
+          "Building an operator team across multiple time zones",
+          "The financial model behind an 8-figure brand",
+          "Hiring senior operators (and firing nicely)",
+          "Inventory, fulfilment, and the unsexy bottlenecks",
+          "Expanding into a new market without breaking the brand",
+          "Brand vs. performance — and why you need both",
+          "The Samuel weekly operating cadence",
+          "Live cohort Q&A archive",
+        ],
+      },
+      {
+        slug: "operator-foundations",
+        title: "Operator Foundations (Free)",
+        level: "Beginner",
+        lessons: 4,
+        duration: "55m",
+        priceUsd: 0,
+        summary: "Free intro from Samuel: the four decisions that separate operators who make it from operators who stall. The same talk he opens every cohort with.",
+        outline: [
+          "The offer test — does it survive paid traffic?",
+          "The environment test — are you in the right room?",
+          "The team test — operators vs. specialists",
+          "The audience test — who actually owns it?",
+        ],
+      },
+    ],
+  },
+
 ];
+
 
 
 
