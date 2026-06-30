@@ -9,6 +9,7 @@ interface FinalizeResult {
   offerName: string | null;
   amountFormatted: string | null;
   orderId: string | null;
+  receiptUrl: string | null;
 }
 
 export default function FounderOfferSuccess() {
@@ -22,6 +23,7 @@ export default function FounderOfferSuccess() {
     offerName: null,
     amountFormatted: null,
     orderId: null,
+    receiptUrl: null,
   });
 
   useEffect(() => {
