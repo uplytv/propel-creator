@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link as LinkIcon, Check, Twitter, Facebook, Linkedin, Mail, MessageCircle, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import MobileShareSheet from "@/components/MobileShareSheet";
 
 interface Props {
   /** Absolute URL of the post. Falls back to current location at click time. */
