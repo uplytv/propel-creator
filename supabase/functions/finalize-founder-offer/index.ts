@@ -127,7 +127,16 @@ serve(async (req) => {
     await Promise.allSettled(sendPromises);
 
     return new Response(
-      JSON.stringify({ ok: true, email: buyerEmail, offerKey }),
+      JSON.stringify({
+        ok: true,
+        email: buyerEmail,
+        offerKey,
+        offerName,
+        amountFormatted: formatAmount(amountCents, currency),
+        amountCents,
+        currency,
+        orderId: sessionId,
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
     );
   } catch (err: any) {
