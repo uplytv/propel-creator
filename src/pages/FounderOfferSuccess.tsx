@@ -129,6 +129,21 @@ export default function FounderOfferSuccess() {
                     </dd>
                   </div>
                 )}
+                {result.receiptUrl && (
+                  <div className="flex justify-between gap-4 pt-2 border-t border-white/10">
+                    <dt className="text-white/60">Stripe receipt</dt>
+                    <dd className="text-right">
+                      <a
+                        href={result.receiptUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#00FF85] font-medium hover:underline"
+                      >
+                        View receipt ↗
+                      </a>
+                    </dd>
+                  </div>
+                )}
               </dl>
             </div>
 
