@@ -397,6 +397,7 @@ function EntryCard({
   const [showEmails, setShowEmails] = useState(false);
   const [emailLogs, setEmailLogs] = useState<EmailLogRow[]>([]);
   const [emailLogsLoading, setEmailLogsLoading] = useState(false);
+  const [failedOnly, setFailedOnly] = useState(false);
 
   const loadEmailLogs = async () => {
     if (!entry.contact_email) {
