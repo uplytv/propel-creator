@@ -602,6 +602,26 @@ function EntryCard({
             Move to pending
           </button>
         )}
+        {canResend && (
+          <button
+            onClick={resendEmail}
+            disabled={resendState === "sending"}
+            title={`Resend ${entry.moderation_status} email to ${entry.contact_email}`}
+            className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.06] border border-white/10 px-3 py-1.5 text-xs font-semibold text-white/80 min-h-[36px] disabled:opacity-50"
+          >
+            {resendState === "sending" ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Send className="h-3 w-3" />
+            )}
+            {resendState === "sending" ? "Sending…" : resendState === "sent" ? "Sent ✓" : "Resend email"}
+          </button>
+        )}
+        {resendMsg && (
+          <span className={`basis-full text-[11px] mt-1 ${resendState === "error" ? "text-rose-300" : "text-white/50"}`}>
+            {resendMsg}
+          </span>
+        )}
       </div>
     </div>
   );
