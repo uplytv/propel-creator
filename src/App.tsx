@@ -59,6 +59,7 @@ const AryaXOBlog = lazy(() => import("./pages/AryaXOBlog"));
 const BlakeTheGreat = lazy(() => import("./pages/BlakeTheGreat"));
 const BlakeTheGreatSite = lazy(() => import("./pages/BlakeTheGreatSite"));
 const BlakeTheGreatBlog = lazy(() => import("./pages/BlakeTheGreatBlog"));
+const BlakeTheGreatMembers = lazy(() => import("./pages/BlakeTheGreatMembers"));
 const ArtistLinkRoute = lazy(() => import("./pages/ArtistLinkRoute"));
 const ArtistSiteRoute = lazy(() => import("./pages/ArtistSiteRoute"));
 const ArtistBlogRoute = lazy(() => import("./pages/ArtistBlogRoute"));

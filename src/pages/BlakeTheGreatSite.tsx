@@ -315,13 +315,12 @@ export default function BlakeTheGreatSite() {
           </ul>
 
           <button
-            onClick={() =>
-              (window.location.href =
-                "mailto:blake@blakethegreat.com?subject=Join%20The%20Blueprint%20-%20%2497%2Fmo")
-            }
-            className="w-full h-12 rounded-xl font-semibold bg-[#00FF85] text-black hover:bg-[#00FF85]/90 transition"
+            onClick={startCheckout}
+            disabled={loading}
+            className="w-full h-12 rounded-xl font-semibold bg-[#00FF85] text-black hover:bg-[#00FF85]/90 transition disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
           >
-            Join for $97/month
+            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+            {loading ? "Starting checkout…" : "Join for $97/month"}
           </button>
           <p className="mt-3 text-xs text-white/40">
             7-day money-back guarantee
