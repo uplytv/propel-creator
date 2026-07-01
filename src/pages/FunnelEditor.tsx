@@ -21,6 +21,8 @@ export default function FunnelEditor() {
   const queryClient = useQueryClient();
   const [content, setContent] = useState<Record<string, any>>({});
   const [isPublished, setIsPublished] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
 
   const { data: page, isLoading } = useQuery({
     queryKey: ["funnel-page", pageId],
