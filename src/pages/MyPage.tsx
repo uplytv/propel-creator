@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { Globe, Plus, Trash2, GripVertical, Copy, Check, ExternalLink, Loader2, Eye, Edit2, Link2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Globe, Plus, Trash2, GripVertical, Copy, Check, ExternalLink, Loader2, Eye, Edit2, Link2, Sparkles } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import BackNav from "@/components/BackNav";
 import { Button } from "@/components/ui/button";
@@ -22,8 +23,11 @@ export default function MyPage() {
   const { user } = useAuth();
   const { data: profile } = useProfile();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const profileId = profile?.id;
   const [tab, setTab] = useState("bio");
+  const [creatingPage, setCreatingPage] = useState(false);
+  const [pageTypeDialog, setPageTypeDialog] = useState(false);
   const [previewMode, setPreviewMode] = useState<"mobile" | "desktop">("mobile");
   const [tagline, setTagline] = useState("");
   const [bgColor, setBgColor] = useState("#0A0A0A");
@@ -108,6 +112,34 @@ export default function MyPage() {
   const bioUrl = `${window.location.origin}/${profile?.username || user?.id}/page`;
   const copyUrl = () => { navigator.clipboard.writeText(bioUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); };
 
+  const createFunnelPage = async (pageType: string) => {
+    if (!profileId) { toast.error("Profile not ready"); return; }
+    setCreatingPage(true);
+    try {
+      const baseSlug = `${pageType}-${Date.now().toString(36)}`;
+      const { data, error } = await supabase
+        .from("creator_pages")
+        .insert({
+          creator_id: profileId,
+          page_type: pageType,
+          title: "Untitled page",
+          slug: baseSlug,
+          is_published: false,
+          content: {},
+        })
+        .select("id")
+        .single();
+      if (error) throw error;
+      setPageTypeDialog(false);
+      toast.success("Page created — opening editor");
+      navigate(`/my-page/funnel/${data.id}`);
+    } catch (e: any) {
+      toast.error("Couldn't create page", { description: e?.message });
+    } finally {
+      setCreatingPage(false);
+    }
+  };
+
   const editorContent = {
     displayName: profile?.display_name || "",
     avatarUrl: profile?.avatar_url || "",
@@ -116,6 +148,7 @@ export default function MyPage() {
     accentColor,
     links: links.filter((l: any) => l.is_active),
   };
+
 
   return (
     <AppLayout>
@@ -194,25 +227,66 @@ export default function MyPage() {
           <TabsContent value="funnels" className="mt-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {pages.map((page: any) => (
-                <Card key={page.id} className="border-border cursor-pointer hover:border-primary/30 transition-colors">
+                <Card
+                  key={page.id}
+                  className="border-border cursor-pointer hover:border-primary/30 transition-colors"
+                  onClick={() => navigate(`/my-page/funnel/${page.id}`)}
+                >
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
                       <Badge variant="outline">{page.page_type.replace("_", " ")}</Badge>
                       <Badge variant={page.is_published ? "default" : "outline"}>{page.is_published ? "Published" : "Draft"}</Badge>
                     </div>
                     <h3 className="font-semibold">{page.title || "Untitled"}</h3>
-                    <p className="text-xs text-muted-foreground mt-1">{page.view_count} views</p>
+                    <p className="text-xs text-muted-foreground mt-1">{page.view_count} views · Tap to edit with AI</p>
                   </CardContent>
                 </Card>
               ))}
-              <Card className="border-dashed border-border cursor-pointer hover:border-primary/30 transition-colors" onClick={() => toast.success("Coming soon", { description: "Funnel page editor launching soon" })}>
+              <Card
+                className="border-dashed border-border cursor-pointer hover:border-primary/30 transition-colors"
+                onClick={() => setPageTypeDialog(true)}
+              >
                 <CardContent className="p-4 flex flex-col items-center justify-center min-h-[120px]">
-                  <Plus className="w-8 h-8 text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">Create Page</p>
+                  <Sparkles className="w-8 h-8 text-primary mb-2" />
+                  <p className="text-sm font-medium">Create page with AI</p>
+                  <p className="text-[11px] text-muted-foreground mt-1">Landing, sales, opt-in & more</p>
                 </CardContent>
               </Card>
             </div>
+
+            <Dialog open={pageTypeDialog} onOpenChange={setPageTypeDialog}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Pick a page type</DialogTitle>
+                </DialogHeader>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { type: "landing", label: "Landing" },
+                    { type: "sales", label: "Sales" },
+                    { type: "opt_in", label: "Opt-in" },
+                    { type: "thank_you", label: "Thank you" },
+                  ].map((p) => (
+                    <Button
+                      key={p.type}
+                      variant="outline"
+                      disabled={creatingPage}
+                      onClick={() => createFunnelPage(p.type)}
+                      className="h-auto py-3 flex flex-col items-start"
+                    >
+                      <span className="font-semibold">{p.label}</span>
+                      <span className="text-[11px] text-muted-foreground">{p.type.replace("_", " ")} page</span>
+                    </Button>
+                  ))}
+                </div>
+                {creatingPage && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="w-4 h-4 animate-spin" /> Creating…
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
           </TabsContent>
+
 
           <TabsContent value="domain" className="mt-4 space-y-4">
             <Card className="border-border"><CardContent className="p-4">
