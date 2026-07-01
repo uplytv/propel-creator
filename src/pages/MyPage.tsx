@@ -112,8 +112,35 @@ export default function MyPage() {
   const bioUrl = `${window.location.origin}/${profile?.username || user?.id}/page`;
   const copyUrl = () => { navigator.clipboard.writeText(bioUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); };
 
-  const editorContent = {
-    displayName: profile?.display_name || "",
+  const createFunnelPage = async (pageType: string) => {
+    if (!profileId) { toast.error("Profile not ready"); return; }
+    setCreatingPage(true);
+    try {
+      const baseSlug = `${pageType}-${Date.now().toString(36)}`;
+      const { data, error } = await supabase
+        .from("creator_pages")
+        .insert({
+          creator_id: profileId,
+          page_type: pageType,
+          title: "Untitled page",
+          slug: baseSlug,
+          is_published: false,
+          content: {},
+        })
+        .select("id")
+        .single();
+      if (error) throw error;
+      setPageTypeDialog(false);
+      toast.success("Page created — opening editor");
+      navigate(`/my-page/funnel/${data.id}`);
+    } catch (e: any) {
+      toast.error("Couldn't create page", { description: e?.message });
+    } finally {
+      setCreatingPage(false);
+    }
+  };
+
+
     avatarUrl: profile?.avatar_url || "",
     tagline,
     bgColor,
