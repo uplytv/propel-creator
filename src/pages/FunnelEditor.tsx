@@ -24,6 +24,19 @@ export default function FunnelEditor() {
   const [aiOpen, setAiOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
 
+  const LOW_BALANCE = 5;
+
+  const { data: wallet, refetch: refetchWallet } = useQuery({
+    queryKey: ["wallet-credits", user?.id],
+    enabled: !!user && aiOpen,
+    queryFn: async () => {
+      const { data } = await supabase.from("wallets").select("credits").eq("user_id", user!.id).maybeSingle();
+      return { credits: data?.credits ?? 0 };
+    },
+  });
+  const balance = wallet?.credits ?? 0;
+  const isLow = balance < LOW_BALANCE;
+
   const { data: page, isLoading } = useQuery({
     queryKey: ["funnel-page", pageId],
     enabled: !!pageId,
