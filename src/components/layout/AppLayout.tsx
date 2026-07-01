@@ -100,6 +100,7 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
     label: "GROW",
     icon: TrendingUp,
     items: [
+      { label: "Site Builder", icon: Sparkles, path: "/my-page", desc: "Build your site with AI" },
       { label: "SmartLinks", icon: Share2, path: "/smart-links", desc: "Music smart links & pre-saves", featureKey: "smart_links" },
       { label: "Radiate", icon: Radio, path: "/radiate", desc: "Broadcast to nearby fans", featureKey: "radiate" },
       { label: "Ad Campaigns", icon: Plug, path: "/ad-integrations", desc: "Boost streams", featureKey: "stream_boost" },
