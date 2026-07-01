@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Save, Eye, Loader2, Sparkles } from "lucide-react";
+import { Save, Eye, Loader2, Sparkles, History, Coins } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 import AppLayout from "@/components/layout/AppLayout";
 import BackNav from "@/components/BackNav";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -24,6 +28,8 @@ export default function FunnelEditor() {
   const [aiOpen, setAiOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
 
+  const [historyOpen, setHistoryOpen] = useState(false);
+
   const LOW_BALANCE = 5;
 
   const { data: wallet, refetch: refetchWallet } = useQuery({
@@ -36,6 +42,22 @@ export default function FunnelEditor() {
   });
   const balance = wallet?.credits ?? 0;
   const isLow = balance < LOW_BALANCE;
+
+  const { data: generations = [], isLoading: loadingGens } = useQuery({
+    queryKey: ["site-ai-generations", user?.id, pageId],
+    enabled: !!user && historyOpen,
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("site_ai_generations")
+        .select("id, prompt, credits_charged, input_tokens, output_tokens, model, preview, created_at, page_id, page_type")
+        .eq("user_id", user!.id)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return (data as any[]) || [];
+    },
+  });
+  const totalCreditsUsed = generations.reduce((s: number, g: any) => s + (g.credits_charged || 0), 0);
 
   const { data: page, isLoading } = useQuery({
     queryKey: ["funnel-page", pageId],
@@ -74,7 +96,7 @@ export default function FunnelEditor() {
   const aiMutation = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase.functions.invoke("generate-site-content", {
-        body: { prompt: aiPrompt, pageType: page?.page_type || "lead_capture" },
+        body: { prompt: aiPrompt, pageType: page?.page_type || "lead_capture", pageId },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -91,6 +113,7 @@ export default function FunnelEditor() {
       });
       toast.success(`Generated! −${data.credits_charged} credits (${data.credits_remaining} left)`);
       refetchWallet();
+      queryClient.invalidateQueries({ queryKey: ["site-ai-generations", user?.id, pageId] });
       setAiOpen(false);
       setAiPrompt("");
     },
@@ -122,6 +145,70 @@ export default function FunnelEditor() {
               <span className="text-xs text-muted-foreground">Published</span>
               <Switch checked={isPublished} onCheckedChange={setIsPublished} />
             </div>
+            <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
+              <SheetTrigger asChild>
+                <Button size="sm" variant="outline" className="gap-1">
+                  <History className="w-3.5 h-3.5" /> History
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col">
+                <SheetHeader className="p-4 border-b">
+                  <SheetTitle className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-primary" /> AI Generations
+                  </SheetTitle>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    <span>{generations.length} recent</span>
+                    <span className="flex items-center gap-1">
+                      <Coins className="w-3 h-3" /> {totalCreditsUsed} credits used
+                    </span>
+                  </div>
+                </SheetHeader>
+                <ScrollArea className="flex-1">
+                  <div className="p-4 space-y-3">
+                    {loadingGens ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                      </div>
+                    ) : generations.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-8">
+                        No AI generations yet. Hit <span className="font-semibold">AI</span> to create your first draft.
+                      </p>
+                    ) : (
+                      generations.map((g: any) => (
+                        <Card key={g.id} className="border-border/50">
+                          <CardContent className="p-3 space-y-2">
+                            <div className="flex items-center justify-between gap-2">
+                              <Badge variant="secondary" className="text-[10px] capitalize">
+                                {(g.page_type || "page").replace("_", " ")}
+                              </Badge>
+                              <span className="text-[11px] text-muted-foreground">
+                                {formatDistanceToNow(new Date(g.created_at), { addSuffix: true })}
+                              </span>
+                            </div>
+                            <p className="text-xs text-foreground line-clamp-2 leading-snug">
+                              {g.prompt}
+                            </p>
+                            {g.preview && (
+                              <p className="text-[11px] text-muted-foreground italic line-clamp-2">
+                                → {g.preview}
+                              </p>
+                            )}
+                            <div className="flex items-center justify-between pt-1 border-t border-border/50">
+                              <span className="flex items-center gap-1 text-xs font-semibold text-primary">
+                                <Coins className="w-3 h-3" /> {g.credits_charged} credits
+                              </span>
+                              <span className="text-[10px] text-muted-foreground">
+                                {(g.input_tokens || 0) + (g.output_tokens || 0)} tokens
+                              </span>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))
+                    )}
+                  </div>
+                </ScrollArea>
+              </SheetContent>
+            </Sheet>
             <Button size="sm" variant="outline" onClick={() => setAiOpen(true)} className="gap-1">
               <Sparkles className="w-3.5 h-3.5" /> AI
             </Button>

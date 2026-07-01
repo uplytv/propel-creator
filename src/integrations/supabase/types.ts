@@ -17802,6 +17802,56 @@ export type Database = {
         }
         Relationships: []
       }
+      site_ai_generations: {
+        Row: {
+          created_at: string
+          credits_charged: number
+          id: string
+          input_tokens: number
+          model: string | null
+          output_tokens: number
+          page_id: string | null
+          page_type: string | null
+          preview: string | null
+          prompt: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credits_charged?: number
+          id?: string
+          input_tokens?: number
+          model?: string | null
+          output_tokens?: number
+          page_id?: string | null
+          page_type?: string | null
+          preview?: string | null
+          prompt: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credits_charged?: number
+          id?: string
+          input_tokens?: number
+          model?: string | null
+          output_tokens?: number
+          page_id?: string | null
+          page_type?: string | null
+          preview?: string | null
+          prompt?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_ai_generations_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "creator_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       smart_link_campaigns: {
         Row: {
           audience: Json

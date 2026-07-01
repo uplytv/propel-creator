@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
     const user = userRes.user;
     if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...cors, "Content-Type": "application/json" } });
 
-    const { prompt, pageType = "lead_capture" } = await req.json();
+    const { prompt, pageType = "lead_capture", pageId = null } = await req.json();
     if (!prompt || typeof prompt !== "string") {
       return new Response(JSON.stringify({ error: "prompt required" }), { status: 400, headers: { ...cors, "Content-Type": "application/json" } });
     }
@@ -85,6 +85,21 @@ Deno.serve(async (req) => {
 
     // Debit
     await admin.from("wallets").update({ credits: balance - credits }).eq("user_id", user.id);
+
+    // Log the generation for the Sites side panel
+    const previewSource = (generated.headline || generated.subheadline || generated.body || "") as string;
+    const preview = typeof previewSource === "string" ? previewSource.slice(0, 200) : "";
+    await admin.from("site_ai_generations").insert({
+      user_id: user.id,
+      page_id: pageId,
+      page_type: pageType,
+      prompt: prompt.slice(0, 2000),
+      credits_charged: credits,
+      input_tokens: inTok,
+      output_tokens: outTok,
+      model: "google/gemini-3-flash-preview",
+      preview,
+    });
 
     return new Response(JSON.stringify({
       content: generated,
