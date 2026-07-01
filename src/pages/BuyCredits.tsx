@@ -125,7 +125,7 @@ const BuyCredits = () => {
               const badge = badgeMap[i];
               const isSelected = selectedPkg === pkg.id;
               const isProcessing = isSelected && purchaseState === "processing";
-              const isUnavailable = !pkg.stripe_price_id;
+              const isUnavailable = false; // Auto-provisions Stripe price on demand.
 
               return (
                 <motion.div
