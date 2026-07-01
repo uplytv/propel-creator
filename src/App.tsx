@@ -59,6 +59,7 @@ const AryaXOBlog = lazy(() => import("./pages/AryaXOBlog"));
 const BlakeTheGreat = lazy(() => import("./pages/BlakeTheGreat"));
 const BlakeTheGreatSite = lazy(() => import("./pages/BlakeTheGreatSite"));
 const BlakeTheGreatBlog = lazy(() => import("./pages/BlakeTheGreatBlog"));
+const BlakeTheGreatMembers = lazy(() => import("./pages/BlakeTheGreatMembers"));
 const ArtistLinkRoute = lazy(() => import("./pages/ArtistLinkRoute"));
 const ArtistSiteRoute = lazy(() => import("./pages/ArtistSiteRoute"));
 const ArtistBlogRoute = lazy(() => import("./pages/ArtistBlogRoute"));
@@ -493,6 +494,7 @@ const App = () => (
                     <Route path="/blake-the-great/course" element={<BlakeTheGreatSite />} />
                     <Route path="/blake-the-great/join" element={<BlakeTheGreatSite />} />
                     <Route path="/blake-the-great/blog" element={<BlakeTheGreatBlog />} />
+                    <Route path="/blake-the-great/members" element={<BlakeTheGreatMembers />} />
                     {/* Roster artists — driven by src/data/artistRoster.ts */}
                     {(["omid", "omid-music", "omidmusic", "morvarid", "morvarid-shahbazi", "morvaridshahbazi", "andy", "andy-music", "andymusic1"]).map((s) => (
                       <Route key={s} path={`/${s}`} element={<ArtistLinkRoute />} />

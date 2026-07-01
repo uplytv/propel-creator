@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Check,
   TrendingUp,
@@ -8,6 +8,7 @@ import {
   MessageSquare,
   BookOpen,
   Zap,
+  Loader2,
 } from "lucide-react";
 import portraitAsset from "@/assets/blake-portrait.jpg.asset.json";
 import lifestyleAsset from "@/assets/blake-lifestyle.jpg";
@@ -16,6 +17,8 @@ import betAsset from "@/assets/blake-bet-win.jpg";
 import tradingAsset from "@/assets/blake-trading-desk.jpg";
 import BackButton from "@/components/common/BackButton";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/AuthContext";
 
 const FEATURES = [
   {
@@ -70,6 +73,9 @@ const TESTIMONIALS = [
 
 export default function BlakeTheGreatSite() {
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.title = "The Blueprint by Blake The Great — $97/mo";
@@ -79,16 +85,42 @@ export default function BlakeTheGreatSite() {
     if (meta) meta.setAttribute("content", desc);
   }, []);
 
+  // Already-authed subscribers land here from marketing links — send them
+  // straight to the gated members area, which handles the sub check itself.
+  const startCheckout = async () => {
+    if (!user) {
+      const redir = encodeURIComponent("/blake-the-great/members");
+      const emailHint = email ? `&email=${encodeURIComponent(email)}` : "";
+      toast.message("Create an account to subscribe", {
+        description: "You'll be sent back to checkout right after.",
+      });
+      navigate(`/auth?redirect=${redir}${emailHint}`);
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke(
+        "create-blake-checkout",
+      );
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't start checkout");
+      setLoading(false);
+    }
+  };
+
   const handleJoin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !email.includes("@")) {
+    if (!user && (!email || !email.includes("@"))) {
       toast.error("Enter a valid email to continue.");
       return;
     }
-    // Stripe checkout wiring lives in the existing checkout edge fn.
-    toast.success("Redirecting to secure checkout…");
-    // Placeholder — hook into a Stripe Price ID for $97/mo when ready.
-    window.location.href = `mailto:blake@blakethegreat.com?subject=Join%20The%20Blueprint&body=Email%3A%20${encodeURIComponent(email)}`;
+    startCheckout();
   };
 
   return (
@@ -133,9 +165,11 @@ export default function BlakeTheGreatSite() {
             />
             <button
               type="submit"
-              className="h-12 px-6 rounded-xl font-semibold bg-[#00FF85] text-black hover:bg-[#00FF85]/90 transition"
+              disabled={loading}
+              className="h-12 px-6 rounded-xl font-semibold bg-[#00FF85] text-black hover:bg-[#00FF85]/90 transition disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
             >
-              Join for $97/mo
+              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {loading ? "Starting…" : "Join for $97/mo"}
             </button>
           </form>
           <p className="mt-3 text-xs text-white/40">
@@ -281,13 +315,12 @@ export default function BlakeTheGreatSite() {
           </ul>
 
           <button
-            onClick={() =>
-              (window.location.href =
-                "mailto:blake@blakethegreat.com?subject=Join%20The%20Blueprint%20-%20%2497%2Fmo")
-            }
-            className="w-full h-12 rounded-xl font-semibold bg-[#00FF85] text-black hover:bg-[#00FF85]/90 transition"
+            onClick={startCheckout}
+            disabled={loading}
+            className="w-full h-12 rounded-xl font-semibold bg-[#00FF85] text-black hover:bg-[#00FF85]/90 transition disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
           >
-            Join for $97/month
+            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+            {loading ? "Starting checkout…" : "Join for $97/month"}
           </button>
           <p className="mt-3 text-xs text-white/40">
             7-day money-back guarantee
