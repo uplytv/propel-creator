@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Save, Eye, Loader2 } from "lucide-react";
+import { Save, Eye, Loader2, Sparkles } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import BackNav from "@/components/BackNav";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -20,6 +21,8 @@ export default function FunnelEditor() {
   const queryClient = useQueryClient();
   const [content, setContent] = useState<Record<string, any>>({});
   const [isPublished, setIsPublished] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
 
   const { data: page, isLoading } = useQuery({
     queryKey: ["funnel-page", pageId],
@@ -55,6 +58,39 @@ export default function FunnelEditor() {
     },
   });
 
+  const aiMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke("generate-site-content", {
+        body: { prompt: aiPrompt, pageType: page?.page_type || "lead_capture" },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data as { content: Record<string, any>; credits_charged: number; credits_remaining: number };
+    },
+    onSuccess: (data) => {
+      // Merge non-empty generated fields into existing content
+      setContent(prev => {
+        const next = { ...prev };
+        for (const [k, v] of Object.entries(data.content)) {
+          if (v && (typeof v === "string" ? v.trim() : true)) next[k] = v;
+        }
+        return next;
+      });
+      toast.success(`Generated! −${data.credits_charged} credits (${data.credits_remaining} left)`);
+      setAiOpen(false);
+      setAiPrompt("");
+    },
+    onError: (err: Error) => {
+      if (err.message === "insufficient_credits") {
+        toast.error("Not enough credits. Top up to keep generating.");
+      } else if (err.message === "rate_limited") {
+        toast.error("Rate limited — try again in a moment.");
+      } else {
+        toast.error(err.message || "Generation failed");
+      }
+    },
+  });
+
   const updateField = (key: string, value: any) => setContent(prev => ({ ...prev, [key]: value }));
 
   if (isLoading) return <AppLayout><div className="flex items-center justify-center h-64"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div></AppLayout>;
@@ -72,11 +108,42 @@ export default function FunnelEditor() {
               <span className="text-xs text-muted-foreground">Published</span>
               <Switch checked={isPublished} onCheckedChange={setIsPublished} />
             </div>
+            <Button size="sm" variant="outline" onClick={() => setAiOpen(true)} className="gap-1">
+              <Sparkles className="w-3.5 h-3.5" /> AI
+            </Button>
             <Button size="sm" onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
               <Save className="w-3.5 h-3.5 mr-1" /> Save
             </Button>
           </div>
         </div>
+
+        <Dialog open={aiOpen} onOpenChange={setAiOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-primary" /> AI Generate</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <p className="text-xs text-muted-foreground">Describe your page in a sentence — we'll draft the copy. Costs ~2 credits per generation.</p>
+              <Textarea
+                value={aiPrompt}
+                onChange={e => setAiPrompt(e.target.value)}
+                rows={4}
+                placeholder="e.g. Landing page for my 6-week songwriting bootcamp, aimed at intermediate guitarists who want to release their first EP."
+              />
+            </div>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setAiOpen(false)}>Cancel</Button>
+              <Button
+                onClick={() => aiMutation.mutate()}
+                disabled={aiMutation.isPending || aiPrompt.trim().length < 10}
+                className="gap-1"
+              >
+                {aiMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                Generate
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <Card>
           <CardContent className="p-4 space-y-4">
