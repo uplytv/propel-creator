@@ -227,25 +227,66 @@ export default function MyPage() {
           <TabsContent value="funnels" className="mt-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {pages.map((page: any) => (
-                <Card key={page.id} className="border-border cursor-pointer hover:border-primary/30 transition-colors">
+                <Card
+                  key={page.id}
+                  className="border-border cursor-pointer hover:border-primary/30 transition-colors"
+                  onClick={() => navigate(`/my-page/funnel/${page.id}`)}
+                >
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
                       <Badge variant="outline">{page.page_type.replace("_", " ")}</Badge>
                       <Badge variant={page.is_published ? "default" : "outline"}>{page.is_published ? "Published" : "Draft"}</Badge>
                     </div>
                     <h3 className="font-semibold">{page.title || "Untitled"}</h3>
-                    <p className="text-xs text-muted-foreground mt-1">{page.view_count} views</p>
+                    <p className="text-xs text-muted-foreground mt-1">{page.view_count} views · Tap to edit with AI</p>
                   </CardContent>
                 </Card>
               ))}
-              <Card className="border-dashed border-border cursor-pointer hover:border-primary/30 transition-colors" onClick={() => toast.success("Coming soon", { description: "Funnel page editor launching soon" })}>
+              <Card
+                className="border-dashed border-border cursor-pointer hover:border-primary/30 transition-colors"
+                onClick={() => setPageTypeDialog(true)}
+              >
                 <CardContent className="p-4 flex flex-col items-center justify-center min-h-[120px]">
-                  <Plus className="w-8 h-8 text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">Create Page</p>
+                  <Sparkles className="w-8 h-8 text-primary mb-2" />
+                  <p className="text-sm font-medium">Create page with AI</p>
+                  <p className="text-[11px] text-muted-foreground mt-1">Landing, sales, opt-in & more</p>
                 </CardContent>
               </Card>
             </div>
+
+            <Dialog open={pageTypeDialog} onOpenChange={setPageTypeDialog}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Pick a page type</DialogTitle>
+                </DialogHeader>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { type: "landing", label: "Landing" },
+                    { type: "sales", label: "Sales" },
+                    { type: "opt_in", label: "Opt-in" },
+                    { type: "thank_you", label: "Thank you" },
+                  ].map((p) => (
+                    <Button
+                      key={p.type}
+                      variant="outline"
+                      disabled={creatingPage}
+                      onClick={() => createFunnelPage(p.type)}
+                      className="h-auto py-3 flex flex-col items-start"
+                    >
+                      <span className="font-semibold">{p.label}</span>
+                      <span className="text-[11px] text-muted-foreground">{p.type.replace("_", " ")} page</span>
+                    </Button>
+                  ))}
+                </div>
+                {creatingPage && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="w-4 h-4 animate-spin" /> Creating…
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
           </TabsContent>
+
 
           <TabsContent value="domain" className="mt-4 space-y-4">
             <Card className="border-border"><CardContent className="p-4">
