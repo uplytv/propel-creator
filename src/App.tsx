@@ -56,6 +56,9 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const AryaXO = lazy(() => import("./pages/AryaXO"));
 const AryaXOSite = lazy(() => import("./pages/AryaXOSite"));
 const AryaXOBlog = lazy(() => import("./pages/AryaXOBlog"));
+const BlakeTheGreat = lazy(() => import("./pages/BlakeTheGreat"));
+const BlakeTheGreatSite = lazy(() => import("./pages/BlakeTheGreatSite"));
+const BlakeTheGreatBlog = lazy(() => import("./pages/BlakeTheGreatBlog"));
 const ArtistLinkRoute = lazy(() => import("./pages/ArtistLinkRoute"));
 const ArtistSiteRoute = lazy(() => import("./pages/ArtistSiteRoute"));
 const ArtistBlogRoute = lazy(() => import("./pages/ArtistBlogRoute"));
@@ -484,6 +487,12 @@ const App = () => (
                     <Route path="/arya-xo/blog" element={<AryaXOBlog />} />
                     <Route path="/arya-xo-blog" element={<AryaXOBlog />} />
                     <Route path="/arya-xo/blog/150-bands" element={<AryaXOBlog />} />
+                    <Route path="/blake" element={<BlakeTheGreat />} />
+                    <Route path="/blakethegreat" element={<BlakeTheGreat />} />
+                    <Route path="/blake-the-great" element={<BlakeTheGreat />} />
+                    <Route path="/blake-the-great/course" element={<BlakeTheGreatSite />} />
+                    <Route path="/blake-the-great/join" element={<BlakeTheGreatSite />} />
+                    <Route path="/blake-the-great/blog" element={<BlakeTheGreatBlog />} />
                     {/* Roster artists — driven by src/data/artistRoster.ts */}
                     {(["omid", "omid-music", "omidmusic", "morvarid", "morvarid-shahbazi", "morvaridshahbazi", "andy", "andy-music", "andymusic1"]).map((s) => (
                       <Route key={s} path={`/${s}`} element={<ArtistLinkRoute />} />
