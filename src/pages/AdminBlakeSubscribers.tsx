@@ -38,6 +38,28 @@ const PRICE_MONTHLY = 97;
 export default function AdminBlakeSubscribers() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [alertsSending, setAlertsSending] = useState(false);
+
+  const runAlerts = async () => {
+    setAlertsSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("blake-subscription-alerts");
+      if (error) throw error;
+      const a = (data as any)?.alerts || {};
+      const total = (a.past_due || 0) + (a.canceling || 0) + (a.renewing_soon || 0);
+      toast({
+        title: total ? "Alerts sent" : "No alerts needed",
+        description: total
+          ? `Emailed admins about ${a.past_due || 0} past due, ${a.canceling || 0} canceling, ${a.renewing_soon || 0} renewing soon.`
+          : "No past-due, canceling, or renewing-soon subscribers right now.",
+      });
+    } catch (e: any) {
+      toast({ title: "Alert scan failed", description: e.message, variant: "destructive" });
+    } finally {
+      setAlertsSending(false);
+    }
+  };
+
 
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["admin-blake-subscribers"],
