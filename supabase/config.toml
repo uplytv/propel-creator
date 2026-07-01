@@ -83,6 +83,8 @@ project_id = "dbjlhmbgskvhuzqvqfrl"
     verify_jwt = false
   [functions.stripe-blake-webhook]
     verify_jwt = false
+  [functions.blake-subscription-alerts]
+    verify_jwt = false
   [functions.track-affiliate-conversion]
     verify_jwt = false
   [functions.reveal-virtual-link]

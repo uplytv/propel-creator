@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { useMemo, useState } from "react";
-import { Users, DollarSign, AlertTriangle, CheckCircle2, Download } from "lucide-react";
+import { Users, DollarSign, AlertTriangle, CheckCircle2, Download, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 
 interface Row {
   id: string;
@@ -37,6 +38,28 @@ const PRICE_MONTHLY = 97;
 export default function AdminBlakeSubscribers() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [alertsSending, setAlertsSending] = useState(false);
+
+  const runAlerts = async () => {
+    setAlertsSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("blake-subscription-alerts");
+      if (error) throw error;
+      const a = (data as any)?.alerts || {};
+      const total = (a.past_due || 0) + (a.canceling || 0) + (a.renewing_soon || 0);
+      toast({
+        title: total ? "Alerts sent" : "No alerts needed",
+        description: total
+          ? `Emailed admins about ${a.past_due || 0} past due, ${a.canceling || 0} canceling, ${a.renewing_soon || 0} renewing soon.`
+          : "No past-due, canceling, or renewing-soon subscribers right now.",
+      });
+    } catch (e: any) {
+      toast({ title: "Alert scan failed", description: e.message, variant: "destructive" });
+    } finally {
+      setAlertsSending(false);
+    }
+  };
+
 
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["admin-blake-subscribers"],
@@ -131,9 +154,13 @@ export default function AdminBlakeSubscribers() {
               Live Stripe subscription status synced via webhook. ${PRICE_MONTHLY}/mo tier.
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
               {isFetching ? "Refreshing…" : "Refresh"}
+            </Button>
+            <Button variant="outline" size="sm" onClick={runAlerts} disabled={alertsSending}>
+              <Mail className="w-4 h-4 mr-1.5" />
+              {alertsSending ? "Scanning…" : "Send alerts now"}
             </Button>
             <Button size="sm" onClick={exportCsv} disabled={!filtered.length}>
               <Download className="w-4 h-4 mr-1.5" /> CSV
