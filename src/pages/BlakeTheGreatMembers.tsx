@@ -63,11 +63,28 @@ export default function BlakeTheGreatMembers() {
     };
 
     verify();
-    // Re-check every 60s (Stripe eventual consistency after checkout)
+    // Re-check every 60s as a safety net for Stripe eventual consistency.
     const t = setInterval(verify, 60_000);
+
+    // Instant unlock: listen for webhook-driven row changes.
+    const channel = supabase
+      .channel(`blake-sub-${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "blake_subscribers",
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => verify(),
+      )
+      .subscribe();
+
     return () => {
       cancelled = true;
       clearInterval(t);
+      supabase.removeChannel(channel);
     };
   }, [user, authLoading, params]);
 
