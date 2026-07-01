@@ -73,6 +73,9 @@ const TESTIMONIALS = [
 
 export default function BlakeTheGreatSite() {
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.title = "The Blueprint by Blake The Great — $97/mo";
@@ -82,16 +85,42 @@ export default function BlakeTheGreatSite() {
     if (meta) meta.setAttribute("content", desc);
   }, []);
 
+  // Already-authed subscribers land here from marketing links — send them
+  // straight to the gated members area, which handles the sub check itself.
+  const startCheckout = async () => {
+    if (!user) {
+      const redir = encodeURIComponent("/blake-the-great/members");
+      const emailHint = email ? `&email=${encodeURIComponent(email)}` : "";
+      toast.message("Create an account to subscribe", {
+        description: "You'll be sent back to checkout right after.",
+      });
+      navigate(`/auth?redirect=${redir}${emailHint}`);
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke(
+        "create-blake-checkout",
+      );
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't start checkout");
+      setLoading(false);
+    }
+  };
+
   const handleJoin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !email.includes("@")) {
+    if (!user && (!email || !email.includes("@"))) {
       toast.error("Enter a valid email to continue.");
       return;
     }
-    // Stripe checkout wiring lives in the existing checkout edge fn.
-    toast.success("Redirecting to secure checkout…");
-    // Placeholder — hook into a Stripe Price ID for $97/mo when ready.
-    window.location.href = `mailto:blake@blakethegreat.com?subject=Join%20The%20Blueprint&body=Email%3A%20${encodeURIComponent(email)}`;
+    startCheckout();
   };
 
   return (
