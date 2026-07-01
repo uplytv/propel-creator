@@ -86,6 +86,21 @@ Deno.serve(async (req) => {
     // Debit
     await admin.from("wallets").update({ credits: balance - credits }).eq("user_id", user.id);
 
+    // Log the generation for the Sites side panel
+    const previewSource = (generated.headline || generated.subheadline || generated.body || "") as string;
+    const preview = typeof previewSource === "string" ? previewSource.slice(0, 200) : "";
+    await admin.from("site_ai_generations").insert({
+      user_id: user.id,
+      page_id: pageId,
+      page_type: pageType,
+      prompt: prompt.slice(0, 2000),
+      credits_charged: credits,
+      input_tokens: inTok,
+      output_tokens: outTok,
+      model: "google/gemini-3-flash-preview",
+      preview,
+    });
+
     return new Response(JSON.stringify({
       content: generated,
       credits_charged: credits,
