@@ -28,6 +28,8 @@ export default function FunnelEditor() {
   const [aiOpen, setAiOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
 
+  const [historyOpen, setHistoryOpen] = useState(false);
+
   const LOW_BALANCE = 5;
 
   const { data: wallet, refetch: refetchWallet } = useQuery({
@@ -40,6 +42,22 @@ export default function FunnelEditor() {
   });
   const balance = wallet?.credits ?? 0;
   const isLow = balance < LOW_BALANCE;
+
+  const { data: generations = [], isLoading: loadingGens } = useQuery({
+    queryKey: ["site-ai-generations", user?.id, pageId],
+    enabled: !!user && historyOpen,
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("site_ai_generations")
+        .select("id, prompt, credits_charged, input_tokens, output_tokens, model, preview, created_at, page_id, page_type")
+        .eq("user_id", user!.id)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return (data as any[]) || [];
+    },
+  });
+  const totalCreditsUsed = generations.reduce((s: number, g: any) => s + (g.credits_charged || 0), 0);
 
   const { data: page, isLoading } = useQuery({
     queryKey: ["funnel-page", pageId],
