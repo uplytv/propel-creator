@@ -90,6 +90,7 @@ export default function FunnelEditor() {
         return next;
       });
       toast.success(`Generated! −${data.credits_charged} credits (${data.credits_remaining} left)`);
+      refetchWallet();
       setAiOpen(false);
       setAiPrompt("");
     },
