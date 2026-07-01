@@ -20418,6 +20418,7 @@ export type Database = {
           display_name: string
           icon: string | null
           id: string
+          is_active: boolean
           position: number | null
         }
         Insert: {
@@ -20428,6 +20429,7 @@ export type Database = {
           display_name: string
           icon?: string | null
           id?: string
+          is_active?: boolean
           position?: number | null
         }
         Update: {
@@ -20438,6 +20440,7 @@ export type Database = {
           display_name?: string
           icon?: string | null
           id?: string
+          is_active?: boolean
           position?: number | null
         }
         Relationships: []
