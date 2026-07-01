@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { Globe, Plus, Trash2, GripVertical, Copy, Check, ExternalLink, Loader2, Eye, Edit2, Link2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Globe, Plus, Trash2, GripVertical, Copy, Check, ExternalLink, Loader2, Eye, Edit2, Link2, Sparkles } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import BackNav from "@/components/BackNav";
 import { Button } from "@/components/ui/button";
