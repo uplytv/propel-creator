@@ -165,9 +165,11 @@ export default function BlakeTheGreatSite() {
             />
             <button
               type="submit"
-              className="h-12 px-6 rounded-xl font-semibold bg-[#00FF85] text-black hover:bg-[#00FF85]/90 transition"
+              disabled={loading}
+              className="h-12 px-6 rounded-xl font-semibold bg-[#00FF85] text-black hover:bg-[#00FF85]/90 transition disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
             >
-              Join for $97/mo
+              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {loading ? "Starting…" : "Join for $97/mo"}
             </button>
           </form>
           <p className="mt-3 text-xs text-white/40">
