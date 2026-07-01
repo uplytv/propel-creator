@@ -145,6 +145,70 @@ export default function FunnelEditor() {
               <span className="text-xs text-muted-foreground">Published</span>
               <Switch checked={isPublished} onCheckedChange={setIsPublished} />
             </div>
+            <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
+              <SheetTrigger asChild>
+                <Button size="sm" variant="outline" className="gap-1">
+                  <History className="w-3.5 h-3.5" /> History
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col">
+                <SheetHeader className="p-4 border-b">
+                  <SheetTitle className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-primary" /> AI Generations
+                  </SheetTitle>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    <span>{generations.length} recent</span>
+                    <span className="flex items-center gap-1">
+                      <Coins className="w-3 h-3" /> {totalCreditsUsed} credits used
+                    </span>
+                  </div>
+                </SheetHeader>
+                <ScrollArea className="flex-1">
+                  <div className="p-4 space-y-3">
+                    {loadingGens ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                      </div>
+                    ) : generations.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-8">
+                        No AI generations yet. Hit <span className="font-semibold">AI</span> to create your first draft.
+                      </p>
+                    ) : (
+                      generations.map((g: any) => (
+                        <Card key={g.id} className="border-border/50">
+                          <CardContent className="p-3 space-y-2">
+                            <div className="flex items-center justify-between gap-2">
+                              <Badge variant="secondary" className="text-[10px] capitalize">
+                                {(g.page_type || "page").replace("_", " ")}
+                              </Badge>
+                              <span className="text-[11px] text-muted-foreground">
+                                {formatDistanceToNow(new Date(g.created_at), { addSuffix: true })}
+                              </span>
+                            </div>
+                            <p className="text-xs text-foreground line-clamp-2 leading-snug">
+                              {g.prompt}
+                            </p>
+                            {g.preview && (
+                              <p className="text-[11px] text-muted-foreground italic line-clamp-2">
+                                → {g.preview}
+                              </p>
+                            )}
+                            <div className="flex items-center justify-between pt-1 border-t border-border/50">
+                              <span className="flex items-center gap-1 text-xs font-semibold text-primary">
+                                <Coins className="w-3 h-3" /> {g.credits_charged} credits
+                              </span>
+                              <span className="text-[10px] text-muted-foreground">
+                                {(g.input_tokens || 0) + (g.output_tokens || 0)} tokens
+                              </span>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))
+                    )}
+                  </div>
+                </ScrollArea>
+              </SheetContent>
+            </Sheet>
             <Button size="sm" variant="outline" onClick={() => setAiOpen(true)} className="gap-1">
               <Sparkles className="w-3.5 h-3.5" /> AI
             </Button>
