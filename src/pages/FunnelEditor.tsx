@@ -24,6 +24,19 @@ export default function FunnelEditor() {
   const [aiOpen, setAiOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
 
+  const LOW_BALANCE = 5;
+
+  const { data: wallet, refetch: refetchWallet } = useQuery({
+    queryKey: ["wallet-credits", user?.id],
+    enabled: !!user && aiOpen,
+    queryFn: async () => {
+      const { data } = await supabase.from("wallets").select("credits").eq("user_id", user!.id).maybeSingle();
+      return { credits: data?.credits ?? 0 };
+    },
+  });
+  const balance = wallet?.credits ?? 0;
+  const isLow = balance < LOW_BALANCE;
+
   const { data: page, isLoading } = useQuery({
     queryKey: ["funnel-page", pageId],
     enabled: !!pageId,
@@ -77,6 +90,7 @@ export default function FunnelEditor() {
         return next;
       });
       toast.success(`Generated! −${data.credits_charged} credits (${data.credits_remaining} left)`);
+      refetchWallet();
       setAiOpen(false);
       setAiPrompt("");
     },
@@ -123,7 +137,25 @@ export default function FunnelEditor() {
               <DialogTitle className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-primary" /> AI Generate</DialogTitle>
             </DialogHeader>
             <div className="space-y-3">
-              <p className="text-xs text-muted-foreground">Describe your page in a sentence — we'll draft the copy. Costs ~2 credits per generation.</p>
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">Describe your page — we'll draft the copy. ~2 credits per generation.</p>
+                <span className={`text-xs font-semibold ${isLow ? "text-destructive" : "text-muted-foreground"}`}>
+                  {balance} credits
+                </span>
+              </div>
+
+              {isLow && (
+                <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 flex items-center justify-between gap-3">
+                  <div className="text-xs">
+                    <p className="font-semibold text-destructive">Low balance</p>
+                    <p className="text-muted-foreground">Top up to keep generating.</p>
+                  </div>
+                  <Button size="sm" onClick={() => { setAiOpen(false); navigate("/buy-credits"); }} className="flex-shrink-0">
+                    Buy credits
+                  </Button>
+                </div>
+              )}
+
               <Textarea
                 value={aiPrompt}
                 onChange={e => setAiPrompt(e.target.value)}
@@ -135,7 +167,7 @@ export default function FunnelEditor() {
               <Button variant="ghost" onClick={() => setAiOpen(false)}>Cancel</Button>
               <Button
                 onClick={() => aiMutation.mutate()}
-                disabled={aiMutation.isPending || aiPrompt.trim().length < 10}
+                disabled={aiMutation.isPending || aiPrompt.trim().length < 10 || balance < 2}
                 className="gap-1"
               >
                 {aiMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
