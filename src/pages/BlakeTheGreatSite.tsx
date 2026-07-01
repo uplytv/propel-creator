@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Check,
   TrendingUp,
@@ -8,6 +8,7 @@ import {
   MessageSquare,
   BookOpen,
   Zap,
+  Loader2,
 } from "lucide-react";
 import portraitAsset from "@/assets/blake-portrait.jpg.asset.json";
 import lifestyleAsset from "@/assets/blake-lifestyle.jpg";
@@ -16,6 +17,8 @@ import betAsset from "@/assets/blake-bet-win.jpg";
 import tradingAsset from "@/assets/blake-trading-desk.jpg";
 import BackButton from "@/components/common/BackButton";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/AuthContext";
 
 const FEATURES = [
   {
