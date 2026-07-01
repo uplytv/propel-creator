@@ -154,9 +154,13 @@ export default function AdminBlakeSubscribers() {
               Live Stripe subscription status synced via webhook. ${PRICE_MONTHLY}/mo tier.
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
               {isFetching ? "Refreshing…" : "Refresh"}
+            </Button>
+            <Button variant="outline" size="sm" onClick={runAlerts} disabled={alertsSending}>
+              <Mail className="w-4 h-4 mr-1.5" />
+              {alertsSending ? "Scanning…" : "Send alerts now"}
             </Button>
             <Button size="sm" onClick={exportCsv} disabled={!filtered.length}>
               <Download className="w-4 h-4 mr-1.5" /> CSV
