@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
     const user = userRes.user;
     if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...cors, "Content-Type": "application/json" } });
 
-    const { prompt, pageType = "lead_capture" } = await req.json();
+    const { prompt, pageType = "lead_capture", pageId = null } = await req.json();
     if (!prompt || typeof prompt !== "string") {
       return new Response(JSON.stringify({ error: "prompt required" }), { status: 400, headers: { ...cors, "Content-Type": "application/json" } });
     }
