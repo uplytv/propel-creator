@@ -58,6 +58,39 @@ export default function FunnelEditor() {
     },
   });
 
+  const aiMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke("generate-site-content", {
+        body: { prompt: aiPrompt, pageType: page?.page_type || "lead_capture" },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data as { content: Record<string, any>; credits_charged: number; credits_remaining: number };
+    },
+    onSuccess: (data) => {
+      // Merge non-empty generated fields into existing content
+      setContent(prev => {
+        const next = { ...prev };
+        for (const [k, v] of Object.entries(data.content)) {
+          if (v && (typeof v === "string" ? v.trim() : true)) next[k] = v;
+        }
+        return next;
+      });
+      toast.success(`Generated! −${data.credits_charged} credits (${data.credits_remaining} left)`);
+      setAiOpen(false);
+      setAiPrompt("");
+    },
+    onError: (err: Error) => {
+      if (err.message === "insufficient_credits") {
+        toast.error("Not enough credits. Top up to keep generating.");
+      } else if (err.message === "rate_limited") {
+        toast.error("Rate limited — try again in a moment.");
+      } else {
+        toast.error(err.message || "Generation failed");
+      }
+    },
+  });
+
   const updateField = (key: string, value: any) => setContent(prev => ({ ...prev, [key]: value }));
 
   if (isLoading) return <AppLayout><div className="flex items-center justify-center h-64"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div></AppLayout>;
