@@ -108,11 +108,42 @@ export default function FunnelEditor() {
               <span className="text-xs text-muted-foreground">Published</span>
               <Switch checked={isPublished} onCheckedChange={setIsPublished} />
             </div>
+            <Button size="sm" variant="outline" onClick={() => setAiOpen(true)} className="gap-1">
+              <Sparkles className="w-3.5 h-3.5" /> AI
+            </Button>
             <Button size="sm" onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
               <Save className="w-3.5 h-3.5 mr-1" /> Save
             </Button>
           </div>
         </div>
+
+        <Dialog open={aiOpen} onOpenChange={setAiOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-primary" /> AI Generate</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <p className="text-xs text-muted-foreground">Describe your page in a sentence — we'll draft the copy. Costs ~2 credits per generation.</p>
+              <Textarea
+                value={aiPrompt}
+                onChange={e => setAiPrompt(e.target.value)}
+                rows={4}
+                placeholder="e.g. Landing page for my 6-week songwriting bootcamp, aimed at intermediate guitarists who want to release their first EP."
+              />
+            </div>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setAiOpen(false)}>Cancel</Button>
+              <Button
+                onClick={() => aiMutation.mutate()}
+                disabled={aiMutation.isPending || aiPrompt.trim().length < 10}
+                className="gap-1"
+              >
+                {aiMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                Generate
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <Card>
           <CardContent className="p-4 space-y-4">
