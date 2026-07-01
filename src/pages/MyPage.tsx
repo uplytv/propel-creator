@@ -23,8 +23,11 @@ export default function MyPage() {
   const { user } = useAuth();
   const { data: profile } = useProfile();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const profileId = profile?.id;
   const [tab, setTab] = useState("bio");
+  const [creatingPage, setCreatingPage] = useState(false);
+  const [pageTypeDialog, setPageTypeDialog] = useState(false);
   const [previewMode, setPreviewMode] = useState<"mobile" | "desktop">("mobile");
   const [tagline, setTagline] = useState("");
   const [bgColor, setBgColor] = useState("#0A0A0A");
