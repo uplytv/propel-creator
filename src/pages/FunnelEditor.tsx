@@ -96,7 +96,7 @@ export default function FunnelEditor() {
   const aiMutation = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase.functions.invoke("generate-site-content", {
-        body: { prompt: aiPrompt, pageType: page?.page_type || "lead_capture" },
+        body: { prompt: aiPrompt, pageType: page?.page_type || "lead_capture", pageId },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -113,6 +113,7 @@ export default function FunnelEditor() {
       });
       toast.success(`Generated! −${data.credits_charged} credits (${data.credits_remaining} left)`);
       refetchWallet();
+      queryClient.invalidateQueries({ queryKey: ["site-ai-generations", user?.id, pageId] });
       setAiOpen(false);
       setAiPrompt("");
     },
