@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { useMemo, useState } from "react";
-import { Users, DollarSign, AlertTriangle, CheckCircle2, Download } from "lucide-react";
+import { Users, DollarSign, AlertTriangle, CheckCircle2, Download, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 
 interface Row {
   id: string;
