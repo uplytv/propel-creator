@@ -140,13 +140,15 @@ export default function MyPage() {
     }
   };
 
-
+  const editorContent = {
+    displayName: profile?.display_name || "",
     avatarUrl: profile?.avatar_url || "",
     tagline,
     bgColor,
     accentColor,
     links: links.filter((l: any) => l.is_active),
   };
+
 
   return (
     <AppLayout>
