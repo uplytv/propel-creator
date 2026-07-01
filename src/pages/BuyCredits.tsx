@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Coins, Zap, Crown, Rocket, Check, ArrowLeft, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import AppLayout from "@/components/layout/AppLayout";
 import { useCreditPackages } from "@/hooks/useStripeAccount";
 import { useWallet } from "@/hooks/useWallet";
@@ -32,28 +33,50 @@ const BuyCredits = () => {
   const [selectedPkg, setSelectedPkg] = useState<string | null>(null);
   const [purchaseState, setPurchaseState] = useState<PurchaseState>("idle");
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryClient = useQueryClient();
   const { data: packages = [], isLoading } = useCreditPackages();
-  const { data: wallet } = useWallet();
+  const { data: wallet, refetch: refetchWallet } = useWallet();
+
+  // Handle Stripe redirect back
+  useEffect(() => {
+    if (searchParams.get("purchased") === "true") {
+      toast.success("Payment successful!", {
+        description: "Your credits are on the way — refreshing balance…",
+      });
+      // Webhook fulfills the credits; poll wallet briefly to catch it.
+      let tries = 0;
+      const poll = setInterval(async () => {
+        tries += 1;
+        await refetchWallet();
+        queryClient.invalidateQueries({ queryKey: ["wallet-credits"] });
+        if (tries >= 6) clearInterval(poll);
+      }, 1500);
+      searchParams.delete("purchased");
+      searchParams.delete("session_id");
+      setSearchParams(searchParams, { replace: true });
+      return () => clearInterval(poll);
+    }
+    if (searchParams.get("canceled") === "true") {
+      toast("Checkout canceled", { description: "No charge was made." });
+      searchParams.delete("canceled");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams, refetchWallet, queryClient]);
 
   const handlePurchase = async (pkg: any) => {
-    if (!pkg.stripe_price_id) {
-      // Silent — button is rendered as disabled "Coming Soon" instead.
-      return;
-    }
     setSelectedPkg(pkg.id);
     setPurchaseState("processing");
 
     try {
-      const { data, error } = await supabase.functions.invoke("stripe-create-product-checkout", {
-        body: {
-          stripe_price_id: pkg.stripe_price_id,
-          purchase_type: "credits",
-        },
+      const { data, error } = await supabase.functions.invoke("create-credits-checkout", {
+        body: { package_id: pkg.id },
       });
       if (error) throw error;
-      if (data?.url) window.location.href = data.url;
+      if (!data?.url) throw new Error("No checkout URL returned");
+      window.location.href = data.url;
     } catch (err: any) {
-      toast.error("Error", { description: err.message });
+      toast.error("Couldn't start checkout", { description: err.message });
       setPurchaseState("idle");
       setSelectedPkg(null);
     }
@@ -102,7 +125,7 @@ const BuyCredits = () => {
               const badge = badgeMap[i];
               const isSelected = selectedPkg === pkg.id;
               const isProcessing = isSelected && purchaseState === "processing";
-              const isUnavailable = !pkg.stripe_price_id;
+              const isUnavailable = false; // Auto-provisions Stripe price on demand.
 
               return (
                 <motion.div
