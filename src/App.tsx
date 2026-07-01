@@ -601,6 +601,7 @@ const App = () => (
                     <Route path="/admin/features" element={<AdminRoute><AdminFeatureToggles /></AdminRoute>} />
                     <Route path="/admin/affiliates" element={<AdminRoute><AdminAffiliates /></AdminRoute>} />
                     <Route path="/admin/referrals" element={<AdminRoute><AdminReferrals /></AdminRoute>} />
+                    <Route path="/admin/blake-subscribers" element={<AdminRoute><AdminBlakeSubscribers /></AdminRoute>} />
                     <Route path="/admin/tv-audit" element={<AdminRoute><AdminTVAudit /></AdminRoute>} />
                     <Route path="/admin/event-fees" element={<AdminRoute><AdminEventFees /></AdminRoute>} />
                     <Route path="/admin/competition-entries" element={<AdminRoute><AdminCompetitionEntries /></AdminRoute>} />
