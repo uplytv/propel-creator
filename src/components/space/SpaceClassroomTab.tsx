@@ -251,6 +251,31 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
   const prevLesson = currentLessonIdx > 0 ? allLessons[currentLessonIdx - 1] : null;
   const nextLesson = currentLessonIdx < allLessons.length - 1 ? allLessons[currentLessonIdx + 1] : null;
 
+  // Skool-style "Continue" target: first uncompleted lesson (or the first lesson).
+  const firstIncompleteLesson = allLessons.find((l: any) => !(completions as Set<string>).has(l.id)) || allLessons[0] || null;
+
+  const renderProgressHero = (variant: "sidebar" | "mobile") => {
+    if (totalLessons === 0) return null;
+    const remaining = totalLessons - completedCount;
+    return (
+      <div className={variant === "mobile" ? "px-4 pt-4 pb-3" : "p-4 border-b border-border"}>
+        <div className="flex items-baseline justify-between mb-1.5">
+          <p className="text-sm font-semibold text-foreground">{progressPct}% complete</p>
+          <p className="text-xs text-muted-foreground tabular-nums">{completedCount}/{totalLessons} lessons</p>
+        </div>
+        <div className="h-2 overflow-hidden bg-muted rounded-sm mb-3">
+          <div className="h-full transition-all duration-500 bg-primary rounded-sm" style={{ width: `${progressPct}%` }} />
+        </div>
+        {firstIncompleteLesson && (
+          <Button size="sm" className="w-full gap-1.5 font-semibold" onClick={() => setSelectedLesson(firstIncompleteLesson)}>
+            <Play className="w-3.5 h-3.5" />
+            {completedCount === 0 ? "Start course" : remaining === 0 ? "Review lessons" : "Continue learning"}
+          </Button>
+        )}
+      </div>
+    );
+  };
+
   const formatDuration = (seconds: number) => {
     if (!seconds) return "";
     const m = Math.floor(seconds / 60);
@@ -457,6 +482,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
   if (isMobile) {
     return (
       <div className="pb-24">
+        {renderProgressHero("mobile")}
         {modules.length === 0 ? (
           <div className="p-8 text-center">
             <BookOpen className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
@@ -612,16 +638,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
 
   const renderSidebar = () => (
     <div className="flex flex-col h-full">
-      {totalLessons > 0 && (
-        <div className="p-4 border-b border-border">
-          <p className="text-xs font-medium mb-2 text-muted-foreground">
-            {completedCount} of {totalLessons} lessons complete
-          </p>
-          <div className="h-2 rounded-full overflow-hidden bg-muted">
-            <div className="h-full rounded-full transition-all duration-500 bg-primary" style={{ width: `${progressPct}%` }} />
-          </div>
-        </div>
-      )}
+      {renderProgressHero("sidebar")}
 
       <div className="flex-1 overflow-y-auto">
         {modules.length === 0 ? (
