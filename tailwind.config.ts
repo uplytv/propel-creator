@@ -88,9 +88,14 @@ export default {
         },
       },
       borderRadius: {
+        // Squared, premium scale (Linear/Vercel/Stripe-tier). rounded-full is
+        // intentionally left untouched so avatars/pills stay circular.
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        xl: "0.5rem",      // 8px  (was 12px)
+        "2xl": "0.625rem", // 10px (was 16px)
+        "3xl": "0.75rem",  // 12px (was 24px)
       },
       keyframes: {
         "accordion-down": {
