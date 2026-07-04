@@ -59,6 +59,8 @@ export async function claudeChat(req: ClaudeChatReq): Promise<any> {
   const wantsJson = req.response_format?.type === "json_object" || req.response_format?.type === "json_schema";
   const sys = wantsJson ? `${system}\n\nReturn ONLY valid JSON. No markdown fences, no preamble.` : system;
 
+  const isFable = req.model.startsWith("claude-fable") || req.model.startsWith("claude-mythos");
+
   const body: any = { model: req.model, max_tokens: req.max_tokens ?? 2048, messages };
   if (sys) body.system = sys;
   if (tools.length) {
@@ -66,13 +68,25 @@ export async function claudeChat(req: ClaudeChatReq): Promise<any> {
     if (toolChoice) body.tool_choice = toolChoice;
   }
 
+  const headers: Record<string, string> = {
+    "x-api-key": apiKey,
+    "anthropic-version": "2023-06-01",
+    "content-type": "application/json",
+  };
+  // Fable 5: opt into a transparent server-side fallback to Opus 4.8 on refusal.
+  if (isFable) {
+    headers["anthropic-beta"] = "server-side-fallback-2026-06-01";
+    body.fallbacks = [{ model: "claude-opus-4-8" }];
+  }
+
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
-    headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+    headers,
     body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(`Anthropic ${res.status}: ${await res.text()}`);
   const data = await res.json();
+  if (data.stop_reason === "refusal") throw new Error("Claude declined this request");
 
   // Anthropic response -> OpenAI shape
   const blocks: any[] = data.content ?? [];

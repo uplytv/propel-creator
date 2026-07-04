@@ -73,7 +73,7 @@ serve(async (req) => {
     let data: any;
     try {
       data = await claudeChat({
-        model: "claude-opus-4-8",
+        model: "claude-fable-5",
         messages: [
           { role: "system", content: SYSTEM },
           { role: "user", content: buildPrompt(body) },

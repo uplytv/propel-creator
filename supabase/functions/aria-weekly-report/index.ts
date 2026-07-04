@@ -104,7 +104,7 @@ Deno.serve(async (req) => {
         let aiData: any;
         try {
           aiData = await claudeChat({
-            model: 'claude-opus-4-8',
+            model: 'claude-fable-5',
             messages: [
               {
                 role: 'system',

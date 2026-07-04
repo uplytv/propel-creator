@@ -37,7 +37,7 @@ Recently completed: ${(ctx.completed ?? []).slice(0, 5).join(" | ") || "none"}`;
     let data: any;
     try {
       data = await claudeChat({
-        model: "claude-opus-4-8",
+        model: "claude-fable-5",
         messages: [
           { role: "system", content: system },
           { role: "user", content: user },

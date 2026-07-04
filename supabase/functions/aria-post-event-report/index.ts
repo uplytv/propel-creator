@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { corsHeaders, json, err } from "../_shared/eventsCors.ts";
-import { callClaude } from "../_shared/anthropic.ts";
+import { callClaude, MODEL_PREMIUM } from "../_shared/anthropic.ts";
 
 // ARIA Post-Event Intelligence: a narrative recap — attendance curve, gate
 // bottlenecks, no-show rate, revenue per tier, and recommendations for next time.
@@ -48,7 +48,7 @@ serve(async (req) => {
       `Tiers: ${JSON.stringify(tiers ?? [])}\n\n` +
       `Return JSON: {"headline":"...","narrative":"2-3 short paragraphs","bottlenecks":["..."],"recommendations":["..."],"no_show_rate_pct": <number>}`;
 
-    const result = await callClaude(system, user, { json: true, maxTokens: 1600 });
+    const result = await callClaude(system, user, { json: true, maxTokens: 1600, model: MODEL_PREMIUM });
     return json({ ok: true, report: result, stats: { sold, entries, noShow, gateCounts } });
   } catch (e) {
     return err((e as Error).message ?? "Failed", 500);

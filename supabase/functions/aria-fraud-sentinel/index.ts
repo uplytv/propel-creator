@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { corsHeaders, json, err } from "../_shared/eventsCors.ts";
-import { callClaude } from "../_shared/anthropic.ts";
+import { callClaude, MODEL_PREMIUM } from "../_shared/anthropic.ts";
 
 // ARIA Fraud Sentinel: flags anomalous purchase patterns (bulk buys, same buyer)
 // and scan anomalies (same ticket at two gates, impossible re-entry timing).
@@ -49,7 +49,7 @@ serve(async (req) => {
       `Scan stats: duplicate_rejections=${duplicates}, tickets_seen_at_multiple_gates=${multiGate}, total_scans=${(scans ?? []).length}\n\n` +
       `Return JSON: {"risk":"low|medium|high","flags":[{"type":"purchase|scan","detail":"...","severity":"low|med|high"}],"note":"one line"}`;
 
-    const result = await callClaude(system, user, { json: true, maxTokens: 1000 });
+    const result = await callClaude(system, user, { json: true, maxTokens: 1000, model: MODEL_PREMIUM });
     return json({ ok: true, report: result, raw_signals: { topBuyers, duplicates, multiGate } });
   } catch (e) {
     return err((e as Error).message ?? "Failed", 500);

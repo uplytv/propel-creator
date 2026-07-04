@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { corsHeaders, json, err } from "../_shared/eventsCors.ts";
-import { callClaude } from "../_shared/anthropic.ts";
+import { callClaude, MODEL_PREMIUM } from "../_shared/anthropic.ts";
 
 // ARIA Pricing Intelligence: analyzes sales velocity vs time-to-event and
 // recommends tier releases / price moves. RECOMMENDATIONS ONLY — never reprices.
@@ -33,7 +33,7 @@ serve(async (req) => {
       `Recent completed orders (newest first): ${JSON.stringify((recentOrders ?? []).slice(0, 40))}\n\n` +
       `Return JSON: {"summary":"one line","velocity":"slow|steady|hot","recommendations":[{"action":"...","why":"...","confidence":"low|med|high"}]}`;
 
-    const result = await callClaude(system, user, { json: true, maxTokens: 1200 });
+    const result = await callClaude(system, user, { json: true, maxTokens: 1200, model: MODEL_PREMIUM });
     return json({ ok: true, analysis: result });
   } catch (e) {
     return err((e as Error).message ?? "Failed", 500);
