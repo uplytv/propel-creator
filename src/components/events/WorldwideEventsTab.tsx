@@ -106,8 +106,8 @@ export function WorldwideEventsTab() {
       </div>
 
       {loading && events.length === 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-72 w-full" />)}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+          {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="aspect-[3/4] w-full rounded-lg" />)}
         </div>
       ) : events.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
@@ -115,7 +115,7 @@ export function WorldwideEventsTab() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
             {events.map((e) => <GlobalEventCard key={e.id} event={e} />)}
           </div>
           {hasMore && (
