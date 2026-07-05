@@ -36,8 +36,12 @@ export const PLATFORM_PLANS: PlatformPlan[] = [
     features: [
       "Everything in Starter",
       "3 sub-accounts",
-      "ARIA AI Team — 5 specialized agents",
-      "Advanced analytics",
+      "ARIA AI Team — 5 specialized agents working for you",
+      "AI content repurposing — one video becomes clips, posts & emails",
+      "Pay-per-view live streams & event livestreams",
+      "Ticket resale marketplace & QR door scanning",
+      "Email blasts & SmartLinks with analytics",
+      "Advanced analytics + weekly AI growth report",
       "Unlimited events",
       "Priority support",
     ],
@@ -50,8 +54,12 @@ export const PLATFORM_PLANS: PlatformPlan[] = [
     features: [
       "Everything in Unlimited",
       "Unlimited sub-accounts",
-      "White-Label branding",
-      "Your brand color & logo on member surfaces",
+      "Full White-Label — your brand, not ours",
+      "Your logo, colors & branded emails on every member surface",
+      "UPLY TV (Roku) channel placement",
+      "Affiliate & promoter program for your team",
+      "Per-event platform fees you control",
+      "Dedicated onboarding — free done-for-you setup call",
       "Founding-creator perks",
     ],
   },
@@ -60,3 +68,12 @@ export const PLATFORM_PLANS: PlatformPlan[] = [
 export const TRIAL_DAYS = 14;
 
 export const TRIAL_INTENT_STORAGE_KEY = "uply_trial_intent";
+
+/** Owner's exact risk-reversal wording — shown near every trial CTA. */
+export const TRIAL_RISK_REVERSAL = "14 days free · No obligation · Cancel at any time";
+
+/**
+ * Free human-led setup call offered right after trial checkout.
+ * PLACEHOLDER — replace with the real booking link before launch.
+ */
+export const SETUP_CALL_URL = "https://calendly.com/uply/setup";
