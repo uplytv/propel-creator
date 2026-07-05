@@ -1,25 +1,29 @@
 import { useEffect, useState } from "react";
-import { useParams, Navigate, Link } from "react-router-dom";
+import { useParams, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import SocialCreatorPage from "@/components/creatorprofile/social/SocialCreatorPage";
 import { getProfileHandleCandidates } from "@/lib/profileSlug";
+import { resolveCreatorDestination } from "@/lib/resolveCreatorDestination";
 
 /**
  * Resolves /:username (and /:username/page) to the canonical /@<slug> social
- * creator page. Falls back to a 404 if no profile exists.
+ * creator page.
  *
  * If the profile has a vanity_slug on artist_profiles, that wins; otherwise we
- * use the username itself.
+ * use the username itself. When NO profile exists we never render a 404 —
+ * the handle runs the standard destination chain (community → profile →
+ * curated artist site → artist blog → /roster) and redirects to the first
+ * tier that exists.
  */
 export default function UsernameRedirect() {
   const { username } = useParams<{ username: string }>();
-  const [target, setTarget] = useState<string | null | undefined>(undefined);
+  const [target, setTarget] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     let cancelled = false;
     async function resolve() {
       if (!username) {
-        setTarget(null);
+        setTarget("/roster");
         return;
       }
       const candidates = getProfileHandleCandidates(username);
@@ -33,7 +37,10 @@ export default function UsernameRedirect() {
       const profile = results.find(({ data }) => data)?.data;
 
       if (!profile) {
-        if (!cancelled) setTarget(null);
+        // No profiles row — fall through the never-404 chain (roster site,
+        // roster blog, /roster) instead of a "Not found" dead end.
+        const dest = await resolveCreatorDestination(username);
+        if (!cancelled) setTarget(dest);
         return;
       }
 
@@ -58,22 +65,6 @@ export default function UsernameRedirect() {
 
   if (target === undefined) {
     return <div className="min-h-screen bg-background" aria-hidden />;
-  }
-  if (target === null) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground px-6 text-center">
-        <h1 className="text-3xl font-heading font-bold mb-3">Not found</h1>
-        <p className="opacity-70 mb-6">
-          No creator with the handle <span className="font-mono">@{username}</span>
-        </p>
-        <Link
-          to="/discover"
-          className="px-5 py-3 rounded-full font-semibold border border-border hover:bg-muted transition min-h-[44px] inline-flex items-center"
-        >
-          Discover creators
-        </Link>
-      </div>
-    );
   }
   return <Navigate to={target} replace />;
 }

@@ -1,15 +1,20 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ARTIST_ROSTER, formatEstablished } from "@/data/artistRoster";
 import { BadgeCheck, ArrowUpRight } from "lucide-react";
 import { trackEvent } from "@/lib/posthog";
+import { resolveCreatorDestination } from "@/lib/resolveCreatorDestination";
 
 /**
  * Marketing landing section showcasing featured creators on UPLY.
- * Each card links to the roster-backed social profile at /@<handle>.
+ * Each card keeps a static href to the roster-backed social profile at
+ * /@<handle> (sane middle-click / new-tab), while plain left-clicks resolve
+ * the best live destination (community → profile → site → blog → /roster)
+ * via resolveCreatorDestination so a card never lands on a dead end.
  * Cards can be filtered client-side by creator type (Singer, DJ, …).
  */
 export default function FeaturedCreatorsSection() {
+  const navigate = useNavigate();
   const [typeFilter, setTypeFilter] = useState<string>("All");
 
   const types = useMemo(() => {
@@ -75,7 +80,8 @@ export default function FeaturedCreatorsSection() {
               key={a.slug}
               to={`/@${a.slug}`}
               aria-label={`Visit ${a.displayName} on UPLY`}
-              onClick={() =>
+              onPointerEnter={() => void resolveCreatorDestination(a.slug)}
+              onClick={(e) => {
                 trackEvent("landing_featured_creator_clicked", {
                   surface: "landing_featured_creators",
                   slug: a.slug,
@@ -83,8 +89,21 @@ export default function FeaturedCreatorsSection() {
                   display_name: a.displayName,
                   position: index + 1,
                   destination: `/@${a.slug}`,
-                })
-              }
+                });
+                // Let middle-click / modified clicks use the static href.
+                if (
+                  e.defaultPrevented ||
+                  e.button !== 0 ||
+                  e.metaKey ||
+                  e.ctrlKey ||
+                  e.shiftKey ||
+                  e.altKey
+                ) {
+                  return;
+                }
+                e.preventDefault();
+                void resolveCreatorDestination(a.slug).then((dest) => navigate(dest));
+              }}
               className="group relative rounded-2xl overflow-hidden border border-white/10 hover:border-white/30 transition-all hover:-translate-y-1 bg-white/5"
               style={{
                 background: `linear-gradient(160deg, ${a.gradient.from}, ${a.gradient.to})`,

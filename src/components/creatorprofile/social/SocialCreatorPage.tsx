@@ -29,6 +29,7 @@ import UpcomingEventsStrip from "../UpcomingEventsStrip";
 import CreatorWorksGrid from "../CreatorWorksGrid";
 import EpisodeFeed from "../EpisodeFeed";
 import CreatorShopTab from "./CreatorShopTab";
+import CreatorDestinationRedirect from "@/components/common/CreatorDestinationRedirect";
 
 const ArtistPageContent = lazy(
   () => import("@/features/music/components/ArtistPage/ArtistPageContent"),
@@ -361,25 +362,16 @@ export default function SocialCreatorPage() {
     jsonLd: personLd,
   });
 
-  // Loading / 404
+  // Loading / never-404 fallback
   if (isLoading) {
     return <div className="min-h-screen bg-background" aria-hidden />;
   }
   if (!basic) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground px-6 text-center">
-        <h1 className="text-3xl font-heading font-bold mb-3">Not found</h1>
-        <p className="opacity-70 mb-6">
-          No creator with the handle <span className="font-mono">@{slug}</span>
-        </p>
-        <Link
-          to="/discover"
-          className="px-5 py-3 rounded-full font-semibold border border-border hover:bg-muted transition min-h-[44px] inline-flex items-center"
-        >
-          Discover creators
-        </Link>
-      </div>
-    );
+    // No DB profile for this handle (e.g. roster artists without a profiles
+    // row). Never render "Not found" — resolve the standard destination
+    // chain (community → profile → artist site → blog → /roster) and go
+    // to the first tier that exists.
+    return <CreatorDestinationRedirect handle={slug} />;
   }
 
   // Tabs

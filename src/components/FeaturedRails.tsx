@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ChevronLeft,
   ChevronRight,
@@ -17,6 +17,7 @@ import bandsCoverAsset from "@/assets/150bands-cover.jpg.asset.json";
 import getdownAsset from "@/assets/getdown-cover.jpg.asset.json";
 import aryaBgAsset from "@/assets/arya-xo-bg.png.asset.json";
 import { ARTIST_ROSTER, formatEstablished } from "@/data/artistRoster";
+import { resolveCreatorDestination } from "@/lib/resolveCreatorDestination";
 
 
 /**
@@ -50,6 +51,13 @@ interface RailItem {
   typeLabel?: string;
   /** "Est. <Mon YYYY>" label shown under the subtitle. */
   estLabel?: string;
+  /**
+   * Creator handle to resolve on click via resolveCreatorDestination
+   * (community → profile → site → blog → /roster). When set, `href` stays as
+   * the best static guess for middle-click / new-tab, and plain left-clicks
+   * navigate to the resolved never-404 destination instead.
+   */
+  resolveHandle?: string;
 }
 
 
@@ -120,7 +128,10 @@ const RAILS: Rail[] = [
       title: a.displayName,
       subtitle: a.location ?? a.eyebrow,
       image: a.portraitUrl,
-      href: `/${a.slug}`,
+      // Static guess: /@<slug> renders the roster-backed profile for every
+      // roster artist (no DB row required), so new-tab opens never 404.
+      href: `/@${a.slug}`,
+      resolveHandle: a.slug,
       verified: a.verified,
       gradient: a.gradient,
       accent: a.accent,
@@ -298,6 +309,7 @@ function aspectClasses(a: Aspect) {
 
 function RailRow({ rail }: { rail: Rail }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
   const [typeFilter, setTypeFilter] = useState<string>("All");
   const Icon = rail.icon;
 
@@ -394,6 +406,32 @@ function RailRow({ rail }: { rail: Rail }) {
             key={item.id}
             to={item.href}
             aria-label={item.title}
+            onPointerEnter={
+              item.resolveHandle
+                ? () => void resolveCreatorDestination(item.resolveHandle!)
+                : undefined
+            }
+            onClick={
+              item.resolveHandle
+                ? (e) => {
+                    // Let middle-click / modified clicks use the static href.
+                    if (
+                      e.defaultPrevented ||
+                      e.button !== 0 ||
+                      e.metaKey ||
+                      e.ctrlKey ||
+                      e.shiftKey ||
+                      e.altKey
+                    ) {
+                      return;
+                    }
+                    e.preventDefault();
+                    void resolveCreatorDestination(item.resolveHandle!).then((dest) =>
+                      navigate(dest),
+                    );
+                  }
+                : undefined
+            }
             className="group/card snap-start shrink-0 focus:outline-none rounded-xl"
           >
             <div
