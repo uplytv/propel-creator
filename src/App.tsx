@@ -18,7 +18,7 @@ import RouteErrorBoundary from "@/components/RouteErrorBoundary";
 import InstallPrompt from "@/components/InstallPrompt";
 import PushNotificationPermission from "@/components/PushNotificationPermission";
 import UploadRecovery from "@/components/UploadRecovery";
-import PersistentPlayer from "@/features/music/components/AudioPlayer/PersistentPlayer";
+import { usePlayerStore } from "@/features/music/hooks/usePlayerStore";
 import OfflineScreen from "@/components/OfflineScreen";
 import SplashScreen from "@/components/SplashScreen";
 import { useNativeInit, useKeyboardState } from "@/hooks/useNativePlatform";
@@ -276,10 +276,20 @@ function ScrollToTop() {
   return null;
 }
 
+// Lazy-loaded so hls.js (statically imported by the player) leaves the main
+// bundle and only downloads when the user actually plays audio.
+const PersistentPlayer = lazy(() => import("@/features/music/components/AudioPlayer/PersistentPlayer"));
+
 function PersistentPlayerGate() {
   const { pathname } = useLocation();
+  const hasTrack = usePlayerStore((s) => s.queue.length > 0 && s.currentIndex >= 0);
   if (pathname.startsWith('/@')) return null;
-  return <PersistentPlayer />;
+  if (!hasTrack) return null;
+  return (
+    <Suspense fallback={null}>
+      <PersistentPlayer />
+    </Suspense>
+  );
 }
 
 function NativeShell({ children }: { children: React.ReactNode }) {
