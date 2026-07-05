@@ -41,17 +41,38 @@ export default function Auth() {
     return raw;
   })();
 
+  // Member (free-account) entry: /auth?mode=signup&as=member&redirect=...
+  // Members skip creator onboarding + the approval waitlist entirely.
+  const asMember = new URLSearchParams(location.search).get("as") === "member";
+
   useEffect(() => {
     if (signUpSuccess) return;
     const checkAndRedirect = async (session: any) => {
       if (!session) return;
       // Check if user needs onboarding
-      const { data: profile } = await supabase
+      const { data: profile } = await (supabase as any)
         .from("profiles")
-        .select("onboarding_complete, is_approved")
+        .select("onboarding_complete, is_approved, account_type")
         .eq("user_id", session.user.id)
         .single();
       const p = profile as any;
+      // Members (free accounts) bypass creator onboarding + the approval
+      // waitlist: straight to their destination. `as=member` records the
+      // persona on first pass; a stored 'member' persona covers later
+      // sign-ins without the param.
+      if (asMember || p?.account_type === "member") {
+        // Record the persona only for pristine profiles (fresh signups).
+        // A creator who signs in through a member CTA link must never be
+        // downgraded — onboarding_complete/is_approved mark the creator path.
+        if (asMember && p?.account_type !== "member" && !p?.onboarding_complete && !p?.is_approved) {
+          await (supabase as any)
+            .from("profiles")
+            .update({ account_type: "member" })
+            .eq("user_id", session.user.id);
+        }
+        navigate(redirectParam || "/discover", { replace: true });
+        return;
+      }
       if (!p?.onboarding_complete) {
         navigate("/onboarding", { replace: true });
       } else if (p?.is_approved) {
@@ -67,7 +88,7 @@ export default function Auth() {
       if (session && !signUpSuccess) checkAndRedirect(session);
     });
     return () => subscription.unsubscribe();
-  }, [navigate, signUpSuccess, redirectParam]);
+  }, [navigate, signUpSuccess, redirectParam, asMember]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,10 +153,20 @@ export default function Auth() {
           Sentry.captureException(err, { tags: { context: "creator_affiliate_tracking" } });
         }
       }
-      trackEvent("signup_completed", { method: "email", has_referral: !!(refCode || creatorRefCode) });
+      trackEvent("signup_completed", { method: "email", has_referral: !!(refCode || creatorRefCode), as_member: asMember });
       // Auto-confirm is enabled — if session exists, redirect immediately
       if (signUpData?.session) {
         toast.success("Account created!", { description: "Welcome to UPLY!" });
+        if (asMember) {
+          // Free member account: record the persona and skip creator
+          // onboarding/waitlist. Idempotent with checkAndRedirect's write.
+          await (supabase as any)
+            .from("profiles")
+            .update({ account_type: "member" })
+            .eq("user_id", signUpData.user.id);
+          navigate(redirectParam || "/discover", { replace: true });
+          return;
+        }
         navigate("/onboarding", { replace: true });
         return;
       }
@@ -306,7 +337,13 @@ export default function Auth() {
               {tab === "signup" ? "Create your free account" : "Welcome back"}
             </CardTitle>
             <CardDescription>
-              {tab === "signup" ? "Keep 95% of what you earn. No card required." : "Sign in to your creator dashboard"}
+              {tab === "signup"
+                ? asMember
+                  ? "Join communities, take free courses, and support creators. No card required."
+                  : "Keep 95% of what you earn. No card required."
+                : asMember
+                  ? "Sign in to your account"
+                  : "Sign in to your creator dashboard"}
             </CardDescription>
           </CardHeader>
           <CardContent>

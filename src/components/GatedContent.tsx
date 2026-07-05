@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Lock, LogIn, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { memberAuthUrl } from "@/lib/memberAuth";
 import PaywallModal from "@/components/PaywallModal";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -42,13 +43,13 @@ function SignInPrompt() {
       <div className="blur-sm pointer-events-none select-none opacity-30 min-h-[120px]" />
       <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/60 backdrop-blur-[2px] rounded-lg p-6">
         <LogIn className="w-8 h-8 text-muted-foreground mb-3" />
-        <p className="text-sm font-semibold text-foreground mb-2">Sign in to access</p>
+        <p className="text-sm font-semibold text-foreground mb-2">Create your free account</p>
         <Button
           size="sm"
-          onClick={() => navigate(`/auth?returnTo=${encodeURIComponent(returnTo)}`)}
+          onClick={() => navigate(memberAuthUrl(returnTo))}
           className="gap-1.5"
         >
-          <LogIn className="w-3.5 h-3.5" /> Sign In
+          <LogIn className="w-3.5 h-3.5" /> Sign Up Free
         </Button>
       </div>
     </div>

@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { CalendarDays } from "lucide-react";
 import { useInviteCodes } from "@/hooks/useInviteCodes";
 import { fireMetaEvent, fireGoogleEvent } from "@/lib/adTracking";
+import { memberAuthUrl } from "@/lib/memberAuth";
 import AddFriendButton from "@/components/social/AddFriendButton";
 import FoundingCreatorBadge from "@/components/shared/FoundingCreatorBadge";
 import CreatorMusicSection from "@/features/music/components/CreatorMusicSection";
@@ -409,7 +410,7 @@ export default function CreatorProfile() {
 
   const handleJoin = async () => {
     if (!user) {
-      navigate(`/auth?ref=${username}`);
+      navigate(memberAuthUrl(window.location.pathname));
       return;
     }
 
@@ -437,7 +438,7 @@ export default function CreatorProfile() {
 
   const handleBuyProduct = async (productId: string) => {
     if (!user) {
-      navigate(`/auth?ref=${username}`);
+      navigate(memberAuthUrl(window.location.pathname));
       return;
     }
     const product = products.find((p: any) => p.id === productId);
@@ -874,6 +875,12 @@ export default function CreatorProfile() {
                             className="flex items-center gap-3 py-2 px-2 rounded-md hover:bg-white/5 transition-colors cursor-pointer"
                             onClick={() => {
                               if (lesson.is_free) {
+                                // Free lessons require a (free) account — RLS only
+                                // exposes lessons to authenticated users.
+                                if (!user) {
+                                  navigate(memberAuthUrl(`/community/${profile.user_id}/classroom`));
+                                  return;
+                                }
                                 navigate(`/community/${profile.user_id}/classroom`);
                               }
                             }}

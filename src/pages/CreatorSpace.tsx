@@ -19,6 +19,7 @@ import BlastHistory from "@/components/blast/BlastHistory";
 import { CreatorAffiliateProgramSettings } from "@/components/affiliates/CreatorAffiliateProgramSettings";
 import { useCreatorAffiliateProgram } from "@/hooks/useAffiliates";
 import { setAffiliateCookie } from "@/lib/affiliateCookies";
+import { memberAuthUrl } from "@/lib/memberAuth";
 import { PricingTab } from "@/components/space/PricingTab";
 import { useSubscriptionTiers } from "@/hooks/useStripeAccount";
 import TierSelectionModal from "@/components/TierSelectionModal";
@@ -148,7 +149,7 @@ export default function CreatorSpace() {
 
   const handleJoinClick = async () => {
     if (!user) {
-      navigate("/auth");
+      navigate(memberAuthUrl());
       return;
     }
     if (hasPaidTiers) {
@@ -185,7 +186,7 @@ export default function CreatorSpace() {
   const switchTab = (slug: TabSlug) => {
     if (!canAccessTab(slug)) {
       if (!user) {
-        navigate("/auth");
+        navigate(memberAuthUrl());
         return;
       }
       setShowTierModal(true);

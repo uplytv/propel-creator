@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Loader2, BookOpen, Layers, Award, Lock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { memberAuthUrl } from "@/lib/memberAuth";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Sentry } from "@/lib/sentry";
@@ -31,6 +33,7 @@ export default function CourseEnrollSheet({
   lessonCount = 0, moduleCount = 0,
 }: Props) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   // Check if already purchased
@@ -63,7 +66,11 @@ export default function CourseEnrollSheet({
   });
 
   const handleEnroll = async () => {
-    if (!user) return;
+    if (!user) {
+      // Logged-out visitor: create a free member account, then come back here.
+      navigate(memberAuthUrl());
+      return;
+    }
     setLoading(true);
     try {
       const origin = window.location.origin;

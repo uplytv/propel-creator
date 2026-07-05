@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Sentry } from "@/lib/sentry";
+import { memberAuthUrl } from "@/lib/memberAuth";
 
 const TYPE_LABELS: Record<string, string> = {
   membership_tier: "Membership",
@@ -57,7 +58,8 @@ export default function PaywallModal({
 
   const handlePurchase = async () => {
     if (!user) {
-      navigate("/auth");
+      // Account required before checkout — free member signup, then return.
+      navigate(memberAuthUrl());
       return;
     }
     setLoading(true);

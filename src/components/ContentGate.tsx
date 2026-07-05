@@ -11,6 +11,7 @@ import { useMemberSubscription } from "@/hooks/useStripeAccount";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { memberAuthUrl } from "@/lib/memberAuth";
 
 interface ContentGateProps {
   creatorId: string;
@@ -57,9 +58,9 @@ export default function ContentGate({ creatorId, children, isFree, type = "post"
         <div className="blur-sm pointer-events-none select-none opacity-50">{children}</div>
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/60 backdrop-blur-[2px] rounded-lg">
           <LogIn className="w-8 h-8 text-muted-foreground mb-3" />
-          <p className="text-sm font-semibold text-foreground mb-2">Sign up to access</p>
-          <Button size="sm" onClick={() => navigate("/auth")} className="gap-1.5">
-            <LogIn className="w-3.5 h-3.5" /> Sign Up
+          <p className="text-sm font-semibold text-foreground mb-2">Create your free account</p>
+          <Button size="sm" onClick={() => navigate(memberAuthUrl())} className="gap-1.5">
+            <LogIn className="w-3.5 h-3.5" /> Sign Up Free
           </Button>
         </div>
       </div>

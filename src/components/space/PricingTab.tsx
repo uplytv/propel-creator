@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import EmptyState from "@/components/ui/EmptyState";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { PurchaseOverlay } from "@/components/payments/PurchaseOverlay";
+import { memberAuthUrl } from "@/lib/memberAuth";
 
 interface PricingTabProps {
   creatorId: string;
@@ -147,7 +148,8 @@ export function PricingTab({ creatorId }: PricingTabProps) {
 
   const handleSubscribe = async (tierId: string) => {
     if (!user) {
-      navigate("/auth");
+      // Account required before checkout — free member signup, then return.
+      navigate(memberAuthUrl());
       return;
     }
     const tier = tiers?.find((t: any) => t.id === tierId);

@@ -57,13 +57,16 @@ export default function Landing() {
   useEffect(() => {
     if (authLoading || !user) return;
     const redirect = async () => {
-      const { data: profile } = await supabase
+      const { data: profile } = await (supabase as any)
         .from("profiles")
-        .select("onboarding_complete, is_approved")
+        .select("onboarding_complete, is_approved, account_type")
         .eq("user_id", user.id)
         .single();
       const p = profile as any;
-      if (p?.is_approved) {
+      // Free member accounts never enter the creator application funnel.
+      if (p?.account_type === "member") {
+        navigate("/discover", { replace: true });
+      } else if (p?.is_approved) {
         navigate("/discover", { replace: true });
       } else if (!p?.onboarding_complete) {
         navigate("/apply", { replace: true });
