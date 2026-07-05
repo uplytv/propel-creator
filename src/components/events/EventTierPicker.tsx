@@ -97,11 +97,16 @@ export default function EventTierPicker({ eventId }: { eventId: string; eventTit
           return (
             <div
               key={tier.id}
-              className="rounded-xl border border-border bg-card p-4 flex flex-col gap-3"
+              className={`rounded-xl border border-border bg-card p-4 flex flex-col gap-3 ${soldOut ? "opacity-60" : ""}`}
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="font-semibold text-foreground">{tier.name}</p>
+                  <p className="font-semibold text-foreground flex items-center gap-2">
+                    {tier.name}
+                    {soldOut && (
+                      <span className="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-muted text-muted-foreground">Sold out</span>
+                    )}
+                  </p>
                   {tier.description && (
                     <p className="text-sm text-muted-foreground">{tier.description}</p>
                   )}
