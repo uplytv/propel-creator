@@ -5,6 +5,7 @@ import { Compass, Radio, Upload, Film, BookOpen, Users, CalendarDays, X, Shoppin
 import LiveShoppingGrid from "@/components/discovery/LiveShoppingGrid";
 import AppLayout from "@/components/layout/AppLayout";
 import PageHero from "@/components/layout/PageHero";
+import QueryErrorState from "@/components/ui/QueryErrorState";
 import { useDiscoveryFeed, type SortOption, type FeedTab } from "@/hooks/useDiscoveryFeed";
 import FeedCard from "@/components/discovery/FeedCard";
 import FeedFilters, { type DiscoverCategory } from "@/components/discovery/FeedFilters";
@@ -114,7 +115,7 @@ export default function Discover() {
 
   const filter = categoryToFilter(category);
   const liveOnly = category === "live";
-  const { data: feedData, isLoading } = useDiscoveryFeed(filter, sort, "", liveOnly, "foryou");
+  const { data: feedData, isLoading, isError, refetch } = useDiscoveryFeed(filter, sort, "", liveOnly, "foryou");
 
   const liveItems = feedData?.live ?? [];
   const allItems = feedData?.all ?? [];
@@ -289,6 +290,8 @@ export default function Discover() {
                   <SkeletonCard key={i} />
                 ))}
               </div>
+            ) : isError ? (
+              <QueryErrorState message="We couldn't load the feed right now. Check your connection and try again." onRetry={() => refetch()} />
             ) : filteredItems.length === 0 ? (
               <EmptyState category={category} />
             ) : (
