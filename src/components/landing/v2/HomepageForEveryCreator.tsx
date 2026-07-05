@@ -39,7 +39,7 @@ export default function HomepageForEveryCreator() {
 
         <div className="text-center mt-10">
           <Link
-            to="/auth"
+            to="/auth?mode=signup"
             className="btn-primary-glow inline-flex items-center justify-center gap-1.5 rounded-md px-8 h-12 text-sm font-bold tracking-wide"
           >
             Get started free <ArrowRight className="w-4 h-4" />

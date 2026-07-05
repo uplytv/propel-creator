@@ -32,7 +32,7 @@ export default function HomepagePPV() {
                 <Link to="/ppv" className="btn-primary-glow inline-flex items-center justify-center gap-1.5 rounded-md px-6 h-11 text-sm font-bold">
                   Explore PPV <ArrowRight className="w-4 h-4" />
                 </Link>
-                <Link to="/auth" className="btn-gold-outline inline-flex items-center justify-center gap-1.5 rounded-md px-6 h-11 text-sm font-bold">
+                <Link to="/auth?mode=signup" className="btn-gold-outline inline-flex items-center justify-center gap-1.5 rounded-md px-6 h-11 text-sm font-bold">
                   Start streaming
                 </Link>
               </div>

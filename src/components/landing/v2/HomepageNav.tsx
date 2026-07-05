@@ -62,7 +62,7 @@ export default function HomepageNav() {
             Sign In
           </Link>
           <Link
-            to="/auth"
+            to="/auth?mode=signup"
             className="btn-primary-glow inline-flex items-center rounded-full px-4 sm:px-5 h-9 sm:h-10 text-[13px] font-bold tracking-wide"
           >
             Get Started

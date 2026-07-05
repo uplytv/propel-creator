@@ -30,6 +30,7 @@ export default function Auth() {
     if (params.get("mode") === "signup") return "signup";
     return getAffiliateCookie("uply_waitlist_ref") || getAffiliateCookie("uply_invite_code") ? "signup" : "signin";
   })();
+  const [tab, setTab] = useState<string>(defaultTab);
 
   // Post-auth redirect target (e.g. /tickets from the Resell tickets entry).
   // Only allow same-origin paths to prevent open-redirect abuse.
@@ -307,8 +308,12 @@ export default function Auth() {
 
         <Card className="border-border/50 shadow-xl">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold">Welcome</CardTitle>
-            <CardDescription>Sign in to your creator dashboard</CardDescription>
+            <CardTitle className="text-2xl font-bold">
+              {tab === "signup" ? "Create your free account" : "Welcome back"}
+            </CardTitle>
+            <CardDescription>
+              {tab === "signup" ? "Keep 95% of what you earn. No card required." : "Sign in to your creator dashboard"}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {forgotMode ? (
@@ -347,7 +352,7 @@ export default function Auth() {
                   </div>
                 </div>
 
-                <Tabs defaultValue={defaultTab}>
+                <Tabs value={tab} onValueChange={setTab}>
                   <TabsList className="grid w-full grid-cols-2 mb-4">
                     <TabsTrigger value="signin">Sign In</TabsTrigger>
                     <TabsTrigger value="signup">Sign Up</TabsTrigger>

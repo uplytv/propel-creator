@@ -130,7 +130,7 @@ export default function HomepagePricing() {
                   </li>
                 ))}
               </ul>
-              <Link to="/auth" className="block">
+              <Link to="/auth?mode=signup" className="block">
                 <Button
                   className={`w-full rounded-full h-11 font-bold ${
                     t.popular ? "btn-primary-glow" : "btn-gold-outline"

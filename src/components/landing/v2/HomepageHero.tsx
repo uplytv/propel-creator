@@ -80,7 +80,7 @@ export default function HomepageHero() {
 
         <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto">
           <Link
-            to="/auth"
+            to="/auth?mode=signup"
             className="btn-primary-glow w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-full px-6 h-12 text-sm font-bold tracking-wide"
           >
             Get Up. Get UPLY <ArrowRight className="w-4 h-4" />
