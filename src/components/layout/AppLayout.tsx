@@ -33,9 +33,23 @@ import { usePublicProfileInfo } from "@/hooks/usePublicProfilePath";
 
 type NavItem = { label: string; icon: React.ElementType; path: string; desc: string; requiresTier?: number; badgeKey?: string; featureKey?: string };
 
-// Sections in display order. EVENTS leads — UPLY's wedge is live ticketed events + PPV.
+// Six flat primary destinations (Skool-style calm). Everything else lives under
+// the single collapsible "More" group at the bottom of the nav.
+const primaryNav: NavItem[] = [
+  { label: "Home", icon: Home, path: "/dashboard", desc: "Overview" },
+  { label: "Discover", icon: Search, path: "/discover", desc: "Find creators" },
+  { label: "Events", icon: Calendar, path: "/events", desc: "Host & manage events", featureKey: "events_hub" },
+  { label: "Community", icon: LayoutGrid, path: "__space__", desc: "Your community hub" },
+  { label: "Studio", icon: Radio, path: "/go-live", desc: "Create & go live" },
+  { label: "Wallet", icon: Wallet, path: "/wallet", desc: "Earnings & payouts", featureKey: "wallet" },
+];
+
+// Paths already surfaced as primary items — excluded from "More" to avoid duplicates.
+const primaryPaths = new Set(primaryNav.map((i) => i.path));
+
+// Item catalog feeding the "More" group. Grouping is kept for per-core feature
+// gating (isCoreEnabled) — the render flattens everything into one group.
 // Every item is feature-gated so admins can tune per-category in /admin/feature-toggles.
-// EVENTS core is expanded by default; others collapsed.
 const coreNav: { core: string; label: string; icon: React.ElementType; items: NavItem[] }[] = [
   {
     core: "events",
@@ -178,7 +192,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [expandedCores, setExpandedCores] = useState<string[]>(["events"]);
+  const [expandedCores, setExpandedCores] = useState<string[]>([]);
   const [uploadSheetOpen, setUploadSheetOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
 
@@ -196,6 +210,18 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   // sidebar Profile shortcut and the branded 404 CTA stay in lockstep.
   const { path: publicProfilePath, handle: vanitySlug } = usePublicProfileInfo();
   const yourPagePath = user ? `/music/artist/${user.id}/edit` : "/auth";
+
+  // Everything that isn't one of the six primary destinations, flattened into
+  // the single "More" group. Preserves per-core gating (isCoreEnabled) and
+  // item-level featureKey gating; skips items already surfaced as primaries.
+  const moreNavItems: NavItem[] = [
+    ...coreNav
+      .filter((g) => isCoreEnabled(g.core))
+      .flatMap((g) => g.items.filter((i) => !primaryPaths.has(i.path))),
+    { label: "Your Page", icon: Globe, path: yourPagePath, desc: "Your public artist page" },
+    ...utilityNav,
+    ...(isAdmin ? [{ label: "Admin", icon: Shield, path: "/admin", desc: "Platform admin" } as NavItem] : []),
+  ].filter((i) => !i.featureKey || isEnabled(i.featureKey));
 
   const getBadge = (item: NavItem) => {
     if (item.badgeKey === "collaborate") return unreadCount;
@@ -217,6 +243,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   // Sanity-check that every nav entry points at a registered route. Dev-only.
   useEffect(() => {
     const allItems = [
+      ...primaryNav,
       ...coreNav.flatMap((g) => g.items),
       ...utilityNav,
       { label: "Public Profile", path: publicProfilePath },
@@ -229,24 +256,14 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     }
   }, [publicProfilePath, yourPagePath]);
 
-  // Auto-expand the core that contains the active route
+  // Auto-expand "More" when it contains the active route
   useEffect(() => {
-    for (const group of coreNav) {
-      const hasActive = group.items.some(item => {
-        const resolved = resolvePath(item);
-        return location.pathname === resolved || location.pathname.startsWith(resolved + "/");
-      });
-      if (hasActive && !expandedCores.includes(group.core)) {
-        setExpandedCores(prev => [...prev, group.core]);
-      }
-    }
-    // Auto-expand More Tools if a utility item is active
-    const utilityActive = utilityNav.some(item => {
+    const moreActive = moreNavItems.some(item => {
       const resolved = resolvePath(item);
-      return location.pathname === resolved;
+      return location.pathname === resolved || location.pathname.startsWith(resolved + "/");
     }) || location.pathname.startsWith("/admin");
-    if (utilityActive && !expandedCores.includes("more_tools")) {
-      setExpandedCores(prev => [...prev, "more_tools"]);
+    if (moreActive && !expandedCores.includes("more")) {
+      setExpandedCores(prev => [...prev, "more"]);
     }
   }, [location.pathname, user]);
 
@@ -318,69 +335,28 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   const renderDesktopNav = () => (
     <nav className={`flex-1 mt-2 ${collapsed ? "px-2" : "px-3"} overflow-y-auto`}>
-      {/* Discover + Home */}
-      {renderNavItem({ label: "Discover", icon: Search, path: "/discover", desc: "Find creators" }, collapsed)}
-      {renderNavItem({ label: "Home", icon: Home, path: "/dashboard", desc: "Overview" }, collapsed)}
-      {renderNavItem({ label: "Your Page", icon: Globe, path: yourPagePath, desc: "Your public artist page" }, collapsed)}
+      {/* Primary — six flat destinations */}
+      {primaryNav.map(item =>
+        collapsed ? (
+          <Tooltip key={item.label}>
+            <TooltipTrigger asChild>{renderNavItem(item, true)}</TooltipTrigger>
+            <TooltipContent side="right">{item.label}</TooltipContent>
+          </Tooltip>
+        ) : (
+          renderNavItem(item, false)
+        )
+      )}
 
-      {/* 5 Cores */}
-      {coreNav.map(group => {
-        if (!isCoreEnabled(group.core)) return null;
-        const isExpanded = expandedCores.includes(group.core);
-        const visibleItems = group.items.filter(i => !i.featureKey || isEnabled(i.featureKey));
-        if (visibleItems.length === 0) return null;
-
-        if (collapsed) {
-          return visibleItems.map(item => (
-            <Tooltip key={item.label}>
-              <TooltipTrigger asChild>{renderNavItem(item, true)}</TooltipTrigger>
-              <TooltipContent side="right">{item.label}</TooltipContent>
-            </Tooltip>
-          ));
-        }
-
-        return (
-          <div key={group.core} className="mt-2">
-            <button
-              onClick={() => setExpandedCores(prev =>
-                prev.includes(group.core) ? prev.filter(c => c !== group.core) : [...prev, group.core]
-              )}
-              className="w-full flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <group.icon className="w-3.5 h-3.5" />
-              <span className="flex-1 text-left">{group.label}</span>
-              <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />
-            </button>
-            <AnimatePresence>
-              {isExpanded && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="overflow-hidden space-y-0.5 ml-1"
-                >
-                  {visibleItems.map(item => renderNavItem(item, false))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        );
-      })}
-
-      {/* More Tools */}
+      {/* More — everything else under one collapsible group */}
       {(() => {
-        const moreToolsCore = "more_tools";
-        const isExpanded = expandedCores.includes(moreToolsCore);
-        const allUtilityItems = [
-          ...utilityNav,
-          ...(isAdmin ? [{ label: "Admin", icon: Shield, path: "/admin", desc: "Platform admin" } as NavItem] : []),
-        ];
+        const moreCore = "more";
+        const isExpanded = expandedCores.includes(moreCore);
+        if (moreNavItems.length === 0) return null;
 
         if (collapsed) {
           return (
             <div className="mt-3 pt-3 border-t border-border/50 space-y-0.5">
-              {allUtilityItems.map(item => (
+              {moreNavItems.map(item => (
                 <Tooltip key={item.label}>
                   <TooltipTrigger asChild>{renderNavItem(item, true)}</TooltipTrigger>
                   <TooltipContent side="right">{item.label}</TooltipContent>
@@ -394,12 +370,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <div className="mt-3 pt-3 border-t border-border/50">
             <button
               onClick={() => setExpandedCores(prev =>
-                prev.includes(moreToolsCore) ? prev.filter(c => c !== moreToolsCore) : [...prev, moreToolsCore]
+                prev.includes(moreCore) ? prev.filter(c => c !== moreCore) : [...prev, moreCore]
               )}
               className="w-full flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
             >
               <Settings className="w-3.5 h-3.5" />
-              <span className="flex-1 text-left">MORE TOOLS</span>
+              <span className="flex-1 text-left">More</span>
               <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />
             </button>
             <AnimatePresence>
@@ -411,7 +387,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                   transition={{ duration: 0.2 }}
                   className="overflow-hidden space-y-0.5 ml-1"
                 >
-                  {allUtilityItems.map(item => renderNavItem(item, false))}
+                  {moreNavItems.map(item => renderNavItem(item, false))}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -753,59 +729,29 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               )}
 
               <nav aria-label="Mobile navigation" className="flex-1 py-2 px-3 overflow-y-auto">
-                {renderNavItem({ label: "Discover", icon: Search, path: "/discover", desc: "Find creators" }, false, () => setMobileMenuOpen(false))}
-                {renderNavItem({ label: "Home", icon: Home, path: "/dashboard", desc: "Overview" }, false, () => setMobileMenuOpen(false))}
-                {renderNavItem({ label: "Your Page", icon: Globe, path: yourPagePath, desc: "Your public artist page" }, false, () => setMobileMenuOpen(false))}
+                {/* Primary — six flat destinations */}
+                {primaryNav.map(item => renderNavItem(item, false, () => setMobileMenuOpen(false)))}
 
-                {coreNav.map(group => {
-                  if (!isCoreEnabled(group.core)) return null;
-                  const visibleItems = group.items.filter(i => !i.featureKey || isEnabled(i.featureKey));
-                  if (visibleItems.length === 0) return null;
-                  const isExpanded = expandedCores.includes(group.core);
-
-                  return (
-                    <div key={group.core} className="mt-2">
-                      <button
-                        onClick={() => setExpandedCores(prev =>
-                          prev.includes(group.core) ? prev.filter(c => c !== group.core) : [...prev, group.core]
-                        )}
-                        className="w-full flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
-                      >
-                        <group.icon className="w-3.5 h-3.5" />
-                        <span className="flex-1 text-left">{group.label}</span>
-                        <ChevronDown className={`w-3 h-3 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
-                      </button>
-                      {isExpanded && (
-                        <div className="space-y-0.5 ml-1">
-                          {visibleItems.map(item => renderNavItem(item, false, () => setMobileMenuOpen(false)))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-
+                {/* More — everything else under one collapsible group */}
                 {(() => {
-                  const moreToolsCore = "more_tools";
-                  const isExpanded = expandedCores.includes(moreToolsCore);
-                  const allUtilityItems = [
-                    ...utilityNav,
-                    ...(isAdmin ? [{ label: "Admin", icon: Shield, path: "/admin", desc: "Platform admin" } as NavItem] : []),
-                  ];
+                  const moreCore = "more";
+                  const isExpanded = expandedCores.includes(moreCore);
+                  if (moreNavItems.length === 0) return null;
                   return (
                     <div className="mt-3 pt-3 border-t border-border/50">
                       <button
                         onClick={() => setExpandedCores(prev =>
-                          prev.includes(moreToolsCore) ? prev.filter(c => c !== moreToolsCore) : [...prev, moreToolsCore]
+                          prev.includes(moreCore) ? prev.filter(c => c !== moreCore) : [...prev, moreCore]
                         )}
                         className="w-full flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
                       >
                         <Settings className="w-3.5 h-3.5" />
-                        <span className="flex-1 text-left">MORE TOOLS</span>
+                        <span className="flex-1 text-left">More</span>
                         <ChevronDown className={`w-3 h-3 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
                       </button>
                       {isExpanded && (
                         <div className="space-y-0.5 ml-1">
-                          {allUtilityItems.map(item => renderNavItem(item, false, () => setMobileMenuOpen(false)))}
+                          {moreNavItems.map(item => renderNavItem(item, false, () => setMobileMenuOpen(false)))}
                         </div>
                       )}
                     </div>
