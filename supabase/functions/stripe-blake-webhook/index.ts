@@ -66,8 +66,28 @@ async function upsertFromSubscription(sub: Stripe.Subscription) {
   const { error } = await supabase
     .from("blake_subscribers")
     .upsert(row, { onConflict: "stripe_subscription_id" });
-  if (error) log("upsert error", error);
-  else log("upserted", { email, status });
+  if (error) {
+    log("upsert error, attempting email-conflict recovery", error);
+    // Likely a stale canceled row with the same email but a different
+    // stripe_subscription_id blocking the unique(lower(email)) index.
+    // Delete the stale row(s) and retry as an insert.
+    const { error: delErr } = await supabase
+      .from("blake_subscribers")
+      .delete()
+      .eq("email", email)
+      .neq("stripe_subscription_id", sub.id);
+    if (delErr) {
+      log("cleanup delete failed", delErr);
+      return;
+    }
+    const { error: retryErr } = await supabase
+      .from("blake_subscribers")
+      .upsert(row, { onConflict: "stripe_subscription_id" });
+    if (retryErr) log("retry upsert error", retryErr);
+    else log("upserted after cleanup", { email, status });
+  } else {
+    log("upserted", { email, status });
+  }
 }
 
 serve(async (req) => {
