@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import EventLiveNowBanner from "@/components/live/EventLiveNowBanner";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import QueryErrorState from "@/components/ui/QueryErrorState";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { QRCodeSVG } from "qrcode.react";
 import SEOHead, { buildEventSchema } from "@/components/SEOHead";
@@ -82,7 +83,7 @@ export default function EventPage() {
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const qc = useQueryClient();
-  const { data: event, isLoading } = useEvent(slug);
+  const { data: event, isLoading, isError, refetch } = useEvent(slug);
   const { data: myTicket } = useMyTicketForEvent(event?.id);
   const claimFree = useClaimFreeTicket();
   const setReminder = useSetEventReminder();
@@ -540,6 +541,16 @@ END:VCALENDAR`;
           <Skeleton className="h-8 w-2/3 mb-4" />
           <Skeleton className="h-4 w-1/3 mb-2" />
           <Skeleton className="h-20 w-full" />
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (isError) {
+    return (
+      <AppLayout>
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <QueryErrorState message="We couldn't load this event right now. Check your connection and try again." onRetry={() => refetch()} />
         </div>
       </AppLayout>
     );

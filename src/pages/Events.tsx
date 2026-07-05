@@ -12,6 +12,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useCreatorEvents, useEventTickets, EventRow } from "@/hooks/useEvents";
 import { Skeleton } from "@/components/ui/skeleton";
 import EmptyState from "@/components/ui/EmptyState";
+import QueryErrorState from "@/components/ui/QueryErrorState";
 import EventCheckIn from "@/components/events/EventCheckIn";
 import EventStaffManager from "@/components/events/EventStaffManager";
 import { useProfile } from "@/hooks/useProfile";
@@ -255,7 +256,7 @@ function EventCard({ event, username }: { event: EventRow; username?: string }) 
 export default function Events() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { data: events, isLoading } = useCreatorEvents();
+  const { data: events, isLoading, isError, refetch } = useCreatorEvents();
   const { data: dbProfile } = useQuery({
     queryKey: ["my-profile-username"],
     queryFn: async () => {
@@ -289,6 +290,11 @@ export default function Events() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[1, 2, 3].map(i => <Skeleton key={i} className="h-64 rounded-xl" />)}
               </div>
+            ) : isError ? (
+              <QueryErrorState
+                message="We couldn't load your events right now. Check your connection and try again."
+                onRetry={() => refetch()}
+              />
             ) : !events?.length ? (
               <EmptyState
                 icon={CalendarDays}

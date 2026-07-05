@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { useMemo } from "react";
 import SEOHead from "@/components/SEOHead";
 import StripeGate from "@/components/StripeGate";
+import QueryErrorState from "@/components/ui/QueryErrorState";
 
 const REVENUE_SOURCES = [
   { key: "subscription", label: "Subscriptions", icon: Users, color: "hsl(var(--primary))" },
@@ -51,7 +52,7 @@ const typeBadge = (type: string) => {
 
 export default function Wallet() {
   const { user } = useAuth();
-  const { data: wallet, isLoading: walletLoading } = useWallet();
+  const { data: wallet, isLoading: walletLoading, isError: walletError, refetch: refetchWallet } = useWallet();
   const { data: transactions = [], isLoading: txLoading } = useTransactions();
 
   const available = Number(wallet?.available_balance ?? 0);
@@ -119,7 +120,12 @@ export default function Wallet() {
         <div className="max-w-5xl mx-auto px-4 md:px-8 py-6 space-y-5 pb-24 md:pb-8 overflow-x-hidden">
           {/* Primary Balance */}
           <div className="rounded-2xl border border-primary/15 bg-primary/5 p-5">
-            {walletLoading ? <Skeleton className="h-16 w-40" /> : (
+            {walletLoading ? <Skeleton className="h-16 w-40" /> : walletError ? (
+              <QueryErrorState
+                message="We couldn't load your wallet right now. Check your connection and try again."
+                onRetry={() => refetchWallet()}
+              />
+            ) : (
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-medium text-primary mb-1">Available Balance</p>

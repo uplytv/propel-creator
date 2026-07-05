@@ -3,6 +3,7 @@ import { Crown } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useMemberPoints } from "@/hooks/useCommunityMembers";
 import MemberXPBadge from "@/components/space/MemberXPBadge";
+import QueryErrorState from "@/components/ui/QueryErrorState";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -47,7 +48,7 @@ function Row({ entry, isCurrentUser }: { entry: any; isCurrentUser: boolean }) {
 export default function SpaceLeaderboardTab({ creatorId }: Props) {
   const { user } = useAuth();
   const [period, setPeriod] = useState<"weekly" | "all">("weekly");
-  const { data: leaderboard = [], isLoading } = useMemberPoints(creatorId, period);
+  const { data: leaderboard = [], isLoading, isError, refetch } = useMemberPoints(creatorId, period);
 
   const topEntries = leaderboard.slice(0, 10);
   const currentUserEntry = user ? leaderboard.find((e: any) => e.user_id === user.id) : null;
@@ -75,6 +76,8 @@ export default function SpaceLeaderboardTab({ creatorId }: Props) {
         <div className="space-y-2">
           {[1, 2, 3, 4, 5].map((i) => <div key={i} className="h-[60px] rounded-md bg-muted/30 animate-pulse" />)}
         </div>
+      ) : isError ? (
+        <QueryErrorState message="We couldn't load the leaderboard right now. Check your connection and try again." onRetry={() => refetch()} />
       ) : leaderboard.length === 0 ? (
         <div className="p-12 text-center rounded-md border border-border bg-card">
           <Crown className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />

@@ -11,6 +11,7 @@ import CourseEnrollSheet from "@/components/payments/CourseEnrollSheet";
 import { PurchaseOverlay } from "@/components/payments/PurchaseOverlay";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import QueryErrorState from "@/components/ui/QueryErrorState";
 import {
   Heart, MessageCircle, Lock, Play, ChevronDown, ChevronUp,
   ExternalLink, Users, BookOpen, FileText, Pencil, ShoppingBag, Loader2 as BuyLoader, Gift
@@ -245,6 +246,8 @@ function useCreatorProfileData(username: string | undefined) {
   return {
     profile: profileQuery.data,
     profileLoading: profileQuery.isLoading,
+    profileError: profileQuery.isError,
+    profileRefetch: profileQuery.refetch,
     socialLinks: socialLinksQuery.data || [],
     liveStream: liveStreamQuery.data,
     memberCount: memberCountQuery.data || 0,
@@ -365,7 +368,7 @@ export default function CreatorProfile() {
   const [purchaseOverlayTier, setPurchaseOverlayTier] = useState<any>(null);
 
   const {
-    profile, profileLoading, socialLinks, liveStream,
+    profile, profileLoading, profileError, profileRefetch, socialLinks, liveStream,
     memberCount, posts, modules, totalLessons, isMember, space, tiers, products, smartLinks,
   } = useCreatorProfileData(username);
 
@@ -447,6 +450,18 @@ export default function CreatorProfile() {
     return (
       <div className="min-h-screen bg-background">
         <ProfileSkeleton />
+      </div>
+    );
+  }
+
+  // Fetch error — a network/Supabase outage, not a missing creator
+  if (profileError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <QueryErrorState
+          message="We couldn't load this creator's profile right now. Check your connection and try again."
+          onRetry={() => profileRefetch()}
+        />
       </div>
     );
   }
