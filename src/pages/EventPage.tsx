@@ -17,6 +17,8 @@ import BackNav from "@/components/BackNav";
 import AppLayout from "@/components/layout/AppLayout";
 import EventTabs from "@/components/social/EventTabs";
 import EventTierPicker from "@/components/events/EventTierPicker";
+import EventGuestList from "@/components/events/EventGuestList";
+import EventWaitlist from "@/components/events/EventWaitlist";
 import EventConcierge from "@/components/events/EventConcierge";
 import { PurchaseOverlay } from "@/components/payments/PurchaseOverlay";
 import SeatPicker from "@/components/events/SeatPicker";
@@ -714,12 +716,11 @@ END:VCALENDAR`;
             </motion.section>
           )}
 
-          {/* Attendees */}
-          {event.tickets_sold > 0 && (
-            <p className="text-sm text-muted-foreground flex items-center gap-2">
-              <Users className="w-4 h-4" /> {event.tickets_sold} {event.tickets_sold === 1 ? "person is" : "people are"} going
-            </p>
-          )}
+          {/* Attendees — guest list with avatars */}
+          {event.tickets_sold > 0 && <EventGuestList eventId={event.id} totalGoing={event.tickets_sold} />}
+
+          {/* Waitlist for sold-out events */}
+          {!isPast && !isHost && !myTicket && event.is_sold_out && <EventWaitlist eventId={event.id} />}
 
           {/* Virtual link for ticket holders */}
           {myTicket && event.virtual_link && virtualRevealed && (
