@@ -516,10 +516,6 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
                     </p>
                   </div>
                 </div>
-              ) : !agreed ? (
-                <div className="rounded-sm border border-dashed border-border bg-muted/30 p-4 text-center text-xs text-muted-foreground">
-                  Agree to the terms above to unlock secure card entry.
-                </div>
               ) : checkoutError ? (
                 <div className="rounded-sm border border-border bg-muted/30 p-4 text-center">
                   <p className="mb-3 text-xs text-destructive">{checkoutError}</p>
@@ -533,14 +529,26 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
                   </Button>
                 </div>
               ) : clientSecret ? (
-                <div className="rounded-sm border border-border bg-card">
-                  <EmbeddedCheckoutProvider
-                    key={clientSecret}
-                    stripe={stripePromise}
-                    options={{ clientSecret, onComplete: handleCheckoutComplete }}
+                <div className="space-y-2">
+                  {/* Card entry is always visible and required; it becomes
+                      interactive once the terms box above is ticked. */}
+                  <div
+                    aria-disabled={!agreed}
+                    className={`rounded-sm border border-border bg-card transition-opacity ${agreed ? "" : "pointer-events-none opacity-50"}`}
                   >
-                    <EmbeddedCheckout />
-                  </EmbeddedCheckoutProvider>
+                    <EmbeddedCheckoutProvider
+                      key={clientSecret}
+                      stripe={stripePromise}
+                      options={{ clientSecret, onComplete: handleCheckoutComplete }}
+                    >
+                      <EmbeddedCheckout />
+                    </EmbeddedCheckoutProvider>
+                  </div>
+                  {!agreed && (
+                    <p className="text-center text-xs font-medium text-muted-foreground">
+                      Card details are required to start your trial — tick the box above to enable payment.
+                    </p>
+                  )}
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-2 rounded-sm border border-border bg-muted/30 py-8">
