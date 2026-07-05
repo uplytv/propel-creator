@@ -76,49 +76,19 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ error: "Self-referral not allowed" }), { status: 400, headers: corsHeaders });
       }
 
-      const commissionAmount = conversion_type === "purchase" ? Number(amount) * 0.2 : 0;
-
-      // Insert conversion
+      // SECURITY: this endpoint is unauthenticated and `amount` is client-supplied,
+      // so it MUST NOT move money or mint payable commission. Purchase conversions
+      // are recorded as pending with zero commission; the real commission is computed
+      // and approved server-side from a Stripe-verified payment (follow-up work).
       await serviceClient.from("affiliate_conversions").insert({
         affiliate_code,
         referred_user_id,
         referring_user_id: platformLink.user_id,
         conversion_type,
-        amount: Number(amount),
-        commission_amount: commissionAmount,
-        status: commissionAmount > 0 ? "approved" : "pending",
+        amount: conversion_type === "purchase" ? 0 : Number(amount),
+        commission_amount: 0,
+        status: "pending",
       });
-
-      // Credit referrer's wallet for purchase conversions
-      if (conversion_type === "purchase" && commissionAmount > 0) {
-        const { data: wallet } = await serviceClient
-          .from("wallets")
-          .select("id, available_balance, lifetime_earned")
-          .eq("user_id", platformLink.user_id)
-          .maybeSingle();
-
-        if (wallet) {
-          await serviceClient
-            .from("wallets")
-            .update({
-              available_balance: Number(wallet.available_balance || 0) + commissionAmount,
-              lifetime_earned: Number(wallet.lifetime_earned || 0) + commissionAmount,
-            })
-            .eq("id", wallet.id);
-
-          // Record transaction
-          await serviceClient.from("transactions").insert({
-            wallet_id: wallet.id,
-            amount: commissionAmount,
-            net_amount: commissionAmount,
-            platform_fee_amount: 0,
-            type: "earn",
-            status: "completed",
-            description: `Affiliate commission (${affiliate_code})`,
-            completed_at: new Date().toISOString(),
-          });
-        }
-      }
 
       // Update link stats
       if (conversion_type === "signup") {
@@ -162,71 +132,31 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ error: "Self-referral not allowed" }), { status: 400, headers: corsHeaders });
       }
 
-      // Get program commission rate
-      const { data: program } = await serviceClient
-        .from("creator_affiliate_programs")
-        .select("commission_rate, creator_id")
-        .eq("id", creatorMember.program_id)
-        .single();
-
-      const rate = program?.commission_rate || 20;
-      const commissionAmount = Number(amount) * (rate / 100);
-
+      // SECURITY: unauthenticated + client-supplied amount — never move money or
+      // mint payable commission here. Record a pending, zero-commission conversion;
+      // real commission is computed/approved server-side from a verified payment.
       await serviceClient.from("affiliate_conversions").insert({
         affiliate_code,
         referred_user_id,
         referring_user_id: creatorMember.member_id,
         conversion_type,
-        amount: Number(amount),
-        commission_amount: commissionAmount,
-        status: commissionAmount > 0 ? "approved" : "pending",
+        amount: conversion_type === "purchase" ? 0 : Number(amount),
+        commission_amount: 0,
+        status: "pending",
       });
 
-      // Update member stats
+      // Update member conversion count (no earnings credited from this endpoint)
       const { data: memberData } = await serviceClient
         .from("creator_affiliate_members")
-        .select("conversions, earnings")
+        .select("conversions")
         .eq("id", creatorMember.id)
         .single();
 
       if (memberData) {
         await serviceClient
           .from("creator_affiliate_members")
-          .update({
-            conversions: (memberData.conversions || 0) + 1,
-            earnings: Number(memberData.earnings || 0) + commissionAmount,
-          })
+          .update({ conversions: (memberData.conversions || 0) + 1 })
           .eq("id", creatorMember.id);
-      }
-
-      // Credit member's wallet for purchase conversions
-      if (conversion_type === "purchase" && commissionAmount > 0) {
-        const { data: wallet } = await serviceClient
-          .from("wallets")
-          .select("id, available_balance, lifetime_earned")
-          .eq("user_id", creatorMember.member_id)
-          .maybeSingle();
-
-        if (wallet) {
-          await serviceClient
-            .from("wallets")
-            .update({
-              available_balance: Number(wallet.available_balance || 0) + commissionAmount,
-              lifetime_earned: Number(wallet.lifetime_earned || 0) + commissionAmount,
-            })
-            .eq("id", wallet.id);
-
-          await serviceClient.from("transactions").insert({
-            wallet_id: wallet.id,
-            amount: commissionAmount,
-            net_amount: commissionAmount,
-            platform_fee_amount: 0,
-            type: "earn",
-            status: "completed",
-            description: `Creator affiliate commission (${affiliate_code})`,
-            completed_at: new Date().toISOString(),
-          });
-        }
       }
 
       return new Response(JSON.stringify({ success: true, type: "creator" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });

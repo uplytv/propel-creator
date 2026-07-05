@@ -19,6 +19,21 @@ serve(async (req) => {
   );
 
   try {
+    // AUTH: admin only — this triggers a real Stripe transfer of platform funds.
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const token = authHeader.replace("Bearer ", "");
+    const { data: userData, error: userErr } = await supabaseAdmin.auth.getUser(token);
+    if (userErr || !userData.user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const { data: isAdmin } = await supabaseAdmin.rpc("has_role", { _user_id: userData.user.id, _role: "admin" });
+    if (!isAdmin) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const { conversion_id } = await req.json();
     if (!conversion_id) throw new Error("conversion_id required");
 
@@ -30,6 +45,7 @@ serve(async (req) => {
       .single();
     if (convErr || !conversion) throw new Error("Conversion not found");
     if (conversion.status === "paid") throw new Error("Already paid");
+    if (conversion.status !== "approved") throw new Error("Conversion is not approved for payout");
     if (conversion.commission_amount <= 0) throw new Error("No commission to pay");
 
     // Get affiliate's Stripe account
