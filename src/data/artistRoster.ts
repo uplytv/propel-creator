@@ -513,7 +513,8 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
       "Arya XO is a Bay Area rapper and recording artist building a catalogue of high-energy, melodic West Coast rap — anchored by breakout records '150 Bands' and 'Get Down'.\n\n" +
       "His full experience on UPLY — site, links, and blog — lives at /arya-xo.",
     gradient: { from: "#1a0b2e", to: "#0a0a0a" },
-    accent: "#C9A84C",
+    // Arya's signature electric green — matches his bespoke site brand.
+    accent: "#00FF85",
     portraitUrl: "/__l5e/assets-v1/ecb368e0-99ff-410b-bc3f-f36978159574/arya-xo-portrait-v3.jpg",
     socials: [
       { kind: "instagram", label: "Instagram", sub: "@aryaxo", href: "https://www.instagram.com/aryaxo", handle: "aryaxo" },

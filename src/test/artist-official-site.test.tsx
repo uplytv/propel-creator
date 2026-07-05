@@ -5,6 +5,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import AryaXO from "@/pages/AryaXO";
 import ArtistLinkPage from "@/components/artistroster/ArtistLinkPage";
+import { ARTIST_ROSTER } from "@/data/artistRoster";
 
 /**
  * Guard rail: every artist's "Official Site" button must point at an
@@ -88,15 +89,16 @@ describe("Artist Official Site CTA", () => {
 
       it(`destination ${c.expectedHref} is registered in App.tsx (won't 404)`, () => {
         // Either an explicit <Route path="/{slug}-site"> or one generated
-        // by the roster .map() loop. Both prove the route resolves to a
-        // real element instead of falling through to NotFound.
+        // by the ARTIST_ROSTER .map() loop (every roster entry gets a
+        // /:slug-site route). Both prove the route resolves to a real
+        // element instead of falling through to NotFound.
         const explicit = new RegExp(
           `<Route\\s+path=["']${c.expectedHref}["']`,
         );
-        const rosterMap = new RegExp(
-          `\\[[^\\]]*["']${c.slug}["'][^\\]]*\\][^\\n]*map[\\s\\S]{0,200}\\$\\{s\\}-site`,
-        );
-        const hasRoute = explicit.test(APP_SOURCE) || rosterMap.test(APP_SOURCE);
+        const rosterMap =
+          /ARTIST_ROSTER[\s\S]{0,200}?\.map\([\s\S]{0,300}?\$\{a\.slug\}-site/.test(APP_SOURCE) &&
+          ARTIST_ROSTER.some((a) => a.slug === c.slug);
+        const hasRoute = explicit.test(APP_SOURCE) || rosterMap;
         expect(hasRoute, `no <Route> registered for ${c.expectedHref}`).toBe(true);
       });
     });

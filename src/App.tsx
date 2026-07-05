@@ -25,6 +25,7 @@ import SplashScreen from "@/components/SplashScreen";
 import { useNativeInit, useKeyboardState } from "@/hooks/useNativePlatform";
 import { AnimatePresence } from "framer-motion";
 import { capturePageView } from "@/lib/posthog";
+import { ARTIST_ROSTER } from "@/data/artistRoster";
 
 // Lazy-loaded pages
 const Landing = lazy(() => import("./pages/Landing"));
@@ -513,8 +514,10 @@ const App = () => (
                     {(["omid", "omid-music", "omidmusic", "morvarid", "morvarid-shahbazi", "morvaridshahbazi", "andy", "andy-music", "andymusic1"]).map((s) => (
                       <Route key={s} path={`/${s}`} element={<ArtistLinkRoute />} />
                     ))}
-                    {(["omid", "morvarid", "andy"]).map((s) => (
-                      <Route key={`${s}-site`} path={`/${s}-site`} element={<ArtistSiteRoute />} />
+                    {/* Every roster artist gets the shared editorial site at /:slug-site.
+                        arya-xo keeps its bespoke wrapper route (/arya-xo-site) above. */}
+                    {ARTIST_ROSTER.filter((a) => a.slug !== "arya-xo").map((a) => (
+                      <Route key={`${a.slug}-site`} path={`/${a.slug}-site`} element={<ArtistSiteRoute />} />
                     ))}
                     {/* Per-artist blog, community, courses (driven by ARTIST_ROSTER) */}
                     <Route path="/roster" element={<RosterHubRoute />} />

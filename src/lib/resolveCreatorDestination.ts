@@ -5,11 +5,9 @@
  *   1. Their community/classroom  → /community/<user_id>   (creator_spaces row exists)
  *   2. Their UPLY profile         → /@<username>           (profiles row exists — the
  *      canonical profile path used app-wide; see usePublicProfilePath / shareUrls)
- *   3. Their curated artist site  → /<slug>-site           (only slugs with a site
- *      route registered in App.tsx)
- *   4. Their roster blog          → /<slug>/blog           (generic /:slug/blog route,
- *      works for any ARTIST_ROSTER entry)
- *   5. Absolute fallback          → /roster
+ *   3. Their curated artist site  → /<slug>-site           (every ARTIST_ROSTER entry
+ *      has a site route mounted in App.tsx via the shared ArtistSiteTemplate)
+ *   4. Absolute fallback          → /roster
  *
  * DB lookups mirror UsernameRedirect: the public `get_public_profile_by_username`
  * RPC across handle candidates (works for anon visitors under RLS). Results are
@@ -20,26 +18,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { findArtistBySlug } from "@/data/artistRoster";
 import { getProfileHandleCandidates, normalizeProfileSlugInput } from "@/lib/profileSlug";
 
-/**
- * Roster slugs whose editorial site route (`/<slug>-site`) is actually mounted
- * in App.tsx. Keep in sync with the hard-coded <Route> lists there — the other
- * roster artists (bazi, bobby, sonuha, arian-shahbazi) have no site route.
- */
-const ROSTER_SITE_SLUGS = new Set(["omid", "morvarid", "andy", "arya-xo"]);
-
 /** Tiny in-memory cache: normalized handle → resolved destination promise. */
 const destinationCache = new Map<string, Promise<string>>();
 
 /**
  * Static tiers (3 → 5). Pure/synchronous — also used as the safety net when
  * the network is unavailable, so the card always lands somewhere real.
+ *
+ * Every ARTIST_ROSTER entry has a mounted editorial site at `/<slug>-site`:
+ * App.tsx maps the roster into <Route>s (arya-xo keeps its bespoke wrapper),
+ * all rendered by the shared ArtistSiteTemplate.
  */
 function resolveRosterDestination(handle: string): string {
   const artist = findArtistBySlug(handle);
-  if (artist) {
-    if (ROSTER_SITE_SLUGS.has(artist.slug)) return `/${artist.slug}-site`;
-    if (artist.posts?.length) return `/${artist.slug}/blog`;
-  }
+  if (artist) return `/${artist.slug}-site`;
   return "/roster";
 }
 
