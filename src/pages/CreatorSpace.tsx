@@ -12,6 +12,7 @@ import SpaceClassroomTab from "@/components/space/SpaceClassroomTab";
 import SpaceCalendarTab from "@/components/space/SpaceCalendarTab";
 import SpaceEventsTab from "@/components/space/SpaceEventsTab";
 import SpaceMembersTab from "@/components/space/SpaceMembersTab";
+import SpaceStoreTab from "@/components/space/SpaceStoreTab";
 import SpaceLeaderboardTab from "@/components/space/SpaceLeaderboardTab";
 import SpaceAboutTab from "@/components/space/SpaceAboutTab";
 import { MemberEarnTab } from "@/components/affiliates/MemberEarnTab";
@@ -29,7 +30,7 @@ import { toast } from "sonner";
 import { usePaymentReturn, useMemberSubscriptionStatus } from "@/hooks/usePaymentReturn";
 import PaymentProcessingOverlay from "@/components/PaymentProcessingOverlay";
 
-const VALID_TABS = ["community", "classroom", "calendar", "events", "members", "leaderboard", "pricing", "earn", "blasts", "about"] as const;
+const VALID_TABS = ["community", "classroom", "calendar", "events", "store", "members", "leaderboard", "pricing", "earn", "blasts", "about"] as const;
 type TabSlug = typeof VALID_TABS[number];
 
 const TAB_LABELS: Record<TabSlug, string> = {
@@ -37,6 +38,7 @@ const TAB_LABELS: Record<TabSlug, string> = {
   classroom: "Classroom",
   calendar: "Calendar",
   events: "Events",
+  store: "Store",
   members: "Members",
   leaderboard: "Leaderboard",
   pricing: "Pricing",
@@ -93,7 +95,7 @@ export default function CreatorSpace() {
     }
   }, [justJoined]);
 
-  const activeTab = resolveTabFromUrl(tabParam);
+  // activeTab is computed below, after membership is known (visitors land on About).
 
   useEffect(() => {
     if (refCode) setAffiliateCookie("uply_creator_ref", refCode, 30);
@@ -122,6 +124,14 @@ export default function CreatorSpace() {
       return !!data;
     },
   });
+
+  // Visitors and non-members land on the About/join page first (owner directive:
+  // course/community signup leads). Members and owners land on the feed.
+  const activeTab: TabSlug = tabParam
+    ? resolveTabFromUrl(tabParam)
+    : isOwner || isMember === true
+      ? "community"
+      : "about";
 
   const showMemberEarn = !isOwner && isMember && affiliateProgram?.is_active;
 
@@ -298,6 +308,7 @@ export default function CreatorSpace() {
         {activeTab === "classroom" && <SpaceClassroomTab creatorId={creatorId!} isOwner={isOwner} />}
         {activeTab === "calendar" && <SpaceCalendarTab creatorId={creatorId!} isOwner={isOwner} />}
         {activeTab === "events" && <SpaceEventsTab creatorId={creatorId!} isOwner={isOwner} />}
+        {activeTab === "store" && <SpaceStoreTab creatorId={creatorId!} isOwner={isOwner} />}
         {activeTab === "members" && <SpaceMembersTab creatorId={creatorId!} />}
         {activeTab === "leaderboard" && <SpaceLeaderboardTab creatorId={creatorId!} />}
         {activeTab === "about" && <SpaceAboutTab creatorId={creatorId!} isOwner={isOwner} />}
