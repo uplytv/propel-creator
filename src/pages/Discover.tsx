@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Compass, Radio, Upload, Film, BookOpen, Users, CalendarDays, X, ShoppingBag } from "lucide-react";
 import LiveShoppingGrid from "@/components/discovery/LiveShoppingGrid";
 import AppLayout from "@/components/layout/AppLayout";
-import PageHero from "@/components/layout/PageHero";
 import QueryErrorState from "@/components/ui/QueryErrorState";
 import { useDiscoveryFeed, type SortOption, type FeedTab } from "@/hooks/useDiscoveryFeed";
 import FeedCard from "@/components/discovery/FeedCard";
@@ -185,13 +184,21 @@ export default function Discover() {
         description="Explore top creators, communities, courses, and live streams on Uply."
       />
 
-      {/* Premium page hero — landing design language inside the app */}
-      <PageHero
-        eyebrow="Discover"
-        title="Find your next"
-        gradientWord="obsession"
-        subtitle="Live streams, courses, communities, drops and events — from creators worth your time."
-      />
+      {/* Simple centered search header — search leads the page */}
+      <div className="border-b border-border">
+        <div className="max-w-2xl mx-auto px-4 py-10 sm:py-12 text-center">
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">Discover creators</h1>
+          <p className="text-sm text-muted-foreground mt-1.5">
+            Streams, courses, communities and events —{" "}
+            <button onClick={() => navigate("/auth?mode=signup")} className="text-primary hover:underline font-medium">
+              or start your own
+            </button>
+          </p>
+          <div className="mt-6 text-left">
+            <SearchSuggestions />
+          </div>
+        </div>
+      </div>
 
       {/* Curated platform-wide feature (Arya XO blog this cycle) */}
       <FeaturedRails variant="feed" />
@@ -239,10 +246,8 @@ export default function Discover() {
 
       {/* Sticky filter bar */}
       <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <div className="max-w-7xl mx-auto px-4 py-3 space-y-3">
-          {/* Search */}
-          <SearchSuggestions />
-          {/* Category pills + sort */}
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          {/* Category pills + sort (search lives in the page header above) */}
           <FeedFilters
             activeCategory={category}
             sort={sort}
