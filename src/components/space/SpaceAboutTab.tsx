@@ -6,7 +6,7 @@ import { useMemberCount, useIsMember, useJoinCommunity } from "@/hooks/useCommun
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Users, Lock, Globe, Tag, CheckCircle, Play, Star,
+  Users, Lock, Globe, Tag, Play,
   Pencil, X, Check, ImagePlus, Loader2, Plus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { UPLYMuxPlayer } from "@/components/MuxPlayer";
+import DefaultCommunityCover from "@/components/space/DefaultCommunityCover";
+import { memberAuthUrl } from "@/lib/memberAuth";
 import {
   DndContext,
   closestCenter,
@@ -86,7 +88,7 @@ function SortableThumb({
       <button
         {...(canDrag ? { ...attributes, ...listeners } : {})}
         onClick={() => !editMode && onSelect(index)}
-        className={`relative w-20 h-14 rounded-lg overflow-hidden transition-all touch-manipulation ${
+        className={`relative w-20 h-14 rounded-none overflow-hidden transition-all touch-manipulation ${
           isActive && !editMode
             ? "ring-2 ring-primary ring-offset-1 ring-offset-background"
             : !editMode
@@ -124,6 +126,16 @@ function SortableThumb({
           <X className="w-3 h-3 text-destructive-foreground" />
         </motion.button>
       )}
+    </div>
+  );
+}
+
+/* ── Join-card stat cell ── */
+function StatCell({ value, label }: { value: string | number; label: string }) {
+  return (
+    <div className="flex-1 py-2.5 text-center">
+      <div className="text-sm font-bold text-foreground">{value}</div>
+      <div className="text-[11px] text-muted-foreground">{label}</div>
     </div>
   );
 }
@@ -180,10 +192,24 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
     queryFn: async () => {
       const { data } = await supabase
         .from("subscription_tiers")
-        .select("id")
+        .select("id, price_monthly")
         .eq("creator_id", creatorId)
         .eq("is_active", true);
       return data || [];
+    },
+  });
+
+  // Course count for the join-card stat row (cheap head count; RLS may hide
+  // modules from non-members — the cell simply doesn't render at 0).
+  const { data: courseCount = 0 } = useQuery({
+    queryKey: ["space-about-course-count", creatorId],
+    enabled: !!creatorId,
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("classroom_modules")
+        .select("id", { count: "exact", head: true })
+        .eq("creator_id", creatorId);
+      return count || 0;
     },
   });
 
@@ -220,8 +246,25 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
   const isFree = space?.is_free !== false;
   const requiresPaidJoin = activeTiers.length > 0 || !isFree || Number(space?.price || 0) > 0;
 
+  // Price shown on the CTA — cheapest live tier, else the legacy space price.
+  const minTierPrice = activeTiers.length > 0
+    ? Math.min(...activeTiers.map((t: any) => Number(t.price_monthly) || 0))
+    : Number(space?.price || 0);
+
+  // Join-card cover: space cover → first gallery image → branded default.
+  const firstGalleryImage = (galleryMedia as any[]).find(
+    (m) => m.url && m.media_type === "image" && !isVideoFileUrl(m.url)
+  )?.url as string | undefined;
+  const joinCardCover = space?.cover_image_url || firstGalleryImage || null;
+
+  // One-line tagline = first non-empty line of the description.
+  const tagline = bio.split("\n").map((l) => l.trim()).find(Boolean) || "";
+
   const handleJoin = async () => {
-    if (!user) return;
+    if (!user) {
+      navigate(memberAuthUrl());
+      return;
+    }
     if (requiresPaidJoin) {
       navigate(`/community/${creatorId}/pricing`);
       if (activeTiers.length === 0) {
@@ -358,6 +401,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
   ].filter((t) => !!t.src);
 
   const activeAsset = thumbnails[activeThumb] || thumbnails[0];
+  const hasMedia = thumbnails.length > 0;
 
   useEffect(() => {
     if (activeThumb >= thumbnails.length) setActiveThumb(0);
@@ -412,176 +456,259 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
 
   const allIds = thumbnails.map((t) => t.id);
 
+  const priceLabel = isFree && activeTiers.length === 0
+    ? "Free"
+    : `$${minTierPrice > 0 ? minTierPrice : space?.price || 0}/month`;
+
+  /* ── Join card CTA (primary conversion element) ── */
+  const renderCta = () => {
+    if (isOwner) {
+      return (
+        <Button
+          variant="outline"
+          className="w-full h-11 rounded-none font-semibold"
+          onClick={() => { setDescInput(bio); setEditingDesc(true); setNameInput(spaceName); }}
+        >
+          <Pencil className="w-4 h-4 mr-2" />
+          Edit community
+        </Button>
+      );
+    }
+    if (isMember) {
+      return (
+        <div className="w-full h-11 rounded-none border border-border bg-secondary/40 flex items-center justify-center gap-2 text-sm font-semibold text-foreground">
+          <Check className="w-4 h-4 text-primary" />
+          You're a member
+        </div>
+      );
+    }
+    const label = requiresPaidJoin
+      ? (minTierPrice > 0 ? `Join for $${minTierPrice}/month` : "Join")
+      : "Join free";
+    return (
+      <>
+        <Button
+          size="lg"
+          className="w-full h-11 rounded-none font-semibold"
+          onClick={handleJoin}
+          disabled={joinCommunity.isPending}
+        >
+          {joinCommunity.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : label}
+        </Button>
+        {requiresPaidJoin && (
+          <p className="text-center text-[11px] text-muted-foreground mt-2">
+            Instant access · Cancel anytime
+          </p>
+        )}
+      </>
+    );
+  };
+
   return (
-    <div className="pb-6">
-      {/* Community Name */}
-      <div className="px-4 pt-4 pb-3">
-        {editingName && isOwner ? (
-          <div className="flex items-center gap-2">
-            <Input value={nameInput} onChange={(e) => setNameInput(e.target.value)}
-              className="text-lg font-bold h-9 flex-1" autoFocus
-              onKeyDown={(e) => e.key === "Enter" && handleSaveName()} />
-            <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={handleSaveName} aria-label="Save name">
-              <Check className="w-4 h-4 text-primary" />
-            </Button>
-            <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => setEditingName(false)} aria-label="Cancel editing name">
-              <X className="w-4 h-4 text-muted-foreground" />
-            </Button>
+    <div className="pb-10">
+      <div className="mx-auto w-full max-w-6xl px-4 pt-5 flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:gap-8">
+
+        {/* ── JOIN CARD — first in DOM so it leads on mobile; column 2 + sticky on desktop ── */}
+        <aside className="w-full lg:col-start-2 lg:row-start-1 lg:sticky lg:top-16">
+          <div className="rounded-none border border-border bg-card overflow-hidden">
+            <div className="aspect-video w-full overflow-hidden bg-secondary/30">
+              {joinCardCover ? (
+                <img src={joinCardCover} alt="" loading="lazy" className="w-full h-full object-cover" />
+              ) : (
+                <DefaultCommunityCover name={spaceName} />
+              )}
+            </div>
+            <div className="p-4">
+              <h3 className="text-base font-bold text-foreground leading-snug">{spaceName}</h3>
+              {tagline && (
+                <p className="mt-1 text-[13px] text-muted-foreground line-clamp-2">{tagline}</p>
+              )}
+
+              {/* Stat row */}
+              <div className="mt-3 flex border-y border-border divide-x divide-border">
+                <StatCell value={formatMemberCount(memberCount)} label={memberCount === 1 ? "Member" : "Members"} />
+                {courseCount > 0 && (
+                  <StatCell value={courseCount} label={courseCount === 1 ? "Course" : "Courses"} />
+                )}
+                <StatCell value={1} label="Admin" />
+              </div>
+
+              <div className="mt-4">{renderCta()}</div>
+            </div>
           </div>
-        ) : (
-          <div className="flex items-center gap-2 group">
-            <h2 className="text-xl font-bold text-foreground">{spaceName}</h2>
-            {isOwner && (
-              <button onClick={() => { setNameInput(spaceName); setEditingName(true); }} aria-label="Edit name"
-                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-md hover:bg-secondary/50">
-                <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
-              </button>
+        </aside>
+
+        {/* ── MAIN CONTENT — column 1 on desktop ── */}
+        <div className="min-w-0 lg:col-start-1 lg:row-start-1">
+          {/* Community Name */}
+          <div className="pb-3">
+            {editingName && isOwner ? (
+              <div className="flex items-center gap-2">
+                <Input value={nameInput} onChange={(e) => setNameInput(e.target.value)}
+                  className="text-lg font-bold h-9 flex-1 rounded-none" autoFocus
+                  onKeyDown={(e) => e.key === "Enter" && handleSaveName()} />
+                <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={handleSaveName} aria-label="Save name">
+                  <Check className="w-4 h-4 text-primary" />
+                </Button>
+                <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => setEditingName(false)} aria-label="Cancel editing name">
+                  <X className="w-4 h-4 text-muted-foreground" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 group">
+                <h1 className="text-2xl lg:text-[28px] font-bold text-foreground leading-tight">{spaceName}</h1>
+                {isOwner && (
+                  <button onClick={() => { setNameInput(spaceName); setEditingName(true); }} aria-label="Edit name"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-none hover:bg-secondary/50">
+                    <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                  </button>
+                )}
+              </div>
             )}
           </div>
-        )}
-      </div>
 
-      {/* Main Video / Cover */}
-      <div className="px-4 mb-3">
-        <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-secondary/30 group">
-          {activeAsset?.src ? (
-            <>
-              {activeAsset.isVideo && isPlayingVideo ? (
-                activeAsset.playbackId ? (
-                  <UPLYMuxPlayer playbackId={activeAsset.playbackId} autoPlay className="h-full" />
+          {/* Compact media gallery — main 16:9 media + thumbnail strip.
+              Only renders when media exists (owners always get an add affordance). */}
+          {hasMedia ? (
+            <div className="mb-4">
+              <div className="relative w-full aspect-video max-h-[420px] rounded-none overflow-hidden bg-secondary/30">
+                {activeAsset.isVideo && isPlayingVideo ? (
+                  activeAsset.playbackId ? (
+                    <UPLYMuxPlayer playbackId={activeAsset.playbackId} autoPlay className="h-full" />
+                  ) : (
+                    <video src={activeAsset.src} controls autoPlay playsInline className="w-full h-full object-contain bg-black" />
+                  )
+                ) : activeAsset.isVideo && !activeAsset.playbackId ? (
+                  <video src={activeAsset.src} muted playsInline preload="metadata" className="w-full h-full object-contain bg-black" />
                 ) : (
-                  <video src={activeAsset.src} controls autoPlay playsInline className="w-full h-full object-contain bg-black" />
-                )
-              ) : activeAsset.isVideo && !activeAsset.playbackId ? (
-                <video src={activeAsset.src} muted playsInline preload="metadata" className="w-full h-full object-contain bg-black" />
-              ) : (
-                <img src={activeAsset.src} alt="" loading="lazy" className="w-full h-full object-contain bg-black" />
-              )}
+                  <img src={activeAsset.src} alt="" loading="lazy" className="w-full h-full object-contain bg-black" />
+                )}
 
-              {activeAsset.isVideo && !isPlayingVideo && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <motion.button type="button" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
-                    onClick={() => setIsPlayingVideo(true)}
-                    className="w-16 h-16 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center cursor-pointer shadow-lg">
-                    <Play className="w-7 h-7 text-foreground ml-1" fill="currentColor" />
-                  </motion.button>
-                </div>
-              )}
+                {activeAsset.isVideo && !isPlayingVideo && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <motion.button type="button" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
+                      onClick={() => setIsPlayingVideo(true)}
+                      className="w-14 h-14 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center cursor-pointer shadow-lg">
+                      <Play className="w-6 h-6 text-foreground ml-0.5" fill="currentColor" />
+                    </motion.button>
+                  </div>
+                )}
 
-              {activeAsset.duration && (
-                <span className="absolute bottom-3 right-3 px-2 py-0.5 rounded-md bg-background/80 backdrop-blur-sm text-xs font-medium text-foreground">
-                  {formatDuration(activeAsset.duration)}
-                </span>
-              )}
-            </>
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-secondary/50 to-secondary/20">
-              {isOwner ? (
-                <button onClick={() => mediaInputRef.current?.click()}
-                  className="flex flex-col items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                  {uploadingMedia ? <Loader2 className="w-8 h-8 animate-spin" /> : (
-                    <><ImagePlus className="w-10 h-10" /><span className="text-sm font-medium">Add photos or videos</span></>
+                {activeAsset.duration && (
+                  <span className="absolute bottom-3 right-3 px-2 py-0.5 rounded-none bg-background/80 backdrop-blur-sm text-xs font-medium text-foreground">
+                    {formatDuration(activeAsset.duration)}
+                  </span>
+                )}
+              </div>
+
+              {/* Thumbnail Strip — iOS-style hold-to-jiggle + drag-to-reorder */}
+              <div className="mt-2">
+                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                  <SortableContext items={allIds} strategy={horizontalListSortingStrategy}>
+                    <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 items-start">
+                      {thumbnails.map((thumb, i) => (
+                        <div
+                          key={thumb.id}
+                          onTouchStart={() => isOwner && handleTouchStart()}
+                          onTouchEnd={handleTouchEnd}
+                          onTouchCancel={handleTouchEnd}
+                          onMouseDown={() => isOwner && handleTouchStart()}
+                          onMouseUp={handleTouchEnd}
+                          onMouseLeave={handleTouchEnd}
+                          onContextMenu={(e) => { if (isOwner) { e.preventDefault(); setEditMode(true); } }}
+                        >
+                          <SortableThumb
+                            thumb={thumb}
+                            index={i}
+                            isActive={activeThumb === i}
+                            editMode={editMode}
+                            onSelect={setActiveThumb}
+                            onDelete={(id) => deleteMedia.mutate(id)}
+                          />
+                        </div>
+                      ))}
+
+                      {/* Add media */}
+                      {isOwner && (
+                        <button onClick={() => mediaInputRef.current?.click()} aria-label="Add media"
+                          className="flex-shrink-0 w-20 h-14 rounded-none border-2 border-dashed border-border hover:border-primary/40 flex items-center justify-center transition-colors">
+                          {uploadingMedia ? <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
+                            : <Plus className="w-5 h-5 text-muted-foreground" />}
+                        </button>
+                      )}
+                    </div>
+                  </SortableContext>
+                </DndContext>
+
+                {/* Edit mode controls */}
+                <AnimatePresence>
+                  {editMode && isOwner && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="flex items-center justify-between mt-2"
+                    >
+                      <span className="text-[11px] text-muted-foreground">Drag to reorder · Tap ✕ to delete</span>
+                      <Button size="sm" variant="secondary" className="h-7 text-xs px-3 rounded-none" onClick={() => setEditMode(false)}>
+                        Done
+                      </Button>
+                    </motion.div>
                   )}
-                </button>
-              ) : (
-                <span className="text-5xl">🚀</span>
-              )}
+                </AnimatePresence>
+
+                {!editMode && isOwner && (
+                  <p className="text-[10px] text-muted-foreground/50 mt-1">Hold to rearrange</p>
+                )}
+              </div>
             </div>
-          )}
+          ) : isOwner ? (
+            /* No media yet — compact owner-only add affordance (no giant hero) */
+            <div className="mb-4">
+              <button onClick={() => mediaInputRef.current?.click()}
+                className="w-full h-28 rounded-none border-2 border-dashed border-border hover:border-primary/40 flex flex-col items-center justify-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
+                {uploadingMedia ? <Loader2 className="w-6 h-6 animate-spin" /> : (
+                  <><ImagePlus className="w-6 h-6" /><span className="text-xs font-medium">Add photos or videos</span></>
+                )}
+              </button>
+            </div>
+          ) : null}
           <input ref={mediaInputRef} type="file" accept="image/*,video/*" className="hidden" onChange={handleMediaUpload} />
-        </div>
-      </div>
 
-      {/* Thumbnail Strip — iOS-style hold-to-jiggle + drag-to-reorder */}
-      <div className="px-4 mb-4">
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={allIds} strategy={horizontalListSortingStrategy}>
-            <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 items-start">
-              {thumbnails.map((thumb, i) => (
-                <div
-                  key={thumb.id}
-                  onTouchStart={() => isOwner && handleTouchStart()}
-                  onTouchEnd={handleTouchEnd}
-                  onTouchCancel={handleTouchEnd}
-                  onMouseDown={() => isOwner && handleTouchStart()}
-                  onMouseUp={handleTouchEnd}
-                  onMouseLeave={handleTouchEnd}
-                  onContextMenu={(e) => { if (isOwner) { e.preventDefault(); setEditMode(true); } }}
-                >
-                  <SortableThumb
-                    thumb={thumb}
-                    index={i}
-                    isActive={activeThumb === i}
-                    editMode={editMode}
-                    onSelect={setActiveThumb}
-                    onDelete={(id) => deleteMedia.mutate(id)}
-                  />
-                </div>
-              ))}
-
-              {/* Add media */}
-              {isOwner && (
-                <button onClick={() => mediaInputRef.current?.click()} aria-label="Add media"
-                  className="flex-shrink-0 w-20 h-14 rounded-lg border-2 border-dashed border-border hover:border-primary/40 flex items-center justify-center transition-colors">
-                  {uploadingMedia ? <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
-                    : <Plus className="w-5 h-5 text-muted-foreground" />}
-                </button>
-              )}
-            </div>
-          </SortableContext>
-        </DndContext>
-
-        {/* Edit mode controls */}
-        <AnimatePresence>
-          {editMode && isOwner && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="flex items-center justify-between mt-2"
-            >
-              <span className="text-[11px] text-muted-foreground">Drag to reorder · Tap ✕ to delete</span>
-              <Button size="sm" variant="secondary" className="h-7 text-xs px-3" onClick={() => setEditMode(false)}>
-                Done
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {!editMode && isOwner && thumbnails.length > 0 && (
-          <p className="text-[10px] text-muted-foreground/50 mt-1">Hold to rearrange</p>
-        )}
-      </div>
-
-      {/* Metadata Row */}
-      <div className="px-4 mb-4">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          {/* Meta row — privacy · members · price · creator */}
+          <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
             {isOwner ? (
               <button onClick={() => {
                 updateSpace.mutate({ is_public: !isPublic }, {
                   onSuccess: () => toast.success(isPublic ? "Set to Private 🔒" : "Set to Public 🌐"),
                 });
-              }} className="flex items-center gap-2 px-2 py-1 -mx-2 rounded-md hover:bg-secondary/50 transition-colors">
+              }} className="flex items-center gap-1.5 px-1 py-0.5 -mx-1 rounded-none hover:bg-secondary/50 transition-colors">
                 {isPublic ? <Globe className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
                 <span>{isPublic ? "Public" : "Private"}</span>
-                <Switch checked={isPublic} className="scale-75 ml-1" />
+                <Switch checked={isPublic} className="scale-75 ml-0.5" />
               </button>
             ) : (
-              <>{isPublic ? <Globe className="w-4 h-4" /> : <Lock className="w-4 h-4" />}<span>{isPublic ? "Public" : "Private"}</span></>
+              <span className="flex items-center gap-1.5">
+                {isPublic ? <Globe className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+                {isPublic ? "Public" : "Private"}
+              </span>
             )}
-          </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Users className="w-4 h-4" />
-            <span>{formatMemberCount(memberCount)} members</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+
+            <span className="text-border">·</span>
+
+            <span className="flex items-center gap-1.5">
+              <Users className="w-4 h-4" />
+              {formatMemberCount(memberCount)} members
+            </span>
+
+            <span className="text-border">·</span>
+
             {isOwner ? (
-              <div className="flex items-center gap-2 flex-wrap">
-                <div className="flex items-center gap-2 px-2 py-1 -mx-2 rounded-md">
+              <span className="flex items-center gap-2 flex-wrap">
+                <span className="flex items-center gap-1.5">
                   <Tag className="w-4 h-4" />
-                  <span>{isFree && !editingPrice ? "Free" : `$${space?.price || 0}/mo`}</span>
-                  <Switch checked={!isFree} className="scale-75 ml-1"
+                  <span>{isFree && !editingPrice ? "Free" : priceLabel}</span>
+                  <Switch checked={!isFree} className="scale-75 ml-0.5"
                     onCheckedChange={(checked) => {
                       if (!checked) {
                         updateSpace.mutate({ is_free: true, price: 0 }, {
@@ -589,7 +716,7 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
                         });
                       } else { setEditingPrice(true); setPriceInput(String(space?.price || "")); }
                     }} />
-                </div>
+                </span>
                 {editingPrice && (
                   <form className="flex items-center gap-1" onSubmit={(e) => {
                     e.preventDefault();
@@ -603,73 +730,67 @@ export default function SpaceAboutTab({ creatorId, isOwner }: Props) {
                   }}>
                     <span className="text-xs text-muted-foreground">$</span>
                     <Input type="number" min="1" step="1" placeholder="49" value={priceInput}
-                      onChange={(e) => setPriceInput(e.target.value)} className="w-16 h-7 text-xs" autoFocus />
+                      onChange={(e) => setPriceInput(e.target.value)} className="w-16 h-7 text-xs rounded-none" autoFocus />
                     <Button type="submit" size="sm" variant="ghost" className="h-7 px-2 text-xs">
                       {updateSpace.isPending ? "…" : "✓"}
                     </Button>
                   </form>
                 )}
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5">
+                <Tag className="w-4 h-4" />
+                {priceLabel}
+              </span>
+            )}
+
+            <span className="text-border">·</span>
+
+            <span className="flex items-center gap-1.5 min-w-0">
+              {avatar ? (
+                <img src={avatar} alt="" loading="lazy" className="w-5 h-5 rounded-full object-cover" />
+              ) : (
+                <span className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">
+                  {spaceName.charAt(0)}
+                </span>
+              )}
+              <span className="truncate">By {creatorProfile?.display_name || "Creator"}</span>
+            </span>
+          </div>
+
+          <div className="border-t border-border mb-4" />
+
+          {/* Description */}
+          <div>
+            {editingDesc && isOwner ? (
+              <div className="space-y-2">
+                <Textarea value={descInput} onChange={(e) => setDescInput(e.target.value)} rows={4}
+                  className="text-sm resize-none rounded-none" placeholder="Tell people what your community is about…" autoFocus />
+                <div className="flex items-center gap-2">
+                  <Button size="sm" className="rounded-none" onClick={handleSaveDesc} disabled={updateSpace.isPending}>
+                    {updateSpace.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <Check className="w-3.5 h-3.5 mr-1" />}
+                    Save
+                  </Button>
+                  <Button size="sm" variant="ghost" className="rounded-none" onClick={() => setEditingDesc(false)}>Cancel</Button>
+                </div>
               </div>
             ) : (
-              <><Tag className="w-4 h-4" /><span>{isFree ? "Free" : `$${space?.price || 0}/mo`}</span></>
-            )}
-          </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            {avatar ? (
-              <img src={avatar} alt="" loading="lazy" className="w-5 h-5 rounded-full object-cover" />
-            ) : (
-              <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">
-                {spaceName.charAt(0)}
+              <div className="group">
+                {bio ? (
+                  <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{bio}</p>
+                ) : isOwner ? (
+                  <p className="text-sm text-muted-foreground/50 italic">No description yet. Click to add one.</p>
+                ) : null}
+                {isOwner && (
+                  <button onClick={() => { setDescInput(bio); setEditingDesc(true); }}
+                    className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                    <Pencil className="w-3 h-3" />{bio ? "Edit description" : "Add description"}
+                  </button>
+                )}
               </div>
             )}
-            <span className="truncate">By {creatorProfile?.display_name || "Creator"}</span>
-            <Star className="w-3.5 h-3.5 text-warning flex-shrink-0" />
           </div>
         </div>
-      </div>
-
-      {/* Join Button */}
-      {!isOwner && user && (
-        <div className="px-4 mb-5">
-          {isMember ? (
-            <div className="flex items-center gap-2 text-sm text-primary"><CheckCircle className="w-4 h-4" /> Member</div>
-          ) : (
-            <Button onClick={handleJoin} className="w-full font-semibold" size="lg">Join Community</Button>
-          )}
-        </div>
-      )}
-
-      <div className="mx-4 border-t border-border mb-5" />
-
-      {/* Description */}
-      <div className="px-4">
-        {editingDesc && isOwner ? (
-          <div className="space-y-2">
-            <Textarea value={descInput} onChange={(e) => setDescInput(e.target.value)} rows={4}
-              className="text-sm resize-none" placeholder="Tell people what your community is about…" autoFocus />
-            <div className="flex items-center gap-2">
-              <Button size="sm" onClick={handleSaveDesc} disabled={updateSpace.isPending}>
-                {updateSpace.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <Check className="w-3.5 h-3.5 mr-1" />}
-                Save
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => setEditingDesc(false)}>Cancel</Button>
-            </div>
-          </div>
-        ) : (
-          <div className="group">
-            {bio ? (
-              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{bio}</p>
-            ) : isOwner ? (
-              <p className="text-sm text-muted-foreground/50 italic">No description yet. Click to add one.</p>
-            ) : null}
-            {isOwner && (
-              <button onClick={() => { setDescInput(bio); setEditingDesc(true); }}
-                className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
-                <Pencil className="w-3 h-3" />{bio ? "Edit description" : "Add description"}
-              </button>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );
