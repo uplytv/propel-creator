@@ -103,15 +103,19 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
   const plan = PLATFORM_PLANS.find((p) => p.key === selectedPlan) ?? PLATFORM_PLANS[0];
   const isAuthed = !!user || sessionReady;
 
+  // GHL-simple step 1: no password field. Accounts are auto-created with a
+  // secure generated password; a set-password email follows. The field only
+  // appears inline if the email already has an account (sign-in required).
+  const [existingAccount, setExistingAccount] = useState(false);
+
   const validateStep1 = () => {
     const next: typeof errors = {};
     if (!company.trim()) next.company = "Company or brand name is required";
     if (!fullName.trim()) next.fullName = "Full name is required";
     if (!email.trim()) next.email = "Email is required";
     else if (!EMAIL_RE.test(email.trim())) next.email = "Enter a valid email address";
-    if (!isAuthed) {
-      const pwError = validatePassword(password);
-      if (pwError) next.password = pwError;
+    if (!isAuthed && existingAccount) {
+      if (!password) next.password = "Enter your existing UPLY password";
     }
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -134,19 +138,24 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
     }
   };
 
-  /** Existing account detected mid-signup → sign in right here with the Step 1
-   *  password and continue to payment. Never leaves the modal for a login page. */
+  /** Existing account detected mid-signup → reveal an inline password field and
+   *  sign in right here, then continue to payment. Never leaves the modal. */
   const redirectExistingAccount = async () => {
+    if (!existingAccount || !password) {
+      // First detection: reveal the password field on step 1 and explain.
+      setExistingAccount(true);
+      toast.info("You already have an account", {
+        description: "Enter your UPLY password below to continue straight to payment.",
+      });
+      return;
+    }
     trackEvent("platform_trial_signin_inline", { plan: selectedPlan, price: plan.price, reason: "existing_account" });
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
     });
     if (error || !data.session) {
-      // Wrong password for the existing account — stay on step 1 and say so.
-      toast.info("You already have an account", {
-        description: "Enter your existing UPLY password to continue straight to payment.",
-      });
+      setErrors((prev) => ({ ...prev, password: "That password doesn't match this account" }));
       return;
     }
     setSessionReady(true);
@@ -167,7 +176,17 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
       return;
     }
 
-    // Create the account NOW so payment can happen inside step 2.
+    // Existing account with the inline password revealed → sign in, don't re-signup.
+    if (existingAccount) {
+      setCreatingAccount(true);
+      await redirectExistingAccount();
+      setCreatingAccount(false);
+      return;
+    }
+
+    // Create the account NOW so payment can happen inside step 2. No password
+    // asked at this step (GHL-simple): we generate a secure one and email the
+    // user a set-password link after payment.
     setCreatingAccount(true);
     try {
       // Guard: TrialIntentResume fires on any auth-state change when an intent
@@ -178,9 +197,12 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
         /* sessionStorage unavailable */
       }
 
+      const generatedPassword =
+        Array.from(crypto.getRandomValues(new Uint8Array(18)), (b) => b.toString(16).padStart(2, "0")).join("") + "Aa1!";
+
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
-        password,
+        password: generatedPassword,
         options: {
           emailRedirectTo: window.location.origin,
           data: { full_name: fullName.trim() },
@@ -208,7 +230,12 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
       });
 
       if (data.session) {
-        // Live session — proceed straight to in-modal payment.
+        // Live session — proceed straight to in-modal payment. Send a
+        // set-password link so they can choose their own password later
+        // (account was created with a generated one). Fire-and-forget.
+        supabase.auth
+          .resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/reset-password` })
+          .catch(() => {});
         setSessionReady(true);
         setAwaitingEmailConfirm(false);
         try {
@@ -395,15 +422,15 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
                 />
                 {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
               </div>
-              {!isAuthed && (
+              {!isAuthed && existingAccount && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="trial-password">Create your password</Label>
+                  <Label htmlFor="trial-password">Welcome back — enter your password</Label>
                   <Input
                     id="trial-password"
                     type="password"
-                    autoComplete="new-password"
+                    autoComplete="current-password"
                     className="rounded-sm"
-                    placeholder="Min 8 characters"
+                    placeholder="Your UPLY password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
