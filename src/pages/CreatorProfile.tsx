@@ -26,6 +26,7 @@ import { CalendarDays } from "lucide-react";
 import { useInviteCodes } from "@/hooks/useInviteCodes";
 import { fireMetaEvent, fireGoogleEvent } from "@/lib/adTracking";
 import AddFriendButton from "@/components/social/AddFriendButton";
+import FoundingCreatorBadge from "@/components/shared/FoundingCreatorBadge";
 import CreatorMusicSection from "@/features/music/components/CreatorMusicSection";
 
 // Social platform icons as simple SVG components
@@ -60,13 +61,13 @@ function useCreatorProfileData(username: string | undefined) {
       // Try username first, then display_name as fallback
       let { data, error } = await (supabase as any)
         .from("profiles")
-        .select("id, user_id, display_name, username, avatar_url, bio, creator_type, members, mrr, total_revenue, cover_image_url, business_category, website")
+        .select("id, user_id, display_name, username, avatar_url, bio, creator_type, members, mrr, total_revenue, cover_image_url, business_category, website, is_founding_creator")
         .eq("username", username)
         .maybeSingle();
       if (!data) {
         const res = await (supabase as any)
           .from("profiles")
-          .select("id, user_id, display_name, username, avatar_url, bio, creator_type, members, mrr, total_revenue, cover_image_url, business_category, website")
+          .select("id, user_id, display_name, username, avatar_url, bio, creator_type, members, mrr, total_revenue, cover_image_url, business_category, website, is_founding_creator")
           .ilike("display_name", username!)
           .maybeSingle();
         data = res.data;
@@ -587,6 +588,9 @@ export default function CreatorProfile() {
           <div className="text-center mt-4">
             <h1 className="text-[28px] font-extrabold text-foreground">{creatorName}</h1>
             <p className="text-sm text-muted-foreground mt-0.5">@{profile.username || profile.display_name || username}</p>
+            <div className="mt-1.5 flex justify-center">
+              <FoundingCreatorBadge show={(profile as any).is_founding_creator} />
+            </div>
           </div>
 
           {/* Type pill */}
