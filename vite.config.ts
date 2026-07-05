@@ -46,7 +46,6 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.png", "logo.png"],
       workbox: {
         // Activate the new service worker immediately and purge stale precaches
         // so a deploy never leaves a tab serving an old index.html that points
@@ -55,6 +54,20 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true,
         cleanupOutdatedCaches: true,
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        // Don't force first-time visitors to download heavy on-demand chunks and
+        // oversized marketing images upfront — they lazy-load normally and get
+        // runtime-cached (rule below). Hashed filenames make this deploy-safe.
+        globIgnores: [
+          "**/hls-*.js",
+          "**/BrowserQRCodeReader-*.js",
+          "**/jspdf*",
+          "**/generateCategoricalChart-*.js",
+          "**/html2canvas*",
+          "**/RichTextEditor-*.js",
+          "**/favicon.png",
+          "**/logo.png",
+          "**/arya-xo-*.png",
+        ],
         navigateFallbackDenylist: [/^\/~oauth/, /^\/api/],
         runtimeCaching: [
           {
@@ -66,6 +79,13 @@ export default defineConfig(({ mode }) => ({
             urlPattern: /^https:\/\/image\.mux\.com\/.*/i,
             handler: "CacheFirst",
             options: { cacheName: "mux-thumbnails", expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 7 } },
+          },
+          {
+            // On-demand chunks excluded from precache: cache after first use.
+            // Content-hashed filenames are immutable, so CacheFirst is safe.
+            urlPattern: /\/assets\/.*\.js$/i,
+            handler: "CacheFirst",
+            options: { cacheName: "lazy-chunks", expiration: { maxEntries: 80, maxAgeSeconds: 60 * 60 * 24 * 14 } },
           },
         ],
         // Never cache live stream or payment endpoints
