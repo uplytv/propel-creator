@@ -79,28 +79,38 @@ export default function HomepageHero() {
 
         <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto">
           <Link
-            to="/auth?mode=signup"
+            to="/pricing"
             className="btn-primary-glow w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md px-8 h-12 text-sm font-bold tracking-wide"
           >
-            Create your business now <ArrowRight className="w-4 h-4" />
+            Start your 14-day free trial <ArrowRight className="w-4 h-4" />
           </Link>
           <Link
-            to="/waitlist"
+            to="/discover"
             className="btn-gold-outline w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md px-8 h-12 text-sm font-bold tracking-wide"
           >
-            Become a founding creator
+            Explore creators
           </Link>
         </div>
+
+        {/* Risk reversal — the conversion line */}
+        <p className="text-xs text-foreground/55 -mt-3">
+          No charge today · Cancel anytime · Set up in minutes
+        </p>
 
         {/* Feature strip — plain text, informative without buttons */}
         <p className="text-xs sm:text-sm text-foreground/60 font-medium tracking-wide max-w-2xl leading-relaxed">
           AI growth team · Live streaming · Courses &amp; community · Music · Events &amp; tickets · Live shopping · Roku TV
         </p>
 
-        {/* First-100 founding offer */}
-        <p className="text-xs sm:text-sm font-semibold text-gold max-w-xl">
-          First 100 creators get a free website funnel, an SEO blog post, and full community &amp; course setup.
-        </p>
+        {/* First-100 founding offer — scarcity chip */}
+        <div className="inline-flex items-start sm:items-center gap-2 rounded-sm border border-gold-hairline bg-[hsl(var(--gold)/0.08)] px-4 py-2.5 max-w-xl text-left">
+          <span className="rounded-sm bg-gold px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide shrink-0">
+            First 100
+          </span>
+          <p className="text-xs sm:text-sm font-semibold text-foreground/85">
+            Founding creators get a free website funnel, an SEO blog post, and full community &amp; course setup — done for you.
+          </p>
+        </div>
 
         {/* Beta code — folded behind one small link */}
         {!showBeta ? (

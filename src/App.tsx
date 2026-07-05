@@ -395,7 +395,7 @@ const App = () => (
                     <Route path="/community/:creatorId/:tab" element={<CreatorSpace />} />
                     <Route path="/space/:creatorId" element={<CreatorSpace />} />
                     <Route path="/space/:creatorId/:tab" element={<CreatorSpace />} />
-                    <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
+                    <Route path="/discover" element={<Discover />} /> {/* public — login only when joining/buying */}
                     <Route path="/shorts" element={<Shorts />} />
                     <Route path="/shop" element={<Shop />} />
                     <Route path="/inbox" element={<ProtectedRoute><Inbox /></ProtectedRoute>} />
