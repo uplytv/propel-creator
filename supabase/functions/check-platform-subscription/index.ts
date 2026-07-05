@@ -7,10 +7,15 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Legacy fixed-price products (pre-2026 plans).
 const PLATFORM_PRODUCTS: Record<string, string> = {
   "prod_UAMcfWZHDj9N3P": "pro",
   "prod_UAMdsCQEOof66s": "scale",
 };
+
+// New platform plans are created with inline price_data (ad-hoc product IDs),
+// so they're recognized via subscription metadata set by create-platform-checkout.
+const PLATFORM_PLAN_KEYS = new Set(["starter", "unlimited", "agency_pro"]);
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -45,20 +50,36 @@ serve(async (req) => {
     }
 
     const customerId = customers.data[0].id;
+    // status "all" so 14-day free trials (status: "trialing") count as subscribed;
+    // filtered to active/trialing below.
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
-      status: "active",
-      limit: 10,
+      status: "all",
+      limit: 20,
     });
 
     let plan = "free";
     let subscriptionEnd: string | null = null;
+    let isTrial = false;
 
     for (const sub of subscriptions.data) {
+      if (sub.status !== "active" && sub.status !== "trialing") continue;
+
+      // New plans: identified by metadata stamped on the subscription at checkout.
+      const metaPlan = (sub.metadata?.platform_plan || "").toLowerCase();
+      if (PLATFORM_PLAN_KEYS.has(metaPlan)) {
+        plan = metaPlan;
+        subscriptionEnd = new Date(sub.current_period_end * 1000).toISOString();
+        isTrial = sub.status === "trialing";
+        break;
+      }
+
+      // Legacy plans: identified by fixed product ID.
       const productId = sub.items.data[0]?.price?.product as string;
       if (PLATFORM_PRODUCTS[productId]) {
         plan = PLATFORM_PRODUCTS[productId];
         subscriptionEnd = new Date(sub.current_period_end * 1000).toISOString();
+        isTrial = sub.status === "trialing";
         break;
       }
     }
@@ -67,6 +88,7 @@ serve(async (req) => {
       subscribed: plan !== "free",
       plan,
       subscription_end: subscriptionEnd,
+      is_trial: isTrial,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
