@@ -58,14 +58,19 @@ serve(async (req) => {
       const active =
         row.status === "active" &&
         (!row.current_period_end || new Date(row.current_period_end) > new Date());
-      return new Response(
-        JSON.stringify({
-          subscribed: active,
-          subscription_end: row.current_period_end,
-          source: "db",
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
-      );
+      if (active) {
+        return new Response(
+          JSON.stringify({
+            subscribed: true,
+            subscription_end: row.current_period_end,
+            source: "db",
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
+        );
+      }
+      // Row exists but isn't active (canceled / past_due / expired).
+      // Fall through to Stripe so returning subscribers get unlocked
+      // immediately even if the webhook hasn't reconciled yet.
     }
 
     // 2) Fallback: query Stripe directly (in case webhook hasn't fired yet).
