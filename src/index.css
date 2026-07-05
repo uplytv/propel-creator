@@ -293,26 +293,26 @@
       #000 24px, #000 calc(100% - 32px), transparent 100%);
   }
 
-  /* Typography rhythm — consistent editorial scale used everywhere. */
+  /* Typography rhythm — simple, readable display scale (Inter, heavy). */
   .type-display-xl {
-    font-family: 'Fraunces', Georgia, serif;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    line-height: 1.02;
-    font-size: clamp(2.5rem, 7vw, 4.75rem);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    font-size: clamp(2.5rem, 7vw, 4.5rem);
   }
   .type-display-lg {
-    font-family: 'Fraunces', Georgia, serif;
-    font-weight: 600;
-    letter-spacing: -0.015em;
-    line-height: 1.05;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.08;
     font-size: clamp(2rem, 5.5vw, 3.5rem);
   }
   .type-display-md {
-    font-family: 'Fraunces', Georgia, serif;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    line-height: 1.1;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.12;
     font-size: clamp(1.4rem, 3vw, 1.875rem);
   }
   .type-eyebrow {

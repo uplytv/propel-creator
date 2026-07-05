@@ -81,15 +81,15 @@ export default function HomepageHero() {
         <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto">
           <Link
             to="/auth?mode=signup"
-            className="btn-primary-glow w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-full px-8 h-12 text-sm font-bold tracking-wide"
+            className="btn-primary-glow w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md px-8 h-12 text-sm font-bold tracking-wide"
           >
-            Get started free <ArrowRight className="w-4 h-4" />
+            Create your business now <ArrowRight className="w-4 h-4" />
           </Link>
           <Link
-            to="/discover"
-            className="btn-gold-outline w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-full px-8 h-12 text-sm font-bold tracking-wide"
+            to="/waitlist"
+            className="btn-gold-outline w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md px-8 h-12 text-sm font-bold tracking-wide"
           >
-            Explore creators
+            Become a founding creator
           </Link>
         </div>
 
