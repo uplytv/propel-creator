@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Link } from "react-router-dom";
 import { Calendar, MapPin, Ticket } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +28,7 @@ const formatDate = (iso: string | null) => {
   }
 };
 
-export function GlobalEventCard({ event }: { event: GlobalEvent }) {
+export const GlobalEventCard = memo(function GlobalEventCard({ event }: { event: GlobalEvent }) {
   const d = event.date ? new Date(event.date) : null;
   const valid = !!d && !isNaN(d.getTime());
 
@@ -85,4 +86,4 @@ export function GlobalEventCard({ event }: { event: GlobalEvent }) {
       </div>
     </div>
   );
-}
+});
