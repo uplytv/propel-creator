@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { Music2, Radio, GraduationCap, ShoppingBag, Ticket, Tv, ArrowRight } from "lucide-react";
 
 // One compact section replacing the nine persona sections (Musicians, Streamers,
@@ -38,13 +37,13 @@ export default function HomepageForEveryCreator() {
         </div>
 
         <div className="text-center mt-10">
-          <Link
-            to="/auth?mode=signup"
+          <a
+            href="#pricing"
             className="btn-primary-glow inline-flex items-center justify-center gap-1.5 rounded-md px-8 h-12 text-sm font-bold tracking-wide"
           >
-            Get started free <ArrowRight className="w-4 h-4" />
-          </Link>
-          <p className="text-xs text-muted-foreground mt-3">Free to start. No card required.</p>
+            Start your 14-day trial <ArrowRight className="w-4 h-4" />
+          </a>
+          <p className="text-xs text-muted-foreground mt-3">14 days free · cancel anytime.</p>
         </div>
       </div>
     </section>
