@@ -2,7 +2,7 @@ import { useEffect, useState, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, PlayCircle, Trophy, Zap, Gamepad2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 const ROTATING = [
   "If you're a musician, ToneDen is dead. We replaced it.",
@@ -18,6 +18,7 @@ export default function HomepageHero() {
   const [settled, setSettled] = useState(false);
   const [cycles, setCycles] = useState(0);
   const [betaCode, setBetaCode] = useState("");
+  const [showBeta, setShowBeta] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -72,55 +73,41 @@ export default function HomepageHero() {
           </h1>
         </div>
 
-        <p className="type-body-lg text-foreground/75 max-w-3xl">
-          Stream. Teach. Sell. Build community. Release music. Promote events.
-          Keep <span className="text-gold font-semibold">95%</span> of everything.
-          One platform. Every screen — including Roku TV.
+        <p className="type-body-lg text-foreground/75 max-w-xl">
+          One platform for your whole creator business. Keep{" "}
+          <span className="text-gold font-semibold">95%</span> of everything you earn.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto">
           <Link
             to="/auth?mode=signup"
-            className="btn-primary-glow w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-full px-6 h-12 text-sm font-bold tracking-wide"
+            className="btn-primary-glow w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-full px-8 h-12 text-sm font-bold tracking-wide"
           >
-            Get Up. Get UPLY <ArrowRight className="w-4 h-4" />
+            Get started free <ArrowRight className="w-4 h-4" />
           </Link>
-          <a
-            href="#streamers"
-            className="btn-gold-outline w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-full px-6 h-12 text-sm font-bold tracking-wide"
+          <Link
+            to="/discover"
+            className="btn-gold-outline w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-full px-8 h-12 text-sm font-bold tracking-wide"
           >
-            <PlayCircle className="w-4 h-4" /> Watch Demo
-          </a>
+            Explore creators
+          </Link>
         </div>
 
-        {/* Milestone pills — gold hairline edition */}
-        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold-hairline bg-card/40 text-foreground/85 text-xs sm:text-sm font-medium">
-            <Trophy className="w-3.5 h-3.5 text-gold" /> 100,000 Members
-          </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold-hairline bg-card/40 text-foreground/85 text-xs sm:text-sm font-medium">
-            <Zap className="w-3.5 h-3.5 text-gold" /> UPLY Awards
-          </span>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold-hairline bg-card/40 text-foreground/85 text-xs sm:text-sm font-medium">
-            <Gamepad2 className="w-3.5 h-3.5 text-gold" /> Creator Games
-          </span>
-        </div>
-
-        <p className="text-xs sm:text-sm text-foreground/70 font-medium tracking-wide max-w-xl">
-          <span className="text-gold font-semibold">Founding creator spots are open.</span>
-          <br />
-          100,000 members and this offer is gone — forever.
+        {/* Feature strip — plain text, informative without buttons */}
+        <p className="text-xs sm:text-sm text-foreground/60 font-medium tracking-wide max-w-2xl leading-relaxed">
+          Live streaming · Courses &amp; community · Music · Events &amp; tickets · Live shopping · Roku TV
         </p>
 
-        {/* Beta access card */}
-        <div className="w-full max-w-md mx-auto rounded-2xl border border-gold-hairline bg-card/60 backdrop-blur-md p-5 sm:p-6 text-left shadow-[0_0_40px_hsl(var(--primary)/0.15)]">
-          <div className="flex flex-col gap-1 mb-4 text-center">
-            <span className="eyebrow-gold">Invite Only — Beta Access</span>
-            <p className="text-sm text-foreground/70">
-              Already have a beta code? Enter it below to bypass the waitlist.
-            </p>
-          </div>
-          <form onSubmit={handleBetaSubmit} className="flex flex-col sm:flex-row gap-2">
+        {/* Beta code — folded behind one small link */}
+        {!showBeta ? (
+          <button
+            onClick={() => setShowBeta(true)}
+            className="text-xs text-foreground/55 underline underline-offset-4 hover:text-foreground/80 transition-colors"
+          >
+            Have a beta code?
+          </button>
+        ) : (
+          <form onSubmit={handleBetaSubmit} className="flex w-full max-w-sm mx-auto gap-2">
             <Input
               value={betaCode}
               onChange={(e) => setBetaCode(e.target.value)}
@@ -128,18 +115,13 @@ export default function HomepageHero() {
               className="flex-1 bg-background/60 border-border/60 text-foreground placeholder:text-foreground/40 h-11 text-base"
               autoComplete="off"
               spellCheck={false}
+              autoFocus
             />
-            <Button
-              type="submit"
-              className="btn-primary-glow h-11 font-semibold rounded-md"
-            >
-              Activate Access
+            <Button type="submit" className="btn-primary-glow h-11 font-semibold rounded-md">
+              Activate
             </Button>
           </form>
-          <p className="text-xs text-foreground/55 mt-3 text-center">
-            Don't have a code? Each founding creator gets 5 invites to share.
-          </p>
-        </div>
+        )}
       </div>
     </section>
   );
