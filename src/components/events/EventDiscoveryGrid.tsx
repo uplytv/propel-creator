@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CalendarDays, MapPin, Monitor, Globe, Ticket, Users } from "lucide-react";
@@ -25,18 +25,11 @@ const typeBadge: Record<string, { emoji: string; color: string; label: string }>
   hybrid: { emoji: "🌐", color: "bg-violet-500/20 text-violet-500", label: "Hybrid" },
 };
 
-function EventCard({ event }: { event: EventRow }) {
+type CardCreator = { display_name: string | null; username: string | null; avatar_url: string | null } | null | undefined;
+
+const EventCard = memo(function EventCard({ event, creator }: { event: EventRow; creator: CardCreator }) {
   const navigate = useNavigate();
   const badge = typeBadge[event.event_type] || typeBadge.virtual;
-
-  // Get creator profile
-  const { data: creator } = useQuery({
-    queryKey: ["event-card-creator", event.creator_id],
-    queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("display_name, username, avatar_url").eq("user_id", event.creator_id).maybeSingle();
-      return data;
-    },
-  });
 
   const date = new Date(event.starts_at);
   const left = event.ticket_quantity ? event.ticket_quantity - event.tickets_sold : null;
@@ -99,7 +92,7 @@ function EventCard({ event }: { event: EventRow }) {
       {left != null && left <= 20 && !event.is_sold_out && <p className="text-[11px] text-destructive">{left} left</p>}
     </motion.div>
   );
-}
+});
 
 export default function EventDiscoveryGrid() {
   const [filter, setFilter] = useState("all");
@@ -111,6 +104,25 @@ export default function EventDiscoveryGrid() {
     const q = search.toLowerCase();
     return [e.title, (e as any).location_name, (e as any).location_city, (e as any).location_state, (e as any).description]
       .some(v => typeof v === "string" && v.toLowerCase().includes(q));
+  });
+
+  // Batch-fetch every creator profile in ONE query instead of one-per-card (N+1).
+  const creatorIds = useMemo(
+    () => [...new Set((filtered ?? []).map(e => e.creator_id).filter(Boolean))].sort(),
+    [filtered],
+  );
+  const { data: creatorMap = {} } = useQuery({
+    queryKey: ["event-grid-creators", creatorIds],
+    enabled: creatorIds.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("user_id, display_name, username, avatar_url")
+        .in("user_id", creatorIds);
+      const map: Record<string, CardCreator> = {};
+      (data ?? []).forEach((p: any) => { map[p.user_id] = p; });
+      return map;
+    },
   });
 
   return (
@@ -149,7 +161,7 @@ export default function EventDiscoveryGrid() {
         />
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-          {filtered.map(e => <EventCard key={e.id} event={e} />)}
+          {filtered.map(e => <EventCard key={e.id} event={e} creator={creatorMap[e.creator_id]} />)}
         </div>
       )}
     </div>
