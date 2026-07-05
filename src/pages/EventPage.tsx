@@ -19,6 +19,7 @@ import EventTabs from "@/components/social/EventTabs";
 import EventTierPicker from "@/components/events/EventTierPicker";
 import EventGuestList from "@/components/events/EventGuestList";
 import EventWaitlist from "@/components/events/EventWaitlist";
+import EventShareButton from "@/components/events/EventShareButton";
 import EventConcierge from "@/components/events/EventConcierge";
 import { PurchaseOverlay } from "@/components/payments/PurchaseOverlay";
 import SeatPicker from "@/components/events/SeatPicker";
@@ -641,13 +642,16 @@ END:VCALENDAR`;
           {/* Live Now Banner */}
           <EventLiveNowBanner eventId={event.id} />
 
-          {/* Badges */}
+          {/* Badges + share */}
           <div className="flex items-center gap-2 flex-wrap">
             {badge && (
               <Badge variant="outline" className={badge.color}>{badge.emoji} {badge.label}</Badge>
             )}
             {event.is_free && <Badge variant="outline" className="bg-primary/20 text-primary">FREE</Badge>}
             {isPast && <Badge variant="outline" className="bg-muted text-muted-foreground">Ended</Badge>}
+            <div className="ml-auto">
+              <EventShareButton slug={event.slug || event.id} />
+            </div>
           </div>
 
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground">{event.title}</h1>

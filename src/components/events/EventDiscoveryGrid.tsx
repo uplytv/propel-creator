@@ -108,7 +108,9 @@ export default function EventDiscoveryGrid() {
 
   const filtered = events?.filter(e => {
     if (!search) return true;
-    return e.title.toLowerCase().includes(search.toLowerCase());
+    const q = search.toLowerCase();
+    return [e.title, (e as any).location_name, (e as any).location_city, (e as any).location_state, (e as any).description]
+      .some(v => typeof v === "string" && v.toLowerCase().includes(q));
   });
 
   return (
@@ -129,7 +131,7 @@ export default function EventDiscoveryGrid() {
       </div>
 
       <Input
-        placeholder="Search events..."
+        placeholder="Search events, venues, cities…"
         value={search}
         onChange={e => setSearch(e.target.value)}
         className="h-9"
