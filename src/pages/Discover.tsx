@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Compass, Radio, Upload, Film, BookOpen, Users, CalendarDays, X, ShoppingBag } from "lucide-react";
 import LiveShoppingGrid from "@/components/discovery/LiveShoppingGrid";
 import AppLayout from "@/components/layout/AppLayout";
+import PageHero from "@/components/layout/PageHero";
 import { useDiscoveryFeed, type SortOption, type FeedTab } from "@/hooks/useDiscoveryFeed";
 import FeedCard from "@/components/discovery/FeedCard";
 import FeedFilters, { type DiscoverCategory } from "@/components/discovery/FeedFilters";
@@ -177,23 +178,13 @@ export default function Discover() {
         description="Explore top creators, communities, courses, and live streams on Uply."
       />
 
-      {/* Premium page hero — brings the landing's design language into the app interior */}
-      <div className="relative overflow-hidden border-b border-border">
-        <div aria-hidden className="pointer-events-none absolute inset-0">
-          <div className="absolute left-1/2 -top-24 -translate-x-1/2 w-[70vw] h-[70vw] max-w-[640px] max-h-[640px] rounded-full bg-primary/10 blur-[120px]" />
-          <div className="absolute right-[8%] top-[10%] w-[30vw] h-[30vw] max-w-[300px] max-h-[300px] rounded-full bg-[hsl(var(--gold)/0.08)] blur-[110px]" />
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4 py-7 sm:py-9">
-          <p className="eyebrow-gold mb-2">Discover</p>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
-            Find your next{" "}
-            <span className="bg-gradient-to-r from-[hsl(220_100%_62%)] to-[hsl(280_85%_60%)] bg-clip-text text-transparent">obsession</span>.
-          </h1>
-          <p className="text-sm sm:text-base text-foreground/70 max-w-2xl mt-2">
-            Live streams, courses, communities, drops and events — from creators worth your time.
-          </p>
-        </div>
-      </div>
+      {/* Premium page hero — landing design language inside the app */}
+      <PageHero
+        eyebrow="Discover"
+        title="Find your next"
+        gradientWord="obsession"
+        subtitle="Live streams, courses, communities, drops and events — from creators worth your time."
+      />
 
       {/* Curated platform-wide feature (Arya XO blog this cycle) */}
       <FeaturedRails variant="feed" />

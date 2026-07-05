@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/layout/AppLayout";
+import PageHero from "@/components/layout/PageHero";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -122,6 +123,12 @@ export default function Dashboard() {
 
   return (
     <AppLayout>
+      <PageHero
+        eyebrow="Creator Studio"
+        title="Welcome back"
+        gradientWord={creatorUsername ? `@${creatorUsername}` : undefined}
+        subtitle="Your platform at a glance — track growth, earnings, and what to do next."
+      />
       <div className="max-w-5xl mx-auto pb-20 md:pb-8">
         <MusicDiscoveryBanner />
         <MilestoneProgressPill />
