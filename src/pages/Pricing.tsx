@@ -8,12 +8,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import PlanCard from "@/components/pricing/PlanCard";
 import TrialSignupModal from "@/components/pricing/TrialSignupModal";
+import CancelSubscriptionModal from "@/components/pricing/CancelSubscriptionModal";
 import { PLATFORM_PLANS, type PlatformPlanKey } from "@/components/pricing/plans";
 
 export default function Pricing() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlatformPlanKey>("unlimited");
 
   const { data: currentPlan = "free", refetch } = useQuery({
@@ -79,6 +81,21 @@ export default function Pricing() {
           All plans include unlimited community members, live streaming, and course creation. Cancel anytime.
         </p>
 
+        {/* Manage current plan (paid/trialing holders only) */}
+        {currentPlan !== "free" && (
+          <div className="mt-6 flex items-center justify-center gap-2">
+            <span className="text-xs text-muted-foreground">
+              You're on the {PLATFORM_PLANS.find((p) => p.key === currentPlan)?.name || currentPlan} plan.
+            </span>
+            <button
+              onClick={() => setCancelOpen(true)}
+              className="text-xs text-destructive/70 hover:text-destructive px-2 py-1 hover:bg-destructive/10 transition-colors"
+            >
+              Cancel subscription
+            </button>
+          </div>
+        )}
+
         {/* Competitor Comparison */}
         <div className="mt-16">
           <h2 className="text-2xl font-bold text-foreground text-center mb-2">Why creators choose UPLY</h2>
@@ -131,6 +148,12 @@ export default function Pricing() {
       </div>
 
       <TrialSignupModal open={modalOpen} onOpenChange={setModalOpen} defaultPlan={selectedPlan} />
+      <CancelSubscriptionModal
+        open={cancelOpen}
+        onOpenChange={setCancelOpen}
+        planName={PLATFORM_PLANS.find((p) => p.key === currentPlan)?.name || currentPlan}
+        onChanged={() => refetch()}
+      />
     </AppLayout>
   );
 }

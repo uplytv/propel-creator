@@ -9,6 +9,8 @@ project_id = "dbjlhmbgskvhuzqvqfrl"
     verify_jwt = false
   [functions.cancel-event]
     verify_jwt = false
+  [functions.cancel-platform-subscription]
+    verify_jwt = false
   [functions.check-platform-subscription]
     verify_jwt = false
   [functions.create-clip]

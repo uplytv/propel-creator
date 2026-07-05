@@ -3,8 +3,9 @@ import { motion } from "framer-motion";
 import {
   User, Bell, Shield, CreditCard, Palette, Mail,
   Camera, Save, Eye, EyeOff, Trash2, Download, Megaphone, Loader2, Users, Ticket, Bot,
-  Sun, Moon, Monitor, Radio, Cast, Share2, Heart, Info
+  Sun, Moon, Monitor, Radio, Cast, Share2, Heart, Info, ExternalLink
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import AppLayout from "@/components/layout/AppLayout";
 import { useApp } from "@/context/AppContext";
@@ -17,6 +18,8 @@ import { useNotificationPreferences } from "@/hooks/useNotificationPreferences";
 import { useProfile, useUpdateProfile, useUploadAvatar } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { SubscriptionsTab } from "@/components/settings/SubscriptionsTab";
+import CancelSubscriptionModal from "@/components/pricing/CancelSubscriptionModal";
+import { PLATFORM_PLANS } from "@/components/pricing/plans";
 import YouTubeImport from "@/components/classroom/YouTubeImport";
 import { useMyTickets } from "@/hooks/useEvents";
 import SocialProfileSection from "@/components/settings/SocialProfileSection";
@@ -123,6 +126,42 @@ export default function Settings() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteText, setDeleteText] = useState("");
   const [deleting, setDeleting] = useState(false);
+
+  // Platform subscription (Billing card): plan status, portal, cancel-retention modal
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
+  const { data: platformSub, refetch: refetchPlatformSub } = useQuery({
+    queryKey: ["platform-subscription-detail", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("check-platform-subscription");
+        if (error) return { subscribed: false, plan: "free" };
+        return data as { subscribed: boolean; plan: string; subscription_end: string | null; is_trial: boolean };
+      } catch {
+        return { subscribed: false, plan: "free" };
+      }
+    },
+  });
+
+  const PLAN_LABELS: Record<string, string> = {
+    ...Object.fromEntries(PLATFORM_PLANS.map((p) => [p.key, `${p.name} · $${p.price}/mo`])),
+    pro: "Pro",
+    scale: "Scale",
+  };
+  const platformPlanLabel = platformSub?.plan ? PLAN_LABELS[platformSub.plan] || platformSub.plan : "";
+
+  const handleOpenBillingPortal = async () => {
+    setPortalLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("stripe-create-portal");
+      if (error) throw error;
+      if (data?.url) window.open(data.url, "_blank");
+    } catch (err: any) {
+      toast.error("Couldn't open billing portal", { description: err.message });
+    }
+    setPortalLoading(false);
+  };
 
   const handleDeleteAccount = async () => {
     if (deleteText !== "DELETE") {
@@ -661,13 +700,48 @@ export default function Settings() {
                 <CreditCard className="w-5 h-5 text-primary" />
                 <h2 className="text-lg font-semibold">Billing</h2>
               </div>
-              <div className="flex items-center justify-between py-2 px-4 rounded-lg bg-secondary/30 border border-border">
-                <div>
-                  <p className="text-sm font-medium">Current Plan</p>
-                  <p className="text-xs text-muted-foreground">Tier {appProfile.tier} · {appProfile.tierName}</p>
+              {platformSub?.subscribed ? (
+                <>
+                  <div className="flex items-center justify-between py-2 px-4 rounded-lg bg-secondary/30 border border-border">
+                    <div>
+                      <p className="text-sm font-medium">
+                        Current Plan · {platformPlanLabel}
+                        {platformSub.is_trial ? " (trial)" : ""}
+                      </p>
+                      {platformSub.subscription_end && (
+                        <p className="text-xs text-muted-foreground">
+                          Renews {new Date(platformSub.subscription_end).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    {/* Stripe portal stays the place for payment-method / invoice updates */}
+                    <button
+                      onClick={handleOpenBillingPortal}
+                      disabled={portalLoading}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-sm font-medium hover:bg-secondary/80 transition-colors disabled:opacity-50"
+                    >
+                      {portalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ExternalLink className="w-4 h-4" />}
+                      Manage billing
+                    </button>
+                    <button
+                      onClick={() => setCancelModalOpen(true)}
+                      className="px-3 py-2 rounded-lg text-sm text-destructive/70 hover:text-destructive hover:bg-destructive/10 transition-colors"
+                    >
+                      Cancel subscription
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center justify-between py-2 px-4 rounded-lg bg-secondary/30 border border-border">
+                  <div>
+                    <p className="text-sm font-medium">Current Plan</p>
+                    <p className="text-xs text-muted-foreground">Tier {appProfile.tier} · {appProfile.tierName}</p>
+                  </div>
+                  <span className="text-sm text-muted-foreground font-medium">Payments coming soon</span>
                 </div>
-                <span className="text-sm text-muted-foreground font-medium">Payments coming soon</span>
-              </div>
+              )}
             </div>
 
             {/* Branding / White-Label */}
@@ -733,6 +807,13 @@ export default function Settings() {
           </motion.div>
         )}
       </div>
+
+      <CancelSubscriptionModal
+        open={cancelModalOpen}
+        onOpenChange={setCancelModalOpen}
+        planName={PLATFORM_PLANS.find((p) => p.key === platformSub?.plan)?.name || platformSub?.plan}
+        onChanged={() => refetchPlatformSub()}
+      />
     </AppLayout>
   );
 }
