@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
       supabase
         .from("mux_live_streams")
         .select(
-          "id, title, playback_id, viewer_count, user_id, channel_category, is_primetime, scheduled_at"
+          "id, title, mux_playback_id, viewer_count, user_id, channel_category, is_primetime, scheduled_at"
         )
         .eq("status", "active")
         .order("viewer_count", { ascending: false })
@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
       supabase
         .from("mux_live_streams")
         .select(
-          "id, title, playback_id, scheduled_at, user_id, channel_category, series_name, episode_number"
+          "id, title, mux_playback_id, scheduled_at, user_id, channel_category, series_name, episode_number"
         )
         .eq("status", "scheduled")
         .gte("scheduled_at", new Date().toISOString())
@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
       supabase
         .from("stream_recordings")
         .select(
-          "id, title, playback_id, duration, view_count, created_at, creator_id"
+          "id, title, playback_id, duration_seconds, view_count, created_at, creator_id"
         )
         .eq("is_published", true)
         .order("created_at", { ascending: false })

@@ -58,14 +58,19 @@ serve(async (req) => {
       const active =
         row.status === "active" &&
         (!row.current_period_end || new Date(row.current_period_end) > new Date());
-      return new Response(
-        JSON.stringify({
-          subscribed: active,
-          subscription_end: row.current_period_end,
-          source: "db",
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
-      );
+      if (active) {
+        return new Response(
+          JSON.stringify({
+            subscribed: true,
+            subscription_end: row.current_period_end,
+            source: "db",
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
+        );
+      }
+      // Row exists but isn't active (canceled / past_due / expired).
+      // Fall through to Stripe so returning subscribers get unlocked
+      // immediately even if the webhook hasn't reconciled yet.
     }
 
     // 2) Fallback: query Stripe directly (in case webhook hasn't fired yet).
@@ -90,6 +95,13 @@ serve(async (req) => {
 
     // Seed row so subsequent reads are cheap.
     if (active) {
+      // Clear stale rows with same email but different subscription id to avoid
+      // hitting the unique(lower(email)) index during insert.
+      await supabase
+        .from("blake_subscribers")
+        .delete()
+        .eq("email", email)
+        .neq("stripe_subscription_id", active.id);
       await supabase.from("blake_subscribers").upsert(
         {
           user_id: user.id,
