@@ -95,6 +95,13 @@ serve(async (req) => {
 
     // Seed row so subsequent reads are cheap.
     if (active) {
+      // Clear stale rows with same email but different subscription id to avoid
+      // hitting the unique(lower(email)) index during insert.
+      await supabase
+        .from("blake_subscribers")
+        .delete()
+        .eq("email", email)
+        .neq("stripe_subscription_id", active.id);
       await supabase.from("blake_subscribers").upsert(
         {
           user_id: user.id,
