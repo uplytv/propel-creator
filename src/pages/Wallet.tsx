@@ -106,23 +106,17 @@ export default function Wallet() {
     <AppLayout>
       <SEOHead title="Wallet | Uply" description="Your creator economy wallet — track earnings, request payouts, and manage your revenue." />
       <StripeGate>
-        <div className="max-w-5xl mx-auto px-4 md:px-8 py-6 space-y-5 pb-24 md:pb-8 overflow-x-hidden">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <WalletIcon className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold tracking-tight">Creator Wallet</h1>
-                <p className="text-xs text-muted-foreground">Your financial command center</p>
-              </div>
-            </div>
+        <PageHero
+          eyebrow="Earnings"
+          title="Creator Wallet"
+          subtitle="Your financial command center"
+          actions={
             <Badge variant="outline" className="border-primary/20 text-primary text-[10px] gap-1 hidden md:flex">
               <Sparkles className="w-3 h-3" /> Real-time
             </Badge>
-          </div>
-
+          }
+        />
+        <div className="max-w-5xl mx-auto px-4 md:px-8 py-6 space-y-5 pb-24 md:pb-8 overflow-x-hidden">
           {/* Primary Balance */}
           <div className="rounded-2xl border border-primary/15 bg-primary/5 p-5">
             {walletLoading ? <Skeleton className="h-16 w-40" /> : (

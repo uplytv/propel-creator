@@ -1,5 +1,6 @@
 import { useState } from "react";
 import AppLayout from "@/components/layout/AppLayout";
+import PageHero from "@/components/layout/PageHero";
 import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,17 +72,13 @@ export default function Repurpose() {
   return (
     <AppLayout>
       <SEOHead title="Repurpose · ARIA" description="Turn one video into a week of content." />
+      <PageHero
+        eyebrow="Content"
+        title="Repurpose with"
+        gradientWord="ARIA"
+        subtitle="One video → a week of Shorts, posts, an email & a thread."
+      />
       <div className="max-w-3xl mx-auto px-4 py-6">
-        <div className="flex items-center gap-3 mb-1">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-[hsl(220_100%_62%)] to-[hsl(280_85%_60%)] flex items-center justify-center">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-foreground">Repurpose with ARIA</h1>
-            <p className="text-sm text-muted-foreground">One video → a week of Shorts, posts, an email & a thread.</p>
-          </div>
-        </div>
-
         <div className="mt-5 space-y-3">
           <Input placeholder="Content title (e.g. 'How I grew to 100k')" value={title} onChange={(e) => setTitle(e.target.value)} />
           <Textarea

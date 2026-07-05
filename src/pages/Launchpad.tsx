@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
+import PageHero from "@/components/layout/PageHero";
 import { useAuth } from "@/context/AuthContext";
 import { useCreateProduct } from "@/hooks/useProducts";
 import { supabase } from "@/integrations/supabase/client";
@@ -237,26 +238,14 @@ export default function Launchpad() {
 
   return (
     <AppLayout>
+      <PageHero
+        eyebrow="Launchpad"
+        title="Creator"
+        gradientWord="Launchpad"
+        subtitle="Pick what you want to launch. We'll handle the rest."
+      />
       <div className="px-4 md:px-8 py-8 max-w-4xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          {/* Header */}
-          <div className="text-center mb-10">
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: "spring", stiffness: 200, damping: 20 }}
-              className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center mx-auto mb-5"
-            >
-              <Rocket className="w-8 h-8 text-primary" />
-            </motion.div>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight">
-              Creator Launchpad
-            </h1>
-            <p className="text-muted-foreground mt-2 text-base max-w-md mx-auto">
-              Pick what you want to launch. We'll handle the rest.
-            </p>
-          </div>
-
           <AnimatePresence mode="wait">
             {!selected ? (
               /* Launch Options Grid */

@@ -8,6 +8,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/context/AppContext";
 import { useGrowthPlan } from "@/hooks/useGrowthPlan";
+import PageHero from "@/components/layout/PageHero";
 import { toast } from "sonner";
 
 type CoachAction = { title: string; why: string; effort: "low"|"medium"|"high"; impact: "low"|"medium"|"high" };
@@ -105,30 +106,13 @@ export default function GrowthAssistant() {
   useEffect(() => { loadCoach(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [plan?.id]);
 
   return (
-    <div className="mobile-safe-content max-w-5xl mx-auto px-4 md:px-8 py-6 md:py-10 space-y-8 md:space-y-10">
-      {/* Hero header */}
-      <motion.header
-        initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35 }}
-        className="relative overflow-hidden rounded-3xl border border-border bg-card px-5 py-6 md:px-8 md:py-8"
-      >
-        <div className="pointer-events-none absolute -top-24 -right-16 h-64 w-64 rounded-full bg-[radial-gradient(circle,hsl(280_85%_60%/0.22),transparent_70%)]" />
-        <div className="pointer-events-none absolute -bottom-28 -left-10 h-64 w-64 rounded-full bg-[radial-gradient(circle,hsl(var(--primary)/0.18),transparent_70%)]" />
-        <div className="relative flex items-start justify-between gap-4 flex-wrap">
-          <div className="min-w-0">
-            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-primary ring-1 ring-primary/20">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span className="text-[11px] font-semibold uppercase tracking-wider">ARIA · Growth Assistant</span>
-            </div>
-            <h1 className="mt-3 text-2xl md:text-4xl font-bold tracking-tight">
-              <span className="bg-gradient-to-r from-primary to-[hsl(280_85%_60%)] bg-clip-text text-transparent">
-                Your next steps, prioritized
-              </span>
-            </h1>
-            <p className="mt-2 max-w-xl text-sm md:text-[15px] text-muted-foreground">
-              Actionable moves across plan, outreach, content, and monetization — tailored to where you are right now.
-            </p>
-          </div>
+    <>
+      <PageHero
+        eyebrow="Growth"
+        title="Your next steps,"
+        gradientWord="prioritized"
+        subtitle="Actionable moves across plan, outreach, content, and monetization — tailored to where you are right now."
+        actions={
           <motion.button
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
             onClick={loadCoach}
@@ -138,9 +122,9 @@ export default function GrowthAssistant() {
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
             Regenerate
           </motion.button>
-        </div>
-      </motion.header>
-
+        }
+      />
+      <div className="mobile-safe-content max-w-5xl mx-auto px-4 md:px-8 py-6 md:py-10 space-y-8 md:space-y-10">
       {/* This week from ARIA */}
       <motion.section
         initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
@@ -286,5 +270,6 @@ export default function GrowthAssistant() {
         ))}
       </section>
     </div>
+    </>
   );
 }
