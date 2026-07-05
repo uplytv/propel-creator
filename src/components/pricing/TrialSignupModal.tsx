@@ -58,6 +58,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
     company?: string;
     fullName?: string;
     email?: string;
+    phone?: string;
     password?: string;
   }>({});
   const [creatingAccount, setCreatingAccount] = useState(false);
@@ -114,6 +115,8 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
     if (!fullName.trim()) next.fullName = "Full name is required";
     if (!email.trim()) next.email = "Email is required";
     else if (!EMAIL_RE.test(email.trim())) next.email = "Enter a valid email address";
+    if (!phone.trim()) next.phone = "Phone number is required";
+    else if (phone.replace(/\D/g, "").length < 7) next.phone = "Enter a valid phone number";
     if (!isAuthed && existingAccount) {
       if (!password) next.password = "Enter your existing UPLY password";
     }
@@ -438,9 +441,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
                 </div>
               )}
               <div className="space-y-1.5">
-                <Label htmlFor="trial-phone">
-                  Phone <span className="text-muted-foreground font-normal">(optional)</span>
-                </Label>
+                <Label htmlFor="trial-phone">Phone number</Label>
                 <Input
                   id="trial-phone"
                   type="tel"
@@ -449,6 +450,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                 />
+                {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
               </div>
             </div>
 
