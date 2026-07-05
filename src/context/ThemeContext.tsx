@@ -17,7 +17,7 @@ function getSystemTheme(): "dark" | "light" {
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => {
     const stored = localStorage.getItem("theme") as Theme | null;
-    return stored || "dark";
+    return stored || "light"; // white-space-first: light is the default
   });
 
   const resolvedTheme = theme === "system" ? getSystemTheme() : theme;

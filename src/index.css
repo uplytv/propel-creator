@@ -26,7 +26,7 @@
     --border: 270 8% 86%;
     --input: 270 8% 90%;
     --ring: 262 83% 58%;
-    --radius: 0.375rem; /* 6px — squared, premium base (buttons 4px, cards 6px) */
+    --radius: 0rem; /* square — retro corporate */
     --sidebar-background: 270 8% 97%;
     --sidebar-foreground: 270 20% 25%;
     --sidebar-primary: 262 83% 58%;
@@ -60,9 +60,9 @@
     --section-divider: linear-gradient(to right, transparent, hsl(42 70% 55% / 0.35), transparent);
 
     /* Additional design tokens */
-    --radius-button: 4px;
-    --radius-card: 8px;
-    --radius-pill: 20px;
+    --radius-button: 0px;
+    --radius-card: 0px;
+    --radius-pill: 2px;
     --shadow-glow: 0 0 12px hsl(262 83% 58% / 0.28);
     --shadow-glow-strong: 0 0 24px hsl(262 83% 58% / 0.45);
     --transition-fast: 150ms ease;
@@ -124,9 +124,9 @@
     --surface-alt: 270 18% 5%;
     --section-divider: linear-gradient(to right, transparent, hsl(42 78% 60% / 0.45), transparent);
 
-    --radius-button: 4px;
-    --radius-card: 8px;
-    --radius-pill: 20px;
+    --radius-button: 0px;
+    --radius-card: 0px;
+    --radius-pill: 2px;
     --shadow-glow: 0 0 14px hsl(262 83% 62% / 0.35);
     --shadow-glow-strong: 0 0 28px hsl(262 83% 62% / 0.55);
     --transition-fast: 150ms ease;
@@ -350,14 +350,16 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     overscroll-behavior: none;
-    font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+    font-family: "Inter", "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
     font-weight: 400;
     line-height: 1.6;
     min-height: 100%;
     min-height: -webkit-fill-available;
   }
   h1, h2, h3 {
-    font-family: "Space Grotesk", "Plus Jakarta Sans", system-ui, sans-serif;
+    /* Corporate-simple: one type family; weight and tracking do the work. */
+    font-family: "Inter", "Plus Jakarta Sans", system-ui, sans-serif;
+    letter-spacing: -0.02em;
     @apply tracking-tight;
   }
   h1 {
