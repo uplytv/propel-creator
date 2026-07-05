@@ -23,7 +23,7 @@ export const PLATFORM_PLANS: PlatformPlan[] = [
       "Live streaming with tips",
       "Community & course builder",
       "Events & ticketing",
-      "95% payouts on everything you sell",
+      "1 creator account",
       "Standard support",
     ],
   },
@@ -35,6 +35,7 @@ export const PLATFORM_PLANS: PlatformPlan[] = [
     popular: true,
     features: [
       "Everything in Starter",
+      "3 sub-accounts",
       "ARIA AI Team — 5 specialized agents",
       "Advanced analytics",
       "Unlimited events",
@@ -48,6 +49,7 @@ export const PLATFORM_PLANS: PlatformPlan[] = [
     audience: "For agencies & brands that need their own look",
     features: [
       "Everything in Unlimited",
+      "Unlimited sub-accounts",
       "White-Label branding",
       "Your brand color & logo on member surfaces",
       "Founding-creator perks",

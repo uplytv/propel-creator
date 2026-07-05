@@ -4,7 +4,7 @@ import { Music2, Radio, GraduationCap, ShoppingBag, Ticket, Tv, ArrowRight } fro
 // One compact section replacing the nine persona sections (Musicians, Streamers,
 // Educators, LiveCommerce, Events, TV, Cultural, B2B, …) — same message, one screen.
 const PERSONAS = [
-  { icon: Music2, title: "Musicians", line: "Drop music, sell tracks and tickets, keep 95%." },
+  { icon: Music2, title: "Musicians", line: "Drop music, sell tracks and tickets — AI handles the promo." },
   { icon: Radio, title: "Streamers", line: "Go live in HD with tips, subs and pay-per-view." },
   { icon: GraduationCap, title: "Educators", line: "Courses, classroom and community in one place." },
   { icon: ShoppingBag, title: "Sellers", line: "Live shopping, products and instant checkout." },
@@ -23,7 +23,7 @@ export default function HomepageForEveryCreator() {
             <span className="bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-mid))] bg-clip-text text-transparent">create.</span>
           </h2>
           <p className="text-foreground/70 mt-3 max-w-xl mx-auto">
-            Whatever you make, UPLY turns it into a business — and you keep 95% of what you earn.
+            Whatever you make, UPLY runs the business side — AI-powered tools for content, growth, and sales.
           </p>
         </div>
 

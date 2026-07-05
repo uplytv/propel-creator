@@ -11,11 +11,11 @@ const ROTATING = [
   "If you sell, your products deserve a platform that keeps your margin.",
   "If you promote events, your fans are already here.",
 ];
-const FINAL = "The Platform That Actually Pays You.";
+const FINAL = "The AI-Powered Operating System for Creators.";
 
 export default function HomepageHero() {
   const [idx, setIdx] = useState(0);
-  const [settled, setSettled] = useState(false);
+  const [settled, setSettled] = useState(true); // static headline — AI-OS positioning
   const [cycles, setCycles] = useState(0);
   const [betaCode, setBetaCode] = useState("");
   const [showBeta, setShowBeta] = useState(false);
@@ -74,8 +74,7 @@ export default function HomepageHero() {
         </div>
 
         <p className="type-body-lg text-foreground/75 max-w-xl">
-          One platform for your whole creator business. Keep{" "}
-          <span className="text-gold font-semibold">95%</span> of everything you earn.
+          Build, run, and grow your entire creator business — with AI doing the heavy lifting.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto">
@@ -95,7 +94,12 @@ export default function HomepageHero() {
 
         {/* Feature strip — plain text, informative without buttons */}
         <p className="text-xs sm:text-sm text-foreground/60 font-medium tracking-wide max-w-2xl leading-relaxed">
-          Live streaming · Courses &amp; community · Music · Events &amp; tickets · Live shopping · Roku TV
+          AI growth team · Live streaming · Courses &amp; community · Music · Events &amp; tickets · Live shopping · Roku TV
+        </p>
+
+        {/* First-100 founding offer */}
+        <p className="text-xs sm:text-sm font-semibold text-gold max-w-xl">
+          First 100 creators get a free website funnel, an SEO blog post, and full community &amp; course setup.
         </p>
 
         {/* Beta code — folded behind one small link */}
