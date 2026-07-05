@@ -13,6 +13,7 @@ import HomepageStreamers from "@/components/landing/v2/HomepageStreamers";
 import HomepageEducators from "@/components/landing/v2/HomepageEducators";
 import HomepageLiveCommerce from "@/components/landing/v2/HomepageLiveCommerce";
 import HomepageEvents from "@/components/landing/v2/HomepageEvents";
+import HomepagePPV from "@/components/landing/v2/HomepagePPV";
 import HomepageTV from "@/components/landing/v2/HomepageTV";
 import HomepageCultural from "@/components/landing/v2/HomepageCultural";
 import HomepageB2B from "@/components/landing/v2/HomepageB2B";
@@ -134,6 +135,7 @@ export default function Landing() {
 
           <SectionSeam />
           <HomepageEvents />
+          <HomepagePPV />
           <HomepageTV />
           <HomepageCultural />
           <HomepageB2B />
