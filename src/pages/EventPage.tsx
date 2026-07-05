@@ -160,6 +160,24 @@ export default function EventPage() {
     },
   });
 
+  // Cheapest general-admission tier — powers the sticky "Get Tickets — from $X" bar.
+  const { data: cheapestTier } = useQuery({
+    queryKey: ["event-cheapest-tier", event?.id],
+    enabled: !!event?.id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("ticket_tiers")
+        .select("id, name, price_cents")
+        .eq("event_id", event!.id)
+        .eq("is_livestream", false)
+        .eq("is_hidden", false)
+        .order("price_cents", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+  });
+
   const badge = event ? typeBadge[event.event_type] || typeBadge.virtual : null;
   const isPast = event ? isBefore(new Date(event.ends_at), new Date()) : false;
   const virtualRevealed = event?.virtual_link_unlocked_at || (event && differenceInMinutes(new Date(event.starts_at), new Date()) <= 30);
@@ -577,23 +595,43 @@ END:VCALENDAR`;
         })}
       />
       <div className="max-w-3xl mx-auto pb-32">
-        {/* Cover */}
-        <div className="relative aspect-video w-full overflow-hidden">
+        {/* Immersive flyer hero (POSH-style): blurred backdrop + sharp poster */}
+        <div className="relative w-full overflow-hidden">
           {event.cover_image_url ? (
-            <img src={event.cover_image_url} alt={event.title} className="w-full h-full object-cover" loading="eager" />
+            <>
+              {/* Blurred backdrop fills the frame for any aspect ratio */}
+              <div className="absolute inset-0">
+                <img
+                  src={event.cover_image_url}
+                  alt=""
+                  aria-hidden="true"
+                  className="w-full h-full object-cover scale-110 blur-2xl brightness-[0.45]"
+                  loading="eager"
+                />
+              </div>
+              {/* Sharp poster, fully visible (no crop) */}
+              <div className="relative flex items-center justify-center min-h-[52vh] max-h-[74vh] py-6">
+                <img
+                  src={event.cover_image_url}
+                  alt={event.title}
+                  className="max-h-[64vh] w-auto max-w-[92%] object-contain rounded-lg shadow-2xl"
+                  loading="eager"
+                />
+              </div>
+            </>
           ) : (
-            <div className="w-full h-full bg-card flex items-center justify-center">
+            <div className="w-full aspect-[4/5] max-h-[70vh] bg-card flex items-center justify-center">
               <CalendarDays className="w-16 h-16 text-muted-foreground" />
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent pointer-events-none" />
 
           {/* Creator overlay */}
-          <div className="absolute bottom-4 left-4 flex items-center gap-3">
+          <div className="absolute bottom-4 left-4 z-10 flex items-center gap-3">
             {creatorProfile?.avatar_url && (
               <img src={creatorProfile.avatar_url} alt={creatorProfile.display_name || ""} className="w-10 h-10 rounded-full border-2 border-primary" loading="lazy" />
             )}
-            <span className="text-sm font-medium text-foreground">{creatorProfile?.display_name}</span>
+            <span className="text-sm font-semibold text-foreground drop-shadow-lg">{creatorProfile?.display_name}</span>
           </div>
         </div>
 
@@ -713,7 +751,11 @@ END:VCALENDAR`;
         </div>
 
         {/* Multi-tier ticket picker (self-hides when the event has no tiers) */}
-        {!isPast && !myTicket && <EventTierPicker eventId={event.id} eventTitle={event.title} />}
+        {!isPast && !myTicket && (
+          <div id="event-tickets" className="scroll-mt-4">
+            <EventTierPicker eventId={event.id} eventTitle={event.title} />
+          </div>
+        )}
 
         {/* Live-stream PPV — "can't make it? watch live" wedge. Only shown when
             the event is live or actually has a PPV tier (no dead button). */}
@@ -907,6 +949,36 @@ END:VCALENDAR`;
                   </Button>
                 )}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* POSH-style sticky "from $X" bar for tiered events (mobile) */}
+        {!isPast && hasTiers && !isHost && !myTicket && (
+          <div className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur border-t border-border p-4 z-40 md:hidden">
+            <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
+              <div>
+                {event.is_sold_out ? (
+                  <p className="text-sm font-bold text-muted-foreground">Sold out</p>
+                ) : cheapestTier ? (
+                  <>
+                    <p className="text-[11px] text-muted-foreground leading-none mb-0.5">From</p>
+                    <p className="text-xl font-bold text-foreground leading-none">
+                      {cheapestTier.price_cents === 0 ? <span className="text-primary">Free</span> : `$${(cheapestTier.price_cents / 100).toFixed(0)}`}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-lg font-bold text-foreground">Tickets</p>
+                )}
+              </div>
+              <Button
+                size="lg"
+                disabled={!!event.is_sold_out}
+                onClick={() => document.getElementById("event-tickets")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                className="gap-2 font-semibold"
+              >
+                <Ticket className="w-4 h-4" /> {event.is_sold_out ? "Sold Out" : "Get Tickets"}
+              </Button>
             </div>
           </div>
         )}
