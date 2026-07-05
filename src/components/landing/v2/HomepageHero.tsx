@@ -64,7 +64,7 @@ export default function HomepageHero() {
       </div>
 
       <div className="relative z-10 w-full max-w-5xl mx-auto text-center flex flex-col items-center gap-6 sm:gap-8">
-        <p className="eyebrow-gold">The Creator Operating System</p>
+        <p className="eyebrow-gold">For musicians, streamers, educators &amp; sellers</p>
 
         <div className="min-h-[140px] sm:min-h-[180px] flex items-center justify-center">
           <h1
@@ -76,7 +76,8 @@ export default function HomepageHero() {
         </div>
 
         <p className="type-body-lg text-foreground/75 max-w-xl">
-          Build, run, and grow your entire creator business — with AI doing the heavy lifting.
+          Stream, sell courses, and run events from one dashboard — while your AI team
+          handles the content, emails, and growth.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto">
@@ -110,7 +111,7 @@ export default function HomepageHero() {
             First 100
           </span>
           <p className="text-xs sm:text-sm font-semibold text-foreground/85">
-            Founding creators get a free website funnel, an SEO blog post, and full community &amp; course setup — done for you.
+            We build your website funnel, SEO blog post, and community &amp; courses — free, done for you.
           </p>
         </div>
 
