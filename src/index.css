@@ -239,7 +239,7 @@
     overflow: hidden;
     background: hsl(var(--card) / 0.5);
     border: 1px solid hsl(var(--border));
-    border-radius: 12px;
+    border-radius: 0px; /* square — corporate */
     transition: border-color 200ms ease, transform 250ms ease,
                 box-shadow 250ms ease;
   }
@@ -834,7 +834,7 @@ select {
 .arya-site :focus-visible {
   outline: none;
   box-shadow: var(--arya-ring);
-  border-radius: 12px;
+  border-radius: 0px;
 }
 
 /* ── Buttons ─────────────────────────────────────────────── */
@@ -892,7 +892,7 @@ select {
 .arya-card {
   background: linear-gradient(180deg, var(--arya-surface-2), var(--arya-surface));
   border: 1px solid var(--arya-border);
-  border-radius: 1rem;
+  border-radius: 0px;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   transition: border-color 200ms ease, transform 200ms ease, background 200ms ease;
