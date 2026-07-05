@@ -8,23 +8,13 @@ import { LANDING_OG_IMAGE_URL } from "@/lib/ogImage";
 
 import HomepageNav from "@/components/landing/v2/HomepageNav";
 import HomepageHero from "@/components/landing/v2/HomepageHero";
-import HomepageMusicians from "@/components/landing/v2/HomepageMusicians";
-import HomepageStreamers from "@/components/landing/v2/HomepageStreamers";
-import HomepageEducators from "@/components/landing/v2/HomepageEducators";
-import HomepageLiveCommerce from "@/components/landing/v2/HomepageLiveCommerce";
-import HomepageEvents from "@/components/landing/v2/HomepageEvents";
+import HomepageForEveryCreator from "@/components/landing/v2/HomepageForEveryCreator";
 import HomepagePPV from "@/components/landing/v2/HomepagePPV";
-import HomepageTV from "@/components/landing/v2/HomepageTV";
-import HomepageCultural from "@/components/landing/v2/HomepageCultural";
-import HomepageB2B from "@/components/landing/v2/HomepageB2B";
 import HomepagePricing from "@/components/landing/v2/HomepagePricing";
 import HomepageFinalCTA from "@/components/landing/v2/HomepageFinalCTA";
 import HomepageFooter from "@/components/landing/v2/HomepageFooter";
 import FoundersStickyCTA from "@/components/founders/FoundersStickyCTA";
-import FeaturedRails from "@/components/FeaturedRails";
-import RosterArtistsRail from "@/components/discover/RosterArtistsRail";
 import FeaturedCreatorsSection from "@/components/landing/FeaturedCreatorsSection";
-import FounderOffersPricing from "@/components/founderoffers/FounderOffersPricing";
 
 const JSON_LD = {
   "@context": "https://schema.org",
@@ -119,34 +109,18 @@ export default function Landing() {
         <main>
           <HomepageHero />
 
-          <FeaturedRails />
-
-          <section className="py-10 md:py-14">
-            <RosterArtistsRail />
-          </section>
-
+          {/* Focused funnel: proof → what it is → PPV highlight → price → CTA.
+              The nine persona sections are consolidated into HomepageForEveryCreator. */}
           <FeaturedCreatorsSection />
 
           <SectionSeam />
-          <HomepageMusicians />
-          <HomepageStreamers />
-          <HomepageEducators />
-          <HomepageLiveCommerce />
+          <HomepageForEveryCreator />
 
           <SectionSeam />
-          <HomepageEvents />
           <HomepagePPV />
-          <HomepageTV />
-          <HomepageCultural />
-          <HomepageB2B />
 
           <SectionSeam />
           <HomepagePricing />
-
-          <SectionSeam />
-          <section className="py-16 md:py-24 px-5">
-            <FounderOffersPricing variant="full" source="landing_page" />
-          </section>
 
           <HomepageFinalCTA />
         </main>
