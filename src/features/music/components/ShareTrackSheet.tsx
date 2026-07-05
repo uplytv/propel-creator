@@ -173,7 +173,7 @@ export default function ShareTrackSheet({ track, open, onClose }: Props) {
         <div className="grid grid-cols-3 gap-2">
           <button
             onClick={handleNativeShare}
-            className="flex flex-col items-center gap-1 py-3 rounded-xl bg-[#3D7CFF] text-black font-bold text-xs"
+            className="flex flex-col items-center gap-1 py-3 rounded-xl bg-primary text-black font-bold text-xs"
           >
             <Share2 className="w-5 h-5" /> Share
           </button>
@@ -187,7 +187,7 @@ export default function ShareTrackSheet({ track, open, onClose }: Props) {
             onClick={handleCopy}
             className="flex flex-col items-center gap-1 py-3 rounded-xl bg-white/5 text-white font-bold text-xs"
           >
-            {copied ? <Check className="w-5 h-5 text-[#3D7CFF]" /> : <Copy className="w-5 h-5" />}
+            {copied ? <Check className="w-5 h-5 text-primary" /> : <Copy className="w-5 h-5" />}
             {copied ? 'Copied' : 'Copy link'}
           </button>
         </div>

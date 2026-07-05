@@ -35,7 +35,7 @@ const PROVIDERS: {
 function StatusPill({ status }: { status: "not_connected" | "active" | "expired" | "revoked" }) {
   const map = {
     not_connected: { label: "Not connected", cls: "bg-white/5 text-white/50" },
-    active: { label: "Connected", cls: "bg-[#3D7CFF]/15 text-[#3D7CFF]" },
+    active: { label: "Connected", cls: "bg-primary/15 text-primary" },
     expired: { label: "Expired", cls: "bg-amber-500/15 text-amber-400" },
     revoked: { label: "Revoked", cls: "bg-rose-500/15 text-rose-400" },
   };
@@ -201,7 +201,7 @@ export default function SettingsConnections() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3 min-w-0">
                       <div className="w-11 h-11 rounded-xl bg-white/5 flex items-center justify-center shrink-0">
-                        <Plug className="w-5 h-5 text-[#3D7CFF]" />
+                        <Plug className="w-5 h-5 text-primary" />
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -223,7 +223,7 @@ export default function SettingsConnections() {
                       <Button
                         onClick={() => connect(p.id)}
                         disabled={connecting === p.id || p.comingSoon}
-                        className="bg-[#3D7CFF] text-black hover:bg-[#3D7CFF]/90 font-semibold min-h-[44px]"
+                        className="bg-primary text-black hover:bg-primary/90 font-semibold min-h-[44px]"
                       >
                         {connecting === p.id ? (
                           <>
@@ -269,7 +269,7 @@ export default function SettingsConnections() {
                             optional
                           />
                           <div className="text-xs text-white/40 flex items-center gap-1.5">
-                            <Check className="w-3.5 h-3.5 text-[#3D7CFF]" />
+                            <Check className="w-3.5 h-3.5 text-primary" />
                             Long-lived token expires{" "}
                             {conn.expires_at
                               ? new Date(conn.expires_at).toLocaleDateString()
@@ -289,7 +289,7 @@ export default function SettingsConnections() {
                       <Button
                         size="sm"
                         onClick={() => connect(p.id)}
-                        className="bg-[#3D7CFF] text-black hover:bg-[#3D7CFF]/90 font-semibold"
+                        className="bg-primary text-black hover:bg-primary/90 font-semibold"
                       >
                         Reconnect
                       </Button>
@@ -345,7 +345,7 @@ function SelectField({
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#3D7CFF] min-h-[44px]"
+          className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-primary min-h-[44px]"
           style={{ fontSize: 16 }}
         >
           <option value="">— Choose —</option>

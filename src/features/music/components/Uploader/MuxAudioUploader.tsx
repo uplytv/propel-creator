@@ -82,7 +82,7 @@ export default function MuxAudioUploader({
       )}
 
       {isSuccess && (
-        <div className="mt-3 flex items-center gap-2 text-xs text-[#3D7CFF]">
+        <div className="mt-3 flex items-center gap-2 text-xs text-primary">
           <CheckCircle2 className="w-3.5 h-3.5" />
           Upload complete. Mux is processing your track.
         </div>

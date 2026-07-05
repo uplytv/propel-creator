@@ -118,7 +118,7 @@ export default function NowPlayingSheet({
 
           <div className="w-full max-w-md mt-6 px-2">
             {station && (
-              <div className="mb-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#3D7CFF]/15 text-[#3D7CFF] border border-[#3D7CFF]/30">
+              <div className="mb-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-primary/15 text-primary border border-primary/30">
                 <Radio className="w-3 h-3" />
                 <span>Station{station.seedName ? ` · ${station.seedName}` : ''}</span>
                 <button
@@ -169,7 +169,7 @@ export default function NowPlayingSheet({
                 onClick={() => setAutoplayRadio(!autoplayRadio)}
                 aria-label="Autoplay radio"
                 className={`p-2 rounded-full ${
-                  autoplayRadio ? 'text-[#3D7CFF]' : 'text-white/70 hover:text-white'
+                  autoplayRadio ? 'text-primary' : 'text-white/70 hover:text-white'
                 }`}
                 title={autoplayRadio ? 'Autoplay on' : 'Autoplay off'}
               >
@@ -227,7 +227,7 @@ export default function NowPlayingSheet({
                     onClick={() => setCrossfade(s)}
                     className={`text-[11px] px-2 py-0.5 rounded-full border ${
                       crossfadeSeconds === s
-                        ? 'bg-[#3D7CFF] text-black border-[#3D7CFF]'
+                        ? 'bg-primary text-black border-primary'
                         : 'border-white/15 text-white/70 hover:bg-white/5'
                     }`}
                   >

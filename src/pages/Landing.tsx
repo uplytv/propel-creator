@@ -107,7 +107,7 @@ export default function Landing() {
       <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <div className="absolute -top-1/4 left-1/2 h-[60vw] w-[60vw] max-h-[800px] max-w-[800px] -translate-x-1/2 rounded-full bg-primary/10 blur-[140px]" />
         <div className="absolute bottom-0 -left-1/4 h-[45vw] w-[45vw] max-h-[600px] max-w-[600px] rounded-full bg-[#B025FF]/[0.07] blur-[140px]" />
-        <div className="absolute top-1/3 -right-1/4 h-[45vw] w-[45vw] max-h-[600px] max-w-[600px] rounded-full bg-[#3D7CFF]/[0.06] blur-[140px]" />
+        <div className="absolute top-1/3 -right-1/4 h-[45vw] w-[45vw] max-h-[600px] max-w-[600px] rounded-full bg-primary/[0.06] blur-[140px]" />
         {/* faint grid texture for a premium, engineered feel */}
         <div className="absolute inset-0 opacity-[0.025] [background-image:linear-gradient(to_right,hsl(var(--foreground))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--foreground))_1px,transparent_1px)] [background-size:64px_64px]" />
       </div>

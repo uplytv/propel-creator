@@ -63,7 +63,7 @@ export default function MusicNotificationsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-semibold text-white truncate">{n.title}</p>
-                    {!n.read_at && <span className="w-2 h-2 rounded-full bg-[#3D7CFF]" />}
+                    {!n.read_at && <span className="w-2 h-2 rounded-full bg-primary" />}
                   </div>
                   {n.body && <p className="text-xs text-white/60 truncate">{n.body}</p>}
                   <p className="text-[11px] text-white/40 mt-0.5">{timeAgo(n.created_at)}</p>

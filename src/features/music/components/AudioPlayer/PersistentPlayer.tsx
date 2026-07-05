@@ -286,7 +286,7 @@ export default function PersistentPlayer() {
               <div className="flex items-center gap-1.5 min-w-0">
                 {station && (
                   <Radio
-                    className="w-3 h-3 flex-shrink-0 text-[#3D7CFF]"
+                    className="w-3 h-3 flex-shrink-0 text-primary"
                     aria-label="Station active"
                   />
                 )}

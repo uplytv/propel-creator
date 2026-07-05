@@ -24,7 +24,7 @@ export default function GroupBlendsPage() {
         />
         <button
           onClick={() => name.trim() && create.mutate(name.trim(), { onSuccess: () => setName("") })}
-          className="rounded-lg bg-[#3D7CFF] text-black font-bold px-4 flex items-center gap-2"
+          className="rounded-lg bg-primary text-black font-bold px-4 flex items-center gap-2"
           style={{ minHeight: 44 }}
         >
           <Plus className="w-4 h-4" /> New

@@ -18,7 +18,7 @@ export default function SleepTimerMenu() {
       <PopoverTrigger asChild>
         <button
           aria-label="Sleep timer"
-          className={`p-2 rounded-full ${active ? 'text-[#3D7CFF]' : 'text-white/70 hover:text-white'}`}
+          className={`p-2 rounded-full ${active ? 'text-primary' : 'text-white/70 hover:text-white'}`}
         >
           <Moon className="w-5 h-5" />
         </button>
@@ -31,7 +31,7 @@ export default function SleepTimerMenu() {
           Sleep timer
         </div>
         {active && (
-          <div className="px-2 py-1 text-xs text-[#3D7CFF]">
+          <div className="px-2 py-1 text-xs text-primary">
             {sleepEndOfTrack ? 'Stops after current track' : `Stops in ${remaining}`}
           </div>
         )}

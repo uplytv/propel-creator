@@ -55,7 +55,7 @@ export default function CommentComposer({ trackId }: { trackId: string }) {
           onClick={() => setAtTime((v) => !v)}
           className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border ${
             effectiveAtTime
-              ? 'border-[#3D7CFF]/40 text-[#3D7CFF] bg-[#3D7CFF]/10'
+              ? 'border-primary/40 text-primary bg-primary/10'
               : 'border-white/10 text-white/60'
           }`}
           style={{ minHeight: 32 }}
@@ -78,7 +78,7 @@ export default function CommentComposer({ trackId }: { trackId: string }) {
         <button
           type="submit"
           disabled={!body.trim() || add.isPending}
-          className="px-4 rounded-lg bg-[#3D7CFF] text-black font-bold text-sm disabled:opacity-40 inline-flex items-center gap-1"
+          className="px-4 rounded-lg bg-primary text-black font-bold text-sm disabled:opacity-40 inline-flex items-center gap-1"
           style={{ minHeight: 44 }}
         >
           <Send className="w-4 h-4" />

@@ -77,7 +77,7 @@ export default function MusicHome() {
             </Link>
             <Link
               to="/music/labs"
-              className="px-3 py-2 rounded-full bg-white/5 text-[#3D7CFF] text-xs font-semibold flex items-center gap-1"
+              className="px-3 py-2 rounded-full bg-white/5 text-primary text-xs font-semibold flex items-center gap-1"
               aria-label="Music Labs — every feature"
               title="Music Labs — every feature"
             >
@@ -128,7 +128,7 @@ export default function MusicHome() {
                   <Link
                     to="/music/labs"
                     onClick={() => setOverflowOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-[#3D7CFF] hover:bg-white/5"
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-primary hover:bg-white/5"
                   >
                     <Sparkles className="w-4 h-4" /> Labs
                   </Link>
@@ -195,7 +195,7 @@ export default function MusicHome() {
           <section className="space-y-3">
             <div className="flex items-center justify-between px-4">
               <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                <Radio className="w-4 h-4 text-[#3D7CFF]" /> Recent Stations
+                <Radio className="w-4 h-4 text-primary" /> Recent Stations
               </h2>
               <button
                 onClick={() => {
@@ -283,7 +283,7 @@ export default function MusicHome() {
               <span>Play a few tracks to personalize this.</span>
               <Link
                 to="/music/browse"
-                className="self-start text-xs px-3 py-1.5 rounded-full bg-[#3D7CFF] text-black font-semibold"
+                className="self-start text-xs px-3 py-1.5 rounded-full bg-primary text-black font-semibold"
               >
                 Browse music
               </Link>

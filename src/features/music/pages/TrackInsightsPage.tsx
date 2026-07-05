@@ -67,7 +67,7 @@ export default function TrackInsightsPage() {
 
       <section className="mt-6 rounded-2xl bg-white/[0.03] border border-white/5 p-4">
         <h2 className="text-sm font-bold text-white mb-3">Completion rate</h2>
-        <div className="text-4xl font-black text-[#3D7CFF]">{completion}%</div>
+        <div className="text-4xl font-black text-primary">{completion}%</div>
         <div className="text-xs text-white/50 mt-1">
           Average % of the track that listeners played in the last 30 days.
         </div>

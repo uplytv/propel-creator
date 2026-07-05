@@ -99,7 +99,7 @@ export default function ArtistSpotlightEditor({ userId }: { userId: string }) {
         <button
           onClick={save}
           disabled={update.isPending}
-          className="px-3 py-1.5 rounded-full bg-[#3D7CFF] text-black text-xs font-bold disabled:opacity-50"
+          className="px-3 py-1.5 rounded-full bg-primary text-black text-xs font-bold disabled:opacity-50"
           style={{ minHeight: 36 }}
         >
           Save

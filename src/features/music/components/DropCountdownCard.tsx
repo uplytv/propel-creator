@@ -44,7 +44,7 @@ export default function DropCountdownCard({ trackId }: Props) {
         <button
           onClick={() => setReminder.mutate(!isReminded)}
           className={`rounded-lg px-4 font-bold text-sm flex items-center gap-2 ${
-            isReminded ? "bg-black/20 text-black" : "bg-black text-[#3D7CFF]"
+            isReminded ? "bg-black/20 text-black" : "bg-black text-primary"
           }`}
           style={{ minHeight: 44 }}
         >

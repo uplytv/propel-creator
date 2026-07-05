@@ -172,14 +172,14 @@ function ProviderCard({
           </div>
         </div>
         {status.connected ? (
-          <span className="inline-flex items-center gap-1 text-xs text-[#3D7CFF]">
+          <span className="inline-flex items-center gap-1 text-xs text-primary">
             <CheckCircle2 className="w-4 h-4" /> Linked
           </span>
         ) : (
           <button
             onClick={onConnect}
             disabled={busy}
-            className="px-4 py-2 rounded-full text-sm font-bold bg-[#3D7CFF] text-black disabled:opacity-50"
+            className="px-4 py-2 rounded-full text-sm font-bold bg-primary text-black disabled:opacity-50"
             style={{ minHeight: 44 }}
           >
             {busy ? "Connecting…" : "Connect"}

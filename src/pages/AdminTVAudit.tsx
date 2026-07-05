@@ -28,7 +28,7 @@ function statusOf(r: Row): { label: string; cls: string } {
   if (r.purchased_at) return { label: "Purchased", cls: "bg-primary/20 text-primary" };
   if (r.dismissed_at) return { label: "Dismissed", cls: "bg-muted text-muted-foreground" };
   if (new Date(r.expires_at) < new Date()) return { label: "Expired", cls: "bg-yellow-500/20 text-yellow-400" };
-  return { label: "Active", cls: "bg-[#3D7CFF]/20 text-[#3D7CFF]" };
+  return { label: "Active", cls: "bg-primary/20 text-primary" };
 }
 
 export default function AdminTVAudit() {
@@ -125,12 +125,12 @@ export default function AdminTVAudit() {
       <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#3D7CFF]/15 flex items-center justify-center">
-              <Tv className="w-5 h-5 text-[#3D7CFF]" />
+            <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
+              <Tv className="w-5 h-5 text-primary" />
             </div>
             <div>
               <h1 className="text-2xl font-bold flex items-center gap-2">
-                TV Feature Audit <ShieldCheck className="w-5 h-5 text-[#3D7CFF]" />
+                TV Feature Audit <ShieldCheck className="w-5 h-5 text-primary" />
               </h1>
               <p className="text-sm text-muted-foreground">
                 Every product feature on UPLY TV — created, dismissed, scanned, and purchased.

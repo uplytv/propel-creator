@@ -33,7 +33,7 @@ export default function EmbedCodeModal({
         />
         <button
           onClick={copyToClipboard}
-          className="w-full mt-3 py-3 rounded-full bg-[#3D7CFF] text-black font-bold inline-flex items-center justify-center gap-2"
+          className="w-full mt-3 py-3 rounded-full bg-primary text-black font-bold inline-flex items-center justify-center gap-2"
           style={{ minHeight: 44 }}
         >
           <Copy className="w-4 h-4" /> Copy iframe

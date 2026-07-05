@@ -30,7 +30,7 @@ const EXPLAINER_KEY = "release_tracker_explainer_dismissed_v1";
 function StatusBadge({ status }: { status: string }) {
   if (status === "not_submitted") return null;
   const map: Record<string, string> = {
-    live: "bg-[#3D7CFF]/20 text-[#3D7CFF] border-[#3D7CFF]/30",
+    live: "bg-primary/20 text-primary border-primary/30",
     submitted: "bg-white/10 text-white/70 border-white/10",
     pending_review: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
     rejected: "bg-red-500/20 text-red-300 border-red-500/30",
@@ -70,7 +70,7 @@ function ReleaseManager({ releaseId }: { releaseId: string }) {
               toast({ title: "Failed", description: e.message, variant: "destructive" });
             }
           }}
-          className="text-xs text-[#3D7CFF] underline disabled:opacity-50"
+          className="text-xs text-primary underline disabled:opacity-50"
           disabled={markAll.isPending}
         >
           Mark all as submitted

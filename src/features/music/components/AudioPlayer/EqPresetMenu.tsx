@@ -20,7 +20,7 @@ export default function EqPresetMenu() {
       <PopoverTrigger asChild>
         <button
           aria-label="Equalizer"
-          className={`p-2 rounded-full ${eq !== 'flat' ? 'text-[#3D7CFF]' : 'text-white/70 hover:text-white'}`}
+          className={`p-2 rounded-full ${eq !== 'flat' ? 'text-primary' : 'text-white/70 hover:text-white'}`}
         >
           <SlidersHorizontal className="w-5 h-5" />
         </button>
@@ -37,7 +37,7 @@ export default function EqPresetMenu() {
             key={o.id}
             onClick={() => set(o.id)}
             className={`w-full text-left px-2 py-2 text-sm rounded-md hover:bg-white/10 ${
-              o.id === eq ? 'text-[#3D7CFF]' : ''
+              o.id === eq ? 'text-primary' : ''
             }`}
           >
             {o.label}

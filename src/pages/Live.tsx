@@ -742,7 +742,7 @@ export default function Live() {
                 <div className="max-w-2xl mx-auto space-y-4">
                   {communityPosts.map((post: any, i: number) => (
                     <motion.div key={post.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
-                      className={`p-4 rounded-xl bg-card border ${post.is_pinned ? 'border-l-[3px] border-l-[#3D7CFF] border-border' : 'border-border'} hover:border-border transition-colors`}>
+                      className={`p-4 rounded-xl bg-card border ${post.is_pinned ? 'border-l-[3px] border-l-primary border-border' : 'border-border'} hover:border-border transition-colors`}>
                       <div className="flex items-center gap-3 mb-3">
                         <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-muted-foreground overflow-hidden">
                           {post.author_avatar ? <img src={post.author_avatar} alt={post.author_name || ''} className="w-full h-full object-cover" loading="lazy" /> : (post.author_name || 'M').slice(0, 2).toUpperCase()}

@@ -30,7 +30,7 @@ const ACCENT_BG: Record<SocialKind, string> = {
   tiktok: "bg-black",
   facebook: "bg-[#1877F2]",
   threads: "bg-black",
-  website: "bg-[#3D7CFF]",
+  website: "bg-primary",
   email: "bg-[#6B7280]",
 };
 

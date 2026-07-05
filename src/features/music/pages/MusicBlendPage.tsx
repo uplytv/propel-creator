@@ -40,7 +40,7 @@ export default function MusicBlendPage() {
             'linear-gradient(135deg, rgba(61, 124, 255,0.15), rgba(176,37,255,0.25), rgba(61,124,255,0.2))',
         }}
       >
-        <div className="flex items-center gap-1 text-xs font-bold text-[#3D7CFF] uppercase tracking-wider mb-2">
+        <div className="flex items-center gap-1 text-xs font-bold text-primary uppercase tracking-wider mb-2">
           <Sparkles className="w-3 h-3" /> Blend
         </div>
         <h1 className="text-3xl sm:text-4xl font-black leading-tight">
@@ -55,7 +55,7 @@ export default function MusicBlendPage() {
               const [first, ...rest] = playable;
               load(first, [first, ...rest]);
             }}
-            className="mt-4 px-5 py-2.5 rounded-full bg-[#3D7CFF] text-black font-bold text-sm"
+            className="mt-4 px-5 py-2.5 rounded-full bg-primary text-black font-bold text-sm"
           >
             Play blend
           </button>

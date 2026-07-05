@@ -18,7 +18,7 @@ export default function TVBuyRedirect() {
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col items-center justify-center p-6 text-center" style={{ fontFamily: "Plus Jakarta Sans, sans-serif" }}>
-      <div className="w-12 h-12 border-4 border-[#3D7CFF] border-t-transparent rounded-full animate-spin mb-6" />
+      <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-6" />
       <h1 className="text-xl font-bold mb-2">Opening secure checkout…</h1>
       <p className="opacity-60 text-sm">You'll be redirected to complete your purchase.</p>
     </div>

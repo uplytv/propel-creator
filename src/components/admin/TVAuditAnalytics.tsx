@@ -344,7 +344,7 @@ export default function TVAuditAnalytics({ rows, streamMeta }: Props) {
                     <td className="p-2">
                       <button
                         onClick={() => setDrill({ type: "stream", streamId: s.streamId })}
-                        className="text-left hover:text-[#3D7CFF] underline-offset-2 hover:underline"
+                        className="text-left hover:text-primary underline-offset-2 hover:underline"
                       >
                         <div className="text-sm font-medium truncate max-w-[260px]">
                           {meta?.title || "Untitled stream"}
