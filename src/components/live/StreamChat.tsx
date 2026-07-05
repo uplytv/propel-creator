@@ -65,6 +65,11 @@ export default function StreamChat({
   };
 
   const pinnedMessages = chatMessages.filter((m) => m.is_pinned);
+  // Only render the most recent messages to bound the DOM on long live streams
+  // (data is retained in full for pins/hype-train; scrollback beyond this is trimmed).
+  const MAX_RENDERED_MESSAGES = 200;
+  const renderedMessages =
+    chatMessages.length > MAX_RENDERED_MESSAGES ? chatMessages.slice(-MAX_RENDERED_MESSAGES) : chatMessages;
 
   return (
     <div className="flex flex-col h-full bg-card/40 backdrop-blur-xl border-l border-border">
@@ -95,7 +100,7 @@ export default function StreamChat({
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-2.5 scrollbar-thin">
         <AnimatePresence initial={false}>
-          {chatMessages.map((msg) => {
+          {renderedMessages.map((msg) => {
             const isCreator = creatorUserId && msg.user_id === creatorUserId;
             const isMember = (msg as any).is_member;
 
