@@ -75,6 +75,7 @@ const SkeletonCard = memo(forwardRef<HTMLDivElement>(function SkeletonCard(_, re
 
 // Empty state component
 function EmptyState({ category }: { category: DiscoverCategory }) {
+  const navigate = useNavigate();
   const config: Record<DiscoverCategory, { icon: React.ElementType; title: string; subtitle: string; cta?: string }> = {
     all: { icon: Compass, title: "Nothing here yet", subtitle: "Check back soon for new content." },
     live: { icon: Radio, title: "No one is live right now", subtitle: "Check back soon or follow creators to get notified." },
@@ -94,7 +95,12 @@ function EmptyState({ category }: { category: DiscoverCategory }) {
       <h3 className="text-base font-semibold text-foreground mb-1" style={{ fontFamily: "Space Grotesk, sans-serif" }}>{c.title}</h3>
       <p className="text-[13px] text-muted-foreground text-center max-w-xs">{c.subtitle}</p>
       {c.cta && (
-        <Button size="sm" variant="outline" className="mt-4 border-primary text-primary hover:bg-primary hover:text-primary-foreground">
+        <Button
+          size="sm"
+          variant="outline"
+          className="mt-4 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+          onClick={() => navigate("/create/video/editor")}
+        >
           {c.cta}
         </Button>
       )}
