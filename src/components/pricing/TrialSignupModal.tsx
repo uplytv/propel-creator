@@ -42,6 +42,34 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Stripe's embedded-checkout iframe — no card data ever touches our code.
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "");
 
+/** Shared wizard header: centered title + two-step tab indicator with active underline. */
+function WizardHeader({ active }: { active: 1 | 2 }) {
+  const steps = [
+    { n: 1 as const, title: "Step 1", sub: "Tell us about your business" },
+    { n: 2 as const, title: "Step 2", sub: "Trial details" },
+  ];
+  return (
+    <div className="space-y-4">
+      <DialogHeader>
+        <DialogTitle className="text-center text-xl font-extrabold tracking-tight">
+          Start your 14-day free trial today!
+        </DialogTitle>
+        <DialogDescription className="sr-only">
+          Two quick steps: tell us about your business, then confirm your plan and add a card.
+        </DialogDescription>
+      </DialogHeader>
+      <div className="grid grid-cols-2 text-center">
+        {steps.map((s) => (
+          <div key={s.n} className={`pb-2 border-b-2 ${active === s.n ? "border-primary" : "border-border"}`}>
+            <p className={`text-sm font-bold ${active === s.n ? "text-primary" : "text-muted-foreground"}`}>{s.title}</p>
+            <p className="text-xs text-muted-foreground">{s.sub}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: TrialSignupModalProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -383,43 +411,38 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
           </>
         ) : step === 1 ? (
           <>
-            <DialogHeader>
-              <DialogTitle>Tell us about your business</DialogTitle>
-              <DialogDescription>
-                Step 1 of 2 — a few details so we can set up your trial.
-              </DialogDescription>
-            </DialogHeader>
+            <WizardHeader active={1} />
 
-            <div className="space-y-4 py-1">
-              <div className="space-y-1.5">
-                <Label htmlFor="trial-company">Company / Brand name</Label>
+            <div className="space-y-3 py-1">
+              <div className="space-y-1">
                 <Input
                   id="trial-company"
-                  className="rounded-sm"
-                  placeholder="Your brand"
+                  aria-label="Company name"
+                  className="rounded-sm h-11"
+                  placeholder="Company name"
                   value={company}
                   onChange={(e) => setCompany(e.target.value)}
                 />
                 {errors.company && <p className="text-xs text-destructive">{errors.company}</p>}
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="trial-name">Full name</Label>
+              <div className="space-y-1">
                 <Input
                   id="trial-name"
-                  className="rounded-sm"
-                  placeholder="Your name"
+                  aria-label="Full name"
+                  className="rounded-sm h-11"
+                  placeholder="Full name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                 />
                 {errors.fullName && <p className="text-xs text-destructive">{errors.fullName}</p>}
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="trial-email">Email</Label>
+              <div className="space-y-1">
                 <Input
                   id="trial-email"
                   type="email"
-                  className="rounded-sm"
-                  placeholder="you@example.com"
+                  aria-label="Email address"
+                  className="rounded-sm h-11"
+                  placeholder="Email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
@@ -440,13 +463,13 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
                   {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
                 </div>
               )}
-              <div className="space-y-1.5">
-                <Label htmlFor="trial-phone">Phone number</Label>
+              <div className="space-y-1">
                 <Input
                   id="trial-phone"
                   type="tel"
-                  className="rounded-sm"
-                  placeholder="+1 (555) 000-0000"
+                  aria-label="Phone number"
+                  className="rounded-sm h-11"
+                  placeholder="Phone number"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                 />
@@ -454,23 +477,31 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
               </div>
             </div>
 
-            <Button
-              onClick={handleContinue}
-              disabled={creatingAccount}
-              className="w-full rounded-sm font-bold"
-            >
-              {creatingAccount && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {creatingAccount ? "Creating your account…" : "Continue to step 2"}
-            </Button>
+            <div className="space-y-2">
+              <Button
+                onClick={handleContinue}
+                disabled={creatingAccount}
+                className="w-full rounded-sm font-bold h-11"
+              >
+                {creatingAccount && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {creatingAccount ? "Creating your account…" : "Go to step 2"}
+              </Button>
+              <p className="text-center text-xs text-muted-foreground">
+                We'll send trial updates and offers by email and text.
+              </p>
+            </div>
           </>
         ) : (
           <>
-            <DialogHeader>
-              <DialogTitle>Start your {TRIAL_DAYS}-day free trial</DialogTitle>
-              <DialogDescription>
-                Step 2 of 2 — confirm your plan and add a card. $0.00 due today.
-              </DialogDescription>
-            </DialogHeader>
+            <WizardHeader active={2} />
+
+            <button
+              type="button"
+              onClick={() => setStep(1)}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              ← Go back to step 1
+            </button>
 
             <div className="space-y-4 py-1">
               <RadioGroup
