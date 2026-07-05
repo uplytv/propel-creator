@@ -96,7 +96,7 @@ export default function HomepageHero() {
 
         {/* Risk reversal — the conversion line */}
         <p className="text-xs text-foreground/55 -mt-3">
-          No charge today · Cancel anytime · Set up in minutes
+          14 days free · No obligation · Cancel at any time
         </p>
 
         {/* Feature strip — plain text, informative without buttons */}
