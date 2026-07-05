@@ -3,9 +3,45 @@ import { Crown } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useMemberPoints } from "@/hooks/useCommunityMembers";
 import MemberXPBadge from "@/components/space/MemberXPBadge";
+import { cn } from "@/lib/utils";
 
 interface Props {
   creatorId: string;
+}
+
+const crownColors: Record<number, string> = { 1: "text-yellow-500", 2: "text-slate-400", 3: "text-amber-700" };
+
+function Row({ entry, isCurrentUser }: { entry: any; isCurrentUser: boolean }) {
+  const name = entry.display_name || "Member";
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-3 p-3 rounded-md border transition-colors",
+        isCurrentUser ? "bg-primary/5 border-primary" : "bg-card border-border",
+      )}
+    >
+      <div className="w-8 text-center shrink-0">
+        {crownColors[entry.rank] ? (
+          <Crown className={cn("w-5 h-5 mx-auto", crownColors[entry.rank])} />
+        ) : (
+          <span className="text-sm font-bold text-muted-foreground tabular-nums">#{entry.rank}</span>
+        )}
+      </div>
+      {entry.avatar_url ? (
+        <img src={entry.avatar_url} alt="" loading="lazy" className="w-9 h-9 rounded-full object-cover shrink-0" />
+      ) : (
+        <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold bg-muted text-foreground shrink-0">
+          {name.charAt(0).toUpperCase()}
+        </div>
+      )}
+      <span className="flex-1 min-w-0 text-sm font-semibold text-foreground truncate flex items-center gap-1.5">
+        <span className="truncate">{name}</span>
+        <MemberXPBadge xp={entry.total_points} showLabel />
+        {isCurrentUser && <span className="text-xs text-primary shrink-0">(you)</span>}
+      </span>
+      <span className="text-sm font-bold text-primary tabular-nums shrink-0">{Number(entry.total_points).toLocaleString()} pts</span>
+    </div>
+  );
 }
 
 export default function SpaceLeaderboardTab({ creatorId }: Props) {
@@ -17,115 +53,53 @@ export default function SpaceLeaderboardTab({ creatorId }: Props) {
   const currentUserEntry = user ? leaderboard.find((e: any) => e.user_id === user.id) : null;
   const currentUserInTop = topEntries.some((e: any) => e.user_id === user?.id);
 
-  const crownColors: Record<number, string> = { 1: "hsl(var(--warning))", 2: "#C0C0C0", 3: "#CD7F32" };
-
   return (
-    <div className="px-4 pt-4">
-      {/* Period Toggle */}
-      <div className="flex gap-2 mb-4">
+    <div className="px-4 pt-4 max-w-2xl mx-auto pb-24">
+      {/* Period — squared segmented control */}
+      <div className="inline-flex items-center gap-0.5 rounded-md border border-border bg-card p-0.5 mb-4">
         {(["weekly", "all"] as const).map((p) => (
           <button
             key={p}
             onClick={() => setPeriod(p)}
-            className="px-4 py-1.5 rounded-full text-xs font-semibold capitalize"
-            style={{
-              background: period === p ? "hsl(var(--primary))" : "transparent",
-              color: period === p ? "hsl(var(--background))" : "hsl(var(--muted-foreground))",
-              border: period === p ? "none" : "1px solid #1e1e1e",
-            }}
+            className={cn(
+              "px-3.5 py-1.5 text-xs font-semibold rounded-sm transition-colors",
+              period === p ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+            )}
           >
-            {p === "weekly" ? "Weekly" : "All Time"}
+            {p === "weekly" ? "This week" : "All time"}
           </button>
         ))}
       </div>
 
       {isLoading ? (
         <div className="space-y-2">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="p-3 rounded-lg animate-pulse" style={{ background: "hsl(var(--background))" }}>
-              <div className="h-6 w-full rounded" style={{ background: "hsl(var(--card))" }} />
-            </div>
-          ))}
+          {[1, 2, 3, 4, 5].map((i) => <div key={i} className="h-[60px] rounded-md bg-muted/30 animate-pulse" />)}
         </div>
       ) : leaderboard.length === 0 ? (
-        <div className="p-12 text-center rounded-lg" style={{ background: "hsl(var(--background))" }}>
-          <Crown className="w-8 h-8 mx-auto mb-2" style={{ color: "hsl(var(--muted-foreground))" }} />
-          <p className="font-semibold text-white mb-1">No rankings yet</p>
-          <p className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>Earn points by posting, commenting, and completing lessons!</p>
+        <div className="p-12 text-center rounded-md border border-border bg-card">
+          <Crown className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+          <p className="font-semibold text-foreground mb-1">No rankings yet</p>
+          <p className="text-sm text-muted-foreground">Earn points by posting, commenting, and completing lessons.</p>
         </div>
       ) : (
         <div className="space-y-2">
-          {topEntries.map((entry: any) => {
-            const isCurrentUser = entry.user_id === user?.id;
-            return (
-              <div
-                key={entry.user_id}
-                className="flex items-center gap-3 p-3 rounded-lg"
-                style={{
-                  background: isCurrentUser ? "rgba(61, 124, 255,0.1)" : "hsl(var(--background))",
-                  border: `1px solid ${isCurrentUser ? "hsl(var(--primary))" : "hsl(var(--card))"}`,
-                }}
-              >
-                <div className="w-8 text-center">
-                  {crownColors[entry.rank] ? (
-                    <Crown className="w-5 h-5 mx-auto" style={{ color: crownColors[entry.rank] }} />
-                  ) : (
-                    <span className="text-sm font-bold" style={{ color: "hsl(var(--muted-foreground))" }}>#{entry.rank}</span>
-                  )}
-                </div>
-                {entry.avatar_url ? (
-                  <img src={entry.avatar_url} alt="" loading="lazy" className="w-8 h-8 rounded-full object-cover" />
-                ) : (
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "hsl(var(--card))", color: "hsl(var(--foreground))" }}>
-                    {(entry.display_name || "M").charAt(0)}
-                  </div>
-                )}
-                <span className="flex-1 text-sm font-semibold text-white truncate flex items-center gap-1.5">
-                  {entry.display_name}
-                  <MemberXPBadge xp={entry.total_points} showLabel />
-                  {isCurrentUser && <span className="text-xs" style={{ color: "hsl(var(--primary))" }}>(you)</span>}
-                </span>
-                <span className="text-sm font-bold" style={{ color: "hsl(var(--primary))" }}>{entry.total_points} pts</span>
-              </div>
-            );
-          })}
+          {topEntries.map((entry: any) => (
+            <Row key={entry.user_id} entry={entry} isCurrentUser={entry.user_id === user?.id} />
+          ))}
 
-          {/* Current user pinned at bottom if not in top 10 */}
           {currentUserEntry && !currentUserInTop && (
             <>
-              <div className="text-center py-1">
-                <span className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>···</span>
-              </div>
-              <div
-                className="flex items-center gap-3 p-3 rounded-lg"
-                style={{ background: "rgba(61, 124, 255,0.1)", border: "1px solid #3D7CFF" }}
-              >
-                <div className="w-8 text-center">
-                  <span className="text-sm font-bold" style={{ color: "hsl(var(--muted-foreground))" }}>#{currentUserEntry.rank}</span>
-                </div>
-                {currentUserEntry.avatar_url ? (
-                  <img src={currentUserEntry.avatar_url} alt="" loading="lazy" className="w-8 h-8 rounded-full object-cover" />
-                ) : (
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "hsl(var(--card))", color: "hsl(var(--foreground))" }}>
-                    {(currentUserEntry.display_name || "M").charAt(0)}
-                  </div>
-                )}
-                <span className="flex-1 text-sm font-semibold text-white truncate flex items-center gap-1.5">
-                  {currentUserEntry.display_name}
-                  <MemberXPBadge xp={currentUserEntry.total_points} showLabel />
-                  <span className="text-xs" style={{ color: "hsl(var(--primary))" }}>(you)</span>
-                </span>
-                <span className="text-sm font-bold" style={{ color: "hsl(var(--primary))" }}>{currentUserEntry.total_points} pts</span>
-              </div>
+              <div className="text-center py-1 text-xs text-muted-foreground">···</div>
+              <Row entry={currentUserEntry} isCurrentUser />
             </>
           )}
         </div>
       )}
 
-      {/* Points Guide */}
-      <div className="mt-6 p-3 rounded-lg" style={{ background: "hsl(var(--background))", border: "1px solid #1e1e1e" }}>
-        <p className="text-xs font-semibold text-white mb-2">How to earn points</p>
-        <div className="space-y-1">
+      {/* How to earn points */}
+      <div className="mt-6 p-4 rounded-md border border-border bg-card">
+        <p className="text-xs font-semibold text-foreground mb-2.5">How to earn points</p>
+        <div className="space-y-1.5">
           {[
             { action: "Post in community", pts: 5 },
             { action: "Comment on a post", pts: 2 },
@@ -134,8 +108,8 @@ export default function SpaceLeaderboardTab({ creatorId }: Props) {
             { action: "Receive a like", pts: 1 },
           ].map((item) => (
             <div key={item.action} className="flex justify-between text-xs">
-              <span style={{ color: "hsl(var(--border))" }}>{item.action}</span>
-              <span style={{ color: "hsl(var(--primary))" }}>+{item.pts}</span>
+              <span className="text-muted-foreground">{item.action}</span>
+              <span className="text-primary font-semibold">+{item.pts}</span>
             </div>
           ))}
         </div>
