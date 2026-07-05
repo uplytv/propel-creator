@@ -426,7 +426,14 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                         onClick={() => setSelectedLesson(lesson)}
                         className="flex-1 text-left px-4 py-4 hover:bg-secondary/50 transition-colors"
                       >
-                        <span className="flex items-center gap-2">
+                        <span className="flex items-center gap-2.5">
+                          {isComplete ? (
+                            <CheckCircle className="w-4 h-4 shrink-0 text-primary" />
+                          ) : lesson.is_free === false ? (
+                            <Lock className="w-4 h-4 shrink-0 text-muted-foreground" />
+                          ) : (
+                            <Play className="w-4 h-4 shrink-0 text-muted-foreground" />
+                          )}
                           <span className={`text-[15px] font-medium ${isComplete ? "text-muted-foreground" : "text-foreground"}`}>
                             {lesson.title}
                           </span>
