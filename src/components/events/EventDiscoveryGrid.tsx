@@ -38,46 +38,65 @@ function EventCard({ event }: { event: EventRow }) {
     },
   });
 
+  const date = new Date(event.starts_at);
+  const left = event.ticket_quantity ? event.ticket_quantity - event.tickets_sold : null;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-card border border-border rounded-xl overflow-hidden cursor-pointer hover:border-primary/40 transition-colors"
+      className="group cursor-pointer"
       onClick={() => navigate(`/${creator?.username || event.creator_id}/events/${event.slug}`)}
     >
-      <div className="aspect-video w-full overflow-hidden relative">
+      {/* Portrait flyer */}
+      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg border border-border bg-muted">
         {event.cover_image_url ? (
-          <img src={event.cover_image_url} alt={event.title} className="w-full h-full object-cover" loading="lazy" />
+          <img src={event.cover_image_url} alt={event.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
         ) : (
-          <div className="w-full h-full bg-muted flex items-center justify-center">
+          <div className="w-full h-full flex items-center justify-center">
             <CalendarDays className="w-10 h-10 text-muted-foreground" />
           </div>
         )}
-        <div className="absolute top-2 left-2">
-          <Badge variant="outline" className={badge.color + " text-xs backdrop-blur-sm"}>
-            {badge.emoji} {badge.label}
-          </Badge>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-transparent" />
+
+        {/* Date chip */}
+        <div className="absolute top-2 left-2 flex flex-col items-center justify-center bg-background/90 backdrop-blur rounded-md w-11 py-1 text-center leading-none">
+          <span className="text-[9px] font-bold uppercase text-primary">{format(date, "MMM")}</span>
+          <span className="text-base font-extrabold text-foreground">{format(date, "d")}</span>
         </div>
-      </div>
-      <div className="p-3 space-y-1.5">
-        <h3 className="font-semibold text-foreground text-sm truncate">{event.title}</h3>
-        <div className="flex items-center gap-2">
-          {creator?.avatar_url && <img src={creator.avatar_url} alt={`${creator.display_name || creator.username} avatar`} className="w-5 h-5 rounded-full" loading="lazy" />}
-          <span className="text-xs text-muted-foreground">{creator?.display_name || creator?.username}</span>
+
+        {/* Type badge */}
+        <div className="absolute top-2 right-2">
+          <Badge variant="outline" className={badge.color + " text-[10px] backdrop-blur-sm"}>{badge.emoji} {badge.label}</Badge>
         </div>
-        <p className="text-xs text-primary">{format(new Date(event.starts_at), "EEE MMM d · h:mm a")}</p>
-        {event.location_name && (
-          <p className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="w-3 h-3" /> {event.location_name}</p>
+
+        {event.is_sold_out && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+            <span className="text-xs font-bold uppercase tracking-widest text-white border border-white/70 rounded px-2 py-1">Sold out</span>
+          </div>
         )}
-        <div className="flex items-center justify-between pt-1">
-          <span className="text-sm font-semibold text-foreground">
-            {event.is_free ? <span className="text-primary">FREE</span> : `$${event.ticket_price}`}
-          </span>
-          {event.ticket_quantity && event.ticket_quantity - event.tickets_sold <= 20 && !event.is_sold_out && (
-            <span className="text-xs text-destructive">{event.ticket_quantity - event.tickets_sold} left</span>
+
+        {/* Title + location overlaid */}
+        <div className="absolute bottom-0 left-0 right-0 p-3">
+          <h3 className="font-bold text-white text-sm leading-tight line-clamp-2 drop-shadow">{event.title}</h3>
+          {event.location_name && (
+            <p className="text-[11px] text-white/80 flex items-center gap-1 mt-0.5"><MapPin className="w-3 h-3 shrink-0" /> <span className="truncate">{event.location_name}</span></p>
           )}
         </div>
       </div>
+
+      {/* Meta row below flyer */}
+      <div className="pt-2 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 min-w-0">
+          {creator?.avatar_url && <img src={creator.avatar_url} alt="" className="w-4 h-4 rounded-full shrink-0" loading="lazy" />}
+          <span className="text-xs text-muted-foreground truncate">{creator?.display_name || creator?.username}</span>
+        </div>
+        <span className="text-sm font-bold text-foreground shrink-0">
+          {event.is_free ? <span className="text-primary">FREE</span> : `$${event.ticket_price}`}
+        </span>
+      </div>
+      <p className="text-[11px] text-primary mt-0.5">{format(date, "EEE MMM d · h:mm a")}</p>
+      {left != null && left <= 20 && !event.is_sold_out && <p className="text-[11px] text-destructive">{left} left</p>}
     </motion.div>
   );
 }
@@ -117,8 +136,8 @@ export default function EventDiscoveryGrid() {
       />
 
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map(i => <Skeleton key={i} className="h-64 rounded-xl" />)}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="aspect-[3/4] rounded-lg" />)}
         </div>
       ) : !filtered?.length ? (
         <EmptyState
@@ -127,7 +146,7 @@ export default function EventDiscoveryGrid() {
           description="Check back soon for new events from creators you follow."
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
           {filtered.map(e => <EventCard key={e.id} event={e} />)}
         </div>
       )}
