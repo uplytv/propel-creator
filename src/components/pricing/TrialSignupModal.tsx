@@ -134,15 +134,29 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
     }
   };
 
-  /** Existing account detected mid-signup → keep the classic fallback: stash intent, send to sign-in. */
-  const redirectExistingAccount = () => {
-    stashIntent();
-    trackEvent("platform_trial_signup_redirect", { plan: selectedPlan, price: plan.price, reason: "existing_account" });
-    toast.info("You already have an account", {
-      description: "Sign in and your trial checkout will resume automatically.",
+  /** Existing account detected mid-signup → sign in right here with the Step 1
+   *  password and continue to payment. Never leaves the modal for a login page. */
+  const redirectExistingAccount = async () => {
+    trackEvent("platform_trial_signin_inline", { plan: selectedPlan, price: plan.price, reason: "existing_account" });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
     });
-    onOpenChange(false);
-    navigate(`/auth?plan=${selectedPlan}`);
+    if (error || !data.session) {
+      // Wrong password for the existing account — stay on step 1 and say so.
+      toast.info("You already have an account", {
+        description: "Enter your existing UPLY password to continue straight to payment.",
+      });
+      return;
+    }
+    setSessionReady(true);
+    setAwaitingEmailConfirm(false);
+    try {
+      localStorage.removeItem(TRIAL_INTENT_STORAGE_KEY);
+    } catch {
+      /* noop */
+    }
+    setStep(2);
   };
 
   const handleContinue = async () => {
@@ -175,7 +189,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
 
       if (error) {
         if (/already|registered|exists/i.test(error.message)) {
-          redirectExistingAccount();
+          await redirectExistingAccount();
           return;
         }
         throw error;
@@ -184,7 +198,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
       // With "Confirm email" ON, Supabase obfuscates existing accounts:
       // signUp "succeeds" but the user has no identities. Treat as existing.
       if (data.user && !data.session && (data.user.identities?.length ?? 0) === 0) {
-        redirectExistingAccount();
+        await redirectExistingAccount();
         return;
       }
 
