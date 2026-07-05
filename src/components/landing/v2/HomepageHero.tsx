@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowRight } from "lucide-react";
+import TrialSignupModal from "@/components/pricing/TrialSignupModal";
 
 const ROTATING = [
   "If you're a musician, ToneDen is dead. We replaced it.",
@@ -19,6 +20,7 @@ export default function HomepageHero() {
   const [cycles, setCycles] = useState(0);
   const [betaCode, setBetaCode] = useState("");
   const [showBeta, setShowBeta] = useState(false);
+  const [trialOpen, setTrialOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -78,12 +80,12 @@ export default function HomepageHero() {
         </p>
 
         <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto">
-          <Link
-            to="/pricing"
+          <button
+            onClick={() => setTrialOpen(true)}
             className="btn-primary-glow w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md px-8 h-12 text-sm font-bold tracking-wide"
           >
             Start your 14-day free trial <ArrowRight className="w-4 h-4" />
-          </Link>
+          </button>
           <Link
             to="/discover"
             className="btn-gold-outline w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md px-8 h-12 text-sm font-bold tracking-wide"
@@ -137,6 +139,8 @@ export default function HomepageHero() {
           </form>
         )}
       </div>
+
+      <TrialSignupModal open={trialOpen} onOpenChange={setTrialOpen} defaultPlan="starter" />
     </section>
   );
 }
