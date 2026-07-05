@@ -11,12 +11,12 @@ import {
   CalendarDays,
   Users,
 } from "lucide-react";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import portraitAsset from "@/assets/arya-xo-portrait-v3.jpg.asset.json";
 import bandsCoverAsset from "@/assets/150bands-cover.jpg.asset.json";
 import getdownAsset from "@/assets/getdown-cover.jpg.asset.json";
 import aryaBgAsset from "@/assets/arya-xo-bg.png.asset.json";
-import { ARTIST_ROSTER } from "@/data/artistRoster";
+import { ARTIST_ROSTER, formatEstablished } from "@/data/artistRoster";
 
 
 /**
@@ -46,6 +46,10 @@ interface RailItem {
   accent?: string;
   /** Single character/letter rendered in the gradient fallback. */
   initial?: string;
+  /** Creator type shown as a small square chip on the card (e.g. "Singer", "DJ") and used for rail filtering. */
+  typeLabel?: string;
+  /** "Est. <Mon YYYY>" label shown under the subtitle. */
+  estLabel?: string;
 }
 
 
@@ -58,6 +62,8 @@ interface Rail {
   seeAllHref: string;
   /** Optional override label, defaults to "See all". */
   seeAllLabel?: string;
+  /** When true, renders a chip row filtering items by their `typeLabel`. */
+  filterable?: boolean;
   items: RailItem[];
 }
 
@@ -108,6 +114,7 @@ const RAILS: Rail[] = [
     aspect: "poster",
     seeAllHref: "/roster",
     seeAllLabel: "See all artists",
+    filterable: true,
     items: ARTIST_ROSTER.map((a) => ({
       id: `roster-${a.slug}`,
       title: a.displayName,
@@ -118,6 +125,8 @@ const RAILS: Rail[] = [
       gradient: a.gradient,
       accent: a.accent,
       initial: a.displayName.trim().charAt(0).toUpperCase(),
+      typeLabel: a.creatorType,
+      estLabel: formatEstablished(a.joinedAt) ?? undefined,
     })),
   },
 
@@ -289,7 +298,23 @@ function aspectClasses(a: Aspect) {
 
 function RailRow({ rail }: { rail: Rail }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const [typeFilter, setTypeFilter] = useState<string>("All");
   const Icon = rail.icon;
+
+  const typeOptions = rail.filterable
+    ? Array.from(
+        new Set(
+          rail.items
+            .map((i) => i.typeLabel)
+            .filter((t): t is string => Boolean(t)),
+        ),
+      )
+    : [];
+
+  const items =
+    rail.filterable && typeFilter !== "All"
+      ? rail.items.filter((i) => i.typeLabel === typeFilter)
+      : rail.items;
 
   const scrollBy = (dir: 1 | -1) => {
     const el = scrollerRef.current;
@@ -340,11 +365,31 @@ function RailRow({ rail }: { rail: Rail }) {
         </div>
       </div>
 
+      {typeOptions.length > 1 && (
+        <div className="flex gap-2 overflow-x-auto px-4 sm:px-6 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {["All", ...typeOptions].map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setTypeFilter(t)}
+              aria-pressed={typeFilter === t}
+              className={`px-3 py-1.5 rounded-none text-xs font-medium whitespace-nowrap transition-colors ${
+                typeFilter === t
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-card border border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div
         ref={scrollerRef}
         className="rail-edge-fade flex gap-3 overflow-x-auto scroll-smooth snap-x snap-mandatory px-4 sm:px-6 pb-3 scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
-        {rail.items.map((item) => (
+        {items.map((item) => (
           <Link
             key={item.id}
             to={item.href}
@@ -389,6 +434,13 @@ function RailRow({ rail }: { rail: Rail }) {
                   {item.badge}
                 </span>
               )}
+              {item.typeLabel && (
+                <span
+                  className={`absolute left-2 ${item.badge ? "top-8" : "top-2"} inline-flex items-center rounded-none bg-background/80 backdrop-blur-sm border border-border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-foreground`}
+                >
+                  {item.typeLabel}
+                </span>
+              )}
               <div className="absolute inset-x-0 bottom-0 p-2.5">
                 <p className="text-[12px] sm:text-[13px] font-semibold text-foreground leading-tight line-clamp-2">
                   {item.title}
@@ -399,6 +451,11 @@ function RailRow({ rail }: { rail: Rail }) {
                 {item.subtitle && (
                   <p className="mt-0.5 text-[10.5px] text-muted-foreground line-clamp-1">
                     {item.subtitle}
+                  </p>
+                )}
+                {item.estLabel && (
+                  <p className="mt-0.5 text-[10px] text-muted-foreground/90">
+                    {item.estLabel}
                   </p>
                 )}
               </div>

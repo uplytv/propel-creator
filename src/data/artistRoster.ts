@@ -120,6 +120,10 @@ export interface ArtistRosterEntry {
   spotifyTrackEmbeds?: { id: string; title: string }[];
   searchKeywords: string[];
   verified?: boolean;
+  /** Primary creator type shown as a small badge on roster cards and used for type filtering (e.g. "Singer", "DJ"). */
+  creatorType?: string;
+  /** ISO date (YYYY-MM-DD) the artist's profile was established on UPLY — rendered as "Est. <Mon YYYY>" on roster cards. */
+  joinedAt?: string;
   bookingEmail?: string;
   location?: string;
   /** Optional pitch line shown in the booking section. */
@@ -180,6 +184,8 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     ],
     searchKeywords: ["omid", "omid music", "omid_music", "persian legend", "persian pop", "iranian singer", "omid jamshid", "nowruz"],
     verified: true,
+    creatorType: "Singer",
+    joinedAt: "2026-02-01",
     bookingEmail: "bookings@uply.tv",
     location: "Los Angeles · Stockholm · Tehran",
     heroChip: "Now booking 2026 — Nowruz & summer dates",
@@ -297,6 +303,8 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     ],
     searchKeywords: ["morvarid", "morvaird", "morvard", "morwarid", "morvarid shahbazi", "morvaridshahbazi", "pearl of persia", "persian dancer", "persian singer", "morvarid production"],
     verified: false,
+    creatorType: "Singer",
+    joinedAt: "2026-05-01",
     location: "Los Angeles",
     heroChip: "Now booking weddings, concerts & private events",
     bookingTagline: "Live vocals, choreography, and stagecraft from a performer who's been on stage since age five.",
@@ -407,6 +415,8 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     ],
     searchKeywords: ["andy", "andy music", "andymusic1", "andy madadian", "andranik madadian", "persian pop", "iranian pop", "andy & kouros"],
     verified: true,
+    creatorType: "Singer",
+    joinedAt: "2026-02-01",
     bookingEmail: "bookings@uply.tv",
     location: "Los Angeles",
     heroChip: "Booking 2026 — international dates open",
@@ -512,6 +522,8 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     ],
     searchKeywords: ["arya", "arya xo", "aryaxo", "150 bands", "get down", "bay area rap"],
     verified: true,
+    creatorType: "Rapper",
+    joinedAt: "2025-12-01",
     bookingEmail: "bookings@uply.tv",
     location: "Bay Area, CA",
     sectionsOverride: ["Links", "Site", "Blog"],
@@ -547,6 +559,8 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     ],
     searchKeywords: ["bazi", "dj bazi", "djbazi", "ari shahbazi", "arishahbazi", "arian shahbazi", "open format dj", "persian dj", "house dj", "hip hop dj"],
     verified: true,
+    creatorType: "DJ",
+    joinedAt: "2026-04-01",
     bookingEmail: "bookings@uply.tv",
     location: "Los Angeles · Worldwide",
     heroChip: "Now booking 2026 — clubs, weddings & private events",
@@ -688,6 +702,8 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     ],
     searchKeywords: ["bobby", "bob", "business with bob", "business_with_bob", "ai creator", "ai business", "creator economy", "whop alternative", "skool alternative", "uply creator"],
     verified: true,
+    creatorType: "Entrepreneur",
+    joinedAt: "2025-12-01",
     bookingEmail: "hello@uply.tv",
     location: "Online · Worldwide",
     heroChip: "AI Operator OS — course now live on UPLY",
@@ -854,6 +870,8 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     ],
     searchKeywords: ["samuel onuha", "sonuha", "icon brand", "icon", "millionaire", "millionaire commerce", "8 figure ecom", "netherlands entrepreneur", "dubai entrepreneur", "us ecommerce", "40 million revenue", "scaling dtc", "elite mentorship"],
     verified: true,
+    creatorType: "Entrepreneur",
+    joinedAt: "2026-05-01",
     bookingEmail: "hello@uply.tv",
     location: "Netherlands · Dubai · United States",
     heroChip: "ELITE 90-Day Mentorship — applications open",
@@ -1011,6 +1029,8 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
     ],
     searchKeywords: ["arian shahbazi", "ari shahbazi", "arishahbazi", "uply founder", "tech founder", "father of twins", "creator economy founder", "uply"],
     verified: true,
+    creatorType: "Founder",
+    joinedAt: "2025-10-01",
     bookingEmail: "hello@uply.tv",
     location: "Los Angeles · Building globally",
     heroChip: "Building UPLY in public",
@@ -1143,6 +1163,22 @@ export const ARTIST_ROSTER: ArtistRosterEntry[] = [
 
 
 
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/**
+ * Formats a roster `joinedAt` ISO date as an "Est. <Mon YYYY>" label
+ * for creator cards (e.g. "2025-03-15" → "Est. Mar 2025").
+ * Returns null when the date is missing or unparsable so cards can hide it.
+ */
+export function formatEstablished(joinedAt?: string): string | null {
+  if (!joinedAt) return null;
+  const m = /^(\d{4})-(\d{2})/.exec(joinedAt);
+  if (!m) return null;
+  const monthIdx = Number(m[2]) - 1;
+  if (monthIdx < 0 || monthIdx > 11) return null;
+  return `Est. ${MONTHS[monthIdx]} ${m[1]}`;
+}
 
 export function findArtistBySlug(slug: string | undefined | null): ArtistRosterEntry | null {
   if (!slug) return null;

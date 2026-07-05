@@ -1,13 +1,30 @@
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ARTIST_ROSTER } from "@/data/artistRoster";
+import { ARTIST_ROSTER, formatEstablished } from "@/data/artistRoster";
 import { BadgeCheck, ArrowUpRight } from "lucide-react";
 import { trackEvent } from "@/lib/posthog";
 
 /**
  * Marketing landing section showcasing featured creators on UPLY.
  * Each card links to the roster-backed social profile at /@<handle>.
+ * Cards can be filtered client-side by creator type (Singer, DJ, …).
  */
 export default function FeaturedCreatorsSection() {
+  const [typeFilter, setTypeFilter] = useState<string>("All");
+
+  const types = useMemo(() => {
+    const unique = new Set<string>();
+    ARTIST_ROSTER.forEach((a) => {
+      if (a.creatorType) unique.add(a.creatorType);
+    });
+    return ["All", ...Array.from(unique)];
+  }, []);
+
+  const visible =
+    typeFilter === "All"
+      ? ARTIST_ROSTER
+      : ARTIST_ROSTER.filter((a) => a.creatorType === typeFilter);
+
   if (!ARTIST_ROSTER?.length) return null;
 
   return (
@@ -26,8 +43,34 @@ export default function FeaturedCreatorsSection() {
           </p>
         </div>
 
+        {types.length > 2 && (
+          <div className="mb-6 flex flex-wrap justify-center gap-2">
+            {types.map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => {
+                  setTypeFilter(t);
+                  trackEvent("landing_featured_creators_type_filter", {
+                    surface: "landing_featured_creators",
+                    type: t,
+                  });
+                }}
+                aria-pressed={typeFilter === t}
+                className={`px-3 py-1.5 rounded-none text-xs font-medium whitespace-nowrap transition-colors ${
+                  typeFilter === t
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-card border border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
-          {ARTIST_ROSTER.map((a, index) => (
+          {visible.map((a, index) => (
             <Link
               key={a.slug}
               to={`/@${a.slug}`}
@@ -47,6 +90,11 @@ export default function FeaturedCreatorsSection() {
                 background: `linear-gradient(160deg, ${a.gradient.from}, ${a.gradient.to})`,
               }}
             >
+              {a.creatorType && (
+                <span className="absolute top-2 left-2 z-10 rounded-none bg-black/60 backdrop-blur-sm border border-white/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                  {a.creatorType}
+                </span>
+              )}
               <div className="aspect-[3/4] w-full overflow-hidden">
                 {a.portraitUrl ? (
                   <img
@@ -81,6 +129,11 @@ export default function FeaturedCreatorsSection() {
                     className="w-3.5 h-3.5 text-white/70 group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0"
                   />
                 </div>
+                {formatEstablished(a.joinedAt) && (
+                  <p className="mt-0.5 text-[10px] text-white/60">
+                    {formatEstablished(a.joinedAt)}
+                  </p>
+                )}
               </div>
             </Link>
           ))}
