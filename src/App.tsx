@@ -19,6 +19,7 @@ import InstallPrompt from "@/components/InstallPrompt";
 import PushNotificationPermission from "@/components/PushNotificationPermission";
 import UploadRecovery from "@/components/UploadRecovery";
 import { usePlayerStore } from "@/features/music/hooks/usePlayerStore";
+import TrialIntentResume from "@/components/pricing/TrialIntentResume";
 import OfflineScreen from "@/components/OfflineScreen";
 import SplashScreen from "@/components/SplashScreen";
 import { useNativeInit, useKeyboardState } from "@/hooks/useNativePlatform";
@@ -640,6 +641,7 @@ const App = () => (
                 </Suspense>
                 </ErrorBoundary>
                 <PersistentPlayerGate />
+                <TrialIntentResume />
               </BrowserRouter>
               </AppWithSplash>
               </NativeShell>
