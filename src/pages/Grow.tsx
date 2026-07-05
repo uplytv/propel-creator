@@ -4,6 +4,7 @@ import { Rocket, Target, TrendingUp, Zap, CheckCircle2, Circle, Clock, Flame, Tr
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
+import PageHero from "@/components/layout/PageHero";
 import { useGrowProgress, useUpdateGrowProgress } from "@/hooks/useGrowProgress";
 
 interface ProtocolTask {
@@ -134,16 +135,13 @@ export default function Grow() {
 
   return (
     <AppLayout>
+      <PageHero
+        eyebrow="Growth"
+        title="Launch"
+        gradientWord="Protocol"
+        subtitle="30 Days to First Scalable Revenue — a structured operator playbook."
+      />
       <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-8">
-        {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="flex items-center gap-3 mb-1">
-            <Rocket className="w-6 h-6 text-primary" />
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Launch Protocol</h1>
-          </div>
-          <p className="text-muted-foreground text-sm">30 Days to First Scalable Revenue — a structured operator playbook.</p>
-        </motion.div>
-
         {/* Streak & Motivation Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="glass-card p-6">

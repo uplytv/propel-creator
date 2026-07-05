@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AppLayout from "@/components/layout/AppLayout";
+import PageHero from "@/components/layout/PageHero";
 import { WorldwideEventsTab } from "@/components/events/WorldwideEventsTab";
 import { useAuth } from "@/context/AuthContext";
 import { useCreatorEvents, useEventTickets, EventRow } from "@/hooks/useEvents";
@@ -266,14 +267,17 @@ export default function Events() {
 
   return (
     <AppLayout>
-      <div className="max-w-4xl mx-auto px-4 py-6 pb-24">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-foreground">Events</h1>
+      <PageHero
+        eyebrow="Events"
+        title="Events"
+        subtitle="Create events, sell tickets, and engage your community — online and in person."
+        actions={
           <Button onClick={() => navigate("/events/create")} className="gap-2">
             <Plus className="w-4 h-4" /> Create Event
           </Button>
-        </div>
-
+        }
+      />
+      <div className="max-w-4xl mx-auto px-4 py-6 pb-24">
         <Tabs defaultValue="mine" className="w-full">
           <TabsList className="mb-4">
             <TabsTrigger value="mine">My Events</TabsTrigger>
