@@ -116,7 +116,13 @@ serve(async (req) => {
 
     if (embedded) {
       sessionConfig.ui_mode = 'embedded';
-      sessionConfig.return_url = `${origin}/dashboard?upgraded=true&session_id={CHECKOUT_SESSION_ID}`;
+      if (trial) {
+        // Trial signup completes INSIDE the modal — no top-level redirect.
+        // The app's onComplete callback shows the in-modal success step.
+        sessionConfig.redirect_on_completion = 'never';
+      } else {
+        sessionConfig.return_url = `${origin}/dashboard?upgraded=true&session_id={CHECKOUT_SESSION_ID}`;
+      }
       delete sessionConfig.success_url;
       delete sessionConfig.cancel_url;
     }

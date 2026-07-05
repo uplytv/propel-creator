@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { CalendarCheck, Loader2, MailCheck, PartyPopper, ShieldCheck } from "lucide-react";
+import { loadStripe } from "@stripe/stripe-js";
+import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
 import {
   Dialog,
   DialogContent,
@@ -17,10 +19,13 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { trackEvent } from "@/lib/posthog";
+import { validatePassword } from "@/lib/passwordValidation";
 import {
   PLATFORM_PLANS,
+  SETUP_CALL_URL,
   TRIAL_DAYS,
   TRIAL_INTENT_STORAGE_KEY,
+  TRIAL_RISK_REVERSAL,
   type PlatformPlanKey,
 } from "./plans";
 
@@ -33,6 +38,10 @@ interface TrialSignupModalProps {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Same PCI-safe pattern as PurchaseOverlay: card entry happens inside
+// Stripe's embedded-checkout iframe — no card data ever touches our code.
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "");
+
 export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: TrialSignupModalProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -42,26 +51,57 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
   const [selectedPlan, setSelectedPlan] = useState<PlatformPlanKey>(defaultPlan);
   const [agreed, setAgreed] = useState(false);
-  const [errors, setErrors] = useState<{ company?: string; fullName?: string; email?: string }>({});
-  const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors] = useState<{
+    company?: string;
+    fullName?: string;
+    email?: string;
+    password?: string;
+  }>({});
+  const [creatingAccount, setCreatingAccount] = useState(false);
+  // True when supabase.auth.signUp succeeded but returned no session —
+  // the project requires email confirmation, so payment resumes via
+  // the uply_trial_intent + TrialIntentResume fallback after confirming.
+  const [awaitingEmailConfirm, setAwaitingEmailConfirm] = useState(false);
+  // Set as soon as signUp hands back a live session (AuthContext's `user`
+  // updates async, but the supabase client can already call edge functions).
+  const [sessionReady, setSessionReady] = useState(false);
 
-  // Sync preselected plan + prefill from auth user each time the modal opens.
+  // Embedded checkout state (step 2)
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [checkoutAttempt, setCheckoutAttempt] = useState(0);
+  // Card accepted, trial subscription live → in-modal success/onboarding step.
+  const [trialLive, setTrialLive] = useState(false);
+
+  // Reset + prefill only on the closed→open transition, so an auth-state
+  // change mid-flow (signUp inside the modal) can't yank the user back to step 1.
+  const wasOpen = useRef(false);
   useEffect(() => {
-    if (!open) return;
-    setStep(1);
-    setSelectedPlan(defaultPlan);
-    setErrors({});
-    if (user) {
-      setEmail((prev) => prev || user.email || "");
-      setFullName(
-        (prev) => prev || (user.user_metadata?.full_name as string | undefined) || ""
-      );
+    if (open && !wasOpen.current) {
+      setStep(1);
+      setSelectedPlan(defaultPlan);
+      setErrors({});
+      setAgreed(false);
+      setAwaitingEmailConfirm(false);
+      setClientSecret(null);
+      setCheckoutError(null);
+      setTrialLive(false);
+      if (user) {
+        setEmail((prev) => prev || user.email || "");
+        setFullName(
+          (prev) => prev || (user.user_metadata?.full_name as string | undefined) || ""
+        );
+      }
     }
+    wasOpen.current = open;
   }, [open, defaultPlan, user]);
 
   const plan = PLATFORM_PLANS.find((p) => p.key === selectedPlan) ?? PLATFORM_PLANS[0];
+  const isAuthed = !!user || sessionReady;
 
   const validateStep1 = () => {
     const next: typeof errors = {};
@@ -69,64 +109,235 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
     if (!fullName.trim()) next.fullName = "Full name is required";
     if (!email.trim()) next.email = "Email is required";
     else if (!EMAIL_RE.test(email.trim())) next.email = "Enter a valid email address";
+    if (!isAuthed) {
+      const pwError = validatePassword(password);
+      if (pwError) next.password = pwError;
+    }
     setErrors(next);
     return Object.keys(next).length === 0;
   };
 
-  const handleContinue = () => {
-    if (validateStep1()) setStep(2);
+  const stashIntent = () => {
+    try {
+      localStorage.setItem(
+        TRIAL_INTENT_STORAGE_KEY,
+        JSON.stringify({
+          plan: selectedPlan,
+          company: company.trim(),
+          full_name: fullName.trim(),
+          email: email.trim(),
+          phone: phone.trim(),
+        })
+      );
+    } catch {
+      // localStorage unavailable (private mode) — flow still works without the stash.
+    }
   };
 
-  const handleStartTrial = async () => {
-    if (!agreed || submitting) return;
+  /** Existing account detected mid-signup → keep the classic fallback: stash intent, send to sign-in. */
+  const redirectExistingAccount = () => {
+    stashIntent();
+    trackEvent("platform_trial_signup_redirect", { plan: selectedPlan, price: plan.price, reason: "existing_account" });
+    toast.info("You already have an account", {
+      description: "Sign in and your trial checkout will resume automatically.",
+    });
+    onOpenChange(false);
+    navigate(`/auth?plan=${selectedPlan}`);
+  };
 
-    const intent = {
-      plan: selectedPlan,
-      company: company.trim(),
-      full_name: fullName.trim(),
-      email: email.trim(),
-      phone: phone.trim(),
-    };
+  const handleContinue = async () => {
+    if (!validateStep1() || creatingAccount) return;
 
-    if (!user) {
-      // Not logged in — stash the intent and send them through signup.
-      try {
-        localStorage.setItem(TRIAL_INTENT_STORAGE_KEY, JSON.stringify(intent));
-      } catch {
-        // localStorage unavailable (private mode) — signup still works.
-      }
-      trackEvent("platform_trial_signup_redirect", { plan: selectedPlan, price: plan.price });
-      onOpenChange(false);
-      navigate(`/auth?mode=signup&plan=${selectedPlan}`);
+    if (isAuthed) {
+      setStep(2);
       return;
     }
 
-    setSubmitting(true);
+    // Create the account NOW so payment can happen inside step 2.
+    setCreatingAccount(true);
     try {
-      const { data, error } = await supabase.functions.invoke("create-platform-checkout", {
-        body: {
-          plan: selectedPlan,
-          trial: true,
-          company: intent.company,
-          full_name: intent.full_name,
-          phone: intent.phone,
+      // Guard: TrialIntentResume fires on any auth-state change when an intent
+      // is stashed. We're handling checkout inline, so suppress it for this page load.
+      try {
+        sessionStorage.setItem("uply_trial_resume_attempted", "1");
+      } catch {
+        /* sessionStorage unavailable */
+      }
+
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          emailRedirectTo: window.location.origin,
+          data: { full_name: fullName.trim() },
         },
       });
-      if (error) throw error;
-      if (!data?.url) throw new Error("No checkout URL returned");
-      trackEvent("platform_trial_started", { plan: selectedPlan, price: plan.price });
-      window.location.href = data.url;
-      // Navigating away — leave the spinner on.
+
+      if (error) {
+        if (/already|registered|exists/i.test(error.message)) {
+          redirectExistingAccount();
+          return;
+        }
+        throw error;
+      }
+
+      // With "Confirm email" ON, Supabase obfuscates existing accounts:
+      // signUp "succeeds" but the user has no identities. Treat as existing.
+      if (data.user && !data.session && (data.user.identities?.length ?? 0) === 0) {
+        redirectExistingAccount();
+        return;
+      }
+
+      trackEvent("platform_trial_account_created", {
+        plan: selectedPlan,
+        instant_session: !!data.session,
+      });
+
+      if (data.session) {
+        // Live session — proceed straight to in-modal payment.
+        setSessionReady(true);
+        setAwaitingEmailConfirm(false);
+        try {
+          localStorage.removeItem(TRIAL_INTENT_STORAGE_KEY);
+        } catch {
+          /* noop */
+        }
+      } else {
+        // Email confirmation required by the Supabase project — stash the
+        // intent so TrialIntentResume relaunches checkout after they confirm.
+        stashIntent();
+        setAwaitingEmailConfirm(true);
+      }
+      setStep(2);
     } catch (err: any) {
-      toast.error(err?.message || "Failed to start your trial. Please try again.");
-      setSubmitting(false);
+      toast.error(err?.message || "Could not create your account. Please try again.");
+    } finally {
+      setCreatingAccount(false);
     }
   };
 
+  // Step 2: create the embedded checkout session (14-day trial, card on file,
+  // billed after) as soon as we're authed. Re-runs when the plan radio changes.
+  useEffect(() => {
+    if (!open || step !== 2 || awaitingEmailConfirm || !isAuthed || trialLive) return;
+
+    let cancelled = false;
+    setClientSecret(null);
+    setCheckoutError(null);
+    setCheckoutLoading(true);
+
+    supabase.functions
+      .invoke("create-platform-checkout", {
+        body: {
+          plan: selectedPlan,
+          trial: true,
+          embedded: true,
+          company: company.trim(),
+          full_name: fullName.trim(),
+          phone: phone.trim(),
+        },
+      })
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) throw error;
+        if (!data?.client_secret) throw new Error("No checkout session returned");
+        setClientSecret(data.client_secret);
+      })
+      .catch((err: any) => {
+        if (!cancelled) setCheckoutError(err?.message || "Could not load secure checkout");
+      })
+      .finally(() => {
+        if (!cancelled) setCheckoutLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+    // company/fullName/phone are frozen once step 2 renders — plan is the only live input.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, step, awaitingEmailConfirm, isAuthed, selectedPlan, checkoutAttempt, trialLive]);
+
+  // Card accepted inside the iframe → trial subscription is live. The session
+  // is created with redirect_on_completion "never", so no page reload happens:
+  // we swap the modal to the success/onboarding step right here.
+  const handleCheckoutComplete = useCallback(() => {
+    try {
+      localStorage.removeItem(TRIAL_INTENT_STORAGE_KEY);
+    } catch {
+      /* noop */
+    }
+    trackEvent("platform_trial_started", { plan: selectedPlan, price: plan.price });
+    setTrialLive(true);
+  }, [selectedPlan, plan.price]);
+
+  const goToDashboard = () => {
+    onOpenChange(false);
+    navigate("/dashboard?trial=started");
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-md sm:max-w-md">
-        {step === 1 ? (
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        // Once the trial is live, any dismissal should land them in the app.
+        if (!nextOpen && trialLive) {
+          goToDashboard();
+          return;
+        }
+        onOpenChange(nextOpen);
+      }}
+    >
+      <DialogContent
+        className={`rounded-md ${
+          step === 2 && !trialLive ? "sm:max-w-lg max-h-[92vh] overflow-y-auto" : "sm:max-w-md"
+        }`}
+      >
+        {trialLive ? (
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <PartyPopper className="h-5 w-5 text-primary" />
+                You're in — your {TRIAL_DAYS}-day trial is live
+              </DialogTitle>
+              <DialogDescription>
+                Your card is on file and UPLY {plan.name} is unlocked. One last thing before you dive in.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-1">
+              {/* Free human setup call — the onboarding offer */}
+              <div className="rounded-md border border-primary/40 bg-primary/5 p-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-primary/15">
+                    <CalendarCheck className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-foreground">Book your free setup call</p>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      We'll build your website funnel, SEO blog post, and community &amp; course
+                      setup with you — a real human rep, free with your trial.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  className="mt-3 w-full rounded-sm font-bold"
+                  onClick={() => window.open(SETUP_CALL_URL, "_blank", "noopener,noreferrer")}
+                >
+                  Book my setup call
+                </Button>
+                <p className="mt-2 text-center text-xs text-muted-foreground">{TRIAL_RISK_REVERSAL}</p>
+              </div>
+
+              <button
+                type="button"
+                onClick={goToDashboard}
+                className="w-full text-center text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+              >
+                Skip for now — go to my dashboard
+              </button>
+            </div>
+          </>
+        ) : step === 1 ? (
           <>
             <DialogHeader>
               <DialogTitle>Tell us about your business</DialogTitle>
@@ -170,6 +381,21 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
                 />
                 {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
               </div>
+              {!isAuthed && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="trial-password">Create your password</Label>
+                  <Input
+                    id="trial-password"
+                    type="password"
+                    autoComplete="new-password"
+                    className="rounded-sm"
+                    placeholder="Min 8 characters"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
+                </div>
+              )}
               <div className="space-y-1.5">
                 <Label htmlFor="trial-phone">
                   Phone <span className="text-muted-foreground font-normal">(optional)</span>
@@ -185,16 +411,21 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
               </div>
             </div>
 
-            <Button onClick={handleContinue} className="w-full rounded-sm font-bold">
-              Continue to step 2
+            <Button
+              onClick={handleContinue}
+              disabled={creatingAccount}
+              className="w-full rounded-sm font-bold"
+            >
+              {creatingAccount && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {creatingAccount ? "Creating your account…" : "Continue to step 2"}
             </Button>
           </>
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle>Trial details</DialogTitle>
+              <DialogTitle>Start your {TRIAL_DAYS}-day free trial</DialogTitle>
               <DialogDescription>
-                Step 2 of 2 — pick your plan and start your {TRIAL_DAYS}-day free trial.
+                Step 2 of 2 — confirm your plan and add a card. $0.00 due today.
               </DialogDescription>
             </DialogHeader>
 
@@ -258,20 +489,67 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
                   </Link>
                 </Label>
               </div>
+
+              {/* Payment — Stripe embedded checkout (PCI-safe iframe) */}
+              {awaitingEmailConfirm ? (
+                <div className="flex items-start gap-3 rounded-sm border border-border bg-muted/50 p-3.5">
+                  <MailCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <div className="text-xs leading-relaxed text-muted-foreground">
+                    <p className="font-bold text-foreground">Check your email to confirm your account</p>
+                    <p className="mt-1">
+                      We sent a confirmation link to <span className="font-semibold text-foreground">{email.trim()}</span>.
+                      Click it and payment resumes automatically — your {TRIAL_DAYS} free days are saved.
+                    </p>
+                  </div>
+                </div>
+              ) : !agreed ? (
+                <div className="rounded-sm border border-dashed border-border bg-muted/30 p-4 text-center text-xs text-muted-foreground">
+                  Agree to the terms above to unlock secure card entry.
+                </div>
+              ) : checkoutError ? (
+                <div className="rounded-sm border border-border bg-muted/30 p-4 text-center">
+                  <p className="mb-3 text-xs text-destructive">{checkoutError}</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-sm"
+                    onClick={() => setCheckoutAttempt((n) => n + 1)}
+                  >
+                    Try again
+                  </Button>
+                </div>
+              ) : clientSecret ? (
+                <div className="rounded-sm border border-border bg-card">
+                  <EmbeddedCheckoutProvider
+                    key={clientSecret}
+                    stripe={stripePromise}
+                    options={{ clientSecret, onComplete: handleCheckoutComplete }}
+                  >
+                    <EmbeddedCheckout />
+                  </EmbeddedCheckoutProvider>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-2 rounded-sm border border-border bg-muted/30 py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  <p className="text-xs text-muted-foreground">
+                    {checkoutLoading ? "Loading secure checkout…" : "Preparing checkout…"}
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="space-y-3">
-              <Button
-                onClick={handleStartTrial}
-                disabled={!agreed || submitting}
-                className="w-full rounded-sm font-bold"
-              >
-                {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Start your {TRIAL_DAYS}-day free trial
-              </Button>
-              <p className="text-center text-xs text-muted-foreground">
-                After {TRIAL_DAYS} days you'll be billed to the card on file. Cancel anytime.
-              </p>
+              {!awaitingEmailConfirm && (
+                <div className="space-y-1">
+                  <p className="text-center text-xs font-semibold text-foreground">
+                    {TRIAL_RISK_REVERSAL}
+                  </p>
+                  <p className="flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    Secured by Stripe — after {TRIAL_DAYS} days, ${plan.price}/mo is billed to the card on file.
+                  </p>
+                </div>
+              )}
               <button
                 type="button"
                 onClick={() => setStep(1)}

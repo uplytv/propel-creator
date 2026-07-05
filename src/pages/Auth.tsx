@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Mail, Lock, User, ArrowLeft, CheckCircle2, RefreshCw, AlertCircle } from "lucide-react";
 import { getAffiliateCookie, clearAffiliateCookie, getReferralData } from "@/lib/affiliateCookies";
+import { validatePassword } from "@/lib/passwordValidation";
 import { trackEvent } from "@/lib/posthog";
 import { Sentry } from "@/lib/sentry";
 
@@ -67,13 +68,6 @@ export default function Auth() {
     });
     return () => subscription.unsubscribe();
   }, [navigate, signUpSuccess, redirectParam]);
-
-  const validatePassword = (pw: string): string | null => {
-    if (pw.length < 8) return "Password must be at least 8 characters.";
-    if (!/[A-Z]/.test(pw)) return "Password must contain at least one uppercase letter.";
-    if (!/[0-9]/.test(pw)) return "Password must contain at least one number.";
-    return null;
-  };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();

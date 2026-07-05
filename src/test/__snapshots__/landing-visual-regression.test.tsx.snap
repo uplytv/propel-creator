@@ -36,7 +36,7 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepageFinalCTA m
       Beta is live. Founding creators are building now.
     </p>
     <a
-      href="/auth"
+      href="/auth?mode=signup"
     >
       <button
         class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97] font-display hover:-translate-y-px hover:shadow-[var(--shadow-glow)] rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_60px_hsl(var(--primary)/0.5)] font-bold text-base px-8 py-6 h-auto"
@@ -148,7 +148,7 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepageFooter mat
 
 exports[`Landing page — visual regression (DOM snapshots) > HomepageHero matches snapshot (initial rotating headline) 1`] = `
 <section
-  class="relative min-h-[100svh] w-full flex flex-col items-center justify-center overflow-hidden px-4 sm:px-6 pt-20 pb-12"
+  class="relative min-h-[100svh] w-full flex flex-col items-center justify-center overflow-hidden px-4 sm:px-6 pt-24 pb-16"
 >
   <div
     class="absolute inset-0 pointer-events-none"
@@ -157,249 +157,97 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepageHero match
       class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] max-w-[900px] max-h-[900px] rounded-full bg-primary/20 blur-[120px] animate-pulse"
     />
     <div
+      class="absolute right-[10%] top-[18%] w-[40vw] h-[40vw] max-w-[420px] max-h-[420px] rounded-full bg-[hsl(var(--gold)/0.10)] blur-[120px]"
+    />
+    <div
       class="absolute inset-0 bg-gradient-to-b from-transparent via-background/60 to-background"
     />
   </div>
   <div
     class="relative z-10 w-full max-w-5xl mx-auto text-center flex flex-col items-center gap-6 sm:gap-8"
   >
+    <p
+      class="eyebrow-gold"
+    >
+      The Creator Operating System
+    </p>
     <div
       class="min-h-[140px] sm:min-h-[180px] flex items-center justify-center"
     >
       <h1
-        class="font-display text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-foreground leading-tight animate-fade-in"
+        class="type-display-xl text-foreground animate-fade-in"
       >
-        If you're a musician, ToneDen is dead. We replaced it.
+        The AI-Powered Operating System for Creators.
       </h1>
     </div>
     <p
-      class="text-base sm:text-lg md:text-xl text-foreground/70 max-w-3xl leading-relaxed"
+      class="type-body-lg text-foreground/75 max-w-xl"
     >
-      Stream. Teach. Sell. Build Community. Release Music. Promote Events. Keep 
-      <span
-        class="text-primary font-semibold"
-      >
-        95%
-      </span>
-       of everything. One platform. Every screen — including Roku TV.
+      Build, run, and grow your entire creator business — with AI doing the heavy lifting.
     </p>
     <div
       class="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto"
     >
+      <button
+        class="btn-primary-glow w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md px-8 h-12 text-sm font-bold tracking-wide"
+      >
+        Start your 14-day free trial 
+        <svg
+          class="lucide lucide-arrow-right w-4 h-4"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M5 12h14"
+          />
+          <path
+            d="m12 5 7 7-7 7"
+          />
+        </svg>
+      </button>
       <a
-        class="w-full sm:w-auto"
-        href="/auth"
+        class="btn-gold-outline w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-md px-8 h-12 text-sm font-bold tracking-wide"
+        href="/discover"
       >
-        <button
-          class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97] font-display hover:-translate-y-px hover:shadow-[var(--shadow-glow)] h-12 rounded-xl px-8 text-base w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_40px_hsl(var(--primary)/0.4)] font-bold"
-        >
-          Get Up. Get UPLY 
-          <svg
-            class="lucide lucide-arrow-right w-4 h-4 ml-1"
-            fill="none"
-            height="24"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-            width="24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M5 12h14"
-            />
-            <path
-              d="m12 5 7 7-7 7"
-            />
-          </svg>
-        </button>
+        Explore creators
       </a>
-      <a
-        class="w-full sm:w-auto"
-        href="#streamers"
-      >
-        <button
-          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-semibold ring-offset-background transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97] font-display border bg-transparent hover:-translate-y-px h-12 rounded-xl px-8 text-base w-full sm:w-auto border-foreground/30 text-foreground hover:bg-foreground/5"
-        >
-          <svg
-            class="lucide lucide-circle-play w-4 h-4 mr-1"
-            fill="none"
-            height="24"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-            width="24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <circle
-              cx="12"
-              cy="12"
-              r="10"
-            />
-            <polygon
-              points="10 8 16 12 10 16 10 8"
-            />
-          </svg>
-           Watch Demo
-        </button>
-      </a>
-    </div>
-    <div
-      class="flex flex-wrap items-center justify-center gap-2 sm:gap-3"
-    >
-      <span
-        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/40 text-primary text-xs sm:text-sm font-medium"
-      >
-        <svg
-          class="lucide lucide-trophy w-3.5 h-3.5"
-          fill="none"
-          height="24"
-          stroke="currentColor"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          width="24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"
-          />
-          <path
-            d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"
-          />
-          <path
-            d="M4 22h16"
-          />
-          <path
-            d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"
-          />
-          <path
-            d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"
-          />
-          <path
-            d="M18 2H6v7a6 6 0 0 0 12 0V2Z"
-          />
-        </svg>
-         100,000 Members
-      </span>
-      <span
-        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/40 text-primary text-xs sm:text-sm font-medium"
-      >
-        <svg
-          class="lucide lucide-zap w-3.5 h-3.5"
-          fill="none"
-          height="24"
-          stroke="currentColor"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          width="24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"
-          />
-        </svg>
-         UPLY Awards
-      </span>
-      <span
-        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/40 text-primary text-xs sm:text-sm font-medium"
-      >
-        <svg
-          class="lucide lucide-gamepad2 w-3.5 h-3.5"
-          fill="none"
-          height="24"
-          stroke="currentColor"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          width="24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <line
-            x1="6"
-            x2="10"
-            y1="11"
-            y2="11"
-          />
-          <line
-            x1="8"
-            x2="8"
-            y1="9"
-            y2="13"
-          />
-          <line
-            x1="15"
-            x2="15.01"
-            y1="12"
-            y2="12"
-          />
-          <line
-            x1="18"
-            x2="18.01"
-            y1="10"
-            y2="10"
-          />
-          <path
-            d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"
-          />
-        </svg>
-         Creator Games
-      </span>
     </div>
     <p
-      class="text-xs sm:text-sm text-primary/90 font-medium tracking-wide max-w-xl"
+      class="text-xs text-foreground/55 -mt-3"
     >
-      Founding creator spots are open.
-      <br />
-      100,000 members and this offer is gone — forever.
+      14 days free · No obligation · Cancel at any time
+    </p>
+    <p
+      class="text-xs sm:text-sm text-foreground/60 font-medium tracking-wide max-w-2xl leading-relaxed"
+    >
+      AI growth team · Live streaming · Courses & community · Music · Events & tickets · Live shopping · Roku TV
     </p>
     <div
-      class="w-full max-w-md mx-auto rounded-2xl border border-primary/40 bg-card/60 backdrop-blur-md p-5 sm:p-6 text-left shadow-[0_0_40px_hsl(var(--primary)/0.15)]"
+      class="inline-flex items-start sm:items-center gap-2 rounded-sm border border-gold-hairline bg-[hsl(var(--gold)/0.08)] px-4 py-2.5 max-w-xl text-left"
     >
-      <div
-        class="flex flex-col gap-1 mb-4 text-center"
+      <span
+        class="rounded-sm bg-gold px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide shrink-0"
       >
-        <span
-          class="text-xs font-semibold tracking-[0.2em] text-primary uppercase"
-        >
-          Invite Only — Beta Access
-        </span>
-        <p
-          class="text-sm text-foreground/70"
-        >
-          Already have a beta code? Enter it below to bypass the waitlist.
-        </p>
-      </div>
-      <form
-        class="flex flex-col sm:flex-row gap-2"
-      >
-        <input
-          autocomplete="off"
-          class="flex w-full rounded-md border px-3.5 py-2 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-0 focus-visible:border-primary disabled:cursor-not-allowed disabled:opacity-50 transition-colors duration-150 flex-1 bg-background/60 border-border/60 text-foreground placeholder:text-foreground/40 h-11 text-base"
-          placeholder="Enter beta code"
-          spellcheck="false"
-          value=""
-        />
-        <button
-          class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-button)] text-sm ring-offset-background transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97] font-display hover:-translate-y-px hover:shadow-[var(--shadow-glow)] px-5 py-2 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold h-11"
-          type="submit"
-        >
-          Activate Access
-        </button>
-      </form>
+        First 100
+      </span>
       <p
-        class="text-xs text-foreground/55 mt-3 text-center"
+        class="text-xs sm:text-sm font-semibold text-foreground/85"
       >
-        Don't have a code? Each founding creator gets 5 invites to share.
+        Founding creators get a free website funnel, an SEO blog post, and full community & course setup — done for you.
       </p>
     </div>
+    <button
+      class="text-xs text-foreground/55 underline underline-offset-4 hover:text-foreground/80 transition-colors"
+    >
+      Have a beta code?
+    </button>
   </div>
 </section>
 `;
@@ -412,36 +260,65 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepageNav matche
     class="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 h-14 sm:h-16"
   >
     <a
-      aria-label="UPLY home"
+      aria-label="Uply home"
       class="flex items-center"
       href="/"
     >
       <img
-        alt="UPLY"
-        class="h-8 w-8 rounded-md"
+        alt="Uply"
+        class="h-12 sm:h-14 md:h-16 w-auto"
         src="/src/assets/logo.png"
       />
     </a>
+    <nav
+      aria-label="Primary"
+      class="hidden md:flex items-center gap-7"
+    >
+      <a
+        class="text-[13px] font-semibold tracking-wide text-foreground/70 hover:text-gold transition-colors"
+        href="/discover"
+      >
+        Creators
+      </a>
+      <a
+        class="text-[13px] font-semibold tracking-wide text-foreground/70 hover:text-gold transition-colors"
+        href="/my-page"
+      >
+        Sites
+      </a>
+      <a
+        class="text-[13px] font-semibold tracking-wide text-foreground/70 hover:text-gold transition-colors"
+        href="/roster"
+      >
+        Roster
+      </a>
+      <a
+        class="text-[13px] font-semibold tracking-wide text-foreground/70 hover:text-gold transition-colors"
+        href="#pricing"
+      >
+        Pricing
+      </a>
+      <a
+        class="text-[13px] font-semibold tracking-wide text-foreground/70 hover:text-gold transition-colors"
+        href="/blog"
+      >
+        Blog
+      </a>
+    </nav>
     <div
       class="flex items-center gap-2 sm:gap-3"
     >
       <a
+        class="hidden sm:inline-flex items-center text-[13px] font-semibold text-foreground/80 hover:text-gold transition-colors px-3 py-2 rounded-md"
         href="/auth"
       >
-        <button
-          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-semibold ring-offset-background transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97] font-display hover:bg-secondary h-9 rounded-md px-3 text-xs text-foreground/80 hover:text-foreground"
-        >
-          Sign In
-        </button>
+        Sign In
       </a>
       <a
-        href="/auth"
+        class="btn-primary-glow inline-flex items-center rounded-md px-4 sm:px-5 h-9 sm:h-10 text-[13px] font-bold tracking-wide"
+        href="/pricing"
       >
-        <button
-          class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-semibold ring-offset-background transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97] font-display hover:-translate-y-px hover:shadow-[var(--shadow-glow)] h-9 rounded-md px-3 text-xs bg-primary text-primary-foreground hover:bg-primary/90"
-        >
-          Get Started
-        </button>
+        Start your 14-day trial
       </a>
     </div>
   </div>
@@ -459,610 +336,756 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepagePricing ma
     <div
       class="text-center max-w-3xl mx-auto mb-10"
     >
-      <div
-        class="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold tracking-wide uppercase mb-4"
+      <p
+        class="eyebrow-gold mb-4"
       >
         Pricing
-      </div>
+      </p>
       <h2
-        class="font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-4"
+        class="type-display-lg text-foreground mb-4"
       >
-        Founding Creator Pricing.
+        Founding Creator Pricing,
+         
+        <span
+          class="italic text-gold font-normal"
+        >
+          honestly priced.
+        </span>
       </h2>
       <p
         class="text-foreground/70 text-base sm:text-lg"
       >
-        This ends at 100,000 creators.
+        Every plan starts with a 14-day free trial. This ends at 100,000 creators.
       </p>
-      <div
-        class="inline-flex items-center gap-3 mt-6 p-1 rounded-full border border-border/50 bg-card/40"
-      >
-        <button
-          class="px-4 py-1.5 rounded-full text-sm font-semibold transition-colors bg-primary text-primary-foreground"
-        >
-          Monthly
-        </button>
-        <button
-          class="px-4 py-1.5 rounded-full text-sm font-semibold transition-colors text-foreground/70"
-        >
-          Annual 
-          <span
-            class="text-xs opacity-80"
-          >
-            (save 20%)
-          </span>
-        </button>
-      </div>
     </div>
     <div
       class="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto"
     >
       <div
-        class="relative rounded-2xl p-6 sm:p-8 border flex flex-col border-border/50 bg-card/40"
+        class="flex flex-col"
       >
         <div
-          class="font-display text-xl font-bold text-foreground"
+          class="relative rounded-md border bg-card p-6 sm:p-7 flex flex-col border-border"
         >
-          Starter
-        </div>
-        <div
-          class="text-sm text-foreground/60 mt-1"
-        >
-          Free forever
-        </div>
-        <div
-          class="my-5"
-        >
-          <span
-            class="font-display text-4xl sm:text-5xl font-bold text-foreground"
+          <div
+            class="mb-4"
           >
-            $
-            0
-          </span>
-        </div>
-        <ul
-          class="space-y-2.5 mb-6 flex-1"
-        >
-          <li
-            class="flex items-start gap-2 text-sm text-foreground/80"
-          >
-            <svg
-              class="lucide lucide-check w-4 h-4 text-primary shrink-0 mt-0.5"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
+            <span
+              class="inline-block rounded-sm border border-border bg-muted px-2.5 py-1 text-xs font-bold uppercase tracking-[0.14em] text-foreground"
             >
-              <path
-                d="M20 6 9 17l-5-5"
-              />
-            </svg>
-            Public profile
-          </li>
-          <li
-            class="flex items-start gap-2 text-sm text-foreground/80"
+              Starter
+            </span>
+          </div>
+          <div
+            class="mb-1"
           >
-            <svg
-              class="lucide lucide-check w-4 h-4 text-primary shrink-0 mt-0.5"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
+            <span
+              class="text-4xl font-bold text-foreground"
             >
-              <path
-                d="M20 6 9 17l-5-5"
-              />
-            </svg>
-            Live streaming
-          </li>
-          <li
-            class="flex items-start gap-2 text-sm text-foreground/80"
+              $
+              97
+            </span>
+            <span
+              class="ml-1 text-sm text-muted-foreground"
+            >
+              /Month
+            </span>
+          </div>
+          <p
+            class="mb-5 text-sm text-muted-foreground"
           >
-            <svg
-              class="lucide lucide-check w-4 h-4 text-primary shrink-0 mt-0.5"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M20 6 9 17l-5-5"
-              />
-            </svg>
-            Community
-          </li>
-          <li
-            class="flex items-start gap-2 text-sm text-foreground/80"
+            For solo creators getting started
+          </p>
+          <ul
+            class="mb-6 flex-1 divide-y divide-border border-y border-border"
           >
-            <svg
-              class="lucide lucide-check w-4 h-4 text-primary shrink-0 mt-0.5"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
             >
-              <path
-                d="M20 6 9 17l-5-5"
-              />
-            </svg>
-            Discovery feed
-          </li>
-          <li
-            class="flex items-start gap-2 text-sm text-foreground/80"
-          >
-            <svg
-              class="lucide lucide-check w-4 h-4 text-primary shrink-0 mt-0.5"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                Full creator platform — profile, feed & discovery
+              </span>
+            </li>
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
             >
-              <path
-                d="M20 6 9 17l-5-5"
-              />
-            </svg>
-            95% on all earnings
-          </li>
-        </ul>
-        <a
-          href="/auth"
-        >
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                Live streaming with tips
+              </span>
+            </li>
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
+            >
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                Community & course builder
+              </span>
+            </li>
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
+            >
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                Events & ticketing
+              </span>
+            </li>
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
+            >
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                1 creator account
+              </span>
+            </li>
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
+            >
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                Standard support
+              </span>
+            </li>
+          </ul>
           <button
-            class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-button)] text-sm font-semibold ring-offset-background transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97] font-display border border-primary text-primary bg-transparent hover:bg-primary/8 hover:-translate-y-px h-11 px-5 py-2 w-full"
+            class="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm ring-offset-background transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97] font-display border border-primary text-primary bg-transparent hover:bg-primary/8 hover:-translate-y-px h-11 px-5 py-2 w-full rounded-sm font-bold"
           >
-            Get Started
+            Start free trial
           </button>
-        </a>
+          <p
+            class="mt-3 text-center text-xs text-muted-foreground"
+          >
+            14 days free · cancel anytime
+          </p>
+        </div>
         <div
-          class="mt-4 text-center text-primary text-sm font-bold"
+          class="mt-4 text-center text-gold text-sm font-bold"
         >
           95% payout. Always.
         </div>
       </div>
       <div
-        class="relative rounded-2xl p-6 sm:p-8 border flex flex-col border-primary bg-gradient-to-b from-primary/10 to-card/30 shadow-[0_0_60px_hsl(var(--primary)/0.2)]"
+        class="flex flex-col"
       >
         <div
-          class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wide"
+          class="relative rounded-md border bg-card p-6 sm:p-7 flex flex-col border-primary shadow-lg"
         >
-          Most Popular
-        </div>
-        <div
-          class="font-display text-xl font-bold text-foreground"
-        >
-          Scaling
-        </div>
-        <div
-          class="text-sm text-foreground/60 mt-1"
-        >
-          For growing creators
-        </div>
-        <div
-          class="my-5"
-        >
-          <span
-            class="font-display text-4xl sm:text-5xl font-bold text-foreground"
+          <div
+            class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-sm bg-primary px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary-foreground"
           >
-            $
-            29
-          </span>
-          <span
-            class="text-foreground/60 text-sm ml-1"
+            Most Popular
+          </div>
+          <div
+            class="mb-4"
           >
-            /mo
-          </span>
-        </div>
-        <ul
-          class="space-y-2.5 mb-6 flex-1"
-        >
-          <li
-            class="flex items-start gap-2 text-sm text-foreground/80"
-          >
-            <svg
-              class="lucide lucide-check w-4 h-4 text-primary shrink-0 mt-0.5"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
+            <span
+              class="inline-block rounded-sm border border-border bg-muted px-2.5 py-1 text-xs font-bold uppercase tracking-[0.14em] text-foreground"
             >
-              <path
-                d="M20 6 9 17l-5-5"
-              />
-            </svg>
-            Everything in Starter
-          </li>
-          <li
-            class="flex items-start gap-2 text-sm text-foreground/80"
+              Unlimited
+            </span>
+          </div>
+          <div
+            class="mb-1"
           >
-            <svg
-              class="lucide lucide-check w-4 h-4 text-primary shrink-0 mt-0.5"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
+            <span
+              class="text-4xl font-bold text-foreground"
             >
-              <path
-                d="M20 6 9 17l-5-5"
-              />
-            </svg>
-            Memberships
-          </li>
-          <li
-            class="flex items-start gap-2 text-sm text-foreground/80"
+              $
+              297
+            </span>
+            <span
+              class="ml-1 text-sm text-muted-foreground"
+            >
+              /Month
+            </span>
+          </div>
+          <p
+            class="mb-5 text-sm text-muted-foreground"
           >
-            <svg
-              class="lucide lucide-check w-4 h-4 text-primary shrink-0 mt-0.5"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M20 6 9 17l-5-5"
-              />
-            </svg>
-            Courses
-          </li>
-          <li
-            class="flex items-start gap-2 text-sm text-foreground/80"
+            For growing creator businesses
+          </p>
+          <ul
+            class="mb-6 flex-1 divide-y divide-border border-y border-border"
           >
-            <svg
-              class="lucide lucide-check w-4 h-4 text-primary shrink-0 mt-0.5"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
             >
-              <path
-                d="M20 6 9 17l-5-5"
-              />
-            </svg>
-            SmartLinks
-          </li>
-          <li
-            class="flex items-start gap-2 text-sm text-foreground/80"
-          >
-            <svg
-              class="lucide lucide-check w-4 h-4 text-primary shrink-0 mt-0.5"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                Everything in Starter
+              </span>
+            </li>
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
             >
-              <path
-                d="M20 6 9 17l-5-5"
-              />
-            </svg>
-            Email broadcasts
-          </li>
-          <li
-            class="flex items-start gap-2 text-sm text-foreground/80"
-          >
-            <svg
-              class="lucide lucide-check w-4 h-4 text-primary shrink-0 mt-0.5"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                3 sub-accounts
+              </span>
+            </li>
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
             >
-              <path
-                d="M20 6 9 17l-5-5"
-              />
-            </svg>
-            ARIA AI Growth Plan
-          </li>
-          <li
-            class="flex items-start gap-2 text-sm text-foreground/80"
-          >
-            <svg
-              class="lucide lucide-check w-4 h-4 text-primary shrink-0 mt-0.5"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                ARIA AI Team — 5 specialized agents
+              </span>
+            </li>
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
             >
-              <path
-                d="M20 6 9 17l-5-5"
-              />
-            </svg>
-            Content gating
-          </li>
-          <li
-            class="flex items-start gap-2 text-sm text-foreground/80"
-          >
-            <svg
-              class="lucide lucide-check w-4 h-4 text-primary shrink-0 mt-0.5"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                Advanced analytics
+              </span>
+            </li>
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
             >
-              <path
-                d="M20 6 9 17l-5-5"
-              />
-            </svg>
-            Events
-          </li>
-        </ul>
-        <a
-          href="/auth"
-        >
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                Unlimited events
+              </span>
+            </li>
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
+            >
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                Priority support
+              </span>
+            </li>
+          </ul>
           <button
-            class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-button)] text-sm font-semibold ring-offset-background transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97] font-display hover:-translate-y-px hover:shadow-[var(--shadow-glow)] h-11 px-5 py-2 w-full bg-primary text-primary-foreground hover:bg-primary/90"
+            class="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm ring-offset-background transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97] font-display bg-primary text-primary-foreground hover:bg-primary/90 hover:-translate-y-px hover:shadow-[var(--shadow-glow)] h-11 px-5 py-2 w-full rounded-sm font-bold"
           >
-            Get Started
+            Start free trial
           </button>
-        </a>
+          <p
+            class="mt-3 text-center text-xs text-muted-foreground"
+          >
+            14 days free · cancel anytime
+          </p>
+        </div>
         <div
-          class="mt-4 text-center text-primary text-sm font-bold"
+          class="mt-4 text-center text-gold text-sm font-bold"
         >
           95% payout. Always.
         </div>
       </div>
       <div
-        class="relative rounded-2xl p-6 sm:p-8 border flex flex-col border-border/50 bg-card/40"
+        class="flex flex-col"
       >
         <div
-          class="font-display text-xl font-bold text-foreground"
+          class="relative rounded-md border bg-card p-6 sm:p-7 flex flex-col border-border"
         >
-          Pro
-        </div>
-        <div
-          class="text-sm text-foreground/60 mt-1"
-        >
-          For full-time creators
-        </div>
-        <div
-          class="my-5"
-        >
-          <span
-            class="font-display text-4xl sm:text-5xl font-bold text-foreground"
+          <div
+            class="mb-4"
           >
-            $
-            99
-          </span>
-          <span
-            class="text-foreground/60 text-sm ml-1"
-          >
-            /mo
-          </span>
-        </div>
-        <ul
-          class="space-y-2.5 mb-6 flex-1"
-        >
-          <li
-            class="flex items-start gap-2 text-sm text-foreground/80"
-          >
-            <svg
-              class="lucide lucide-check w-4 h-4 text-primary shrink-0 mt-0.5"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
+            <span
+              class="inline-block rounded-sm border border-border bg-muted px-2.5 py-1 text-xs font-bold uppercase tracking-[0.14em] text-foreground"
             >
-              <path
-                d="M20 6 9 17l-5-5"
-              />
-            </svg>
-            Everything in Scaling
-          </li>
-          <li
-            class="flex items-start gap-2 text-sm text-foreground/80"
+              Agency Pro
+            </span>
+          </div>
+          <div
+            class="mb-1"
           >
-            <svg
-              class="lucide lucide-check w-4 h-4 text-primary shrink-0 mt-0.5"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
+            <span
+              class="text-4xl font-bold text-foreground"
             >
-              <path
-                d="M20 6 9 17l-5-5"
-              />
-            </svg>
-            Simulcast 8 platforms
-          </li>
-          <li
-            class="flex items-start gap-2 text-sm text-foreground/80"
+              $
+              497
+            </span>
+            <span
+              class="ml-1 text-sm text-muted-foreground"
+            >
+              /Month
+            </span>
+          </div>
+          <p
+            class="mb-5 text-sm text-muted-foreground"
           >
-            <svg
-              class="lucide lucide-check w-4 h-4 text-primary shrink-0 mt-0.5"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M20 6 9 17l-5-5"
-              />
-            </svg>
-            Co-streaming 4 guests
-          </li>
-          <li
-            class="flex items-start gap-2 text-sm text-foreground/80"
+            For agencies & brands that need their own look
+          </p>
+          <ul
+            class="mb-6 flex-1 divide-y divide-border border-y border-border"
           >
-            <svg
-              class="lucide lucide-check w-4 h-4 text-primary shrink-0 mt-0.5"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
             >
-              <path
-                d="M20 6 9 17l-5-5"
-              />
-            </svg>
-            Live commerce
-          </li>
-          <li
-            class="flex items-start gap-2 text-sm text-foreground/80"
-          >
-            <svg
-              class="lucide lucide-check w-4 h-4 text-primary shrink-0 mt-0.5"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                Everything in Unlimited
+              </span>
+            </li>
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
             >
-              <path
-                d="M20 6 9 17l-5-5"
-              />
-            </svg>
-            Ad campaign builder
-          </li>
-          <li
-            class="flex items-start gap-2 text-sm text-foreground/80"
-          >
-            <svg
-              class="lucide lucide-check w-4 h-4 text-primary shrink-0 mt-0.5"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                Unlimited sub-accounts
+              </span>
+            </li>
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
             >
-              <path
-                d="M20 6 9 17l-5-5"
-              />
-            </svg>
-            White-label options
-          </li>
-          <li
-            class="flex items-start gap-2 text-sm text-foreground/80"
-          >
-            <svg
-              class="lucide lucide-check w-4 h-4 text-primary shrink-0 mt-0.5"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                White-Label branding
+              </span>
+            </li>
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
             >
-              <path
-                d="M20 6 9 17l-5-5"
-              />
-            </svg>
-            Priority support
-          </li>
-        </ul>
-        <a
-          href="/auth"
-        >
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                Your brand color & logo on member surfaces
+              </span>
+            </li>
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
+            >
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                Founding-creator perks
+              </span>
+            </li>
+          </ul>
           <button
-            class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-button)] text-sm font-semibold ring-offset-background transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97] font-display border border-primary text-primary bg-transparent hover:bg-primary/8 hover:-translate-y-px h-11 px-5 py-2 w-full"
+            class="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm ring-offset-background transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97] font-display border border-primary text-primary bg-transparent hover:bg-primary/8 hover:-translate-y-px h-11 px-5 py-2 w-full rounded-sm font-bold"
           >
-            Get Started
+            Start free trial
           </button>
-        </a>
+          <p
+            class="mt-3 text-center text-xs text-muted-foreground"
+          >
+            14 days free · cancel anytime
+          </p>
+        </div>
         <div
-          class="mt-4 text-center text-primary text-sm font-bold"
+          class="mt-4 text-center text-gold text-sm font-bold"
         >
           95% payout. Always.
+        </div>
+      </div>
+    </div>
+    <div
+      class="mt-14 max-w-5xl mx-auto"
+    >
+      <div
+        class="text-center mb-6"
+      >
+        <p
+          class="eyebrow-gold mb-3"
+        >
+          The Math
+        </p>
+        <h3
+          class="type-display-md text-foreground"
+        >
+          UPLY vs. 
+          <span
+            class="italic text-gold font-normal"
+          >
+            the legacy stack
+          </span>
+        </h3>
+      </div>
+      <div
+        class="card-editorial rounded-md overflow-hidden"
+      >
+        <div
+          class="grid grid-cols-[1.4fr_1fr_1fr] text-[10px] sm:text-xs font-bold uppercase tracking-[0.22em] text-muted-foreground px-4 sm:px-6 py-3 border-b border-border/60"
+        >
+          <div>
+            Tool
+          </div>
+          <div>
+            They charge
+          </div>
+          <div
+            class="text-gold"
+          >
+            UPLY
+          </div>
+        </div>
+        <div
+          class="grid grid-cols-[1.4fr_1fr_1fr] items-center px-4 sm:px-6 py-3 sm:py-4 text-sm "
+        >
+          <div
+            class="font-semibold text-foreground"
+          >
+            Ticketmaster / Live Nation
+          </div>
+          <div
+            class="text-muted-foreground"
+          >
+            27–37% fees + venue cut
+          </div>
+          <div
+            class="font-bold text-gold"
+          >
+            5% flat
+          </div>
+        </div>
+        <div
+          class="grid grid-cols-[1.4fr_1fr_1fr] items-center px-4 sm:px-6 py-3 sm:py-4 text-sm bg-card/40"
+        >
+          <div
+            class="font-semibold text-foreground"
+          >
+            Patreon
+          </div>
+          <div
+            class="text-muted-foreground"
+          >
+            8–12% + processing
+          </div>
+          <div
+            class="font-bold text-gold"
+          >
+            5% flat
+          </div>
+        </div>
+        <div
+          class="grid grid-cols-[1.4fr_1fr_1fr] items-center px-4 sm:px-6 py-3 sm:py-4 text-sm "
+        >
+          <div
+            class="font-semibold text-foreground"
+          >
+            Kajabi
+          </div>
+          <div
+            class="text-muted-foreground"
+          >
+            $199 / mo + transaction fees
+          </div>
+          <div
+            class="font-bold text-gold"
+          >
+            From $97 / mo · 5% flat
+          </div>
+        </div>
+        <div
+          class="grid grid-cols-[1.4fr_1fr_1fr] items-center px-4 sm:px-6 py-3 sm:py-4 text-sm bg-card/40"
+        >
+          <div
+            class="font-semibold text-foreground"
+          >
+            Twitch / Kick
+          </div>
+          <div
+            class="text-muted-foreground"
+          >
+            Up to 50% revenue split
+          </div>
+          <div
+            class="font-bold text-gold"
+          >
+            5% flat
+          </div>
+        </div>
+        <div
+          class="grid grid-cols-[1.4fr_1fr_1fr] items-center px-4 sm:px-6 py-3 sm:py-4 text-sm "
+        >
+          <div
+            class="font-semibold text-foreground"
+          >
+            Linktree / Beacons
+          </div>
+          <div
+            class="text-muted-foreground"
+          >
+            Paywall on basics
+          </div>
+          <div
+            class="font-bold text-gold"
+          >
+            Included
+          </div>
+        </div>
+        <div
+          class="grid grid-cols-[1.4fr_1fr_1fr] items-center px-4 sm:px-6 py-3 sm:py-4 text-sm bg-card/40"
+        >
+          <div
+            class="font-semibold text-foreground"
+          >
+            Eventbrite
+          </div>
+          <div
+            class="text-muted-foreground"
+          >
+            3.7% + $1.79 per ticket
+          </div>
+          <div
+            class="font-bold text-gold"
+          >
+            5% flat — no per-ticket fee
+          </div>
         </div>
       </div>
     </div>
     <p
       class="text-center text-foreground/60 text-sm mt-8"
     >
-      Every tier. 95% payout. Always. No exceptions.
+      Every plan. 95% payout. Always. No exceptions.
     </p>
   </div>
 </section>

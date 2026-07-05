@@ -16,6 +16,7 @@ import PageHero from "@/components/layout/PageHero";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { OnboardingChecklist } from "@/components/dashboard/OnboardingChecklist";
 import { WeeklyGrowthReport } from "@/components/dashboard/WeeklyGrowthReport";
@@ -89,6 +90,21 @@ export default function Dashboard() {
   const [wizardDone, setWizardDone] = useState(() => localStorage.getItem("uply_fdw") === "1");
   const [creatorUsername, setCreatorUsername] = useState<string | null>(null);
   useMilestoneTracker();
+
+  // Trial signup return point: embedded checkout redirects (or SPA-navigates)
+  // here with ?trial=started once the card is on file and the trial sub is live.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("trial") !== "started") return;
+    toast.success("You're in — your 14-day trial is live", { id: "trial-live" });
+    try {
+      localStorage.removeItem("uply_trial_intent");
+    } catch { /* noop */ }
+    params.delete("trial");
+    params.delete("session_id");
+    const qs = params.toString();
+    window.history.replaceState({}, "", window.location.pathname + (qs ? `?${qs}` : ""));
+  }, []);
 
   useEffect(() => {
     if (!user || wizardDone) return;

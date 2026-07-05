@@ -11,6 +11,15 @@ import { render } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import type { ReactElement } from "react";
 
+// HomepagePricing renders TrialSignupModal (closed), which needs an auth
+// context and Stripe's loader — stub both so the section renders standalone.
+vi.mock("@/context/AuthContext", () => ({
+  useAuth: () => ({ user: null, session: null, loading: false }),
+}));
+vi.mock("@stripe/stripe-js", () => ({
+  loadStripe: () => Promise.resolve(null),
+}));
+
 import HomepageNav from "@/components/landing/v2/HomepageNav";
 import HomepageHero from "@/components/landing/v2/HomepageHero";
 import HomepagePricing from "@/components/landing/v2/HomepagePricing";
