@@ -13,6 +13,7 @@ const buttonVariants = cva(
         outline: "border border-primary text-primary bg-transparent hover:bg-primary/8 hover:-translate-y-px",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         soft: "bg-primary/10 text-primary hover:bg-primary/15 border-0",
+        gradient: "bg-brand-gradient brand-glow text-white border-0 hover:opacity-90 hover:-translate-y-px",
         ghost: "hover:bg-secondary hover:text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         hero: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[var(--shadow-glow-strong)] hover:shadow-[var(--shadow-glow-strong)] hover:-translate-y-px text-base font-bold",
