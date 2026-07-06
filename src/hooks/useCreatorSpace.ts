@@ -120,12 +120,8 @@ export function useCreateCommunityPost() {
         .from("community_posts")
         .insert({ ...post, author_id: user.id });
       if (error) throw error;
-      await supabase.from("member_points").insert({
-        user_id: user.id,
-        creator_id: post.creator_id,
-        action_type: "post",
-        points: 5,
-      });
+      // Points are awarded server-side by a trigger on community_posts INSERT
+      // (see migration 20260706133000_server_side_points.sql).
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["community-posts"] });
@@ -161,12 +157,7 @@ export function useToggleLike() {
         if (post) {
           await supabase.from("community_posts").update({ like_count: (post.like_count || 0) + 1 }).eq("id", postId);
         }
-        await supabase.from("member_points").insert({
-          user_id: user.id,
-          creator_id: creatorId,
-          action_type: "like_received",
-          points: 1,
-        });
+        // Points are awarded server-side by a trigger on community_post_likes INSERT.
         return { liked: true };
       }
     },
@@ -232,12 +223,7 @@ export function useCreateComment() {
       if (post) {
         await supabase.from("community_posts").update({ comment_count: (post.comment_count || 0) + 1 }).eq("id", postId);
       }
-      await supabase.from("member_points").insert({
-        user_id: user.id,
-        creator_id: creatorId,
-        action_type: "comment",
-        points: 2,
-      });
+      // Points are awarded server-side by a trigger on community_comments INSERT.
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["community-comments"] });

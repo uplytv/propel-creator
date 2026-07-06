@@ -68,9 +68,8 @@ export function useCompleteLesson() {
         .from("lesson_completions")
         .insert({ lesson_id: lessonId, user_id: user.id });
       if (error && !error.message.includes("duplicate")) throw error;
-      await supabase.from("member_points").insert({
-        user_id: user.id, creator_id: creatorId, action_type: "lesson_complete", points: 10,
-      });
+      // Points are awarded server-side by a trigger on lesson_completions INSERT
+      // (dedupes via UNIQUE(lesson_id, user_id) — no double-award on re-click).
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lesson-completions"] });
