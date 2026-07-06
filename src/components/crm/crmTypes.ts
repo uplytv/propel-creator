@@ -15,6 +15,7 @@ export interface CrmContact {
   tags: string[];
   stage: CrmStage;
   notes_count: number;
+  value_cents: number | null;
   last_activity_at: string | null;
   created_at: string;
   updated_at: string;
@@ -55,3 +56,14 @@ export const kindLabels: Record<CrmActivityKind, string> = {
   call: "Call",
   email: "Email",
 };
+
+/** "$1,250" (whole dollars) or "$1,250.50" when there are cents. */
+export function formatCents(cents: number): string {
+  const dollars = cents / 100;
+  return dollars.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
+    maximumFractionDigits: 2,
+  });
+}

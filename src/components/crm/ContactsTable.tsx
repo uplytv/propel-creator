@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useUpdateContactStage } from "@/hooks/useCrm";
+import ContactValueField from "./ContactValueField";
 import { STAGES, sourceConfig, stageConfig, type CrmContact, type CrmStage } from "./crmTypes";
 
 export default function ContactsTable({
@@ -24,6 +25,7 @@ export default function ContactsTable({
             <TableHead>Source</TableHead>
             <TableHead>Tags</TableHead>
             <TableHead>Stage</TableHead>
+            <TableHead>Value</TableHead>
             <TableHead className="text-right">Last activity</TableHead>
           </TableRow>
         </TableHeader>
@@ -84,6 +86,9 @@ export default function ContactsTable({
                       ))}
                     </SelectContent>
                   </Select>
+                </TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  <ContactValueField contact={contact} />
                 </TableCell>
                 <TableCell className="text-right text-xs text-muted-foreground whitespace-nowrap">
                   {contact.last_activity_at

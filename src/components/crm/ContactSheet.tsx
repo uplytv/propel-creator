@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { format } from "date-fns";
-import { CalendarClock, Loader2, Plus, StickyNote, Phone, Mail as MailIcon, CheckSquare } from "lucide-react";
+import { CalendarClock, Loader2, Plus, StickyNote, Phone, Mail as MailIcon, CheckSquare, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAddCrmActivity, useCrmActivities, useToggleTaskDone, useUpdateContactStage } from "@/hooks/useCrm";
+import ContactValueField from "./ContactValueField";
 import {
   STAGES,
   kindLabels,
@@ -117,12 +119,28 @@ export default function ContactSheet({
               <p className="text-xs text-muted-foreground mb-1">Added</p>
               <p className="text-xs text-foreground pt-2">{format(new Date(contact.created_at), "MMM d, yyyy")}</p>
             </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Deal value</p>
+              <ContactValueField contact={contact} />
+            </div>
             {contact.phone && (
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Phone</p>
                 <p className="text-xs text-foreground">{contact.phone}</p>
               </div>
             )}
+          </div>
+
+          {/* Automations hint */}
+          <div className="border border-border bg-muted/30 p-3 flex items-start gap-2">
+            <Zap className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Automations: stage changes can enroll this contact in sequences — create one with trigger{" "}
+              <code className="text-[10px] bg-muted px-1 py-0.5 text-foreground">crm_stage_customer</code>.{" "}
+              <Link to="/dashboard/drip-sequences" className="text-primary underline underline-offset-2">
+                Manage sequences
+              </Link>
+            </p>
           </div>
         </div>
 

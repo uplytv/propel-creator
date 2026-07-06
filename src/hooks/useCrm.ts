@@ -55,6 +55,18 @@ export function useUpdateContactStage() {
   });
 }
 
+export function useUpdateContactValue() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ contactId, valueCents }: { contactId: string; valueCents: number | null }) => {
+      const { error } = await db.from("crm_contacts").update({ value_cents: valueCents }).eq("id", contactId);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["crm-contacts"] }),
+    onError: () => toast.error("Couldn't update value"),
+  });
+}
+
 export function useCrmActivities(contactId: string | null) {
   return useQuery<CrmActivity[]>({
     queryKey: ["crm-activities", contactId],
