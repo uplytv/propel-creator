@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, Check, AlertTriangle, Flag, Briefcase, CheckCircle2, XCircle, Eye, Star, MessageSquare, Heart, UserPlus, Coins, Users, Megaphone, Trophy, Package, Gift } from "lucide-react";
+import { Bell, Check, AlertTriangle, Flag, Briefcase, CheckCircle2, XCircle, Eye, Star, MessageSquare, Heart, UserPlus, Coins, Users, Megaphone, Trophy, Package, Gift, Mail, Ticket, Calendar, Repeat2 } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
@@ -51,6 +51,28 @@ export default function NotificationBell() {
     member_joined: { icon: Users, color: "bg-primary/10 text-primary" },
     order_shipped: { icon: Package, color: "bg-blue-500/15 text-blue-400" },
     giveaway_winner: { icon: Gift, color: "bg-amber-500/15 text-amber-400" },
+    // Notification-engine types (DB triggers + webhook/app-level inserts).
+    email_subscriber: { icon: Mail, color: "bg-primary/10 text-primary" },
+    new_subscriber: { icon: Users, color: "bg-primary/15 text-primary" },
+    new_paid_member: { icon: Users, color: "bg-primary/15 text-primary" },
+    member_canceled: { icon: XCircle, color: "bg-destructive/10 text-destructive" },
+    subscription_canceled: { icon: XCircle, color: "bg-destructive/10 text-destructive" },
+    subscription_recovered: { icon: CheckCircle2, color: "bg-primary/10 text-primary" },
+    payment_failed: { icon: AlertTriangle, color: "bg-destructive/10 text-destructive" },
+    renewal: { icon: Coins, color: "bg-primary/15 text-primary" },
+    sale: { icon: Coins, color: "bg-primary/15 text-primary" },
+    purchase: { icon: Package, color: "bg-blue-500/15 text-blue-400" },
+    ticket: { icon: Ticket, color: "bg-primary/15 text-primary" },
+    ticket_sold: { icon: Ticket, color: "bg-primary/15 text-primary" },
+    event_ticket: { icon: Ticket, color: "bg-primary/15 text-primary" },
+    event_ticket_sale: { icon: Ticket, color: "bg-primary/15 text-primary" },
+    resale_sold: { icon: Coins, color: "bg-primary/15 text-primary" },
+    booking_inquiry: { icon: Calendar, color: "bg-primary/10 text-primary" },
+    affiliate_conversion: { icon: Repeat2, color: "bg-primary/10 text-primary" },
+    brand_application: { icon: Briefcase, color: "bg-primary/10 text-primary" },
+    brand_application_accepted: { icon: CheckCircle2, color: "bg-primary/15 text-primary" },
+    new_message: { icon: MessageSquare, color: "bg-primary/10 text-primary" },
+    deal_message: { icon: MessageSquare, color: "bg-primary/10 text-primary" },
   };
 
   const getIcon = (n: any) => {

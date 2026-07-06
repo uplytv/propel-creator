@@ -4,9 +4,10 @@ import {
   Bell, Check, CheckCheck, AlertTriangle, Flag, Briefcase,
   CheckCircle2, XCircle, Eye, Star, Filter, Trash2,
   MessageSquare, Heart, UserPlus, Coins, Users, Megaphone,
-  Trophy, Package, Gift, Zap, Calendar, Ticket, MapPin, Music, Repeat2
+  Trophy, Package, Gift, Zap, Calendar, Ticket, MapPin, Music, Repeat2, Mail
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
+import { supabase } from "@/integrations/supabase/client";
 import { useNotifications, AppNotification } from "@/hooks/useNotifications";
 import { useMusicActivityNotifications } from "@/features/music/hooks/useMusicActivityNotifications";
 import { formatDistanceToNow } from "date-fns";
@@ -19,7 +20,37 @@ type FilterTab = "all" | "activity" | "matches" | "events" | "purchases";
 
 const MATCH_TYPES = new Set(["hey", "super_hey", "hey_mutual"]);
 const EVENT_TYPES = new Set(["event_reminder", "going_out", "waitlist_available"]);
-const PURCHASE_TYPES = new Set(["ticket_confirmed", "subscription_confirmed", "order_shipped", "live_sale", "tip_received"]);
+const PURCHASE_TYPES = new Set([
+  "ticket_confirmed", "subscription_confirmed", "order_shipped", "live_sale", "tip_received",
+  // notification-engine money events
+  "sale", "purchase", "ticket", "ticket_sold", "event_ticket", "event_ticket_sale",
+  "resale_sold", "renewal", "new_paid_member", "new_subscriber", "affiliate_conversion",
+]);
+
+// Fallback click-through routes for notification types whose rows carry no link.
+const TYPE_FALLBACK_ROUTES: Record<string, string> = {
+  member_joined: "/dashboard",
+  new_paid_member: "/dashboard",
+  new_subscriber: "/dashboard",
+  email_subscriber: "/dashboard/subscribers",
+  sale: "/wallet",
+  renewal: "/wallet",
+  resale_sold: "/wallet",
+  tip_received: "/wallet",
+  live_sale: "/wallet",
+  purchase: "/products",
+  ticket: "/tickets",
+  event_ticket: "/tickets",
+  ticket_sold: "/events",
+  event_ticket_sale: "/events",
+  booking_inquiry: "/admin/booking-inquiries",
+  affiliate_conversion: "/affiliates",
+  brand_application: "/marketplace",
+  brand_application_accepted: "/marketplace",
+  deal_message: "/marketplace",
+  new_message: "/messages",
+  payment_failed: "/settings",
+};
 
 const socialNotifIcon: Record<string, { icon: any; color: string }> = {
   community_comment: { icon: MessageSquare, color: "bg-primary/10 text-primary" },
@@ -45,6 +76,28 @@ const socialNotifIcon: Record<string, { icon: any; color: string }> = {
   track_uploaded: { icon: Music, color: "bg-primary/15 text-primary" },
   track_reposted: { icon: Repeat2, color: "bg-primary/10 text-primary" },
   track_comment: { icon: MessageSquare, color: "bg-primary/10 text-primary" },
+  // Notification-engine types (DB triggers + webhook/app-level inserts).
+  email_subscriber: { icon: Mail, color: "bg-primary/10 text-primary" },
+  new_subscriber: { icon: Users, color: "bg-primary/15 text-primary" },
+  new_paid_member: { icon: Users, color: "bg-primary/15 text-primary" },
+  member_canceled: { icon: XCircle, color: "bg-destructive/10 text-destructive" },
+  subscription_canceled: { icon: XCircle, color: "bg-destructive/10 text-destructive" },
+  subscription_recovered: { icon: CheckCircle2, color: "bg-primary/10 text-primary" },
+  payment_failed: { icon: AlertTriangle, color: "bg-destructive/10 text-destructive" },
+  renewal: { icon: Coins, color: "bg-primary/15 text-primary" },
+  sale: { icon: Coins, color: "bg-primary/15 text-primary" },
+  purchase: { icon: Package, color: "bg-blue-500/15 text-blue-400" },
+  ticket: { icon: Ticket, color: "bg-primary/15 text-primary" },
+  ticket_sold: { icon: Ticket, color: "bg-primary/15 text-primary" },
+  event_ticket: { icon: Ticket, color: "bg-primary/15 text-primary" },
+  event_ticket_sale: { icon: Ticket, color: "bg-primary/15 text-primary" },
+  resale_sold: { icon: Coins, color: "bg-primary/15 text-primary" },
+  booking_inquiry: { icon: Calendar, color: "bg-primary/10 text-primary" },
+  affiliate_conversion: { icon: Repeat2, color: "bg-primary/10 text-primary" },
+  brand_application: { icon: Briefcase, color: "bg-primary/10 text-primary" },
+  brand_application_accepted: { icon: CheckCircle2, color: "bg-primary/15 text-primary" },
+  new_message: { icon: MessageSquare, color: "bg-primary/10 text-primary" },
+  deal_message: { icon: MessageSquare, color: "bg-primary/10 text-primary" },
 };
 
 const jobNotifIcon: Record<string, { icon: any; color: string; label: string }> = {
@@ -145,12 +198,26 @@ export default function Notifications() {
     return true;
   });
 
-  const handleNavigate = (n: AppNotification) => {
+  const handleNavigate = async (n: AppNotification) => {
     if (!n.read) markRead(n.id, n.source);
-    if (n.source === "job" && n.job_id) navigate(`/jobs/${n.job_id}`);
-    else if (n.link) navigate(n.link);
-    else if (MATCH_TYPES.has(n.type)) navigate("/social/people");
-    else if (EVENT_TYPES.has(n.type)) navigate("/social/local");
+    if (n.source === "job" && n.job_id) { navigate(`/jobs/${n.job_id}`); return; }
+    if (n.link) { navigate(n.link); return; }
+    if (MATCH_TYPES.has(n.type)) { navigate("/social/people"); return; }
+    if (EVENT_TYPES.has(n.type)) { navigate("/social/local"); return; }
+    // Community engagement: resolve the post's community for click-through.
+    if ((n.type === "community_comment" || n.type === "community_like" || n.type === "community_blast") && n.reference_id) {
+      const { data } = await supabase
+        .from("community_posts").select("creator_id").eq("id", n.reference_id).maybeSingle();
+      if (data?.creator_id) { navigate(`/community/${data.creator_id}/community`); return; }
+    }
+    // New follower: go to the follower's profile.
+    if (n.type === "new_follower" && n.actor_id) {
+      const { data } = await supabase
+        .from("profiles").select("username").eq("user_id", n.actor_id).maybeSingle();
+      if (data?.username) { navigate(`/${data.username}`); return; }
+    }
+    const fallback = TYPE_FALLBACK_ROUTES[n.type];
+    if (fallback) navigate(fallback);
   };
 
   return (
