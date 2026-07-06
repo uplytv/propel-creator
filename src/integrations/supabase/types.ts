@@ -4754,6 +4754,33 @@ export type Database = {
         }
         Relationships: []
       }
+      dunning_notices: {
+        Row: {
+          customer_email: string | null
+          id: string
+          sent_at: string
+          subscription_id: string
+          touch_number: number
+          user_id: string | null
+        }
+        Insert: {
+          customer_email?: string | null
+          id?: string
+          sent_at?: string
+          subscription_id: string
+          touch_number: number
+          user_id?: string | null
+        }
+        Update: {
+          customer_email?: string | null
+          id?: string
+          sent_at?: string
+          subscription_id?: string
+          touch_number?: number
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       edge_function_rate_limits: {
         Row: {
           call_count: number | null
@@ -7792,6 +7819,7 @@ export type Database = {
           creator_id: string
           id: string
           points: number
+          source_id: string | null
           user_id: string
         }
         Insert: {
@@ -7800,6 +7828,7 @@ export type Database = {
           creator_id: string
           id?: string
           points?: number
+          source_id?: string | null
           user_id: string
         }
         Update: {
@@ -7808,6 +7837,7 @@ export type Database = {
           creator_id?: string
           id?: string
           points?: number
+          source_id?: string | null
           user_id?: string
         }
         Relationships: []
@@ -22159,6 +22189,7 @@ export type Database = {
           unique_listeners: number
         }[]
       }
+      get_user_id_by_email: { Args: { p_email: string }; Returns: string }
       has_creator_access: { Args: { _creator_id: string }; Returns: boolean }
       has_event_livestream_access: {
         Args: { _event_id: string }
