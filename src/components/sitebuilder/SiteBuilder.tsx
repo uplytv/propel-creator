@@ -17,7 +17,9 @@ import {
   ExternalLink,
   Pencil,
   GripVertical,
+  CalendarCheck,
 } from "lucide-react";
+import { SETUP_CALL_URL } from "@/components/pricing/plans";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -251,6 +253,28 @@ export default function SiteBuilder() {
                   <Button size="sm" variant={theme.mode === "dark" ? "default" : "outline"} onClick={() => setTheme((t) => ({ ...t, mode: "dark" }))}>Dark</Button>
                 </div>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Done-for-you: hire the UPLY team */}
+        <Card className="border-primary/40 bg-primary/5">
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+              <div>
+                <h3 className="font-semibold text-sm">Want it done for you?</h3>
+                <p className="mt-1 text-xs text-muted-foreground max-w-md">
+                  Our team builds your custom website &amp; funnel with you on a call —
+                  design, copy, and setup handled. Free with your trial.
+                </p>
+              </div>
+              <Button
+                size="sm"
+                className="shrink-0 font-bold"
+                onClick={() => window.open(SETUP_CALL_URL, "_blank", "noopener,noreferrer")}
+              >
+                <CalendarCheck className="w-4 h-4 mr-1.5" /> Book a build call
+              </Button>
             </div>
           </CardContent>
         </Card>
