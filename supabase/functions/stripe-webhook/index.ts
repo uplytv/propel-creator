@@ -1,5 +1,12 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import {
+  classifyPurchaseType,
+  shouldCreateFulfillment,
+  computeRefundWalletAdjustment,
+  extractRefundIdentifier,
+  planDisputeActions,
+} from "../_shared/stripeWebhookLogic.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -235,8 +242,10 @@ Deno.serve(async (req) => {
         const session = event.data.object as Stripe.Checkout.Session;
         const metadata = session.metadata || {};
         const purchaseType = metadata.purchase_type || "subscription";
+        // Branch routing extracted to pure logic (tested in src/test/stripe-webhook-logic.test.ts)
+        const branch = classifyPurchaseType(metadata);
 
-        if (purchaseType === "track") {
+        if (branch === "track") {
           // Locked-track one-time unlock. Mirrors the product/course branch.
           const { buyer_id, track_id, creator_id } = metadata;
           const amount = (session.amount_total || 0) / 100;
@@ -281,7 +290,7 @@ Deno.serve(async (req) => {
             console.error("track purchase missing buyer_id or track_id", metadata);
           }
 
-        } else if (purchaseType === "tip") {
+        } else if (branch === "tip") {
           const { sender_id, creator_id, stream_id, message, amount } = metadata;
           const tipAmount = parseFloat(amount || "0");
           const fee = Math.round(tipAmount * 0.05 * 100) / 100;
@@ -297,7 +306,7 @@ Deno.serve(async (req) => {
           await updateWallet(supabase, creator_id, tipAmount, fee, "Tip from viewer", session.payment_intent as string);
           logStep("Tip processed", { sender_id, creator_id, amount: tipAmount });
 
-        } else if (purchaseType === "product" || purchaseType === "course") {
+        } else if (branch === "product_course") {
           const { buyer_id, product_id, creator_id } = metadata;
           const amount = (session.amount_total || 0) / 100;
           const fee = Math.round(amount * 0.05 * 100) / 100;
@@ -371,7 +380,7 @@ Deno.serve(async (req) => {
           await updateWallet(supabase, creator_id, amount, fee, `Product sale: ${productName}`, session.payment_intent as string);
           logStep("Product/course purchase processed", { buyer_id, product_id, amount });
 
-        } else if (purchaseType === "event_ticket") {
+        } else if (branch === "event_ticket") {
           const { event_id, buyer_id, creator_id } = metadata;
           const qty = parseInt(metadata.quantity || "1", 10) || 1;
           const seatLabels: string[] = (metadata.seat_labels || "")
@@ -432,7 +441,7 @@ Deno.serve(async (req) => {
 
           logStep("Event ticket processed", { event_id, buyer_id, amount });
 
-        } else if (purchaseType === "credits") {
+        } else if (branch === "credits") {
           const { buyer_id } = metadata;
           const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
           const priceId = lineItems.data[0]?.price?.id;
@@ -456,7 +465,7 @@ Deno.serve(async (req) => {
             }
           }
 
-        } else if (purchaseType === "subscription") {
+        } else if (branch === "subscription") {
           // Subscription checkout
           const { member_id, creator_id, tier_id, space_id } = metadata;
           if (member_id && creator_id) {
@@ -628,7 +637,7 @@ Deno.serve(async (req) => {
 
             logStep("Subscription checkout completed", { member_id, creator_id });
           }
-        } else if (purchaseType === "live_product") {
+        } else if (branch === "live_product") {
           const { live_product_id, buyer_id, creator_id } = metadata;
           if (!live_product_id || !buyer_id || !creator_id) {
             logStep("Missing live_product metadata", metadata);
@@ -665,12 +674,20 @@ Deno.serve(async (req) => {
               });
             }
 
-            // Auto-create unfulfilled fulfillment record
-            await supabase.from("live_purchase_fulfillments").insert({
-              purchase_id: purchase.id,
-              creator_id,
-              status: "unfulfilled",
-            });
+            // Auto-create unfulfilled fulfillment record — except for PPV
+            // access purchases (digital entitlement, nothing to ship). Keeps
+            // creator fulfillment queues clean.
+            const { data: lpTypeRow } = await supabase
+              .from("live_products").select("type").eq("id", live_product_id).maybeSingle();
+            if (shouldCreateFulfillment({ liveProductType: lpTypeRow?.type, metadataContext: metadata.context })) {
+              await supabase.from("live_purchase_fulfillments").insert({
+                purchase_id: purchase.id,
+                creator_id,
+                status: "unfulfilled",
+              });
+            } else {
+              logStep("Fulfillment skipped (PPV access purchase)", { live_product_id });
+            }
           }
 
           // Credit creator wallet (95% of sale amount)
@@ -927,6 +944,82 @@ Deno.serve(async (req) => {
         break;
       }
 
+      case "charge.dispute.created": {
+        const dispute = event.data.object as Stripe.Dispute;
+        const disputePi = typeof dispute.payment_intent === "string"
+          ? dispute.payment_intent
+          : (dispute.payment_intent as any)?.id ?? null;
+
+        // Find the purchase by payment intent across the purchase tables.
+        // An unknown PI is NOT an error — log, alert admins, ack 200.
+        let dpProductPurchases: Array<{ id: string; creator_id: string | null }> = [];
+        let dpTickets: Array<{ id: string; creator_id: string | null }> = [];
+        let dpLivePurchases: Array<{ id: string; creator_id: string | null }> = [];
+        if (disputePi) {
+          const { data: pp } = await supabase
+            .from("product_purchases").select("id, creator_id")
+            .eq("stripe_payment_intent_id", disputePi);
+          const { data: tks } = await supabase
+            .from("tickets").select("id, creator_id")
+            .eq("stripe_payment_intent_id", disputePi);
+          const { data: lps } = await supabase
+            .from("live_purchases").select("id, creator_id")
+            .eq("stripe_payment_intent_id", disputePi);
+          dpProductPurchases = pp || [];
+          dpTickets = tks || [];
+          dpLivePurchases = lps || [];
+        }
+
+        const plan = planDisputeActions(
+          { disputeId: dispute.id, paymentIntentId: disputePi, amountCents: dispute.amount, reason: dispute.reason },
+          { productPurchases: dpProductPurchases, tickets: dpTickets, livePurchases: dpLivePurchases },
+        );
+
+        // POLICY: do NOT auto-revoke access — chargebacks are contested and may
+        // be won. plan.revokeAccess is always false by design. Ticket and
+        // live-purchase statuses are also left untouched (they gate scanning /
+        // PPV access); those matches surface via the admin alert instead.
+        if (plan.productPurchaseIdsToMarkDisputed.length > 0) {
+          await supabase.from("product_purchases")
+            .update({ status: "disputed" })
+            .in("id", plan.productPurchaseIdsToMarkDisputed);
+        }
+
+        for (const disputedCreatorId of plan.creatorIdsToNotify) {
+          await supabase.from("notifications").insert({
+            user_id: disputedCreatorId,
+            type: plan.notificationType,
+            title: plan.creatorTitle,
+            message: plan.creatorMessage,
+            reference_id: dispute.id,
+            link: "/dashboard",
+          });
+        }
+
+        // Admin visibility — reuse the notify_admin batching/dedup pattern.
+        const { error: disputeAdminErr } = await supabase.rpc("notify_admin", {
+          p_title: plan.adminTitle,
+          p_body: plan.adminMessage,
+          p_type: plan.notificationType,
+          p_link: "/admin",
+          p_metadata: { dispute_id: dispute.id, payment_intent: disputePi },
+          p_amount: (dispute.amount || 0) / 100,
+          p_dedup_key: dispute.id,
+        });
+        if (disputeAdminErr) {
+          logStep("notify_admin failed (non-fatal)", { error: disputeAdminErr.message });
+        }
+
+        logStep("Dispute recorded", {
+          disputeId: dispute.id,
+          paymentIntent: disputePi,
+          identified: plan.identified,
+          markedDisputed: plan.productPurchaseIdsToMarkDisputed.length,
+          flaggedWithoutStatusChange: plan.flaggedWithoutStatusChange.length,
+        });
+        break;
+      }
+
       case "charge.refunded": {
         const charge = event.data.object as Stripe.Charge;
         const paymentIntentId = charge.payment_intent as string;
@@ -938,6 +1031,134 @@ Deno.serve(async (req) => {
             .is("revoked_at", null);
 
           logStep("Charge refunded, access revoked", { paymentIntentId });
+
+          // ── Wallet clawback: reverse the previously-credited net (95% share),
+          // proportional on partial refunds, floored at zero. ──
+          const refundId = extractRefundIdentifier(charge as any);
+
+          // Per-refund idempotency claim — UNIQUE(refund_id) means only one
+          // delivery of this refund proceeds. If a prior attempt claimed the
+          // row but crashed before applying (clawback_amount still NULL), the
+          // retry may proceed; concurrent same-event races are already
+          // serialized by the stripe_event_id claim above.
+          let proceedWithClawback = false;
+          const { data: clawClaim, error: clawClaimErr } = await supabase
+            .from("stripe_refund_clawbacks")
+            .insert({
+              refund_id: refundId,
+              stripe_charge_id: charge.id,
+              stripe_payment_intent_id: paymentIntentId,
+            })
+            .select("id")
+            .maybeSingle();
+          if (clawClaim) {
+            proceedWithClawback = true;
+          } else if (clawClaimErr?.code === "23505" || clawClaimErr?.message?.includes("duplicate")) {
+            const { data: existingClaw } = await supabase
+              .from("stripe_refund_clawbacks")
+              .select("clawback_amount")
+              .eq("refund_id", refundId)
+              .maybeSingle();
+            if (existingClaw && existingClaw.clawback_amount !== null) {
+              logStep("Refund clawback skipped (already applied)", { refundId, paymentIntentId });
+            } else {
+              proceedWithClawback = true; // prior attempt crashed before applying
+            }
+          } else {
+            // Guard table unavailable (migration not deployed?) — fail safe:
+            // keep today's behavior (no clawback) and log loudly.
+            logStep("Refund clawback unavailable — guard claim failed", {
+              refundId, paymentIntentId, error: clawClaimErr?.message,
+            });
+          }
+
+          if (proceedWithClawback) {
+            // The original wallet credit for this payment (95% net "earn" row)
+            const { data: earnTx } = await supabase
+              .from("transactions")
+              .select("id, wallet_id, net_amount")
+              .eq("stripe_payment_intent_id", paymentIntentId)
+              .eq("type", "earn")
+              .eq("status", "completed")
+              .maybeSingle();
+
+            if (!earnTx?.wallet_id || !(Number(earnTx.net_amount) > 0)) {
+              logStep("Refund clawback skipped (no prior wallet credit)", { paymentIntentId, refundId });
+            } else {
+              // Prior clawbacks for this PI (handles successive partial refunds)
+              const { data: priorClaws } = await supabase
+                .from("stripe_refund_clawbacks")
+                .select("clawback_amount")
+                .eq("stripe_payment_intent_id", paymentIntentId)
+                .neq("refund_id", refundId);
+              const alreadyClawedBack = (priorClaws || [])
+                .reduce((sum: number, r: any) => sum + (Number(r.clawback_amount) || 0), 0);
+
+              const { data: clawWallet } = await supabase
+                .from("wallets")
+                .select("id, available_balance")
+                .eq("id", earnTx.wallet_id)
+                .maybeSingle();
+
+              const adj = computeRefundWalletAdjustment({
+                amountCents: charge.amount || 0,
+                amountRefundedCents: charge.amount_refunded || 0,
+                priorCreditedNet: Number(earnTx.net_amount) || 0,
+                alreadyClawedBack,
+                walletAvailableBalance: Number(clawWallet?.available_balance) || 0,
+              });
+
+              if (adj.clawback <= 0) {
+                logStep("Refund clawback no-op (nothing left to claw back)", { paymentIntentId, refundId });
+              } else {
+                // Ledger row: type "refund", negative net_amount.
+                // NOTE: stripe_payment_intent_id intentionally NOT set here —
+                // updateWallet's idempotency guard maybeSingle()s completed
+                // transactions by PI; a second row with the same PI would break
+                // that guard. The refund is keyed by reference_id instead.
+                await supabase.from("transactions").insert({
+                  wallet_id: earnTx.wallet_id,
+                  amount: -adj.clawback,
+                  net_amount: -adj.clawback,
+                  platform_fee_amount: 0,
+                  type: "refund",
+                  status: "completed",
+                  reference_id: refundId,
+                  description: adj.shortfall > 0
+                    ? `Refund clawback for ${paymentIntentId} — wallet floored at zero, shortfall $${adj.shortfall.toFixed(2)}`
+                    : `Refund clawback for ${paymentIntentId}`,
+                  completed_at: new Date().toISOString(),
+                });
+
+                if (clawWallet && adj.walletDecrement > 0) {
+                  await supabase.from("wallets")
+                    .update({ available_balance: adj.newBalance })
+                    .eq("id", clawWallet.id);
+                }
+
+                // Record the applied amounts on the guard row
+                await supabase.from("stripe_refund_clawbacks")
+                  .update({
+                    wallet_id: earnTx.wallet_id,
+                    clawback_amount: adj.clawback,
+                    wallet_decrement: adj.walletDecrement,
+                    shortfall: adj.shortfall,
+                  })
+                  .eq("refund_id", refundId);
+
+                if (adj.shortfall > 0) {
+                  logStep("Refund clawback SHORTFALL (wallet floored at zero)", {
+                    paymentIntentId, refundId,
+                    clawback: adj.clawback, recovered: adj.walletDecrement, shortfall: adj.shortfall,
+                  });
+                }
+                logStep("Refund clawback applied", {
+                  paymentIntentId, refundId,
+                  clawback: adj.clawback, walletDecrement: adj.walletDecrement, newBalance: adj.newBalance,
+                });
+              }
+            }
+          }
         }
         break;
       }
