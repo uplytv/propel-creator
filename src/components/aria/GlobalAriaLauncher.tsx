@@ -61,10 +61,10 @@ export default function GlobalAriaLauncher() {
         onClick={() => setOpen(true)}
         aria-label="Open ARIA AI assistant (⌘J)"
         title="Ask ARIA  ·  ⌘J"
-        className="fixed z-40 right-4 bottom-[calc(6.25rem+env(safe-area-inset-bottom))] md:bottom-6 w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-black font-bold transition-transform hover:scale-105 active:scale-95"
+        className="fixed z-40 right-4 bottom-[calc(6.25rem+env(safe-area-inset-bottom))] md:bottom-6 w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-white font-bold transition-transform hover:scale-105 active:scale-95"
         style={{
-          background: "linear-gradient(135deg, #00FF85 0%, #00d96f 100%)",
-          boxShadow: "0 10px 30px rgba(0,255,133,0.35)",
+          background: "linear-gradient(135deg, hsl(var(--gradient-start)) 0%, hsl(var(--gradient-mid)) 100%)",
+          boxShadow: "0 10px 30px hsl(var(--gradient-mid) / 0.35)",
           minWidth: 44,
           minHeight: 44,
         }}
