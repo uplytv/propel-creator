@@ -88,6 +88,7 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
     icon: DollarSign,
     items: [
       { label: "Products", icon: Package, path: "/products", desc: "What you sell", featureKey: "product_store" },
+      { label: "My Purchases", icon: CreditCard, path: "/purchases", desc: "Products, tickets & receipts" },
       { label: "Wallet", icon: Wallet, path: "/wallet", desc: "Earnings & payouts", featureKey: "wallet" },
       { label: "Buy Credits", icon: CreditCard, path: "/buy-credits", desc: "Purchase credits" },
       { label: "Jobs & Talent", icon: Briefcase, path: "/jobs", desc: "Freelance marketplace", featureKey: "jobs_marketplace" },
@@ -481,7 +482,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           {/* Profile — clickable shortcut to your public artist page */}
           <button
             onClick={() => navigate(publicProfilePath)}
-            className={`w-full flex items-center gap-3 rounded-lg hover:bg-white/5 transition-colors ${collapsed ? "p-2 justify-center" : "px-3 py-2"}`}
+            className={`w-full flex items-center gap-3 rounded-lg hover:bg-muted transition-colors ${collapsed ? "p-2 justify-center" : "px-3 py-2"}`}
           >
             {profile.avatarUrl ? (
               <img src={profile.avatarUrl} alt="" loading="lazy" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
@@ -678,7 +679,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => { navigate(publicProfilePath); setMobileMenuOpen(false); }}
-                    className="flex items-center gap-3 flex-1 min-w-0 rounded-lg px-1 py-1 -mx-1 hover:bg-white/5 transition-colors text-left"
+                    className="flex items-center gap-3 flex-1 min-w-0 rounded-lg px-1 py-1 -mx-1 hover:bg-muted transition-colors text-left"
                   >
                     {profile.avatarUrl ? (
                       <img src={profile.avatarUrl} alt="" loading="lazy" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />

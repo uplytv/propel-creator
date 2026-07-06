@@ -31,6 +31,8 @@ project_id = "dbjlhmbgskvhuzqvqfrl"
     verify_jwt = false
   [functions.generate-shorts]
     verify_jwt = false
+  [functions.get-product-download]
+    verify_jwt = false
   [functions.handle-email-unsubscribe]
     verify_jwt = false
   [functions.import-from-url]

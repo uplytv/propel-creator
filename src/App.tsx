@@ -204,6 +204,7 @@ const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const Newsletter = lazy(() => import("./pages/Newsletter"));
 const MyPage = lazy(() => import("./pages/MyPage"));
 const PublicSite = lazy(() => import("./pages/PublicSite"));
+const Purchases = lazy(() => import("./pages/Purchases"));
 const FunnelEditor = lazy(() => import("./pages/FunnelEditor"));
 const Marketplace = lazy(() => import("./pages/Marketplace"));
 const BrandDeal = lazy(() => import("./pages/BrandDeal"));
@@ -642,6 +643,7 @@ const App = () => (
                     <Route path="/founder-offers/canceled" element={<FounderOfferCanceled />} />
 
                     {/* Legacy /:username and /:username/page redirect to /@<slug>; keep last before 404. */}
+                    <Route path="/purchases" element={<ProtectedRoute><Purchases /></ProtectedRoute>} />
                     <Route path="/:username/site" element={<PublicSite />} />
                     <Route path="/:username/page" element={<UsernameRedirect />} />
                     <Route path="/:username" element={<UsernameRedirect />} />

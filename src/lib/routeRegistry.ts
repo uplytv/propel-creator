@@ -62,6 +62,7 @@ const KNOWN_PATTERNS: string[] = [
   "/ad-integrations",
   "/ads-manager",
   "/crm",
+  "/purchases",
   "/ads",
 
   // Content & creation
