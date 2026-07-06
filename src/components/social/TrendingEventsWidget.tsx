@@ -50,7 +50,7 @@ export default function TrendingEventsWidget() {
     <div className="px-4 py-3">
       <div className="flex items-center gap-2 mb-3">
         <Flame className="w-4 h-4" style={{ color: "#FF6B35" }} />
-        <h3 className="text-white font-bold text-sm">Trending This Week</h3>
+        <h3 className="text-foreground font-bold text-sm">Trending This Week</h3>
       </div>
 
       <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
@@ -59,13 +59,13 @@ export default function TrendingEventsWidget() {
             key={event.id}
             onClick={() => navigate(`/events/${event.id}`)}
             className="flex-shrink-0 rounded-xl overflow-hidden transition-transform active:scale-[0.97]"
-            style={{ width: 150, background: "rgba(255,255,255,0.06)" }}
+            style={{ width: 150, background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
           >
             <div className="relative">
               {event.cover_image ? (
                 <img src={event.cover_image} className="w-full h-20 object-cover" alt={event.title} />
               ) : (
-                <div className="w-full h-20 flex items-center justify-center" style={{ background: "rgba(255,255,255,0.05)" }}>
+                <div className="w-full h-20 flex items-center justify-center" style={{ background: "hsl(var(--muted))" }}>
                   <span className="text-2xl">🎶</span>
                 </div>
               )}
@@ -78,7 +78,7 @@ export default function TrendingEventsWidget() {
               </span>
             </div>
             <div className="p-2">
-              <p className="text-white text-xs font-bold line-clamp-2 mb-1">{event.title}</p>
+              <p className="text-foreground text-xs font-bold line-clamp-2 mb-1">{event.title}</p>
               <div className="flex items-center gap-1">
                 <TrendingUp className="w-3 h-3" style={{ color: "#3D7CFF" }} />
                 <span className="text-[10px] font-semibold" style={{ color: "#3D7CFF" }}>

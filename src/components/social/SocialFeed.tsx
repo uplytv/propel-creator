@@ -40,7 +40,7 @@ export default function SocialFeed({ friendsOnly }: SocialFeedProps) {
   if (posts.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-4">
-        <p className="text-white/50 text-sm">No posts yet. Be the first!</p>
+        <p className="text-muted-foreground text-sm">No posts yet. Be the first!</p>
       </div>
     );
   }

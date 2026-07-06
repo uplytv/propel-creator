@@ -52,7 +52,7 @@ export default function CreatorMilestones({ creatorId }: { creatorId: string }) 
 
   return (
     <section className="max-w-[720px] mx-auto px-4 mb-6">
-      <h2 className="text-white text-lg font-bold mb-3 flex items-center gap-2">
+      <h2 className="text-foreground text-lg font-bold mb-3 flex items-center gap-2">
         <Trophy className="w-5 h-5" style={{ color: "hsl(var(--warning))" }} /> Milestones
       </h2>
       <div className="flex flex-wrap gap-2">

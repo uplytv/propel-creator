@@ -46,8 +46,8 @@ export default function EventCountdown({ startsAt, compact }: EventCountdownProp
       <span
         className="px-2 py-0.5 rounded-full text-[10px] font-bold"
         style={{
-          background: isLive ? "rgba(255,59,48,0.2)" : "rgba(255,255,255,0.1)",
-          color: isLive ? "#FF3B30" : "rgba(255,255,255,0.7)",
+          background: isLive ? "rgba(255,59,48,0.2)" : "hsl(var(--muted))",
+          color: isLive ? "#FF3B30" : "hsl(var(--muted-foreground))",
         }}
       >
         {isLive ? "🔴 LIVE" : `⏱ ${timeLeft}`}
@@ -59,8 +59,8 @@ export default function EventCountdown({ startsAt, compact }: EventCountdownProp
     <div
       className="flex items-center gap-2 px-3 py-2 rounded-xl"
       style={{
-        background: isLive ? "rgba(255,59,48,0.1)" : "rgba(255,255,255,0.06)",
-        border: `1px solid ${isLive ? "rgba(255,59,48,0.2)" : "rgba(255,255,255,0.08)"}`,
+        background: isLive ? "rgba(255,59,48,0.1)" : "hsl(var(--muted))",
+        border: `1px solid ${isLive ? "rgba(255,59,48,0.2)" : "hsl(var(--border))"}`,
       }}
     >
       <Clock className="w-4 h-4" style={{ color: isLive ? "#FF3B30" : "#3D7CFF" }} />

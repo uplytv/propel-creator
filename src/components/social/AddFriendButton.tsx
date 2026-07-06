@@ -95,7 +95,7 @@ export default function AddFriendButton({
         onClick={() => cancel.mutate()}
         disabled={cancel.isPending}
         className={`inline-flex items-center font-semibold rounded-lg ${sizeClasses} ${className}`}
-        style={{ backgroundColor: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)" }}
+        style={{ backgroundColor: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}
       >
         <Clock className="w-3.5 h-3.5" /> Requested
       </button>
@@ -119,7 +119,7 @@ export default function AddFriendButton({
       onClick={() => send.mutate()}
       disabled={send.isPending}
       className={`inline-flex items-center font-semibold rounded-lg ${sizeClasses} ${className}`}
-      style={{ backgroundColor: "rgba(255,255,255,0.08)", color: "#fff" }}
+      style={{ backgroundColor: "hsl(var(--muted))", color: "hsl(var(--foreground))" }}
     >
       <UserPlus className="w-3.5 h-3.5" /> Add Friend
     </button>

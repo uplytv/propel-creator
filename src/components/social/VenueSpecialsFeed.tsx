@@ -26,8 +26,8 @@ export default function VenueSpecialsFeed() {
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4">
         <span className="text-3xl mb-3">🍸</span>
-        <p className="text-sm text-white/50 font-medium">No specials posted yet</p>
-        <p className="text-xs text-white/30 mt-1">Producers can post happy hours and deals</p>
+        <p className="text-sm text-muted-foreground font-medium">No specials posted yet</p>
+        <p className="text-xs text-muted-foreground/70 mt-1">Producers can post happy hours and deals</p>
       </div>
     );
   }
@@ -35,20 +35,20 @@ export default function VenueSpecialsFeed() {
   return (
     <div className="space-y-2 px-4">
       {specials.map((s: any) => (
-        <div key={s.id} className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
+        <div key={s.id} className="rounded-xl p-3" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
           <div className="flex items-center gap-2 mb-1.5">
             <Avatar className="w-8 h-8">
               <AvatarImage src={s.profiles?.avatar_url} />
-              <AvatarFallback className="bg-white/10 text-white text-xs">
+              <AvatarFallback className="bg-muted text-foreground text-xs">
                 {(s.profiles?.display_name || "V").slice(0, 2)}
               </AvatarFallback>
             </Avatar>
             <div>
-              <span className="text-sm font-semibold text-white">{s.profiles?.display_name}</span>
-              <span className="text-xs text-white/30 ml-1">· {formatDistanceToNow(new Date(s.created_at), { addSuffix: true })}</span>
+              <span className="text-sm font-semibold text-foreground">{s.profiles?.display_name}</span>
+              <span className="text-xs text-muted-foreground ml-1">· {formatDistanceToNow(new Date(s.created_at), { addSuffix: true })}</span>
             </div>
           </div>
-          <p className="text-sm text-white/80">{s.content}</p>
+          <p className="text-sm text-foreground/80">{s.content}</p>
         </div>
       ))}
     </div>

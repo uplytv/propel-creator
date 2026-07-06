@@ -27,9 +27,9 @@ export default function EventTabs({ eventId, eventTitle }: EventTabsProps) {
   ];
 
   return (
-    <div className="mt-6 border-t" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+    <div className="mt-6 border-t" style={{ borderColor: "hsl(var(--border))" }}>
       <div className="flex sticky top-[44px] z-30 bg-background/95 backdrop-blur"
-        style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+        style={{ borderBottom: "1px solid hsl(var(--border))" }}
       >
         {tabs.map((t) => {
           const Icon = t.icon;
@@ -40,7 +40,7 @@ export default function EventTabs({ eventId, eventTitle }: EventTabsProps) {
               onClick={() => setTab(t.id)}
               className="flex-1 py-3 flex flex-col items-center gap-1 text-[11px] font-semibold transition-colors"
               style={{
-                color: active ? "#3D7CFF" : "rgba(255,255,255,0.5)",
+                color: active ? "#3D7CFF" : "hsl(var(--muted-foreground))",
                 borderBottom: active ? "2px solid #3D7CFF" : "2px solid transparent",
               }}
             >
@@ -122,31 +122,31 @@ function EventChatTab({ eventId }: { eventId: string }) {
     <div className="flex flex-col h-[60vh]">
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
         {isLoading ? (
-          <p className="text-xs text-white/40 text-center">Loading…</p>
+          <p className="text-xs text-muted-foreground text-center">Loading…</p>
         ) : messages.length === 0 ? (
           <div className="text-center py-12">
             <span className="text-3xl block mb-2">💬</span>
-            <p className="text-sm text-white/60">Be the first to say something</p>
+            <p className="text-sm text-muted-foreground">Be the first to say something</p>
           </div>
         ) : (
           messages.map((m: any) => (
             <div key={m.id} className="flex items-start gap-2">
               <Avatar className="w-7 h-7 flex-shrink-0">
                 <AvatarImage src={m.profiles?.avatar_url || undefined} />
-                <AvatarFallback className="bg-white/10 text-white text-[10px]">
+                <AvatarFallback className="bg-muted text-foreground text-[10px]">
                   {(m.profiles?.display_name || "U").slice(0, 2)}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-xs font-semibold text-white truncate">
+                  <span className="text-xs font-semibold text-foreground truncate">
                     {m.profiles?.display_name || "User"}
                   </span>
-                  <span className="text-[10px] text-white/30">
+                  <span className="text-[10px] text-muted-foreground">
                     {formatDistanceToNow(new Date(m.created_at), { addSuffix: true })}
                   </span>
                 </div>
-                <p className="text-sm text-white/85 break-words">{m.content}</p>
+                <p className="text-sm text-foreground/85 break-words">{m.content}</p>
               </div>
             </div>
           ))
@@ -155,14 +155,14 @@ function EventChatTab({ eventId }: { eventId: string }) {
       <form
         onSubmit={(e) => { e.preventDefault(); send.mutate(); }}
         className="px-3 py-2 flex gap-2"
-        style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+        style={{ borderTop: "1px solid hsl(var(--border))" }}
       >
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder={user ? "Say hi…" : "Sign in to chat"}
           disabled={!user || send.isPending}
-          className="flex-1 px-3 py-2 rounded-full text-sm bg-white/5 text-white placeholder:text-white/30 outline-none focus:bg-white/8"
+          className="flex-1 px-3 py-2 rounded-full text-sm bg-muted text-foreground placeholder:text-muted-foreground outline-none focus:bg-muted/80"
         />
         <button
           type="submit"
@@ -202,13 +202,13 @@ function EventPeopleTab({ eventId }: { eventId: string }) {
     staleTime: 30_000,
   });
 
-  if (isLoading) return <p className="text-center text-xs text-white/40 py-12">Loading…</p>;
+  if (isLoading) return <p className="text-center text-xs text-muted-foreground py-12">Loading…</p>;
 
   if (people.length === 0) {
     return (
       <div className="text-center py-12 px-4">
         <span className="text-3xl block mb-2">🎟️</span>
-        <p className="text-sm text-white/60">No one has marked Going yet — be the first!</p>
+        <p className="text-sm text-muted-foreground">No one has marked Going yet — be the first!</p>
       </div>
     );
   }
@@ -223,11 +223,11 @@ function EventPeopleTab({ eventId }: { eventId: string }) {
         >
           <Avatar className="w-14 h-14">
             <AvatarImage src={p.avatar_url || undefined} />
-            <AvatarFallback className="bg-white/10 text-white text-xs">
+            <AvatarFallback className="bg-muted text-foreground text-xs">
               {(p.display_name || "U").slice(0, 2)}
             </AvatarFallback>
           </Avatar>
-          <span className="text-[11px] font-semibold text-white truncate w-full text-center">
+          <span className="text-[11px] font-semibold text-foreground truncate w-full text-center">
             {p.display_name || "User"}
           </span>
         </button>
@@ -255,7 +255,7 @@ function EventGalleryTab({ eventId }: { eventId: string }) {
     staleTime: 30_000,
   });
 
-  if (isLoading) return <p className="text-center text-xs text-white/40 py-12">Loading…</p>;
+  if (isLoading) return <p className="text-center text-xs text-muted-foreground py-12">Loading…</p>;
 
   const navigate = useNavigate();
   const PostCta = (
@@ -272,8 +272,8 @@ function EventGalleryTab({ eventId }: { eventId: string }) {
     return (
       <div className="px-4 py-10 text-center">
         <span className="text-3xl block mb-2">📸</span>
-        <p className="text-sm text-white/60">No photos yet</p>
-        <p className="text-[11px] text-white/40 mt-1">Post a story tagged to this event to fill the gallery</p>
+        <p className="text-sm text-muted-foreground">No photos yet</p>
+        <p className="text-[11px] text-muted-foreground/80 mt-1">Post a story tagged to this event to fill the gallery</p>
         <div className="max-w-[260px] mx-auto mt-4">{PostCta}</div>
       </div>
     );
@@ -320,14 +320,14 @@ function EventMarketplaceTab({ eventId, eventTitle }: { eventId: string; eventTi
     staleTime: 30_000,
   });
 
-  if (isLoading) return <p className="text-center text-xs text-white/40 py-12">Loading…</p>;
+  if (isLoading) return <p className="text-center text-xs text-muted-foreground py-12">Loading…</p>;
 
   return (
     <div className="px-4 py-3">
       {composerOpen && <MarketplaceComposer eventId={eventId} onClose={() => setComposerOpen(false)} />}
       <div className="flex items-center justify-between mb-3">
-        <p className="text-xs text-white/50">
-          Buy or sell tickets, gear, and rides for {eventTitle ? <span className="text-white/80">{eventTitle}</span> : "this event"}
+        <p className="text-xs text-muted-foreground">
+          Buy or sell tickets, gear, and rides for {eventTitle ? <span className="text-foreground/80">{eventTitle}</span> : "this event"}
         </p>
         <button
           className="px-3 py-1.5 rounded-full text-[11px] font-bold transition-transform active:scale-95"
@@ -344,8 +344,8 @@ function EventMarketplaceTab({ eventId, eventTitle }: { eventId: string; eventTi
       {items.length === 0 ? (
         <div className="text-center py-10">
           <span className="text-3xl block mb-2">🛍️</span>
-          <p className="text-sm text-white/60">No listings yet</p>
-          <p className="text-[11px] text-white/40 mt-1">Be the first to post a ticket or item</p>
+          <p className="text-sm text-muted-foreground">No listings yet</p>
+          <p className="text-[11px] text-muted-foreground/80 mt-1">Be the first to post a ticket or item</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-2.5">
@@ -353,7 +353,7 @@ function EventMarketplaceTab({ eventId, eventTitle }: { eventId: string; eventTi
             <div
               key={it.id}
               className="rounded-xl overflow-hidden"
-              style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
+              style={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
             >
               {it.media_urls?.[0] && (
                 <img src={it.media_urls[0]} alt="" className="w-full aspect-square object-cover" loading="lazy" />
@@ -361,7 +361,7 @@ function EventMarketplaceTab({ eventId, eventTitle }: { eventId: string; eventTi
               <div className="p-2.5">
                 <div className="flex items-center justify-between gap-1 mb-1">
                   {it.marketplace_category && (
-                    <span className="text-[9px] uppercase tracking-wider text-white/50 font-bold">
+                    <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
                       {it.marketplace_category}
                     </span>
                   )}
@@ -371,8 +371,8 @@ function EventMarketplaceTab({ eventId, eventTitle }: { eventId: string; eventTi
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-white font-semibold line-clamp-2">{it.content}</p>
-                <p className="text-[10px] text-white/40 mt-1">
+                <p className="text-sm text-foreground font-semibold line-clamp-2">{it.content}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">
                   {it.profile?.display_name || "User"}
                 </p>
               </div>

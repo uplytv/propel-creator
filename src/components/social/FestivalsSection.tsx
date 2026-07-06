@@ -32,7 +32,7 @@ export default function FestivalsSection({ limit = 12 }: { limit?: number }) {
     return (
       <div className="px-4 py-3 space-y-3">
         {[1, 2].map((i) => (
-          <div key={i} className="h-44 rounded-2xl bg-white/5 animate-pulse" />
+          <div key={i} className="h-44 rounded-2xl bg-muted animate-pulse" />
         ))}
       </div>
     );
@@ -43,10 +43,10 @@ export default function FestivalsSection({ limit = 12 }: { limit?: number }) {
   return (
     <div className="px-4 py-3">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-base font-bold text-white flex items-center gap-1.5">
+        <h2 className="text-base font-bold text-foreground flex items-center gap-1.5">
           <Flame className="w-4 h-4" style={{ color: "#FF6B35" }} /> Festivals
         </h2>
-        <span className="text-[11px] text-white/40">{festivals.length} upcoming</span>
+        <span className="text-[11px] text-muted-foreground">{festivals.length} upcoming</span>
       </div>
 
       <div className="space-y-3">
@@ -55,13 +55,13 @@ export default function FestivalsSection({ limit = 12 }: { limit?: number }) {
             key={f.id}
             onClick={() => navigate(`/global-events/${f.id}`)}
             className="block w-full text-left rounded-2xl overflow-hidden transition-transform active:scale-[0.99]"
-            style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
+            style={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
           >
             <div className="relative aspect-[16/9]">
               {f.image_url ? (
                 <img src={f.image_url} alt={f.title} className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-white/5">
+                <div className="w-full h-full flex items-center justify-center bg-muted">
                   <span className="text-4xl">🎪</span>
                 </div>
               )}
@@ -92,7 +92,7 @@ export default function FestivalsSection({ limit = 12 }: { limit?: number }) {
               )}
             </div>
             <div className="flex items-center justify-between px-3 py-2.5">
-              <span className="text-[11px] text-white/50">
+              <span className="text-[11px] text-muted-foreground">
                 Tap to view details
               </span>
               <div onClick={(e) => e.stopPropagation()}>

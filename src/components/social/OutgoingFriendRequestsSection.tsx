@@ -57,34 +57,34 @@ export default function OutgoingFriendRequestsSection() {
 
   return (
     <div className="px-4 py-3">
-      <h3 className="text-sm font-bold text-white/80 mb-2 flex items-center gap-1.5">
+      <h3 className="text-sm font-bold text-foreground/80 mb-2 flex items-center gap-1.5">
         <Clock className="w-3.5 h-3.5" />
-        Sent Requests <span className="text-white/40">({requests.length})</span>
+        Sent Requests <span className="text-muted-foreground">({requests.length})</span>
       </h3>
       <div className="space-y-2">
         {requests.map((r: any) => (
           <div
             key={`${r.user_id}-${r.friend_id}`}
             className="flex items-center gap-3 rounded-xl p-2.5"
-            style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+            style={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
           >
             <Avatar className="w-9 h-9">
               <AvatarImage src={r.profile?.avatar_url || undefined} />
-              <AvatarFallback className="bg-white/10 text-white text-xs">
+              <AvatarFallback className="bg-muted text-foreground text-xs">
                 {(r.profile?.display_name || "U").slice(0, 2)}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white truncate">
+              <p className="text-sm font-semibold text-foreground truncate">
                 {r.profile?.display_name || "Someone"}
               </p>
-              <p className="text-[11px] text-white/40">Awaiting response</p>
+              <p className="text-[11px] text-muted-foreground">Awaiting response</p>
             </div>
             <button
               onClick={() => cancel.mutate(r.otherId)}
               disabled={cancel.isPending}
               className="px-3 py-1.5 rounded-full text-[11px] font-bold transition-transform active:scale-95 inline-flex items-center gap-1"
-              style={{ backgroundColor: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)" }}
+              style={{ backgroundColor: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}
             >
               <X className="w-3 h-3" /> Cancel
             </button>

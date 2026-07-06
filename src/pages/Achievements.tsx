@@ -130,11 +130,11 @@ export default function Achievements() {
         {loading ? (
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-20 rounded-xl bg-white/[0.03] border border-white/5 animate-pulse" />
+              <div key={i} className="h-20 rounded-xl bg-card border border-border animate-pulse" />
             ))}
           </div>
         ) : items.length === 0 ? (
-          <div className="rounded-xl border border-white/10 bg-white/[0.03] p-8 text-center">
+          <div className="rounded-xl border border-border bg-card p-8 text-center">
             <Sparkles className="w-8 h-8 text-primary mx-auto mb-3" />
             <h3 className="font-semibold mb-1">No milestones yet</h3>
             <p className="text-sm text-muted-foreground">
@@ -150,12 +150,12 @@ export default function Achievements() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search milestones..."
-                  className="pl-9 pr-9 bg-white/[0.03] border-white/10"
+                  className="pl-9 pr-9 bg-card border-border"
                 />
                 {query && (
                   <button
                     onClick={() => setQuery("")}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-white/5 text-muted-foreground"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-muted text-muted-foreground"
                     aria-label="Clear search"
                   >
                     <X className="w-4 h-4" />
@@ -175,7 +175,7 @@ export default function Achievements() {
                       "px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
                       filter === opt.key
                         ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-white/[0.03] border-white/10 text-muted-foreground hover:text-foreground"
+                        : "bg-card border-border text-muted-foreground hover:text-foreground"
                     )}
                   >
                     {opt.label}
@@ -197,7 +197,7 @@ export default function Achievements() {
                       "px-2.5 py-1 rounded-md font-medium border transition-colors",
                       sort === opt.key
                         ? "bg-primary/15 border-primary/40 text-primary"
-                        : "bg-white/[0.02] border-white/10 text-muted-foreground hover:text-foreground"
+                        : "bg-card border-border text-muted-foreground hover:text-foreground"
                     )}
                   >
                     {opt.label}
@@ -208,7 +208,7 @@ export default function Achievements() {
                     onClick={() => {
                       updateParams({ q: null, group: null, sort: null, cursor: null, pageSize: null });
                     }}
-                    className="ml-auto inline-flex items-center gap-1 px-2.5 py-1 rounded-md font-medium border border-white/10 bg-white/[0.02] text-muted-foreground hover:text-foreground transition-colors"
+                    className="ml-auto inline-flex items-center gap-1 px-2.5 py-1 rounded-md font-medium border border-border bg-card text-muted-foreground hover:text-foreground transition-colors"
                   >
                     <RotateCcw className="w-3 h-3" />
                     Reset
@@ -218,7 +218,7 @@ export default function Achievements() {
             </div>
 
             {filtered.length === 0 ? (
-              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-8 text-center">
+              <div className="rounded-xl border border-border bg-card p-8 text-center">
                 <Search className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
                 <h3 className="font-semibold mb-1">No matches</h3>
                 <p className="text-sm text-muted-foreground">
@@ -260,7 +260,7 @@ export default function Achievements() {
                           "px-2 py-1 rounded-md border transition-colors",
                           pageSize === n
                             ? "bg-primary/15 border-primary/40 text-primary"
-                            : "bg-white/[0.02] border-white/10 hover:text-foreground"
+                            : "bg-card border-border hover:text-foreground"
                         )}
                       >
                         {n}
@@ -294,7 +294,7 @@ export default function Achievements() {
                     <button
                       onClick={() => setCursor(prevCursor)}
                       disabled={prevCursor === null && startIndex === 0}
-                      className="p-1.5 rounded-md border border-white/10 bg-white/[0.02] text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="p-1.5 rounded-md border border-border bg-card text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
                       aria-label="Previous page"
                     >
                       <ChevronLeft className="w-4 h-4" />
@@ -302,7 +302,7 @@ export default function Achievements() {
                     <button
                       onClick={() => setCursor(nextCursor)}
                       disabled={nextCursor === null}
-                      className="p-1.5 rounded-md border border-white/10 bg-white/[0.02] text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="p-1.5 rounded-md border border-border bg-card text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
                       aria-label="Next page"
                     >
                       <ChevronRight className="w-4 h-4" />

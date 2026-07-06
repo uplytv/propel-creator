@@ -14,6 +14,7 @@ exports[`Onboarding — visual regression (DOM snapshots) > Splash screen matche
     <img
       alt="UPLY"
       class="w-24 h-24 object-contain"
+      loading="eager"
       src="/src/assets/logo.png"
     />
   </div>
@@ -65,18 +66,18 @@ exports[`Onboarding — visual regression (DOM snapshots) > Step 1 (name) matche
       class="space-y-4 mb-4"
     >
       <input
-        class="flex h-11 w-full rounded-md border border-input bg-card px-3.5 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground placeholder:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-0 focus-visible:border-primary disabled:cursor-not-allowed disabled:opacity-50 transition-colors duration-150 text-center text-lg py-6"
+        class="flex h-11 w-full rounded-md border border-input bg-card px-3.5 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground placeholder:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-0 focus-visible:border-primary focus-visible:shadow-[0_0_0_4px_hsl(var(--primary)/0.12)] disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-150 text-center text-lg py-6"
         placeholder="Full name *"
         value=""
       />
       <input
-        class="flex h-11 w-full rounded-md border border-input bg-card px-3.5 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground placeholder:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-0 focus-visible:border-primary disabled:cursor-not-allowed disabled:opacity-50 transition-colors duration-150 text-center text-sm py-4 opacity-60"
+        class="flex h-11 w-full rounded-md border border-input bg-card px-3.5 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground placeholder:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-0 focus-visible:border-primary focus-visible:shadow-[0_0_0_4px_hsl(var(--primary)/0.12)] disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-150 text-center text-sm py-4 opacity-60"
         disabled=""
         placeholder="Email"
         value="test@example.com"
       />
       <input
-        class="flex h-11 w-full rounded-md border border-input bg-card px-3.5 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground placeholder:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-0 focus-visible:border-primary disabled:cursor-not-allowed disabled:opacity-50 transition-colors duration-150 text-center text-sm py-4"
+        class="flex h-11 w-full rounded-md border border-input bg-card px-3.5 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground placeholder:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-0 focus-visible:border-primary focus-visible:shadow-[0_0_0_4px_hsl(var(--primary)/0.12)] disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-150 text-center text-sm py-4"
         placeholder="@yourhandle or youtube.com/c/yourchannel"
         value=""
       />

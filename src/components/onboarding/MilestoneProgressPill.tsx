@@ -149,7 +149,7 @@ export function MilestoneProgressPill({ onboardingStep, totalOnboardingSteps = 3
         animate={{ opacity: 1, y: 0 }}
         whileTap={{ scale: 0.96 }}
         className={cn(
-          "fixed bottom-24 right-4 md:bottom-6 z-50 flex items-center gap-2 rounded-full border border-white/10 bg-background/90 backdrop-blur px-3 py-2 shadow-lg min-h-[44px]",
+          "fixed bottom-24 right-4 md:bottom-6 z-50 flex items-center gap-2 rounded-full border border-border bg-background/90 backdrop-blur px-3 py-2 shadow-lg min-h-[44px]",
           pulse && "ring-2 ring-primary animate-pulse"
         )}
         aria-label={`Milestone progress: ${reachedCount} of ${total}`}
@@ -158,7 +158,7 @@ export function MilestoneProgressPill({ onboardingStep, totalOnboardingSteps = 3
         <span className="text-xs font-semibold text-foreground">
           {reachedCount}/{total}
         </span>
-        <div className="w-12 h-1.5 rounded-full bg-white/10 overflow-hidden">
+        <div className="w-12 h-1.5 rounded-full bg-muted overflow-hidden">
           <motion.div
             className="h-full bg-primary"
             initial={{ width: 0 }}
@@ -184,7 +184,7 @@ export function MilestoneProgressPill({ onboardingStep, totalOnboardingSteps = 3
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 40, scale: 0.96 }}
               transition={{ type: "spring", damping: 24 }}
-              className="fixed inset-x-4 bottom-24 md:bottom-6 md:right-6 md:left-auto md:w-[360px] z-[61] rounded-2xl border border-white/10 bg-background p-5 shadow-2xl max-h-[70vh] overflow-y-auto"
+              className="fixed inset-x-4 bottom-24 md:bottom-6 md:right-6 md:left-auto md:w-[360px] z-[61] rounded-2xl border border-border bg-background p-5 shadow-2xl max-h-[70vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
@@ -193,7 +193,7 @@ export function MilestoneProgressPill({ onboardingStep, totalOnboardingSteps = 3
                 </div>
                 <button
                   onClick={() => setOpen(false)}
-                  className="p-1 rounded-full hover:bg-white/10 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                  className="p-1 rounded-full hover:bg-muted min-h-[44px] min-w-[44px] flex items-center justify-center"
                   aria-label="Close"
                 >
                   <X className="w-4 h-4" />
@@ -205,7 +205,7 @@ export function MilestoneProgressPill({ onboardingStep, totalOnboardingSteps = 3
                   <span>{reachedCount} of {total} unlocked</span>
                   <span>{pct}%</span>
                 </div>
-                <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+                <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
                   <motion.div
                     className="h-full bg-gradient-to-r from-primary to-primary/60"
                     initial={{ width: 0 }}
@@ -230,7 +230,7 @@ export function MilestoneProgressPill({ onboardingStep, totalOnboardingSteps = 3
                             "flex items-center gap-3 rounded-lg p-2.5 border",
                             m.reached
                               ? "border-primary/30 bg-primary/5"
-                              : "border-white/5 bg-white/[0.02] opacity-70"
+                              : "border-border bg-muted opacity-70"
                           )}
                         >
                           <span className="text-lg">{m.emoji}</span>
@@ -238,7 +238,7 @@ export function MilestoneProgressPill({ onboardingStep, totalOnboardingSteps = 3
                           {m.reached ? (
                             <Check className="w-4 h-4 text-primary" />
                           ) : (
-                            <span className="w-4 h-4 rounded-full border border-white/20" />
+                            <span className="w-4 h-4 rounded-full border border-border" />
                           )}
                         </li>
                       ))}

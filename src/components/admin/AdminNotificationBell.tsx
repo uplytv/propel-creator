@@ -73,7 +73,7 @@ export default function AdminNotificationBell() {
         <SheetContent side="right" className="w-[400px] max-w-full bg-background border-l border-border p-0">
           <SheetHeader className="px-4 pt-4 pb-3 border-b border-border">
             <div className="flex items-center justify-between">
-              <SheetTitle className="text-white font-heading text-lg">Admin Alerts</SheetTitle>
+              <SheetTitle className="text-foreground font-heading text-lg">Admin Alerts</SheetTitle>
               <div className="flex items-center gap-2">
                 <Button
                   variant="ghost"
@@ -115,7 +115,7 @@ export default function AdminNotificationBell() {
                     key={n.id}
                     onClick={() => handleTap(n)}
                     className={cn(
-                      "w-full flex items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-white/5 border-l-[3px]",
+                      "w-full flex items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-muted border-l-[3px]",
                       !n.read ? SEVERITY_BORDER[severity] : "border-l-transparent opacity-70"
                     )}
                   >
@@ -125,7 +125,7 @@ export default function AdminNotificationBell() {
                         : severity === "critical" ? "🚨" : severity === "warning" ? "⚠️" : severity === "success" ? "✅" : "ℹ️"}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-white truncate">{n.title}</p>
+                      <p className="text-sm font-semibold text-foreground truncate">{n.title}</p>
                       <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.message}</p>
                       <p className="text-[11px] text-muted-foreground/60 mt-1">
                         {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}

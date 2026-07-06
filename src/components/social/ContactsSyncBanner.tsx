@@ -36,18 +36,18 @@ export default function ContactsSyncBanner() {
   return (
     <div
       className="mx-4 mt-3 rounded-xl p-4 relative"
-      style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+      style={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
     >
       <button onClick={handleDismiss} className="absolute top-3 right-3">
-        <X className="w-4 h-4 text-white/30" />
+        <X className="w-4 h-4 text-muted-foreground" />
       </button>
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(61, 124, 255,0.1)" }}>
           <Users className="w-5 h-5" style={{ color: "#3D7CFF" }} />
         </div>
         <div className="flex-1">
-          <p className="text-sm font-semibold text-white">Find your friends on UPLY</p>
-          <p className="text-xs text-white/40 mt-0.5">Invite friends to join the scene</p>
+          <p className="text-sm font-semibold text-foreground">Find your friends on UPLY</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Invite friends to join the scene</p>
         </div>
       </div>
       <Button

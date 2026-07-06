@@ -133,8 +133,8 @@ export default function SocialFriends() {
         ) : feedItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 px-8 text-center">
             <span className="text-5xl mb-4">👥</span>
-            <p className="text-white font-bold text-lg mb-2">Follow people to see what they're up to</p>
-            <p className="text-white/50 text-sm mb-6">Their activity will show up here</p>
+            <p className="text-foreground font-bold text-lg mb-2">Follow people to see what they're up to</p>
+            <p className="text-muted-foreground text-sm mb-6">Their activity will show up here</p>
             <button
               onClick={() => navigate("/social/people")}
               className="px-6 py-3 rounded-xl font-bold text-sm transition-transform active:scale-95"
@@ -150,28 +150,28 @@ export default function SocialFriends() {
                 key={item.id}
                 className="rounded-xl p-3 transition-transform active:scale-[0.98]"
                 style={{
-                  backgroundColor: "rgba(255,255,255,0.03)",
-                  border: "1px solid rgba(255,255,255,0.08)",
+                  backgroundColor: "hsl(var(--card))",
+                  border: "1px solid hsl(var(--border))",
                 }}
               >
                 <div className="flex items-start gap-3">
                   <Avatar className="w-10 h-10 flex-shrink-0">
                     <AvatarImage src={item.user?.avatar_url || undefined} />
-                    <AvatarFallback className="bg-white/10 text-white text-xs">
+                    <AvatarFallback className="bg-muted text-foreground text-xs">
                       {(item.user?.display_name || "U").slice(0, 2)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-white">
+                    <p className="text-sm text-foreground">
                       <span className="font-semibold">{item.user?.display_name}</span>{" "}
-                      <span className="text-white/60">{item.text}</span>
+                      <span className="text-muted-foreground">{item.text}</span>
                     </p>
                     {item.subtext && (
                       <p className="text-xs mt-0.5" style={{ color: "#3D7CFF" }}>
                         {item.subtext}
                       </p>
                     )}
-                    <p className="text-[10px] text-white/30 mt-1">
+                    <p className="text-[10px] text-muted-foreground/70 mt-1">
                       {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
                     </p>
                   </div>

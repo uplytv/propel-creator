@@ -46,7 +46,7 @@ export default function RecentlyViewedProducers() {
 
   return (
     <div className="px-4 pt-4">
-      <h2 className="text-base font-bold text-white mb-3">Recently Viewed</h2>
+      <h2 className="text-base font-bold text-foreground mb-3">Recently Viewed</h2>
       <div className="flex gap-3 overflow-x-auto -mx-4 px-4 pb-2 scrollbar-hide">
         {profiles.map((p: any) => (
           <button
@@ -56,11 +56,11 @@ export default function RecentlyViewedProducers() {
           >
             <Avatar className="w-14 h-14">
               <AvatarImage src={p.avatar_url || undefined} />
-              <AvatarFallback className="bg-white/10 text-white text-xs">
+              <AvatarFallback className="bg-muted text-foreground text-xs">
                 {(p.display_name || "U").slice(0, 2)}
               </AvatarFallback>
             </Avatar>
-            <span className="text-[10px] font-semibold text-white/80 truncate w-full text-center">
+            <span className="text-[10px] font-semibold text-foreground/80 truncate w-full text-center">
               {p.display_name || "Producer"}
             </span>
           </button>

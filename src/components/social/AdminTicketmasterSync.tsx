@@ -45,13 +45,13 @@ export default function AdminTicketmasterSync() {
       style={{ background: "rgba(61, 124, 255,0.04)", border: "1px solid rgba(61, 124, 255,0.15)" }}
     >
       <div className="min-w-0">
-        <p className="text-xs font-bold text-white">⚙️ Admin: Event Sources</p>
+        <p className="text-xs font-bold text-foreground">⚙️ Admin: Event Sources</p>
         {lastResult ? (
-          <p className="text-[10px] text-white/50 truncate">
+          <p className="text-[10px] text-muted-foreground truncate">
             TM:{lastResult.ticketmaster} EB:{lastResult.eventbrite} SG:{lastResult.seatgeek} → {lastResult.upserted} upserted
           </p>
         ) : (
-          <p className="text-[10px] text-white/40">Sync Ticketmaster/Eventbrite/SeatGeek now</p>
+          <p className="text-[10px] text-muted-foreground">Sync Ticketmaster/Eventbrite/SeatGeek now</p>
         )}
       </div>
       <button

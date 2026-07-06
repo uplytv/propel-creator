@@ -86,7 +86,7 @@ export default function HangoutMatchSection() {
       <div className="px-4 py-3">
         <div
           className="h-80 w-full rounded-2xl animate-pulse"
-          style={{ backgroundColor: "rgba(255,255,255,0.04)" }}
+          style={{ backgroundColor: "hsl(var(--muted))" }}
         />
       </div>
     );
@@ -105,10 +105,10 @@ export default function HangoutMatchSection() {
             className="w-6 h-6 mx-auto mb-2"
             style={{ color: "#3D7CFF" }}
           />
-          <p className="text-white text-sm font-semibold">
+          <p className="text-foreground text-sm font-semibold">
             You've seen everyone for now
           </p>
-          <p className="text-white/50 text-xs mt-1">
+          <p className="text-muted-foreground text-xs mt-1">
             Check back soon for new hangout matches
           </p>
         </div>
@@ -136,13 +136,13 @@ export default function HangoutMatchSection() {
   return (
     <div className="px-4 py-3">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+        <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
           <Sparkles className="w-4 h-4" style={{ color: "#3D7CFF" }} />
           Find Hangout Friends
         </h3>
-        <span className="text-[10px] text-white/40">Swipe to connect</span>
+        <span className="text-[10px] text-muted-foreground">Swipe to connect</span>
       </div>
-      <p className="text-xs text-white/50 mb-3">{prompt}</p>
+      <p className="text-xs text-muted-foreground mb-3">{prompt}</p>
 
       <div className="relative h-80 w-full select-none">
         {/* Background card peek */}
@@ -150,8 +150,8 @@ export default function HangoutMatchSection() {
           <div
             className="absolute inset-0 rounded-2xl scale-95 opacity-50"
             style={{
-              backgroundColor: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.06)",
+              backgroundColor: "hsl(var(--card))",
+              border: "1px solid hsl(var(--border))",
             }}
           />
         )}
@@ -161,8 +161,8 @@ export default function HangoutMatchSection() {
             key={current.user_id}
             className="absolute inset-0 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing"
             style={{
-              backgroundColor: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.08)",
+              backgroundColor: "hsl(var(--card))",
+              border: "1px solid hsl(var(--border))",
             }}
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
@@ -183,7 +183,7 @@ export default function HangoutMatchSection() {
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
                 <Avatar className="w-32 h-32">
-                  <AvatarFallback className="bg-white/10 text-white text-2xl">
+                  <AvatarFallback className="bg-muted text-foreground text-2xl">
                     {(current.display_name || "U").slice(0, 2)}
                   </AvatarFallback>
                 </Avatar>
@@ -223,11 +223,11 @@ export default function HangoutMatchSection() {
           aria-label="Pass"
           className="w-14 h-14 rounded-full flex items-center justify-center transition-transform active:scale-90"
           style={{
-            backgroundColor: "rgba(255,255,255,0.06)",
-            border: "1px solid rgba(255,255,255,0.12)",
+            backgroundColor: "hsl(var(--muted))",
+            border: "1px solid hsl(var(--border))",
           }}
         >
-          <X className="w-6 h-6 text-white/70" />
+          <X className="w-6 h-6 text-muted-foreground" />
         </button>
         <button
           onClick={() => onLike(current)}

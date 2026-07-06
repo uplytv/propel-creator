@@ -54,7 +54,7 @@ export default function EventHypeMeter({ eventId, compact }: EventHypeMeterProps
             {hypeLabels[hypeLevel]}
           </span>
         </div>
-        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted))" }}>
           <div
             className="h-full rounded-full transition-all duration-500"
             style={{
@@ -65,8 +65,8 @@ export default function EventHypeMeter({ eventId, compact }: EventHypeMeterProps
         </div>
       </div>
       <div className="text-right">
-        <p className="text-white text-xs font-bold">{counts.going}</p>
-        <p className="text-white/40 text-[10px]">going</p>
+        <p className="text-foreground text-xs font-bold">{counts.going}</p>
+        <p className="text-muted-foreground text-[10px]">going</p>
       </div>
     </div>
   );

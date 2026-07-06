@@ -50,10 +50,10 @@ export default function SocialProducers() {
         {user && !isProducer && (
           <div
             className="mx-4 mt-3 rounded-xl p-4"
-            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
+            style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
           >
-            <p className="text-sm text-white font-semibold mb-1">🎛️ Are you a venue, promoter, or artist?</p>
-            <p className="text-xs text-white/40 mb-3">Register as a Producer to create events and post specials</p>
+            <p className="text-sm text-foreground font-semibold mb-1">🎛️ Are you a venue, promoter, or artist?</p>
+            <p className="text-xs text-muted-foreground mb-3">Register as a Producer to create events and post specials</p>
             <button
               onClick={() => setShowRegister(true)}
               className="w-full py-3 rounded-xl font-bold text-sm transition-transform active:scale-95"
@@ -69,10 +69,10 @@ export default function SocialProducers() {
             className="mx-4 mt-3 rounded-xl p-4"
             style={{ background: "rgba(61, 124, 255,0.04)", border: "1px solid rgba(61, 124, 255,0.15)" }}
           >
-            <p className="text-sm text-white font-bold mb-2">🎛️ Your Producer Dashboard</p>
+            <p className="text-sm text-foreground font-bold mb-2">🎛️ Your Producer Dashboard</p>
             <div className="flex items-center gap-3">
-              <span className="text-xs text-white/60">{myEventCount} Events</span>
-              <span className="text-xs text-white/30">·</span>
+              <span className="text-xs text-muted-foreground">{myEventCount} Events</span>
+              <span className="text-xs text-muted-foreground/60">·</span>
               <button
                 onClick={() => setShowEventCreator(true)}
                 className="px-3 py-1.5 rounded-lg text-xs font-bold transition-transform active:scale-95"
@@ -91,12 +91,12 @@ export default function SocialProducers() {
         <ProducerCarousel />
 
         <div className="px-4 pt-4">
-          <h2 className="text-base font-bold text-white mb-3">Upcoming Events</h2>
+          <h2 className="text-base font-bold text-foreground mb-3">Upcoming Events</h2>
         </div>
         <EventDiscoveryGrid filter="producer" />
 
         <div className="px-4 pt-6">
-          <h2 className="text-base font-bold text-white mb-3">Happy Hours & Specials</h2>
+          <h2 className="text-base font-bold text-foreground mb-3">Happy Hours & Specials</h2>
         </div>
         <VenueSpecialsFeed />
       </div>

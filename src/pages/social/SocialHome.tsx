@@ -58,7 +58,7 @@ export default function SocialHome() {
 
         {friendsGoingOut.length > 0 && (
           <div className="px-4 py-3">
-            <h3 className="text-sm font-bold text-white mb-2">
+            <h3 className="text-sm font-bold text-foreground mb-2">
               {friendsGoingOut.length} friend{friendsGoingOut.length > 1 ? "s" : ""} going out this week
             </h3>
             <div className="flex gap-3 overflow-x-auto scrollbar-hide">
@@ -66,12 +66,12 @@ export default function SocialHome() {
                 <div key={a.id} className="flex flex-col items-center gap-1 flex-shrink-0" style={{ minWidth: 56 }}>
                   <Avatar className="w-11 h-11">
                     <AvatarImage src={a.profiles?.avatar_url} />
-                    <AvatarFallback className="bg-white/10 text-white text-[10px]">
+                    <AvatarFallback className="bg-muted text-foreground text-[10px]">
                       {(a.profiles?.display_name || "U").slice(0, 2)}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-[10px] text-white/60 truncate max-w-[56px]">{a.profiles?.display_name?.split(" ")[0]}</span>
-                  <span className="text-[9px] text-white/30">{format(new Date(a.attend_date), "EEE")}</span>
+                  <span className="text-[10px] text-muted-foreground truncate max-w-[56px]">{a.profiles?.display_name?.split(" ")[0]}</span>
+                  <span className="text-[9px] text-muted-foreground/70">{format(new Date(a.attend_date), "EEE")}</span>
                 </div>
               ))}
             </div>

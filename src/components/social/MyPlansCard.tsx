@@ -80,14 +80,14 @@ export default function MyPlansCard() {
     <div
       className="mx-4 my-3"
       style={{
-        background: "rgba(255,255,255,0.03)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        background: "hsl(var(--card))",
+        border: "1px solid hsl(var(--border))",
         borderRadius: 16,
         padding: 16,
       }}
     >
       <div className="flex items-center justify-between mb-3">
-        <h3 style={{ fontSize: 15, fontWeight: 700, color: "#FFFFFF" }}>
+        <h3 style={{ fontSize: 15, fontWeight: 700, color: "hsl(var(--foreground))" }}>
           My plans ({upcoming.length})
         </h3>
         <Link to="/social/friends" style={{ fontSize: 12, color: "#3D7CFF" }}>See all</Link>
@@ -109,8 +109,8 @@ export default function MyPlansCard() {
             <div
               className="flex items-center gap-3 rounded-xl p-3 transition-colors"
               style={{
-                background: "rgba(255,255,255,0.02)",
-                border: "1px solid rgba(255,255,255,0.06)",
+                background: "hsl(var(--muted) / 0.5)",
+                border: "1px solid hsl(var(--border))",
               }}
             >
               <div
@@ -129,7 +129,7 @@ export default function MyPlansCard() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-semibold truncate" style={{ color: "#fff" }}>{title}</p>
+                  <p className="text-sm font-semibold truncate" style={{ color: "hsl(var(--foreground))" }}>{title}</p>
                   <span
                     className="text-[10px] px-1.5 py-0.5 rounded-full flex-shrink-0"
                     style={{
@@ -140,9 +140,9 @@ export default function MyPlansCard() {
                     {p.status === "going" ? "Going" : "Maybe"}
                   </span>
                 </div>
-                <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>{dateStr}</p>
+                <p className="text-xs mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>{dateStr}</p>
                 {loc && (
-                  <p className="text-[11px] mt-0.5 flex items-center gap-1" style={{ color: "rgba(255,255,255,0.4)" }}>
+                  <p className="text-[11px] mt-0.5 flex items-center gap-1" style={{ color: "hsl(var(--muted-foreground))" }}>
                     <MapPin className="w-3 h-3" />{loc}
                   </p>
                 )}
@@ -152,8 +152,8 @@ export default function MyPlansCard() {
                 className="flex-shrink-0 rounded-md flex items-center justify-center transition-colors"
                 style={{
                   width: 32, height: 32,
-                  background: "rgba(255,255,255,0.04)",
-                  color: "rgba(255,255,255,0.5)",
+                  background: "hsl(var(--muted))",
+                  color: "hsl(var(--muted-foreground))",
                 }}
                 aria-label="Remove from plans"
               >

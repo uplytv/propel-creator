@@ -81,27 +81,27 @@ export default function FriendRequestsSection() {
 
   return (
     <div className="px-4 py-3">
-      <h3 className="text-sm font-bold text-white mb-2">
-        Pending Requests <span className="text-white/40">({requests.length})</span>
+      <h3 className="text-sm font-bold text-foreground mb-2">
+        Pending Requests <span className="text-muted-foreground">({requests.length})</span>
       </h3>
       <div className="space-y-2">
         {requests.map((r: any) => (
           <div
             key={`${r.user_id}-${r.friend_id}`}
             className="flex items-center gap-3 rounded-xl p-2.5"
-            style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
+            style={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
           >
             <Avatar className="w-10 h-10">
               <AvatarImage src={r.profile?.avatar_url || undefined} />
-              <AvatarFallback className="bg-white/10 text-white text-xs">
+              <AvatarFallback className="bg-muted text-foreground text-xs">
                 {(r.profile?.display_name || "U").slice(0, 2)}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white truncate">
+              <p className="text-sm font-semibold text-foreground truncate">
                 {r.profile?.display_name || "Someone"}
               </p>
-              <p className="text-[11px] text-white/40">wants to connect</p>
+              <p className="text-[11px] text-muted-foreground">wants to connect</p>
             </div>
             <button
               onClick={() => accept.mutate(r.otherId)}
@@ -116,7 +116,7 @@ export default function FriendRequestsSection() {
               onClick={() => decline.mutate(r.otherId)}
               disabled={decline.isPending}
               className="w-9 h-9 rounded-full flex items-center justify-center transition-transform active:scale-95"
-              style={{ backgroundColor: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)" }}
+              style={{ backgroundColor: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}
               aria-label="Decline"
             >
               <X className="w-4 h-4" />

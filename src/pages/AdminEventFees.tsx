@@ -79,11 +79,11 @@ export default function AdminEventFees() {
         </div>
 
         <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4">
+          <div className="rounded-xl border border-border bg-card p-4">
             <div className="text-xs text-muted-foreground">Total events</div>
             <div className="text-2xl font-bold mt-1">{events.length}</div>
           </div>
-          <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4">
+          <div className="rounded-xl border border-border bg-card p-4">
             <div className="text-xs text-muted-foreground">
               At default ({EXPECTED_FEE_PCT}%)
             </div>
@@ -91,7 +91,7 @@ export default function AdminEventFees() {
               {events.length - mismatchCount}
             </div>
           </div>
-          <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4">
+          <div className="rounded-xl border border-border bg-card p-4">
             <div className="text-xs text-muted-foreground">Mismatches</div>
             <div className="text-2xl font-bold mt-1 text-destructive">
               {mismatchCount}
@@ -114,7 +114,7 @@ export default function AdminEventFees() {
             className={`h-11 px-4 rounded-md border text-sm font-medium transition-colors ${
               onlyMismatches
                 ? "bg-destructive/15 border-destructive/40 text-destructive"
-                : "bg-white/[0.03] border-white/10 text-muted-foreground hover:text-foreground"
+                : "bg-card border-border text-muted-foreground hover:text-foreground"
             }`}
           >
             {onlyMismatches ? "Showing mismatches only" : "Show mismatches only"}
@@ -132,9 +132,9 @@ export default function AdminEventFees() {
             No events match the current filters.
           </div>
         ) : (
-          <div className="rounded-xl border border-white/5 overflow-hidden">
+          <div className="rounded-xl border border-border overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-white/[0.03] text-xs uppercase text-muted-foreground">
+              <thead className="bg-muted text-xs uppercase text-muted-foreground">
                 <tr>
                   <th className="text-left px-4 py-3 font-medium">Event</th>
                   <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">
@@ -150,7 +150,7 @@ export default function AdminEventFees() {
                   const fee = Number(e.platform_fee_pct);
                   const ok = fee === EXPECTED_FEE_PCT;
                   return (
-                    <tr key={e.id} className="border-t border-white/5">
+                    <tr key={e.id} className="border-t border-border">
                       <td className="px-4 py-3">
                         <div className="font-medium truncate max-w-[260px]">
                           {e.title || "Untitled"}
@@ -160,7 +160,7 @@ export default function AdminEventFees() {
                         </div>
                       </td>
                       <td className="px-4 py-3 hidden sm:table-cell">
-                        <Badge variant="outline" className="text-xs border-white/10">
+                        <Badge variant="outline" className="text-xs border-border">
                           {e.status || "—"}
                         </Badge>
                       </td>
@@ -402,7 +402,7 @@ function HistoryDialog({
             history.map((h) => (
               <div
                 key={h.id}
-                className="rounded-lg border border-white/5 bg-white/[0.03] p-3 text-sm"
+                className="rounded-lg border border-border bg-card p-3 text-sm"
               >
                 <div className="flex items-center justify-between">
                   <div className="font-mono">
@@ -450,8 +450,8 @@ function FeeChangeHistoryPanel({ events }: { events: EventRow[] }) {
   });
 
   return (
-    <div className="rounded-xl border border-white/5 overflow-hidden">
-      <div className="bg-white/[0.03] px-4 py-3 flex items-center gap-2">
+    <div className="rounded-xl border border-border overflow-hidden">
+      <div className="bg-muted px-4 py-3 flex items-center gap-2">
         <History className="h-4 w-4 text-muted-foreground" />
         <h2 className="text-sm font-semibold">Recent fee changes</h2>
         <span className="text-xs text-muted-foreground ml-auto">{history.length} entries</span>
@@ -469,7 +469,7 @@ function FeeChangeHistoryPanel({ events }: { events: EventRow[] }) {
           </p>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-white/[0.02] text-xs uppercase text-muted-foreground sticky top-0">
+            <thead className="bg-muted text-xs uppercase text-muted-foreground sticky top-0">
               <tr>
                 <th className="text-left px-4 py-2 font-medium">Event</th>
                 <th className="text-left px-4 py-2 font-medium hidden sm:table-cell">Admin</th>
@@ -480,7 +480,7 @@ function FeeChangeHistoryPanel({ events }: { events: EventRow[] }) {
             </thead>
             <tbody>
               {history.map((h) => (
-                <tr key={h.id} className="border-t border-white/5">
+                <tr key={h.id} className="border-t border-border">
                   <td className="px-4 py-3">
                     <div className="font-medium truncate max-w-[200px]">
                       {eventMap.get(h.event_id) || "Untitled"}

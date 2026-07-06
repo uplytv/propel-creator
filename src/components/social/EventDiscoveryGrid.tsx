@@ -128,15 +128,15 @@ export default function EventDiscoveryGrid({
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4">
         <span className="text-4xl mb-3">🗺️</span>
-        <p className="text-sm text-white font-semibold mb-1">
+        <p className="text-sm text-foreground font-semibold mb-1">
           No events {profile?.location ? `in ${profile.location}` : "nearby"} yet
         </p>
-        <p className="text-xs text-white/40 mb-4">Check back later or explore all events</p>
+        <p className="text-xs text-muted-foreground mb-4">Check back later or explore all events</p>
         <div className="flex gap-2">
           <button
             onClick={() => navigate("/events")}
             className="px-4 py-2 rounded-xl text-xs font-semibold transition-transform active:scale-95"
-            style={{ border: "1.5px solid rgba(255,255,255,0.2)", color: "white" }}
+            style={{ border: "1.5px solid hsl(var(--border))", color: "hsl(var(--foreground))" }}
           >
             Browse All Events
           </button>
@@ -155,12 +155,12 @@ export default function EventDiscoveryGrid({
   return (
     <div className="px-4 py-3">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-base font-bold text-white">{title}</h2>
+        <h2 className="text-base font-bold text-foreground">{title}</h2>
         {showSeeAll && (
           <button
             onClick={() => navigate("/events")}
             className="flex items-center gap-0.5 text-xs font-semibold"
-            style={{ color: "rgba(255,255,255,0.5)" }}
+            style={{ color: "hsl(var(--muted-foreground))" }}
           >
             See All
             <ChevronRight className="w-3.5 h-3.5" />
@@ -179,9 +179,9 @@ export default function EventDiscoveryGrid({
           onClick={() => navigate("/events")}
           className="w-full mt-4 py-3 rounded-xl text-sm font-semibold transition-all active:scale-[0.98]"
           style={{
-            backgroundColor: "rgba(255,255,255,0.06)",
-            color: "rgba(255,255,255,0.7)",
-            border: "1px solid rgba(255,255,255,0.08)",
+            backgroundColor: "hsl(var(--card))",
+            color: "hsl(var(--muted-foreground))",
+            border: "1px solid hsl(var(--border))",
           }}
         >
           See All Events

@@ -20,21 +20,21 @@ export default function SocialPostCard({ post }: SocialPostCardProps) {
   const counts = post.reaction_counts || {};
 
   return (
-    <div className="rounded-xl p-3" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+    <div className="rounded-xl p-3" style={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
       {/* Header */}
       <div className="flex items-center gap-2 mb-2">
         <Avatar className="w-9 h-9">
           <AvatarImage src={profile?.avatar_url} />
-          <AvatarFallback className="bg-white/10 text-white text-xs">
+          <AvatarFallback className="bg-muted text-foreground text-xs">
             {(profile?.display_name || "U").slice(0, 2)}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1">
-            <span className="text-sm font-semibold text-white truncate">{profile?.display_name}</span>
-            <span className="text-xs text-white/30">@{profile?.username}</span>
+            <span className="text-sm font-semibold text-foreground truncate">{profile?.display_name}</span>
+            <span className="text-xs text-muted-foreground">@{profile?.username}</span>
           </div>
-          <span className="text-[10px] text-white/40">{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
+          <span className="text-[10px] text-muted-foreground">{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
         </div>
       </div>
 
@@ -46,13 +46,13 @@ export default function SocialPostCard({ post }: SocialPostCardProps) {
       )}
 
       {post.post_type === "fit" && (
-        <span className="inline-block text-xs px-2 py-0.5 rounded-md mb-2 ml-1" style={{ backgroundColor: "rgba(255,255,255,0.08)", color: "white" }}>
+        <span className="inline-block text-xs px-2 py-0.5 rounded-md mb-2 ml-1" style={{ backgroundColor: "hsl(var(--muted))", color: "hsl(var(--foreground))" }}>
           FIT 👗
         </span>
       )}
 
       {/* Content */}
-      {post.content && <p className="text-sm text-white/90 mb-2">{post.content}</p>}
+      {post.content && <p className="text-sm text-foreground/90 mb-2">{post.content}</p>}
 
       {/* Media */}
       {post.media_urls?.length > 0 && (
@@ -65,13 +65,13 @@ export default function SocialPostCard({ post }: SocialPostCardProps) {
           <button
             key={r.key}
             onClick={() => reactToPost({ postId: post.id, reaction: r.key })}
-            className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-colors hover:bg-white/5"
+            className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-colors hover:bg-muted"
           >
             <span>{r.emoji}</span>
-            {(counts[r.key] || 0) > 0 && <span className="text-white/50">{counts[r.key]}</span>}
+            {(counts[r.key] || 0) > 0 && <span className="text-muted-foreground">{counts[r.key]}</span>}
           </button>
         ))}
-        <span className="ml-auto text-xs text-white/30">{post.comment_count || 0} comments</span>
+        <span className="ml-auto text-xs text-muted-foreground">{post.comment_count || 0} comments</span>
       </div>
     </div>
   );

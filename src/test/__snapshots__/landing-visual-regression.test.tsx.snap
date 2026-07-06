@@ -15,7 +15,7 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepageFinalCTA m
     class="relative max-w-4xl mx-auto text-center"
   >
     <h2
-      class="font-display text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-foreground leading-tight mb-6"
+      class="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-[-0.03em] text-foreground leading-[1.08] mb-6"
     >
       You weren't early to YouTube. You weren't early to Instagram.
        
@@ -28,46 +28,42 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepageFinalCTA m
     <p
       class="text-base sm:text-lg md:text-xl text-foreground/70 max-w-3xl mx-auto leading-relaxed mb-8"
     >
-      Every platform that made creators rich — the ones who got there first won the biggest. UPLY is the creator operating system. The infrastructure. The one platform that does everything — and pays you like a partner, not a landlord.
+      Every platform that made creators rich — the ones who got there first won the biggest. UPLY is the AI-powered operating system for creators. The infrastructure. One platform that builds, runs, and grows the whole business with you.
     </p>
     <p
       class="text-foreground/60 mb-8"
     >
       Beta is live. Founding creators are building now.
     </p>
-    <a
-      href="/auth?mode=signup"
+    <button
+      class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97] font-display hover:-translate-y-px hover:shadow-[var(--shadow-glow)] rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_60px_hsl(var(--primary)/0.5)] font-bold text-base px-8 py-6 h-auto"
     >
-      <button
-        class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97] font-display hover:-translate-y-px hover:shadow-[var(--shadow-glow)] rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_60px_hsl(var(--primary)/0.5)] font-bold text-base px-8 py-6 h-auto"
+      Claim Your Founding Creator Spot 
+      <svg
+        class="lucide lucide-arrow-right w-5 h-5 ml-2"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
       >
-        Claim Your Founding Creator Spot 
-        <svg
-          class="lucide lucide-arrow-right w-5 h-5 ml-2"
-          fill="none"
-          height="24"
-          stroke="currentColor"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          width="24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M5 12h14"
-          />
-          <path
-            d="m12 5 7 7-7 7"
-          />
-        </svg>
-      </button>
-    </a>
-    <div
-      class="mt-6 text-sm text-foreground/60 font-mono"
+        <path
+          d="M5 12h14"
+        />
+        <path
+          d="m12 5 7 7-7 7"
+        />
+      </svg>
+    </button>
+    <p
+      class="mt-4 text-xs text-foreground/55"
     >
-      uply.tv/founding
-    </div>
+      14 days free · No obligation · Cancel at any time
+    </p>
     <p
       class="mt-6 text-sm text-primary font-semibold"
     >
@@ -134,6 +130,30 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepageFooter mat
       >
         Sign In
       </a>
+      <button
+        aria-controls="uply-vs-links"
+        aria-expanded="false"
+        class="inline-flex items-center gap-1 text-foreground/70 hover:text-foreground"
+        type="button"
+      >
+        UPLY vs…
+        <svg
+          class="lucide lucide-chevron-down h-3.5 w-3.5 transition-transform"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="m6 9 6 6 6-6"
+          />
+        </svg>
+      </button>
     </div>
     <div
       class="text-xs text-foreground/50"
@@ -169,7 +189,7 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepageHero match
     <p
       class="eyebrow-gold"
     >
-      The Creator Operating System
+      For musicians, streamers, educators & sellers
     </p>
     <div
       class="min-h-[140px] sm:min-h-[180px] flex items-center justify-center"
@@ -183,7 +203,7 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepageHero match
     <p
       class="type-body-lg text-foreground/75 max-w-xl"
     >
-      Build, run, and grow your entire creator business — with AI doing the heavy lifting.
+      Stream, sell courses, and run events from one dashboard — while your AI team handles the content, emails, and growth.
     </p>
     <div
       class="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto"
@@ -240,7 +260,7 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepageHero match
       <p
         class="text-xs sm:text-sm font-semibold text-foreground/85"
       >
-        Founding creators get a free website funnel, an SEO blog post, and full community & course setup — done for you.
+        We build your website funnel, SEO blog post, and community & courses — free, done for you.
       </p>
     </div>
     <button
@@ -282,15 +302,9 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepageNav matche
       </a>
       <a
         class="text-[13px] font-semibold tracking-wide text-foreground/70 hover:text-gold transition-colors"
-        href="/my-page"
-      >
-        Sites
-      </a>
-      <a
-        class="text-[13px] font-semibold tracking-wide text-foreground/70 hover:text-gold transition-colors"
         href="/roster"
       >
-        Roster
+        Sites
       </a>
       <a
         class="text-[13px] font-semibold tracking-wide text-foreground/70 hover:text-gold transition-colors"
@@ -511,6 +525,29 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepagePricing ma
                 />
               </svg>
               <span>
+                Message & book artists for shows near you
+              </span>
+            </li>
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
+            >
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
                 1 creator account
               </span>
             </li>
@@ -664,7 +701,7 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepagePricing ma
                 />
               </svg>
               <span>
-                ARIA AI Team — 5 specialized agents
+                ARIA AI Team — 5 specialized agents working for you
               </span>
             </li>
             <li
@@ -687,7 +724,122 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepagePricing ma
                 />
               </svg>
               <span>
-                Advanced analytics
+                AI content repurposing — one video becomes clips, posts & emails
+              </span>
+            </li>
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
+            >
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                Pay-per-view live streams & event livestreams
+              </span>
+            </li>
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
+            >
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                Ticket resale marketplace & QR door scanning
+              </span>
+            </li>
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
+            >
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                Contact & bid on exclusive artists for shows near you
+              </span>
+            </li>
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
+            >
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                Email blasts & SmartLinks with analytics
+              </span>
+            </li>
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
+            >
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                Advanced analytics + weekly AI growth report
               </span>
             </li>
             <li
@@ -858,7 +1010,7 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepagePricing ma
                 />
               </svg>
               <span>
-                White-Label branding
+                Full White-Label — your brand, not ours
               </span>
             </li>
             <li
@@ -881,7 +1033,122 @@ exports[`Landing page — visual regression (DOM snapshots) > HomepagePricing ma
                 />
               </svg>
               <span>
-                Your brand color & logo on member surfaces
+                Your logo, colors & branded emails on every member surface
+              </span>
+            </li>
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
+            >
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                UPLY TV (Roku) channel placement
+              </span>
+            </li>
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
+            >
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                Affiliate & promoter program for your team
+              </span>
+            </li>
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
+            >
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                Direct line to artists' management teams
+              </span>
+            </li>
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
+            >
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                Per-event platform fees you control
+              </span>
+            </li>
+            <li
+              class="flex items-start gap-2 py-2.5 text-sm text-foreground"
+            >
+              <svg
+                class="lucide lucide-check mt-0.5 h-4 w-4 shrink-0 text-primary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+              <span>
+                Dedicated onboarding — free done-for-you setup call
               </span>
             </li>
             <li

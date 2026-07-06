@@ -766,7 +766,7 @@ export default function CreatorProfile() {
               <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold text-white animate-pulse" style={{ background: "hsl(var(--destructive))" }}>
                 <span className="w-1.5 h-1.5 rounded-full bg-white" /> LIVE NOW
               </span>
-              <span className="text-white text-sm font-semibold flex-1">{liveStream.title || "Untitled Stream"}</span>
+              <span className="text-foreground text-sm font-semibold flex-1">{liveStream.title || "Untitled Stream"}</span>
               <span className="text-muted-foreground text-xs">{liveStream.viewer_count || 0} watching</span>
             </div>
             {liveStream.mux_playback_id ? (
@@ -784,7 +784,7 @@ export default function CreatorProfile() {
               </div>
             )}
             {!isMember && (
-              <button onClick={handleJoin} className="w-full mt-3 py-2.5 rounded-lg text-sm font-semibold" style={{ background: "hsl(var(--primary))", color: "hsl(var(--background))" }}>
+              <button onClick={handleJoin} className="w-full mt-3 py-2.5 rounded-lg text-sm font-semibold" style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
                 Join to chat and support {creatorName} →
               </button>
             )}
@@ -796,16 +796,16 @@ export default function CreatorProfile() {
       {posts.length > 0 && (
         <section className="max-w-[720px] mx-auto px-4 mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-white text-xl font-bold">Community</h2>
+            <h2 className="text-foreground text-xl font-bold">Community</h2>
             <span className="text-muted-foreground text-sm">{memberCount} members</span>
           </div>
           <div className="space-y-3">
             {posts.map((post: any) => (
-              <div key={post.id} className="relative rounded-lg p-4" style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}>
+              <div key={post.id} className="relative rounded-lg p-4" style={{ background: "hsl(var(--background))", border: "1px solid hsl(var(--border))" }}>
                 {!isMember && (
                   <div className="absolute inset-0 rounded-lg z-10 flex flex-col items-center justify-center backdrop-blur-sm" style={{ background: "rgba(10,10,10,0.7)" }}>
-                    <Lock className="w-5 h-5 text-muted-foreground mb-1" />
-                    <span className="text-muted-foreground text-xs">Join to read the full post</span>
+                    <Lock className="w-5 h-5 text-white/80 mb-1" />
+                    <span className="text-white/80 text-xs">Join to read the full post</span>
                   </div>
                 )}
                 <div className="flex items-center gap-2 mb-2">
@@ -816,10 +816,10 @@ export default function CreatorProfile() {
                       {((post as any).profiles?.display_name || "U").charAt(0)}
                     </div>
                   )}
-                  <span className="text-white text-sm font-medium">{(post as any).profiles?.display_name || "Member"}</span>
+                  <span className="text-foreground text-sm font-medium">{(post as any).profiles?.display_name || "Member"}</span>
                   <span className="text-muted-foreground text-xs ml-auto">{formatTimeAgo(post.created_at)}</span>
                 </div>
-                <h3 className="text-white text-[15px] font-semibold truncate">{post.title}</h3>
+                <h3 className="text-foreground text-[15px] font-semibold truncate">{post.title}</h3>
                 <p className="text-muted-foreground text-[13px] line-clamp-2 mt-1">{post.body}</p>
                 <div className="flex items-center gap-4 mt-2 text-muted-foreground text-xs">
                   <span className="flex items-center gap-1"><Heart className="w-3.5 h-3.5" /> {post.like_count}</span>
@@ -846,18 +846,18 @@ export default function CreatorProfile() {
       {modules.length > 0 && (
         <section className="max-w-[720px] mx-auto px-4 mb-24">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-white text-xl font-bold">Courses</h2>
+            <h2 className="text-foreground text-xl font-bold">Courses</h2>
             <span className="text-muted-foreground text-sm">{totalLessons} lessons</span>
           </div>
           <div className="space-y-3">
             {modules.map((mod: any) => (
-              <div key={mod.id} className="rounded-lg overflow-hidden" style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}>
+              <div key={mod.id} className="rounded-lg overflow-hidden" style={{ background: "hsl(var(--background))", border: "1px solid hsl(var(--border))" }}>
                 <button
                   onClick={() => toggleModule(mod.id)}
                   className="w-full flex items-center justify-between p-4 text-left"
                 >
                   <div>
-                    <h3 className="text-white text-base font-semibold">{mod.title}</h3>
+                    <h3 className="text-foreground text-base font-semibold">{mod.title}</h3>
                     <p className="text-muted-foreground text-[13px] mt-0.5">{mod.lessons?.length || 0} lessons</p>
                   </div>
                   {expandedModules.has(mod.id) ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
@@ -872,7 +872,7 @@ export default function CreatorProfile() {
                         {mod.lessons?.map((lesson: any) => (
                           <div
                             key={lesson.id}
-                            className="flex items-center gap-3 py-2 px-2 rounded-md hover:bg-white/5 transition-colors cursor-pointer"
+                            className="flex items-center gap-3 py-2 px-2 rounded-md hover:bg-muted transition-colors cursor-pointer"
                             onClick={() => {
                               if (lesson.is_free) {
                                 // Free lessons require a (free) account — RLS only
@@ -890,9 +890,9 @@ export default function CreatorProfile() {
                             ) : (
                               <Lock className="w-4 h-4 text-muted-foreground shrink-0" />
                             )}
-                            <span className="text-white text-sm flex-1 truncate">{lesson.title}</span>
+                            <span className="text-foreground text-sm flex-1 truncate">{lesson.title}</span>
                             {lesson.is_free && (
-                              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold" style={{ background: "hsl(var(--primary))", color: "hsl(var(--background))" }}>FREE</span>
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold" style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>FREE</span>
                             )}
                             {lesson.duration_seconds > 0 && (
                               <span className="text-muted-foreground text-xs">{formatDuration(lesson.duration_seconds)}</span>
@@ -916,7 +916,7 @@ export default function CreatorProfile() {
       {products.length > 0 && (
         <section className="max-w-[720px] mx-auto px-4 mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-white text-xl font-bold">Shop</h2>
+            <h2 className="text-foreground text-xl font-bold">Shop</h2>
             <span className="text-muted-foreground text-sm">{products.length} product{products.length !== 1 ? "s" : ""}</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -927,7 +927,7 @@ export default function CreatorProfile() {
                 <div
                   key={product.id}
                   className="rounded-xl overflow-hidden"
-                  style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}
+                  style={{ background: "hsl(var(--background))", border: "1px solid hsl(var(--border))" }}
                 >
                   {product.image_url && (
                     <img src={product.image_url} alt={product.name} loading="lazy" className="w-full h-32 object-cover" />
@@ -939,7 +939,7 @@ export default function CreatorProfile() {
                         {product.type}
                       </span>
                     </div>
-                    <h3 className="text-white text-sm font-bold mt-1">{product.name}</h3>
+                    <h3 className="text-foreground text-sm font-bold mt-1">{product.name}</h3>
                     {product.description && (
                       <p className="text-muted-foreground text-xs line-clamp-2 mt-1">{product.description}</p>
                     )}
@@ -952,7 +952,7 @@ export default function CreatorProfile() {
                           onClick={() => handleBuyProduct(product.id)}
                           disabled={buyingProductId === product.id}
                           className="px-4 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50"
-                          style={{ background: "hsl(var(--primary))", color: "hsl(var(--background))" }}
+                          style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
                         >
                           {buyingProductId === product.id ? (
                             <BuyLoader className="w-3.5 h-3.5 animate-spin" />
@@ -965,7 +965,7 @@ export default function CreatorProfile() {
                         <button
                           onClick={() => navigate(`/community/${profile.user_id}/${product.type === 'course' ? 'classroom' : 'community'}`)}
                           className="px-4 py-1.5 rounded-lg text-xs font-bold"
-                          style={{ background: "hsl(var(--card))", color: "hsl(var(--primary))", border: "1px solid #1E1E1E" }}
+                          style={{ background: "hsl(var(--card))", color: "hsl(var(--primary))", border: "1px solid hsl(var(--border))" }}
                         >
                           Access Free
                         </button>
@@ -983,7 +983,7 @@ export default function CreatorProfile() {
       {smartLinks.length > 0 && (
         <section className="max-w-[720px] mx-auto px-4 mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-white text-xl font-bold">🎵 Music & Links</h2>
+            <h2 className="text-foreground text-xl font-bold">🎵 Music & Links</h2>
             <span className="text-muted-foreground text-sm">
               {smartLinks.length} link{smartLinks.length !== 1 ? "s" : ""}
             </span>
@@ -994,7 +994,7 @@ export default function CreatorProfile() {
                 key={sl.id}
                 href={`/link/${sl.slug}`}
                 className="block rounded-xl overflow-hidden transition-transform active:scale-95"
-                style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}
+                style={{ background: "hsl(var(--background))", border: "1px solid hsl(var(--border))" }}
               >
                 <div className="aspect-square bg-muted flex items-center justify-center overflow-hidden relative">
                   {sl.cover_image_url ? (
@@ -1005,14 +1005,14 @@ export default function CreatorProfile() {
                   {sl.is_presave && (
                     <span
                       className="absolute top-2 right-2 text-[10px] font-bold px-2 py-0.5 rounded-full"
-                      style={{ background: "hsl(var(--primary))", color: "hsl(var(--background))" }}
+                      style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
                     >
                       Pre-save
                     </span>
                   )}
                 </div>
                 <div className="p-2.5">
-                  <p className="text-white text-xs font-bold truncate">{sl.title}</p>
+                  <p className="text-foreground text-xs font-bold truncate">{sl.title}</p>
                   {sl.artist && (
                     <p className="text-muted-foreground text-[11px] truncate mt-0.5">{sl.artist}</p>
                   )}
@@ -1058,7 +1058,7 @@ export default function CreatorProfile() {
             <button
               onClick={handleJoin}
               className="px-4 py-2 rounded-lg text-xs font-bold shrink-0"
-              style={{ background: "hsl(var(--primary))", color: "hsl(var(--background))" }}
+              style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
             >
               {isMember ? "Open" : "Join Community →"}
             </button>
@@ -1131,23 +1131,23 @@ function CreatorProfileEvents({ username }: { username?: string }) {
 
   return (
     <section className="max-w-[720px] mx-auto px-4 mb-8">
-      <h2 className="text-white text-xl font-bold mb-4">Events</h2>
+      <h2 className="text-foreground text-xl font-bold mb-4">Events</h2>
       <div className="space-y-3">
         {upcoming.map((event: any) => (
           <div
             key={event.id}
             onClick={() => navigate(`/${username}/events/${event.slug}`)}
             className="rounded-lg p-4 cursor-pointer hover:border-primary/40 transition-colors"
-            style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}
+            style={{ background: "hsl(var(--background))", border: "1px solid hsl(var(--border))" }}
           >
             <div className="flex items-center justify-between">
               <div className="flex-1 min-w-0">
-                <h3 className="text-white text-[15px] font-semibold truncate">{event.title}</h3>
+                <h3 className="text-foreground text-[15px] font-semibold truncate">{event.title}</h3>
                 <p className="text-primary text-xs mt-1">
                   {new Date(event.starts_at).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })} · {new Date(event.starts_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                 </p>
               </div>
-              <span className="text-white text-sm font-semibold ml-3">
+              <span className="text-foreground text-sm font-semibold ml-3">
                 {event.is_free ? <span style={{ color: "hsl(var(--primary))" }}>FREE</span> : `$${event.ticket_price}`}
               </span>
             </div>
@@ -1157,11 +1157,11 @@ function CreatorProfileEvents({ username }: { username?: string }) {
           <div
             key={event.id}
             className="rounded-lg p-4 opacity-50"
-            style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}
+            style={{ background: "hsl(var(--background))", border: "1px solid hsl(var(--border))" }}
           >
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-white text-[15px] font-semibold truncate">{event.title}</h3>
+                <h3 className="text-foreground text-[15px] font-semibold truncate">{event.title}</h3>
                 <p className="text-muted-foreground text-xs mt-1">Ended</p>
               </div>
             </div>
@@ -1175,10 +1175,10 @@ function CreatorProfileEvents({ username }: { username?: string }) {
 function ProfileSkeleton() {
   return (
     <div className="min-h-screen" style={{ background: "hsl(var(--background))" }}>
-      <div className="h-14" style={{ borderBottom: "1px solid #1E1E1E" }} />
+      <div className="h-14" style={{ borderBottom: "1px solid hsl(var(--border))" }} />
       <div className="h-44 w-full animate-pulse" style={{ background: "hsl(var(--background))" }} />
       <div className="max-w-[720px] mx-auto px-4 -mt-12 relative z-10 flex flex-col items-center">
-        <div className="w-24 h-24 rounded-full animate-pulse" style={{ background: "hsl(var(--card))", border: "3px solid #222" }} />
+        <div className="w-24 h-24 rounded-full animate-pulse" style={{ background: "hsl(var(--card))", border: "3px solid hsl(var(--border))" }} />
         <div className="h-7 w-48 rounded mt-4 animate-pulse" style={{ background: "hsl(var(--card))" }} />
         <div className="h-4 w-24 rounded mt-2 animate-pulse" style={{ background: "hsl(var(--card))" }} />
         <div className="h-4 w-80 rounded mt-4 animate-pulse" style={{ background: "hsl(var(--card))" }} />

@@ -104,7 +104,7 @@ export default function CreatorTestimonials({ creatorId, isOwner }: { creatorId:
   return (
     <section className="max-w-[720px] mx-auto px-4 mb-8">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-white text-xl font-bold flex items-center gap-2">
+        <h2 className="text-foreground text-xl font-bold flex items-center gap-2">
           <MessageSquareQuote className="w-5 h-5" style={{ color: "hsl(var(--primary))" }} />
           Reviews
           {reviews.length > 0 && (
@@ -117,7 +117,7 @@ export default function CreatorTestimonials({ creatorId, isOwner }: { creatorId:
           <button
             onClick={() => setShowForm(!showForm)}
             className="text-xs font-semibold px-3 py-1.5 rounded-lg"
-            style={{ background: "hsl(var(--card))", color: "hsl(var(--primary))", border: "1px solid #1E1E1E" }}
+            style={{ background: "hsl(var(--card))", color: "hsl(var(--primary))", border: "1px solid hsl(var(--border))" }}
           >
             Write a Review
           </button>
@@ -126,9 +126,9 @@ export default function CreatorTestimonials({ creatorId, isOwner }: { creatorId:
 
       {/* Submit form */}
       {showForm && (
-        <div className="rounded-xl p-4 mb-4" style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}>
+        <div className="rounded-xl p-4 mb-4" style={{ background: "hsl(var(--background))", border: "1px solid hsl(var(--border))" }}>
           <div className="flex items-center gap-3 mb-3">
-            <span className="text-white text-sm font-medium">Your rating:</span>
+            <span className="text-foreground text-sm font-medium">Your rating:</span>
             <StarRating rating={rating} onChange={setRating} interactive />
           </div>
           <textarea
@@ -137,8 +137,8 @@ export default function CreatorTestimonials({ creatorId, isOwner }: { creatorId:
             maxLength={500}
             rows={3}
             placeholder="Share your experience..."
-            className="w-full rounded-lg px-3 py-2 text-sm text-white placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary/40"
-            style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}
+            className="w-full rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary/40"
+            style={{ background: "hsl(var(--background))", border: "1px solid hsl(var(--border))" }}
           />
           <div className="flex justify-between items-center mt-2">
             <span className="text-muted-foreground text-xs">{body.length}/500</span>
@@ -160,7 +160,7 @@ export default function CreatorTestimonials({ creatorId, isOwner }: { creatorId:
           <div
             key={review.id}
             className="rounded-xl p-4"
-            style={{ background: "hsl(var(--background))", border: "1px solid #1E1E1E" }}
+            style={{ background: "hsl(var(--background))", border: "1px solid hsl(var(--border))" }}
           >
             <div className="flex items-center gap-3 mb-2">
               <Avatar className="w-8 h-8">
@@ -170,7 +170,7 @@ export default function CreatorTestimonials({ creatorId, isOwner }: { creatorId:
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-white text-sm font-semibold truncate">{review.reviewer?.display_name || "Member"}</p>
+                <p className="text-foreground text-sm font-semibold truncate">{review.reviewer?.display_name || "Member"}</p>
                 <p className="text-muted-foreground text-[11px]">{formatDistanceToNow(new Date(review.created_at), { addSuffix: true })}</p>
               </div>
               <StarRating rating={review.rating} />

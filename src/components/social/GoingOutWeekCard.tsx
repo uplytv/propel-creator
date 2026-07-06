@@ -56,8 +56,8 @@ export default function GoingOutWeekCard() {
     <div
       className="mx-4 my-3"
       style={{
-        background: "rgba(255,255,255,0.03)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        background: "hsl(var(--card))",
+        border: "1px solid hsl(var(--border))",
         borderRadius: 16,
         padding: 16,
       }}
@@ -66,7 +66,7 @@ export default function GoingOutWeekCard() {
         style={{
           fontSize: 15,
           fontWeight: 700,
-          color: "#FFFFFF",
+          color: "hsl(var(--foreground))",
           marginBottom: 12,
         }}
       >
@@ -86,9 +86,9 @@ export default function GoingOutWeekCard() {
           const isMaybe = status === "maybe";
 
           // Default: no status = plain white number, no highlight
-          let bg = "rgba(255,255,255,0.03)";
-          let borderColor = "rgba(255,255,255,0.08)";
-          let numColor = "rgba(255,255,255,0.6)";
+          let bg = "hsl(var(--muted) / 0.5)";
+          let borderColor = "hsl(var(--border))";
+          let numColor = "hsl(var(--muted-foreground))";
 
           if (isGoing) {
             bg = "rgba(61, 124, 255,0.08)";
@@ -118,7 +118,7 @@ export default function GoingOutWeekCard() {
                 style={{
                   fontSize: 10,
                   fontWeight: 600,
-                  color: "rgba(255,255,255,0.4)",
+                  color: "hsl(var(--muted-foreground))",
                 }}
               >
                 {dayLabel}
@@ -142,7 +142,7 @@ export default function GoingOutWeekCard() {
         <p
           style={{
             fontSize: 11,
-            color: "rgba(255,255,255,0.4)",
+            color: "hsl(var(--muted-foreground))",
             marginTop: 8,
           }}
         >

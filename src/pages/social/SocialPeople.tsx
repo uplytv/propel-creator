@@ -47,7 +47,7 @@ export default function SocialPeople() {
     return (
       <div className="flex flex-col items-center justify-center py-20 px-4">
         <span className="text-4xl mb-4">👋</span>
-        <p className="text-white font-bold text-lg mb-2">Sign in to discover people</p>
+        <p className="text-foreground font-bold text-lg mb-2">Sign in to discover people</p>
         <button
           onClick={() => navigate("/auth")}
           className="px-6 py-3 rounded-xl font-bold text-sm"
@@ -73,8 +73,8 @@ export default function SocialPeople() {
         <SEOHead title="People — UPLY" description="Find your people on UPLY" />
         <div className="flex flex-col items-center justify-center py-20 px-8 text-center">
           <span className="text-5xl mb-4">🌙</span>
-          <p className="text-white font-bold text-lg mb-2">You've seen everyone nearby</p>
-          <p className="text-white/50 text-sm mb-6">
+          <p className="text-foreground font-bold text-lg mb-2">You've seen everyone nearby</p>
+          <p className="text-muted-foreground text-sm mb-6">
             Check back when more people update their Going Out plans
           </p>
           <button
@@ -164,7 +164,7 @@ export default function SocialPeople() {
           </button>
         </div>
 
-        <p className="text-center text-xs text-white/25 pb-2">
+        <p className="text-center text-xs text-muted-foreground/70 pb-2">
           Drag the card ↑ to preview swipe
         </p>
       </div>

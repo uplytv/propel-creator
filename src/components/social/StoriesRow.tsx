@@ -46,8 +46,8 @@ export default function StoriesRow({ filterLocal, filterFriends }: StoriesRowPro
       <div className="flex gap-3 overflow-x-auto scrollbar-hide px-4 py-3">
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="flex flex-col items-center gap-1.5 flex-shrink-0">
-            <div className="w-16 h-16 rounded-full bg-white/5 animate-pulse" />
-            <div className="w-10 h-2 rounded bg-white/5 animate-pulse" />
+            <div className="w-16 h-16 rounded-full bg-muted animate-pulse" />
+            <div className="w-10 h-2 rounded bg-muted animate-pulse" />
           </div>
         ))}
       </div>
@@ -66,17 +66,17 @@ export default function StoriesRow({ filterLocal, filterFriends }: StoriesRowPro
           <div className="relative w-16 h-16">
             {myStories ? (
               <div className="w-full h-full rounded-full" style={{ boxShadow: "0 0 0 2.5px #3D7CFF" }}>
-                <Avatar className="w-full h-full border-2 border-[#0A0A0A]">
+                <Avatar className="w-full h-full border-2 border-background">
                   <AvatarImage src={myProfile?.avatar_url || undefined} />
-                  <AvatarFallback className="bg-white/10 text-white text-xs">You</AvatarFallback>
+                  <AvatarFallback className="bg-muted text-foreground text-xs">You</AvatarFallback>
                 </Avatar>
               </div>
             ) : (
               <div
                 className="w-full h-full rounded-full flex items-center justify-center"
                 style={{
-                  background: "rgba(255,255,255,0.06)",
-                  border: "2px dashed rgba(255,255,255,0.15)",
+                  background: "hsl(var(--muted) / 0.5)",
+                  border: "2px dashed hsl(var(--border))",
                 }}
               >
                 <Plus className="w-6 h-6" style={{ color: "#3D7CFF" }} />
@@ -85,7 +85,7 @@ export default function StoriesRow({ filterLocal, filterFriends }: StoriesRowPro
           </div>
           <span
             className="truncate max-w-[64px] text-center"
-            style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.6)" }}
+            style={{ fontSize: 10, fontWeight: 600, color: "hsl(var(--muted-foreground))" }}
           >
             Your Plan
           </span>
@@ -113,16 +113,16 @@ export default function StoriesRow({ filterLocal, filterFriends }: StoriesRowPro
                   background: "linear-gradient(135deg, #3D7CFF, #00E5FF)",
                 }}
               >
-                <Avatar className="w-full h-full border-2 border-[#0A0A0A]">
+                <Avatar className="w-full h-full border-2 border-background">
                   <AvatarImage src={avatar} />
-                  <AvatarFallback className="bg-white/10 text-white text-[11px] font-bold">
+                  <AvatarFallback className="bg-muted text-foreground text-[11px] font-bold">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
               </div>
               <span
                 className="truncate max-w-[64px] text-center"
-                style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.6)" }}
+                style={{ fontSize: 10, fontWeight: 600, color: "hsl(var(--muted-foreground))" }}
               >
                 {name.split(" ")[0]}
               </span>

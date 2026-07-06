@@ -45,18 +45,18 @@ export default function MarketplaceComposer({ eventId, onClose }: Props) {
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm">
       <div
         className="w-full sm:max-w-md bg-background rounded-t-2xl sm:rounded-2xl p-4 max-h-[85vh] overflow-y-auto"
-        style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+        style={{ border: "1px solid hsl(var(--border))" }}
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-bold text-white">Post a Listing</h3>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-            <X className="w-4 h-4 text-white" />
+          <h3 className="text-base font-bold text-foreground">Post a Listing</h3>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+            <X className="w-4 h-4 text-foreground" />
           </button>
         </div>
 
         <div className="space-y-3">
           <div>
-            <label className="text-[11px] font-semibold text-white/60 uppercase tracking-wider">Category</label>
+            <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Category</label>
             <div className="flex flex-wrap gap-1.5 mt-1.5">
               {CATEGORIES.map((c) => (
                 <button
@@ -64,8 +64,8 @@ export default function MarketplaceComposer({ eventId, onClose }: Props) {
                   onClick={() => setCategory(c)}
                   className="px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
                   style={{
-                    backgroundColor: category === c ? "#3D7CFF" : "rgba(255,255,255,0.08)",
-                    color: category === c ? "#0A0A0A" : "rgba(255,255,255,0.7)",
+                    backgroundColor: category === c ? "#3D7CFF" : "hsl(var(--muted))",
+                    color: category === c ? "#0A0A0A" : "hsl(var(--muted-foreground))",
                   }}
                 >
                   {c}
@@ -75,24 +75,24 @@ export default function MarketplaceComposer({ eventId, onClose }: Props) {
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold text-white/60 uppercase tracking-wider">Description</label>
+            <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Description</label>
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="2 GA tickets, face value, meeting at venue…"
-              className="w-full mt-1.5 px-3 py-2 rounded-lg text-sm bg-white/5 text-white placeholder:text-white/30 outline-none focus:bg-white/8 min-h-[88px] resize-none"
+              className="w-full mt-1.5 px-3 py-2 rounded-lg text-sm bg-muted text-foreground placeholder:text-muted-foreground outline-none focus:bg-muted/80 min-h-[88px] resize-none"
             />
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold text-white/60 uppercase tracking-wider">Price (optional)</label>
+            <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Price (optional)</label>
             <input
               type="number"
               inputMode="decimal"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               placeholder="$"
-              className="w-full mt-1.5 px-3 py-2 rounded-lg text-sm bg-white/5 text-white placeholder:text-white/30 outline-none focus:bg-white/8"
+              className="w-full mt-1.5 px-3 py-2 rounded-lg text-sm bg-muted text-foreground placeholder:text-muted-foreground outline-none focus:bg-muted/80"
             />
           </div>
 

@@ -59,8 +59,8 @@ export default function SocialMarketplace() {
       {marketplacePosts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
           <span className="text-5xl mb-4">🏪</span>
-          <p className="text-white font-bold text-lg mb-2">No listings yet</p>
-          <p className="text-white/50 text-sm mb-6">Buy, sell, and trade tickets, stays, and rideshares</p>
+          <p className="text-foreground font-bold text-lg mb-2">No listings yet</p>
+          <p className="text-muted-foreground text-sm mb-6">Buy, sell, and trade tickets, stays, and rideshares</p>
           {user && (
             <button
               onClick={() => setShowCreate(true)}
@@ -80,27 +80,27 @@ export default function SocialMarketplace() {
               <div
                 key={post.id}
                 className="rounded-xl p-3"
-                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
+                style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
               >
                 <div className="flex items-start gap-2.5">
                   <Avatar className="w-9 h-9 flex-shrink-0">
                     <AvatarImage src={profile?.avatar_url} />
-                    <AvatarFallback className="bg-white/10 text-white text-xs">
+                    <AvatarFallback className="bg-muted text-foreground text-xs">
                       {(profile?.display_name || "U").slice(0, 2)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-semibold text-white">{profile?.display_name}</span>
+                      <span className="text-sm font-semibold text-foreground">{profile?.display_name}</span>
                       <span className="text-lg">{catEmoji}</span>
                     </div>
-                    <p className="text-sm text-white/80 line-clamp-3">{post.content}</p>
+                    <p className="text-sm text-foreground/80 line-clamp-3">{post.content}</p>
                     {post.price && (
                       <span className="inline-block mt-1 px-2 py-0.5 rounded-md text-xs font-bold" style={{ background: "rgba(61, 124, 255,0.1)", color: "#3D7CFF" }}>
                         ${post.price}
                       </span>
                     )}
-                    <p className="text-[10px] text-white/30 mt-1">
+                    <p className="text-[10px] text-muted-foreground mt-1">
                       {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
                     </p>
                   </div>

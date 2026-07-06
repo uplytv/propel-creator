@@ -36,14 +36,14 @@ export default function ProducerCarousel() {
   if (producers.length === 0) {
     return (
       <div className="px-4 py-6">
-        <p className="text-sm text-white/40">No producers yet</p>
+        <p className="text-sm text-muted-foreground">No producers yet</p>
       </div>
     );
   }
 
   return (
     <div className="px-4 pt-4">
-      <h2 className="text-base font-semibold text-white mb-3">Featured Producers</h2>
+      <h2 className="text-base font-semibold text-foreground mb-3">Featured Producers</h2>
       <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
         {producers.map((p: any) => (
           <button
@@ -56,12 +56,12 @@ export default function ProducerCarousel() {
           >
             <Avatar className="w-16 h-16 border-2" style={{ borderColor: "#3D7CFF" }}>
               <AvatarImage src={p.avatar_url} />
-              <AvatarFallback className="bg-white/10 text-white text-xs">
+              <AvatarFallback className="bg-muted text-foreground text-xs">
                 {(p.display_name || "P").slice(0, 2)}
               </AvatarFallback>
             </Avatar>
-            <span className="text-[10px] text-white/60 truncate max-w-[64px]">{p.display_name}</span>
-            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-white/10 text-white/50">
+            <span className="text-[10px] text-muted-foreground truncate max-w-[64px]">{p.display_name}</span>
+            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
               🎛️ {p.producer_type || "Producer"}
             </span>
           </button>

@@ -87,15 +87,15 @@ export default function SharedPlanCard({ eventId, eventTitle }: SharedPlanCardPr
     <div className="px-4 py-3">
       <div className="flex items-center gap-2 mb-3">
         <Users className="w-4 h-4" style={{ color: "#3D7CFF" }} />
-        <h3 className="text-white font-bold text-sm">Group Plans</h3>
+        <h3 className="text-foreground font-bold text-sm">Group Plans</h3>
       </div>
 
       {/* My plan or create */}
       {myPlan ? (
         <div className="rounded-xl p-3 mb-2" style={{ background: "rgba(61, 124, 255,0.08)", border: "1px solid rgba(61, 124, 255,0.15)" }}>
-          <p className="text-white font-semibold text-sm mb-1">{myPlan.title}</p>
+          <p className="text-foreground font-semibold text-sm mb-1">{myPlan.title}</p>
           <div className="flex items-center gap-1">
-            <span className="text-white/50 text-xs">
+            <span className="text-muted-foreground text-xs">
               {(myPlan.shared_plan_members || []).length} invited
             </span>
           </div>
@@ -105,14 +105,14 @@ export default function SharedPlanCard({ eventId, eventTitle }: SharedPlanCardPr
           onClick={createPlan}
           disabled={creating}
           className="w-full flex items-center justify-center gap-2 py-3 rounded-xl mb-2 transition-transform active:scale-[0.97]"
-          style={{ background: "rgba(255,255,255,0.06)", border: "1px dashed rgba(255,255,255,0.15)" }}
+          style={{ background: "hsl(var(--muted) / 0.5)", border: "1px dashed hsl(var(--border))" }}
         >
           {creating ? (
-            <Loader2 className="w-4 h-4 animate-spin text-white/40" />
+            <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
           ) : (
             <>
-              <Plus className="w-4 h-4 text-white/40" />
-              <span className="text-white/50 text-sm font-medium">Create a group plan</span>
+              <Plus className="w-4 h-4 text-muted-foreground" />
+              <span className="text-muted-foreground text-sm font-medium">Create a group plan</span>
             </>
           )}
         </button>
@@ -126,11 +126,11 @@ export default function SharedPlanCard({ eventId, eventTitle }: SharedPlanCardPr
           <div
             key={plan.id}
             className="rounded-xl p-3 mb-2 flex items-center justify-between"
-            style={{ background: "rgba(255,255,255,0.06)" }}
+            style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
           >
             <div>
-              <p className="text-white text-sm font-semibold">{plan.title}</p>
-              <p className="text-white/40 text-xs">You've been invited</p>
+              <p className="text-foreground text-sm font-semibold">{plan.title}</p>
+              <p className="text-muted-foreground text-xs">You've been invited</p>
             </div>
             <div className="flex gap-2">
               <button
@@ -143,9 +143,9 @@ export default function SharedPlanCard({ eventId, eventTitle }: SharedPlanCardPr
               <button
                 onClick={() => respondToInvite(plan.id, "declined")}
                 className="w-8 h-8 rounded-full flex items-center justify-center"
-                style={{ background: "rgba(255,255,255,0.1)" }}
+                style={{ background: "hsl(var(--muted))" }}
               >
-                <X className="w-4 h-4 text-white/50" />
+                <X className="w-4 h-4 text-muted-foreground" />
               </button>
             </div>
           </div>

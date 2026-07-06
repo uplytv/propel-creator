@@ -12,7 +12,7 @@ interface LeaderboardEntry {
 
 const PODIUM_COLORS = [
   { ring: "ring-yellow-400/40", bg: "bg-gradient-to-br from-yellow-400/20 to-amber-500/10", text: "text-yellow-400", icon: Crown },
-  { ring: "ring-slate-300/30", bg: "bg-gradient-to-br from-slate-300/15 to-slate-400/5", text: "text-slate-300", icon: Trophy },
+  { ring: "ring-slate-300/30", bg: "bg-gradient-to-br from-slate-300/15 to-slate-400/5", text: "text-muted-foreground", icon: Trophy },
   { ring: "ring-amber-600/30", bg: "bg-gradient-to-br from-amber-600/15 to-orange-500/5", text: "text-amber-500", icon: Medal },
 ];
 

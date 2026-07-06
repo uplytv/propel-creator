@@ -51,7 +51,7 @@ export default function CreatorAnalyticsDashboard() {
     return (
       <div className="px-4 py-4 space-y-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-20 rounded-xl bg-white/5 animate-pulse" />
+          <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />
         ))}
       </div>
     );
@@ -68,18 +68,18 @@ export default function CreatorAnalyticsDashboard() {
 
   return (
     <div className="px-4 py-4">
-      <h3 className="text-white font-bold text-base mb-3">Your Analytics</h3>
+      <h3 className="text-foreground font-bold text-base mb-3">Your Analytics</h3>
       <div className="grid grid-cols-2 gap-2.5">
         {cards.map((card) => (
           <div
             key={card.label}
             className="rounded-xl p-3"
-            style={{ background: "rgba(255,255,255,0.06)" }}
+            style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
           >
             <card.icon className="w-4 h-4 mb-2" style={{ color: card.color }} />
-            <p className="text-white font-black text-xl">{card.value}</p>
-            <p className="text-white/40 text-[11px] font-medium">{card.label}</p>
-            {card.sub && <p className="text-white/25 text-[10px]">{card.sub}</p>}
+            <p className="text-foreground font-black text-xl">{card.value}</p>
+            <p className="text-muted-foreground text-[11px] font-medium">{card.label}</p>
+            {card.sub && <p className="text-muted-foreground/70 text-[10px]">{card.sub}</p>}
           </div>
         ))}
       </div>

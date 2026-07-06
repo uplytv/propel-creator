@@ -36,8 +36,8 @@ export default function EventDiscoveryCard({ event }: EventDiscoveryCardProps) {
       onClick={handleClick}
       className="rounded-xl overflow-hidden cursor-pointer transition-transform active:scale-[0.98]"
       style={{
-        backgroundColor: "rgba(255,255,255,0.04)",
-        border: "1px solid rgba(255,255,255,0.06)",
+        backgroundColor: "hsl(var(--card))",
+        border: "1px solid hsl(var(--border))",
       }}
     >
       {/* Event Image */}
@@ -51,7 +51,7 @@ export default function EventDiscoveryCard({ event }: EventDiscoveryCardProps) {
         ) : (
           <div
             className="w-full aspect-[4/3] flex items-center justify-center"
-            style={{ backgroundColor: "rgba(255,255,255,0.05)" }}
+            style={{ backgroundColor: "hsl(var(--muted))" }}
           >
             <span className="text-3xl">🎶</span>
           </div>
@@ -72,7 +72,7 @@ export default function EventDiscoveryCard({ event }: EventDiscoveryCardProps) {
       {/* Content */}
       <div className="p-2.5">
         <h3
-          className="font-bold text-white leading-tight mb-1 line-clamp-2"
+          className="font-bold text-foreground leading-tight mb-1 line-clamp-2"
           style={{ fontSize: 15 }}
         >
           {event.title}
@@ -86,8 +86,8 @@ export default function EventDiscoveryCard({ event }: EventDiscoveryCardProps) {
                 key={tag}
                 className="px-2 py-0.5 rounded-full text-[10px] font-medium"
                 style={{
-                  backgroundColor: "rgba(255,255,255,0.08)",
-                  color: "rgba(255,255,255,0.6)",
+                  backgroundColor: "hsl(var(--muted))",
+                  color: "hsl(var(--muted-foreground))",
                 }}
               >
                 {tag}
@@ -108,7 +108,7 @@ export default function EventDiscoveryCard({ event }: EventDiscoveryCardProps) {
         )}
 
         {city && (
-          <p className="text-[10px] text-white/40">{city}</p>
+          <p className="text-[10px] text-muted-foreground">{city}</p>
         )}
 
         {/* Countdown + Hype */}

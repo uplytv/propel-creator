@@ -94,8 +94,8 @@ export default function GoingButton(props: GoingButtonProps) {
       className={`${padding} rounded-full font-bold transition-transform active:scale-95 inline-flex items-center gap-1`}
       style={{
         fontSize,
-        backgroundColor: isGoing ? "rgba(61, 124, 255,0.15)" : variant === "filled" ? "#3D7CFF" : "rgba(255,255,255,0.08)",
-        color: isGoing ? "#3D7CFF" : variant === "filled" ? "#0A0A0A" : "rgba(255,255,255,0.9)",
+        backgroundColor: isGoing ? "rgba(61, 124, 255,0.15)" : variant === "filled" ? "#3D7CFF" : "hsl(var(--muted))",
+        color: isGoing ? "#3D7CFF" : variant === "filled" ? "#0A0A0A" : "hsl(var(--foreground))",
         border: isGoing ? "1px solid rgba(61, 124, 255,0.4)" : "1px solid transparent",
         opacity: busy ? 0.6 : 1,
       }}

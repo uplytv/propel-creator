@@ -31,7 +31,7 @@ export default function RosterArtistsRail() {
           <Link
             key={a.slug}
             to={`/${a.slug}`}
-            className="group relative shrink-0 w-[160px] md:w-[200px] snap-start rounded-xl overflow-hidden bg-white/5 border border-white/10 hover:border-white/30 transition-colors"
+            className="group relative shrink-0 w-[160px] md:w-[200px] snap-start rounded-xl overflow-hidden bg-card border border-border hover:border-foreground/30 transition-colors"
           >
             <div className="aspect-[3/4] w-full overflow-hidden bg-gradient-to-br from-primary/30 to-accent/30">
               {a.portraitUrl ? (

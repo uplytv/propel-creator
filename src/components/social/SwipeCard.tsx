@@ -119,8 +119,8 @@ export default function SwipeCard({ person, index, onSwipeRight, onSwipeLeft, on
         className="relative overflow-hidden"
         style={{
           borderRadius: 20,
-          backgroundColor: "rgba(255,255,255,0.04)",
-          border: "1px solid rgba(255,255,255,0.08)",
+          backgroundColor: "hsl(var(--card))",
+          border: "1px solid hsl(var(--border))",
           height: "65vh",
           maxHeight: 520,
         }}
