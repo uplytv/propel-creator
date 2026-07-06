@@ -109,6 +109,31 @@ export function PricingTab({ creatorId }: PricingTabProps) {
     },
   });
 
+  // Tier-gated classroom content: rank -> lesson count, via SECURITY DEFINER
+  // RPC (gated lesson rows are invisible to under-tier members, so a plain
+  // select would undercount). Used for the per-tier "Unlocks N gated lessons"
+  // hint. (supabase as any): new RPC not yet in generated types.
+  const { data: gatedCounts = [] } = useQuery({
+    queryKey: ["tier-gated-lesson-counts", creatorId],
+    enabled: !!creatorId,
+    queryFn: async () => {
+      const { data, error } = await (supabase as any).rpc("tier_gated_lesson_counts", { p_creator_id: creatorId });
+      if (error) return [] as { min_rank: number; lesson_count: number }[];
+      return (data || []) as { min_rank: number; lesson_count: number }[];
+    },
+  });
+
+  // A tier unlocks every lesson gated at or below its rank. tier_rank is a new
+  // column (backfilled from price ordering); fall back to list position for
+  // tiers created before types/backfill catch up.
+  const gatedLessonsUnlockedBy = (tier: any, idx: number) => {
+    const rank = tier.tier_rank ?? idx + 1;
+    return (gatedCounts as any[]).reduce(
+      (sum, row) => (Number(row.min_rank) <= rank ? sum + Number(row.lesson_count) : sum),
+      0,
+    );
+  };
+
   const handleCreate = async () => {
     if (!name || !price) return;
     if ((tiers?.length || 0) >= MAX_TIERS) {
@@ -260,6 +285,12 @@ export function PricingTab({ creatorId }: PricingTabProps) {
                     {tier.description && (
                       <p className="text-xs text-muted-foreground mt-1 max-w-[220px]">{tier.description}</p>
                     )}
+                    {gatedLessonsUnlockedBy(tier, idx) > 0 && (
+                      <p className="text-[11px] font-medium text-primary mt-1.5 flex items-center gap-1">
+                        <Check className="w-3 h-3" />
+                        Unlocks {gatedLessonsUnlockedBy(tier, idx)} tier-gated lesson{gatedLessonsUnlockedBy(tier, idx) !== 1 ? "s" : ""}
+                      </p>
+                    )}
                   </div>
                   <div className="text-right">
                     <span className="text-2xl font-bold text-primary">${tier.price_monthly}</span>
@@ -330,9 +361,10 @@ export function PricingTab({ creatorId }: PricingTabProps) {
     <div className="px-4 pt-4 space-y-4">
       {tiers && tiers.length > 0 ? (
         <div className="space-y-3">
-          {tiers.map((tier: any) => {
+          {tiers.map((tier: any, idx: number) => {
             const subCount = subscriberCounts[tier.id] || 0;
             const hasSubscribers = subCount > 0;
+            const gatedN = gatedLessonsUnlockedBy(tier, idx);
             return (
               <motion.div
                 key={tier.id}
@@ -349,6 +381,9 @@ export function PricingTab({ creatorId }: PricingTabProps) {
                     {tier.description && <p className="text-xs text-muted-foreground line-clamp-1">{tier.description}</p>}
                     {hasSubscribers && (
                       <p className="text-[10px] text-muted-foreground mt-0.5">{subCount} active subscriber{subCount !== 1 ? "s" : ""}</p>
+                    )}
+                    {gatedN > 0 && (
+                      <p className="text-[10px] text-muted-foreground mt-0.5">Unlocks {gatedN} gated lesson{gatedN !== 1 ? "s" : ""}</p>
                     )}
                   </div>
                 </div>

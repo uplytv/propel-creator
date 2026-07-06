@@ -281,7 +281,7 @@ export function useCreateModule() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ title, description, creatorId, is_free }: { title: string; description: string; creatorId: string; is_free?: boolean }) => {
+    mutationFn: async ({ title, description, creatorId, is_free, min_tier_rank }: { title: string; description: string; creatorId: string; is_free?: boolean; min_tier_rank?: number | null }) => {
       if (!user) throw new Error("Not authenticated");
       const { data: existing } = await supabase
         .from("classroom_modules")
@@ -290,9 +290,10 @@ export function useCreateModule() {
         .order("position", { ascending: false })
         .limit(1);
       const nextPos = existing && (existing as any[]).length > 0 ? (existing as any[])[0].position + 1 : 0;
-      const { data, error } = await supabase
+      // (supabase as any): min_tier_rank is a new column not yet in generated types
+      const { data, error } = await (supabase as any)
         .from("classroom_modules")
-        .insert({ creator_id: creatorId, title, description, position: nextPos, is_free: is_free ?? true })
+        .insert({ creator_id: creatorId, title, description, position: nextPos, is_free: is_free ?? true, min_tier_rank: min_tier_rank ?? null })
         .select()
         .maybeSingle();
       if (error) {
@@ -323,6 +324,8 @@ export interface LessonWritePayload {
   duration_seconds?: number;
   is_free?: boolean;
   lesson_links?: { label: string; url: string }[];
+  /** Minimum subscription tier rank required (null = every member). */
+  min_tier_rank?: number | null;
 }
 
 export function useCreateLesson() {
@@ -352,10 +355,12 @@ export function useCreateLesson() {
 export function useUpdateModule() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, title, description }: { id: string; title: string; description: string }) => {
-      const { error } = await supabase
+    mutationFn: async ({ id, title, description, min_tier_rank }: { id: string; title: string; description: string; min_tier_rank?: number | null }) => {
+      const patch: any = { title, description };
+      if (min_tier_rank !== undefined) patch.min_tier_rank = min_tier_rank; // new column — only send when provided
+      const { error } = await (supabase as any)
         .from("classroom_modules")
-        .update({ title, description })
+        .update(patch)
         .eq("id", id);
       if (error) throw error;
     },

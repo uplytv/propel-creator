@@ -1,15 +1,17 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import DOMPurify from "dompurify";
 import Hls from "hls.js";
-import { ChevronDown, ChevronRight, CheckCircle, Lock, Play, Plus, ArrowLeft, ArrowRight, GripVertical, Trash2, Pencil, Loader2, AlertCircle, BookOpen, Clock, Layers, ImagePlus, Youtube, Link2, ExternalLink, Upload, RefreshCw, X, Film } from "lucide-react";
+import { ChevronDown, ChevronRight, CheckCircle, Lock, Play, Plus, ArrowLeft, ArrowRight, GripVertical, Trash2, Pencil, Loader2, AlertCircle, BookOpen, Clock, Layers, ImagePlus, Youtube, Link2, ExternalLink, Upload, RefreshCw, X, Film, Crown } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UPLYMuxPlayer } from "@/components/MuxPlayer";
 import { useAuth } from "@/context/AuthContext";
 import { useClassroomModules, useClassroomLessons, useLessonCompletions, useCompleteLesson, useCreateModule, useCreateLesson, useReorderModules, useReorderLessons, useDeleteModule, useDeleteLesson, useUpdateModule, useUpdateLesson, useLessonMediaSources, useSelfHealLessonMedia, resolveLessonMedia, extractYouTubeId, extractVimeoId, type LessonMedia } from "@/hooks/useClassroom";
+import { useCreatorTiers, requiredTierForRank, effectiveLessonMinRank, type CreatorTier } from "@/hooks/useTierGating";
 import RichTextEditor from "@/components/email/RichTextEditor";
 import ContentGate from "@/components/ContentGate";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
@@ -222,6 +224,56 @@ function LessonResources({ links }: { links: any }) {
   );
 }
 
+/* ── Tier gating UI (ARPU ladder) ──
+   TierChip marks tier-gated modules/lessons in the sidebar; MinTierSelect lets
+   the creator pick the minimum subscription tier (null = every member). */
+function TierChip({ rank, tiers }: { rank?: number | null; tiers?: CreatorTier[] }) {
+  if (rank == null) return null;
+  const tier = requiredTierForRank(tiers, rank);
+  return (
+    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/10 text-primary whitespace-nowrap flex-shrink-0">
+      <Crown className="w-2.5 h-2.5" /> {tier ? tier.name : `Tier ${rank}+`}
+    </span>
+  );
+}
+
+function MinTierSelect({ creatorId, value, onChange }: { creatorId: string; value: number | null; onChange: (v: number | null) => void }) {
+  const { data: tiers = [] } = useCreatorTiers(creatorId);
+  const byRank = new Map<number, CreatorTier>();
+  for (const t of tiers.filter((t) => t.is_active)) {
+    if (!byRank.has(t.tier_rank)) byRank.set(t.tier_rank, t);
+  }
+  const options = Array.from(byRank.values()).sort((a, b) => a.tier_rank - b.tier_rank);
+  if (options.length === 0) return null; // no active tiers → nothing to scope to
+  const selected = value != null ? byRank.get(value) : null;
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-lg bg-muted px-3 py-2.5">
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-foreground">Minimum tier</p>
+        <p className="text-xs text-muted-foreground truncate">
+          {value == null ? "Any paid member can access" : `Requires ${selected?.name || `tier ${value}`} or higher`}
+        </p>
+      </div>
+      <Select
+        value={value == null ? "everyone" : String(value)}
+        onValueChange={(v) => onChange(v === "everyone" ? null : parseInt(v, 10))}
+      >
+        <SelectTrigger className="w-[160px] flex-shrink-0 border-0 bg-secondary h-8 text-xs font-semibold">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="everyone">Everyone</SelectItem>
+          {options.map((t) => (
+            <SelectItem key={t.id} value={String(t.tier_rank)}>
+              {t.name} (${t.price_monthly}/mo)
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════════════════════════════
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════ */
@@ -237,6 +289,17 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
   const reorderLessons = useReorderLessons();
   const deleteModule = useDeleteModule();
   const deleteLesson = useDeleteLesson();
+
+  // Tier ladder for tier-scoped gating: chips in the sidebar + the member
+  // upsell ("Requires <Tier>"). A lesson's effective requirement is the
+  // stricter of its own min_tier_rank and its module's.
+  const { data: creatorTiers } = useCreatorTiers(creatorId);
+  const moduleById = useMemo(() => {
+    const m: Record<string, any> = {};
+    for (const mod of modules as any[]) m[mod.id] = mod;
+    return m;
+  }, [modules]);
+  const lessonMinRank = (lesson: any): number | null => effectiveLessonMinRank(lesson, moduleById[lesson?.module_id]);
 
   // Resolve every lesson's video state (playback id / processing / errored) from
   // the reliable upload_id + asset_id source maps, and self-heal finished
@@ -396,7 +459,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
   // Level 3: Lesson view (Skool-style with ← Menu / Next →)
   if (isMobile && selectedLesson) {
     return (
-      <ContentGate creatorId={creatorId} type="lesson" isFree={selectedLesson.is_free}>
+      <ContentGate creatorId={creatorId} type="lesson" isFree={selectedLesson.is_free} minTierRank={lessonMinRank(selectedLesson)}>
         <div className="min-h-[60vh]">
           {/* Video player */}
           <LessonPlayer lesson={selectedLesson} media={mediaFor(selectedLesson)} isOwner={isOwner} onReupload={() => setEditingLesson(selectedLesson)} />
@@ -501,6 +564,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                           <span className={`text-[15px] font-medium ${isComplete ? "text-muted-foreground" : "text-foreground"}`}>
                             {lesson.title}
                           </span>
+                          <TierChip rank={lesson.min_tier_rank} tiers={creatorTiers} />
                           {(() => {
                             const m = mediaFor(lesson);
                             if (m.status === "processing") return <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-yellow-500/15 text-yellow-600"><Loader2 className="w-2.5 h-2.5 animate-spin" /> Processing</span>;
@@ -642,6 +706,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                                 <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${mod.is_free ? "bg-primary/10 text-primary" : "bg-accent text-accent-foreground"}`}>
                                   {mod.is_free ? "FREE" : "PAID"}
                                 </span>
+                                <TierChip rank={mod.min_tier_rank} tiers={creatorTiers} />
                               </div>
                               {mod.description && (
                                 <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">{mod.description}</p>
@@ -743,7 +808,10 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                               {modCompleted ? <CheckCircle className="w-3 h-3" /> : idx + 1}
                             </span>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-foreground truncate">{mod.title}</p>
+                              <div className="flex items-center gap-1.5">
+                                <p className="text-sm font-semibold text-foreground truncate">{mod.title}</p>
+                                <TierChip rank={mod.min_tier_rank} tiers={creatorTiers} />
+                              </div>
                               <p className="text-[11px] text-muted-foreground">{lessons.length} lesson{lessons.length !== 1 ? "s" : ""}</p>
                             </div>
                             {isExpanded ? <ChevronDown className="w-4 h-4 flex-shrink-0 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 flex-shrink-0 text-muted-foreground" />}
@@ -809,6 +877,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                                               })()}
                                             </div>
                                           </div>
+                                          <TierChip rank={lesson.min_tier_rank} tiers={creatorTiers} />
                                           {lesson.is_free === false && <Lock className="w-3.5 h-3.5 flex-shrink-0 text-muted-foreground" />}
                                         </button>
                                         {isOwner && (
@@ -911,7 +980,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
 
     return (
       <div className="h-full overflow-y-auto">
-        <ContentGate creatorId={creatorId} type="lesson" isFree={selectedLesson.is_free}>
+        <ContentGate creatorId={creatorId} type="lesson" isFree={selectedLesson.is_free} minTierRank={lessonMinRank(selectedLesson)}>
         <LessonPlayer lesson={selectedLesson} media={mediaFor(selectedLesson)} isOwner={isOwner} onReupload={() => setEditingLesson(selectedLesson)} />
         <div className="max-w-3xl mx-auto p-6 space-y-6">
           <h1 className="text-2xl font-bold text-foreground">{selectedLesson.title}</h1>
@@ -972,11 +1041,13 @@ function AddModuleDialog({ open, onClose, creatorId }: { open: boolean; onClose:
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [isFree, setIsFree] = useState(true);
+  const [minTierRank, setMinTierRank] = useState<number | null>(null);
   const createModule = useCreateModule();
   const handleSubmit = async () => {
     if (!title.trim()) return;
-    await createModule.mutateAsync({ title, description, creatorId, is_free: isFree });
-    setTitle(""); setDescription(""); setIsFree(true);
+    // Free modules never carry a tier requirement (free stays free).
+    await createModule.mutateAsync({ title, description, creatorId, is_free: isFree, min_tier_rank: isFree ? null : minTierRank });
+    setTitle(""); setDescription(""); setIsFree(true); setMinTierRank(null);
     onClose();
     toast.success("Module added!");
   };
@@ -1008,6 +1079,7 @@ function AddModuleDialog({ open, onClose, creatorId }: { open: boolean; onClose:
               </button>
             </div>
           </div>
+          {!isFree && <MinTierSelect creatorId={creatorId} value={minTierRank} onChange={setMinTierRank} />}
           <Button onClick={handleSubmit} disabled={!title.trim()} className="w-full font-semibold">Add Module</Button>
         </div>
       </DialogContent>
@@ -1030,10 +1102,12 @@ function AddLessonDialog({ open, onClose, moduleId, creatorId }: { open: boolean
 function EditModuleDialog({ open, onClose, module: mod }: { open: boolean; onClose: () => void; module: any }) {
   const [title, setTitle] = useState(mod.title);
   const [description, setDescription] = useState(mod.description || "");
+  const [minTierRank, setMinTierRank] = useState<number | null>(mod.min_tier_rank ?? null);
   const updateModule = useUpdateModule();
   const handleSubmit = async () => {
     if (!title.trim()) return;
-    await updateModule.mutateAsync({ id: mod.id, title, description });
+    // Free modules never carry a tier requirement (free stays free).
+    await updateModule.mutateAsync({ id: mod.id, title, description, min_tier_rank: mod.is_free ? null : minTierRank });
     onClose();
     toast.success("Module updated!");
   };
@@ -1045,6 +1119,7 @@ function EditModuleDialog({ open, onClose, module: mod }: { open: boolean; onClo
         <div className="space-y-3">
           <Input placeholder="Module title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 bg-muted" />
           <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 bg-muted" />
+          {!mod.is_free && <MinTierSelect creatorId={mod.creator_id} value={minTierRank} onChange={setMinTierRank} />}
           <Button onClick={handleSubmit} disabled={!title.trim()} className="w-full font-semibold">Save Changes</Button>
         </div>
       </DialogContent>
@@ -1085,6 +1160,7 @@ function LessonEditorForm({
   const [title, setTitle] = useState<string>(lesson?.title || "");
   const [description, setDescription] = useState<string>(lesson?.description || "");
   const [isFree, setIsFree] = useState<boolean>(lesson?.is_free ?? false);
+  const [minTierRank, setMinTierRank] = useState<number | null>(lesson?.min_tier_rank ?? null);
   const [links, setLinks] = useState<{ label: string; url: string }[]>(
     Array.isArray(lesson?.lesson_links) ? lesson.lesson_links.map((l: any) => ({ label: l.label || "", url: l.url || "" })) : [],
   );
@@ -1148,10 +1224,12 @@ function LessonEditorForm({
       const cleanLinks = links.map((l) => ({ label: (l.label || "").trim(), url: (l.url || "").trim() })).filter((l) => l.url);
       const videoPatch = await buildVideoPatch();
       const processing = videoPatch.video_status === "processing";
+      // Free lessons never carry a tier requirement (free stays free).
+      const tierPatch = { min_tier_rank: isFree ? null : minTierRank };
       if (mode === "create") {
-        await createLesson.mutateAsync({ module_id: moduleId!, creator_id: creatorId, title: title.trim(), description, is_free: isFree, lesson_links: cleanLinks, ...videoPatch });
+        await createLesson.mutateAsync({ module_id: moduleId!, creator_id: creatorId, title: title.trim(), description, is_free: isFree, lesson_links: cleanLinks, ...tierPatch, ...videoPatch });
       } else {
-        await updateLesson.mutateAsync({ id: lesson.id, title: title.trim(), description, is_free: isFree, lesson_links: cleanLinks, ...videoPatch });
+        await updateLesson.mutateAsync({ id: lesson.id, title: title.trim(), description, is_free: isFree, lesson_links: cleanLinks, ...tierPatch, ...videoPatch });
       }
       onClose();
       toast.success(mode === "create"
@@ -1289,6 +1367,9 @@ function LessonEditorForm({
           <button onClick={() => setIsFree(false)} className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${!isFree ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>Paid</button>
         </div>
       </div>
+
+      {/* Minimum tier (tier-scoped gating) — only for paid lessons */}
+      {!isFree && <MinTierSelect creatorId={creatorId} value={minTierRank} onChange={setMinTierRank} />}
 
       <Button onClick={handleSubmit} disabled={!title.trim() || uploading} className="w-full font-semibold">
         {uploading ? "Saving…" : mode === "create" ? "Add Lesson" : "Save Changes"}
