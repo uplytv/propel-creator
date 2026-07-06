@@ -133,13 +133,14 @@ export default function Settings() {
   const { data: platformSub, refetch: refetchPlatformSub } = useQuery({
     queryKey: ["platform-subscription-detail", user?.id],
     enabled: !!user,
-    queryFn: async () => {
+    queryFn: async (): Promise<{ subscribed: boolean; plan: string; subscription_end: string | null; is_trial: boolean }> => {
+      const fallback = { subscribed: false, plan: "free", subscription_end: null, is_trial: false };
       try {
         const { data, error } = await supabase.functions.invoke("check-platform-subscription");
-        if (error) return { subscribed: false, plan: "free" };
+        if (error) return fallback;
         return data as { subscribed: boolean; plan: string; subscription_end: string | null; is_trial: boolean };
       } catch {
-        return { subscribed: false, plan: "free" };
+        return fallback;
       }
     },
   });
