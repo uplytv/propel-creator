@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { corsHeaders, json, err } from "../_shared/eventsCors.ts";
 import { callClaude, MODEL_PREMIUM } from "../_shared/anthropic.ts";
+import { checkEdgeRateLimit } from "../_shared/rateLimit.ts";
 
 // ARIA Fraud Sentinel: flags anomalous purchase patterns (bulk buys, same buyer)
 // and scan anomalies (same ticket at two gates, impossible re-entry timing).
@@ -13,6 +14,10 @@ serve(async (req) => {
     if (!auth) return err("Unauthorized", 401);
     const { data: u } = await supabase.auth.getUser(auth.replace("Bearer ", ""));
     if (!u?.user) return err("Unauthorized", 401);
+    // Rate limit per user (20/hour) — fail-open on infra errors.
+    if (!(await checkEdgeRateLimit(supabase, u.user.id, "aria-fraud-sentinel", { maxCalls: 20, windowMs: 60 * 60_000 }))) {
+      return err("Rate limit reached. Try again later.", 429);
+    }
     const { event_id } = await req.json();
     if (!event_id) return err("event_id required");
 

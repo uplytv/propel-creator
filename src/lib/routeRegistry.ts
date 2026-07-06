@@ -14,7 +14,8 @@ import { matchRoutes, type RouteObject } from "react-router-dom";
 // Top-level path patterns mounted in App.tsx. The bare "/:username" catch-all
 // is intentionally NOT registered here — nav code should never point at it
 // directly; it resolves dynamically per-user via getProfileHandleCandidates.
-const KNOWN_PATTERNS: string[] = [
+// Exported so reservedUsernames.ts can derive route-colliding handles from it.
+export const KNOWN_PATTERNS: string[] = [
   "/",
   "/index",
   "/auth",

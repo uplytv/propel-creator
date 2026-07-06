@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { checkEdgeRateLimit, requestIp } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -44,6 +45,22 @@ serve(async (req) => {
       user = userData?.user ?? null;
     }
     logStep(user ? "User authenticated" : "No authenticated user (guest path candidate)", { userId: user?.id });
+
+    // Rate limit BEFORE any Stripe API work. Authenticated users are keyed by
+    // user id; the unauthenticated guest-trial path is keyed by IP (tighter cap).
+    // Fail-open on infra errors so a broken limiter never blocks checkout.
+    const rlIdentifier = user ? user.id : `ip:${requestIp(req)}`;
+    const rlAllowed = await checkEdgeRateLimit(supabase, rlIdentifier, "create-platform-checkout", {
+      maxCalls: user ? 20 : 10,
+      windowMs: 10 * 60_000,
+    });
+    if (!rlAllowed) {
+      logStep("Rate limited", { identifier: user ? "user" : "ip" });
+      return new Response(
+        JSON.stringify({ error: "Too many checkout attempts. Please wait a few minutes and try again." }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 429 },
+      );
+    }
 
     const { price_id, embedded, plan, trial, company, full_name, phone, email: guestEmailRaw } = await req.json();
 

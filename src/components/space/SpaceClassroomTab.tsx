@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import DOMPurify from "dompurify";
 import Hls from "hls.js";
 import { ChevronDown, ChevronRight, CheckCircle, Lock, Play, Plus, ArrowLeft, ArrowRight, GripVertical, Trash2, Pencil, Loader2, AlertCircle, BookOpen, Clock, Layers, ImagePlus, Youtube, Link2, ExternalLink, Upload, RefreshCw, X, Film } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -187,7 +188,8 @@ function LessonDescription({ text }: { text?: string }) {
     return (
       <div
         className="prose prose-sm max-w-none text-foreground prose-headings:text-foreground prose-a:text-primary prose-strong:text-foreground [&_p]:my-2 [&_ul]:my-2 [&_ol]:my-2 [&_a]:underline"
-        dangerouslySetInnerHTML={{ __html: value }}
+        // Lesson bodies are member-authored HTML (Quill) — sanitize against stored XSS.
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(value) }}
       />
     );
   }

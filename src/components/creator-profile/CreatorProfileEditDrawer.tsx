@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Loader2, Plus, Trash2, Upload } from "lucide-react";
+import { validateUsername, USERNAME_MAX_LENGTH } from "@/lib/reservedUsernames";
 
 const PLATFORMS = ["instagram", "tiktok", "youtube", "twitter", "linkedin", "podcast", "newsletter"];
 
@@ -78,6 +79,11 @@ export default function CreatorProfileEditDrawer({ open, onOpenChange, profile, 
   const removeLink = (idx: number) => setLinks(links.filter((_, i) => i !== idx));
 
   const handleSave = async () => {
+    const usernameError = validateUsername(username);
+    if (usernameError) {
+      toast.error(usernameError);
+      return;
+    }
     setSaving(true);
     try {
       // Update profile
@@ -112,7 +118,7 @@ export default function CreatorProfileEditDrawer({ open, onOpenChange, profile, 
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto" style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--card))" }}>
         <SheetHeader>
-          <SheetTitle className="text-white">Edit Profile</SheetTitle>
+          <SheetTitle className="text-foreground">Edit Profile</SheetTitle>
         </SheetHeader>
         <div className="space-y-5 mt-6">
           {/* Avatar */}
@@ -152,19 +158,19 @@ export default function CreatorProfileEditDrawer({ open, onOpenChange, profile, 
           {/* Fields */}
           <div>
             <Label className="text-muted-foreground text-xs">Display Name</Label>
-            <Input value={displayName} onChange={e => setDisplayName(e.target.value)} className="mt-1" style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--card))", color: "white" }} />
+            <Input value={displayName} maxLength={80} onChange={e => setDisplayName(e.target.value)} className="mt-1" style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--card))", color: "white" }} />
           </div>
           <div>
             <Label className="text-muted-foreground text-xs">Username</Label>
-            <Input value={username} onChange={e => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))} className="mt-1" style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--card))", color: "white" }} placeholder="your_username" />
+            <Input value={username} maxLength={USERNAME_MAX_LENGTH} onChange={e => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))} className="mt-1" style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--card))", color: "white" }} placeholder="your_username" />
           </div>
           <div>
             <Label className="text-muted-foreground text-xs">Bio</Label>
-            <Textarea value={bio} onChange={e => setBio(e.target.value)} rows={4} className="mt-1" style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--card))", color: "white" }} />
+            <Textarea value={bio} maxLength={500} onChange={e => setBio(e.target.value)} rows={4} className="mt-1" style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--card))", color: "white" }} />
           </div>
           <div>
             <Label className="text-muted-foreground text-xs">Creator Type</Label>
-            <Input value={creatorType} onChange={e => setCreatorType(e.target.value)} className="mt-1" style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--card))", color: "white" }} placeholder="e.g. Fitness, Tech, Music" />
+            <Input value={creatorType} maxLength={60} onChange={e => setCreatorType(e.target.value)} className="mt-1" style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--card))", color: "white" }} placeholder="e.g. Fitness, Tech, Music" />
           </div>
 
           {/* Social Links */}

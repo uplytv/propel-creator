@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { corsHeaders, json, err } from "../_shared/eventsCors.ts";
 import { callClaude } from "../_shared/anthropic.ts";
+import { checkEdgeRateLimit, requestIp } from "../_shared/rateLimit.ts";
 
 // ARIA Event Copilot: turn a plain-language event idea into a full draft —
 // page copy, suggested ticket tiers + pricing, announcement email, social copy.
@@ -9,6 +11,13 @@ serve(async (req) => {
   try {
     const { description, event_type = "concert", capacity, city } = await req.json();
     if (!description) return err("description required");
+
+    // Unauthenticated (verify_jwt=false) endpoint that spends Anthropic credits —
+    // rate limit per IP (10 drafts / 10 min), fail-open on infra errors.
+    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
+    if (!(await checkEdgeRateLimit(supabase, `ip:${requestIp(req)}`, "aria-event-copilot", { maxCalls: 10, windowMs: 10 * 60_000 }))) {
+      return err("Too many drafts in a short time. Please wait a few minutes and try again.", 429);
+    }
 
     const system =
       "You are ARIA, UPLY's event marketing copilot for creators. You write punchy, " +

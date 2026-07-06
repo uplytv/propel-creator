@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { checkEdgeRateLimit } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -32,6 +33,22 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Rate limit per user (30/hour) — fail-open on infra errors.
+    const rlUserId = claimsData.claims.sub as string;
+    const adminClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
+      auth: { persistSession: false },
+    });
+    const rlAllowed = await checkEdgeRateLimit(adminClient, rlUserId, 'aria-assistant', {
+      maxCalls: 30,
+      windowMs: 60 * 60_000,
+    });
+    if (!rlAllowed) {
+      return new Response(
+        JSON.stringify({ error: 'Rate limit reached. Try again later.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 

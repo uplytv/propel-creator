@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkEdgeRateLimit, requestIp } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -20,6 +21,19 @@ Deno.serve(async (req) => {
 
     if (!affiliate_code || !conversion_type) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400, headers: corsHeaders });
+    }
+
+    // Unauthenticated endpoint — rate limit per IP (fail-open on infra errors)
+    // so a single caller cannot flood click/conversion counters.
+    const rlAllowed = await checkEdgeRateLimit(serviceClient, `ip:${requestIp(req)}`, "track-affiliate-conversion", {
+      maxCalls: 30,
+      windowMs: 60_000,
+    });
+    if (!rlAllowed) {
+      return new Response(
+        JSON.stringify({ error: "Too many requests. Please slow down and try again shortly." }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     // ── Click tracking (no referred_user_id needed) ──
