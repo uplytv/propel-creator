@@ -33,16 +33,19 @@ serve(async (req) => {
   try {
     logStep("Request received");
 
+    // Auth is OPTIONAL for the new trial plans (guest checkout by email —
+    // existing free accounts must not be blocked from starting a paid trial).
+    // Legacy price_id checkouts still require an authenticated user.
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("Unauthorized");
-    const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabase.auth.getUser(token);
-    if (userError || !userData.user) throw new Error("Unauthorized");
+    let user: { id: string; email?: string | null } | null = null;
+    if (authHeader) {
+      const token = authHeader.replace("Bearer ", "");
+      const { data: userData } = await supabase.auth.getUser(token);
+      user = userData?.user ?? null;
+    }
+    logStep(user ? "User authenticated" : "No authenticated user (guest path candidate)", { userId: user?.id });
 
-    const user = userData.user;
-    logStep("User authenticated", { userId: user.id, email: user.email });
-
-    const { price_id, embedded, plan, trial, company, full_name, phone } = await req.json();
+    const { price_id, embedded, plan, trial, company, full_name, phone, email: guestEmailRaw } = await req.json();
 
     // New platform plans (inline price_data, 14-day free trial).
     // Keep amounts in sync with src/components/pricing/plans.ts.
@@ -57,15 +60,41 @@ serve(async (req) => {
     if (!planPricing && !price_id) throw new Error("plan or price_id required");
     logStep("Plan resolved", { plan: plan || null, price_id: price_id || null, trial: !!trial });
 
+    // Guest checkout is permitted ONLY for the new trial plans, keyed by email.
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const guestEmail = typeof guestEmailRaw === "string" ? guestEmailRaw.trim().toLowerCase() : "";
+    if (!user && !(planPricing && trial && EMAIL_RE.test(guestEmail))) {
+      throw new Error("Unauthorized");
+    }
+    const checkoutEmail = (user?.email || guestEmail).toLowerCase();
+
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
     // Check for existing customer
-    const customers = await stripe.customers.list({ email: user.email!, limit: 1 });
+    const customers = await stripe.customers.list({ email: checkoutEmail, limit: 1 });
     let customerId: string | undefined;
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
     }
     logStep("Customer lookup", { customerId: customerId || "new" });
+
+    // Guest guard: if this email already carries a live platform plan, they must
+    // sign in instead (prevents duplicate subscriptions on someone's account).
+    if (!user && customerId) {
+      const existingSubs = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 20 });
+      const hasLivePlatformPlan = existingSubs.data.some(
+        (s: any) =>
+          (s.status === "active" || s.status === "trialing") &&
+          (s.metadata?.plan_type === "platform" || s.metadata?.platform_plan),
+      );
+      if (hasLivePlatformPlan) {
+        logStep("Guest blocked — already subscribed", { customerId });
+        return new Response(JSON.stringify({ error: "already_subscribed" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+    }
 
     const origin = req.headers.get("origin") || "https://uply.tv";
     logStep("Origin", { origin });
@@ -87,9 +116,10 @@ serve(async (req) => {
       : [{ price: price_id, quantity: 1 }];
 
     const metadata: Record<string, string> = {
-      user_id: user.id,
       plan_type: "platform",
     };
+    if (user) metadata.user_id = user.id;
+    else metadata.guest_email = checkoutEmail;
     if (plan) metadata.platform_plan = plan;
     if (company) metadata.company = String(company).slice(0, 500);
     if (full_name) metadata.full_name = String(full_name).slice(0, 500);
@@ -97,7 +127,7 @@ serve(async (req) => {
 
     const sessionConfig: any = {
       customer: customerId,
-      customer_email: customerId ? undefined : user.email!,
+      customer_email: customerId ? undefined : checkoutEmail,
       line_items: lineItems,
       mode: "subscription",
       success_url: `${origin}/dashboard?upgraded=true`,

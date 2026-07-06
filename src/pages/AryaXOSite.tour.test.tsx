@@ -7,6 +7,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor, within, act } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 
@@ -81,6 +82,13 @@ vi.mock("@/assets/arya-xo-bg.png.asset.json", () => ({
 
 import AryaXOSite from "./AryaXOSite";
 
+const renderSite = () =>
+  render(
+    <MemoryRouter initialEntries={["/arya-xo-site"]}>
+      <AryaXOSite />
+    </MemoryRouter>,
+  );
+
 const seed: Row[] = [
   { id: "nyc", city: "New York", country: "USA", vote_count: 10 },
   { id: "la", city: "Los Angeles", country: "USA", vote_count: 7 },
@@ -99,7 +107,7 @@ beforeEach(() => {
 });
 
 async function renderAndWaitForCities() {
-  render(<AryaXOSite />);
+  renderSite();
   await screen.findByRole("button", { name: /New York/ });
 }
 
@@ -151,14 +159,14 @@ describe("Tour-demand widget — one vote per device", () => {
   });
 
   it("persists the device gate across remounts (same vote_fp reused)", async () => {
-    const { unmount } = render(<AryaXOSite />);
+    const { unmount } = renderSite();
     await screen.findByRole("button", { name: /New York/ });
     fireEvent.click(screen.getByRole("button", { name: /New York/ }));
     await waitFor(() => expect(rpcMock).toHaveBeenCalledTimes(1));
     const fpBefore = localStorage.getItem("uply_voter_fp");
     unmount();
 
-    render(<AryaXOSite />);
+    renderSite();
     await screen.findByRole("button", { name: /New York/ });
     // Reuses fingerprint, no new vote permitted
     expect(localStorage.getItem("uply_voter_fp")).toBe(fpBefore);

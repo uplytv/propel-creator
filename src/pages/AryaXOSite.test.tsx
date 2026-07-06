@@ -1,11 +1,12 @@
 /**
- * Integration tests for the Arya XO embedded artist site.
- * Confirms (a) every visible button routes to the correct URL/section,
- * and (b) the booking form reliably inserts an inquiry into the UPLY CRM
- * (`public_booking_inquiries`) and surfaces the success state.
+ * Integration tests for the Arya XO artist site (rendered through the shared
+ * ArtistSiteTemplate). Confirms (a) every visible button routes to the
+ * correct URL/section, and (b) the booking form reliably inserts an inquiry
+ * into the UPLY CRM (`public_booking_inquiries`) and surfaces the success state.
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 
 // ── Supabase mock ─────────────────────────────────────────
 const insertMock = vi.fn<(payload: unknown) => Promise<{ error: unknown }>>()
@@ -37,16 +38,14 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 
-
-// Asset JSON files
-vi.mock("@/assets/arya-xo-150bands.png.asset.json", () => ({
-  default: { url: "https://cdn.test/portrait.png" },
-}));
-vi.mock("@/assets/arya-xo-bg.png.asset.json", () => ({
-  default: { url: "https://cdn.test/bg.png" },
-}));
-
 import AryaXOSite from "./AryaXOSite";
+
+const renderSite = () =>
+  render(
+    <MemoryRouter initialEntries={["/arya-xo-site"]}>
+      <AryaXOSite />
+    </MemoryRouter>,
+  );
 
 beforeEach(() => {
   insertMock.mockClear();
@@ -57,8 +56,8 @@ beforeEach(() => {
 // ── Routing / button targets ──────────────────────────────
 describe("AryaXOSite — buttons route correctly", () => {
   it("nav anchors point to the right in-page sections", () => {
-    render(<AryaXOSite />);
-    const nav = screen.getAllByRole("navigation")[0];
+    renderSite();
+    const nav = screen.getByRole("navigation", { name: /site sections/i });
     const expectAnchor = (label: string, href: string) => {
       const el = within(nav).getByRole("link", { name: label });
       expect(el).toHaveAttribute("href", href);
@@ -70,31 +69,43 @@ describe("AryaXOSite — buttons route correctly", () => {
     expectAnchor("Booking", "#booking");
   });
 
-  it("nav Links button routes to /arya-xo public profile", () => {
-    render(<AryaXOSite />);
+  it("nav Links buttons route to the /arya-xo links hub", () => {
+    renderSite();
     const links = screen.getAllByRole("link", { name: /^Links$/ });
-    expect(links[0]).toHaveAttribute("href", "/arya-xo");
+    expect(links.length).toBeGreaterThan(0);
+    links.forEach((el) => expect(el).toHaveAttribute("href", "/arya-xo"));
   });
 
-  it('hero "Stream 150 BANDS" opens the Spotify deep link in a new tab', () => {
-    render(<AryaXOSite />);
-    const stream = screen.getByRole("link", { name: /Stream 150 BANDS/i });
-    expect(stream).toHaveAttribute(
+  it("hero streaming pills deep-link 150 BANDS on Spotify / Apple / YouTube", () => {
+    renderSite();
+    const hero = screen.getByRole("banner");
+
+    const spotify = within(hero).getByRole("link", { name: /^Spotify$/ });
+    expect(spotify).toHaveAttribute(
       "href",
-      "https://open.spotify.com/search/150%20Bands%20Hugel"
+      "https://open.spotify.com/track/3QBkhZL0nUSrm6qcoSEZvt"
     );
-    expect(stream).toHaveAttribute("target", "_blank");
-    expect(stream).toHaveAttribute("rel", expect.stringContaining("noopener"));
+    expect(spotify).toHaveAttribute("target", "_blank");
+    expect(spotify).toHaveAttribute("rel", expect.stringContaining("noopener"));
+
+    expect(within(hero).getByRole("link", { name: /^Apple Music$/ })).toHaveAttribute(
+      "href",
+      "https://music.apple.com/us/song/150-bands/6778877438"
+    );
+    expect(within(hero).getByRole("link", { name: /^YouTube$/ })).toHaveAttribute(
+      "href",
+      "https://www.youtube.com/watch?v=gqYburgfJ9s"
+    );
   });
 
-  it('hero "Book Arya XO" jumps to the booking section', () => {
-    render(<AryaXOSite />);
-    const book = screen.getByRole("link", { name: /Book Arya XO/i });
-    expect(book).toHaveAttribute("href", "#booking");
+  it('hero "Book" pill jumps to the booking section', () => {
+    renderSite();
+    const hero = screen.getByRole("banner");
+    expect(within(hero).getByRole("link", { name: /^Book$/ })).toHaveAttribute("href", "#booking");
   });
 
   it("release cards link out to Spotify with proper rel/target", () => {
-    render(<AryaXOSite />);
+    renderSite();
     const get = screen.getByRole("link", { name: /Get Down/i });
     expect(get).toHaveAttribute(
       "href",
@@ -104,7 +115,7 @@ describe("AryaXOSite — buttons route correctly", () => {
   });
 
   it("YouTube 'Watch on YouTube' link uses the watch URL", () => {
-    render(<AryaXOSite />);
+    renderSite();
     const watch = screen.getByRole("link", { name: /Watch on YouTube/i });
     expect(watch).toHaveAttribute(
       "href",
@@ -112,26 +123,31 @@ describe("AryaXOSite — buttons route correctly", () => {
     );
   });
 
-  it("social row routes to the right external profiles", () => {
-    render(<AryaXOSite />);
+  it("socials grid routes to the right external profiles", () => {
+    renderSite();
     const ig = screen.getByRole("link", { name: /Instagram/i });
     expect(ig).toHaveAttribute("href", "https://www.instagram.com/litreeezy/");
 
-    // YouTube appears twice (video link + social pill) — find the social pill
+    // YouTube appears more than once (hero pill + video link + social card)
     const yt = screen
       .getAllByRole("link", { name: /YouTube/i })
       .find((el) => el.getAttribute("href")?.includes("@litreeezy"));
     expect(yt?.getAttribute("href")).toMatch(/youtube\.com\/@litreeezy/);
 
-    expect(screen.getByRole("link", { name: /Apple Music/i }).getAttribute("href"))
-      .toMatch(/music\.apple\.com/);
-    expect(screen.getByRole("link", { name: /Spotify/i }).getAttribute("href"))
-      .toMatch(/open\.spotify\.com\/search\/Arya/);
+    const apple = screen
+      .getAllByRole("link", { name: /Apple Music/i })
+      .find((el) => el.getAttribute("href")?.includes("/artist/"));
+    expect(apple?.getAttribute("href")).toMatch(/music\.apple\.com/);
+
+    const spotify = screen
+      .getAllByRole("link", { name: /Spotify/i })
+      .find((el) => el.getAttribute("href")?.includes("/search/"));
+    expect(spotify?.getAttribute("href")).toMatch(/open\.spotify\.com\/search\/Arya/);
   });
 
 
   it("footer 'Powered by UPLY' links to home", () => {
-    render(<AryaXOSite />);
+    renderSite();
     const footer = screen.getByRole("contentinfo");
     const home = within(footer).getByRole("link");
     expect(home).toHaveAttribute("href", "/");
@@ -146,14 +162,21 @@ describe("AryaXOSite — buttons route correctly", () => {
       configurable: true,
     });
 
-    render(<AryaXOSite />);
+    renderSite();
     fireEvent.click(screen.getByRole("button", { name: /Share this page/i }));
 
-    const url = await screen.findByDisplayValue("https://uply.tv/arya-xo-site");
+    // Every share mints a fresh cache-busting `?v=` on the canonical URL
+    const url = await screen.findByDisplayValue((v: string) =>
+      v.startsWith("https://uply.tv/arya-xo-site?v=")
+    );
     expect(url).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /^Copy$/i }));
-    await waitFor(() => expect(writeText).toHaveBeenCalledWith("https://uply.tv/arya-xo-site"));
+    await waitFor(() =>
+      expect(writeText).toHaveBeenCalledWith(
+        expect.stringMatching(/^https:\/\/uply\.tv\/arya-xo-site\?v=/)
+      )
+    );
     expect(await screen.findByRole("button", { name: /Copied/i })).toBeInTheDocument();
   });
 });
@@ -161,7 +184,7 @@ describe("AryaXOSite — buttons route correctly", () => {
 // ── Booking form → CRM insert ─────────────────────────────
 describe("AryaXOSite — booking form writes to UPLY CRM", () => {
   it("submits a complete inquiry into public_booking_inquiries and shows success", async () => {
-    render(<AryaXOSite />);
+    renderSite();
 
     fireEvent.change(screen.getByPlaceholderText("Jane Doe"), {
       target: { value: "Promoter Pete" },
@@ -169,7 +192,7 @@ describe("AryaXOSite — booking form writes to UPLY CRM", () => {
     fireEvent.change(screen.getByPlaceholderText("you@venue.com"), {
       target: { value: "pete@drais.com" },
     });
-    fireEvent.change(screen.getByPlaceholderText(/Drai/), {
+    fireEvent.change(screen.getByPlaceholderText(/Venue, festival/), {
       target: { value: "Drai's Beach Club" },
     });
     fireEvent.change(screen.getByPlaceholderText("Las Vegas, USA"), {
@@ -178,7 +201,7 @@ describe("AryaXOSite — booking form writes to UPLY CRM", () => {
     fireEvent.change(screen.getByPlaceholderText("25000"), {
       target: { value: "75000" },
     });
-    fireEvent.change(screen.getByPlaceholderText(/HUGEL/), {
+    fireEvent.change(screen.getByPlaceholderText(/Headliner/), {
       target: { value: "HUGEL, Roy Woods" },
     });
     fireEvent.change(screen.getByPlaceholderText(/60-min set/), {
@@ -207,7 +230,7 @@ describe("AryaXOSite — booking form writes to UPLY CRM", () => {
   });
 
   it("blocks submission until name + valid email + city are provided", () => {
-    render(<AryaXOSite />);
+    renderSite();
     const submit = screen.getByRole("button", { name: /Send booking inquiry/i }) as HTMLButtonElement;
     expect(submit).toBeDisabled();
 
@@ -228,7 +251,7 @@ describe("AryaXOSite — booking form writes to UPLY CRM", () => {
 
   it("surfaces a friendly error if the CRM insert fails", async () => {
     insertMock.mockResolvedValueOnce({ error: { message: "Network down" } });
-    render(<AryaXOSite />);
+    renderSite();
 
     fireEvent.change(screen.getByPlaceholderText("Jane Doe"), { target: { value: "P" } });
     fireEvent.change(screen.getByPlaceholderText("you@venue.com"), {

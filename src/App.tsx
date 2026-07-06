@@ -73,6 +73,7 @@ const ArtistCompetitionSubmitRoute = lazy(() => import("./pages/ArtistCompetitio
 const ArtistSignInRoute = lazy(() => import("./pages/ArtistSignInRoute"));
 const ArtistAccountRoute = lazy(() => import("./pages/ArtistAccountRoute"));
 const RosterHubRoute = lazy(() => import("./pages/RosterHubRoute"));
+const ComparisonPage = lazy(() => import("./pages/ComparisonPage"));
 const UplyBlog = lazy(() => import("./pages/UplyBlog"));
 const UplyBlogPost = lazy(() => import("./pages/UplyBlogPost"));
 const AdminBookingInquiries = lazy(() => import("./pages/AdminBookingInquiries"));
@@ -532,6 +533,7 @@ const App = () => (
                     <Route path="/:slug/competition/entry/:entryId" element={<ArtistCompetitionRoute />} />
                     <Route path="/:slug/signin" element={<ArtistSignInRoute />} />
                     <Route path="/:slug/account" element={<ArtistAccountRoute />} />
+                    <Route path="/vs/:slug" element={<ComparisonPage />} />
                     <Route path="/blog" element={<UplyBlog />} />
                     <Route path="/blog/:slug" element={<UplyBlogPost />} />
                     <Route path="/admin/booking-inquiries" element={<AdminBookingInquiries />} />

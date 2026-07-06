@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import logo from "@/assets/logo.png";
+import { COMPARISONS } from "@/data/comparisons";
 
 export default function HomepageFooter() {
   return (
@@ -21,6 +22,27 @@ export default function HomepageFooter() {
         </div>
 
         <div className="text-xs text-foreground/50">© {new Date().getFullYear()} UPLY</div>
+      </div>
+
+      {/* UPLY vs — comparison pages */}
+      <div className="max-w-7xl mx-auto mt-10 pt-8 border-t border-border/40">
+        <div className="text-xs font-bold uppercase tracking-[0.18em] text-foreground/50 mb-3 text-center md:text-left">
+          UPLY vs
+        </div>
+        <nav
+          aria-label="Comparison pages"
+          className="flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-2 text-sm"
+        >
+          {COMPARISONS.map((c) => (
+            <Link
+              key={c.slug}
+              to={`/vs/${c.slug}`}
+              className="text-foreground/70 hover:text-foreground"
+            >
+              UPLY vs {c.competitorName}
+            </Link>
+          ))}
+        </nav>
       </div>
     </footer>
   );

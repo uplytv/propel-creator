@@ -169,14 +169,30 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
     }
   };
 
-  /** Existing account detected mid-signup → reveal an inline password field and
-   *  sign in right here, then continue to payment. Never leaves the modal. */
+  // Guest checkout: the email already has an UPLY account but NO paid plan —
+  // don't wall the purchase behind a password. Step 2 checks out by email;
+  // Stripe attaches the card + trial to their customer record, and they sign
+  // in later for access. The password wall only appears if the backend says
+  // the email already carries a live paid plan (already_subscribed).
+  const [guestCheckout, setGuestCheckout] = useState(false);
+
+  /** Existing account detected mid-signup → continue as guest checkout unless
+   *  the account already has a live paid plan (then sign-in is required). */
   const redirectExistingAccount = async () => {
     if (!existingAccount || !password) {
-      // First detection: reveal the password field on step 1 and explain.
-      setExistingAccount(true);
-      toast.info("You already have an account", {
-        description: "Enter your UPLY password below to continue straight to payment.",
+      if (!existingAccount) {
+        // Unpaid existing account → frictionless guest checkout.
+        setGuestCheckout(true);
+        stashIntent();
+        toast.info("You already have an UPLY account", {
+          description: "No problem — start your trial now and sign in afterwards to access it.",
+        });
+        setStep(2);
+        return;
+      }
+      // Password wall is showing (already_subscribed) but empty — prompt.
+      toast.info("Enter your password", {
+        description: "This email already has an active plan — sign in to continue.",
       });
       return;
     }
@@ -291,7 +307,7 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
   // Step 2: create the embedded checkout session (14-day trial, card on file,
   // billed after) as soon as we're authed. Re-runs when the plan radio changes.
   useEffect(() => {
-    if (!open || step !== 2 || awaitingEmailConfirm || !isAuthed || trialLive) return;
+    if (!open || step !== 2 || awaitingEmailConfirm || !(isAuthed || guestCheckout) || trialLive) return;
 
     let cancelled = false;
     setClientSecret(null);
@@ -307,11 +323,22 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
           company: company.trim(),
           full_name: fullName.trim(),
           phone: phone.trim(),
+          email: email.trim(),
         },
       })
       .then(({ data, error }) => {
         if (cancelled) return;
         if (error) throw error;
+        if (data?.error === "already_subscribed") {
+          // The email already carries a live paid plan — require sign-in.
+          setGuestCheckout(false);
+          setExistingAccount(true);
+          setStep(1);
+          toast.info("This email already has an active UPLY plan", {
+            description: "Enter your password to sign in and manage your subscription.",
+          });
+          return;
+        }
         if (!data?.client_secret) throw new Error("No checkout session returned");
         setClientSecret(data.client_secret);
       })
@@ -325,9 +352,9 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
     return () => {
       cancelled = true;
     };
-    // company/fullName/phone are frozen once step 2 renders — plan is the only live input.
+    // company/fullName/phone/email are frozen once step 2 renders — plan is the only live input.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, step, awaitingEmailConfirm, isAuthed, selectedPlan, checkoutAttempt, trialLive]);
+  }, [open, step, awaitingEmailConfirm, isAuthed, guestCheckout, selectedPlan, checkoutAttempt, trialLive]);
 
   // Card accepted inside the iframe → trial subscription is live. The session
   // is created with redirect_on_completion "never", so no page reload happens:
@@ -344,6 +371,14 @@ export default function TrialSignupModal({ open, onOpenChange, defaultPlan }: Tr
 
   const goToDashboard = () => {
     onOpenChange(false);
+    if (guestCheckout && !user) {
+      // Guest trial on an existing account — they need to sign in for access.
+      toast.info("Sign in to access your trial", {
+        description: "Your trial is active on this email — sign in with your UPLY password.",
+      });
+      navigate(`/auth?redirect=${encodeURIComponent("/dashboard?trial=started")}`);
+      return;
+    }
     navigate("/dashboard?trial=started");
   };
 
