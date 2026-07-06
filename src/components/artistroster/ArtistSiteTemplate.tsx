@@ -111,12 +111,19 @@ const SOCIAL_BRAND_BG: Record<SocialKind, string> = {
   email: "bg-[#6B7280]",
 };
 
-const EVENT_TYPES = [
+const PERFORMER_EVENT_TYPES = [
   "Club / Live Show",
   "Festival",
   "Private / Corporate",
   "Brand Activation",
   "Feature / Studio Session",
+];
+const BUSINESS_ENGAGEMENT_TYPES = [
+  "Speaking / Keynote",
+  "Workshop / Training",
+  "Consulting / Advisory",
+  "Brand Partnership",
+  "Podcast / Interview",
 ];
 
 export interface ArtistSiteHeroLink {
@@ -155,6 +162,45 @@ export interface ArtistSiteTemplateProps {
   ogImage?: string;
   /** Extra page-level nodes (e.g. Arya's 150 BANDS autoplay chip). */
   children?: ReactNode;
+}
+
+/**
+ * Creator-type persona → which site sections are logical.
+ * Performers (singers, rappers, DJs, bands…) get Music + Tour + show-style
+ * booking. Everyone else (entrepreneurs, founders, coaches, educators, authors…)
+ * gets a business-framed "Work with me" section and no Music/Tour — those tabs
+ * make no sense for a non-artist.
+ */
+const PERFORMER_TYPES = new Set([
+  "singer", "rapper", "dj", "musician", "band", "producer", "artist",
+  "performer", "comedian", "dancer", "vocalist", "instrumentalist",
+]);
+
+export function sitePersona(creatorType?: string): {
+  isPerformer: boolean;
+  bookingLabel: string;
+  bookingEyebrow: string;
+  bookingHeading: (name: string) => string;
+  bookingDefaultTagline: string;
+} {
+  const isPerformer = PERFORMER_TYPES.has((creatorType ?? "").trim().toLowerCase());
+  return isPerformer
+    ? {
+        isPerformer: true,
+        bookingLabel: "Booking",
+        bookingEyebrow: "Direct booking",
+        bookingHeading: (name) => `Book ${name} in 60 seconds.`,
+        bookingDefaultTagline:
+          "Fill four fields, hit send. No agents, no back-and-forth — your inquiry lands directly in the team's inbox on UPLY and gets a same-week reply.",
+      }
+    : {
+        isPerformer: false,
+        bookingLabel: "Work with me",
+        bookingEyebrow: "Work together",
+        bookingHeading: (name) => `Work with ${name}.`,
+        bookingDefaultTagline:
+          "Speaking, consulting, brand partnerships, or a collab — tell me what you have in mind. Your inquiry lands directly in my inbox on UPLY and gets a same-week reply.",
+      };
 }
 
 export default function ArtistSiteTemplate(props: ArtistSiteTemplateProps) {
@@ -261,13 +307,15 @@ function ArtistSiteBody({
   ].filter(Boolean) as ArtistSiteHeroLink[];
   const ctaLinks = heroLinks ?? derivedHeroLinks;
 
+  // Creator-type drives which sections make sense (musician vs entrepreneur/etc).
+  const persona = sitePersona(artist.creatorType);
   const sections: { id: string; label: string }[] = [
-    artist.releases?.length ? { id: "music", label: "Music" } : null,
+    persona.isPerformer && artist.releases?.length ? { id: "music", label: "Music" } : null,
     artist.videos?.length ? { id: "videos", label: "Videos" } : null,
     featuredBlock ? { id: "press", label: "Press" } : null,
     { id: "about", label: "About" },
-    { id: "tour", label: "Tour" },
-    artist.bookingEmail ? { id: "booking", label: "Booking" } : null,
+    persona.isPerformer ? { id: "tour", label: "Tour" } : null,
+    artist.bookingEmail ? { id: "booking", label: persona.bookingLabel } : null,
   ].filter(Boolean) as { id: string; label: string }[];
 
   const ogImageUrl =
@@ -451,7 +499,7 @@ function ArtistSiteBody({
               })}
               {artist.bookingEmail && (
                 <a href="#booking" className="arya-btn arya-btn--ghost arya-btn--lg">
-                  <Mail className="h-4 w-4" /> Book
+                  <Mail className="h-4 w-4" /> {persona.isPerformer ? "Book" : "Work with me"}
                 </a>
               )}
             </div>
@@ -499,8 +547,8 @@ function ArtistSiteBody({
         )}
       </header>
 
-      {/* MUSIC / RELEASES */}
-      {artist.releases && artist.releases.length > 0 && (
+      {/* MUSIC / RELEASES — performers only */}
+      {persona.isPerformer && artist.releases && artist.releases.length > 0 && (
         <section id="music" className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
           <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--arya-cta)]">Discography</p>
           <h2 className="mt-2 font-heading text-3xl sm:text-4xl font-bold">Latest releases</h2>
@@ -714,12 +762,14 @@ function ArtistSiteBody({
         )}
       </section>
 
-      {/* TOUR REQUESTS — fans vote for their city */}
-      <TourRequestsSection slug={slug} displayName={artist.displayName} />
+      {/* TOUR REQUESTS — fans vote for their city (performers only) */}
+      {persona.isPerformer && (
+        <TourRequestsSection slug={slug} displayName={artist.displayName} />
+      )}
 
-      {/* BOOKING — inline CRM form */}
+      {/* BOOKING / WORK-WITH-ME — inline CRM form */}
       {artist.bookingEmail && (
-        <BookingSection artist={artist} slug={slug} />
+        <BookingSection artist={artist} slug={slug} persona={persona} />
       )}
 
       {/* SPOTIFY EMBED */}
@@ -822,12 +872,21 @@ function AccentName({ name }: { name: string }) {
 }
 
 // ── Booking (inline CRM form → public_booking_inquiries) ────
-function BookingSection({ artist, slug }: { artist: ArtistRosterEntry; slug: string }) {
+function BookingSection({
+  artist,
+  slug,
+  persona,
+}: {
+  artist: ArtistRosterEntry;
+  slug: string;
+  persona: ReturnType<typeof sitePersona>;
+}) {
+  const engagementTypes = persona.isPerformer ? PERFORMER_EVENT_TYPES : BUSINESS_ENGAGEMENT_TYPES;
   const emptyForm = {
     contact_name: "",
     contact_email: "",
     contact_org: "",
-    event_type: EVENT_TYPES[0],
+    event_type: engagementTypes[0],
     event_city: "",
     event_date: "",
     budget_usd: "",
@@ -886,19 +945,18 @@ function BookingSection({ artist, slug }: { artist: ArtistRosterEntry; slug: str
         <div className="grid lg:grid-cols-[1fr_1.2fr] gap-8 lg:gap-12">
           {/* Left: pitch */}
           <div>
-            <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--arya-cta)]">Direct booking</p>
+            <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--arya-cta)]">{persona.bookingEyebrow}</p>
             <h2 className="mt-2 font-heading text-3xl sm:text-4xl font-bold leading-tight">
-              Book {artist.displayName} in 60 seconds.
+              {persona.bookingHeading(artist.displayName)}
             </h2>
             <p className="mt-3 text-[var(--arya-text-dim)] max-w-md">
-              {artist.bookingTagline ??
-                "Fill four fields, hit send. No agents, no back-and-forth — your inquiry lands directly in the team's inbox on UPLY and gets a same-week reply."}
+              {artist.bookingTagline ?? persona.bookingDefaultTagline}
             </p>
 
             <div className="mt-6 grid grid-cols-2 gap-3">
               <div className="arya-card p-4">
                 <MapPin className="h-4 w-4 text-[var(--arya-cta)]" />
-                <div className="mt-2 font-semibold text-sm">Touring from</div>
+                <div className="mt-2 font-semibold text-sm">{persona.isPerformer ? "Touring from" : "Based in"}</div>
                 <div className="text-[var(--arya-text-mute)] text-xs">{artist.location ?? "Worldwide"}</div>
               </div>
               <div className="arya-card p-4">
@@ -908,13 +966,15 @@ function BookingSection({ artist, slug }: { artist: ArtistRosterEntry; slug: str
               </div>
               <div className="arya-card p-4">
                 <DollarSign className="h-4 w-4 text-[var(--arya-cta)]" />
-                <div className="mt-2 font-semibold text-sm">Fee range</div>
+                <div className="mt-2 font-semibold text-sm">{persona.isPerformer ? "Fee range" : "Rates"}</div>
                 <div className="text-[var(--arya-text-mute)] text-xs">Tiered — share your budget</div>
               </div>
               <div className="arya-card p-4">
                 <Users className="h-4 w-4 text-[var(--arya-cta)]" />
-                <div className="mt-2 font-semibold text-sm">Lineups welcome</div>
-                <div className="text-[var(--arya-text-mute)] text-xs">Festivals, clubs, brand events</div>
+                <div className="mt-2 font-semibold text-sm">{persona.isPerformer ? "Lineups welcome" : "Formats"}</div>
+                <div className="text-[var(--arya-text-mute)] text-xs">
+                  {persona.isPerformer ? "Festivals, clubs, brand events" : "Talks, workshops, advisory"}
+                </div>
               </div>
             </div>
 
@@ -981,9 +1041,9 @@ function BookingSection({ artist, slug }: { artist: ArtistRosterEntry; slug: str
                   />
                 </Field>
 
-                <Field label="Event type">
+                <Field label={persona.isPerformer ? "Event type" : "Engagement type"}>
                   <select value={form.event_type} onChange={update("event_type")} className="arya-input">
-                    {EVENT_TYPES.map((t) => (
+                    {engagementTypes.map((t) => (
                       <option key={t} value={t} className="bg-[#0c0c0c]">{t}</option>
                     ))}
                   </select>
@@ -995,11 +1055,11 @@ function BookingSection({ artist, slug }: { artist: ArtistRosterEntry; slug: str
                       required
                       value={form.event_city}
                       onChange={update("event_city")}
-                      placeholder="Las Vegas, USA"
+                      placeholder={persona.isPerformer ? "Las Vegas, USA" : "Remote or city, country"}
                       className="arya-input"
                     />
                   </Field>
-                  <Field label="Event date">
+                  <Field label={persona.isPerformer ? "Event date" : "Preferred date"}>
                     <input type="date" value={form.event_date} onChange={update("event_date")} className="arya-input" />
                   </Field>
                 </div>
@@ -1016,21 +1076,23 @@ function BookingSection({ artist, slug }: { artist: ArtistRosterEntry; slug: str
                   />
                 </Field>
 
-                <Field label="Lineup / other artists on the bill">
-                  <input
-                    value={form.lineup}
-                    onChange={update("lineup")}
-                    placeholder="Headliner, support, +others"
-                    className="arya-input"
-                  />
-                </Field>
+                {persona.isPerformer && (
+                  <Field label="Lineup / other artists on the bill">
+                    <input
+                      value={form.lineup}
+                      onChange={update("lineup")}
+                      placeholder="Headliner, support, +others"
+                      className="arya-input"
+                    />
+                  </Field>
+                )}
 
-                <Field label="Anything else (set length, hospitality, etc.)">
+                <Field label={persona.isPerformer ? "Anything else (set length, hospitality, etc.)" : "Tell me more (goals, audience, scope…)"}>
                   <textarea
                     rows={3}
                     value={form.message}
                     onChange={update("message")}
-                    placeholder="60-min set, festival main stage, deposit terms…"
+                    placeholder={persona.isPerformer ? "60-min set, festival main stage, deposit terms…" : "Audience size, topic, timeline, deliverables…"}
                     className="arya-input resize-none"
                   />
                 </Field>
