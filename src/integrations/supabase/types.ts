@@ -123,6 +123,60 @@ export type Database = {
           },
         ]
       }
+      ad_campaigns: {
+        Row: {
+          audience: Json | null
+          budget_daily_cents: number | null
+          created_at: string
+          creative_url: string | null
+          creator_id: string
+          cta: string | null
+          external_id: string | null
+          headline: string | null
+          id: string
+          name: string
+          objective: string | null
+          platform: string
+          primary_text: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          audience?: Json | null
+          budget_daily_cents?: number | null
+          created_at?: string
+          creative_url?: string | null
+          creator_id: string
+          cta?: string | null
+          external_id?: string | null
+          headline?: string | null
+          id?: string
+          name: string
+          objective?: string | null
+          platform: string
+          primary_text?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          audience?: Json | null
+          budget_daily_cents?: number | null
+          created_at?: string
+          creative_url?: string | null
+          creator_id?: string
+          cta?: string | null
+          external_id?: string | null
+          headline?: string | null
+          id?: string
+          name?: string
+          objective?: string | null
+          platform?: string
+          primary_text?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ad_campaigns_published: {
         Row: {
           brief: Json
@@ -2601,6 +2655,42 @@ export type Database = {
           },
         ]
       }
+      cart_orders: {
+        Row: {
+          buyer_id: string
+          completed_at: string | null
+          created_at: string
+          id: string
+          items: Json
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          subtotal: number
+        }
+        Insert: {
+          buyer_id: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          items?: Json
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          subtotal?: number
+        }
+        Update: {
+          buyer_id?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          items?: Json
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          subtotal?: number
+        }
+        Relationships: []
+      }
       category_feature_defaults: {
         Row: {
           category_id: string
@@ -4049,6 +4139,95 @@ export type Database = {
           label?: string
           price_usd?: number
           stripe_price_id?: string | null
+        }
+        Relationships: []
+      }
+      crm_activities: {
+        Row: {
+          body: string
+          contact_id: string
+          created_at: string
+          creator_id: string
+          done: boolean
+          due_at: string | null
+          id: string
+          kind: string
+        }
+        Insert: {
+          body: string
+          contact_id: string
+          created_at?: string
+          creator_id: string
+          done?: boolean
+          due_at?: string | null
+          id?: string
+          kind: string
+        }
+        Update: {
+          body?: string
+          contact_id?: string
+          created_at?: string
+          creator_id?: string
+          done?: boolean
+          due_at?: string | null
+          id?: string
+          kind?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_activities_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_contacts: {
+        Row: {
+          created_at: string
+          creator_id: string
+          email: string
+          id: string
+          last_activity_at: string | null
+          name: string | null
+          notes_count: number
+          phone: string | null
+          source: string
+          stage: string
+          tags: string[]
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          email: string
+          id?: string
+          last_activity_at?: string | null
+          name?: string | null
+          notes_count?: number
+          phone?: string | null
+          source?: string
+          stage?: string
+          tags?: string[]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          email?: string
+          id?: string
+          last_activity_at?: string | null
+          name?: string | null
+          notes_count?: number
+          phone?: string | null
+          source?: string
+          stage?: string
+          tags?: string[]
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -21810,6 +21989,7 @@ export type Database = {
         Returns: string
       }
       creator_content_count: { Args: { p_creator_id: string }; Returns: number }
+      crm_sync_contacts: { Args: { p_creator_id: string }; Returns: number }
       decrement_merch_variant_stock: {
         Args: { _qty?: number; _variant_id: string }
         Returns: number
