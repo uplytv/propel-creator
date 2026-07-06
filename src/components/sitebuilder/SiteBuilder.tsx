@@ -32,6 +32,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { SITE_TEMPLATES, applyTemplate, type SiteTemplate } from "./templates";
 import { useAuth } from "@/context/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
@@ -61,6 +63,17 @@ export default function SiteBuilder() {
 
   const [sections, setSections] = useState<SiteSection[]>([]);
   const [theme, setTheme] = useState<SiteTheme>(DEFAULT_THEME);
+  const [templatesOpen, setTemplatesOpen] = useState(false);
+
+  const handleApplyTemplate = (template: SiteTemplate) => {
+    const { sections: next, theme: nextTheme } = applyTemplate(template);
+    setSections(next);
+    setTheme(nextTheme);
+    setTemplatesOpen(false);
+    toast.success(`${template.name} template applied`, {
+      description: "Make it yours — edit any section, then Save or Publish.",
+    });
+  };
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState<"mobile" | "desktop">("desktop");
   const [isPublished, setIsPublished] = useState(false);
@@ -284,6 +297,10 @@ export default function SiteBuilder() {
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-sm">Sections</h3>
+              <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" onClick={() => setTemplatesOpen(true)}>
+                <Sparkles className="w-3.5 h-3.5 mr-1" /> Templates
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button size="sm" variant="outline">
@@ -306,6 +323,7 @@ export default function SiteBuilder() {
                   })}
                 </DropdownMenuContent>
               </DropdownMenu>
+              </div>
             </div>
 
             {sections.length === 0 && (
@@ -389,6 +407,52 @@ export default function SiteBuilder() {
           </div>
         </div>
       </div>
+
+      {/* Template picker */}
+      <Dialog open={templatesOpen} onOpenChange={setTemplatesOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Start from a template</DialogTitle>
+            <DialogDescription>
+              Pick a proven layout for your kind of business. Applying replaces your current sections — you can edit everything after.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid sm:grid-cols-2 gap-3 pt-1">
+            {SITE_TEMPLATES.map((t) => {
+              const Icon = t.icon;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => handleApplyTemplate(t)}
+                  className="text-left border border-border hover:border-primary hover:bg-muted/50 transition-colors p-4 focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="inline-flex items-center justify-center w-8 h-8 shrink-0"
+                      style={{ background: t.theme.accent, color: "#fff" }}
+                    >
+                      <Icon className="w-4 h-4" />
+                    </span>
+                    <div>
+                      <div className="font-semibold text-sm leading-tight">{t.name}</div>
+                      <div className="text-[11px] text-muted-foreground">{t.forWho}</div>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-xs text-muted-foreground">{t.description}</p>
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {t.sections.map((s, i) => (
+                      <span key={i} className="text-[10px] uppercase tracking-wide bg-muted px-1.5 py-0.5 text-muted-foreground">
+                        {s.kind}
+                      </span>
+                    ))}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
