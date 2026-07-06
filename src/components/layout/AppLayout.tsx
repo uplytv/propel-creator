@@ -117,7 +117,8 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
       { label: "Site Builder", icon: Sparkles, path: "/my-page", desc: "Build your site with AI" },
       { label: "SmartLinks", icon: Share2, path: "/smart-links", desc: "Music smart links & pre-saves", featureKey: "smart_links" },
       { label: "Radiate", icon: Radio, path: "/radiate", desc: "Broadcast to nearby fans", featureKey: "radiate" },
-      { label: "Ad Campaigns", icon: Plug, path: "/ad-integrations", desc: "Boost streams", featureKey: "stream_boost" },
+      { label: "Ads Manager", icon: Rocket, path: "/ads-manager", desc: "Google, Facebook & Instagram ads", featureKey: "stream_boost" },
+      { label: "Ad Campaigns", icon: Plug, path: "/ad-integrations", desc: "Pixels & boost streams", featureKey: "stream_boost" },
       { label: "Affiliates", icon: Handshake, path: "/affiliates", desc: "Referral program", featureKey: "affiliates" },
       { label: "Content Syndication", icon: Globe, path: "/distribution", desc: "Publish everywhere at once", featureKey: "content_syndication" },
       { label: "Brand Deals", icon: Briefcase, path: "/marketplace", desc: "Sponsored opportunities", featureKey: "brand_deals" },
@@ -128,6 +129,7 @@ const coreNav: { core: string; label: string; icon: React.ElementType; items: Na
     label: "AUDIENCE",
     icon: Mail,
     items: [
+      { label: "CRM", icon: UserCheck, path: "/crm", desc: "Every fan & customer in one place" },
       { label: "Newsletter", icon: Mail, path: "/newsletter", desc: "Email your members", featureKey: "newsletter" },
       { label: "Subscribers", icon: UserPlus, path: "/dashboard/subscribers", desc: "Email capture & leads", featureKey: "email_subscribers" },
       { label: "Broadcast", icon: Radio, path: "/dashboard/broadcast", desc: "Email your list", featureKey: "email_broadcast" },

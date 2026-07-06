@@ -45,6 +45,8 @@ const Founders = lazy(() => import("./pages/Founders"));
 const InviteCodes = lazy(() => import("./pages/InviteCodes"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Products = lazy(() => import("./pages/Products"));
+const CRM = lazy(() => import("./pages/CRM"));
+const AdsManager = lazy(() => import("./pages/AdsManager"));
 const MyRep = lazy(() => import("./pages/MyRep"));
 const Grow = lazy(() => import("./pages/Grow"));
 const Affiliates = lazy(() => import("./pages/Affiliates"));
@@ -557,6 +559,8 @@ const App = () => (
                     <Route path="/go-live" element={<ProtectedRoute><GoLive /></ProtectedRoute>} />
                     <Route path="/buy-credits" element={<ProtectedRoute><BuyCredits /></ProtectedRoute>} />
                     <Route path="/ad-integrations" element={<ProtectedRoute><AdIntegrations /></ProtectedRoute>} />
+                    <Route path="/ads-manager" element={<ProtectedRoute><AdsManager /></ProtectedRoute>} />
+                    <Route path="/crm" element={<ProtectedRoute><CRM /></ProtectedRoute>} />
                     <Route path="/jobs" element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
                     <Route path="/jobs/:id" element={<ProtectedRoute><JobDetail /></ProtectedRoute>} />
                     <Route path="/post-job" element={<ProtectedRoute><PostJob /></ProtectedRoute>} />
