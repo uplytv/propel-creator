@@ -106,6 +106,18 @@ export function useStreamEngagement(streamId: string | undefined, creatorUserId?
         const updated = payload.new as LiveChatMessage;
         setChatMessages((prev) => prev.map((m) => m.id === updated.id ? { ...m, ...updated } : m));
       })
+      .on("postgres_changes", {
+        // DELETE events can't be filtered (old row only carries the PK), so
+        // listen table-wide and drop by id — a no-op for other streams' ids.
+        event: "DELETE",
+        schema: "public",
+        table: "live_chat_messages",
+      }, (payload: any) => {
+        const deletedId = payload.old?.id;
+        if (!deletedId) return;
+        pendingMessagesRef.current = pendingMessagesRef.current.filter((m) => m.id !== deletedId);
+        setChatMessages((prev) => prev.filter((m) => m.id !== deletedId));
+      })
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
@@ -229,20 +241,27 @@ export function useStreamEngagement(streamId: string | undefined, creatorUserId?
     await supabase.from("live_reactions").insert({ stream_id: streamId, user_id: userId, emoji });
   }, [streamId]);
 
-  // Send chat message — rate limited
+  // Send chat message — rate limited. Returns an error message when the
+  // server rejects the insert (slow mode trigger, ban/timeout RLS).
   const lastChatRef = useRef(0);
-  const sendChatMessage = useCallback(async (userId: string, username: string, avatarUrl: string | null, message: string) => {
+  const sendChatMessage = useCallback(async (userId: string, username: string, avatarUrl: string | null, message: string): Promise<string | undefined> => {
     if (!streamId || !message.trim()) return;
     const now = Date.now();
     if (now - lastChatRef.current < 300) return; // ~3 msgs/sec max
     lastChatRef.current = now;
-    await supabase.from("live_chat_messages").insert({
+    const { error } = await supabase.from("live_chat_messages").insert({
       stream_id: streamId,
       user_id: userId,
       username,
       avatar_url: avatarUrl,
       message: filterProfanity(message.trim()),
     });
+    if (!error) return;
+    // RLS violation ⇒ banned or timed out; trigger errors carry their own text.
+    if (error.message?.includes("row-level security")) {
+      return "You can't chat in this stream right now.";
+    }
+    return error.message;
   }, [streamId]);
 
   // Pin/unpin message (creator only)

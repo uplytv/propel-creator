@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ThumbsUp, MessageCircle, Pin, MoreHorizontal, Send, ArrowLeft, SlidersHorizontal, Megaphone } from "lucide-react";
+import { ThumbsUp, MessageCircle, Pin, PinOff, MoreHorizontal, Send, ArrowLeft, SlidersHorizontal, Megaphone, Flag, Trash2, Ban } from "lucide-react";
 import ContentGate from "@/components/ContentGate";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { fetchProfileMap } from "@/lib/supabaseTyped";
 import {
   useCommunityPosts,
   useCreateCommunityPost,
@@ -15,12 +17,36 @@ import {
   useTogglePin,
   useCreatorSpace,
 } from "@/hooks/useCreatorSpace";
+import {
+  useReportContent,
+  useBanCommunityMember,
+  useDeleteCommunityPost,
+  useDeleteCommunityComment,
+  type ReportContentType,
+} from "@/hooks/useCommunityModeration";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import BlastComposer from "@/components/blast/BlastComposer";
+import CommunityReportsSheet from "@/components/space/CommunityReportsSheet";
 
 interface Props {
   creatorId: string;
@@ -33,6 +59,10 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
   const [showComposer, setShowComposer] = useState(false);
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [showBlastComposer, setShowBlastComposer] = useState(false);
+  const [showReports, setShowReports] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{ type: ReportContentType; id: string } | null>(null);
+  const [reportReason, setReportReason] = useState("");
+  const [banTarget, setBanTarget] = useState<{ userId: string; name: string } | null>(null);
   const { data: space } = useCreatorSpace(creatorId);
 
   // Composer state
@@ -46,6 +76,9 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
   const createPost = useCreateCommunityPost();
   const toggleLike = useToggleLike();
   const togglePin = useTogglePin();
+  const reportContent = useReportContent();
+  const banMember = useBanCommunityMember();
+  const deletePost = useDeleteCommunityPost();
 
   const handlePost = async () => {
     if (!postBody.trim()) return;
@@ -64,21 +97,84 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
     await toggleLike.mutateAsync({ postId, creatorId });
   };
 
+  const submitReport = async () => {
+    if (!reportTarget) return;
+    try {
+      await reportContent.mutateAsync({
+        creatorId,
+        contentType: reportTarget.type,
+        contentId: reportTarget.id,
+        reason: reportReason,
+      });
+      toast.success("Report submitted", { description: "The community owner will review it." });
+      setReportTarget(null);
+      setReportReason("");
+    } catch (err: any) {
+      toast.error("Error", { description: err.message });
+    }
+  };
+
+  const confirmBan = async () => {
+    if (!banTarget) return;
+    try {
+      await banMember.mutateAsync({ targetUserId: banTarget.userId });
+      toast.success(`${banTarget.name} has been banned from this community`);
+    } catch (err: any) {
+      toast.error("Error", { description: err.message });
+    }
+    setBanTarget(null);
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    try {
+      await deletePost.mutateAsync(postId);
+      toast.success("Post deleted");
+    } catch (err: any) {
+      toast.error("Error", { description: err.message });
+    }
+  };
+
+  // Open a post from a report link (it may not be in the current page of posts)
+  const handleJumpToPost = async (postId: string) => {
+    const { data } = await supabase.from("community_posts").select("*").eq("id", postId).maybeSingle();
+    if (!data) {
+      toast.error("Content unavailable", { description: "This post may have been deleted." });
+      return;
+    }
+    const profileMap = await fetchProfileMap([data.author_id]);
+    setSelectedPost({
+      ...data,
+      author_name: profileMap.get(data.author_id)?.display_name || "Member",
+      author_avatar: profileMap.get(data.author_id)?.avatar_url || null,
+    });
+  };
+
   return (
     <div className="px-4 pt-4">
       {/* Blast Button + Category Filters */}
       {isOwner && (
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm font-semibold text-foreground">Community</span>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setShowBlastComposer(true)}
-            className="gap-1.5 text-xs border-primary/40 text-primary hover:bg-primary/10"
-          >
-            <Megaphone className="w-3.5 h-3.5" />
-            Blast
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowReports(true)}
+              className="gap-1.5 text-xs"
+            >
+              <Flag className="w-3.5 h-3.5" />
+              Reports
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowBlastComposer(true)}
+              className="gap-1.5 text-xs border-primary/40 text-primary hover:bg-primary/10"
+            >
+              <Megaphone className="w-3.5 h-3.5" />
+              Blast
+            </Button>
+          </div>
         </div>
       )}
       <div className="flex gap-2 overflow-x-auto scrollbar-none pb-3">
@@ -236,17 +332,56 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
                         <Pin className="w-3 h-3" /> Pinned
                       </div>
                     )}
-                    {isOwner && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          togglePin.mutate({ postId: post.id, isPinned: post.is_pinned });
-                        }}
-                        aria-label="Post options"
-                        className="p-1 rounded"
-                      >
-                        <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
-                      </button>
+                    {user && (isOwner || post.author_id !== user.id) && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            onClick={(e) => e.stopPropagation()}
+                            aria-label="Post options"
+                            className="p-1 rounded"
+                          >
+                            <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          {isOwner && (
+                            <DropdownMenuItem
+                              onClick={() => togglePin.mutate({ postId: post.id, isPinned: post.is_pinned })}
+                            >
+                              {post.is_pinned ? (
+                                <><PinOff className="w-3.5 h-3.5 mr-2" /> Unpin post</>
+                              ) : (
+                                <><Pin className="w-3.5 h-3.5 mr-2" /> Pin post</>
+                              )}
+                            </DropdownMenuItem>
+                          )}
+                          {(isOwner || post.author_id === user.id) && (
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => handleDeletePost(post.id)}
+                            >
+                              <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete post
+                            </DropdownMenuItem>
+                          )}
+                          {isOwner && post.author_id !== creatorId && (
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={() =>
+                                setBanTarget({ userId: post.author_id, name: post.author_name || "This member" })
+                              }
+                            >
+                              <Ban className="w-3.5 h-3.5 mr-2" /> Ban member
+                            </DropdownMenuItem>
+                          )}
+                          {!isOwner && post.author_id !== user.id && (
+                            <DropdownMenuItem
+                              onClick={() => setReportTarget({ type: "post", id: post.id })}
+                            >
+                              <Flag className="w-3.5 h-3.5 mr-2" /> Report post
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     )}
                   </div>
                 </div>
@@ -282,6 +417,7 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
           creatorId={creatorId}
           isOwner={isOwner}
           onClose={() => setSelectedPost(null)}
+          onReportComment={(commentId) => setReportTarget({ type: "comment", id: commentId })}
         />
       )}
 
@@ -295,20 +431,86 @@ export default function SpaceCommunityTab({ creatorId, isOwner }: Props) {
           lastBlastSentAt={space.last_blast_sent_at}
         />
       )}
+
+      {/* Owner moderation queue */}
+      {isOwner && (
+        <CommunityReportsSheet
+          open={showReports}
+          onOpenChange={setShowReports}
+          creatorId={creatorId}
+          onJumpToPost={handleJumpToPost}
+        />
+      )}
+
+      {/* Report dialog (posts + comments) */}
+      <Dialog open={!!reportTarget} onOpenChange={(open) => { if (!open) { setReportTarget(null); setReportReason(""); } }}>
+        <DialogContent className="border-border bg-card text-foreground max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Report {reportTarget?.type === "comment" ? "comment" : "post"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Textarea
+              placeholder="What's wrong with this content? (optional)"
+              value={reportReason}
+              onChange={(e) => setReportReason(e.target.value)}
+              rows={3}
+              className="border-0 bg-muted"
+            />
+            <Button
+              onClick={submitReport}
+              disabled={reportContent.isPending}
+              className="w-full font-semibold"
+            >
+              Submit report
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Ban confirmation */}
+      <AlertDialog open={!!banTarget} onOpenChange={(open) => { if (!open) setBanTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ban {banTarget?.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              They'll be removed from your community and won't be able to post, comment, or re-join.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmBan}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Ban member
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
 
-function PostDetailView({ post, creatorId, isOwner, onClose }: { post: any; creatorId: string; isOwner: boolean; onClose: () => void }) {
+function PostDetailView({ post, creatorId, isOwner, onClose, onReportComment }: { post: any; creatorId: string; isOwner: boolean; onClose: () => void; onReportComment: (commentId: string) => void }) {
   const { user } = useAuth();
   const { data: comments = [], isLoading } = useCommunityComments(post.id);
   const createComment = useCreateComment();
+  const deleteComment = useDeleteCommunityComment();
   const [commentText, setCommentText] = useState("");
 
   const handleComment = async () => {
     if (!commentText.trim()) return;
     await createComment.mutateAsync({ postId: post.id, body: commentText, creatorId });
     setCommentText("");
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      await deleteComment.mutateAsync({ commentId, postId: post.id });
+      toast.success("Comment deleted");
+    } catch (err: any) {
+      toast.error("Error", { description: err.message });
+    }
   };
 
   return (
@@ -348,7 +550,7 @@ function PostDetailView({ post, creatorId, isOwner, onClose }: { post: any; crea
             {comments.length} {comments.length === 1 ? "comment" : "comments"}
           </p>
           {comments.map((c: any) => (
-            <div key={c.id} className="flex gap-2 mb-4">
+            <div key={c.id} className="flex gap-2 mb-4 group">
               {c.author_avatar ? (
                 <img src={c.author_avatar} alt="" loading="lazy" className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
               ) : (
@@ -356,7 +558,7 @@ function PostDetailView({ post, creatorId, isOwner, onClose }: { post: any; crea
                   {(c.author_name || "M").charAt(0)}
                 </div>
               )}
-              <div>
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs font-bold text-foreground">{c.author_name}</span>
                   <span className="text-[10px] text-muted-foreground">
@@ -365,6 +567,28 @@ function PostDetailView({ post, creatorId, isOwner, onClose }: { post: any; crea
                 </div>
                 <p className="text-sm text-muted-foreground">{c.body}</p>
               </div>
+              {user && (
+                <div className="flex items-start gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                  {(isOwner || c.author_id === user.id) && (
+                    <button
+                      onClick={() => handleDeleteComment(c.id)}
+                      aria-label="Delete comment"
+                      className="p-1 rounded text-muted-foreground hover:text-destructive"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                  {!isOwner && c.author_id !== user.id && (
+                    <button
+                      onClick={() => onReportComment(c.id)}
+                      aria-label="Report comment"
+                      className="p-1 rounded text-muted-foreground hover:text-foreground"
+                    >
+                      <Flag className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>
