@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search } from "lucide-react";
 import { GlobalEventCard, type GlobalEvent } from "./GlobalEventCard";
+import OnUplyEventsRail from "./OnUplyEventsRail";
 
 const PAGE_SIZE = 20;
 
@@ -72,6 +73,9 @@ export function WorldwideEventsTab() {
 
   return (
     <div className="space-y-4">
+      {/* UPLY-native events first; external worldwide directory stays below */}
+      <OnUplyEventsRail />
+
       <div className="space-y-3">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

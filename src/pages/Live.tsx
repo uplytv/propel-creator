@@ -9,6 +9,7 @@ import SEOHead from "@/components/SEOHead";
 import StreamCardNew from "@/components/live/StreamCardNew";
 
 import { useFollows } from "@/hooks/useFollows";
+import { CATEGORY_BUCKETS, countByBucket } from "@/lib/streamCategories";
 
 // ─── Types ──────────────────────────────────────────────────────
 interface LiveStream {
@@ -27,21 +28,13 @@ interface LiveStream {
   ended_at: string | null;
   created_at: string | null;
   energy_score?: number;
+  /** Discovery Engine V2 score (video_discovery_scores.score, cron-refreshed). */
+  discovery_score?: number;
   creator_name?: string;
   creator_avatar?: string;
   creator_tier?: number;
   creator_tier_name?: string;
 }
-
-const HARDCODED_CATEGORIES = [
-  { emoji: "💪", name: "Fitness", gradient: "from-emerald-500/20 to-teal-500/10" },
-  { emoji: "💰", name: "Finance", gradient: "from-amber-500/20 to-yellow-500/10" },
-  { emoji: "🎮", name: "Gaming", gradient: "from-violet-500/20 to-purple-500/10" },
-  { emoji: "💬", name: "Just Chatting", gradient: "from-sky-500/20 to-blue-500/10" },
-  { emoji: "🎵", name: "Music", gradient: "from-rose-500/20 to-pink-500/10" },
-  { emoji: "📚", name: "Education", gradient: "from-indigo-500/20 to-blue-500/10" },
-  { emoji: "🌍", name: "IRL", gradient: "from-green-500/20 to-emerald-500/10" },
-];
 
 const SECTION_TABS = [
   { id: "live", label: "Live Now", icon: Radio },
@@ -102,16 +95,28 @@ export default function Live() {
     }
 
     const userIds = [...new Set(streams.map((s: any) => s.user_id))];
-    const { data: profiles } = await supabase
-      .from('profiles_public')
-      .select('user_id, display_name, avatar_url, tier, tier_name')
-      .in('user_id', userIds);
+    const streamIds = streams.map((s: any) => s.id);
+    // Profiles + Discovery Engine V2 scores (recalculated every 5 min by the
+    // recalculate-discovery-scores cron; live streams are floored at 30).
+    const [{ data: profiles }, { data: scoreRows }] = await Promise.all([
+      supabase
+        .from('profiles_public')
+        .select('user_id, display_name, avatar_url, tier, tier_name')
+        .in('user_id', userIds),
+      supabase
+        .from('video_discovery_scores')
+        .select('content_id, score')
+        .eq('content_type', 'stream')
+        .in('content_id', streamIds),
+    ]);
     const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
+    const scoreMap = new Map((scoreRows || []).map((r: any) => [r.content_id, Number(r.score) || 0]));
 
     const enriched = streams.map((s: any) => {
       const profile = profileMap.get(s.user_id);
       return {
         ...s,
+        discovery_score: scoreMap.get(s.id) ?? 0,
         creator_name: profile?.display_name || 'Creator',
         creator_avatar: profile?.avatar_url || '',
         creator_tier: profile?.tier || 1,
@@ -120,16 +125,8 @@ export default function Live() {
     });
     setLiveStreams(enriched);
 
-    const counts: Record<string, number> = {};
-    streams.forEach((s: any) => {
-      const cat = (s.category || '').toLowerCase();
-      HARDCODED_CATEGORIES.forEach(hc => {
-        if (cat.includes(hc.name.toLowerCase())) {
-          counts[hc.name] = (counts[hc.name] || 0) + 1;
-        }
-      });
-    });
-    setCategoryCounts(counts);
+    // Real per-bucket counts from the shared taxonomy (no substring guessing).
+    setCategoryCounts(countByBucket(streams.map((s: any) => s.category)));
   };
 
   // ─── Fetch Clips ────────────────────────────────────────────
@@ -271,6 +268,10 @@ export default function Live() {
     title: s.title || 'Untitled Stream',
     category: s.category || 'General',
     viewers: s.viewer_count || 0,
+    // Energy = Discovery Engine V2 score; mux_live_streams.energy_score is a
+    // legacy column that is never written (always 0), so it's only a fallback.
+    energyScore: (s.discovery_score ?? 0) > 0 ? (s.discovery_score as number) : (s.energy_score || 0),
+    startedAtMs: s.started_at ? new Date(s.started_at).getTime() : 0,
     isLive: s.status === 'active',
     isPublic: s.is_public ?? true,
     thumbnailGradient: '',
@@ -282,6 +283,19 @@ export default function Live() {
     ppvPrice: (s as any).ppv_price ?? null,
   });
 
+  // For You ranking: followed creators first, then energy (discovery score)
+  // desc, then live viewers desc, then most recently started.
+  const followingSet = new Set(followingIds);
+  const rankStreams = <T extends { userId: string; energyScore: number; viewers: number; startedAtMs: number }>(list: T[]): T[] =>
+    [...list].sort((a, b) => {
+      const aFollowed = followingSet.has(a.userId) ? 1 : 0;
+      const bFollowed = followingSet.has(b.userId) ? 1 : 0;
+      if (aFollowed !== bFollowed) return bFollowed - aFollowed;
+      if (a.energyScore !== b.energyScore) return b.energyScore - a.energyScore;
+      if (a.viewers !== b.viewers) return b.viewers - a.viewers;
+      return b.startedAtMs - a.startedAtMs;
+    });
+
   const hasLiveStreams = liveStreams.length > 0;
   const allStreams = liveStreams.map(toMockFormat);
   let filtered = search
@@ -290,10 +304,11 @@ export default function Live() {
   if (activeStreamTab === "following" && hasLiveStreams) {
     filtered = filtered.filter(s => 'userId' in s && followingIds.includes((s as any).userId));
   }
+  filtered = rankStreams(filtered);
   const liveCount = liveStreams.length;
 
-  // Hero stream = highest viewers
-  const heroStream = filtered.length > 0 ? [...filtered].sort((a, b) => b.viewers - a.viewers)[0] : null;
+  // Hero stream = top of the For You ranking (followed > energy > viewers > recency)
+  const heroStream = filtered.length > 0 ? filtered[0] : null;
   const gridStreams = heroStream ? filtered.filter(s => s.id !== heroStream.id) : filtered;
 
   const totalViewers = allStreams.reduce((sum, s) => sum + s.viewers, 0);
@@ -527,8 +542,8 @@ export default function Live() {
               {/* Categories */}
               <div ref={categoriesRef} className="mt-10">
                 <h3 className="text-lg font-bold text-foreground mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Top Categories</h3>
-                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide sm:grid sm:grid-cols-4 lg:grid-cols-7 sm:overflow-visible">
-                  {HARDCODED_CATEGORIES.map(cat => (
+                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide sm:grid sm:grid-cols-4 lg:grid-cols-8 sm:overflow-visible">
+                  {CATEGORY_BUCKETS.map(cat => (
                     <div key={cat.name} className="flex-shrink-0 w-24 sm:w-auto cursor-pointer group">
                       <div className={`aspect-square rounded-lg bg-gradient-to-br ${cat.gradient} border border-border flex items-center justify-center text-3xl group-hover:border-primary/40 transition-colors`}>
                         {cat.emoji}
