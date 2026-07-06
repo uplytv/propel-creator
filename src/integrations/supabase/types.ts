@@ -2822,6 +2822,7 @@ export type Database = {
           id: string
           is_free: boolean
           lesson_links: Json
+          min_tier_rank: number | null
           module_id: string
           mux_asset_id: string | null
           mux_playback_id: string | null
@@ -2842,6 +2843,7 @@ export type Database = {
           id?: string
           is_free?: boolean
           lesson_links?: Json
+          min_tier_rank?: number | null
           module_id: string
           mux_asset_id?: string | null
           mux_playback_id?: string | null
@@ -2862,6 +2864,7 @@ export type Database = {
           id?: string
           is_free?: boolean
           lesson_links?: Json
+          min_tier_rank?: number | null
           module_id?: string
           mux_asset_id?: string | null
           mux_playback_id?: string | null
@@ -2892,6 +2895,7 @@ export type Database = {
           description: string
           id: string
           is_free: boolean
+          min_tier_rank: number | null
           position: number
           slug: string | null
           title: string
@@ -2903,6 +2907,7 @@ export type Database = {
           description?: string
           id?: string
           is_free?: boolean
+          min_tier_rank?: number | null
           position?: number
           slug?: string | null
           title: string
@@ -2914,6 +2919,7 @@ export type Database = {
           description?: string
           id?: string
           is_free?: boolean
+          min_tier_rank?: number | null
           position?: number
           slug?: string | null
           title?: string
@@ -3225,12 +3231,42 @@ export type Database = {
         }
         Relationships: []
       }
+      community_comment_likes: {
+        Row: {
+          comment_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "community_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_comments: {
         Row: {
           author_id: string
           body: string
           created_at: string
           id: string
+          parent_id: string | null
           post_id: string
         }
         Insert: {
@@ -3238,6 +3274,7 @@ export type Database = {
           body: string
           created_at?: string
           id?: string
+          parent_id?: string | null
           post_id: string
         }
         Update: {
@@ -3245,14 +3282,54 @@ export type Database = {
           body?: string
           created_at?: string
           id?: string
+          parent_id?: string | null
           post_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "community_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "community_comments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "community_comments_post_id_fkey"
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_event_rsvps: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_event_rsvps_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "community_events"
             referencedColumns: ["id"]
           },
         ]
@@ -3316,6 +3393,67 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      community_poll_votes: {
+        Row: {
+          created_at: string
+          id: string
+          option_index: number
+          poll_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          option_index: number
+          poll_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          option_index?: number
+          poll_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "community_polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_polls: {
+        Row: {
+          created_at: string
+          id: string
+          options: Json
+          post_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          options: Json
+          post_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          options?: Json
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_polls_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: true
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       community_post_likes: {
         Row: {
@@ -4297,6 +4435,7 @@ export type Database = {
           tags: string[]
           updated_at: string
           user_id: string | null
+          value_cents: number | null
         }
         Insert: {
           created_at?: string
@@ -4312,6 +4451,7 @@ export type Database = {
           tags?: string[]
           updated_at?: string
           user_id?: string | null
+          value_cents?: number | null
         }
         Update: {
           created_at?: string
@@ -4327,6 +4467,7 @@ export type Database = {
           tags?: string[]
           updated_at?: string
           user_id?: string | null
+          value_cents?: number | null
         }
         Relationships: []
       }
@@ -19443,6 +19584,7 @@ export type Database = {
           price_monthly: number
           stripe_price_id: string | null
           stripe_product_id: string | null
+          tier_rank: number | null
           trial_days: number | null
         }
         Insert: {
@@ -19455,6 +19597,7 @@ export type Database = {
           price_monthly?: number
           stripe_price_id?: string | null
           stripe_product_id?: string | null
+          tier_rank?: number | null
           trial_days?: number | null
         }
         Update: {
@@ -19467,6 +19610,7 @@ export type Database = {
           price_monthly?: number
           stripe_price_id?: string | null
           stripe_product_id?: string | null
+          tier_rank?: number | null
           trial_days?: number | null
         }
         Relationships: []
@@ -22187,7 +22331,31 @@ export type Database = {
         Returns: string
       }
       creator_content_count: { Args: { p_creator_id: string }; Returns: number }
+      crm_advance_stage_to_customer: {
+        Args: { p_creator_id: string; p_email: string }
+        Returns: undefined
+      }
       crm_sync_contacts: { Args: { p_creator_id: string }; Returns: number }
+      crm_upsert_contact: {
+        Args: {
+          p_activity_at: string
+          p_creator_id: string
+          p_email: string
+          p_name: string
+          p_source: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      crm_upsert_contact_for_user: {
+        Args: {
+          p_activity_at: string
+          p_creator_id: string
+          p_source: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       decrement_merch_variant_stock: {
         Args: { _qty?: number; _variant_id: string }
         Returns: number
@@ -22383,6 +22551,10 @@ export type Database = {
         Returns: boolean
       }
       has_stream_ppv_access: { Args: { p_stream_id: string }; Returns: boolean }
+      has_tier_access: {
+        Args: { p_creator_id: string; p_min_rank: number }
+        Returns: boolean
+      }
       has_track_access: {
         Args: { _track_id: string; _user_id: string }
         Returns: boolean
@@ -22990,6 +23162,13 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      tier_gated_lesson_counts: {
+        Args: { p_creator_id: string }
+        Returns: {
+          lesson_count: number
+          min_rank: number
+        }[]
       }
       update_subscriber_send_hour: {
         Args: { p_email: string; p_hour: number }
