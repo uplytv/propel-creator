@@ -2783,6 +2783,36 @@ export type Database = {
           },
         ]
       }
+      chat_moderation: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          kind: string
+          stream_creator_id: string
+          target_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          kind: string
+          stream_creator_id: string
+          target_user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          kind?: string
+          stream_creator_id?: string
+          target_user_id?: string
+        }
+        Relationships: []
+      }
       classroom_lessons: {
         Row: {
           created_at: string
@@ -2791,11 +2821,15 @@ export type Database = {
           duration_seconds: number
           id: string
           is_free: boolean
+          lesson_links: Json
           module_id: string
           mux_asset_id: string | null
+          mux_playback_id: string | null
+          mux_upload_id: string | null
           position: number
           slug: string | null
           title: string
+          video_status: string | null
           video_type: string | null
           video_url: string | null
           youtube_video_id: string | null
@@ -2807,11 +2841,15 @@ export type Database = {
           duration_seconds?: number
           id?: string
           is_free?: boolean
+          lesson_links?: Json
           module_id: string
           mux_asset_id?: string | null
+          mux_playback_id?: string | null
+          mux_upload_id?: string | null
           position?: number
           slug?: string | null
           title: string
+          video_status?: string | null
           video_type?: string | null
           video_url?: string | null
           youtube_video_id?: string | null
@@ -2823,11 +2861,15 @@ export type Database = {
           duration_seconds?: number
           id?: string
           is_free?: boolean
+          lesson_links?: Json
           module_id?: string
           mux_asset_id?: string | null
+          mux_playback_id?: string | null
+          mux_upload_id?: string | null
           position?: number
           slug?: string | null
           title?: string
+          video_status?: string | null
           video_type?: string | null
           video_url?: string | null
           youtube_video_id?: string | null
@@ -3064,6 +3106,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      community_bans: {
+        Row: {
+          created_at: string
+          creator_id: string
+          id: string
+          reason: string | null
+          target_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          id?: string
+          reason?: string | null
+          target_user_id: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          id?: string
+          reason?: string | null
+          target_user_id?: string
+        }
+        Relationships: []
       }
       community_blasts: {
         Row: {
@@ -3495,6 +3561,39 @@ export type Database = {
           started_at?: string | null
           status?: string
           title?: string | null
+        }
+        Relationships: []
+      }
+      content_reports: {
+        Row: {
+          content_id: string
+          content_type: string
+          created_at: string
+          creator_id: string
+          id: string
+          reason: string | null
+          reporter_id: string
+          status: string
+        }
+        Insert: {
+          content_id: string
+          content_type: string
+          created_at?: string
+          creator_id: string
+          id?: string
+          reason?: string | null
+          reporter_id: string
+          status?: string
+        }
+        Update: {
+          content_id?: string
+          content_type?: string
+          created_at?: string
+          creator_id?: string
+          id?: string
+          reason?: string | null
+          reporter_id?: string
+          status?: string
         }
         Relationships: []
       }
@@ -16194,10 +16293,13 @@ export type Database = {
           hype_train_level: number | null
           id: string
           is_event_stream: boolean | null
+          is_ppv: boolean
           is_public: boolean | null
           mux_playback_id: string | null
           mux_stream_id: string
           orientation: string | null
+          ppv_price: number | null
+          slow_mode_seconds: number
           slug: string | null
           started_at: string | null
           status: string | null
@@ -16224,10 +16326,13 @@ export type Database = {
           hype_train_level?: number | null
           id?: string
           is_event_stream?: boolean | null
+          is_ppv?: boolean
           is_public?: boolean | null
           mux_playback_id?: string | null
           mux_stream_id: string
           orientation?: string | null
+          ppv_price?: number | null
+          slow_mode_seconds?: number
           slug?: string | null
           started_at?: string | null
           status?: string | null
@@ -16254,10 +16359,13 @@ export type Database = {
           hype_train_level?: number | null
           id?: string
           is_event_stream?: boolean | null
+          is_ppv?: boolean
           is_public?: boolean | null
           mux_playback_id?: string | null
           mux_stream_id?: string
           orientation?: string | null
+          ppv_price?: number | null
+          slow_mode_seconds?: number
           slug?: string | null
           started_at?: string | null
           status?: string | null
@@ -18998,6 +19106,30 @@ export type Database = {
         }
         Relationships: []
       }
+      stream_playback_vault: {
+        Row: {
+          created_at: string
+          download_url: string | null
+          playback_id: string
+          ref_id: string
+          ref_type: string
+        }
+        Insert: {
+          created_at?: string
+          download_url?: string | null
+          playback_id: string
+          ref_id: string
+          ref_type: string
+        }
+        Update: {
+          created_at?: string
+          download_url?: string | null
+          playback_id?: string
+          ref_id?: string
+          ref_type?: string
+        }
+        Relationships: []
+      }
       stream_recordings: {
         Row: {
           created_at: string
@@ -19156,6 +19288,42 @@ export type Database = {
           stream_recording_id?: string
           transcript_json?: Json | null
           transcript_text?: string | null
+        }
+        Relationships: []
+      }
+      stripe_refund_clawbacks: {
+        Row: {
+          clawback_amount: number | null
+          created_at: string
+          id: string
+          refund_id: string
+          shortfall: number | null
+          stripe_charge_id: string | null
+          stripe_payment_intent_id: string | null
+          wallet_decrement: number | null
+          wallet_id: string | null
+        }
+        Insert: {
+          clawback_amount?: number | null
+          created_at?: string
+          id?: string
+          refund_id: string
+          shortfall?: number | null
+          stripe_charge_id?: string | null
+          stripe_payment_intent_id?: string | null
+          wallet_decrement?: number | null
+          wallet_id?: string | null
+        }
+        Update: {
+          clawback_amount?: number | null
+          created_at?: string
+          id?: string
+          refund_id?: string
+          shortfall?: number | null
+          stripe_charge_id?: string | null
+          stripe_payment_intent_id?: string | null
+          wallet_decrement?: number | null
+          wallet_id?: string | null
         }
         Relationships: []
       }
@@ -22166,6 +22334,10 @@ export type Database = {
           username: string
         }[]
       }
+      get_stream_playback: {
+        Args: { p_ref_id: string; p_ref_type?: string }
+        Returns: Json
+      }
       get_super_fans: {
         Args: { _artist_id: string; _limit?: number }
         Returns: {
@@ -22210,6 +22382,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      has_stream_ppv_access: { Args: { p_stream_id: string }; Returns: boolean }
       has_track_access: {
         Args: { _track_id: string; _user_id: string }
         Returns: boolean
@@ -22242,6 +22415,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      is_banned_from_post_community: {
+        Args: { _post_id: string }
+        Returns: boolean
+      }
       is_blend_member: {
         Args: { _blend_id: string; _user_id: string }
         Returns: boolean
@@ -22250,12 +22427,14 @@ export type Database = {
         Args: { _project: string; _user: string }
         Returns: boolean
       }
+      is_community_banned: { Args: { _creator_id: string }; Returns: boolean }
       is_email_suppressed: { Args: { p_email: string }; Returns: boolean }
       is_new_creator: { Args: { p_creator_id: string }; Returns: boolean }
       is_playlist_collaborator: {
         Args: { _min_role?: string; _playlist_id: string; _user_id: string }
         Returns: boolean
       }
+      is_stream_chat_blocked: { Args: { _stream_id: string }; Returns: boolean }
       link_wristband: {
         Args: {
           p_event_id: string
