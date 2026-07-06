@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Sparkles, Bot, User, Loader2, Plus } from "lucide-react";
+import { Send, Sparkles, Bot, User, Loader2, Plus, Mic, Square, Volume2, VolumeX } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/context/AppContext";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useAuth } from "@/context/AuthContext";
+import { useVoiceAria } from "@/hooks/useVoiceAria";
 import ReactMarkdown from "react-markdown";
 
 interface Message {
@@ -65,7 +66,12 @@ export default function AriaChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isStreaming]);
 
-  const handleSend = async (text?: string) => {
+  const voice = useVoiceAria({
+    onInterim: (transcript) => setInput(transcript),
+    onFinal: (transcript) => handleSend(transcript, true),
+  });
+
+  const handleSend = async (text?: string, viaVoice = false) => {
     const content = (text || input).trim();
     if (!content || isStreaming) return;
 
@@ -94,6 +100,7 @@ export default function AriaChat() {
     };
     setMessages(prev => [...prev, assistantMsg]);
     setIsStreaming(false);
+    if (viaVoice) voice.speakReply(response);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -115,6 +122,46 @@ export default function AriaChat() {
     e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px";
   };
 
+  // Voice controls (hidden on unsupported browsers, e.g. Firefox)
+  const voiceControls = voice.supported ? (
+    <>
+      <button
+        type="button"
+        onClick={voice.toggleVoiceReplies}
+        title={voice.voiceReplies ? "Mute voice replies" : "Speak replies aloud"}
+        aria-label={voice.voiceReplies ? "Mute voice replies" : "Speak replies aloud"}
+        className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+      >
+        {voice.voiceReplies ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+      </button>
+      {voice.speaking ? (
+        <button
+          type="button"
+          onClick={voice.stopSpeaking}
+          title="Stop speaking"
+          aria-label="Stop speaking"
+          className="flex-shrink-0 w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center animate-pulse"
+        >
+          <Square className="w-3.5 h-3.5 fill-current" />
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={voice.toggleListening}
+          title={voice.listening ? "Stop listening" : "Talk to ARIA"}
+          aria-label={voice.listening ? "Stop listening" : "Talk to ARIA"}
+          className={`flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${
+            voice.listening
+              ? "bg-destructive text-destructive-foreground animate-pulse"
+              : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+          }`}
+        >
+          <Mic className="w-4 h-4" />
+        </button>
+      )}
+    </>
+  ) : null;
+
   // Empty state / Welcome
   if (!hasStarted) {
     return (
@@ -129,9 +176,14 @@ export default function AriaChat() {
           </div>
           <h2 className="text-2xl font-bold text-foreground mb-1">ARIA</h2>
           <p className="text-xs text-muted-foreground mb-1 font-medium tracking-wide uppercase">Advanced Revenue Increasing Agent</p>
-          <p className="text-sm text-muted-foreground mb-6">
+          <p className="text-sm text-muted-foreground mb-3">
             Your AI growth partner. Ask me anything about growing your creator business.
           </p>
+          {voice.supported && (
+            <span className="inline-flex items-center gap-1.5 mb-6 px-2 py-1 border border-primary/30 bg-primary/5 text-primary text-[10px] font-semibold uppercase tracking-wide">
+              <Mic className="w-3 h-3" /> New: Voice — tap the mic and talk
+            </span>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full mb-8">
             {SUGGESTIONS.map((s, i) => (
@@ -157,10 +209,11 @@ export default function AriaChat() {
               value={input}
               onChange={handleTextareaInput}
               onKeyDown={handleKeyDown}
-              placeholder="Ask ARIA anything..."
+              placeholder={voice.listening ? "Listening…" : "Ask ARIA anything..."}
               rows={1}
               className="flex-1 resize-none bg-transparent px-3 py-2.5 text-sm outline-none text-foreground placeholder:text-muted-foreground max-h-[120px]"
             />
+            {voiceControls}
             <button
               onClick={() => handleSend()}
               disabled={!input.trim()}
@@ -169,6 +222,9 @@ export default function AriaChat() {
               <Send className="w-4 h-4" />
             </button>
           </div>
+          {voice.error && (
+            <p className="text-[10px] text-center text-destructive mt-2">{voice.error}</p>
+          )}
         </div>
       </div>
     );
@@ -182,6 +238,11 @@ export default function AriaChat() {
           <Sparkles className="w-4 h-4 text-primary" />
           <span className="text-sm font-semibold text-foreground">ARIA</span>
           <span className="text-[10px] text-muted-foreground">Advanced Revenue Increasing Agent</span>
+          {voice.supported && (
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 border border-primary/30 bg-primary/5 text-primary text-[9px] font-semibold uppercase tracking-wide">
+              <Mic className="w-2.5 h-2.5" /> Voice
+            </span>
+          )}
         </div>
         <button
           onClick={handleNewChat}
@@ -255,10 +316,11 @@ export default function AriaChat() {
             value={input}
             onChange={handleTextareaInput}
             onKeyDown={handleKeyDown}
-            placeholder="Ask ARIA anything..."
+            placeholder={voice.listening ? "Listening…" : "Ask ARIA anything..."}
             rows={1}
             className="flex-1 resize-none bg-transparent px-3 py-2.5 text-sm outline-none text-foreground placeholder:text-muted-foreground max-h-[120px]"
           />
+          {voiceControls}
           <button
             onClick={() => handleSend()}
             disabled={!input.trim() || isStreaming}
@@ -267,6 +329,9 @@ export default function AriaChat() {
             {isStreaming ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </button>
         </div>
+        {voice.error && (
+          <p className="text-[10px] text-center text-destructive mt-2">{voice.error}</p>
+        )}
         <p className="text-[10px] text-center text-muted-foreground mt-2">ARIA can make mistakes. Verify important information.</p>
       </div>
     </div>

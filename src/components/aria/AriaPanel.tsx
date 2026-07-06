@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { X, Send, Sparkles } from "lucide-react";
+import { X, Send, Sparkles, Mic, Square, Volume2, VolumeX } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/context/AppContext";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useAuth } from "@/context/AuthContext";
+import { useVoiceAria } from "@/hooks/useVoiceAria";
 
 interface Message {
   role: "user" | "assistant";
@@ -79,15 +80,25 @@ export function AriaPanel({ open, onClose }: AriaPanelProps) {
   }, [open, hasInitialized, getCreatorContext, sendToAria]);
 
   useEffect(() => {
-    if (!open) setHasInitialized(false);
+    if (!open) {
+      setHasInitialized(false);
+      voice.stopListening();
+      voice.stopSpeaking();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  const handleSend = async () => {
-    const trimmed = input.trim();
+  const voice = useVoiceAria({
+    onInterim: (transcript) => setInput(transcript),
+    onFinal: (transcript) => handleSend(transcript, true),
+  });
+
+  const handleSend = async (textOverride?: string, viaVoice = false) => {
+    const trimmed = (textOverride ?? input).trim();
     if (!trimmed || isTyping) return;
 
     const userMsg: Message = { role: "user", content: trimmed };
@@ -99,6 +110,7 @@ export function AriaPanel({ open, onClose }: AriaPanelProps) {
     const response = await sendToAria(trimmed, newMessages);
     setMessages((prev) => [...prev, { role: "assistant", content: response }]);
     setIsTyping(false);
+    if (viaVoice) voice.speakReply(response);
   };
 
   if (!open) return null;
@@ -119,14 +131,35 @@ export function AriaPanel({ open, onClose }: AriaPanelProps) {
               <span className="font-bold text-base text-accent-green font-sans">
                 ARIA
               </span>
+              {voice.supported && (
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 border border-surface-border bg-surface-raised text-text-dim text-[9px] font-semibold uppercase tracking-wide">
+                  <Mic className="w-2.5 h-2.5" /> Voice
+                </span>
+              )}
             </div>
             <p className="text-xs mt-0.5 text-text-dim">
               Your AI growth partner · Powered by Claude
             </p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5 transition-colors">
-            <X className="w-5 h-5 text-text-dim" />
-          </button>
+          <div className="flex items-center gap-1">
+            {voice.supported && (
+              <button
+                onClick={voice.toggleVoiceReplies}
+                title={voice.voiceReplies ? "Mute voice replies" : "Speak replies aloud"}
+                aria-label={voice.voiceReplies ? "Mute voice replies" : "Speak replies aloud"}
+                className="p-1.5 rounded-lg hover:bg-white/5 transition-colors"
+              >
+                {voice.voiceReplies ? (
+                  <Volume2 className="w-4 h-4 text-text-dim" />
+                ) : (
+                  <VolumeX className="w-4 h-4 text-text-dim" />
+                )}
+              </button>
+            )}
+            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5 transition-colors">
+              <X className="w-5 h-5 text-text-dim" />
+            </button>
+          </div>
         </div>
 
         {/* Messages */}
@@ -169,17 +202,45 @@ export function AriaPanel({ open, onClose }: AriaPanelProps) {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder="Ask ARIA anything..."
+              placeholder={voice.listening ? "Listening…" : "Ask ARIA anything..."}
               className="flex-1 px-4 py-2.5 rounded-lg text-sm outline-none bg-surface-raised text-foreground border border-surface-border placeholder:text-text-dim"
             />
+            {voice.supported && (
+              voice.speaking ? (
+                <button
+                  onClick={voice.stopSpeaking}
+                  title="Stop speaking"
+                  aria-label="Stop speaking"
+                  className="px-3 py-2.5 rounded-lg transition-all bg-surface-raised border border-surface-border text-foreground animate-pulse"
+                >
+                  <Square className="w-4 h-4 fill-current" />
+                </button>
+              ) : (
+                <button
+                  onClick={voice.toggleListening}
+                  title={voice.listening ? "Stop listening" : "Talk to ARIA"}
+                  aria-label={voice.listening ? "Stop listening" : "Talk to ARIA"}
+                  className={`px-3 py-2.5 rounded-lg transition-all border ${
+                    voice.listening
+                      ? "bg-destructive text-destructive-foreground border-destructive animate-pulse"
+                      : "bg-surface-raised border-surface-border text-text-dim hover:text-foreground"
+                  }`}
+                >
+                  <Mic className="w-4 h-4" />
+                </button>
+              )
+            )}
             <button
-              onClick={handleSend}
+              onClick={() => handleSend()}
               disabled={!input.trim() || isTyping}
               className="px-3 py-2.5 rounded-lg font-medium text-sm transition-all disabled:opacity-40 bg-accent-green text-accent-green-foreground"
             >
               <Send className="w-4 h-4" />
             </button>
           </div>
+          {voice.error && (
+            <p className="text-[10px] mt-1.5 text-destructive">{voice.error}</p>
+          )}
         </div>
       </div>
 
