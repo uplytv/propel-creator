@@ -1,11 +1,12 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import Hls from "hls.js";
-import { ChevronDown, ChevronRight, CheckCircle, Lock, Play, Plus, ArrowLeft, ArrowRight, GripVertical, Trash2, Pencil, Loader2, AlertCircle, BookOpen, Clock, Layers, ImagePlus, Menu } from "lucide-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ChevronDown, ChevronRight, CheckCircle, Lock, Play, Plus, ArrowLeft, ArrowRight, GripVertical, Trash2, Pencil, Loader2, AlertCircle, BookOpen, Clock, Layers, ImagePlus, Youtube, Link2, ExternalLink, Upload, RefreshCw, X, Film } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UPLYMuxPlayer } from "@/components/MuxPlayer";
 import { useAuth } from "@/context/AuthContext";
-import { useClassroomModules, useClassroomLessons, useLessonCompletions, useCompleteLesson, useCreateModule, useCreateLesson, useReorderModules, useReorderLessons, useDeleteModule, useDeleteLesson, useUpdateModule, useUpdateLesson } from "@/hooks/useClassroom";
+import { useClassroomModules, useClassroomLessons, useLessonCompletions, useCompleteLesson, useCreateModule, useCreateLesson, useReorderModules, useReorderLessons, useDeleteModule, useDeleteLesson, useUpdateModule, useUpdateLesson, useLessonMediaSources, useSelfHealLessonMedia, resolveLessonMedia, extractYouTubeId, extractVimeoId, type LessonMedia } from "@/hooks/useClassroom";
+import RichTextEditor from "@/components/email/RichTextEditor";
 import ContentGate from "@/components/ContentGate";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -97,59 +98,124 @@ function HlsVideo({ src, title }: { src: string; title?: string }) {
   );
 }
 
-/* ── Lesson Video Player ── */
-function LessonPlayer({ lesson }: { lesson: any }) {
-  // Resolve a Mux playback id from either table — uploads live in mux_assets,
-  // live-stream recordings live in stream_recordings.
-  const { data: lookupPlayback } = useQuery({
-    queryKey: ["lesson-playback", lesson.mux_asset_id],
-    enabled: !!lesson.mux_asset_id,
-    queryFn: async () => {
-      const { data: asset } = await supabase
-        .from("mux_assets").select("mux_playback_id").eq("mux_asset_id", lesson.mux_asset_id).maybeSingle();
-      if (asset?.mux_playback_id) return asset.mux_playback_id;
-      const { data: rec } = await supabase
-        .from("stream_recordings").select("playback_id").eq("mux_asset_id", lesson.mux_asset_id).maybeSingle();
-      return rec?.playback_id || null;
-    },
-  });
+/* ── Lesson Video Player ──
+   Renders from a pre-resolved `media` object (see resolveLessonMedia). Never
+   falls through to a blank <video src="upload:…">: every state — ready,
+   processing, failed, empty — has a clear, deliberate UI. */
+function LessonPlayer({ lesson, media, isOwner, onReupload }: { lesson: any; media: LessonMedia; isOwner?: boolean; onReupload?: () => void }) {
+  if (media.status === "ready") {
+    if (media.kind === "youtube" && media.youtubeId) {
+      return (
+        <div className="w-full aspect-video bg-black">
+          <iframe
+            src={`https://www.youtube.com/embed/${media.youtubeId}?rel=0`}
+            className="w-full h-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            title={lesson.title}
+          />
+        </div>
+      );
+    }
+    if (media.kind === "vimeo" && media.vimeoId) {
+      return (
+        <div className="w-full aspect-video bg-black">
+          <iframe
+            src={`https://player.vimeo.com/video/${media.vimeoId}`}
+            className="w-full h-full"
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowFullScreen
+            title={lesson.title}
+          />
+        </div>
+      );
+    }
+    if (media.kind === "mux" && media.playbackId) {
+      return <UPLYMuxPlayer playbackId={media.playbackId} title={lesson.title} />;
+    }
+    if (media.kind === "direct" && media.directUrl) {
+      return media.isHls
+        ? <HlsVideo src={media.directUrl} title={lesson.title} />
+        : <div className="w-full aspect-video bg-black"><video src={media.directUrl} controls playsInline className="w-full h-full object-contain" /></div>;
+    }
+  }
 
-  // Recordings sometimes store the HLS URL in video_url — pull the Mux id out.
-  const muxFromUrl = useMemo(() => {
-    const m = (lesson.video_url || "").match(/stream\.mux\.com\/([A-Za-z0-9]+)/);
-    return m?.[1] || null;
-  }, [lesson.video_url]);
-
-  const playbackId = lookupPlayback || muxFromUrl;
-
-  // YouTube embed
-  if (lesson.video_type === "youtube" && lesson.youtube_video_id) {
+  if (media.status === "processing") {
     return (
-      <div className="w-full aspect-video bg-black">
-        <iframe
-          src={`https://www.youtube.com/embed/${lesson.youtube_video_id}?autoplay=1`}
-          className="w-full h-full"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          title={lesson.title}
-        />
+      <div className="w-full aspect-video flex flex-col items-center justify-center gap-3 bg-secondary/40">
+        <Loader2 className="w-10 h-10 text-primary animate-spin" />
+        <p className="text-sm font-medium text-foreground">Processing video…</p>
+        <p className="text-xs text-muted-foreground">This usually takes a minute. It will play automatically when ready.</p>
       </div>
     );
   }
 
-  // Mux (handles HLS) — covers uploads + live-stream recordings.
-  if (playbackId) return <UPLYMuxPlayer playbackId={playbackId} title={lesson.title} autoPlay />;
-
-  if (lesson.video_url) {
-    const isHls = lesson.video_url.includes(".m3u8") || lesson.video_url.includes("stream.mux.com");
-    return isHls
-      ? <HlsVideo src={lesson.video_url} title={lesson.title} />
-      : <div className="w-full aspect-video bg-black"><video src={lesson.video_url} controls autoPlay playsInline className="w-full h-full object-contain" /></div>;
+  if (media.status === "errored") {
+    return (
+      <div className="w-full aspect-video flex flex-col items-center justify-center gap-3 bg-secondary/40 px-6 text-center">
+        <AlertCircle className="w-10 h-10 text-destructive" />
+        <p className="text-sm font-semibold text-foreground">This video didn’t finish uploading</p>
+        {isOwner ? (
+          <>
+            <p className="text-xs text-muted-foreground">The upload failed to process. Re-upload the file to fix it.</p>
+            <Button size="sm" variant="outline" className="gap-1.5 mt-1" onClick={onReupload}>
+              <RefreshCw className="w-3.5 h-3.5" /> Re-upload video
+            </Button>
+          </>
+        ) : (
+          <p className="text-xs text-muted-foreground">This lesson’s video is temporarily unavailable.</p>
+        )}
+      </div>
+    );
   }
 
+  // No video attached
   return (
-    <div className="w-full aspect-video flex items-center justify-center bg-card">
-      <Play className="w-12 h-12 text-muted-foreground" />
+    <div className="w-full aspect-video flex flex-col items-center justify-center gap-2 bg-secondary/40 text-center px-6">
+      <Film className="w-10 h-10 text-muted-foreground/50" />
+      <p className="text-sm font-medium text-muted-foreground">{isOwner ? "No video yet — edit this lesson to add one." : "This lesson has no video."}</p>
+    </div>
+  );
+}
+
+/* ── Rich description (Quill HTML) with a safe plain-text fallback ── */
+function LessonDescription({ text }: { text?: string }) {
+  const value = (text || "").trim();
+  if (!value) return null;
+  const looksHtml = /<\/?[a-z][\s\S]*>/i.test(value);
+  if (looksHtml) {
+    return (
+      <div
+        className="prose prose-sm max-w-none text-foreground prose-headings:text-foreground prose-a:text-primary prose-strong:text-foreground [&_p]:my-2 [&_ul]:my-2 [&_ol]:my-2 [&_a]:underline"
+        dangerouslySetInnerHTML={{ __html: value }}
+      />
+    );
+  }
+  return <div className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">{value}</div>;
+}
+
+/* ── Resources / attachment links shown under a lesson ── */
+function LessonResources({ links }: { links: any }) {
+  const list: { label: string; url: string }[] = Array.isArray(links) ? links.filter((l) => l && l.url) : [];
+  if (list.length === 0) return null;
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Resources</p>
+      <div className="space-y-1.5">
+        {list.map((l, i) => (
+          <a
+            key={i}
+            href={/^https?:\/\//.test(l.url) ? l.url : `https://${l.url}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg border border-border bg-secondary/30 hover:bg-secondary/60 transition-colors group"
+          >
+            <Link2 className="w-4 h-4 flex-shrink-0 text-primary" />
+            <span className="text-sm font-medium text-foreground truncate flex-1">{l.label?.trim() || l.url}</span>
+            <ExternalLink className="w-3.5 h-3.5 flex-shrink-0 text-muted-foreground group-hover:text-foreground transition-colors" />
+          </a>
+        ))}
+      </div>
     </div>
   );
 }
@@ -170,22 +236,20 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
   const deleteModule = useDeleteModule();
   const deleteLesson = useDeleteLesson();
 
-  const lessonAssetIds = allLessons.filter((l: any) => l.mux_asset_id && l.mux_asset_id !== "").map((l: any) => l.mux_asset_id);
-  const { data: assetStatuses = {} } = useQuery({
-    queryKey: ["lesson-asset-statuses", lessonAssetIds],
-    enabled: lessonAssetIds.length > 0,
-    refetchInterval: (query) => {
-      const data = query.state.data as Record<string, any> | undefined;
-      if (!data) return false;
-      return Object.values(data).some((a: any) => a.status === "preparing" || a.status === "pending") ? 15000 : false;
-    },
-    queryFn: async () => {
-      const { data } = await supabase.from("mux_assets").select("mux_asset_id, status, mux_playback_id").in("mux_asset_id", lessonAssetIds);
-      const map: Record<string, any> = {};
-      (data || []).forEach((a: any) => { map[a.mux_asset_id] = { status: a.status || "preparing", hasPlayback: !!a.mux_playback_id, playbackId: a.mux_playback_id || null }; });
-      return map;
-    },
-  });
+  // Resolve every lesson's video state (playback id / processing / errored) from
+  // the reliable upload_id + asset_id source maps, and self-heal finished
+  // uploads back onto the lesson row (owner only). One source of truth for both
+  // the sidebar badges and the player.
+  const { data: mediaSources } = useLessonMediaSources(allLessons);
+  useSelfHealLessonMedia(allLessons, isOwner, mediaSources);
+  const mediaMap = useMemo(() => {
+    const byUpload = mediaSources?.byUpload || {};
+    const byAsset = mediaSources?.byAsset || {};
+    const m: Record<string, LessonMedia> = {};
+    for (const l of allLessons as any[]) m[l.id] = resolveLessonMedia(l, byUpload, byAsset);
+    return m;
+  }, [allLessons, mediaSources]);
+  const mediaFor = (lesson: any): LessonMedia => mediaMap[lesson?.id] || { status: "none", kind: "none" };
 
   const [expandedModules, setExpandedModules] = useState<Set<string>>(() => new Set(modules.map((m: any) => m.id)));
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
@@ -333,7 +397,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
       <ContentGate creatorId={creatorId} type="lesson" isFree={selectedLesson.is_free}>
         <div className="min-h-[60vh]">
           {/* Video player */}
-          <LessonPlayer lesson={selectedLesson} />
+          <LessonPlayer lesson={selectedLesson} media={mediaFor(selectedLesson)} isOwner={isOwner} onReupload={() => setEditingLesson(selectedLesson)} />
 
           {/* ← Menu / Next → bar */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
@@ -355,14 +419,12 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
           </div>
 
           {/* Lesson content */}
-          <div className="px-4 py-5 space-y-4">
+          <div className="px-4 py-5 space-y-5">
             <h1 className="text-xl font-bold text-foreground">{selectedLesson.title}</h1>
 
-            {selectedLesson.description && (
-              <div className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">
-                {selectedLesson.description}
-              </div>
-            )}
+            <LessonDescription text={selectedLesson.description} />
+
+            <LessonResources links={selectedLesson.lesson_links} />
 
             {/* Complete button */}
             {user && !(completions as Set<string>).has(selectedLesson.id) ? (
@@ -437,9 +499,14 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                           <span className={`text-[15px] font-medium ${isComplete ? "text-muted-foreground" : "text-foreground"}`}>
                             {lesson.title}
                           </span>
-                          {lesson.video_type === "youtube" && (
-                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-destructive/10 text-destructive">YouTube</span>
-                          )}
+                          {(() => {
+                            const m = mediaFor(lesson);
+                            if (m.status === "processing") return <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-yellow-500/15 text-yellow-600"><Loader2 className="w-2.5 h-2.5 animate-spin" /> Processing</span>;
+                            if (m.status === "errored" && isOwner) return <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-destructive/10 text-destructive">Error</span>;
+                            if (m.kind === "youtube") return <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-destructive/10 text-destructive">YouTube</span>;
+                            if (m.kind === "vimeo") return <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-sky-500/10 text-sky-600">Vimeo</span>;
+                            return null;
+                          })()}
                         </span>
                       </button>
                       {isOwner && (
@@ -724,18 +791,16 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
                                               {lesson.duration_seconds > 0 && (
                                                 <span className="text-[11px] text-muted-foreground">{formatDuration(lesson.duration_seconds)}</span>
                                               )}
-                                              {isOwner && lesson.mux_asset_id && (() => {
-                                                const asset = (assetStatuses as Record<string, any>)[lesson.mux_asset_id];
-                                                const status = asset?.status || (lesson.mux_asset_id === "pending" ? "preparing" : null);
-                                                if (!status || status === "ready") return null;
-                                                if (status === "preparing" || status === "pending") return (
-                                                  <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-yellow-500/15 text-yellow-500">
+                                              {(() => {
+                                                const st = mediaFor(lesson).status;
+                                                if (st === "processing") return (
+                                                  <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-yellow-500/15 text-yellow-600">
                                                     <Loader2 className="w-2.5 h-2.5 animate-spin" /> Processing
                                                   </span>
                                                 );
-                                                if (status === "errored") return (
+                                                if (st === "errored" && isOwner) return (
                                                   <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-destructive/15 text-destructive">
-                                                    <AlertCircle className="w-2.5 h-2.5" /> Error
+                                                    <AlertCircle className="w-2.5 h-2.5" /> Upload failed
                                                   </span>
                                                 );
                                                 return null;
@@ -844,14 +909,12 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
 
     return (
       <div className="h-full overflow-y-auto">
-        <LessonPlayer lesson={selectedLesson} />
-        <div className="p-6 space-y-6">
-          <h1 className="text-xl font-bold text-foreground">{selectedLesson.title}</h1>
-          {selectedLesson.description && (
-            <div className="text-sm leading-relaxed text-muted-foreground">
-              {selectedLesson.description}
-            </div>
-          )}
+        <ContentGate creatorId={creatorId} type="lesson" isFree={selectedLesson.is_free}>
+        <LessonPlayer lesson={selectedLesson} media={mediaFor(selectedLesson)} isOwner={isOwner} onReupload={() => setEditingLesson(selectedLesson)} />
+        <div className="max-w-3xl mx-auto p-6 space-y-6">
+          <h1 className="text-2xl font-bold text-foreground">{selectedLesson.title}</h1>
+          <LessonDescription text={selectedLesson.description} />
+          <LessonResources links={selectedLesson.lesson_links} />
           <div className="flex items-center justify-between pt-4 border-t border-border">
             <button onClick={() => prevLesson && setSelectedLesson(prevLesson)} disabled={!prevLesson} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-secondary/50 ${prevLesson ? "text-foreground" : "text-muted-foreground/30"}`}>
               <ArrowLeft className="w-4 h-4" /> Previous
@@ -875,6 +938,7 @@ export default function SpaceClassroomTab({ creatorId, isOwner }: Props) {
             </Button>
           </div>
         </div>
+        </ContentGate>
       </div>
     );
   };
@@ -950,100 +1014,12 @@ function AddModuleDialog({ open, onClose, creatorId }: { open: boolean; onClose:
 }
 
 function AddLessonDialog({ open, onClose, moduleId, creatorId }: { open: boolean; onClose: () => void; moduleId: string; creatorId: string }) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [isFree, setIsFree] = useState(false);
-  const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const createLesson = useCreateLesson();
-  const { user } = useAuth();
-
-  const uploadToMux = async (file: File): Promise<string | null> => {
-    if (!user) return null;
-    const { uploadToMuxWithRetry } = await import("@/lib/muxUpload");
-    return uploadToMuxWithRetry({
-      userId: user.id,
-      title,
-      description,
-      file,
-      onProgress: setUploadProgress,
-    });
-  };
-
-  const handleSubmit = async () => {
-    if (!title.trim()) return;
-    setUploading(true);
-    try {
-      let uploadId: string | null = null;
-      if (videoFile) uploadId = await uploadToMux(videoFile);
-      await createLesson.mutateAsync({
-        module_id: moduleId, creator_id: creatorId, title, description, is_free: isFree,
-        ...(uploadId ? { mux_asset_id: "pending", video_url: `upload:${uploadId}` } : {}),
-      });
-      setTitle(""); setDescription(""); setVideoFile(null); setUploadProgress(0); setIsFree(false);
-      onClose();
-      toast.success(videoFile ? "Lesson added! Video is processing..." : "Lesson added!");
-    } catch (err: any) {
-      toast.error("Error", { description: err.message });
-    } finally { setUploading(false); }
-  };
-
+  const [busy, setBusy] = useState(false);
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o && !uploading) onClose(); }}>
-      <DialogContent className="bg-card border-border">
+    <Dialog open={open} onOpenChange={(o) => { if (!o && !busy) onClose(); }}>
+      <DialogContent className="bg-card border-border max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader><DialogTitle>Add Lesson</DialogTitle></DialogHeader>
-        <div className="space-y-3">
-          <Input placeholder="Lesson title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 bg-muted" />
-          <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 bg-muted" />
-          <div className="flex items-center justify-between rounded-lg bg-muted px-3 py-2.5">
-            <div>
-              <p className="text-sm font-medium text-foreground">Access</p>
-              <p className="text-xs text-muted-foreground">{isFree ? "Free preview lesson" : "Paid members only"}</p>
-            </div>
-            <div className="flex gap-1 rounded-full bg-secondary p-0.5">
-              <button
-                onClick={() => setIsFree(true)}
-                className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${isFree ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
-              >
-                Free
-              </button>
-              <button
-                onClick={() => setIsFree(false)}
-                className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${!isFree ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
-              >
-                Paid
-              </button>
-            </div>
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-1.5 text-muted-foreground">Video (optional)</label>
-            {!videoFile ? (
-              <label className="flex flex-col items-center justify-center gap-1.5 p-4 rounded-lg cursor-pointer hover:bg-secondary/50 transition-colors border border-dashed border-border">
-                <Play className="w-5 h-5 text-primary" />
-                <span className="text-xs text-muted-foreground">Click to select a video file</span>
-                <input type="file" accept="video/*" className="hidden" onChange={(e) => setVideoFile(e.target.files?.[0] || null)} />
-              </label>
-            ) : (
-              <div className="flex items-center gap-2 p-2.5 rounded-lg bg-muted">
-                <Play className="w-4 h-4 flex-shrink-0 text-primary" />
-                <span className="text-xs text-foreground truncate flex-1">{videoFile.name}</span>
-                <button onClick={() => setVideoFile(null)} className="text-xs px-2 py-0.5 rounded text-muted-foreground">Remove</button>
-              </div>
-            )}
-          </div>
-          {uploading && (
-            <div className="space-y-1">
-              <div className="h-1.5 rounded-full overflow-hidden bg-muted">
-                <div className="h-full rounded-full transition-all bg-primary" style={{ width: `${uploadProgress}%` }} />
-              </div>
-              <p className="text-xs text-center text-muted-foreground">Uploading… {uploadProgress}%</p>
-            </div>
-          )}
-          <Button onClick={handleSubmit} disabled={!title.trim() || uploading} className="w-full font-semibold">
-            {uploading ? "Uploading…" : "Add Lesson"}
-          </Button>
-        </div>
+        <LessonEditorForm mode="create" moduleId={moduleId} creatorId={creatorId} onClose={onClose} onBusyChange={setBusy} />
       </DialogContent>
     </Dialog>
   );
@@ -1075,94 +1051,246 @@ function EditModuleDialog({ open, onClose, module: mod }: { open: boolean; onClo
 }
 
 function EditLessonDialog({ open, onClose, lesson }: { open: boolean; onClose: () => void; lesson: any }) {
-  const [title, setTitle] = useState(lesson.title);
-  const [description, setDescription] = useState(lesson.description || "");
-  const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [removeVideo, setRemoveVideo] = useState(false);
-  const updateLesson = useUpdateLesson();
-  const { user } = useAuth();
+  const [busy, setBusy] = useState(false);
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o && !busy) onClose(); }}>
+      <DialogContent className="bg-card border-border max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogHeader><DialogTitle>Edit Lesson</DialogTitle></DialogHeader>
+        <LessonEditorForm mode="edit" creatorId={lesson.creator_id} lesson={lesson} onClose={onClose} onBusyChange={setBusy} />
+      </DialogContent>
+    </Dialog>
+  );
+}
 
-  const hasExistingVideo = !removeVideo && (lesson.mux_asset_id || lesson.video_url);
+/* ═══════════════════════════════════════════════════════════════
+   Unified Skool-style lesson editor (create + edit)
+   VIDEO (Upload | YouTube/URL) · TITLE · rich DESCRIPTION · RESOURCES · ACCESS
+   ═══════════════════════════════════════════════════════════════ */
+function LessonEditorForm({
+  mode, moduleId, creatorId, lesson, onClose, onBusyChange,
+}: {
+  mode: "create" | "edit";
+  moduleId?: string;
+  creatorId: string;
+  lesson?: any;
+  onClose: () => void;
+  onBusyChange?: (busy: boolean) => void;
+}) {
+  const { user } = useAuth();
+  const createLesson = useCreateLesson();
+  const updateLesson = useUpdateLesson();
+
+  const [title, setTitle] = useState<string>(lesson?.title || "");
+  const [description, setDescription] = useState<string>(lesson?.description || "");
+  const [isFree, setIsFree] = useState<boolean>(lesson?.is_free ?? false);
+  const [links, setLinks] = useState<{ label: string; url: string }[]>(
+    Array.isArray(lesson?.lesson_links) ? lesson.lesson_links.map((l: any) => ({ label: l.label || "", url: l.url || "" })) : [],
+  );
+
+  const existingMedia = useMemo<LessonMedia>(() => (lesson ? resolveLessonMedia(lesson) : { status: "none", kind: "none" }), [lesson]);
+  const hasExistingVideo = mode === "edit" && existingMedia.status !== "none";
+
+  const [editingVideo, setEditingVideo] = useState<boolean>(!hasExistingVideo);
+  const [videoTab, setVideoTab] = useState<"upload" | "url">("upload");
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoUrl, setVideoUrl] = useState("");
+  const [removeVideo, setRemoveVideo] = useState(false);
+
+  const [uploading, setUploadingState] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const setUploading = (v: boolean) => { setUploadingState(v); onBusyChange?.(v); };
+
+  const urlDetect = useMemo(() => {
+    const u = videoUrl.trim();
+    if (!u) return null;
+    const yt = extractYouTubeId(u); if (yt) return { kind: "youtube" as const, id: yt };
+    const vim = extractVimeoId(u); if (vim) return { kind: "vimeo" as const, id: vim };
+    if (/^https?:\/\/.+/i.test(u)) return { kind: "direct" as const, id: null };
+    return { kind: "invalid" as const, id: null };
+  }, [videoUrl]);
 
   const uploadToMux = async (file: File): Promise<string | null> => {
     if (!user) return null;
     const { uploadToMuxWithRetry } = await import("@/lib/muxUpload");
-    return uploadToMuxWithRetry({
-      userId: user.id,
-      title,
-      description,
-      file,
-      onProgress: setUploadProgress,
-    });
+    return uploadToMuxWithRetry({ userId: user.id, title: title || "Lesson video", description: "", file, onProgress: setUploadProgress });
+  };
+
+  const buildVideoPatch = async (): Promise<any> => {
+    if (removeVideo) {
+      return { video_url: null, video_type: null, youtube_video_id: null, mux_asset_id: null, mux_upload_id: null, mux_playback_id: null, video_status: null };
+    }
+    if (mode === "edit" && !editingVideo) return {}; // untouched
+    if (videoTab === "upload" && videoFile) {
+      const uploadId = await uploadToMux(videoFile);
+      if (!uploadId) throw new Error("Upload failed");
+      return { video_url: `upload:${uploadId}`, mux_upload_id: uploadId, mux_asset_id: "pending", mux_playback_id: null, video_type: null, youtube_video_id: null, video_status: "processing" };
+    }
+    if (videoTab === "url" && videoUrl.trim() && urlDetect && urlDetect.kind !== "invalid") {
+      const u = videoUrl.trim();
+      const base = { video_url: u, mux_upload_id: null, mux_asset_id: null, mux_playback_id: null, video_status: "ready" };
+      if (urlDetect.kind === "youtube") return { ...base, video_type: "youtube", youtube_video_id: urlDetect.id };
+      if (urlDetect.kind === "vimeo") return { ...base, video_type: "vimeo", youtube_video_id: null };
+      return { ...base, video_type: "url", youtube_video_id: null };
+    }
+    return {};
   };
 
   const handleSubmit = async () => {
     if (!title.trim()) return;
+    if (editingVideo && videoTab === "url" && videoUrl.trim() && urlDetect?.kind === "invalid") {
+      toast.error("Invalid video URL", { description: "Paste a YouTube, Vimeo, or direct video link." });
+      return;
+    }
     setUploading(true);
     try {
-      const updateData: any = { id: lesson.id, title, description };
-      if (videoFile) {
-        const uploadId = await uploadToMux(videoFile);
-        if (uploadId) { updateData.mux_asset_id = "pending"; updateData.video_url = `upload:${uploadId}`; }
-      } else if (removeVideo) {
-        updateData.mux_asset_id = null; updateData.video_url = null;
+      const cleanLinks = links.map((l) => ({ label: (l.label || "").trim(), url: (l.url || "").trim() })).filter((l) => l.url);
+      const videoPatch = await buildVideoPatch();
+      const processing = videoPatch.video_status === "processing";
+      if (mode === "create") {
+        await createLesson.mutateAsync({ module_id: moduleId!, creator_id: creatorId, title: title.trim(), description, is_free: isFree, lesson_links: cleanLinks, ...videoPatch });
+      } else {
+        await updateLesson.mutateAsync({ id: lesson.id, title: title.trim(), description, is_free: isFree, lesson_links: cleanLinks, ...videoPatch });
       }
-      await updateLesson.mutateAsync(updateData);
       onClose();
-      toast.success(videoFile ? "Lesson updated! Video is processing..." : "Lesson updated!");
+      toast.success(mode === "create"
+        ? (processing ? "Lesson added — video is processing…" : "Lesson added!")
+        : (processing ? "Lesson updated — video is processing…" : "Lesson updated!"));
     } catch (err: any) {
       toast.error("Error", { description: err.message });
     } finally { setUploading(false); }
   };
 
+  const existingVideoLabel =
+    existingMedia.status === "processing" ? "Video processing…"
+    : existingMedia.status === "errored" ? "Previous upload failed"
+    : existingMedia.kind === "youtube" ? "YouTube video attached"
+    : existingMedia.kind === "vimeo" ? "Vimeo video attached"
+    : "Video attached";
+
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o && !uploading) onClose(); }}>
-      <DialogContent className="bg-card border-border">
-        <DialogHeader><DialogTitle>Edit Lesson</DialogTitle></DialogHeader>
-        <div className="space-y-3">
-          <Input placeholder="Lesson title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 bg-muted" />
-          <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 bg-muted" />
-          <div>
-            <label className="block text-xs font-medium mb-1.5 text-muted-foreground">Video</label>
-            {videoFile ? (
-              <div className="flex items-center gap-2 p-2.5 rounded-lg bg-muted">
-                <Play className="w-4 h-4 flex-shrink-0 text-primary" />
-                <span className="text-xs text-foreground truncate flex-1">{videoFile.name}</span>
-                <button onClick={() => setVideoFile(null)} className="text-xs px-2 py-0.5 rounded text-muted-foreground">Remove</button>
-              </div>
-            ) : hasExistingVideo ? (
-              <div className="flex items-center gap-2 p-2.5 rounded-lg bg-muted">
-                <CheckCircle className="w-4 h-4 flex-shrink-0 text-primary" />
-                <span className="text-xs text-foreground flex-1">Video attached</span>
-                <label className="text-xs px-2 py-0.5 rounded cursor-pointer hover:bg-secondary text-primary">
-                  Replace
-                  <input type="file" accept="video/*" className="hidden" onChange={(e) => { setVideoFile(e.target.files?.[0] || null); setRemoveVideo(false); }} />
-                </label>
-                <button onClick={() => { setRemoveVideo(true); setVideoFile(null); }} className="text-xs px-2 py-0.5 rounded text-destructive">Remove</button>
-              </div>
-            ) : (
-              <label className="flex flex-col items-center justify-center gap-1.5 p-4 rounded-lg cursor-pointer hover:bg-secondary/50 transition-colors border border-dashed border-border">
-                <Play className="w-5 h-5 text-primary" />
-                <span className="text-xs text-muted-foreground">Click to select a video file</span>
-                <input type="file" accept="video/*" className="hidden" onChange={(e) => { setVideoFile(e.target.files?.[0] || null); setRemoveVideo(false); }} />
-              </label>
-            )}
+    <div className="space-y-4">
+      {/* Title */}
+      <div className="space-y-1.5">
+        <label className="text-xs font-semibold text-foreground">Lesson title</label>
+        <Input placeholder="e.g. Getting started" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 bg-muted" />
+      </div>
+
+      {/* Video */}
+      <div className="space-y-1.5">
+        <label className="text-xs font-semibold text-foreground">Video</label>
+        {hasExistingVideo && !editingVideo && !removeVideo ? (
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-muted">
+            {existingMedia.status === "processing" ? <Loader2 className="w-4 h-4 flex-shrink-0 text-primary animate-spin" />
+              : existingMedia.status === "errored" ? <AlertCircle className="w-4 h-4 flex-shrink-0 text-destructive" />
+              : existingMedia.kind === "youtube" ? <Youtube className="w-4 h-4 flex-shrink-0 text-destructive" />
+              : <CheckCircle className="w-4 h-4 flex-shrink-0 text-primary" />}
+            <span className="text-sm text-foreground flex-1">{existingVideoLabel}</span>
+            <button onClick={() => { setEditingVideo(true); setVideoFile(null); setVideoUrl(""); }} className="text-xs font-medium px-2 py-1 rounded text-primary hover:bg-secondary">Replace</button>
+            <button onClick={() => { setRemoveVideo(true); setEditingVideo(false); }} className="text-xs font-medium px-2 py-1 rounded text-destructive hover:bg-secondary">Remove</button>
           </div>
-          {uploading && (
-            <div className="space-y-1">
-              <div className="h-1.5 rounded-full overflow-hidden bg-muted">
-                <div className="h-full rounded-full transition-all bg-primary" style={{ width: `${uploadProgress}%` }} />
-              </div>
-              <p className="text-xs text-center text-muted-foreground">Uploading… {uploadProgress}%</p>
+        ) : removeVideo ? (
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-muted">
+            <X className="w-4 h-4 flex-shrink-0 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground flex-1">Video will be removed on save</span>
+            <button onClick={() => { setRemoveVideo(false); if (hasExistingVideo) setEditingVideo(false); }} className="text-xs font-medium px-2 py-1 rounded text-primary hover:bg-secondary">Undo</button>
+          </div>
+        ) : (
+          <div className="rounded-lg border border-border overflow-hidden">
+            <div className="flex border-b border-border">
+              <button onClick={() => setVideoTab("upload")} className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold transition-colors ${videoTab === "upload" ? "bg-secondary text-foreground" : "text-muted-foreground hover:bg-secondary/50"}`}>
+                <Upload className="w-3.5 h-3.5" /> Upload
+              </button>
+              <button onClick={() => setVideoTab("url")} className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold transition-colors ${videoTab === "url" ? "bg-secondary text-foreground" : "text-muted-foreground hover:bg-secondary/50"}`}>
+                <Youtube className="w-3.5 h-3.5" /> YouTube / URL
+              </button>
             </div>
-          )}
-          <Button onClick={handleSubmit} disabled={!title.trim() || uploading} className="w-full font-semibold">
-            {uploading ? "Uploading…" : "Save Changes"}
-          </Button>
+            <div className="p-3">
+              {videoTab === "upload" ? (
+                !videoFile ? (
+                  <label className="flex flex-col items-center justify-center gap-1.5 p-5 rounded-lg cursor-pointer hover:bg-secondary/50 transition-colors border border-dashed border-border">
+                    <Upload className="w-5 h-5 text-primary" />
+                    <span className="text-xs text-muted-foreground">Click to select a video file</span>
+                    <span className="text-[10px] text-muted-foreground/70">MP4, MOV, WebM — any size</span>
+                    <input type="file" accept="video/*" className="hidden" onChange={(e) => setVideoFile(e.target.files?.[0] || null)} />
+                  </label>
+                ) : (
+                  <div className="flex items-center gap-2 p-2.5 rounded-lg bg-muted">
+                    <Film className="w-4 h-4 flex-shrink-0 text-primary" />
+                    <span className="text-xs text-foreground truncate flex-1">{videoFile.name}</span>
+                    <button onClick={() => setVideoFile(null)} className="text-xs px-2 py-0.5 rounded text-muted-foreground hover:bg-secondary">Remove</button>
+                  </div>
+                )
+              ) : (
+                <div className="space-y-2">
+                  <Input placeholder="youtube.com/watch?v=…   ·   vimeo.com/…   ·   https://…/video.mp4" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} className="border-0 bg-muted" />
+                  {urlDetect && (urlDetect.kind === "invalid" ? (
+                    <p className="text-xs text-destructive">Enter a valid YouTube, Vimeo, or direct video URL.</p>
+                  ) : (
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <CheckCircle className="w-3.5 h-3.5 text-primary" />
+                      {urlDetect.kind === "youtube" ? "YouTube video detected" : urlDetect.kind === "vimeo" ? "Vimeo video detected" : "Direct video link detected"}
+                    </div>
+                  ))}
+                  {urlDetect?.kind === "youtube" && urlDetect.id && (
+                    <div className="aspect-video w-full rounded-lg overflow-hidden bg-black">
+                      <img src={`https://img.youtube.com/vi/${urlDetect.id}/hqdefault.jpg`} alt="Video preview" loading="lazy" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                </div>
+              )}
+              {hasExistingVideo && (
+                <button onClick={() => { setEditingVideo(false); setVideoFile(null); setVideoUrl(""); }} className="mt-2 text-xs text-muted-foreground hover:text-foreground">Cancel — keep current video</button>
+              )}
+            </div>
+          </div>
+        )}
+        {uploading && (
+          <div className="space-y-1 pt-1">
+            <div className="h-1.5 rounded-full overflow-hidden bg-muted">
+              <div className="h-full rounded-full transition-all bg-primary" style={{ width: `${uploadProgress}%` }} />
+            </div>
+            <p className="text-xs text-center text-muted-foreground">Uploading… {uploadProgress}%</p>
+          </div>
+        )}
+      </div>
+
+      {/* Description */}
+      <div className="space-y-1.5">
+        <label className="text-xs font-semibold text-foreground">Description</label>
+        <p className="text-[11px] text-muted-foreground -mt-0.5">Overview the topic and what students will learn.</p>
+        <RichTextEditor value={description} onChange={setDescription} placeholder="What's this lesson about?" />
+      </div>
+
+      {/* Resource links */}
+      <div className="space-y-2">
+        <label className="text-xs font-semibold text-foreground">Resources &amp; links</label>
+        {links.map((l, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <Input placeholder="Label" value={l.label} onChange={(e) => setLinks(links.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))} className="border-0 bg-muted flex-1" />
+            <Input placeholder="https://…" value={l.url} onChange={(e) => setLinks(links.map((x, j) => (j === i ? { ...x, url: e.target.value } : x)))} className="border-0 bg-muted flex-[1.5]" />
+            <button onClick={() => setLinks(links.filter((_, j) => j !== i))} className="p-2 rounded text-muted-foreground hover:bg-secondary hover:text-destructive"><Trash2 className="w-3.5 h-3.5" /></button>
+          </div>
+        ))}
+        <button onClick={() => setLinks([...links, { label: "", url: "" }])} className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline">
+          <Plus className="w-3.5 h-3.5" /> Add link
+        </button>
+      </div>
+
+      {/* Access */}
+      <div className="flex items-center justify-between rounded-lg bg-muted px-3 py-2.5">
+        <div>
+          <p className="text-sm font-medium text-foreground">Access</p>
+          <p className="text-xs text-muted-foreground">{isFree ? "Free preview — anyone can watch" : "Paid members only"}</p>
         </div>
-      </DialogContent>
-    </Dialog>
+        <div className="flex gap-1 rounded-full bg-secondary p-0.5">
+          <button onClick={() => setIsFree(true)} className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${isFree ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>Free</button>
+          <button onClick={() => setIsFree(false)} className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${!isFree ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>Paid</button>
+        </div>
+      </div>
+
+      <Button onClick={handleSubmit} disabled={!title.trim() || uploading} className="w-full font-semibold">
+        {uploading ? "Saving…" : mode === "create" ? "Add Lesson" : "Save Changes"}
+      </Button>
+    </div>
   );
 }
