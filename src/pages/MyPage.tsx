@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import SEOHead from "@/components/SEOHead";
 import LinkInBioRenderer from "@/_archive/bio-page/components/pages/LinkInBioRenderer";
+import SiteBuilder from "@/components/sitebuilder/SiteBuilder";
 
 export default function MyPage() {
   const { user } = useAuth();
@@ -158,6 +159,7 @@ export default function MyPage() {
         <Tabs value={tab} onValueChange={setTab} className="mt-4">
           <TabsList className="w-full justify-start">
             <TabsTrigger value="bio">Bio Page</TabsTrigger>
+            <TabsTrigger value="website">Website</TabsTrigger>
             <TabsTrigger value="funnels">Funnel Pages</TabsTrigger>
             <TabsTrigger value="domain">Custom Domain</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -222,6 +224,10 @@ export default function MyPage() {
                 </div>
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="website" className="mt-4">
+            <SiteBuilder />
           </TabsContent>
 
           <TabsContent value="funnels" className="mt-4">
