@@ -217,14 +217,14 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   // Everything that isn't one of the six primary destinations, flattened into
   // the single "More" group. Preserves per-core gating (isCoreEnabled) and
   // item-level featureKey gating; skips items already surfaced as primaries.
-  const moreNavItems: NavItem[] = [
+  const moreNavItems: NavItem[] = ([
     ...coreNav
       .filter((g) => isCoreEnabled(g.core))
       .flatMap((g) => g.items.filter((i) => !primaryPaths.has(i.path))),
-    { label: "Your Page", icon: Globe, path: yourPagePath, desc: "Your public artist page" },
+    { label: "Your Page", icon: Globe, path: yourPagePath, desc: "Your public artist page" } as NavItem,
     ...utilityNav,
     ...(isAdmin ? [{ label: "Admin", icon: Shield, path: "/admin", desc: "Platform admin" } as NavItem] : []),
-  ].filter((i) => !i.featureKey || isEnabled(i.featureKey));
+  ] as NavItem[]).filter((i) => !i.featureKey || isEnabled(i.featureKey));
 
   const getBadge = (item: NavItem) => {
     if (item.badgeKey === "collaborate") return unreadCount;
