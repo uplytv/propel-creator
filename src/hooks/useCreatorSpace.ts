@@ -109,6 +109,12 @@ export function useCommunityPosts(creatorId: string | undefined, category?: stri
   });
 }
 
+// Input caps for community content (Phase 2 security hardening). Enforced in
+// the create mutations below and mirrored as maxLength on the composers.
+export const COMMUNITY_POST_TITLE_MAX = 200;
+export const COMMUNITY_POST_BODY_MAX = 10000;
+export const COMMUNITY_COMMENT_MAX = 2000;
+
 export function useCreateCommunityPost() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -116,6 +122,8 @@ export function useCreateCommunityPost() {
   return useMutation({
     mutationFn: async (post: { creator_id: string; title: string; body: string; category: string; image_url?: string }) => {
       if (!user) throw new Error("Not authenticated");
+      if ((post.title?.length ?? 0) > COMMUNITY_POST_TITLE_MAX) throw new Error(`Title is too long (max ${COMMUNITY_POST_TITLE_MAX} characters).`);
+      if ((post.body?.length ?? 0) > COMMUNITY_POST_BODY_MAX) throw new Error(`Post is too long (max ${COMMUNITY_POST_BODY_MAX} characters).`);
       const { error } = await supabase
         .from("community_posts")
         .insert({ ...post, author_id: user.id });
@@ -218,6 +226,7 @@ export function useCreateComment() {
   return useMutation({
     mutationFn: async ({ postId, body, creatorId }: { postId: string; body: string; creatorId: string }) => {
       if (!user) throw new Error("Not authenticated");
+      if ((body?.length ?? 0) > COMMUNITY_COMMENT_MAX) throw new Error(`Comment is too long (max ${COMMUNITY_COMMENT_MAX} characters).`);
       await supabase.from("community_comments").insert({ post_id: postId, author_id: user.id, body });
       const { data: post } = await supabase.from("community_posts").select("comment_count").eq("id", postId).single();
       if (post) {

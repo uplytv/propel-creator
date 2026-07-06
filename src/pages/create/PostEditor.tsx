@@ -5,6 +5,8 @@ import { toast } from "sonner";
 
 import { useAuth } from "@/context/AuthContext";
 import {
+  COMMUNITY_POST_BODY_MAX,
+  COMMUNITY_POST_TITLE_MAX,
   useCommunityCategories,
   useCreateCommunityPost,
   useEnsureSpace,
@@ -87,12 +89,14 @@ export default function PostEditor() {
           <Input
             placeholder="Title (optional)"
             value={title}
+            maxLength={COMMUNITY_POST_TITLE_MAX}
             onChange={(e) => setTitle(e.target.value)}
             className="border-0 bg-muted"
           />
           <Textarea
             placeholder="What's on your mind?"
             value={body}
+            maxLength={COMMUNITY_POST_BODY_MAX}
             onChange={(e) => setBody(e.target.value)}
             rows={8}
             autoFocus

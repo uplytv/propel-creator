@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, parseISO } from "date-fns";
-import { ChevronLeft, ChevronRight, Plus, CalendarDays, ExternalLink } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, CalendarDays, ExternalLink, Check } from "lucide-react";
 import { useCommunityEvents, useCreateEvent } from "@/hooks/useCommunityMembers";
+import { useEventRsvps, useToggleRsvp, type EventRsvpInfo } from "@/hooks/useCommunityDepth";
+import { useAuth } from "@/context/AuthContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,6 +16,7 @@ interface Props {
 }
 
 export default function SpaceCalendarTab({ creatorId, isOwner }: Props) {
+  const { user } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showAddEvent, setShowAddEvent] = useState(false);
   const { data: events = [] } = useCommunityEvents(creatorId);
@@ -32,16 +35,38 @@ export default function SpaceCalendarTab({ creatorId, isOwner }: Props) {
     .filter((e: any) => parseISO(e.event_date) >= new Date())
     .slice(0, 5);
 
+  // RSVPs — members-only via RLS; +15 points awarded server-side on first RSVP
+  const { data: rsvpMap = {} } = useEventRsvps(upcomingEvents.map((e: any) => e.id));
+  const toggleRsvp = useToggleRsvp();
+
+  const handleRsvp = (eventId: string, going: boolean) => {
+    if (!user) {
+      toast.error("Sign in to RSVP");
+      return;
+    }
+    toggleRsvp.mutate(
+      { eventId, going },
+      {
+        onError: (err: any) =>
+          toast.error("Couldn't RSVP", {
+            description: String(err?.message || "").toLowerCase().includes("row-level security")
+              ? "Join this community to RSVP to events."
+              : err.message,
+          }),
+      }
+    );
+  };
+
   return (
     <div className="px-4 pt-4">
       {/* Month nav */}
       <div className="flex items-center justify-between mb-4">
         <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))}>
-          <ChevronLeft className="w-5 h-5 text-white" />
+          <ChevronLeft className="w-5 h-5 text-foreground" />
         </button>
-        <h2 className="text-base font-bold text-white">{format(currentDate, "MMMM yyyy")}</h2>
+        <h2 className="text-base font-bold text-foreground">{format(currentDate, "MMMM yyyy")}</h2>
         <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))}>
-          <ChevronRight className="w-5 h-5 text-white" />
+          <ChevronRight className="w-5 h-5 text-foreground" />
         </button>
       </div>
 
@@ -64,7 +89,7 @@ export default function SpaceCalendarTab({ creatorId, isOwner }: Props) {
               className="aspect-square flex flex-col items-center justify-center rounded-lg relative text-xs"
               style={{
                 background: today ? "hsl(var(--primary))" : dayEvents.length > 0 ? "hsl(var(--background))" : "transparent",
-                color: today ? "hsl(var(--background))" : "hsl(var(--foreground))",
+                color: today ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))",
               }}
             >
               {day.getDate()}
@@ -81,14 +106,14 @@ export default function SpaceCalendarTab({ creatorId, isOwner }: Props) {
         <button
           onClick={() => setShowAddEvent(true)}
           className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold mb-4"
-          style={{ border: "1px dashed #1e1e1e", color: "hsl(var(--primary))" }}
+          style={{ border: "1px dashed hsl(var(--border))", color: "hsl(var(--primary))" }}
         >
           <Plus className="w-4 h-4" /> Add Event
         </button>
       )}
 
       {/* Upcoming Events */}
-      <h3 className="text-sm font-semibold text-white mb-3">Upcoming Events</h3>
+      <h3 className="text-sm font-semibold text-foreground mb-3">Upcoming Events</h3>
       {upcomingEvents.length === 0 ? (
         <div className="p-8 text-center rounded-lg" style={{ background: "hsl(var(--background))" }}>
           <CalendarDays className="w-8 h-8 mx-auto mb-2" style={{ color: "hsl(var(--muted-foreground))" }} />
@@ -96,25 +121,74 @@ export default function SpaceCalendarTab({ creatorId, isOwner }: Props) {
         </div>
       ) : (
         <div className="space-y-2">
-          {upcomingEvents.map((event: any) => (
-            <div key={event.id} className="p-3 rounded-lg" style={{ background: "hsl(var(--background))", border: "1px solid #1e1e1e" }}>
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-semibold text-white">{event.title}</p>
-                  <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
-                    {format(parseISO(event.event_date), "MMM d, yyyy")}
-                    {event.event_time && ` · ${event.event_time}`}
-                  </p>
-                  {event.description && <p className="text-xs mt-1" style={{ color: "hsl(var(--border))" }}>{event.description}</p>}
+          {upcomingEvents.map((event: any) => {
+            const rsvp: EventRsvpInfo = (rsvpMap as Record<string, EventRsvpInfo>)[event.id] || { count: 0, mine: false, attendees: [] };
+            return (
+              <div key={event.id} className="p-3 rounded-lg" style={{ background: "hsl(var(--background))", border: "1px solid hsl(var(--border))" }}>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{event.title}</p>
+                    <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
+                      {format(parseISO(event.event_date), "MMM d, yyyy")}
+                      {event.event_time && ` · ${event.event_time}`}
+                    </p>
+                    {event.description && <p className="text-xs mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>{event.description}</p>}
+                  </div>
+                  {event.link && (
+                    <a href={event.link} target="_blank" rel="noreferrer" className="p-1">
+                      <ExternalLink className="w-4 h-4" style={{ color: "hsl(var(--primary))" }} />
+                    </a>
+                  )}
                 </div>
-                {event.link && (
-                  <a href={event.link} target="_blank" rel="noreferrer" className="p-1">
-                    <ExternalLink className="w-4 h-4" style={{ color: "hsl(var(--primary))" }} />
-                  </a>
-                )}
+
+                {/* RSVP row — Going button, going-count, attendee avatars */}
+                <div className="flex items-center justify-between mt-3 pt-2 border-t border-border">
+                  <div className="flex items-center gap-2">
+                    {rsvp.attendees.length > 0 && (
+                      <div className="flex -space-x-2">
+                        {rsvp.attendees.map((a) =>
+                          a.avatar_url ? (
+                            <img
+                              key={a.user_id}
+                              src={a.avatar_url}
+                              alt={a.display_name}
+                              title={a.display_name}
+                              loading="lazy"
+                              className="w-6 h-6 rounded-full object-cover border-2 border-background"
+                            />
+                          ) : (
+                            <div
+                              key={a.user_id}
+                              title={a.display_name}
+                              className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold bg-muted text-foreground border-2 border-background"
+                            >
+                              {(a.display_name || "M").charAt(0)}
+                            </div>
+                          )
+                        )}
+                      </div>
+                    )}
+                    <span className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
+                      {rsvp.count === 0 ? "Be the first to RSVP" : `${rsvp.count} going`}
+                    </span>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant={rsvp.mine ? "outline" : "default"}
+                    className="h-7 px-3 text-xs font-semibold"
+                    onClick={() => handleRsvp(event.id, !rsvp.mine)}
+                    disabled={toggleRsvp.isPending}
+                  >
+                    {rsvp.mine ? (
+                      <><Check className="w-3.5 h-3.5 mr-1" /> Going</>
+                    ) : (
+                      "Going?"
+                    )}
+                  </Button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -141,14 +215,14 @@ function AddEventDialog({ open, onClose, creatorId }: { open: boolean; onClose: 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="border-0" style={{ background: "hsl(var(--background))", color: "hsl(var(--foreground))" }}>
-        <DialogHeader><DialogTitle className="text-white">Add Event</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle className="text-foreground">Add Event</DialogTitle></DialogHeader>
         <div className="space-y-3">
-          <Input placeholder="Event title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "hsl(var(--card))" }} />
-          <Input type="date" value={eventDate} onChange={(e) => setEventDate(e.target.value)} className="border-0 text-white" style={{ background: "hsl(var(--card))" }} />
-          <Input type="time" value={eventTime} onChange={(e) => setEventTime(e.target.value)} className="border-0 text-white" style={{ background: "hsl(var(--card))" }} />
-          <Textarea placeholder="Description (optional)" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "hsl(var(--card))" }} />
-          <Input placeholder="Link (optional, e.g. Zoom URL)" value={link} onChange={(e) => setLink(e.target.value)} className="border-0 text-white placeholder:text-gray-500" style={{ background: "hsl(var(--card))" }} />
-          <Button onClick={handleSubmit} disabled={!title.trim() || !eventDate} className="w-full font-semibold" style={{ background: "hsl(var(--primary))", color: "hsl(var(--background))" }}>Add Event</Button>
+          <Input placeholder="Event title" value={title} onChange={(e) => setTitle(e.target.value)} className="border-0 text-foreground placeholder:text-muted-foreground" style={{ background: "hsl(var(--card))" }} />
+          <Input type="date" value={eventDate} onChange={(e) => setEventDate(e.target.value)} className="border-0 text-foreground" style={{ background: "hsl(var(--card))" }} />
+          <Input type="time" value={eventTime} onChange={(e) => setEventTime(e.target.value)} className="border-0 text-foreground" style={{ background: "hsl(var(--card))" }} />
+          <Textarea placeholder="Description (optional)" value={description} onChange={(e) => setDescription(e.target.value)} className="border-0 text-foreground placeholder:text-muted-foreground" style={{ background: "hsl(var(--card))" }} />
+          <Input placeholder="Link (optional, e.g. Zoom URL)" value={link} onChange={(e) => setLink(e.target.value)} className="border-0 text-foreground placeholder:text-muted-foreground" style={{ background: "hsl(var(--card))" }} />
+          <Button onClick={handleSubmit} disabled={!title.trim() || !eventDate} className="w-full font-semibold" style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>Add Event</Button>
         </div>
       </DialogContent>
     </Dialog>
