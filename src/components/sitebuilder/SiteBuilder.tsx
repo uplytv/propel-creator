@@ -18,6 +18,7 @@ import {
   Pencil,
   GripVertical,
   CalendarCheck,
+  Sparkles,
 } from "lucide-react";
 import { SETUP_CALL_URL } from "@/components/pricing/plans";
 import { Button } from "@/components/ui/button";
