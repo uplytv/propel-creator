@@ -2523,6 +2523,36 @@ export type Database = {
         }
         Relationships: []
       }
+      cancellation_feedback: {
+        Row: {
+          created_at: string | null
+          id: string
+          plan: string | null
+          rating: number | null
+          reason: string | null
+          user_id: string
+          would_return: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          plan?: string | null
+          rating?: number | null
+          reason?: string | null
+          user_id: string
+          would_return?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          plan?: string | null
+          rating?: number | null
+          reason?: string | null
+          user_id?: string
+          would_return?: string | null
+        }
+        Relationships: []
+      }
       cart_items: {
         Row: {
           created_at: string
@@ -16865,6 +16895,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_type: string
           age: number | null
           auto_download_recordings: boolean | null
           avatar_url: string | null
@@ -16898,6 +16929,7 @@ export type Database = {
           id: string
           interests: string[] | null
           is_approved: boolean
+          is_founding_creator: boolean
           is_producer: boolean | null
           last_active_at: string | null
           last_name: string | null
@@ -16936,6 +16968,7 @@ export type Database = {
           welcome_email_sent_at: string | null
         }
         Insert: {
+          account_type?: string
           age?: number | null
           auto_download_recordings?: boolean | null
           avatar_url?: string | null
@@ -16969,6 +17002,7 @@ export type Database = {
           id?: string
           interests?: string[] | null
           is_approved?: boolean
+          is_founding_creator?: boolean
           is_producer?: boolean | null
           last_active_at?: string | null
           last_name?: string | null
@@ -17007,6 +17041,7 @@ export type Database = {
           welcome_email_sent_at?: string | null
         }
         Update: {
+          account_type?: string
           age?: number | null
           auto_download_recordings?: boolean | null
           avatar_url?: string | null
@@ -17040,6 +17075,7 @@ export type Database = {
           id?: string
           interests?: string[] | null
           is_approved?: boolean
+          is_founding_creator?: boolean
           is_producer?: boolean | null
           last_active_at?: string | null
           last_name?: string | null
